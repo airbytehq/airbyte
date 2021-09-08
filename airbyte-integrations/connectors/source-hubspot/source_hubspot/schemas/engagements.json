@@ -153,8 +153,7 @@
           "type": ["null", "string"]
         },
         "recordingUrl": {
-          "type": ["null", "string"],
-          "format": "uri"
+          "type": ["null", "string"]
         },
         "disposition": {
           "type": ["null", "string"]

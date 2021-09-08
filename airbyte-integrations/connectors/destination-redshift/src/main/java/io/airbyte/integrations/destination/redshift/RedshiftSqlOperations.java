@@ -24,9 +24,11 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
+import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -35,7 +37,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOperations {
+public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
@@ -52,7 +54,8 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName)
+      throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // query syntax:
@@ -71,8 +74,9 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   }
 
   @Override
-  public boolean isValidData(final String data) {
-    final int dataSize = data.getBytes().length;
+  public boolean isValidData(final JsonNode data) {
+    String stringData = Jsons.serialize(data);
+    final int dataSize = stringData.getBytes().length;
     return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 

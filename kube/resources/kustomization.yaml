@@ -12,5 +12,4 @@ resources:
   - temporal.yaml
   - volume-configs.yaml
   - volume-db.yaml
-  - volume-workspace.yaml
   - webapp.yaml

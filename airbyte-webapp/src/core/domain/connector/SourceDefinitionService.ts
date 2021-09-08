@@ -11,4 +11,4 @@ class SourceDefinitionService extends AirbyteRequestService {
   }
 }
 
-export const sourceDefinitionService = new SourceDefinitionService();
+export { SourceDefinitionService };

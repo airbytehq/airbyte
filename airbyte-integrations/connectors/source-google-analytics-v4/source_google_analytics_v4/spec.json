@@ -1,0 +1,41 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-analytics-v4",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Google Analytics V4 Spec",
+    "type": "object",
+    "required": ["credentials_json", "view_id", "start_date"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials_json": {
+        "type": "string",
+        "title": "Credentials JSON",
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> if you need help generating this key.",
+        "airbyte_secret": true
+      },
+      "view_id": {
+        "type": "string",
+        "title": "View ID",
+        "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>.",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "A date in the format YYYY-MM-DD.",
+        "examples": ["2020-06-01"]
+      },
+      "window_in_days": {
+        "type": "integer",
+        "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "examples": [30, 60, 90, 120, 200, 364],
+        "default": 90
+      },
+      "custom_reports": {
+        "title": "Custom Reports",
+        "type": "string",
+        "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4\">docs</a> to get more information about this field."
+      }
+    }
+  }
+}

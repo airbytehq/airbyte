@@ -6,7 +6,7 @@
       "type": ["null", "integer"]
     },
     "amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "paid_at": {
       "type": ["null", "string"],

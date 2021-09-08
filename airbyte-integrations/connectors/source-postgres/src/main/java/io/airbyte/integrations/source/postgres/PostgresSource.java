@@ -40,6 +40,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -73,9 +74,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
 
-    List<String> additionalParameters = new ArrayList<>();
+    final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
@@ -106,8 +107,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
-    AirbyteCatalog catalog = super.discover(config);
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+    final AirbyteCatalog catalog = super.discover(config);
 
     if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
@@ -123,14 +124,14 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
-        List<JsonNode> matchingSlots = database.query(connection -> {
+        final List<JsonNode> matchingSlots = database.query(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
-          PreparedStatement ps = connection.prepareStatement(sql);
+          final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
           ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
           ps.setString(3, config.get("database").asText());
@@ -148,8 +149,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       });
 
       checkOperations.add(database -> {
-        List<JsonNode> matchingPublications = database.query(connection -> {
-          PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
+        final List<JsonNode> matchingPublications = database.query(connection -> {
+          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
 
           LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
@@ -169,7 +170,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+      throws Exception {
     // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
     // create it.
     final AirbyteConnectionStatus check = check(config);
@@ -182,11 +184,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
-                                                                             ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             StateManager stateManager,
-                                                                             Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     /**
      * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
      * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
@@ -195,7 +197,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
      * part
      */
-    JsonNode sourceConfig = database.getSourceConfig();
+    final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
@@ -208,7 +210,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @VisibleForTesting
-  static boolean isCdc(JsonNode config) {
+  static boolean isCdc(final JsonNode config) {
     final boolean isCdc = config.hasNonNull("replication_method")
         && config.get("replication_method").hasNonNull("replication_slot")
         && config.get("replication_method").hasNonNull("publication");
@@ -224,7 +226,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
    *
    * Note: in place mutation.
    */
-  private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
+  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
       stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
     }
@@ -238,7 +240,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
    *
    * Note: in place mutation.
    */
-  private static AirbyteStream setIncrementalToSourceDefined(AirbyteStream stream) {
+  private static AirbyteStream setIncrementalToSourceDefined(final AirbyteStream stream) {
     if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
       stream.setSourceDefinedCursor(true);
     }
@@ -247,9 +249,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   // Note: in place mutation.
-  private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
-    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
@@ -260,8 +262,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return stream;
   }
 
-  public static void main(String[] args) throws Exception {
-    final Source source = new PostgresSource();
+  public static void main(final String[] args) throws Exception {
+    final Source source = new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);

@@ -1,0 +1,838 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "employee",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "401(k) - Company pays": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Coverage": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Effective date": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "401(k) - Status": {
+              "type": ["null", "string"]
+            },
+            "Accrual Level Start Date": {
+              "type": ["null", "string"]
+            },
+            "address1": {
+              "type": ["null", "string"]
+            },
+            "address2": {
+              "type": ["null", "string"]
+            },
+            "allergies": {
+              "type": ["null", "string"]
+            },
+            "Asset Category": {
+              "type": ["null", "string"]
+            },
+            "Asset Description": {
+              "type": ["null", "string"]
+            },
+            "BambooHR Advantage Package Demo Video - Completed": {
+              "type": ["null", "string"]
+            },
+            "BambooHR Advantage Package Demo Video - Due Date": {
+              "type": ["null", "string"]
+            },
+            "BambooHR Advantage Package Demo Video - Expires": {
+              "type": ["null", "string"]
+            },
+            "Benefit Groups": {
+              "type": ["null", "string"]
+            },
+            "Benefit History": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Accrual Start Date": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Adjustments (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Available Balance": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Current balance": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Days scheduled": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Days taken (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Policy": {
+              "type": ["null", "string"]
+            },
+            "Bereavement - Policy Assigned": {
+              "type": ["null", "string"]
+            },
+            "dateOfBirth": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Company pays": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Coverage": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Effective date": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "CA Health Insurance - Status": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "College/Institution": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Accrual Start Date": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Adjustments (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Available Balance": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Current balance": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Hours scheduled": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Hours taken (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Policy": {
+              "type": ["null", "string"]
+            },
+            "Comp/In Lieu Time - Policy Assigned": {
+              "type": ["null", "string"]
+            },
+            "Company Handbook Quiz - Completed": {
+              "type": ["null", "string"]
+            },
+            "Company Handbook Quiz - Due Date": {
+              "type": ["null", "string"]
+            },
+            "Company Handbook Quiz - Expires": {
+              "type": ["null", "string"]
+            },
+            "payRateEffectiveDate": {
+              "type": ["null", "string"]
+            },
+            "payChangeReason": {
+              "type": ["null", "string"]
+            },
+            "Compensation comments": {
+              "type": ["null", "string"]
+            },
+            "Completed - Category": {
+              "type": ["null", "string"]
+            },
+            "Completed - Completed": {
+              "type": ["null", "string"]
+            },
+            "Completed - Cost": {
+              "type": ["null", "string"]
+            },
+            "Completed - Credits": {
+              "type": ["null", "string"]
+            },
+            "Completed - Hours": {
+              "type": ["null", "string"]
+            },
+            "Completed - Instructor": {
+              "type": ["null", "string"]
+            },
+            "Completed - Notes": {
+              "type": ["null", "string"]
+            },
+            "Completed - Title": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Accrual Start Date": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Adjustments (YTD)": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Available Balance": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Current balance": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Hours scheduled": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Hours taken (YTD)": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Policy": {
+              "type": ["null", "string"]
+            },
+            "COVID-19 Related Absence - Policy Assigned": {
+              "type": ["null", "string"]
+            },
+            "CPR - Completed": {
+              "type": ["null", "string"]
+            },
+            "CPR - Due Date": {
+              "type": ["null", "string"]
+            },
+            "CPR - Expires": {
+              "type": ["null", "string"]
+            },
+            "Date Assigned": {
+              "type": ["null", "string"]
+            },
+            "Date Returned": {
+              "type": ["null", "string"]
+            },
+            "Degree": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Company pays": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Coverage": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Effective date": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Dental Insurance - Status": {
+              "type": ["null", "string"]
+            },
+            "department": {
+              "type": ["null", "string"]
+            },
+            "Dependent Birth Date": {
+              "type": ["null", "string"]
+            },
+            "Dependent City": {
+              "type": ["null", "string"]
+            },
+            "Dependent Country": {
+              "type": ["null", "string"]
+            },
+            "Dependent First Name": {
+              "type": ["null", "string"]
+            },
+            "Dependent Full-Time Student": {
+              "type": ["null", "string"]
+            },
+            "Dependent Gender": {
+              "type": ["null", "string"]
+            },
+            "Dependent Home Phone": {
+              "type": ["null", "string"]
+            },
+            "Dependent Last Name": {
+              "type": ["null", "string"]
+            },
+            "Dependent Middle Name": {
+              "type": ["null", "string"]
+            },
+            "Dependent Relationship": {
+              "type": ["null", "string"]
+            },
+            "Dependent SSN": {
+              "type": ["null", "string"]
+            },
+            "Dependent State": {
+              "type": ["null", "string"]
+            },
+            "Dependent Street 1": {
+              "type": ["null", "string"]
+            },
+            "Dependent Street 2": {
+              "type": ["null", "string"]
+            },
+            "Dependent US Citizen": {
+              "type": ["null", "string"]
+            },
+            "Dependent ZIP": {
+              "type": ["null", "string"]
+            },
+            "dietaryRestrictions": {
+              "type": ["null", "string"]
+            },
+            "Disability - Company pays": {
+              "type": ["null", "string"]
+            },
+            "Disability - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Disability - Coverage": {
+              "type": ["null", "string"]
+            },
+            "Disability - Effective date": {
+              "type": ["null", "string"]
+            },
+            "Disability - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "Disability - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "Disability - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Disability - Status": {
+              "type": ["null", "string"]
+            },
+            "division": {
+              "type": ["null", "string"]
+            },
+            "eeo": {
+              "type": ["null", "string"]
+            },
+            "Eligible For Re-hire": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact City": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Country": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Email": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Home Phone": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Mobile Phone": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Name": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Primary": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Relationship": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contacts": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact State": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Street 1": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Street 2": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Work Ext": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact Work Phone": {
+              "type": ["null", "string"]
+            },
+            "Emergency Contact ZIP Code": {
+              "type": ["null", "string"]
+            },
+            "employeeNumber": {
+              "type": ["null", "string"]
+            },
+            "Employee Education: End Date": {
+              "type": ["null", "string"]
+            },
+            "Employee Education: Start Date": {
+              "type": ["null", "string"]
+            },
+            "employmentHistoryStatus": {
+              "type": ["null", "string"]
+            },
+            "acaStatus": {
+              "type": ["null", "string"]
+            },
+            "employeeStatusDate": {
+              "type": ["null", "string"]
+            },
+            "Employment status comments": {
+              "type": ["null", "string"]
+            },
+            "ethnicity": {
+              "type": ["null", "string"]
+            },
+            "Expiration": {
+              "type": ["null", "string"]
+            },
+            "facebook": {
+              "type": ["null", "string"]
+            },
+            "First Aid - Completed": {
+              "type": ["null", "string"]
+            },
+            "First Aid - Due Date": {
+              "type": ["null", "string"]
+            },
+            "First Aid - Expires": {
+              "type": ["null", "string"]
+            },
+            "firstName": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Accrual Start Date": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Adjustments (YTD)": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Available Balance": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Current balance": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Hours scheduled": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Hours taken (YTD)": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Policy": {
+              "type": ["null", "string"]
+            },
+            "FMLA - Policy Assigned": {
+              "type": ["null", "string"]
+            },
+            "gender": {
+              "type": ["null", "string"]
+            },
+            "Getting Started in BambooHR - Completed": {
+              "type": ["null", "string"]
+            },
+            "Getting Started in BambooHR - Due Date": {
+              "type": ["null", "string"]
+            },
+            "Getting Started in BambooHR - Expires": {
+              "type": ["null", "string"]
+            },
+            "GPA": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Company pays": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Coverage": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Effective date": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Health Insurance - CA - Status": {
+              "type": ["null", "string"]
+            },
+            "hireDate": {
+              "type": ["null", "string"]
+            },
+            "homeEmail": {
+              "type": ["null", "string"]
+            },
+            "homePhone": {
+              "type": ["null", "string"]
+            },
+            "instagram": {
+              "type": ["null", "string"]
+            },
+            "Issued": {
+              "type": ["null", "string"]
+            },
+            "Issuing country": {
+              "type": ["null", "string"]
+            },
+            "Job Information: Date": {
+              "type": ["null", "string"]
+            },
+            "jobTitle": {
+              "type": ["null", "string"]
+            },
+            "lastName": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Company pays": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Coverage": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Effective date": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "Life Insurance - Status": {
+              "type": ["null", "string"]
+            },
+            "linkedIn": {
+              "type": ["null", "string"]
+            },
+            "location": {
+              "type": ["null", "string"]
+            },
+            "Major/Specialization": {
+              "type": ["null", "string"]
+            },
+            "maritalStatus": {
+              "type": ["null", "string"]
+            },
+            "middleName": {
+              "type": ["null", "string"]
+            },
+            "mobilePhone": {
+              "type": ["null", "string"]
+            },
+            "New Hire Training - Completed": {
+              "type": ["null", "string"]
+            },
+            "New Hire Training - Due Date": {
+              "type": ["null", "string"]
+            },
+            "New Hire Training - Expires": {
+              "type": ["null", "string"]
+            },
+            "customNIN1": {
+              "type": ["null", "string"]
+            },
+            "Note": {
+              "type": ["null", "string"]
+            },
+            "originalHireDate": {
+              "type": ["null", "string"]
+            },
+            "overtimeRate": {
+              "type": ["null", "string"]
+            },
+            "exempt": {
+              "type": ["null", "string"]
+            },
+            "payPer": {
+              "type": ["null", "string"]
+            },
+            "payRate": {
+              "type": ["null", "string"]
+            },
+            "payPeriod": {
+              "type": ["null", "string"]
+            },
+            "paySchedule": {
+              "type": ["null", "string"]
+            },
+            "payType": {
+              "type": ["null", "string"]
+            },
+            "pinterest": {
+              "type": ["null", "string"]
+            },
+            "nickname": {
+              "type": ["null", "string"]
+            },
+            "preferredName": {
+              "type": ["null", "string"]
+            },
+            "Reporting to": {
+              "type": ["null", "string"]
+            },
+            "customSecondaryLanguage1": {
+              "type": ["null", "string"]
+            },
+            "Self-service access": {
+              "type": ["null", "string"]
+            },
+            "Serial #": {
+              "type": ["null", "string"]
+            },
+            "customShirtsize": {
+              "type": ["null", "string"]
+            },
+            "Sick - Accrual Start Date": {
+              "type": ["null", "string"]
+            },
+            "Sick - Adjustments (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Sick - Available Balance": {
+              "type": ["null", "string"]
+            },
+            "Sick - Current balance": {
+              "type": ["null", "string"]
+            },
+            "Sick - Hours scheduled": {
+              "type": ["null", "string"]
+            },
+            "Sick - Hours taken (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Sick - Policy": {
+              "type": ["null", "string"]
+            },
+            "Sick - Policy Assigned": {
+              "type": ["null", "string"]
+            },
+            "Sick Full-Time policy - Assigned": {
+              "type": ["null", "string"]
+            },
+            "Sick Full-Time policy - Started on": {
+              "type": ["null", "string"]
+            },
+            "ssn": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "employmentStatus": {
+              "type": ["null", "string"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "customTaxFileNumber1": {
+              "type": ["null", "string"]
+            },
+            "Termination Reason": {
+              "type": ["null", "string"]
+            },
+            "Termination Type": {
+              "type": ["null", "string"]
+            },
+            "twitterFeed": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Company pays": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Coverage": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Effective date": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "UK Private Medical Insurance (PMI) - Status": {
+              "type": ["null", "string"]
+            },
+            "Unlawful Harassment - Completed": {
+              "type": ["null", "string"]
+            },
+            "Unlawful Harassment - Due Date": {
+              "type": ["null", "string"]
+            },
+            "Unlawful Harassment - Expires": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Company pays": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Coverage": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Effective date": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - FSA Eligible - Status": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Company pays": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Company pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Coverage": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Effective date": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Eligibility date": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Employee pays": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Employee pays - Currency code": {
+              "type": ["null", "string"]
+            },
+            "US Health Insurance - HSA Eligible - Status": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Accrual Start Date": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Adjustments (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Available Balance": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Current balance": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Hours scheduled": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Hours taken (YTD)": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Policy": {
+              "type": ["null", "string"]
+            },
+            "Vacation - Policy Assigned": {
+              "type": ["null", "string"]
+            },
+            "Vacation Full-Time policy - Assigned": {
+              "type": ["null", "string"]
+            },
+            "Vacation Full-Time policy - Started on": {
+              "type": ["null", "string"]
+            },
+            "Veteran Status": {
+              "type": ["null", "string"]
+            },
+            "Visa": {
+              "type": ["null", "string"]
+            },
+            "Visa:Date": {
+              "type": ["null", "string"]
+            },
+            "Visa Information": {
+              "type": ["null", "string"]
+            },
+            "workEmail": {
+              "type": ["null", "string"]
+            },
+            "workPhoneExtension": {
+              "type": ["null", "string"]
+            },
+            "Working from home during COVID-19 - Completed": {
+              "type": ["null", "string"]
+            },
+            "Working from home during COVID-19 - Due Date": {
+              "type": ["null", "string"]
+            },
+            "Working from home during COVID-19 - Expires": {
+              "type": ["null", "string"]
+            },
+            "workPhone": {
+              "type": ["null", "string"]
+            },
+            "zipcode": {
+              "type": ["null", "string"]
+            },
+            "terminationDate": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

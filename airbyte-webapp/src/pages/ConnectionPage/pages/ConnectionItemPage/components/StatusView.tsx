@@ -13,11 +13,11 @@ import JobResource from "core/resources/Job";
 import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
-import useConnection from "components/hooks/services/useConnectionHook";
-import useLoadingStateHook from "components/hooks/useLoadingStateHook";
+import useConnection from "hooks/services/useConnectionHook";
+import useLoadingState from "hooks/useLoadingState";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type IProps = {
   connection: Connection;
@@ -27,8 +27,7 @@ type IProps = {
 };
 
 const Content = styled.div`
-  max-width: 816px;
-  margin: 18px auto;
+  margin: 18px 10px;
 `;
 
 const StyledContentCard = styled(ContentCard)`
@@ -61,7 +60,7 @@ const StatusView: React.FC<IProps> = ({
   sourceDefinition,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { isLoading, showFeedback, startAction } = useLoadingStateHook();
+  const { isLoading, showFeedback, startAction } = useLoadingState();
   const analyticsService = useAnalytics();
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,

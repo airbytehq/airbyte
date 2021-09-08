@@ -65,11 +65,11 @@ services:
       - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
       - MAX_SYNC_JOB_ATTEMPTS=${MAX_SYNC_JOB_ATTEMPTS}
       - MAX_SYNC_TIMEOUT_DAYS=${MAX_SYNC_TIMEOUT_DAYS}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
-      - data:${CONFIG_ROOT}
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -144,6 +144,9 @@ services:
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
+  # the data volume is only needed for backward compatibility; when users upgrade
+  # from an old Airbyte version that relies on file-based configs, the server needs
+  # to read this volume to copy their configs to the database
   data:
     name: ${DATA_DOCKER_MOUNT}
   db:

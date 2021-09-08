@@ -45,9 +45,11 @@ tags:
   - name: destination_definition_specification
     description: DestinationDefinitionSpecification related resources.
   - name: destination
-    description: Destination  related resources.
+    description: Destination related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: oauth
+    description: OAuth related resources to delegate access from user.
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
@@ -1182,6 +1184,98 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/get_consent_url:
+    post:
+      tags:
+        - oauth
+      summary: Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
+      operationId: getSourceOAuthConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceOauthConsentRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthConsentRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/complete_oauth:
+    post:
+      tags:
+        - oauth
+      summary: Given a source def ID and optional workspaceID generate an access/refresh token etc.
+      operationId: completeSourceOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteSourceOauthRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteOauthResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/get_consent_url:
+    post:
+      tags:
+        - oauth
+      summary: Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
+      operationId: getDestinationOAuthConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationOauthConsentRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthConsentRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/complete_oauth:
+    post:
+      tags:
+        - oauth
+      summary:
+      operationId: completeDestinationOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteDestinationOAuthRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteOauthResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1464,6 +1558,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportRead"
+  /v1/deployment/export_workspace:
+    post:
+      tags:
+        - deployment
+      summary: Export Airbyte Workspace Configuration
+      operationId: exportWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/AirbyteArchive"
+  /v1/deployment/upload_archive_resource:
+    post:
+      tags:
+        - deployment
+      summary: Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
+      operationId: uploadArchiveResource
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/AirbyteArchive"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadRead"
+  /v1/deployment/import_into_workspace:
+    post:
+      tags:
+        - deployment
+      summary: >
+        Import Airbyte Configuration into Workspace (this operation might change ids of imported
+        configurations). Note, in order to use this api endpoint, you might need to upload a
+        temporary archive resource with 'deployment/upload_archive_resource' first
+      operationId: importIntoWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -1502,11 +1658,19 @@ components:
       type: object
       required:
         - notificationType
+        - sendOnSuccess
+        - sendOnFailure
       properties:
         # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
         # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
         notificationType:
           $ref: "#/components/schemas/NotificationType"
+        sendOnSuccess:
+          type: boolean
+          default: false
+        sendOnFailure:
+          type: boolean
+          default: true
         slackConfiguration:
           $ref: "#/components/schemas/SlackNotificationConfiguration"
     SlackNotificationConfiguration:
@@ -1948,7 +2112,6 @@ components:
     DestinationCreate:
       type: object
       required:
-        - workspaceId
         - name
         - workspaceId
         - destinationDefinitionId
@@ -2815,6 +2978,61 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DbMigrationRead"
+    # OAuth
+    SourceOauthConsentRequest:
+      type: object
+      required:
+        - sourceDefinitionId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    DestinationOauthConsentRequest:
+      type: object
+      required:
+        - destinationDefinitionId
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    OAuthConsentRead:
+      type: object
+      required:
+        - consentUrl
+      properties:
+        consentUrl:
+          type: string
+    CompleteSourceOauthRequest:
+      type: object
+      required:
+        - sourceDefinitionId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        queryParams:
+          description: The query parameters present in the redirect URL after a user granted consent e.g auth code
+          type: object
+          additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+    CompleteDestinationOAuthRequest:
+      type: object
+      required:
+        - destinationDefinitionId
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        queryParams:
+          description: The query parameters present in the redirect URL after a user granted consent e.g auth code
+          type: object
+          additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+    CompleteOauthResponse:
+      type: object
+      additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
     # Web Backend
     WebBackendConnectionRead:
       type: object
@@ -2912,6 +3130,31 @@ components:
             - failed
         reason:
           type: string
+    ResourceId:
+      type: string
+      format: uuid
+    UploadRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        resourceId:
+          $ref: "#/components/schemas/ResourceId"
+    ImportRequestBody:
+      type: object
+      required:
+        - resourceId
+        - workspaceId
+      properties:
+        resourceId:
+          $ref: "#/components/schemas/ResourceId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     InvalidInputProperty:
       type: object
       required:

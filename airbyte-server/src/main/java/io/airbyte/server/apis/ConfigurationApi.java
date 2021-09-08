@@ -26,6 +26,8 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckOperationRead;
+import io.airbyte.api.model.CompleteDestinationOAuthRequest;
+import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -44,12 +46,14 @@ import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.api.model.ImportRead;
+import io.airbyte.api.model.ImportRequestBody;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
@@ -57,6 +61,7 @@ import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
+import io.airbyte.api.model.OAuthConsentRead;
 import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
@@ -74,10 +79,12 @@ import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
+import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
@@ -109,6 +116,7 @@ import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -124,6 +132,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -145,6 +154,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
+  private final OAuthHandler oAuthHandler;
   private final Configs configs;
 
   public ConfigurationApi(final ConfigRepository configRepository,
@@ -186,8 +196,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         operationsHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
+    oAuthHandler = new OAuthHandler(configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
+    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
@@ -266,6 +277,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
+  }
+
+  // SOURCE OAUTH
+
+  @Override
+  public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceOauthConsentRequest) {
+    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
+  }
+
+  @Override
+  public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest completeSourceOauthRequest) {
+    return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
   // SOURCE IMPLEMENTATION
@@ -357,6 +380,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
+  }
+
+  // DESTINATION OAUTH
+  @Override
+  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationOauthConsentRequest) {
+    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
+  }
+
+  @Override
+  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest requestBody) {
+    return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
   }
 
   // DESTINATION IMPLEMENTATION
@@ -572,6 +606,21 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ImportRead importArchive(final File archiveFile) {
     return execute(() -> archiveHandler.importData(archiveFile));
+  }
+
+  @Override
+  public File exportWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> archiveHandler.exportWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public UploadRead uploadArchiveResource(File archiveFile) {
+    return execute(() -> archiveHandler.uploadArchiveResource(archiveFile));
+  }
+
+  @Override
+  public ImportRead importIntoWorkspace(ImportRequestBody importRequestBody) {
+    return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
   }
 
   private <T> T execute(HandlerCall<T> call) {

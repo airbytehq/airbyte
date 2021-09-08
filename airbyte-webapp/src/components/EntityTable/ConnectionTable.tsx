@@ -14,7 +14,7 @@ import FrequencyCell from "./components/FrequencyCell";
 import StatusCell from "./components/StatusCell";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;

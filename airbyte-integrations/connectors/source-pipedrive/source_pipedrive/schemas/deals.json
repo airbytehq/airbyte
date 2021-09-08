@@ -58,8 +58,7 @@
       "format": "date-time"
     },
     "next_activity_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "next_activity_id": {
       "type": ["null", "integer"]
@@ -154,8 +153,7 @@
       "type": ["null", "string"]
     },
     "next_activity_duration": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "next_activity_note": {
       "type": ["null", "string"]

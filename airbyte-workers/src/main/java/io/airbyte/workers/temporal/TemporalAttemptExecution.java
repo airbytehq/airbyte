@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.io.IOs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -108,11 +109,16 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       mdcSetter.accept(jobRoot);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
-      jobRootDirCreator.accept(jobRoot);
 
-      final String workflowId = workflowIdProvider.get();
-      final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
-      IOs.writeFile(workflowIdFile, workflowId);
+      // There are no shared volumes on Kube; only do this for Docker.
+      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+        LOGGER.debug("Creating local workspace directory..");
+        jobRootDirCreator.accept(jobRoot);
+
+        final String workflowId = workflowIdProvider.get();
+        final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
+        IOs.writeFile(workflowIdFile, workflowId);
+      }
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();

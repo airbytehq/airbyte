@@ -18,8 +18,11 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
+|[BambooHR](./sources/bamboo-hr.md)| Alpha |
 |[Braintree](./sources/braintree.md)| Alpha |
+|[BigCommerce](./sources/bigcommerce.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
+|[Bing Ads](./sources/bing-ads.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
@@ -30,6 +33,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Drupal](./sources/drupal.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
 |[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
+|[Facebook Pages](./sources/facebook-pages.md)| Alpha |
 |[Files](./sources/file.md)| Certified |
 |[Freshdesk](./sources/freshdesk.md)| Certified |
 |[GitHub](./sources/github.md)| Beta |
@@ -37,6 +41,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Ads](./sources/google-ads.md)| Beta |
 |[Google Adwords](./sources/google-adwords.md)| Beta |
 |[Google Analytics](./sources/googleanalytics.md)| Beta |
+|[Google Analytics v4](./sources/google-analytics-v4.md)| Beta |
 |[Google Directory](./sources/google-directory.md)| Certified |
 |[Google Search Console](./sources/google-search-console.md)| Beta |
 |[Google Sheets](./sources/google-sheets.md)| Certified |
@@ -108,6 +113,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 ### Destinations
 | Connector | Grade |
 |----|----|
+|[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Chargify (Keen)](./destinations/keen.md)| Alpha |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
@@ -117,6 +123,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
+|[MongoDB](./destinations/mongodb.md)| Alpha |
 |[MySQL](./destinations/mysql.md)| Beta |
 |[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |

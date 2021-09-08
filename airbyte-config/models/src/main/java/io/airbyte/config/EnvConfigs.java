@@ -105,7 +105,7 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getAirbyteApiUrl() {
+  public String getAirbyteApiHost() {
     return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
   }
 

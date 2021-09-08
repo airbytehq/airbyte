@@ -109,63 +109,60 @@ class DefaultSynchronousSchedulerClientTest {
     @SuppressWarnings("unchecked")
     @Test
     void testExecuteJobSuccess() {
-      final UUID configId = UUID.randomUUID();
-      final UUID jobTrackingId = UUID.randomUUID();
+      final UUID sourceDefinitionId = UUID.randomUUID();
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
       assertEquals(ConfigType.DISCOVER_SCHEMA, response.getMetadata().getConfigType());
       assertTrue(response.getMetadata().getConfigId().isPresent());
-      assertEquals(configId, response.getMetadata().getConfigId().get());
+      assertEquals(sourceDefinitionId, response.getMetadata().getConfigId().get());
       assertTrue(response.getMetadata().isSucceeded());
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void testExecuteJobFailure() {
-      final UUID configId = UUID.randomUUID();
-      final UUID jobTrackingId = UUID.randomUUID();
+      final UUID sourceDefinitionId = UUID.randomUUID();
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID);
 
       assertNotNull(response);
       assertNull(response.getOutput());
       assertEquals(ConfigType.DISCOVER_SCHEMA, response.getMetadata().getConfigType());
       assertTrue(response.getMetadata().getConfigId().isPresent());
-      assertEquals(configId, response.getMetadata().getConfigId().get());
+      assertEquals(sourceDefinitionId, response.getMetadata().getConfigId().get());
       assertFalse(response.getMetadata().isSucceeded());
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void testExecuteRuntimeException() {
-      final UUID configId = UUID.randomUUID();
-      final UUID jobTrackingId = UUID.randomUUID();
+      final UUID sourceDefinitionId = UUID.randomUUID();
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
       when(function.apply(any(UUID.class))).thenThrow(new RuntimeException());
 
       assertThrows(
           RuntimeException.class,
-          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId, WORKSPACE_ID));
+          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID));
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
     }
 
   }

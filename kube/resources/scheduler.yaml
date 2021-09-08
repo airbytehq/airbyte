@@ -164,6 +164,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: GCP_STORAGE_BUCKET
+            - name: INTERNAL_API_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: INTERNAL_API_HOST
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool
@@ -197,20 +202,10 @@ spec:
             - containerPort: 9029
             - containerPort: 9030 # end temporal worker port pool
           volumeMounts:
-            - name: airbyte-volume-configs
-              mountPath: /configs
-            - name: airbyte-volume-workspace
-              mountPath: /workspace
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds
               readOnly: true
       volumes:
-        - name: airbyte-volume-workspace
-          persistentVolumeClaim:
-            claimName: airbyte-volume-workspace
-        - name: airbyte-volume-configs
-          persistentVolumeClaim:
-            claimName: airbyte-volume-configs
         - name: gcs-log-creds-volume
           secret:
             secretName: gcs-log-creds

@@ -10,6 +10,20 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 8/26/2021
+
+New source: 
+* [**Short.io**](https://docs.airbyte.io/integrations/sources/shortio)
+
+New features:
+* **GitHub** source: Add support for rotating through multiple API tokens.
+* **Google Ads** source: Added `UserLocationReport` stream.
+* **Cart** source: Added the `order_items` stream.
+
+Bug fixes:
+* **Postgres** source: Fix out-of-memory issue with CDC interacting with large JSON blobs.
+* **Intercom** source: Pagination now works as expected.
+
 ## 8/18/2021
 
 New source:

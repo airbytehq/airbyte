@@ -71,7 +71,8 @@ class SourceFilesAbstract(AbstractSource, ABC):
             - That the path pattern(s) provided in config are valid to be matched against.
 
         :param logger: an instance of AirbyteLogger to use
-        :param config: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :param config: The user-provided configuration as specified by the source's spec.
+                                This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
         source using the provided configuration.
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
@@ -83,7 +84,8 @@ class SourceFilesAbstract(AbstractSource, ABC):
             for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
                 found_a_file = True
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
-                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)  # test that matching on the pattern doesn't error
+                # test that matching on the pattern doesn't error
+                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 break  # just need first file here to test connection and valid patterns
 
         except Exception as e:

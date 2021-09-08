@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 
 import tcLogo from "./techcrunch-logo.png";
-import tfirLogo from "./tfir-logo.png";
+import tfirLogo from "./tfir-logo.svg";
 
 export const news = [
   {

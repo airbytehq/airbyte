@@ -5,6 +5,17 @@ description: Be sure to not miss out on new features and improvements!
 # Platform
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
+
+## [08-23-2021 - 0.29.12](https://github.com/airbytehq/airbyte/releases/tag/v0.29.12-alpha)
+* Syncs now have a `max_sync_timeout` that times them out after 3 days.
+* Fixed Kube deploys when logging with Minio.
+
+## [08-20-2021 - 0.29.11](https://github.com/airbytehq/airbyte/releases/tag/v0.29.11-alpha)
+* Nothing of note.
+
+## [08-20-2021 - 0.29.10](https://github.com/airbytehq/airbyte/releases/tag/v0.29.10-alpha)
+* Migration of Python connector template images to Alpine Docker images to reduce size.
+
 ## [08-20-2021 - 0.29.9](https://github.com/airbytehq/airbyte/releases/tag/v0.29.9-alpha)
 * Nothing of note.
 

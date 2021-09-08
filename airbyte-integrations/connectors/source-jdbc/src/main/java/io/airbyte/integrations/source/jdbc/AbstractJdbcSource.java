@@ -58,6 +58,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class contains helper functions and boilerplate for implementing a source connector for a
+ * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
+ * for a relational DB which has a JDBC driver, make an effort to use this class.
+ */
 public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBCType, JdbcDatabase> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
@@ -112,15 +117,13 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   private String getCatalog(SqlDatabase database) {
     return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
-
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
-      throws Exception {
+  protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database, String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getColumns(getCatalog(database), null, null, null),
+        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
             .put(INTERNAL_SCHEMA_NAME,
@@ -158,6 +161,12 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                 .collect(Collectors.toList()))
             .build())
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+      throws Exception {
+    return discoverInternal(database, null);
   }
 
   @Override
