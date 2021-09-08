@@ -55,6 +55,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
+  private final String gcsCsvFileLocation; // this used in destination-bigquery (GCS upload type)
 
   public GcsCsvWriter(GcsDestinationConfig config,
                       AmazonS3 s3Client,
@@ -68,6 +69,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
 
     String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
     String objectKey = String.join("/", outputPrefix, outputFilename);
+    gcsCsvFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
@@ -97,6 +99,10 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
     csvPrinter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  public String getGcsCsvFileLocation() {
+    return gcsCsvFileLocation;
   }
 
 }

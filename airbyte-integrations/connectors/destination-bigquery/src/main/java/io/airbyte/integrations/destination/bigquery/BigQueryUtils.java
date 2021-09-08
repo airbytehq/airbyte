@@ -24,8 +24,11 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -35,6 +38,9 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -73,6 +79,27 @@ public class BigQueryUtils {
     }
   }
 
+  static void createSchemaAndTableIfNeeded(BigQuery bigquery,
+                                           Set<String> existingSchemas,
+                                           String schemaName,
+                                           String tmpTableName,
+                                           String datasetLocation,
+                                           Schema schema) {
+    if (!existingSchemas.contains(schemaName)) {
+      createSchemaTable(bigquery, schemaName, datasetLocation);
+      existingSchemas.add(schemaName);
+    }
+    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
+  }
+
+  static void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
+    final Dataset dataset = bigquery.getDataset(datasetId);
+    if (dataset == null || !dataset.exists()) {
+      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
+      bigquery.create(datasetInfo);
+    }
+  }
+
   // https://cloud.google.com/bigquery/docs/tables#create-table
   static void createTable(BigQuery bigquery, String datasetName, String tableName, Schema schema) {
     try {
@@ -85,6 +112,31 @@ public class BigQueryUtils {
       LOGGER.info("Table: {} created successfully", tableId);
     } catch (BigQueryException e) {
       LOGGER.info("Table was not created. \n", e);
+    }
+  }
+
+  public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
+    JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
+        .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
+        .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"No flattening\"\n"
+            + "}"))
+        .build());
+
+    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    return gcsJsonNode;
+  }
+
+  public static String getDatasetLocation(JsonNode config) {
+    if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
+      return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
+    } else {
+      return "US";
     }
   }
 
