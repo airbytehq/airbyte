@@ -23,7 +23,7 @@ function write_standard_creds() {
 
 # Please maintain this organisation and alphabetise.
 write_standard_creds destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
-write_standard_creds destination-bigquery-denormalized "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
+write_standard_creds destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 write_standard_creds destination-gcs "$DESTINATION_GCS_CREDS"
 write_standard_creds destination-kvdb "$DESTINATION_KVDB_TEST_CREDS"
 write_standard_creds destination-keen "$DESTINATION_KEEN_TEST_CREDS"

@@ -20,6 +20,7 @@
       "auth_method": {
         "title": "ZenDesk Authorization Method",
         "type": "object",
+        "default": "api_token",
         "description": "Zendesk service provides 2 auth method: API token and oAuth2. Now only the first one is available. Another one will be added in the future",
         "oneOf": [
           {
@@ -28,6 +29,10 @@
             "required": ["email", "api_token"],
             "additionalProperties": false,
             "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "api_token"
+              },
               "email": {
                 "type": "string",
                 "description": "The user email for your Zendesk account"

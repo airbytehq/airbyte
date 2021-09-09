@@ -55,33 +55,27 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition standardSourceDefinition = configRepository
-        .getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation = OAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
+    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getConsentUrl());
   }
 
   public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition standardDestinationDefinition =
-        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation = OAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
+    final OAuthFlowImplementation oAuthFlowImplementation =
+        getDestinationOAuthFlowImplementation(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getConsentUrl());
   }
 
   public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition standardSourceDefinition =
-        configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation = OAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
+    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(oauthSourceRequestBody.getSourceDefinitionId());
     return oAuthFlowImplementation.completeOAuth(oauthSourceRequestBody.getWorkspaceId(), oauthSourceRequestBody.getQueryParams());
   }
 
   public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest oauthDestinationRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition standardDestinationDefinition =
-        configRepository.getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation = OAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
+    final OAuthFlowImplementation oAuthFlowImplementation =
+        getDestinationOAuthFlowImplementation(oauthDestinationRequestBody.getDestinationDefinitionId());
     return oAuthFlowImplementation.completeOAuth(oauthDestinationRequestBody.getWorkspaceId(), oauthDestinationRequestBody.getQueryParams());
   }
 
@@ -100,6 +94,20 @@ public class OAuthHandler {
         .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
         .withSourceDefinitionId(requestBody.getSourceDefinitionId());
     configRepository.writeSourceOAuthParam(param);
+  }
+
+  private OAuthFlowImplementation getSourceOAuthFlowImplementation(UUID sourceDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceDefinitionId);
+    return OAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
+  }
+
+  private OAuthFlowImplementation getDestinationOAuthFlowImplementation(UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardDestinationDefinition standardDestinationDefinition = configRepository
+        .getStandardDestinationDefinition(destinationDefinitionId);
+    return OAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
   }
 
 }
