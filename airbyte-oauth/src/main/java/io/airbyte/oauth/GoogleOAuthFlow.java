@@ -169,11 +169,9 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       final JsonNode json = Jsons.deserialize(response.body());
       return Map.of(
-          "access_token", Jsons.getStringOrNull(json, "access_token"),
-          "expires_in", Jsons.getIntOrZero(json, "expires_in"),
-          "refresh_token", Jsons.getStringOrNull(json, "refresh_token"),
-          "scope", Jsons.getStringOrNull(json, "scope"),
-          "token_type", Jsons.getStringOrNull(json, "token_type"));
+          "refresh_token", Jsons.getOptional(json, "refresh_token")
+              .orElseThrow(
+                  () -> new IOException(String.format("Missing 'refresh_token' in query params from %s", GOOGLE_ANALYTICS_ACCESS_TOKEN_URL))));
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete Google OAuth flow", e);
     }

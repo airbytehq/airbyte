@@ -26,6 +26,7 @@ package io.airbyte.oauth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +39,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,10 +68,8 @@ public class GoogleOAuthFlowTest {
 
   @Test
   public void testGetConsentUrlEmptyOAuthParameters() {
-    assertThrows(ConfigNotFoundException.class,
-        () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(ConfigNotFoundException.class,
-        () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
   }
 
   @Test
@@ -88,17 +89,17 @@ public class GoogleOAuthFlowTest {
   }
 
   @Test
-  public void testSourceGetConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
+  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test")
+            .put("client_id", "test_client_id")
             .build()))));
     final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=test&redirect_uri=%s",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=test_client_id&redirect_uri=%s",
         GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
         definitionId,
         REDIRECT_URL);
@@ -106,20 +107,75 @@ public class GoogleOAuthFlowTest {
   }
 
   @Test
-  public void testDestinationGetConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
+  public void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
     when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test")
+            .put("client_id", "test_client_id")
             .build()))));
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=test&redirect_uri=%s",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=test_client_id&redirect_uri=%s",
         GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
         definitionId,
         REDIRECT_URL);
     assertEquals(expectedDestinationUrl, actualDestinationUrl);
   }
+
+  @Test
+  public void testCompleteOAuthMissingCode() throws IOException, ConfigNotFoundException, JsonValidationException {
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withSourceDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+            .put("client_id", "test_client_id")
+            .put("client_secret", "test_client_secret")
+            .build()))));
+    final Map<String, Object> queryParams = Map.of();
+    assertThrows(IOException.class, () -> googleOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL));
+  }
+
+  @Test
+  public void testCompleteSourceOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withSourceDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+            .put("client_id", "test_client_id")
+            .put("client_secret", "test_client_secret")
+            .build()))));
+    final String expectedQueryParams = Jsons.serialize(Map.of(
+        "refresh_token", "refresh_token_response"));
+    final HttpResponse response = mock(HttpResponse.class);
+    when(response.body()).thenReturn(expectedQueryParams);
+    when(httpClient.send(any(), any())).thenReturn(response);
+    final Map<String, Object> queryParams = Map.of("code", "test_code");
+    final Map<String, Object> actualQueryParams = googleOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
+  }
+
+  @Test
+  public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withDestinationDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+            .put("client_id", "test_client_id")
+            .put("client_secret", "test_client_secret")
+            .build()))));
+    final String expectedQueryParams = Jsons.serialize(Map.of(
+        "refresh_token", "refresh_token_response"));
+    final HttpResponse response = mock(HttpResponse.class);
+    when(response.body()).thenReturn(expectedQueryParams);
+    when(httpClient.send(any(), any())).thenReturn(response);
+    final Map<String, Object> queryParams = Map.of("code", "test_code");
+    final Map<String, Object> actualQueryParams = googleOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
+  }
+
 }
