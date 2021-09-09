@@ -15,6 +15,15 @@ This Source is capable of syncing the following core Streams:
 * [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
 
 
+Supported report streams:
+* [AccountPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+* [AdPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+* [AdGroupPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+* [CampaignPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+* [BudgetSummaryReport](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
+* [KeywordPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+
+
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
@@ -49,6 +58,12 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 * refresh_token: Token received during [auth process](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth?view=bingads-13)
 * client_secret: Secret generated during application registration
 * client_id: Id generated during application registration
+* reports_start_date: From which date report generation should start
+* report_aggregation: Defines how report data will be aggregated
+* hourly_reports: includes hourly report streams if true
+* daily_reports: includes daily report streams if true
+* weekly_reports: includes weekly report streams if true
+* monthly_reports: includes monthly report streams if true
 
 ### Setup guide
 
@@ -65,4 +80,5 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750) | Added reporting streams) |
 | 0.1.0   | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911) | Initial release supported core streams (Accounts, Campaigns, Ads, AdGroups) |
