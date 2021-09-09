@@ -45,4 +45,5 @@ We recommend creating a key specifically for Airbyte access. This will allow you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.7   | 2021-09-08 | [5910](https://github.com/airbytehq/airbyte/pull/5910) | Add Single Sends Stats stream |
 | 0.2.6   | 2021-07-19 | [4839](https://github.com/airbytehq/airbyte/pull/4839) | Gracefully handle malformed responses from the API |
