@@ -102,10 +102,10 @@ public abstract class S3StreamCopier implements StreamCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-            new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
-                    .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-                    .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-                    .partSize(s3Config.getPartSize());
+        new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
+            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+            .partSize(s3Config.getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     // See the above comment.
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
