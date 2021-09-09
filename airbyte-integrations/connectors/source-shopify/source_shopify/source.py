@@ -344,7 +344,7 @@ class DiscountCodes(IncrementalShopifyStream):
     ) -> Iterable[Mapping[str, Any]]:
         # get the last saved orders stream state
         price_rules_stream_state = self.tmp_stream_state.get("price_rules")
-        for data in PriceRules(self.config).read_records(sync_mode=SyncMode.incremental, stream_state=price_rules_stream_state):
+        for data in PriceRules(self.config).read_records(stream_state=price_rules_stream_state, **kwargs):
             discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=discount_slice)
 
