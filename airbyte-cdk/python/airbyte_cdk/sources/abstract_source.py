@@ -151,6 +151,19 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
+    @staticmethod
+    def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
+        """
+        Check if record count reached liimt set by internal config.
+        :param internal_config - internal CDK configuration separated from user defined config
+        :records_counter - number of records already red
+        :return True if limit reached, False otherwise
+        """
+        if internal_config.limit:
+            if records_counter >= internal_config.limit:
+                return True
+        return False
+
     def _read_incremental(
         self,
         logger: AirbyteLogger,
@@ -181,10 +194,10 @@ class AbstractSource(Source, ABC):
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-                if internal_config.limit:
-                    total_records_counter += 1
-                    if total_records_counter >= internal_config.limit:
-                        break
+
+                total_records_counter += 1
+                if self._limit_reached(internal_config, total_records_counter):
+                    break
 
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
@@ -199,10 +212,9 @@ class AbstractSource(Source, ABC):
             )
             for record in records:
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
-                if internal_config.limit:
-                    total_records_counter += 1
-                    if total_records_counter >= internal_config.limit:
-                        break
+                total_records_counter += 1
+                if self._limit_reached(internal_config, total_records_counter):
+                    break
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
         logger.info(f"Setting state of {stream_name} stream to {stream_state}")
