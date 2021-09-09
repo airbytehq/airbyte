@@ -72,7 +72,10 @@ public class JobScheduler implements Runnable {
         jobPersistence,
         configRepository,
         new ScheduleJobPredicate(Instant::now),
-        new DefaultSyncJobFactory(new DefaultJobCreator(jobPersistence), configRepository, new OAuthConfigSupplier(configRepository)));
+        new DefaultSyncJobFactory(
+            new DefaultJobCreator(jobPersistence),
+            configRepository,
+            new OAuthConfigSupplier(configRepository, false)));
   }
 
   @Override

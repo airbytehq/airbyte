@@ -50,7 +50,7 @@ public class OAuthConfigSupplierTest {
   @BeforeEach
   public void setup() {
     configRepository = mock(ConfigRepository.class);
-    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
   }
 
   @Test
@@ -112,6 +112,33 @@ public class OAuthConfigSupplierTest {
     expectedConfig.set("api_client", Jsons.jsonNode(Map.of("anyOf", List.of(
         Map.of("id", "id"),
         Map.of("service", "account")))));
+    assertEquals(expectedConfig, actualConfig);
+  }
+
+  @Test
+  void testInjectMaskedOAuthParameters() throws JsonValidationException, IOException {
+    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true);
+
+    final JsonNode config = generateJsonConfig();
+    final UUID sourceDefinitionId = UUID.randomUUID();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, String> oauthParameters = generateOAuthParameters();
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(oauthParameters)),
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
+    final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
+    for (String key : oauthParameters.keySet()) {
+      expectedConfig.set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
+    }
     assertEquals(expectedConfig, actualConfig);
   }
 

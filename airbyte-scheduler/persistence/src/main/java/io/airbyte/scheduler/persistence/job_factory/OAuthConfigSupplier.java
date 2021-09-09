@@ -38,10 +38,13 @@ import java.util.UUID;
 
 public class OAuthConfigSupplier {
 
+  public static final String SECRET_MASK = "******";
   final private ConfigRepository configRepository;
+  private final boolean maskSecrets;
 
-  public OAuthConfigSupplier(ConfigRepository configRepository) {
+  public OAuthConfigSupplier(ConfigRepository configRepository, boolean maskSecrets) {
     this.configRepository = configRepository;
+    this.maskSecrets = maskSecrets;
   }
 
   public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
@@ -78,10 +81,14 @@ public class OAuthConfigSupplier {
     }
   }
 
-  private static void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
+  private void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
     for (String key : Jsons.keys(fromConfig)) {
-      if (!config.has(key) || isSecretMask(config.get(key).asText())) {
-        config.set(key, fromConfig.get(key));
+      if (maskSecrets) {
+        config.set(key, Jsons.jsonNode(SECRET_MASK));
+      } else {
+        if (!config.has(key) || isSecretMask(config.get(key).asText())) {
+          config.set(key, fromConfig.get(key));
+        }
       }
     }
   }
