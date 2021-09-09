@@ -29,7 +29,6 @@ from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -105,8 +104,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
 
+    @staticmethod
     def stream_state_to_tmp(
-        self,
         stream_name: str,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
@@ -114,7 +113,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         cursor_field: str,
     ) -> Mapping[str, Any]:
         """
-        Method to save the current stream state for future reuse within slicing.
+        Method to save the current stream state for future re-use within slicing.
         The method requires having the temporary `state_object` as placeholder.
         Because of the specific of Shopify's entities relations, we have the opportunity to fetch the updates
         for particular stream using the `Incremental Refresh`, inside slicing.
@@ -342,7 +341,7 @@ class DiscountCodes(IncrementalShopifyStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        # get the last saved orders stream state
+        # get the last saved price_rules stream state
         price_rules_stream_state = self.tmp_stream_state.get("price_rules")
         for data in PriceRules(self.config).read_records(stream_state=price_rules_stream_state, **kwargs):
             discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
