@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class MigrationCurrentSchemaTest {
@@ -64,6 +65,8 @@ public class MigrationCurrentSchemaTest {
   // get all of the "current" jobs (in other words the one airbyte-db). get all of the configs
   // from the output schema of the last migration. make sure they match.
   @Test
+  @Disabled
+  // TODO(#5902): Liren will adapt this to the new migration system.
   void testJobsOfLastMigrationMatchSource() {
     final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.JOB);
     final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(

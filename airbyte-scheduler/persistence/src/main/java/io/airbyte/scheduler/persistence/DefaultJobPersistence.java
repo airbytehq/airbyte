@@ -295,6 +295,29 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
+    database.query(ctx -> ctx.execute(
+        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
+        temporalWorkflowId,
+        jobId,
+        attemptNumber));
+  }
+
+  @Override
+  public Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
+    var result = database.query(ctx -> ctx.fetch(
+        " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
+        jobId,
+        attemptNumber)).stream().findFirst();
+
+    if (result.isEmpty() || result.get().get("temporal_workflow_id") == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(result.get().get("temporal_workflow_id", String.class));
+  }
+
+  @Override
   public <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 

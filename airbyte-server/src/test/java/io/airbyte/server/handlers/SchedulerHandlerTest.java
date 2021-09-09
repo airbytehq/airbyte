@@ -91,7 +91,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -169,7 +168,6 @@ class SchedulerHandlerTest {
         jsonSchemaValidator,
         specFetcher,
         jobPersistence,
-        mock(Path.class),
         jobNotifier,
         mock(WorkflowServiceStubs.class));
   }
