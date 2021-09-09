@@ -197,9 +197,12 @@ class AbstractSource(Source, ABC):
 
                 total_records_counter += 1
                 if self._limit_reached(internal_config, total_records_counter):
+                    # Break from slice loop to save state and exit from _read_incremental function.
                     break
 
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+            if self._limit_reached(internal_config, total_records_counter):
+                return
 
     def _read_full_refresh(
         self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, internal_config: InternalConfig
@@ -214,7 +217,7 @@ class AbstractSource(Source, ABC):
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
                 total_records_counter += 1
                 if self._limit_reached(internal_config, total_records_counter):
-                    break
+                    return
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
         logger.info(f"Setting state of {stream_name} stream to {stream_state}")
