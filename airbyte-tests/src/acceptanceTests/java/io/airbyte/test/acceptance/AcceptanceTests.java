@@ -487,6 +487,27 @@ public class AcceptanceTests {
 
   @Test
   @Order(8)
+  public void testCancelSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+
+    var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+    assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
+  }
+
+  @Test
+  @Order(9)
   public void testIncrementalSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -554,7 +575,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(9)
+  @Order(10)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testScheduledSync() throws Exception {
@@ -581,7 +602,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(10)
+  @Order(11)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testMultipleSchemasAndTablesSync() throws Exception {
@@ -606,7 +627,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(11)
+  @Order(12)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testMultipleSchemasSameTablesSync() throws Exception {
@@ -631,7 +652,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(12)
+  @Order(13)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testIncrementalDedupeSync() throws Exception {
@@ -678,7 +699,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(13)
+  @Order(14)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testCheckpointing() throws Exception {
@@ -753,7 +774,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(14)
+  @Order(15)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = java.nio.file.Files.readAllLines(
@@ -777,7 +798,7 @@ public class AcceptanceTests {
 
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @Test
-  @Order(15)
+  @Order(16)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testBackpressure() throws Exception {
