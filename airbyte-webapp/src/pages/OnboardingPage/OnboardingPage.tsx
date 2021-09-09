@@ -8,7 +8,9 @@ import useSource, { useSourceList } from "hooks/services/useSourceHook";
 import useDestination, {
   useDestinationList,
 } from "hooks/services/useDestinationHook";
-import { useConnectionList } from "hooks/services/useConnectionHook";
+import useConnection, {
+  useConnectionList,
+} from "hooks/services/useConnectionHook";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -24,6 +26,9 @@ import { StepType } from "./types";
 import { useAnalytics } from "hooks/useAnalytics";
 import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
+import useWorkspace from "hooks/services/useWorkspace";
+import useRouterHook from "hooks/useRouter";
+import { Routes } from "pages/routes";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -44,6 +49,7 @@ const ScreenContent = styled.div`
 
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalytics();
+  const { push } = useRouterHook();
 
   useEffect(() => {
     analyticsService.page("Onboarding Page");
@@ -52,6 +58,7 @@ const OnboardingPage: React.FC = () => {
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
   const { connections } = useConnectionList();
+  const { syncConnection } = useConnection();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}
@@ -63,6 +70,7 @@ const OnboardingPage: React.FC = () => {
 
   const { createSource, recreateSource } = useSource();
   const { createDestination, recreateDestination } = useDestination();
+  const { finishOnboarding } = useWorkspace();
 
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -216,7 +224,20 @@ const OnboardingPage: React.FC = () => {
       { id: "zoomCalls", data: <FormattedMessage id="onboarding.zoomCalls" /> },
     ];
 
-    return <FinalStep useCases={useCases} />;
+    const onSync = () => syncConnection(connections[0]);
+    const onCloseOnboarding = () => {
+      finishOnboarding();
+      push(Routes.Root);
+    };
+
+    return (
+      <FinalStep
+        useCases={useCases}
+        connectionId={connections[0].connectionId}
+        onSync={onSync}
+        onFinishOnboarding={onCloseOnboarding}
+      />
+    );
   };
 
   return (

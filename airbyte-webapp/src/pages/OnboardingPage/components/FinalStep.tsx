@@ -1,15 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import { useResource, useSubscription } from "rest-hooks";
 
 import VideoItem from "./VideoItem";
 import ProgressBlock from "./ProgressBlock";
 import HighlightedText from "./HighlightedText";
 import { H1, Button } from "components/base";
 import UseCaseBlock from "./UseCaseBlock";
+import ConnectionResource from "core/resources/Connection";
+import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
+// import Status from "core/statuses";
 
 type FinalStepProps = {
   useCases?: { id: string; data: React.ReactNode }[];
+  connectionId: string;
+  onSync: () => void;
+  onFinishOnboarding: () => void;
 };
 
 const Title = styled(H1)`
@@ -31,7 +38,20 @@ const CloseButton = styled(Button)`
   margin-top: 30px;
 `;
 
-const FinalStep: React.FC<FinalStepProps> = ({ useCases }) => {
+const FinalStep: React.FC<FinalStepProps> = ({
+  useCases,
+  connectionId,
+  onSync,
+  onFinishOnboarding,
+}) => {
+  const connection = useResource(ConnectionResource.detailShape(), {
+    connectionId,
+  });
+  useSubscription(ConnectionResource.detailShape(), {
+    connectionId: connectionId,
+  });
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
       <Videos>
@@ -48,7 +68,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ useCases }) => {
           img="/videoCover.png"
         />
       </Videos>
-      <ProgressBlock />
+      <ProgressBlock connection={connection} onSync={onSync} />
       <Title bold>
         <FormattedMessage
           id="onboarding.useCases"
@@ -67,9 +87,11 @@ const FinalStep: React.FC<FinalStepProps> = ({ useCases }) => {
           </UseCaseBlock>
         ))}
 
-      <CloseButton secondary>
+      <CloseButton secondary onClick={onFinishOnboarding}>
         <FormattedMessage id="onboarding.closeOnboarding" />
       </CloseButton>
+
+      {isOpen ? <SyncCompletedModal onClose={() => setIsOpen(false)} /> : null}
     </>
   );
 };

@@ -22,7 +22,11 @@ const FeedbackButtons = styled.div`
   align-items: center;
 `;
 
-const ModalBody: React.FC = () => {
+type ModalBodyProps = {
+  onClose: () => void;
+};
+
+const ModalBody: React.FC<ModalBodyProps> = ({ onClose }) => {
   return (
     <Body>
       <H3 center bold parentColor>
@@ -32,7 +36,7 @@ const ModalBody: React.FC = () => {
         <FeedbackButton isBad />
         <FeedbackButton />
       </FeedbackButtons>
-      <Button secondary>
+      <Button secondary onClick={onClose}>
         <FormattedMessage id="onboarding.skipNow" />
       </Button>
     </Body>

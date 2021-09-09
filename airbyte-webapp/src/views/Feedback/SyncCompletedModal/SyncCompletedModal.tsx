@@ -1,20 +1,18 @@
 import React from "react";
-// import styled from "styled-components";
 
 import Modal from "components/Modal";
 import ModalHeader from "./components/ModalHeader";
 import ModalBody from "./components/ModalBody";
 
-// const Content = styled.div`
-//   display: flex;
-//   flex-direction: row;
-// `;
+type SyncCompletedModalProps = {
+  onClose: () => void;
+};
 
-const SyncCompletedModal: React.FC = () => {
+const SyncCompletedModal: React.FC<SyncCompletedModalProps> = ({ onClose }) => {
   return (
     <Modal>
       <ModalHeader />
-      <ModalBody />
+      <ModalBody onClose={onClose} />
     </Modal>
   );
 };

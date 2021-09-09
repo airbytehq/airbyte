@@ -18,7 +18,7 @@ import Connections from "views/layout/SideBar/components/ConnectionsIcon";
 import Destination from "views/layout/SideBar/components/DestinationIcon";
 import Onboarding from "views/layout/SideBar/components/OnboardingIcon";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
-// import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Bar = styled.nav`
   width: 100px;
@@ -125,7 +125,7 @@ const WorkspaceButton = styled.div`
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
   const config = useConfig();
-  // const { workspace } = useWorkspace();
+  const { workspace } = useWorkspace();
 
   return (
     <Bar>
@@ -139,16 +139,16 @@ const SideBar: React.FC = () => {
           )}
         </WorkspacePopout>
         <Menu>
-          {/*{workspace.displaySetupWizard ? (*/}
-          <li>
-            <MenuItem to={Routes.Onboarding} activeClassName="active">
-              <Onboarding />
-              <Text>
-                <FormattedMessage id="sidebar.onboarding" />
-              </Text>
-            </MenuItem>
-          </li>
-          {/*) : null}*/}
+          {workspace.displaySetupWizard ? (
+            <li>
+              <MenuItem to={Routes.Onboarding} activeClassName="active">
+                <Onboarding />
+                <Text>
+                  <FormattedMessage id="sidebar.onboarding" />
+                </Text>
+              </MenuItem>
+            </li>
+          ) : null}
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
               <Connections />
