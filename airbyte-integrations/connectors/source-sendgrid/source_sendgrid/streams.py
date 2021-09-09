@@ -191,6 +191,18 @@ class Segments(SendgridStream):
         return "marketing/segments"
 
 
+class SingleSends(SendgridStreamMetadataPagination):
+    """
+    https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats
+    """
+
+    data_field = "results"
+
+    @staticmethod
+    def initial_path() -> str:
+        return "marketing/stats/singlesends"
+
+
 class Templates(SendgridStreamMetadataPagination):
     data_field = "result"
 
@@ -217,6 +229,8 @@ class SuppressionGroups(SendgridStream):
 
 
 class SuppressionGroupMembers(SendgridStreamOffsetPagination):
+    primary_key = "group_id"
+
     def path(self, **kwargs) -> str:
         return "asm/suppressions"
 
