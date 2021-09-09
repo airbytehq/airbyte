@@ -42,8 +42,8 @@ include ':airbyte-config:init' // transitively used by airbyte-workers.
 include ':airbyte-config:persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
-include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
+include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
 // platform
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
