@@ -66,7 +66,7 @@ class CloseComStream(HttpStream, ABC):
             skip = parsed.get("_skip", 0)
             limit = parsed.get("_limit", len(data))
             return {"_skip": int(skip) + int(limit)}
-        if cursor_next and data:
+        if cursor_next:
             return {"_cursor": cursor_next}
         return None
 
@@ -108,7 +108,6 @@ class CloseComStream(HttpStream, ABC):
 class IncrementalCloseComStream(CloseComStream):
 
     cursor_field = "date_updated"
-    state_checkpoint_interval = 100
 
     def get_updated_state(
         self,
@@ -131,7 +130,6 @@ class CloseComActivitiesStream(IncrementalCloseComStream):
 
     cursor_field = "date_created"
     number_of_items_per_page = 100
-    state_checkpoint_interval = None
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
@@ -241,7 +239,6 @@ class Events(IncrementalCloseComStream):
     """
 
     number_of_items_per_page = 50
-    state_checkpoint_interval = None
 
     def path(self, **kwargs) -> str:
         return "event"
