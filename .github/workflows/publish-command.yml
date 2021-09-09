@@ -169,6 +169,9 @@ jobs:
           SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
           SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
           SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
+          SOURCE_TIKTOK_MARKETING_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_TEST_CREDS }}
+          SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS }}
+
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }}
