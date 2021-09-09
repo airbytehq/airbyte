@@ -106,7 +106,12 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     cursor_field = "updated_at"
 
     def stream_state_to_tmp(
-        self, stream_name: str, current_stream_state: Dict, latest_record: Dict, state_object: Dict, cursor_field: str
+        self,
+        stream_name: str,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+        state_object: Mapping[str, Any],
+        cursor_field: str
     ) -> Mapping[str, Any]:
         """
         Method to save the current stream state for future reuse within slicing.
@@ -118,16 +123,14 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             if 'transaction` was added to the order, then the `orders` is updated as well.
             etc.
         """
-        current_state_value = current_stream_state.get(cursor_field, "")
-        latest_record_state_value = latest_record.get(cursor_field, "")
-        tmp_state_value = state_object.get(stream_name, {}).get(cursor_field, "")
+        # get the current tmp_state_value
+        tmp_stream_state_value = state_object.get(stream_name, {}).get(cursor_field, "")
         # Compare the `current_stream_state` with `latest_record` to have the initial state value
         if current_stream_state:
-            state_object[stream_name] = {cursor_field: min(current_state_value, latest_record_state_value)}
+            state_object[stream_name] = {cursor_field: min(current_stream_state.get(cursor_field, ""), latest_record.get(cursor_field, ""))}
             # Check if we have the saved state and keep the minimun value
-            if tmp_state_value:
-                state_object[stream_name] = {cursor_field: min(current_state_value, tmp_state_value)}
-
+            if tmp_stream_state_value:
+                state_object[stream_name] = {cursor_field: min(current_stream_state.get(cursor_field, ""), tmp_stream_state_value)}
         return state_object
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
