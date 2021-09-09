@@ -92,7 +92,7 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
             .withDockerImageTag(dstDockerTag));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository);
+    final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository, mock(OAuthConfigSupplier.class));
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 

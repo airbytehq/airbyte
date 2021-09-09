@@ -33,6 +33,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -71,7 +72,10 @@ public class JobScheduler implements Runnable {
         jobPersistence,
         configRepository,
         new ScheduleJobPredicate(Instant::now),
-        new DefaultSyncJobFactory(new DefaultJobCreator(jobPersistence), configRepository));
+        new DefaultSyncJobFactory(
+            new DefaultJobCreator(jobPersistence),
+            configRepository,
+            new OAuthConfigSupplier(configRepository, false)));
   }
 
   @Override

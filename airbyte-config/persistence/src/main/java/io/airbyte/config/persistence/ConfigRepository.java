@@ -29,7 +29,9 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -209,6 +211,33 @@ public class ConfigRepository {
 
   public List<StandardSyncOperation> listStandardSyncOperations() throws IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
+  }
+
+  public SourceOAuthParameter getSourceOAuthParams(final UUID SourceOAuthParameterId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameterId.toString(), SourceOAuthParameter.class);
+  }
+
+  public void writeSourceOAuthParam(final SourceOAuthParameter SourceOAuthParameter) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.getOauthParameterId().toString(), SourceOAuthParameter);
+  }
+
+  public List<SourceOAuthParameter> listSourceOAuthParam() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.class);
+  }
+
+  public DestinationOAuthParameter getDestinationOAuthParams(final UUID destinationOAuthParameterId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameterId.toString(), DestinationOAuthParameter.class);
+  }
+
+  public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameter.getOauthParameterId().toString(),
+        destinationOAuthParameter);
+  }
+
+  public List<DestinationOAuthParameter> listDestinationOAuthParam() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {

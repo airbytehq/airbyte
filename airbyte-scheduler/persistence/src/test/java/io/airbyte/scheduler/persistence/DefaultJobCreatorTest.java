@@ -129,7 +129,7 @@ public class DefaultJobCreatorTest {
   }
 
   @BeforeEach
-  void setup() {
+  void setup() throws IOException {
     jobPersistence = mock(JobPersistence.class);
     jobCreator = new DefaultJobCreator(jobPersistence);
   }

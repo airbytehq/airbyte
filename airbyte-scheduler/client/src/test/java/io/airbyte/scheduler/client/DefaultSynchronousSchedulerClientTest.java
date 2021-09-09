@@ -48,6 +48,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.temporal.JobMetadata;
@@ -87,13 +88,18 @@ class DefaultSynchronousSchedulerClientTest {
 
   private TemporalClient temporalClient;
   private JobTracker jobTracker;
+  private OAuthConfigSupplier oAuthConfigSupplier;
   private DefaultSynchronousSchedulerClient schedulerClient;
 
   @BeforeEach
-  void setup() {
+  void setup() throws IOException {
     temporalClient = mock(TemporalClient.class);
     jobTracker = mock(JobTracker.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
+    oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
+    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+
+    when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
+    when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
   }
 
   private static JobMetadata createMetadata(boolean succeeded) {
@@ -172,7 +178,7 @@ class DefaultSynchronousSchedulerClientTest {
   class TestJobCreation {
 
     @Test
-    void testCreateSourceCheckConnectionJob() {
+    void testCreateSourceCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE);
@@ -186,7 +192,7 @@ class DefaultSynchronousSchedulerClientTest {
     }
 
     @Test
-    void testCreateDestinationCheckConnectionJob() {
+    void testCreateDestinationCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE);
@@ -200,7 +206,7 @@ class DefaultSynchronousSchedulerClientTest {
     }
 
     @Test
-    void testCreateDiscoverSchemaJob() {
+    void testCreateDiscoverSchemaJob() throws IOException {
       final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE);

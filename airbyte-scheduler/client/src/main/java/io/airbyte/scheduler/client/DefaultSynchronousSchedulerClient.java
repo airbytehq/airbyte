@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -34,6 +35,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.temporal.TemporalClient;
@@ -48,16 +50,23 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultSynchronousSchedulerClient(TemporalClient temporalClient, JobTracker jobTracker) {
+  public DefaultSynchronousSchedulerClient(TemporalClient temporalClient, JobTracker jobTracker, OAuthConfigSupplier oAuthConfigSupplier) {
     this.temporalClient = temporalClient;
     this.jobTracker = jobTracker;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage) {
+  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
+      throws IOException {
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        source.getSourceDefinitionId(),
+        source.getWorkspaceId(),
+        source.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(source.getConfiguration())
+        .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
 
     return execute(
@@ -69,9 +78,14 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
-                                                                                                final String dockerImage) {
+                                                                                                final String dockerImage)
+      throws IOException {
+    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destination.getDestinationId(),
+        destination.getWorkspaceId(),
+        destination.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(destination.getConfiguration())
+        .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImage);
 
     return execute(
@@ -82,9 +96,13 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) {
+  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) throws IOException {
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        source.getSourceDefinitionId(),
+        source.getWorkspaceId(),
+        source.getConfiguration());
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-        .withConnectionConfiguration(source.getConfiguration())
+        .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
 
     return execute(
