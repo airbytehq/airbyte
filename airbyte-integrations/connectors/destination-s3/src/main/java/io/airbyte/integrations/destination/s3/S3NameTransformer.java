@@ -41,10 +41,10 @@ public class S3NameTransformer extends ExtendedNameTransformer {
   }
 
   private String checkFirsCharInStreamName(String name) {
-    if (name.substring(0, 1).matches("\\d")) {
-      return "_" + name;
-    } else {
+    if (name.substring(0, 1).matches("[A-Za-z_]")) {
       return name;
+    } else {
+      return "_" + name;
     }
   }
 
