@@ -50,7 +50,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
                                  S3Config s3Config,
                                  ExtendedNameTransformer nameTransformer,
                                  SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName,  Strings.addRandomSuffix("", "_", 3) + streamName, client, db, s3Config, nameTransformer, sqlOperations);
+    super(stagingFolder, destSyncMode, schema, streamName,  Strings.addRandomSuffix("", "", 3) + "_" + streamName, client, db, s3Config, nameTransformer, sqlOperations);
   }
 
   @Override
