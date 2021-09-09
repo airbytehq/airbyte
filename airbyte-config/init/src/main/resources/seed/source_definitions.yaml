@@ -104,10 +104,10 @@
   dockerImageTag: 0.4.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
-- sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
+- sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   name: Salesforce
-  dockerRepository: airbyte/source-salesforce-singer
-  dockerImageTag: 0.2.5
+  dockerRepository: airbyte/source-salesforce
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
@@ -149,7 +149,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
 - sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
@@ -176,7 +176,7 @@
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
@@ -200,7 +200,7 @@
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
@@ -401,7 +401,7 @@
 - sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   name: Typeform
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
 - sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   name: Cart.com

@@ -86,19 +86,16 @@
       "type": ["null", "string"]
     },
     "conversation_created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "conversation_updated_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "conversation_total_parts": {
       "type": ["null", "integer"]
     },
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "external_id": {
       "type": ["null", "string"]
@@ -107,8 +104,7 @@
       "type": ["null", "string"]
     },
     "notified_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "part_type": {
       "type": ["null", "string"]

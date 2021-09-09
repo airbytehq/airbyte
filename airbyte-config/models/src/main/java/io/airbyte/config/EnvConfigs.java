@@ -72,6 +72,10 @@ public class EnvConfigs implements Configs {
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
+  public static final String MAX_SPEC_WORKERS = "MAX_SPEC_WORKERS";
+  public static final String MAX_CHECK_WORKERS = "MAX_CHECK_WORKERS";
+  public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
+  public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
@@ -86,6 +90,11 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
+
+  public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
+  public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
+  public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
+  public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
 
   public static final String DEFAULT_NETWORK = "host";
 
@@ -290,6 +299,15 @@ public class EnvConfigs implements Configs {
         .map(this::workerPodToleration)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public MaxWorkersConfig getMaxWorkers() {
+    return new MaxWorkersConfig(
+        Math.toIntExact(getEnvOrDefault(MAX_SPEC_WORKERS, DEFAULT_MAX_SPEC_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
   }
 
   @Override

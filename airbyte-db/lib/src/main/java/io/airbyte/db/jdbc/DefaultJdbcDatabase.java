@@ -49,10 +49,20 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   private final CloseableConnectionSupplier connectionSupplier;
 
   public DefaultJdbcDatabase(final DataSource dataSource) {
-    this(new DataSourceConnectionSupplier(dataSource));
+    this(new DataSourceConnectionSupplier(dataSource), JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public DefaultJdbcDatabase(final DataSource dataSource, JdbcSourceOperations sourceOperations) {
+    this(new DataSourceConnectionSupplier(dataSource), sourceOperations);
+  }
+
+  public DefaultJdbcDatabase(CloseableConnectionSupplier connectionSupplier, JdbcSourceOperations sourceOperations) {
+    super(sourceOperations);
+    this.connectionSupplier = connectionSupplier;
   }
 
   public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier) {
+    super(JdbcUtils.getDefaultSourceOperations());
     this.connectionSupplier = connectionSupplier;
   }
 
@@ -68,7 +78,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = connectionSupplier.getConnection()) {
-      return JdbcUtils.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+      return sourceOperations.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
     }
   }
 
@@ -77,7 +87,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                       CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return JdbcUtils.toStream(query.apply(connection), recordTransform)
+    return sourceOperations.toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
@@ -114,7 +124,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                              CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return JdbcUtils.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    return sourceOperations.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");
