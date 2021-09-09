@@ -88,9 +88,16 @@ class CustomQuery(IncrementalGoogleAdsStream):
             google_data_type = str(node.data_type).replace("GoogleAdsFieldDataType.", "")
             if google_data_type == "ENUM":
                 field_value = {"type": "string", "enum": list(node.enum_values)}
-            elif google_data_type == "MESSAGE":  # this can be anything (or skip as additionalproperties) ?
-                output_type = ["string", "number", "array", "object", "boolean", "null"]
-                field_value = {"type": output_type}
+            elif google_data_type == "MESSAGE":
+                # Represents protobuf message and could be anything, set custom
+                # attribute "protobuf_message" to convert it to a string (or
+                # array of strings) later.
+                # https://developers.google.com/google-ads/api/reference/rpc/v8/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
+                if node.is_repeated:
+                    output_type = ["array", "null"]
+                else:
+                    output_type = ["string", "null"]
+                field_value = {"type": output_type, "protobuf_message": True}
             else:
                 output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
                 field_value = {"type": output_type}

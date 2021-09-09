@@ -70,6 +70,7 @@
       },
       "custom_queries": {
         "type": "array",
+        "title": "Custom GAQL Queries",
         "items": {
           "type": "object",
           "properties": {

@@ -224,7 +224,7 @@ def test_google_type_conversion(config):
         "campaign.shopping_setting.campaign_priority": ["integer", "null"],  # INT32
         "campaign.shopping_setting.merchant_id": ["integer", "null"],  # INT64
         "campaign_budget.explicitly_shared": ["boolean", "null"],  # BOOLEAN
-        "bidding_strategy.enhanced_cpc": ["string", "number", "array", "object", "boolean", "null"],  # MESSAGE
+        "bidding_strategy.enhanced_cpc": ["string", "null"],  # MESSAGE
         "segments.date": ["string", "null"],  # autoadded, should be DATE
     }
 
