@@ -2987,7 +2987,7 @@ components:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         redirectUrl:
-          description: The url to redirect to after getting the oauth token
+          description: When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given.
           type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
@@ -3004,7 +3004,7 @@ components:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         redirectUrl:
-          description: The url to redirect to after getting the oauth token
+          description: When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given.
           type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
