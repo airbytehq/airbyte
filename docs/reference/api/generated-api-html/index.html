@@ -288,8 +288,8 @@ font-style: italic;
   <li><a href="#completeSourceOAuth"><code><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></a></li>
   <li><a href="#getDestinationOAuthConsent"><code><span class="http-method">post</span> /v1/destination_oauths/get_consent_url</code></a></li>
   <li><a href="#getSourceOAuthConsent"><code><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></a></li>
-  <li><a href="#setInstancewideDestinationOauthParams"><code><span class="http-method">post</span> /v1/destination_oauths/set_instancewide_oauth_params</code></a></li>
-  <li><a href="#setInstancewideSourceOauthParams"><code><span class="http-method">post</span> /v1/source_oauths/set_instancewide_oauth_params</code></a></li>
+  <li><a href="#setInstancewideDestinationOauthParams"><code><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></a></li>
+  <li><a href="#setInstancewideSourceOauthParams"><code><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></a></li>
   </ul>
   <h4><a href="#Openapi">Openapi</a></h4>
   <ul>
@@ -2986,7 +2986,7 @@ font-style: italic;
   <div class="method"><a name="setInstancewideDestinationOauthParams"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/set_instancewide_oauth_params</code></pre></div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></pre></div>
     <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideDestinationOauthParams</span>)</div>
     <div class="method-notes"></div>
 
@@ -3034,7 +3034,7 @@ font-style: italic;
   <div class="method"><a name="setInstancewideSourceOauthParams"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/set_instancewide_oauth_params</code></pre></div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></pre></div>
     <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideSourceOauthParams</span>)</div>
     <div class="method-notes"></div>
 

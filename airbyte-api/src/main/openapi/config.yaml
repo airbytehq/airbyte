@@ -1578,7 +1578,7 @@ paths:
                 $ref: "#/components/schemas/ImportRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-  /v1/source_oauths/set_instancewide_oauth_params:
+  /v1/source_oauths/oauth_params/create:
     post:
       tags:
         - oauth
@@ -1601,7 +1601,7 @@ paths:
           $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-  /v1/destination_oauths/set_instancewide_oauth_params:
+  /v1/destination_oauths/oauth_params/create:
     post:
       tags:
         - oauth
