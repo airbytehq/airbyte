@@ -11,8 +11,8 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      # When account doesn't have the Refunds
-      configured_catalog_path: "integration_tests/no_refunds_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 1200
   incremental: 
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -20,3 +20,4 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 1200

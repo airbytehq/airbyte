@@ -6,7 +6,9 @@ WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
-    && pip install --upgrade pip
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata
+
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
@@ -18,8 +20,11 @@ WORKDIR /airbyte/integration_code
 
 # copy all loaded and built libraries to a pure basic image
 COPY --from=builder /install /usr/local
+# add default timezone settings
+COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN echo "Etc/UTC" > /etc/timezone
 
-# Bash is installed for more convenient debugging.
+# bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
 # copy payload code only

@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": ["string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "pull_request_review_id": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "diff_hunk": {
+      "type": ["null", "string"]
+    },
+    "path": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "integer"]
+    },
+    "original_position": {
+      "type": ["null", "integer"]
+    },
+    "commit_id": {
+      "type": ["null", "string"]
+    },
+    "original_commit_id": {
+      "type": ["null", "string"]
+    },
+    "in_reply_to_id": {
+      "type": ["null", "integer"]
+    },
+    "user": {
+      "$ref": "user.json"
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "pull_request_url": {
+      "type": ["null", "string"]
+    },
+    "author_association": {
+      "type": ["null", "string"]
+    },
+    "_links": {
+      "type": ["null", "object"],
+      "properties": {
+        "self": {
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "html": {
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "pull_request": {
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "start_line": {
+      "type": ["null", "integer"]
+    },
+    "original_start_line": {
+      "type": ["null", "integer"]
+    },
+    "start_side": {
+      "type": ["null", "string"]
+    },
+    "line": {
+      "type": ["null", "integer"]
+    },
+    "original_line": {
+      "type": ["null", "integer"]
+    },
+    "side": {
+      "type": ["null", "string"]
+    }
+  }
+}

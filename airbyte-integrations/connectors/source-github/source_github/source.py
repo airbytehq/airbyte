@@ -34,6 +34,7 @@ from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 
 from .streams import (
     Assignees,
+    Branches,
     Collaborators,
     Comments,
     CommitComments,
@@ -43,13 +44,19 @@ from .streams import (
     IssueLabels,
     IssueMilestones,
     Issues,
+    Organizations,
     Projects,
     PullRequests,
+    PullRequestStats,
     Releases,
     Repositories,
+    RepositoryStats,
+    ReviewComments,
     Reviews,
     Stargazers,
+    Tags,
     Teams,
+    Users,
 )
 
 TOKEN_SEPARATOR = ","
@@ -82,15 +89,12 @@ class SourceGithub(AbstractSource):
             authenticator = self._get_authenticator(config["access_token"])
             repositories = self._generate_repositories(config=config, authenticator=authenticator)
 
-            # We should use the most poorly filled stream to use the `list` method,
-            # because when using the `next` method, we can get the `StopIteration` error.
-            projects_stream = Projects(
+            repository_stats_stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=repositories,
-                start_date=config["start_date"],
             )
-            for stream in projects_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                list(projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
+            for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
             return True, None
         except Exception as e:
             return False, repr(e)
@@ -98,11 +102,14 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config["access_token"])
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
+        organizations = list({org.split("/")[0] for org in repositories})
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
+        organization_args = {"authenticator": authenticator, "organizations": organizations}
 
         return [
             Assignees(**full_refresh_args),
+            Branches(**full_refresh_args),
             Collaborators(**full_refresh_args),
             Comments(**incremental_args),
             CommitComments(**incremental_args),
@@ -112,10 +119,16 @@ class SourceGithub(AbstractSource):
             IssueLabels(**full_refresh_args),
             IssueMilestones(**incremental_args),
             Issues(**incremental_args),
+            Organizations(**organization_args),
             Projects(**incremental_args),
+            PullRequestStats(**full_refresh_args),
             PullRequests(**incremental_args),
             Releases(**incremental_args),
+            Repositories(**organization_args),
+            ReviewComments(**incremental_args),
             Reviews(**full_refresh_args),
             Stargazers(**incremental_args),
-            Teams(**full_refresh_args),
+            Tags(**full_refresh_args),
+            Teams(**organization_args),
+            Users(**organization_args),
         ]

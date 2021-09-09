@@ -47,9 +47,11 @@ public abstract class MigrationDevCenter {
     DUMP_SCHEMA
   }
 
+  private final String dbIdentifier;
   private final String schemaDumpFile;
 
-  protected MigrationDevCenter(String schemaDumpFile) {
+  protected MigrationDevCenter(String dbIdentifier, String schemaDumpFile) {
+    this.dbIdentifier = dbIdentifier;
     this.schemaDumpFile = schemaDumpFile;
   }
 
@@ -69,7 +71,7 @@ public abstract class MigrationDevCenter {
   private void createMigration() {
     try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
       FlywayDatabaseMigrator migrator = getMigrator(database);
-      MigrationDevHelper.createNextMigrationFile("configs", migrator);
+      MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

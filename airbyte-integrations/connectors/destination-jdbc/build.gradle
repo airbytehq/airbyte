@@ -4,10 +4,6 @@ plugins {
     id 'airbyte-integration-test-java'
 }
 
-application {
-    mainClass = 'io.airbyte.integrations.destination.jdbc.JdbcDestination'
-}
-
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'

@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -99,7 +100,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final List<AirbyteMessage> buffer;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedFunction<String, Boolean, Exception> isValidRecord;
+  private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final int queueBatchSize;
@@ -115,7 +116,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
-                                CheckedFunction<String, Boolean, Exception> isValidRecord,
+                                CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                                 int queueBatchSize) {
     this.outputRecordCollector = outputRecordCollector;
     this.queueBatchSize = queueBatchSize;
@@ -151,13 +152,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
-      final String data = Jsons.serialize(message.getRecord().getData());
 
       if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
       }
 
-      if (!isValidRecord.apply(data)) {
+      if (!isValidRecord.apply(message.getRecord().getData())) {
         pairToIgnoredRecordCount.put(stream, pairToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
       }
