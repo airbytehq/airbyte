@@ -28,7 +28,12 @@ import io.airbyte.api.model.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
+import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
+import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -88,6 +93,23 @@ public class OAuthHandler {
         oauthDestinationRequestBody.getDestinationDefinitionId(),
         oauthDestinationRequestBody.getQueryParams(),
         oauthDestinationRequestBody.getRedirectUrl());
+  }
+
+  public void setDestinationInstancewideOauthParams(SetInstancewideDestinationOauthParamsRequestBody requestBody)
+      throws JsonValidationException, IOException {
+    DestinationOAuthParameter param = new DestinationOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
+        .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
+    configRepository.writeDestinationOAuthParam(param);
+  }
+
+  public void setSourceInstancewideOauthParams(SetInstancewideSourceOauthParamsRequestBody requestBody) throws JsonValidationException, IOException {
+    SourceOAuthParameter param = new SourceOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
+        .withSourceDefinitionId(requestBody.getSourceDefinitionId());
+    configRepository.writeSourceOAuthParam(param);
   }
 
   private OAuthFlowImplementation getSourceOAuthFlowImplementation(UUID sourceDefinitionId)
