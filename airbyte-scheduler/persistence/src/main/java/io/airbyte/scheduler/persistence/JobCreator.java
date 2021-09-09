@@ -34,14 +34,6 @@ import java.util.Optional;
 
 public interface JobCreator {
 
-  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
-
-  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createGetSpecJob(String integrationImage) throws IOException;
-
   /**
    *
    * @param source db model representing where data comes from

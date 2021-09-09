@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import ContentCard from "components/ContentCard";
 import CheckConnection from "./CheckConnection";
-import useSource from "components/hooks/services/useSourceHook";
+import useSource from "hooks/services/useSourceHook";
 import { Routes } from "../../../../routes";
-import useDestination from "components/hooks/services/useDestinationHook";
+import useDestination from "hooks/services/useDestinationHook";
 import { JobsLogItem } from "components/JobItem";
 import { JobInfo } from "core/resources/Scheduler";
 

@@ -124,8 +124,6 @@ export default class ConnectionResource
   ): ReadShape<SchemaDetail<{ connections: Connection[] }>> {
     return {
       ...super.listShape(),
-      getFetchKey: (params: { workspaceId: string }) =>
-        "POST /web_backend/connections/list" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<{ connections: Connection[] }> =>
