@@ -143,20 +143,20 @@ public class LogClientSingleton {
 
   public static void setJobMdc(Path path) {
     if (shouldUseLocalLogs(new EnvConfigs())) {
-      LOGGER.info("Setting docker job mdc");
+      LOGGER.debug("Setting docker job mdc");
       MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     } else {
-      LOGGER.info("Setting kube job mdc");
+      LOGGER.debug("Setting kube job mdc");
       MDC.put(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     }
   }
 
   public static void setWorkspaceMdc(Path path) {
     if (shouldUseLocalLogs(new EnvConfigs())) {
-      LOGGER.info("Setting docker workspace mdc");
+      LOGGER.debug("Setting docker workspace mdc");
       MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
     } else {
-      LOGGER.info("Setting kube workspace mdc");
+      LOGGER.debug("Setting kube workspace mdc");
       MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.toString());
     }
   }

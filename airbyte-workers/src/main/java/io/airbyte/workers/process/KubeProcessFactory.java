@@ -45,6 +45,10 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
   private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
+  private static final String JOB_LABEL_KEY = "job_id";
+  private static final String ATTEMPT_LABEL_KEY = "attempt_id";
+  private static final String WORKER_POD_LABEL_KEY = "airbyte";
+  private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
 
   private final String namespace;
   private final ApiClient officialClient;
@@ -121,6 +125,9 @@ public class KubeProcessFactory implements ProcessFactory {
           entrypoint,
           resourceRequirements,
           WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
+          Map.of(JOB_LABEL_KEY, jobId,
+              ATTEMPT_LABEL_KEY, String.valueOf(attempt),
+              WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE),
           args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage(), e);
