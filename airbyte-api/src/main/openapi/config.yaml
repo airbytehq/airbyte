@@ -1364,48 +1364,6 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/sources/recreate:
-    post:
-      tags:
-        - web_backend
-      summary: Recreate a source
-      operationId: webBackendRecreateSource
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceRecreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/destinations/recreate:
-    post:
-      tags:
-        - web_backend
-      summary: Recreate a destination
-      operationId: webBackendRecreateDestination
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationRecreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/list:
     post:
       tags:
@@ -1914,25 +1872,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
-    SourceRecreate:
-      type: object
-      required:
-        - workspaceId
-        - sourceDefinitionId
-        - sourceId
-        - connectionConfiguration
-        - name
-      properties:
-        sourceDefinitionId:
-          $ref: "#/components/schemas/SourceDefinitionId"
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        connectionConfiguration:
-          $ref: "#/components/schemas/SourceConfiguration"
-        name:
-          type: string
     SourceUpdate:
       type: object
       required:
@@ -2125,25 +2064,6 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
-    DestinationRecreate:
-      type: object
-      required:
-        - workspaceId
-        - destinationId
-        - destinationDefinitionId
-        - connectionConfiguration
-        - name
-      properties:
-        destinationDefinitionId:
-          $ref: "#/components/schemas/DestinationDefinitionId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        connectionConfiguration:
-          $ref: "#/components/schemas/DestinationConfiguration"
-        name:
-          type: string
     DestinationUpdate:
       type: object
       required:

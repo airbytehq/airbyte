@@ -95,7 +95,6 @@ public class DefaultJobCreator implements JobCreator {
       configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
       configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
     });
-
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withNamespaceFormat(standardSync.getNamespaceFormat())
