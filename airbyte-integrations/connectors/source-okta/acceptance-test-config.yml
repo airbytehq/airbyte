@@ -17,7 +17,7 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
-        charges: ["lastUpdated"]
+        users: ["lastUpdated"]
