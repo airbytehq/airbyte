@@ -78,7 +78,7 @@ def spec_object():
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
-    with pytest_raises(SystemExit) as ex_info:
+    with pytest_raises(Exception) as ex_info:
         check_config_against_spec_or_exit(config, spec_object, logger)
         exc = ex_info.value
         traceback.print_exception(type(exc), exc, exc.__traceback__)
