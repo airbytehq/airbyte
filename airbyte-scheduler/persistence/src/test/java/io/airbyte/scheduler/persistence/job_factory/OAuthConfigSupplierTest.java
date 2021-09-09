@@ -115,7 +115,6 @@ public class OAuthConfigSupplierTest {
     assertEquals(expectedConfig, actualConfig);
   }
 
-
   @Test
   void testInjectMaskedOAuthParameters() throws JsonValidationException, IOException {
     final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true);

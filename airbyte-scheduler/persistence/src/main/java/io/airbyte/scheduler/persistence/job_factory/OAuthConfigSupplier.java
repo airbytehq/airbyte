@@ -81,7 +81,6 @@ public class OAuthConfigSupplier {
     }
   }
 
-
   private void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
     for (String key : Jsons.keys(fromConfig)) {
       if (maskSecrets) {

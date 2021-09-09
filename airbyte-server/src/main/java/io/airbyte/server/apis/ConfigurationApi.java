@@ -130,7 +130,6 @@ import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
