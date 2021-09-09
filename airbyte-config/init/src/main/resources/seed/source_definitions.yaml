@@ -464,3 +464,8 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
+- sourceDefinitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
+  name: Commercetools
+  dockerRepository: airbyte/source-commercetools
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/commercetools
