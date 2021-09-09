@@ -212,6 +212,9 @@ class CampaignsMetrics(IterableStream):
     data_field = None
 
     def __init__(self, api_key: str, start_date: str):
+        """
+        https://api.iterable.com/api/docs#campaigns_metrics
+        """
         super().__init__(api_key)
         self.start_date = start_date
 
@@ -283,6 +286,9 @@ class EmailUnsubscribe(IterableExportStream):
 
 
 class Events(IterableStream):
+    """
+    https://api.iterable.com/api/docs#events_User_events
+    """
     primary_key = None
     data_field = "events"
 
