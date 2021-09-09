@@ -60,7 +60,7 @@ public interface Configs {
 
   String getSecretStoreGcpProjectId();
 
-  String getSecretStoreConfigsEnabled();
+  String getSecretStoreForConfigs();
 
   boolean runDatabaseMigrationOnStartup();
 

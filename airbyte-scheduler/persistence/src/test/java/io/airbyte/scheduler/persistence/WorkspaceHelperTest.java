@@ -40,6 +40,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -101,7 +102,8 @@ class WorkspaceHelperTest {
   public void setup() throws IOException {
     tmpDir = Files.createTempDirectory("workspace_helper_test_" + RandomStringUtils.randomAlphabetic(5));
 
-    configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
+    ConfigPersistence filePersistence = new FileSystemConfigPersistence(tmpDir);
+    configRepository = new ConfigRepository(filePersistence, filePersistence);
     jobPersistence = mock(JobPersistence.class);
 
     workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);

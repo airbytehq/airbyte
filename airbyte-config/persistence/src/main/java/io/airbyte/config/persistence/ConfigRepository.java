@@ -50,13 +50,17 @@ public class ConfigRepository {
   private final ConfigPersistence persistence;
   private final ConfigPersistence secretsPersistence;
 
-  public ConfigRepository(final ConfigPersistence persistence) {
-    this(persistence, persistence);
-  }
-
   public ConfigRepository(final ConfigPersistence persistence, final ConfigPersistence secretsPersistence) {
     this.persistence = persistence;
     this.secretsPersistence = secretsPersistence;
+  }
+
+  /**
+   * This should only be used for backward compatibility where a secret store isn't yet in use.
+   */
+  public ConfigRepository(final ConfigPersistence persistence) {
+    this.persistence = persistence;
+    this.secretsPersistence = persistence;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)

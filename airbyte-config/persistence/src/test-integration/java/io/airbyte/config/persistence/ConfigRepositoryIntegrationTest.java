@@ -38,6 +38,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,12 +73,12 @@ class ConfigRepositoryIntegrationTest {
     SOURCE_DEFINITION_1.withSourceDefinitionId(UUID_1).withName("mysql");
   }
   private static final SourceConnection SOURCE_CONNECTION = new SourceConnection()
-        .withSourceId(SOURCE_CONNECTION_ID)
-        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
-        .withWorkspaceId(WORKSPACE_ID)
-        .withConfiguration(Jsons.deserialize("{\"somefield\":\"secretvalue\"}"))
-        .withName("source")
-        .withTombstone(false);
+      .withSourceId(SOURCE_CONNECTION_ID)
+      .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+      .withWorkspaceId(WORKSPACE_ID)
+      .withConfiguration(Jsons.deserialize("{\"somefield\":\"secretvalue\"}"))
+      .withName("source")
+      .withTombstone(false);
 
   public static final UUID UUID_2 = new UUID(0, 2);
   public static final StandardSourceDefinition SOURCE_DEFINITION_2 = new StandardSourceDefinition();
@@ -107,22 +108,20 @@ class ConfigRepositoryIntegrationTest {
       .withName("dest")
       .withTombstone(false);
 
-
   @BeforeEach
   void setup() throws IOException {
     Path p = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), this.getClass().getName());
     Files.createDirectories(new File(p.toAbsolutePath() + "/config").toPath());
 
     configPersistence = new FileSystemConfigPersistence(p);
-    secretsConfigPersistence = new GoogleSecretsManagerConfigPersistence(WORKSPACE_ID);
+    secretsConfigPersistence = new GoogleSecretsManagerConfigPersistence();
     configRepository = new ConfigRepository(configPersistence, secretsConfigPersistence);
   }
 
   @AfterEach
   void tearDown() throws IOException {
     // Delete all the secrets we stored for testing in this temporary workspace.
-    String prefix = ((GoogleSecretsManagerConfigPersistence) secretsConfigPersistence).getVersion() + "-"
-        + ((GoogleSecretsManagerConfigPersistence) secretsConfigPersistence).getWorkspacePattern();
+    String prefix = ((GoogleSecretsManagerConfigPersistence) secretsConfigPersistence).getVersion() + "-";
     List<String> names = GoogleSecretsManager.listSecretsMatching(prefix);
     for (String name : names) {
       GoogleSecretsManager.deleteSecret(name);
@@ -131,57 +130,62 @@ class ConfigRepositoryIntegrationTest {
 
   // Make sure we can add configs and then replace them with updated ones, and the updates take.
   @Test
-  void replaceAllConfigsSeeUpdates() throws IOException {
-    Map<AirbyteConfig, Stream<Object>> map =  new LinkedHashMap<>();
+  void replaceAllConfigsSeeUpdates() throws IOException, JsonValidationException, ConfigNotFoundException {
+    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
     map.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(DESTINATION_CONNECTION));
     configRepository.replaceAllConfigs(map, true);
 
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
     map.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(DESTINATION_CONNECTION));
-    configRepository.replaceAllConfigs(map,false);
+    configRepository.replaceAllConfigs(map, false);
 
-    // TODO: Reload them and check to see that all the expected contents are there?
+    assertNotNull(configRepository.getSourceConnection(SOURCE_CONNECTION_ID));
+    assertNotNull(configRepository.getSourceConnection(SOURCE_CONNECTION_ID2));
+    assertNotNull(configRepository.getDestinationConnection(DESTINATION_CONNECTION_ID));
   }
 
   @Test
   void replaceAllConfigsEmptySet() throws IOException {
     // Make sure we can call replaceAll on an empty set and it doesn't crash.
-    Map<AirbyteConfig, Stream<Object>> map =  new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
     configRepository.replaceAllConfigs(map, true);
-    configRepository.replaceAllConfigs(map,false);
+    configRepository.replaceAllConfigs(map, false);
   }
 
   @Test
   void replaceAllConfigsSecretsLocation() throws IOException {
-    // Make sure that secrets are written out to the correct secret store and don't show up in the wrong one.
+    // Make sure that secrets are written out to the correct secret store and don't show up in the wrong
+    // one.
 
-    Map<AirbyteConfig, Stream<Object>> map =  new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
     map.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(DESTINATION_CONNECTION));
     configRepository.replaceAllConfigs(map, false);
 
     Map<String, Stream<JsonNode>> nonsecret = configPersistence.dumpConfigs();
-    assert(nonsecret.size() == 0);
+    assert (nonsecret.size() == 0);
 
     Map<String, Stream<JsonNode>> secret = secretsConfigPersistence.dumpConfigs();
-    assert(secret.size() == 2);
+    assert (secret.size() == 2);
   }
 
   @Test
   void dumpConfigs() throws IOException {
     // 1. Make sure we can store some configs and then do a dump and they're all included.
     // 2. Make sure we can see both of configs from a non-secret store and configs from a secret store.
-    Map<AirbyteConfig, Stream<Object>> map =  new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
 
     // These should land in the secrets store, so they're the core of testing.
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
     map.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(DESTINATION_CONNECTION));
 
-    // We're checking serialization for all the rest of these, to make sure nothing explodes during storage and they are retained.
+    // We're checking serialization for all the rest of these, to make sure nothing explodes during
+    // storage and they are retained.
     map.put(ConfigSchema.STANDARD_WORKSPACE, Stream.of(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withCustomerId(UUID.randomUUID())));
     map.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(new StandardSourceDefinition().withSourceDefinitionId(UUID.randomUUID())));
-    map.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, Stream.of(new StandardDestinationDefinition().withDestinationDefinitionId(UUID.randomUUID())));
+    map.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        Stream.of(new StandardDestinationDefinition().withDestinationDefinitionId(UUID.randomUUID())));
     map.put(ConfigSchema.STANDARD_SYNC, Stream.of(new StandardSync()
         .withName("sync")
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)

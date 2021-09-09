@@ -35,9 +35,9 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.GoogleSecretsManagerConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -243,8 +243,10 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final ConfigRepository configRepository =
+        configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
+            ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(), new GoogleSecretsManagerConfigPersistence())
+            : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,

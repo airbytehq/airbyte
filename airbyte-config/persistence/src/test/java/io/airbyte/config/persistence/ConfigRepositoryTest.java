@@ -46,7 +46,7 @@ class ConfigRepositoryTest {
   @BeforeEach
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
-    configRepository = new ConfigRepository(configPersistence);
+    configRepository = new ConfigRepository(configPersistence, configPersistence);
   }
 
   @Test

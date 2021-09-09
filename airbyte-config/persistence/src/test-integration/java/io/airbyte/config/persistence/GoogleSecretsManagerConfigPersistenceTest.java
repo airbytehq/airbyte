@@ -25,7 +25,6 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
@@ -58,7 +57,7 @@ public class GoogleSecretsManagerConfigPersistenceTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    configPersistence = new GoogleSecretsManagerConfigPersistence(WORKSPACE_ID);
+    configPersistence = new GoogleSecretsManagerConfigPersistence();
   }
 
   @Test
@@ -79,39 +78,6 @@ public class GoogleSecretsManagerConfigPersistenceTest {
     Assertions.assertEquals(
         Sets.newHashSet(SOURCE_1, SOURCE_2),
         Sets.newHashSet(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)));
-  }
-
-  @Test
-  public void testReplaceAllConfigs() throws Exception {
-    /*
-     * writeDestination(configPersistence, DESTINATION_S3); writeDestination(configPersistence,
-     * DESTINATION_SNOWFLAKE);
-     *
-     * final Map<AirbyteConfig, Stream<Object>> newConfigs =
-     * Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
-     *
-     * configPersistence.replaceAllConfigs(newConfigs, true);
-     *
-     * // dry run does not change anything assertRecordCount(2); assertHasDestination(DESTINATION_S3);
-     * assertHasDestination(DESTINATION_SNOWFLAKE);
-     *
-     * configPersistence.replaceAllConfigs(newConfigs, false); assertRecordCount(2);
-     * assertHasSource(SOURCE_GITHUB); assertHasSource(SOURCE_POSTGRES);
-     */
-    fail();
-  }
-
-  @Test
-  public void testDumpConfigs() throws Exception {
-    /*
-     * writeSource(configPersistence, SOURCE_GITHUB); writeSource(configPersistence, SOURCE_POSTGRES);
-     * writeDestination(configPersistence, DESTINATION_S3); Map<String, Stream<JsonNode>> actual =
-     * configPersistence.dumpConfigs(); Map<String, Stream<JsonNode>> expected = Map.of(
-     * ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB),
-     * Jsons.jsonNode(SOURCE_POSTGRES)), ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
-     * Stream.of(Jsons.jsonNode(DESTINATION_S3))); assertSameConfigDump(expected, actual);
-     */
-    fail();
   }
 
   private void assertRecordCount(int expectedCount) throws Exception {

@@ -39,12 +39,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.FileSystemConfigPersistence;
+import io.airbyte.config.persistence.GoogleSecretsManagerConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -76,6 +80,7 @@ import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class ArchiveHandlerTest {
 
+  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandlerTest.class);
 
   private static final String VERSION = "0.6.8";
@@ -84,10 +89,12 @@ public class ArchiveHandlerTest {
   private Database database;
   private JobPersistence jobPersistence;
   private DatabaseConfigPersistence configPersistence;
+  private FileSystemConfigPersistence secretsPersistence;
   private ConfigPersistence seedPersistence;
 
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
+  private EnvConfigs configs;
 
   private static class NoOpFileTtlManager extends FileTtlManager {
 
@@ -115,6 +122,9 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
+    Path p = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), this.getClass().getName());
+    Files.createDirectories(new File(p.toAbsolutePath() + "/config").toPath());
+
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jobPersistence = new DefaultJobPersistence(database);
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
@@ -122,7 +132,9 @@ public class ArchiveHandlerTest {
     configPersistence = new DatabaseConfigPersistence(database);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
-    configRepository = new ConfigRepository(configPersistence);
+    secretsPersistence = new FileSystemConfigPersistence(p);
+    configRepository = new ConfigRepository(configPersistence, secretsPersistence); // TODO
+    //configRepository = new ConfigRepository(configPersistence, configPersistence);
 
     jobPersistence.setVersion(VERSION);
 
@@ -150,7 +162,7 @@ public class ArchiveHandlerTest {
     File archive = archiveHandler.exportData();
 
     // After deleting the configs, the dump becomes empty.
-    configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
+    configRepository.replaceAllConfigs(Collections.emptyMap(), false);
     assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
 
     // After importing the configs, the dump is restored.
@@ -178,12 +190,12 @@ public class ArchiveHandlerTest {
         .withTombstone(false);
 
     // Write source connection and an old source definition.
-    configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnection.getSourceId().toString(), sourceConnection);
+    configRepository.writeSourceConnection(sourceConnection);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
 
     // Export, wipe, and import the configs.
     archive = archiveHandler.exportData();
-    configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
+    configRepository.replaceAllConfigs(Collections.emptyMap(), false);
     archiveHandler.importData(archive);
 
     // The version has not changed.
@@ -212,7 +224,8 @@ public class ArchiveHandlerTest {
     FileUtils.copyFile(archive, secondArchive);
 
     // After deleting all the configs, the dump becomes empty.
-    configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
+    configRepository.replaceAllConfigs(Collections.emptyMap(), false);
+    //configPersistence.replaceAllConfigs(Collections.emptyMap(), false); // JENNY
     assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
 
     // Restore default seed data
@@ -263,7 +276,7 @@ public class ArchiveHandlerTest {
     // check that first workspace is unchanged even though modifications were made to second workspace
     // (that contains similar connections from importing the same archive)
     archive = archiveHandler.exportWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId));
-    configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
+    configRepository.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     setupWorkspaceData(workspaceId);
     uploadRead = archiveHandler.uploadArchiveResource(archive);
@@ -286,7 +299,7 @@ public class ArchiveHandlerTest {
     // Fill up with some configurations
     setupWorkspaceData(workspaceId);
     final UUID sourceid = UUID.randomUUID();
-    configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceid.toString(), new SourceConnection()
+    configRepository.writeSourceConnection(new SourceConnection()
         .withSourceId(sourceid)
         .withWorkspaceId(workspaceId)
         .withSourceDefinitionId(configRepository.listStandardSources().get(0).getSourceDefinitionId())
@@ -294,7 +307,7 @@ public class ArchiveHandlerTest {
         .withConfiguration(Jsons.emptyObject())
         .withTombstone(false));
     final UUID destinationId = UUID.randomUUID();
-    configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), new DestinationConnection()
+    configRepository.writeDestinationConnection(new DestinationConnection()
         .withDestinationId(destinationId)
         .withWorkspaceId(workspaceId)
         .withDestinationDefinitionId(configRepository.listStandardDestinationDefinitions().get(0).getDestinationDefinitionId())

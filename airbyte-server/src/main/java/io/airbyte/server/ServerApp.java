@@ -33,10 +33,10 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.GoogleSecretsManagerConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
@@ -178,10 +178,12 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase)
-        .loadData(ConfigSeedProvider.get(configs))
-        .withValidation();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+
+    final ConfigRepository configRepository =
+        configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
+            ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).loadData(ConfigSeedProvider.get(configs)).withValidation(),
+                new GoogleSecretsManagerConfigPersistence())
+            : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).loadData(ConfigSeedProvider.get(configs)).withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(

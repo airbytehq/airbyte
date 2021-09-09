@@ -34,34 +34,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence {
 
-  protected UUID workspaceId;
-
-  public GoogleSecretsManagerConfigPersistence(UUID workspaceId) {
-    this.workspaceId = workspaceId;
-  }
+  public GoogleSecretsManagerConfigPersistence() {}
 
   public String getVersion() {
     return "secrets-v1";
-  }
-
-  public String getWorkspacePattern() {
-    return "workspace-%s".format(workspaceId.toString());
   }
 
   /**
    * Determines the secrets manager key name for storing a particular config
    */
   protected <T> String generateKeyNameFromType(AirbyteConfig configType, String configId) {
-    return String.format("%s-%s-%s-%s-configuration", getVersion(), getWorkspacePattern(), configType.getIdFieldName(), configId);
+    return String.format("%s-%s-%s-configuration", getVersion(), configType.getIdFieldName(), configId);
   }
 
   protected <T> String generateKeyPrefixFromType(AirbyteConfig configType) {
-    return String.format("%s-%s-%s-", getVersion(), getWorkspacePattern(), configType.getIdFieldName());
+    return String.format("%s-%s-", getVersion(), configType.getIdFieldName());
   }
 
   @Override
