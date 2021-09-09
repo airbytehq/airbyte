@@ -29,6 +29,12 @@ from requests.auth import AuthBase
 
 
 class MultipleTokenAuthenticator(AuthBase):
+    """
+    Builds auth header, based on the list of tokens provided.
+    Auth header is changed per each `get_auth_header` call, using each token in cycle.
+    The token is attached to each request via the `auth_header` header.
+    """
+
     def __init__(self, tokens: List[str], auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method
         self.auth_header = auth_header
@@ -44,5 +50,10 @@ class MultipleTokenAuthenticator(AuthBase):
 
 
 class TokenAuthenticator(MultipleTokenAuthenticator):
+    """
+    Builds auth header, based on the token provided.
+    The token is attached to each request via the `auth_header` header.
+    """
+
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         super().__init__([token], auth_method, auth_header)

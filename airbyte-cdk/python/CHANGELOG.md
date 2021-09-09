@@ -1,9 +1,9 @@
 # Changelog
 
 ## 0.1.18
-Add requests native auth module. 
-Implement Oauth2Authenticator, MultipleTokenAuthenticator and TokenAuthenticator authenticators.
-Add support for both legacy and requests native authenticator to HttpStream class.
+- Allow using `requests.auth.AuthBase` as authenticators instead of custom CDK authenticators.
+- Implement Oauth2Authenticator, MultipleTokenAuthenticator and TokenAuthenticator authenticators.
+- Add support for both legacy and requests native authenticator to HttpStream class.
 
 ## 0.1.17
 Fix mismatching between number of records actually read and number of records in logs by 1: https://github.com/airbytehq/airbyte/pull/5767

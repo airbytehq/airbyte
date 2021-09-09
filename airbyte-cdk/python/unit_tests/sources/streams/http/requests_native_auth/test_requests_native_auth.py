@@ -32,24 +32,34 @@ from requests import Response
 LOGGER = logging.getLogger(__name__)
 
 
-def test_token_authenticator():
+def test_token_authenticator(mocker):
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
     token = TokenAuthenticator(token="test-token")
-    header = token.get_auth_header()
-    assert {"Authorization": "Bearer test-token"} == header
-    header = token.get_auth_header()
-    assert {"Authorization": "Bearer test-token"} == header
+    header1 = token.get_auth_header()
+    header2 = token.get_auth_header()
+
+    mocker.patch.object(requests.sessions.Session, "send", new=lambda self, request, **kwargs: request.headers)
+    request_headers = requests.request(url="https://fake_url", method="FAKE", auth=token)
+
+    assert all(item in request_headers.items() for item in header1.items())
+    assert {"Authorization": "Bearer test-token"} == header1
+    assert {"Authorization": "Bearer test-token"} == header2
 
 
-def test_multiple_token_authenticator():
+def test_multiple_token_authenticator(mocker):
     token = MultipleTokenAuthenticator(tokens=["token1", "token2"])
     header1 = token.get_auth_header()
-    assert {"Authorization": "Bearer token1"} == header1
     header2 = token.get_auth_header()
-    assert {"Authorization": "Bearer token2"} == header2
     header3 = token.get_auth_header()
+
+    mocker.patch.object(requests.sessions.Session, "send", new=lambda self, request, **kwargs: request.headers)
+    request_headers = requests.request(url="https://fake_url", method="FAKE", auth=token)
+
+    assert all(item in request_headers.items() for item in header2.items())
+    assert {"Authorization": "Bearer token1"} == header1
+    assert {"Authorization": "Bearer token2"} == header2
     assert {"Authorization": "Bearer token1"} == header3
 
 
@@ -135,3 +145,16 @@ class TestOauth2Authenticator:
         token = oauth.refresh_access_token()
 
         assert ("access_token", 1000) == token
+
+    def test_auth_call_method(self, mocker):
+        oauth = Oauth2Authenticator(
+            token_refresh_endpoint=TestOauth2Authenticator.refresh_endpoint,
+            client_id=TestOauth2Authenticator.client_id,
+            client_secret=TestOauth2Authenticator.client_secret,
+            refresh_token=TestOauth2Authenticator.refresh_token,
+        )
+        mocker.patch.object(oauth, "refresh_access_token", return_value=("access_token", 100))
+        mocker.patch.object(requests.sessions.Session, "send", new=lambda s, request, **kwargs: request.headers)
+        request_headers = requests.request(url="https://fake_url", method="FAKE", auth=oauth)
+
+        assert all(item in request_headers.items() for item in oauth.get_auth_header().items())
