@@ -111,7 +111,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
         state_object: Mapping[str, Any],
-        cursor_field: str
+        cursor_field: str,
     ) -> Mapping[str, Any]:
         """
         Method to save the current stream state for future reuse within slicing.
