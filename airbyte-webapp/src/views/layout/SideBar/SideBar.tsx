@@ -7,9 +7,9 @@ import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Routes } from "pages/routes";
-import config from "config";
+import { useConfig } from "config";
 
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import { Link } from "components";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
@@ -102,6 +102,7 @@ const Notification = styled(Indicator)`
 
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
+  const config = useConfig();
 
   return (
     <Bar>

@@ -1,13 +1,15 @@
 import { useMemo } from "react";
 import { UserService } from "packages/cloud/lib/domain/users";
-import { api } from "packages/cloud/config/api";
 
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
+import { useConfig } from "packages/cloud/services/config";
 
-export function useGetUserService() {
+export function useGetUserService(): UserService {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  const { cloudApiUrl } = useConfig();
 
-  return useMemo(() => new UserService(requestAuthMiddleware, api.cloud), [
+  return useMemo(() => new UserService(cloudApiUrl, requestAuthMiddleware), [
+    cloudApiUrl,
     requestAuthMiddleware,
   ]);
 }

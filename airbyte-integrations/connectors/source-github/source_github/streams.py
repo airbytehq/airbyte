@@ -24,7 +24,8 @@
 
 import os
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -129,6 +130,11 @@ class GithubStream(HttpStream, ABC):
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.CONFLICT:
+                error_msg = (
+                    f"Syncing `{self.name}` stream isn't available for repository "
+                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
+                )
             else:
                 self.logger.error(f"Undefined error while reading records: {error_msg}")
                 raise e
@@ -271,11 +277,26 @@ class SemiIncrementalGithubStream(GithubStream):
 class IncrementalGithubStream(SemiIncrementalGithubStream):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        since_params = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        if since_params:
+            params["since"] = since_params
         return params
 
 
 # Below are full refresh streams
+
+
+class RepositoryStats(GithubStream):
+    """
+    This stream is technical and not intended for the user, we use it for checking connection with the repository.
+    API docs: https://docs.github.com/en/rest/reference/repos#get-a-repository
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
 
 
 class Assignees(GithubStream):
@@ -668,3 +689,69 @@ class ReviewComments(IncrementalGithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
+
+
+# Reactions streams
+
+
+class ReactionStream(GithubStream, ABC):
+
+    parent_key = "id"
+
+    def __init__(self, **kwargs):
+        self._stream_kwargs = deepcopy(kwargs)
+        self._parent_stream = self.parent_entity(**kwargs)
+        kwargs.pop("start_date", None)
+        super().__init__(**kwargs)
+
+    @property
+    @abstractmethod
+    def parent_entity(self):
+        """
+        Specify the class of the parent stream for which receive reactions
+        """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
+        return f"{parent_path}/{stream_slice[self.parent_key]}/reactions"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
+
+
+class CommitCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment
+    """
+
+    parent_entity = CommitComments
+
+
+class IssueCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment
+    """
+
+    parent_entity = Comments
+
+
+class IssueReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
+    """
+
+    parent_entity = Issues
+    parent_key = "number"
+
+
+class PullRequestCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment
+    """
+
+    parent_entity = ReviewComments

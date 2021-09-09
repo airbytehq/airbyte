@@ -37,19 +37,24 @@ from .streams import (
     Branches,
     Collaborators,
     Comments,
+    CommitCommentReactions,
     CommitComments,
     Commits,
     Events,
+    IssueCommentReactions,
     IssueEvents,
     IssueLabels,
     IssueMilestones,
+    IssueReactions,
     Issues,
     Organizations,
     Projects,
+    PullRequestCommentReactions,
     PullRequests,
     PullRequestStats,
     Releases,
     Repositories,
+    RepositoryStats,
     ReviewComments,
     Reviews,
     Stargazers,
@@ -88,15 +93,12 @@ class SourceGithub(AbstractSource):
             authenticator = self._get_authenticator(config["access_token"])
             repositories = self._generate_repositories(config=config, authenticator=authenticator)
 
-            # We should use the most poorly filled stream to use the `list` method,
-            # because when using the `next` method, we can get the `StopIteration` error.
-            projects_stream = Projects(
+            repository_stats_stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=repositories,
-                start_date=config["start_date"],
             )
-            for stream in projects_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                list(projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
+            for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
             return True, None
         except Exception as e:
             return False, repr(e)
@@ -114,15 +116,19 @@ class SourceGithub(AbstractSource):
             Branches(**full_refresh_args),
             Collaborators(**full_refresh_args),
             Comments(**incremental_args),
+            CommitCommentReactions(**incremental_args),
             CommitComments(**incremental_args),
             Commits(**incremental_args),
             Events(**incremental_args),
+            IssueCommentReactions(**incremental_args),
             IssueEvents(**incremental_args),
             IssueLabels(**full_refresh_args),
             IssueMilestones(**incremental_args),
+            IssueReactions(**incremental_args),
             Issues(**incremental_args),
             Organizations(**organization_args),
             Projects(**incremental_args),
+            PullRequestCommentReactions(**incremental_args),
             PullRequestStats(**full_refresh_args),
             PullRequests(**incremental_args),
             Releases(**incremental_args),

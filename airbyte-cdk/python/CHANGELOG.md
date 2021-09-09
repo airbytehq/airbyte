@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.17
+Fix mismatching between number of records actually read and number of records in logs by 1: https://github.com/airbytehq/airbyte/pull/5767
+
+## 0.1.16
+Update generated AirbyteProtocol models to contain [Oauth changes](https://github.com/airbytehq/airbyte/pull/5776).
+
 ## 0.1.15
 Add \_limit and \_page_size as internal config parameters for SAT
 
