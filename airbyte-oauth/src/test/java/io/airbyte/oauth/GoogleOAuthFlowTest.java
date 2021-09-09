@@ -45,8 +45,12 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GoogleOAuthFlowTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
 
   public static final String REDIRECT_URL = "https%3A//airbyte.io";
   private HttpClient httpClient;
@@ -103,6 +107,7 @@ public class GoogleOAuthFlowTest {
         GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
         definitionId,
         REDIRECT_URL);
+    LOGGER.info(expectedSourceUrl);
     assertEquals(expectedSourceUrl, actualSourceUrl);
   }
 

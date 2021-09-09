@@ -160,21 +160,33 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
         .put("redirect_uri", redirectUrl)
         .build();
     final HttpRequest request = HttpRequest.newBuilder()
-        .POST(HttpRequest.BodyPublishers.ofString(Jsons.serialize(body)))
+        .POST(HttpRequest.BodyPublishers.ofString(serialize(body)))
         .uri(URI.create(GOOGLE_ANALYTICS_ACCESS_TOKEN_URL))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .build();
     final HttpResponse<String> response;
     try {
       response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      final JsonNode json = Jsons.deserialize(response.body());
-      return Map.of(
-          "refresh_token", Jsons.getOptional(json, "refresh_token")
-              .orElseThrow(
-                  () -> new IOException(String.format("Missing 'refresh_token' in query params from %s", GOOGLE_ANALYTICS_ACCESS_TOKEN_URL))));
+      var data = Jsons.deserialize(response.body());
+      if (data.has("refresh_token")) {
+        return Map.of("refresh_token", data.get("refresh_token").asText());
+      } else {
+        throw new IOException(String.format("Missing 'refresh_token' in query params from %s", GOOGLE_ANALYTICS_ACCESS_TOKEN_URL));
+      }
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete Google OAuth flow", e);
     }
+  }
+
+  private static String serialize(ImmutableMap<String, String> body) {
+    final StringBuilder result = new StringBuilder();
+    for (var entry : body.entrySet()) {
+      if (result.length() > 0) {
+        result.append("&");
+      }
+      result.append(entry.getKey()).append("=").append(entry.getValue());
+    }
+    return result.toString();
   }
 
   private JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
