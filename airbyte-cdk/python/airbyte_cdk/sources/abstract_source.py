@@ -196,6 +196,9 @@ class AbstractSource(Source, ABC):
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
                 total_records_counter += 1
+                # This functionality should ideally live outside of this method
+                # but since state is managed inside this method, we keep track
+                # of it here.
                 if self._limit_reached(internal_config, total_records_counter):
                     # Break from slice loop to save state and exit from _read_incremental function.
                     break
