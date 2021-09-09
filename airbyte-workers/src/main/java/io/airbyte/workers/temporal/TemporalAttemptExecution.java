@@ -112,6 +112,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       mdcSetter.accept(jobRoot);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
+      // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
+      // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
       saveWorkflowIdForCancellation();
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();

@@ -125,9 +125,15 @@ public interface JobPersistence {
   // END OF LIFECYCLE
   //
 
+  /**
+   * Sets an attempt's temporal workflow id. Later used to cancel the workflow.
+   */
   void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException;
 
-  String getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
+  /**
+   * Retrieves an attempt's temporal workflow id. Used to cancel the workflow.
+   */
+  Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
 
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
 

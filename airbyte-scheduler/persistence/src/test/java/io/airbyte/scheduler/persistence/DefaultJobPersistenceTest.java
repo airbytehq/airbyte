@@ -354,18 +354,18 @@ class DefaultJobPersistenceTest {
       var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
       var defaultWorkflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
-      assertEquals(null, defaultWorkflowId);
+      assertTrue(defaultWorkflowId.isEmpty());
 
       database.query(ctx -> ctx.execute(
           "UPDATE attempts SET temporal_workflow_id = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
           attemptNumber));
-      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
       assertEquals(workflowId, "56a81f3a-006c-42d7-bce2-29d675d08ea4");
     }
 
     @Test
-    void testGetMissingAttempt() {
-      assertThrows(RuntimeException.class, () -> jobPersistence.getAttemptTemporalWorkflowId(0, 0));
+    void testGetMissingAttempt() throws IOException {
+      assertTrue(jobPersistence.getAttemptTemporalWorkflowId(0, 0).isEmpty());
     }
 
     @Test
@@ -376,7 +376,7 @@ class DefaultJobPersistenceTest {
 
       jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
 
-      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
       assertEquals(workflowId, temporalWorkflowId);
     }
 

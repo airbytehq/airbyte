@@ -304,17 +304,17 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public String getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
+  public Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
     var result = database.query(ctx -> ctx.fetch(
         " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
         jobId,
         attemptNumber)).stream().findFirst();
 
-    if (result.isEmpty()) {
-      throw new RuntimeException("Unable to find attempt and retrieve temporalWorkflowId.");
+    if (result.isEmpty() || result.get().get("temporal_workflow_id") == null) {
+      return Optional.empty();
     }
 
-    return result.get().get("temporal_workflow_id", String.class);
+    return Optional.of(result.get().get("temporal_workflow_id", String.class));
   }
 
   @Override

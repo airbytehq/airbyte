@@ -350,21 +350,15 @@ public class SchedulerHandler {
     return JobConverter.getJobInfoRead(job);
   }
 
-  private void cancelTemporalWorkflowIfPresent(long jobId) {
-    String workflowId = null;
-    try {
-      var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
-                                                                                   // specific to a job id, allowing us to do this.
-      workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
+  private void cancelTemporalWorkflowIfPresent(long jobId) throws IOException {
+    var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
+                                                                                 // specific to a job id, allowing us to do this.
+    var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
-    } catch (Exception e) {
-      LOGGER.info("Skipping temporal workflow cancellation as workflow has not yet been created.");
-    }
-
-    if (workflowId != null) {
+    if (workflowId.isPresent()) {
       LOGGER.info("Cancelling workflow: {}", workflowId);
       final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
-          .setWorkflowId(workflowId)
+          .setWorkflowId(workflowId.get())
           .build();
       final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
           .setWorkflowExecution(workflowExecution)
