@@ -25,6 +25,7 @@
 package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
@@ -50,14 +51,14 @@ import java.util.UUID;
  */
 public class GoogleOAuthFlow implements OAuthFlowImplementation {
 
-  private final HttpClient httpClient = HttpClient.newBuilder()
-      .version(Version.HTTP_1_1)
-      .build();
+  private final HttpClient httpClient;
 
   private static final String GOOGLE_ANALYTICS_CONSENT_URL = "https://accounts.google.com/o/oauth2/v2/auth";
   private static final String GOOGLE_ANALYTICS_ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
+  @VisibleForTesting
+  static final String GOOGLE_ANALYTICS_SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
   private static final List<String> GOOGLE_QUERY_PARAMETERS = List.of(
-      "scope=https%3A//www.googleapis.com/auth/analytics.readonly",
+      String.format("scope=%s", GOOGLE_ANALYTICS_SCOPE),
       "access_type=offline",
       "include_granted_scopes=true",
       "response_type=code",
@@ -66,7 +67,13 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   private final ConfigRepository configRepository;
 
   public GoogleOAuthFlow(ConfigRepository configRepository) {
+    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
+  }
+
+  @VisibleForTesting
+  GoogleOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
     this.configRepository = configRepository;
+    this.httpClient = httpClient;
   }
 
   @Override
