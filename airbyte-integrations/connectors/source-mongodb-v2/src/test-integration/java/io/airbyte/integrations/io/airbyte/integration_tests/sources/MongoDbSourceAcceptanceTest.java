@@ -115,10 +115,10 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                    "test.acceptance_test",
-                    Field.of("_id", JsonSchemaPrimitive.STRING),
-                    Field.of("id", JsonSchemaPrimitive.STRING),
-                    Field.of("name", JsonSchemaPrimitive.STRING))
+                "test.acceptance_test",
+                Field.of("_id", JsonSchemaPrimitive.STRING),
+                Field.of("id", JsonSchemaPrimitive.STRING),
+                Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }

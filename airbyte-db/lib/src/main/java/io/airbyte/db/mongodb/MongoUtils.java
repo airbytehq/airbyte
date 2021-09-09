@@ -110,8 +110,8 @@ public class MongoUtils {
   }
 
   /**
-   * Gets 10.000 documents from collection, gathers all unique fields and its type. In case when one field has different types in 2 and more
-   * documents, the type is set to String.
+   * Gets 10.000 documents from collection, gathers all unique fields and its type. In case when one
+   * field has different types in 2 and more documents, the type is set to String.
    *
    * @param collection mongo collection
    * @return map of unique fields and its type
