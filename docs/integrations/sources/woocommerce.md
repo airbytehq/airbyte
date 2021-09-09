@@ -47,4 +47,4 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0  | 2021-09-09 | [5521](https://github.com/airbytehq/airbyte/pull/5521) | Initial Release. Source WooCommerce |
+| 0.1.0  | 2021-09-09 | [5955](https://github.com/airbytehq/airbyte/pull/5955) | Initial Release. Source WooCommerce |
