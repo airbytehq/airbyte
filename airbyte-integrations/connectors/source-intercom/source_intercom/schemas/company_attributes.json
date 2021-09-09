@@ -12,8 +12,7 @@
       "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "custom": {
       "type": ["null", "boolean"]
