@@ -124,6 +124,7 @@ public class Migrate {
   }
 
   private Path runMigration(Migration migration, Path migrationInputRoot) throws IOException {
+    LOGGER.info("====== running migration: {}", migration);
     final Path tmpOutputDir = Files.createDirectories(migrateRoot.resolve(migration.getVersion()));
 
     // create a map of each input resource path to the input stream.
@@ -134,6 +135,7 @@ public class Migrate {
             entry -> MoreStreams.toStream(entry.getValue())
                 .peek(r -> {
                   try {
+                    LOGGER.info("====== left: {}, right {}", migration.getInputSchema().get(entry.getKey()), r);
                     jsonSchemaValidator.ensure(migration.getInputSchema().get(entry.getKey()), r);
                   } catch (JsonValidationException e) {
                     throw new IllegalArgumentException(

@@ -156,6 +156,7 @@ public class MigrationAcceptanceTest {
         .setLogListener("server", logConsumerForServer(logsToExpect))
         .build();
 
+    LOGGER.info("====== Running second run...");
     airbyteTestContainer.start();
 
     ApiClient apiClient = getApiClient();
