@@ -24,7 +24,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -32,13 +32,14 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
+from source_bing_ads.reports import ReportsMixin
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
-    primary_key: str = "Id"
+    primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
     # indicates whether stream should cache incoming responses via VcrCache
     use_cache: bool = False
 
@@ -109,7 +110,7 @@ class BingAdsStream(Stream, ABC):
         """
         Fetches account_id from slice object
         """
-        return stream_slice.get("account_id") if stream_slice else None
+        return str(stream_slice.get("account_id")) if stream_slice else None
 
     def read_records(
         self,
@@ -120,15 +121,14 @@ class BingAdsStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
+        account_id = self.get_account_id(stream_slice)
 
         while True:
             params = self.request_params(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, account_id=account_id
             )
 
-            response = self.send_request(params, account_id=self.get_account_id(stream_slice))
+            response = self.send_request(params, account_id=account_id)
             for record in self.parse_response(response):
                 yield record
 
@@ -147,6 +147,8 @@ class Accounts(BingAdsStream):
     Stream caches incoming responses to be able to reuse this data in Campaigns stream
     """
 
+    primary_key = "Id"
+    # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
@@ -204,6 +206,7 @@ class Campaigns(BingAdsStream):
     Stream caches incoming responses to be able to reuse this data in AdGroups stream
     """
 
+    primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "Campaign"
@@ -243,6 +246,7 @@ class AdGroups(BingAdsStream):
     Stream caches incoming responses to be able to reuse this data in Ads stream
     """
 
+    primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "AdGroup"
@@ -276,6 +280,7 @@ class Ads(BingAdsStream):
     Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
     """
 
+    primary_key = "Id"
     data_field: str = "Ad"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
@@ -313,6 +318,269 @@ class Ads(BingAdsStream):
         yield from []
 
 
+class BudgetSummaryReport(ReportsMixin, BingAdsStream):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "BudgetSummaryReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    report_aggregation = None
+    cursor_field = "Date"
+    report_schema_name = "budget_summary_report"
+    primary_key = "Date"
+
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "CampaignName",
+        "CampaignId",
+        "Date",
+        "MonthlyBudget",
+        "DailySpend",
+        "MonthToDateSpend",
+    ]
+
+
+class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "CampaignPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "campaign_performance_report"
+
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
+        "Impressions",
+        "Clicks",
+        "Ctr",
+        "AverageCpc",
+        "Spend",
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
+    ]
+
+
+class CampaignPerformanceReportHourly(CampaignPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class CampaignPerformanceReportDaily(CampaignPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class CampaignPerformanceReportWeekly(CampaignPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class AdPerformanceReport(ReportsMixin, BingAdsStream):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "AdPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "ad_performance_report"
+
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
+        "Impressions",
+        "Clicks",
+        "Spend",
+        "Ctr",
+        "AverageCpc",
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
+        "AdGroupName",
+        "AdGroupId",
+        "AdTitle",
+        "AdId",
+        "AdType",
+    ]
+
+
+class AdPerformanceReportHourly(AdPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class AdPerformanceReportDaily(AdPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AdPerformanceReportWeekly(AdPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AdPerformanceReportMonthly(AdPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "AdGroupPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "ad_group_performance_report"
+
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
+        "Impressions",
+        "Clicks",
+        "Ctr",
+        "AverageCpc",
+        "Spend",
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
+        "AdGroupName",
+        "AdGroupId",
+    ]
+
+
+class AdGroupPerformanceReportHourly(AdGroupPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class AdGroupPerformanceReportDaily(AdGroupPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AdGroupPerformanceReportWeekly(AdGroupPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "KeywordPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "keyword_performance_report"
+
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
+        "Impressions",
+        "Clicks",
+        "Ctr",
+        "AverageCpc",
+        "Spend",
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
+        "AdGroupName",
+        "AdGroupId",
+        "AdId",
+        "AdType",
+        "Keyword",
+        "KeywordId",
+        "QualityScore",
+        "BidMatchType",
+        "AbsoluteTopImpressionRatePercent",
+    ]
+
+
+class KeywordPerformanceReportHourly(KeywordPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class KeywordPerformanceReportDaily(KeywordPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class KeywordPerformanceReportWeekly(KeywordPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class AccountPerformanceReport(ReportsMixin, BingAdsStream):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "AccountPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "account_performance_report"
+
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "DeviceType",
+        "Network",
+        "Impressions",
+        "Clicks",
+        "Spend",
+        "Ctr",
+        "AverageCpc",
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
+    ]
+
+
+class AccountPerformanceReportHourly(AccountPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class AccountPerformanceReportDaily(AccountPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AccountPerformanceReportWeekly(AccountPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AccountPerformanceReportMonthly(AccountPerformanceReport):
+    report_aggregation = "Monthly"
+
+
 class SourceBingAds(AbstractSource):
     """
     Source implementation of Bing Ads API. Fetches advertising data from accounts
@@ -337,11 +605,34 @@ class SourceBingAds(AbstractSource):
 
         return True, None
 
+    def get_report_streams(self, aggregation_type: str) -> List[Stream]:
+        return [
+            globals()[f"AccountPerformanceReport{aggregation_type}"],
+            globals()[f"KeywordPerformanceReport{aggregation_type}"],
+            globals()[f"AdGroupPerformanceReport{aggregation_type}"],
+            globals()[f"AdPerformanceReport{aggregation_type}"],
+            globals()[f"CampaignPerformanceReport{aggregation_type}"],
+        ]
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
-        return [
+        streams = [
             Accounts(client, config),
             AdGroups(client, config),
             Ads(client, config),
             Campaigns(client, config),
         ]
+
+        if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
+            streams.append(BudgetSummaryReport(client, config))
+
+        if config["hourly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
+        if config["daily_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
+        if config["weekly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
+        if config["monthly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
+
+        return streams
