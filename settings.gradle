@@ -37,7 +37,8 @@ include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-test-utils'
 
 // platform
-if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+// TODO don't always build platform unless needed.
+//if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-analytics'
     include ':airbyte-cli'
     include ':airbyte-db:jooq'
@@ -54,7 +55,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-server'
     include ':airbyte-webapp'
     include ':airbyte-tests'
-}
+//}
 
 // connectors base
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
