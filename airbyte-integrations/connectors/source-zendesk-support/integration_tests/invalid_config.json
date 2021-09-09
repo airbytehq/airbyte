@@ -1,6 +1,8 @@
 {
-  "email": "broken.email@invalid.config",
-  "api_token": "<broken token>",
+  "auth_method": {
+    "api_token": "<broken token>",
+    "email": "broken.email@invalid.config"
+  },
   "subdomain": "test-failure-airbyte",
   "start_date": "2030-01-01T00:00:00Z"
 }
