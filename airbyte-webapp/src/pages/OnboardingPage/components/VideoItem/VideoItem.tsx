@@ -49,6 +49,7 @@ const VideoBlock = styled.div<{ small?: boolean }>`
 `;
 
 const VideoFrame = styled.div<{ small?: boolean; img?: string }>`
+  cursor: pointer;
   position: relative;
   width: ${({ small }) => (small ? 158 : 317)}px;
   height: ${({ small }) => (small ? 92 : 185)}px;
@@ -72,6 +73,7 @@ const Description = styled.div<{ small?: boolean }>`
   font-size: 13px;
   line-height: ${({ small }) => (small ? 16 : 20)}px;
   margin-top: 14px;
+  cursor: pointer;
 `;
 
 const VideoItem: React.FC<VideoItemProps> = ({
@@ -85,11 +87,17 @@ const VideoItem: React.FC<VideoItemProps> = ({
   return (
     <Content small={small}>
       <VideoBlock small={small}>
-        <VideoFrame small={small} img={img}>
+        <VideoFrame
+          small={small}
+          img={img}
+          onClick={() => setIsVideoOpen(true)}
+        >
           <PlayButton small={small} onClick={() => setIsVideoOpen(true)} />
         </VideoFrame>
       </VideoBlock>
-      <Description small={small}>{description}</Description>
+      <Description small={small} onClick={() => setIsVideoOpen(true)}>
+        {description}
+      </Description>
       {isVideoOpen ? (
         <ShowVideo videoId={videoId} onClose={() => setIsVideoOpen(false)} />
       ) : null}
