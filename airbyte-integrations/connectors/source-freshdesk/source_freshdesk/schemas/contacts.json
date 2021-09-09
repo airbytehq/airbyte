@@ -60,7 +60,7 @@
       "type": "string"
     },
     "unique_external_id": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"]
     }
   }
 }
