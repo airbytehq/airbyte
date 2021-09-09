@@ -71,7 +71,9 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
                                                      Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                      ConfiguredAirbyteCatalog catalog,
-                                                     Consumer<AirbyteMessage> outputRecordCollector) {
+                                                     Consumer<AirbyteMessage> outputRecordCollector,
+                                                     boolean isGcsUploadingMode,
+                                                     boolean isKeepFilesInGcs) {
     return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
   }
 
