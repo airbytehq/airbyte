@@ -32,6 +32,7 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.mongodb.MongoDatabase;
 import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -200,6 +201,10 @@ public class Databases {
 
   public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
     return new BigQueryDatabase(projectId, jsonCreds);
+  }
+
+  public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {
+    return new MongoDatabase(connectionString, databaseName);
   }
 
 }
