@@ -24,7 +24,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -39,7 +39,7 @@ CACHE: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
-    primary_key: Optional[str] = None
+    primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
     # indicates whether stream should cache incoming responses via VcrCache
     use_cache: bool = False
 
@@ -327,6 +327,7 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     report_aggregation = None
     cursor_field = "Date"
     report_schema_name = "budget_summary_report"
+    primary_key = "Date"
 
     report_columns = [
         "AccountName",

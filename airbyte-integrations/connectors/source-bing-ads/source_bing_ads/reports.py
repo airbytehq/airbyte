@@ -24,7 +24,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import source_bing_ads.source
@@ -97,6 +97,8 @@ class ReportsMixin(ABC):
     # timeout for reporting download operations in milliseconds
     timeout: int = 300000
     report_file_format: str = "Csv"
+
+    primary_key: List[str] = ["TimePeriod", "Network", "DeviceType"]
 
     @property
     @abstractmethod
