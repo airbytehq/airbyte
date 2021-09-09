@@ -73,7 +73,6 @@ import org.slf4j.LoggerFactory;
 public class MigrationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationAcceptanceTest.class);
-
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
