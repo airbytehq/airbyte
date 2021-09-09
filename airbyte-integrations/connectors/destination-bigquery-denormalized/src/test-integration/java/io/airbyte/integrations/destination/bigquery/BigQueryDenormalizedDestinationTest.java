@@ -107,7 +107,7 @@ class BigQueryDenormalizedDestinationTest {
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
-    final String projectId = credentialsJson.get(BigQueryDestination.CONFIG_PROJECT_ID).asText();
+    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJsonString.getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
@@ -124,10 +124,10 @@ class BigQueryDenormalizedDestinationTest {
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
-        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, credentialsJsonString)
+        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
