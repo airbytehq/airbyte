@@ -45,7 +45,7 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
   private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
-  private static final String JOB_LABEL_KEY = "jobid";
+  private static final String JOB_LABEL_KEY = "job_id";
 
   private final String namespace;
   private final ApiClient officialClient;

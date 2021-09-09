@@ -273,7 +273,7 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         ResourceRequirements resourceRequirements,
                         List<WorkerPodToleration> tolerations,
-                        Map<String, String> labels,
+                        Map<String, String> userDefinedLabels,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -371,7 +371,9 @@ public class KubePodProcess extends Process {
     List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
         : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    Map<String, String> podLabels = labels.addAll(AIRBYTE_POD_LABELS);
+    Map<String, String> podLabels = new HashMap<>();
+    podLabels.putAll(AIRBYTE_POD_LABELS);
+    podLabels.putAll(userDefinedLabels);
 
     final Pod pod = new PodBuilder()
         .withApiVersion("v1")
