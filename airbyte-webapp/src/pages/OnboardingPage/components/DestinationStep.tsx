@@ -11,7 +11,6 @@ import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
-import SkipOnboardingButton from "./SkipOnboardingButton";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalytics } from "hooks/useAnalytics";
@@ -95,9 +94,6 @@ const DestinationStep: React.FC<IProps> = ({
       <ContentCard full>
         <ServiceForm
           formType="destination"
-          additionBottomControls={
-            <SkipOnboardingButton step="destination connection" />
-          }
           allowChangeConnector
           onServiceSelect={onDropDownSelect}
           onSubmit={onSubmitForm}

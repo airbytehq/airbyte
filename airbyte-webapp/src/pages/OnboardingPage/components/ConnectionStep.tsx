@@ -3,7 +3,6 @@ import React from "react";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
-import SkipOnboardingButton from "./SkipOnboardingButton";
 import TitlesBlock from "./TitlesBlock";
 import { FormattedMessage } from "react-intl";
 import HighlightedText from "./HighlightedText";
@@ -38,7 +37,6 @@ const ConnectionStep: React.FC<IProps> = ({
       </TitlesBlock>
       <CreateConnectionContent
         noTitles
-        additionBottomControls={<SkipOnboardingButton step="connection" />}
         source={source}
         destination={destination}
         afterSubmitConnection={afterSubmitConnection}

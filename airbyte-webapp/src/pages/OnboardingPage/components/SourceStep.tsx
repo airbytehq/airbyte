@@ -11,7 +11,6 @@ import { JobsLogItem } from "components/JobItem";
 
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 
-import SkipOnboardingButton from "./SkipOnboardingButton";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalytics } from "hooks/useAnalytics";
 import HighlightedText from "./HighlightedText";
@@ -91,9 +90,6 @@ const SourceStep: React.FC<IProps> = ({
       </TitlesBlock>
       <ContentCard full>
         <ServiceForm
-          additionBottomControls={
-            <SkipOnboardingButton step="source connection" />
-          }
           allowChangeConnector
           onServiceSelect={onServiceSelect}
           onSubmit={onSubmitForm}

@@ -95,10 +95,11 @@ const useConnection = (): {
   updateConnection: (conn: UpdateConnection) => Promise<Connection>;
   updateStateConnection: (conn: UpdateStateConnection) => Promise<void>;
   resetConnection: (connId: string) => Promise<void>;
+  syncConnection: (conn: Connection) => Promise<void>;
   deleteConnection: (payload: { connectionId: string }) => Promise<void>;
 } => {
   const { push } = useRouter();
-  const { finishOnboarding, workspace } = useWorkspace();
+  const { workspace } = useWorkspace();
   const analyticsService = useAnalytics();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
@@ -108,6 +109,7 @@ const useConnection = (): {
   );
   const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
   const resetConnectionResource = useFetcher(ConnectionResource.reset());
+  const syncConnectionResource = useFetcher(ConnectionResource.syncShape());
 
   const createConnection = async ({
     values,
@@ -155,9 +157,6 @@ const useConnection = (): {
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId,
       });
-      if (workspace.displaySetupWizard) {
-        await finishOnboarding();
-      }
 
       return result;
     } catch (e) {
@@ -221,12 +220,28 @@ const useConnection = (): {
     [resetConnectionResource]
   );
 
+  const syncConnection = async (connection: Connection) => {
+    analyticsService.track("Source - Action", {
+      action: "Full refresh sync",
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
+      frequency: connection.schedule,
+    });
+    await syncConnectionResource({
+      connectionId: connection.connectionId,
+    });
+  };
+
   return {
     createConnection,
     updateConnection,
     updateStateConnection,
     resetConnection,
     deleteConnection,
+    syncConnection,
   };
 };
 
