@@ -13,6 +13,7 @@ data
 # Secrets
 secrets
 !airbyte-integrations/connector-templates/**/secrets
+!airbyte-integrations/connector-templates/**/integration_tests/sample_config.json
 
 # Python
 *.egg-info
