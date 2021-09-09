@@ -170,7 +170,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerJobClient,
         synchronousSchedulerClient,
         jobPersistence,
-        configs.getWorkspaceRoot(),
         jobNotifier,
         temporalService);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
