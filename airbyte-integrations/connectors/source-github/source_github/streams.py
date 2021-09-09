@@ -24,7 +24,8 @@
 
 import os
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -276,7 +277,9 @@ class SemiIncrementalGithubStream(GithubStream):
 class IncrementalGithubStream(SemiIncrementalGithubStream):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        since_params = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        if since_params:
+            params["since"] = since_params
         return params
 
 
@@ -686,3 +689,69 @@ class ReviewComments(IncrementalGithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
+
+
+# Reactions streams
+
+
+class ReactionStream(GithubStream, ABC):
+
+    parent_key = "id"
+
+    def __init__(self, **kwargs):
+        self._stream_kwargs = deepcopy(kwargs)
+        self._parent_stream = self.parent_entity(**kwargs)
+        kwargs.pop("start_date", None)
+        super().__init__(**kwargs)
+
+    @property
+    @abstractmethod
+    def parent_entity(self):
+        """
+        Specify the class of the parent stream for which receive reactions
+        """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
+        return f"{parent_path}/{stream_slice[self.parent_key]}/reactions"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
+
+
+class CommitCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment
+    """
+
+    parent_entity = CommitComments
+
+
+class IssueCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment
+    """
+
+    parent_entity = Comments
+
+
+class IssueReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
+    """
+
+    parent_entity = Issues
+    parent_key = "number"
+
+
+class PullRequestCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment
+    """
+
+    parent_entity = ReviewComments
