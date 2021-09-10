@@ -84,14 +84,14 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
     if (dryRun) {
-      for (final Map.Entry<AirbyteConfig, Stream<T>> configuration : configs.entrySet()) {
+      for (final Map.Entry<AirbyteConfig, Stream<?>> configuration : configs.entrySet()) {
         configuration.getValue().forEach(Jsons::serialize);
       }
       return;
     }
-    for (final Map.Entry<AirbyteConfig, Stream<T>> configuration : configs.entrySet()) {
+    for (final Map.Entry<AirbyteConfig, Stream<?>> configuration : configs.entrySet()) {
       AirbyteConfig configType = configuration.getKey();
       configuration.getValue().forEach(config -> {
         try {

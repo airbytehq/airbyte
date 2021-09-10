@@ -45,10 +45,8 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
-import io.airbyte.config.persistence.GoogleSecretsManagerConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -134,7 +132,7 @@ public class ArchiveHandlerTest {
     configPersistence.loadData(seedPersistence);
     secretsPersistence = new FileSystemConfigPersistence(p);
     configRepository = new ConfigRepository(configPersistence, secretsPersistence); // TODO
-    //configRepository = new ConfigRepository(configPersistence, configPersistence);
+    // configRepository = new ConfigRepository(configPersistence, configPersistence);
 
     jobPersistence.setVersion(VERSION);
 
@@ -225,7 +223,7 @@ public class ArchiveHandlerTest {
 
     // After deleting all the configs, the dump becomes empty.
     configRepository.replaceAllConfigs(Collections.emptyMap(), false);
-    //configPersistence.replaceAllConfigs(Collections.emptyMap(), false); // JENNY
+    // configPersistence.replaceAllConfigs(Collections.emptyMap(), false); // JENNY
     assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
 
     // Restore default seed data

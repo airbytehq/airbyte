@@ -131,7 +131,7 @@ class ConfigRepositoryIntegrationTest {
   // Make sure we can add configs and then replace them with updated ones, and the updates take.
   @Test
   void replaceAllConfigsSeeUpdates() throws IOException, JsonValidationException, ConfigNotFoundException {
-    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<?>> map = new LinkedHashMap<>();
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
     map.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(DESTINATION_CONNECTION));
     configRepository.replaceAllConfigs(map, true);
@@ -148,7 +148,7 @@ class ConfigRepositoryIntegrationTest {
   @Test
   void replaceAllConfigsEmptySet() throws IOException {
     // Make sure we can call replaceAll on an empty set and it doesn't crash.
-    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<?>> map = new LinkedHashMap<>();
     configRepository.replaceAllConfigs(map, true);
     configRepository.replaceAllConfigs(map, false);
   }
@@ -158,7 +158,7 @@ class ConfigRepositoryIntegrationTest {
     // Make sure that secrets are written out to the correct secret store and don't show up in the wrong
     // one.
 
-    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<?>> map = new LinkedHashMap<>();
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
     map.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(DESTINATION_CONNECTION));
     configRepository.replaceAllConfigs(map, false);
@@ -174,7 +174,7 @@ class ConfigRepositoryIntegrationTest {
   void dumpConfigs() throws IOException {
     // 1. Make sure we can store some configs and then do a dump and they're all included.
     // 2. Make sure we can see both of configs from a non-secret store and configs from a secret store.
-    Map<AirbyteConfig, Stream<Object>> map = new LinkedHashMap<>();
+    Map<AirbyteConfig, Stream<?>> map = new LinkedHashMap<>();
 
     // These should land in the secrets store, so they're the core of testing.
     map.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(SOURCE_CONNECTION, SOURCE_CONNECTION_2));
