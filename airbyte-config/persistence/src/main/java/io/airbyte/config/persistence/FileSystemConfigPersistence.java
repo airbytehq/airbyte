@@ -29,9 +29,9 @@ import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -201,13 +201,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
   @Override
   public void loadData(ConfigPersistence seedPersistence) throws IOException {
-    Map<AirbyteConfig, Stream<?>> seedData = new HashMap<>();
-    for (Map.Entry<String, Stream<JsonNode>> entry : seedPersistence.dumpConfigs().entrySet()) {
-      ConfigSchema configType = ConfigSchema.valueOf(entry.getKey());
-      Stream<?> configStream = entry.getValue().map(jsonNode -> Jsons.object(jsonNode, configType.getClassName()));
-      seedData.put(configType, configStream);
-    }
-    replaceAllConfigs(seedData, false);
+    throw new UnsupportedEncodingException("This method is not supported in this implementation");
   }
 
   private <T> T getConfigInternal(AirbyteConfig configType, String configId, Class<T> clazz)
