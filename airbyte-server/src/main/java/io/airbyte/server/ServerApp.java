@@ -179,12 +179,14 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    configPersistence.loadData(ConfigSeedProvider.get(configs));
 
     final ConfigRepository configRepository =
         configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
-            ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).loadData(ConfigSeedProvider.get(configs)).withValidation(),
+            ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(),
                 new GoogleSecretsManagerConfigPersistence())
-            : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).loadData(ConfigSeedProvider.get(configs)).withValidation());
+            : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(

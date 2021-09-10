@@ -284,4 +284,8 @@ public class ConfigRepository {
     return bothConfigTypes;
   }
 
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    persistence.loadData(seedPersistence);
+  }
+
 }
