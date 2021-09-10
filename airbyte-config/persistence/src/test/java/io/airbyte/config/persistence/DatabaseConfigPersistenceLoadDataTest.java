@@ -37,8 +37,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.Collections;
 import java.util.Map;
@@ -119,23 +121,32 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @Order(3)
   @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
-    // the seed has a newer version of s3 destination
+    // the seed has a newer version of s3 destination and github source
     StandardDestinationDefinition destinationS3V2 = YamlSeedConfigPersistence.get()
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "4816b78f-1489-44c1-9060-4b19d5fa9362", StandardDestinationDefinition.class)
         .withDockerImageTag("10000.1.0");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(destinationS3V2));
+    StandardSourceDefinition sourceGithubV2 = YamlSeedConfigPersistence.get()
+        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "ef69ef6e-aa7f-4af1-a01d-ef775033524e", StandardSourceDefinition.class)
+        .withDockerImageTag("10000.15.3");
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(Collections.singletonList(sourceGithubV2));
 
-    // create a sync to mark the destination as used
-    StandardSync s3Sync = new StandardSync()
-        .withConnectionId(UUID.randomUUID())
-        .withSourceId(SOURCE_GITHUB.getSourceDefinitionId())
-        .withDestinationId(destinationS3V2.getDestinationDefinitionId());
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, s3Sync.getConnectionId().toString(), s3Sync);
+    // create connections to mark the source and destination as in use
+    DestinationConnection s3Connection = new DestinationConnection()
+        .withDestinationId(UUID.randomUUID())
+        .withDestinationDefinitionId(destinationS3V2.getDestinationDefinitionId());
+    configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, s3Connection.getDestinationId().toString(), s3Connection);
+    SourceConnection githubConnection = new SourceConnection()
+        .withSourceId(UUID.randomUUID())
+        .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
+    configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 
     configPersistence.loadData(seedPersistence);
     // s3 destination is not updated
     assertHasDestination(DESTINATION_S3);
+    assertHasSource(SOURCE_GITHUB);
   }
 
   @Test
