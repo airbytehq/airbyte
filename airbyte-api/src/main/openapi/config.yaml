@@ -1364,17 +1364,17 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/sources/recreate:
+  /v1/web_backend/sources/create:
     post:
       tags:
         - web_backend
-      summary: Recreate a source
-      operationId: webBackendRecreateSource
+      summary: Create a source
+      operationId: webBackendCreateSource
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceRecreate"
+              $ref: "#/components/schemas/SourceCreate"
         required: true
       responses:
         "200":
@@ -1385,17 +1385,17 @@ paths:
                 $ref: "#/components/schemas/SourceRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/destinations/recreate:
+  /v1/web_backend/destinations/create:
     post:
       tags:
         - web_backend
-      summary: Recreate a destination
-      operationId: webBackendRecreateDestination
+      summary: Create a destination
+      operationId: webBackendCreateDestination
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationRecreate"
+              $ref: "#/components/schemas/DestinationCreate"
         required: true
       responses:
         "200":
@@ -1620,6 +1620,52 @@ paths:
                 $ref: "#/components/schemas/ImportRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/source_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideSourceOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+  /v1/destination_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideDestinationOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -1658,11 +1704,19 @@ components:
       type: object
       required:
         - notificationType
+        - sendOnSuccess
+        - sendOnFailure
       properties:
         # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
         # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
         notificationType:
           $ref: "#/components/schemas/NotificationType"
+        sendOnSuccess:
+          type: boolean
+          default: false
+        sendOnFailure:
+          type: boolean
+          default: true
         slackConfiguration:
           $ref: "#/components/schemas/SlackNotificationConfiguration"
     SlackNotificationConfiguration:
@@ -1906,25 +1960,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
-    SourceRecreate:
-      type: object
-      required:
-        - workspaceId
-        - sourceDefinitionId
-        - sourceId
-        - connectionConfiguration
-        - name
-      properties:
-        sourceDefinitionId:
-          $ref: "#/components/schemas/SourceDefinitionId"
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        connectionConfiguration:
-          $ref: "#/components/schemas/SourceConfiguration"
-        name:
-          type: string
     SourceUpdate:
       type: object
       required:
@@ -2117,25 +2152,6 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
-    DestinationRecreate:
-      type: object
-      required:
-        - workspaceId
-        - destinationId
-        - destinationDefinitionId
-        - connectionConfiguration
-        - name
-      properties:
-        destinationDefinitionId:
-          $ref: "#/components/schemas/DestinationDefinitionId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        connectionConfiguration:
-          $ref: "#/components/schemas/DestinationConfiguration"
-        name:
-          type: string
     DestinationUpdate:
       type: object
       required:
@@ -2985,7 +3001,7 @@ components:
       required:
         - destinationDefinitionId
       properties:
-        sourceDefinitionId:
+        destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -3025,6 +3041,28 @@ components:
     CompleteOauthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
+    SetInstancewideSourceOauthParamsRequestBody:
+      type: object
+      required:
+        - sourceConnectorDefinitionId
+        - params
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        params:
+          type: object
+          additionalProperties: true
+    SetInstancewideDestinationOauthParamsRequestBody:
+      type: object
+      required:
+        - destinationDefinitionId
+        - params
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        params:
+          type: object
+          additionalProperties: true
     # Web Backend
     WebBackendConnectionRead:
       type: object

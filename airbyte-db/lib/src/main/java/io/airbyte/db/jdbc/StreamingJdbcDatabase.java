@@ -47,6 +47,14 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
   public StreamingJdbcDatabase(DataSource dataSource, JdbcDatabase database, JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+    this(dataSource, database, jdbcStreamingQueryConfiguration, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public StreamingJdbcDatabase(DataSource dataSource,
+                               JdbcDatabase database,
+                               JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                               JdbcSourceOperations sourceOperations) {
+    super(sourceOperations);
     this.dataSource = dataSource;
     this.database = database;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
@@ -101,7 +109,7 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
-      return JdbcUtils.toStream(ps.executeQuery(), recordTransform)
+      return sourceOperations.toStream(ps.executeQuery(), recordTransform)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);

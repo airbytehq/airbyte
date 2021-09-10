@@ -39,7 +39,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
@@ -78,7 +78,7 @@
 - sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   name: S3
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   name: Sendgrid
@@ -104,10 +104,10 @@
   dockerImageTag: 0.4.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
-- sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
+- sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   name: Salesforce
-  dockerRepository: airbyte/source-salesforce-singer
-  dockerImageTag: 0.2.5
+  dockerRepository: airbyte/source-salesforce
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
@@ -149,7 +149,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
 - sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
@@ -160,7 +160,7 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
@@ -176,7 +176,7 @@
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
@@ -194,13 +194,13 @@
 - sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
@@ -251,12 +251,6 @@
   dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/appstore
   icon: appstore.svg
-- sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
-  name: Mongo DB
-  dockerRepository: airbyte/source-mongodb
-  dockerImageTag: 0.3.3
-  documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb
-  icon: mongodb.svg
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   name: Google Directory
   dockerRepository: airbyte/source-google-directory
@@ -317,10 +311,10 @@
   dockerRepository: airbyte/source-pokeapi
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
-- sourceDefinitionId: 5a1d14c2-d829-49cd-8437-1e87dc9f5368
+- sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   name: Google Search Console
-  dockerRepository: airbyte/source-google-search-console-singer
-  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-google-search-console
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-search-console
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   name: ClickHouse
@@ -355,7 +349,7 @@
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   name: Slack
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/slack
   icon: slack.svg
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
@@ -401,7 +395,7 @@
 - sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   name: Typeform
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
 - sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   name: Cart.com
@@ -441,7 +435,7 @@
 - sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   name: Bing Ads
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
 - sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
   name: BigCommerce
@@ -464,3 +458,9 @@
   dockerRepository: airbyte/source-amazon-ads
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
+- sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
+  name: MongoDb
+  dockerRepository: airbyte/source-mongodb-v2
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
+  icon: mongodb.svg

@@ -189,9 +189,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
-
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
@@ -199,13 +198,14 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
+        .put(CONFIG_CREDS, credentialsJson.toString())
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
-    final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
         .setCredentials(credentials)
