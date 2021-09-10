@@ -24,3 +24,7 @@ configMapGenerator:
   - name: airbyte-env
     envs:
       - .env
+
+secretGenerator:
+  - name: airbyte-secrets
+    env: .secrets

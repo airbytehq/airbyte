@@ -1,0 +1,98 @@
+{
+  "search_analytics_by_date": {
+    "https://airbyte.io": {
+      "web": {
+        "date": "2023-08-28"
+      },
+      "news": {
+        "date": "2023-08-28"
+      },
+      "image": {
+        "date": "2023-08-28"
+      },
+      "video": {
+        "date": "2023-08-28"
+      }
+    }
+  },
+  "search_analytics_by_country": {
+    "https://airbyte.io": {
+      "web": {
+        "date": "2023-08-28"
+      },
+      "news": {
+        "date": "2023-08-28"
+      },
+      "image": {
+        "date": "2023-08-28"
+      },
+      "video": {
+        "date": "2023-08-28"
+      }
+    }
+  },
+  "search_analytics_by_device": {
+    "https://airbyte.io": {
+      "web": {
+        "date": "2023-08-28"
+      },
+      "news": {
+        "date": "2023-08-28"
+      },
+      "image": {
+        "date": "2023-08-28"
+      },
+      "video": {
+        "date": "2023-08-28"
+      }
+    }
+  },
+  "search_analytics_by_page": {
+    "https://airbyte.io": {
+      "web": {
+        "date": "2023-08-28"
+      },
+      "news": {
+        "date": "2023-08-28"
+      },
+      "image": {
+        "date": "2023-08-28"
+      },
+      "video": {
+        "date": "2023-08-28"
+      }
+    }
+  },
+  "search_analytics_by_query": {
+    "https://airbyte.io": {
+      "web": {
+        "date": "2023-08-28"
+      },
+      "news": {
+        "date": "2023-08-28"
+      },
+      "image": {
+        "date": "2023-08-28"
+      },
+      "video": {
+        "date": "2023-08-28"
+      }
+    }
+  },
+  "search_analytics_all_fields": {
+    "https://airbyte.io": {
+      "web": {
+        "date": "2023-08-28"
+      },
+      "news": {
+        "date": "2023-08-28"
+      },
+      "image": {
+        "date": "2023-08-28"
+      },
+      "video": {
+        "date": "2023-08-28"
+      }
+    }
+  }
+}
