@@ -24,6 +24,10 @@ configMapGenerator:
   - name: airbyte-env
     env: .env
 
+secretGenerator:
+  - name: airbyte-secrets
+    env: .secrets
+
 patchesStrategicMerge:
   - pod-antiaffinity.yaml
   - parallelize-worker.yaml

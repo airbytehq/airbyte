@@ -40,8 +40,8 @@ spec:
                   key: CONFIG_ROOT
             - name: DATABASE_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_PASSWORD
             - name: DATABASE_URL
               valueFrom:
@@ -50,8 +50,8 @@ spec:
                   key: DATABASE_URL
             - name: DATABASE_USER
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_USER
             - name: TRACKING_STRATEGY
               valueFrom:
@@ -115,13 +115,13 @@ spec:
                   key: S3_LOG_BUCKET_REGION
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: AWS_ACCESS_KEY_ID
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: AWS_SECRET_ACCESS_KEY
             - name: S3_MINIO_ENDPOINT
               valueFrom:
@@ -135,8 +135,8 @@ spec:
                   key: S3_PATH_STYLE_ACCESS
             - name: GOOGLE_APPLICATION_CREDENTIALS
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: GOOGLE_APPLICATION_CREDENTIALS
             - name: GCP_STORAGE_BUCKET
               valueFrom:

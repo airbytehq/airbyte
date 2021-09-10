@@ -24,5 +24,9 @@ configMapGenerator:
   - name: airbyte-env
     env: .env
 
+secretGenerator:
+  - name: airbyte-secrets
+    env: .secrets
+
 patchesStrategicMerge:
   - set-resource-limits.yaml
