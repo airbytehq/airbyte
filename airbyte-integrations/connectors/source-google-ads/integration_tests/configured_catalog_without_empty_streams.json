@@ -63,6 +63,28 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "happytable",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["campaign.start_date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["campaign.start_date"]
+    },
+    {
+      "stream": {
+        "name": "unhappytable",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["customer.id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

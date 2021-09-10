@@ -146,7 +146,7 @@ def test_convert_schema_into_query():
 def test_get_field_value():
     field = "segment.date"
     date = "2001-01-01"
-    response = GoogleAds.get_field_value(MockedDateSegment(date), field)
+    response = GoogleAds.get_field_value(MockedDateSegment(date), field, {})
     assert response == date
 
 
