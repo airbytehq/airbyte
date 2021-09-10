@@ -33,11 +33,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.JobDiscoverCatalogConfig;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -132,74 +129,9 @@ public class DefaultJobCreatorTest {
   }
 
   @BeforeEach
-  void setup() {
+  void setup() throws IOException {
     jobPersistence = mock(JobPersistence.class);
     jobCreator = new DefaultJobCreator(jobPersistence);
-  }
-
-  @Test
-  void testCreateSourceCheckConnectionJob() throws IOException {
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-        .withDockerImage(SOURCE_IMAGE_NAME);
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
-        .withCheckConnection(jobCheckConnectionConfig);
-
-    final String expectedScope = SOURCE_CONNECTION.getSourceId().toString();
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
-
-    final long jobId = jobCreator.createSourceCheckConnectionJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
-    assertEquals(JOB_ID, jobId);
-  }
-
-  @Test
-  void testCreateDestinationCheckConnectionJob() throws IOException {
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
-        .withDockerImage(DESTINATION_IMAGE_NAME);
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
-        .withCheckConnection(jobCheckConnectionConfig);
-
-    final String expectedScope = DESTINATION_CONNECTION.getDestinationId().toString();
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
-
-    final long jobId = jobCreator.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DESTINATION_IMAGE_NAME);
-    assertEquals(JOB_ID, jobId);
-  }
-
-  @Test
-  void testCreateDiscoverSchemaJob() throws IOException {
-    final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-        .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-        .withDockerImage(SOURCE_IMAGE_NAME);
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
-        .withDiscoverCatalog(jobDiscoverCatalogConfig);
-
-    final String expectedScope = SOURCE_CONNECTION.getSourceId().toString();
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
-
-    final long jobId = jobCreator.createDiscoverSchemaJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
-    assertEquals(JOB_ID, jobId);
-  }
-
-  @Test
-  void testCreateGetSpecJob() throws IOException {
-    final String integrationImage = "pg/pg-3000";
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.GET_SPEC)
-        .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
-
-    when(jobPersistence.enqueueJob(integrationImage, jobConfig)).thenReturn(Optional.of(JOB_ID));
-
-    final long jobId = jobCreator.createGetSpecJob(integrationImage);
-    assertEquals(JOB_ID, jobId);
   }
 
   @Test
