@@ -307,8 +307,8 @@ public class RunMigrationTest {
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
-        YamlSeedConfigPersistence.get(),
-        TARGET_VERSION)) {
+        TARGET_VERSION,
+        YamlSeedConfigPersistence.get())) {
       runMigration.run();
     }
   }

@@ -269,8 +269,8 @@ public class ServerApp implements ServerRunnable {
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
-        YamlSeedConfigPersistence.get(),
-        airbyteVersion)) {
+        airbyteVersion,
+        YamlSeedConfigPersistence.get())) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
