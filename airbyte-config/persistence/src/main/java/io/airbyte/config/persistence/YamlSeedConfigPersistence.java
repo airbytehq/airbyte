@@ -130,4 +130,8 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
         e -> e.getValue().values().stream()));
   }
 
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
+  }
+
 }

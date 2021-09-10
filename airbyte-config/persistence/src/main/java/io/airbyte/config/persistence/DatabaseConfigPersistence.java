@@ -75,7 +75,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * Load or update the configs from the seed.
    */
-  public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
+  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
       boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where());
       if (isInitialized) {
@@ -85,7 +85,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
       return null;
     });
-    return this;
   }
 
   public ValidatingConfigPersistence withValidation() {

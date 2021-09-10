@@ -93,4 +93,8 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     schemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    decoratedPersistence.loadData(seedPersistence);
+  }
+
 }

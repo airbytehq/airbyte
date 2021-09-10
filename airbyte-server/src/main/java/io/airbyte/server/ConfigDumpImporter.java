@@ -46,8 +46,8 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -137,8 +137,9 @@ public class ConfigDumpImporter {
       // 3. Import Postgres content
       importDatabaseFromArchive(sourceRoot, targetVersion);
 
-      // 4. Import Configs
+      // 4. Import Configs and update connector definitions
       importConfigsFromArchive(sourceRoot, false);
+      configRepository.loadData(YamlSeedConfigPersistence.get());
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
