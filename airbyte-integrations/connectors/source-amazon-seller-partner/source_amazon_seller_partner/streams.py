@@ -33,6 +33,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
@@ -142,7 +144,6 @@ class ReportsAmazonSPStream(Stream, ABC):
         - retrieve the report document (if report processing status is `DONE`);
         - decrypt the report document (if report processing status is `DONE`);
         - yield the report document (if report processing status is `DONE`)
-        or the report json (if report processing status is **not** `DONE`)
     """
 
     primary_key = None
@@ -266,7 +267,6 @@ class ReportsAmazonSPStream(Stream, ABC):
         """
         Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
-        Yield the report body itself if there are no document id in it.
         """
         report_payload = {}
         is_processed = False
@@ -292,8 +292,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             response = self._session.send(request)
             yield from self.parse_response(response)
         else:
-            # yield report if no report document exits
-            yield report_payload
+            logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
 
 
 class MerchantListingsReports(ReportsAmazonSPStream):

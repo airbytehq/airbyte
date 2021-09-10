@@ -11,10 +11,11 @@ tests:
       timeout_seconds: 60
   discovery:
     - config_path: "secrets/config.json"
-  basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_no_empty_streams.json"
-      empty_streams: []
+# TODO: uncomment when any stream is filled with data. Records streams return different values each time
+#  basic_read:
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_no_empty_streams.json"
+#      empty_streams: []
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"
@@ -22,7 +23,6 @@ tests:
 #     future_state_path: "integration_tests/future_state.json"
 #     cursor_paths:
 #       Orders: ["LastUpdateDate"]
-# TODO: uncomment when Orders (or any other) stream is filled with data. Records streams return different values each time
 #  full_refresh:
 #   - config_path: "secrets/config.json"
 #     configured_catalog_path: "integration_tests/configured_catalog.json"
