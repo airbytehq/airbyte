@@ -129,6 +129,10 @@ class GithubStream(HttpStream, ABC):
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.NOT_FOUND and "/repos?" in error_msg:
+                # `Repositories` stream is not available for repositories not in an organization.
+                # Handle "404 Client Error: Not Found for url: https://api.github.com/orgs/cjwooo/repos?per_page=100" error.
+                error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
