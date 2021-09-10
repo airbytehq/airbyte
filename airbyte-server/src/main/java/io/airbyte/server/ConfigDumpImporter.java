@@ -46,6 +46,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -119,7 +120,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  public void importDataWithSeed(String targetVersion, File archive) throws IOException, JsonValidationException {
+  public void importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) throws IOException, JsonValidationException {
     final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
       // 1. Unzip source
@@ -139,7 +140,7 @@ public class ConfigDumpImporter {
 
       // 4. Import Configs and update connector definitions
       importConfigsFromArchive(sourceRoot, false);
-      configRepository.loadData(YamlSeedConfigPersistence.get());
+      configRepository.loadData(seedPersistence);
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);

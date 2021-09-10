@@ -24,6 +24,7 @@
 
 package io.airbyte.server;
 
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
@@ -43,14 +44,17 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
   private final String targetVersion;
+  private final ConfigPersistence seedPersistence;
   private final ConfigDumpExporter configDumpExporter;
   private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(JobPersistence jobPersistence,
                       ConfigRepository configRepository,
+                      ConfigPersistence seedPersistence,
                       String targetVersion) {
     this.targetVersion = targetVersion;
+    this.seedPersistence = seedPersistence;
     this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
     this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null);
   }
@@ -73,7 +77,7 @@ public class RunMigration implements Runnable, AutoCloseable {
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      configDumpImporter.importDataWithSeed(targetVersion, output);
+      configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
     } catch (IOException | JsonValidationException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }

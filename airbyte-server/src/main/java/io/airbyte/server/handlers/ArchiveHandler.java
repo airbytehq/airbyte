@@ -32,6 +32,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.ConfigDumpExporter;
@@ -111,7 +112,7 @@ public class ArchiveHandler {
    */
   public ImportRead importData(File archive) {
     try {
-      return importInternal(() -> configDumpImporter.importDataWithSeed(version, archive));
+      return importInternal(() -> configDumpImporter.importDataWithSeed(version, archive, YamlSeedConfigPersistence.get()));
     } finally {
       FileUtils.deleteQuietly(archive);
     }
