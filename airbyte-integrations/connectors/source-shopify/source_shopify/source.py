@@ -34,6 +34,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from .utils import BackupStreamState as backup
 from .utils import ShopifyRateLimiter as limiter
 
 
@@ -48,22 +49,13 @@ class ShopifyStream(HttpStream, ABC):
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
-    """
-    This is the placeholder for the tmp stream state for each incremental stream,
-    It's empty, once the sync has started and is being updated while sync operation takes place,
-    It holds the `temporary stream state values` before they are updated to have the opportunity to reuse this state.
-    """
-    tmp_stream_state = {}
-
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self.start_date = config["start_date"]
-        self.shop = config["shop"]
         self.config = config
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.shop}.myshopify.com/admin/api/{self.api_version}/"
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/"
 
     @staticmethod
     def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -79,7 +71,7 @@ class ShopifyStream(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             params["order"] = f"{self.order_field} asc"
-            params[self.filter_field] = self.start_date
+            params[self.filter_field] = self.config["start_date"]
         return params
 
     @limiter.balance_rate_limit()
@@ -96,48 +88,17 @@ class ShopifyStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
+
     # Setting the check point interval to the limit of the records output
     @property
-    def state_checkpoint_interval(self):
+    def state_checkpoint_interval(self) -> int:
         return super().limit
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
 
-    @staticmethod
-    def stream_state_to_tmp(
-        stream_name: str,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
-        state_object: Mapping[str, Any],
-        cursor_field: str,
-    ) -> Mapping[str, Any]:
-        """
-        Method to save the current stream state for future re-use within slicing.
-        The method requires having the temporary `state_object` as placeholder.
-        Because of the specific of Shopify's entities relations, we have the opportunity to fetch the updates
-        for particular stream using the `Incremental Refresh`, inside slicing.
-        For example:
-            if `order refund` records were updated, then the `orders` is updated as well.
-            if 'transaction` was added to the order, then the `orders` is updated as well.
-            etc.
-        """
-        # get the current tmp_state_value
-        tmp_stream_state_value = state_object.get(stream_name, {}).get(cursor_field, "")
-        # Compare the `current_stream_state` with `latest_record` to have the initial state value
-        if current_stream_state:
-            state_object[stream_name] = {cursor_field: min(current_stream_state.get(cursor_field, ""), latest_record.get(cursor_field, ""))}
-            # Check if we have the saved state and keep the minimun value
-            if tmp_stream_state_value:
-                state_object[stream_name] = {cursor_field: min(current_stream_state.get(cursor_field, ""), tmp_stream_state_value)}
-        return state_object
-
+    @backup.backup_stream_state
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        # Work with temporary state object
-        self.tmp_stream_state = self.stream_state_to_tmp(
-            self.name, current_stream_state, latest_record, self.tmp_stream_state, self.cursor_field
-        )
-        # Updating the stream state
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
@@ -156,7 +117,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
@@ -174,8 +135,9 @@ class OrderSubstream(IncrementalShopifyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         # get the last saved orders stream state
-        orders_stream_state = self.tmp_stream_state.get("orders")
-        for data in Orders(self.config).read_records(stream_state=orders_stream_state, **kwargs):
+        orders_stream = Orders(self.config)
+        orders_stream_state = backup.state_backup.get(orders_stream.name)
+        for data in orders_stream.read_records(stream_state=orders_stream_state, **kwargs):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
@@ -342,10 +304,11 @@ class DiscountCodes(IncrementalShopifyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         # get the last saved price_rules stream state
-        price_rules_stream_state = self.tmp_stream_state.get("price_rules")
-        for data in PriceRules(self.config).read_records(stream_state=price_rules_stream_state, **kwargs):
-            discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=discount_slice)
+        price_rules_stream = PriceRules(self.config)
+        price_rules_stream_state = backup.state_backup.get(price_rules_stream.name)
+        for data in price_rules_stream.read_records(stream_state=price_rules_stream_state, **kwargs):
+            slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
