@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -40,6 +41,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,8 +54,9 @@ import org.slf4j.LoggerFactory;
 public class GoogleOAuthFlowTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private static final String REDIRECT_URL = "https%3A//airbyte.io";
 
-  public static final String REDIRECT_URL = "https%3A//airbyte.io";
   private HttpClient httpClient;
   private ConfigRepository configRepository;
   private GoogleOAuthFlow googleOAuthFlow;
@@ -99,13 +103,14 @@ public class GoogleOAuthFlowTest {
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
+            .put("client_id", getClientId())
             .build()))));
     final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=test_client_id&redirect_uri=%s",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
         GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
         definitionId,
+        getClientId(),
         REDIRECT_URL);
     LOGGER.info(expectedSourceUrl);
     assertEquals(expectedSourceUrl, actualSourceUrl);
@@ -118,14 +123,16 @@ public class GoogleOAuthFlowTest {
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
+            .put("client_id", getClientId())
             .build()))));
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=test_client_id&redirect_uri=%s",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
         GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
         definitionId,
+        getClientId(),
         REDIRECT_URL);
+    LOGGER.info(expectedDestinationUrl);
     assertEquals(expectedDestinationUrl, actualDestinationUrl);
   }
 
@@ -136,7 +143,7 @@ public class GoogleOAuthFlowTest {
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
+            .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build()))));
     final Map<String, Object> queryParams = Map.of();
@@ -150,7 +157,7 @@ public class GoogleOAuthFlowTest {
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
+            .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build()))));
     final String expectedQueryParams = Jsons.serialize(Map.of(
@@ -170,7 +177,7 @@ public class GoogleOAuthFlowTest {
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
+            .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build()))));
     final String expectedQueryParams = Jsons.serialize(Map.of(
@@ -181,6 +188,16 @@ public class GoogleOAuthFlowTest {
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
+  }
+
+  private String getClientId() throws IOException {
+    if (!Files.exists(CREDENTIALS_PATH)) {
+      return "test_client_id";
+    } else {
+      final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+      final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
+      return credentialsJson.get("client_id").asText();
+    }
   }
 
 }

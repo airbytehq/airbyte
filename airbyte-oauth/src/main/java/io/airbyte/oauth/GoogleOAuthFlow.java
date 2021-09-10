@@ -160,7 +160,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
         .put("redirect_uri", redirectUrl)
         .build();
     final HttpRequest request = HttpRequest.newBuilder()
-        .POST(HttpRequest.BodyPublishers.ofString(serialize(body)))
+        .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(body)))
         .uri(URI.create(GOOGLE_ANALYTICS_ACCESS_TOKEN_URL))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .build();
@@ -178,7 +178,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private static String serialize(ImmutableMap<String, String> body) {
+  private static String toUrlEncodedString(ImmutableMap<String, String> body) {
     final StringBuilder result = new StringBuilder();
     for (var entry : body.entrySet()) {
       if (result.length() > 0) {
