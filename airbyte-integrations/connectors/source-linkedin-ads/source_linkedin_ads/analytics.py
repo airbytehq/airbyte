@@ -146,7 +146,7 @@ def make_date_slices(start_date: str, end_date: str = None, window_in_days: int 
             "end.year": slice_end_date.year,
         }
         date_slices.append({"dateRange": date_slice})
-        start = slice_end_date if slice_end_date <= end else end
+        start = slice_end_date
     return date_slices
 
 
