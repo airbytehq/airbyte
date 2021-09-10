@@ -33,7 +33,6 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -179,10 +178,9 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase)
-        .loadData(ConfigSeedProvider.get(configs))
-        .withValidation();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    configPersistence.loadData(ConfigSeedProvider.get(configs));
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
