@@ -44,6 +44,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -404,20 +405,27 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         as those in the seed.
    */
   private Set<String> getConnectorRepositoriesInUse(DSLContext ctx) {
-    Field<String> sourceIdField = field("config_blob ->> 'sourceId'", SQLDataType.VARCHAR).as("sourceId");
-    Field<String> destinationIdField = field("config_blob ->> 'destinationId'", SQLDataType.VARCHAR).as("destinationId");
-    Set<String> usedConfigIds = ctx
-        .select(sourceIdField, destinationIdField)
+    Set<String> usedConnectorDefinitionIds = new HashSet<>();
+    // query for used source definitions
+    usedConnectorDefinitionIds.addAll(ctx
+        .select(field("config_blob ->> 'sourceDefinitionId'", SQLDataType.VARCHAR))
         .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC.name()))
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.SOURCE_CONNECTION.name()))
         .fetch().stream()
-        .flatMap(row -> Stream.of(row.getValue(sourceIdField), row.getValue(destinationIdField)))
-        .collect(Collectors.toSet());
-
-    Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
-    return ctx.select(repoField)
+        .flatMap(row -> Stream.of(row.value1()))
+        .collect(Collectors.toSet()));
+    // query for used destination definitions
+    usedConnectorDefinitionIds.addAll(ctx
+        .select(field("config_blob ->> 'destinationDefinitionId'", SQLDataType.VARCHAR))
         .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConfigIds))
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.DESTINATION_CONNECTION.name()))
+        .fetch().stream()
+        .flatMap(row -> Stream.of(row.value1()))
+        .collect(Collectors.toSet()));
+
+    return ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
+        .from(AIRBYTE_CONFIGS)
+        .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConnectorDefinitionIds))
         .fetch().stream()
         .map(Record1::value1)
         .collect(Collectors.toSet());
