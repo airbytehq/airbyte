@@ -102,17 +102,27 @@ class SourceAmazonSellerPartner(AbstractSource):
         return stream_kwargs
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        stream_kwargs = self._get_stream_kwargs(config)
+        """
+        Check connection to Amazon SP API by requesting the list of reports as this endpoint should be available for any config.
+        Validate if response has the expected error code and body.
+        Show error message in case of request exception or unexpected response.
+        """
 
-        reports_res = requests.get(
-            url=f"{stream_kwargs['url_base']}{MerchantListingsReports.path_prefix}/reports",
-            headers={**stream_kwargs["authenticator"].get_auth_header(), "content-type": "application/json"},
-            params={"reportTypes": MerchantListingsReports.name},
-            auth=stream_kwargs["aws_signature"],
-        )
-        connected = reports_res.status_code == 200 and reports_res.json().get("payload")
-        return connected, f"Unable to connect to Amazon Seller API with the provided credentials - {reports_res.json()}"
+        error_msg = "Unable to connect to Amazon Seller API with the provided credentials - {error}"
+        try:
+            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+            stream_kwargs = self._get_stream_kwargs(config)
+
+            reports_res = requests.get(
+                url=f"{stream_kwargs['url_base']}{MerchantListingsReports.path_prefix}/reports",
+                headers={**stream_kwargs["authenticator"].get_auth_header(), "content-type": "application/json"},
+                params={"reportTypes": MerchantListingsReports.name},
+                auth=stream_kwargs["aws_signature"],
+            )
+            connected = reports_res.status_code == 200 and reports_res.json().get("payload")
+            return connected, None if connected else error_msg.format(error=reports_res.json())
+        except Exception as error:
+            return False, error_msg.format(error=repr(error))
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
