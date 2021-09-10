@@ -42,7 +42,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Analytics](./sources/googleanalytics.md)| Beta |
 |[Google Analytics v4](./sources/google-analytics-v4.md)| Beta |
 |[Google Directory](./sources/google-directory.md)| Certified |
-|[Google Search Console](./sources/google-search-console.md)| Alpha |
+|[Google Search Console](./sources/google-search-console.md)| Beta |
 |[Google Sheets](./sources/google-sheets.md)| Certified |
 |[Google Workspace Admin Reports](./sources/google-workspace-admin-reports.md)| Certified |
 |[Greenhouse](./sources/greenhouse.md)| Beta |

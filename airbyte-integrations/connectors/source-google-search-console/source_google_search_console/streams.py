@@ -165,11 +165,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
+        and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
+        searchType` value from [` web`, `news `,` image`, `video`]. It's just a double nested loop with a yield statement.
+        """
+
         for site_url in self._site_urls:
             for search_type in self.search_types:
                 yield {"site_url": site_url, "search_type": search_type}
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
+        """
+        The `next_page_token` implements pagination functionality. This method gets the response
+        and compares the number of records with the constant `ROW_LIMITS` (maximum value 25000),
+        and if they are equal, this means that we get the end of the` Page`, and we need to go further,
+        for this we simply increase the `startRow` parameter in request body by `ROW_LIMIT` value.
+        """
+
         if len(response.json().get(self.data_field, [])) == ROW_LIMIT:
             self.start_row += ROW_LIMIT
             return True
@@ -185,6 +198,16 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
+        """
+        Here is a description of the parameters and implementations of the request body:
+        1. The `startDate` is retrieved from the `_get_start_date`,
+        if` SyncMode = full_refresh` just use `start_date` from configuration, otherwise use `get_update_state`.
+        2. The `endDate` is retrieved from the `config.json`.
+        3. The `sizes` parameter is used to group the result by some dimension.
+        The following dimensions are available: `date`, `country`, `page`, `device`, `query`.
+        4. For the `searchType` check the paragraph stream_slices method.
+        5. For the `startRow` and `rowLimit` check next_page_token method.
+        """
 
         start_date = self._get_start_data(stream_state, stream_slice)
 
@@ -243,6 +266,11 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
+        """
+        With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
+        and `searchType`. This functionality is placed in `get_update_state`.
+        """
+
         latest_benchmark = latest_record[self.cursor_field]
 
         site_url = latest_record.get("site_url")
@@ -259,7 +287,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         else:
             current_stream_state = {site_url: {search_type: {self.cursor_field: latest_benchmark}}}
 
-        # this line is required to pass the acceptance test successfully
+        # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
+        # support that
         current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
         return current_stream_state

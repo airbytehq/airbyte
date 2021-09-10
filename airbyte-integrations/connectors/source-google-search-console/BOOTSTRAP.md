@@ -1,5 +1,18 @@
 # Google Search Console
 
+From [the docs](https://support.google.com/webmasters/answer/9128668?hl=en): 
+
+Google Search Console is a free service offered by Google that helps you monitor, maintain, and troubleshoot your site's presence in Google Search results. 
+
+Search Console offers tools and reports for the following actions:
+
+* Confirm that Google can find and crawl your site.
+* Fix indexing problems and request re-indexing of new or updated content.
+* View Google Search traffic data for your site: how often your site appears in Google Search, which search queries show your site, how often searchers click through for those queries, and more.
+* Receive alerts when Google encounters indexing, spam, or other issues on your site.
+* Show you which sites link to your website.
+* Troubleshoot issues for AMP, mobile usability, and other Search features.
+
 The API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/parameters.
 
 ## Endpoints and Streams:
@@ -13,7 +26,8 @@ We have them because if we want to get all the data from the GSC (using the Sear
 we have to deal with a large dataset. 
 
 In order to reduce the amount of data, and to retrieve a specific dataset (for example, to get country specific data) 
-we can use SearchAnalyticsByCountry.
+we can use SearchAnalyticsByCountry. 
+So each of the SearchAnalytics streams groups data by certain dimensions like date, country, page, etc.
 
 There are:
    1. SearchAnalyticsByDate
@@ -26,30 +40,3 @@ There are:
 
 There are 2 types of authorization `User Account` and `Service Account`.
 To chose one we use an authorization field with the `oneOf` parameter  in the `spec.json` file.
-
-
-## Analytics
-
-### 1. Pagination
-
-The `next_page_token` implements pagination functionality. This method gets the response and compares the number of records with the constant `ROW_LIMITS` (maximum value 25000), and if they are equal, this means that we get the end of the` Page`, and we need to go further, for this we simply increase the `startRow` parameter in request body by `ROW_LIMIT` value.
-
-
-### 2. Loop support
-
-The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`, and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some` searchType` value from [` web`, `news `,` image`, `video`]. It's just a double nested loop with a yield statement.
-
-
-### 3. Incremental sync
-
-With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url` and `searchType`. This functionality is placed in `get_update_state`.
-
-
-### 4. Request body (analytics streams)
-
-Here is a description of the parameters and implementations of the request body:
-   1. The `startDate` is retrieved from the `_get_start_date`, if` SyncMode = full_refresh` just use `start_date` from configuration, otherwise use `get_update_state`.
-   2. The `endDate` is retrieved from the `config.json`.
-   3. The `sizes` parameter is used to group the result by some dimension. The following dimensions are available: `date`, `country`, `page`, `device`, `query`.
-   4. For the `searchType` check the paragraph 2.
-   5. For the `startRow` and `rowLimit` check the paragraph 3.

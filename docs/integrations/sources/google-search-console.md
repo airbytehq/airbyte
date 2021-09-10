@@ -49,7 +49,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 You can either:
 * Use the existing `Service Account` for your Google Project with granted Admin Permissions
-* Use the existing `User Account` for your Google Project with granted Admin Permissions
+* Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose. 
 * Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
 * Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
 
@@ -79,15 +79,6 @@ If you lose this key pair, you will need to generate a new one!
 
 ### Note
 You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to view the email address, public key fingerprints, and other information, or to generate additional public/private key pairs. For more details about service account credentials in the API Console, see [Service accounts](https://cloud.google.com/iam/docs/understanding-service-accounts) in the API Console help file.
-
-### Using the existing User Account 
-1. Follow instructions [here](https://www.balbooa.com/gridbox-documentation/how-to-get-google-client-id-and-client-secret), to get `CLIENT_ID, CLIENT_SECRET and REDIRECTED_URI`
-2. Source `Google Search Console` provides scripts to easy get User Account credentials:
-   1. Go to the `connectors/google-search-console/credentials` directory.
-   2. Fill the file `credentials.json` with your personal credentials from step 1.
-   3. Run the `./get_credentials.sh` script and follow the instructions.
-   4. Copy the `refresh_token` from the console.
-
 
 ### Create a Service Account with delegated domain-wide authority
 
