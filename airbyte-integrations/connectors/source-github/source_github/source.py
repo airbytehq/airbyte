@@ -102,16 +102,22 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config["access_token"])
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
-        organizations = list(set({org.split("/")[0] for org in repositories}))
+        organizations = list({org.split("/")[0] for org in repositories})
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
         organization_args = {"authenticator": authenticator, "organizations": organizations}
 
         # Get the default branch for each repository
         default_branches = {}
-        repository_stream = Repositories(authenticator=authenticator, organizations=organizations)
-        for stream in repository_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            default_branches.update({r["full_name"]: r["default_branch"] for r in repository_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)})
+        repository_stats_stream = RepositoryStats(
+            authenticator=authenticator,
+            repositories=repositories,
+        )
+        for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            default_branches.update({
+                r["full_name"]: r["default_branch"]
+                for r in repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+            })
 
         # Create mapping of repository to list of branches to pull commits for
         # If no branches are specified for a repo, use its default branch

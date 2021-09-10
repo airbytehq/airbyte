@@ -718,10 +718,10 @@ class Commits(IncrementalGithubStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         repository = stream_slice["repository"]
-        branches_stream = Branches(authenticator=self.authenticator, repositories=[repository])
-        branches = [branch["name"] for branch in branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)]
-
-        start_point_map = {branch: self.get_starting_point(stream_state=stream_state, repository=repository, branch=branch) for branch in branches}
+        start_point_map = {
+            branch: self.get_starting_point(stream_state=stream_state, repository=repository, branch=branch)
+            for branch in self.branches_to_pull.get(repository, [])
+        }
         for record in super(SemiIncrementalGithubStream, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
