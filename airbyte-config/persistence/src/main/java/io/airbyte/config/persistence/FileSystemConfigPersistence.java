@@ -199,6 +199,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     LOGGER.info("Deleted {}", oldConfigsDir);
   }
 
+  @Override
   public void loadData(ConfigPersistence seedPersistence) throws IOException {
     Map<AirbyteConfig, Stream<?>> seedData = new HashMap<>();
     for (Map.Entry<String, Stream<JsonNode>> entry : seedPersistence.dumpConfigs().entrySet()) {

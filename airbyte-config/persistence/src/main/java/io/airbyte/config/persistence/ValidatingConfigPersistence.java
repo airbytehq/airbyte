@@ -88,13 +88,14 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     return decoratedPersistence.dumpConfigs();
   }
 
+  @Override
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    decoratedPersistence.loadData(seedPersistence);
+  }
+
   private <T> void validateJson(T config, AirbyteConfig configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));
-  }
-
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
-    decoratedPersistence.loadData(seedPersistence);
   }
 
 }
