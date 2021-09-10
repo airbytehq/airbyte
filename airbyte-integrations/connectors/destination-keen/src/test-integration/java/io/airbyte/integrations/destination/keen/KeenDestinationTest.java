@@ -54,7 +54,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-keen:dev";
+    return "airbyte/destination-keen:0.2";
   }
 
   @Override
