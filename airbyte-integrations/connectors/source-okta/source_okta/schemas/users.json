@@ -8,7 +8,7 @@
     },
     "activated": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "created": {
       "format": "date-time",
