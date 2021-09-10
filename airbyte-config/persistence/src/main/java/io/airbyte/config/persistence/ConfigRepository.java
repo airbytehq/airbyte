@@ -248,4 +248,8 @@ public class ConfigRepository {
     return persistence.dumpConfigs();
   }
 
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    persistence.loadData(seedPersistence);
+  }
+
 }
