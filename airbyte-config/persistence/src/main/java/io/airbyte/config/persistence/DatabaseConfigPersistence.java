@@ -271,6 +271,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       this.dockerImageTag = dockerImageTag;
     }
 
+    @Override
+    public String toString() {
+      return String.format("%s: %s (%s)", dockerRepository, dockerImageTag, connectorDefinitionId);
+    }
+
   }
 
   private static class ConnectorCounter {
@@ -291,7 +296,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     try {
       Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
+      LOGGER.info("Connectors in use: {}", connectorRepositoriesInUse);
+
       Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
+      LOGGER.info("Current connector versions: {}", connectorRepositoryToInfoMap.values());
 
       OffsetDateTime timestamp = OffsetDateTime.now();
       int newConnectorCount = 0;
@@ -335,10 +343,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       JsonNode configJson = Jsons.jsonNode(latestDefinition);
       String repository = configJson.get("dockerRepository").asText();
       if (connectorRepositoriesInUse.contains(repository)) {
+        LOGGER.info("Connector {} is in use; skip updating", repository);
         continue;
       }
 
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
+        LOGGER.info("Adding new connector {}: {}", repository, configJson);
         newCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
         continue;
       }
@@ -346,7 +356,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       String latestImageTag = configJson.get("dockerImageTag").asText();
       if (!latestImageTag.equals(connectorInfo.dockerImageTag)) {
+        LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
+      } else {
+        LOGGER.info("Connector {} does not need update: {}", repository, connectorInfo.dockerImageTag);
       }
     }
     return new ConnectorCounter(newCount, updatedCount);
