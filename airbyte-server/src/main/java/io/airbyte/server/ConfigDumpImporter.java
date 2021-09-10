@@ -119,7 +119,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  public void importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) throws IOException, JsonValidationException {
+  public void importDataWithSeed(String targetVersion, File archive) throws IOException, JsonValidationException {
     final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
       // 1. Unzip source

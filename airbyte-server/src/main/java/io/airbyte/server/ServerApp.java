@@ -37,7 +37,6 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -271,8 +270,7 @@ public class ServerApp implements ServerRunnable {
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
-        airbyteVersion,
-        YamlSeedConfigPersistence.get())) {
+        airbyteVersion)) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
