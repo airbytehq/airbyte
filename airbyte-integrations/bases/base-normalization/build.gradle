@@ -8,8 +8,27 @@ airbytePython {
 }
 
 dependencies {
+    implementation project(':airbyte-workers')
     implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
 }
+
+// we need to access the sshtunneling script from airbyte-workers for ssh support
+task copySshScript(type: Copy, dependsOn: [project(':airbyte-workers').processResources]) {
+    from "${project(':airbyte-workers').buildDir}/resources/main"
+    into "${buildDir}"
+    include "sshtunneling.sh"
+}
+
+// make sure the copy task above worked (if it fails, it fails silently annoyingly)
+task checkSshScriptCopy(type: Task, dependsOn: copySshScript) {
+    doFirst {
+        assert file("${buildDir}/sshtunneling.sh").exists() :
+                "Copy of sshtunneling.sh failed, check that it is present in airbyte-workers."
+    }
+}
+
+test.dependsOn checkSshScriptCopy
+assemble.dependsOn checkSshScriptCopy
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
 integrationTest.dependsOn(build)
@@ -24,6 +43,8 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
+
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")

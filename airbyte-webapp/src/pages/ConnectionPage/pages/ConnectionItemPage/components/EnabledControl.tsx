@@ -4,9 +4,9 @@ import styled from "styled-components";
 
 import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
-import useConnection from "components/hooks/services/useConnectionHook";
+import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "components/EntityTable/types";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;

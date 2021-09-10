@@ -171,7 +171,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
     final String oldConfigsDir = "config_deprecated";
     // create a new folder
     final String importDirectory = TMP_DIR + UUID.randomUUID();
@@ -179,7 +179,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.createDirectories(rootOverride);
 
     // write everything
-    for (final Map.Entry<AirbyteConfig, Stream<T>> config : configs.entrySet()) {
+    for (final Map.Entry<AirbyteConfig, Stream<?>> config : configs.entrySet()) {
       writeConfigs(config.getKey(), config.getValue(), rootOverride);
     }
 

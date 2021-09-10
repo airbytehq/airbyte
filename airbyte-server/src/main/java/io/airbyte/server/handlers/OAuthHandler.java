@@ -28,30 +28,86 @@ import io.airbyte.api.model.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
+import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
+import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
-import io.airbyte.server.errors.ApplicationErrorKnownException;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.OAuthFlowImplementation;
+import io.airbyte.oauth.OAuthImplementationFactory;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 public class OAuthHandler {
 
-  public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody) {
-    // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
-    throw new ApplicationErrorKnownException("Source connector does not supports OAuth yet.");
+  private final ConfigRepository configRepository;
+
+  public OAuthHandler(ConfigRepository configRepository) {
+    this.configRepository = configRepository;
   }
 
-  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationDefinitionIdRequestBody) {
-    // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
-    throw new ApplicationErrorKnownException("Destination connector does not supports OAuth yet.");
+  public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getConsentUrl());
   }
 
-  public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest oauthSourceRequestBody) {
-    // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
-    throw new ApplicationErrorKnownException("Source connector does not supports OAuth yet.");
+  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final OAuthFlowImplementation oAuthFlowImplementation =
+        getDestinationOAuthFlowImplementation(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+    return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getConsentUrl());
   }
 
-  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest oauthDestinationRequestBody) {
-    // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
-    throw new ApplicationErrorKnownException("Destination connector does not supports OAuth yet.");
+  public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest oauthSourceRequestBody)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(oauthSourceRequestBody.getSourceDefinitionId());
+    return oAuthFlowImplementation.completeOAuth(oauthSourceRequestBody.getWorkspaceId(), oauthSourceRequestBody.getQueryParams());
+  }
+
+  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest oauthDestinationRequestBody)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final OAuthFlowImplementation oAuthFlowImplementation =
+        getDestinationOAuthFlowImplementation(oauthDestinationRequestBody.getDestinationDefinitionId());
+    return oAuthFlowImplementation.completeOAuth(oauthDestinationRequestBody.getWorkspaceId(), oauthDestinationRequestBody.getQueryParams());
+  }
+
+  public void setDestinationInstancewideOauthParams(SetInstancewideDestinationOauthParamsRequestBody requestBody)
+      throws JsonValidationException, IOException {
+    DestinationOAuthParameter param = new DestinationOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
+        .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
+    configRepository.writeDestinationOAuthParam(param);
+  }
+
+  public void setSourceInstancewideOauthParams(SetInstancewideSourceOauthParamsRequestBody requestBody) throws JsonValidationException, IOException {
+    SourceOAuthParameter param = new SourceOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
+        .withSourceDefinitionId(requestBody.getSourceDefinitionId());
+    configRepository.writeSourceOAuthParam(param);
+  }
+
+  private OAuthFlowImplementation getSourceOAuthFlowImplementation(UUID sourceDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceDefinitionId);
+    return OAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
+  }
+
+  private OAuthFlowImplementation getDestinationOAuthFlowImplementation(UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardDestinationDefinition standardDestinationDefinition = configRepository
+        .getStandardDestinationDefinition(destinationDefinitionId);
+    return OAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
   }
 
 }

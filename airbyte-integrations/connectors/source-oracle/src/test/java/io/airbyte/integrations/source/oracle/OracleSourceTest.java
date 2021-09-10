@@ -70,7 +70,6 @@ class OracleSourceTest {
 
   private static OracleContainer ORACLE_DB;
 
-  private static OracleContainer container;
   private static JsonNode config;
 
   @BeforeAll
@@ -87,6 +86,7 @@ class OracleSourceTest {
         .put("sid", ORACLE_DB.getSid())
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
+        .put("schemas", List.of("TEST"))
         .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
@@ -105,16 +105,6 @@ class OracleSourceTest {
     });
 
     database.close();
-  }
-
-  private JdbcDatabase getDatabaseFromConfig(JsonNode config) {
-    return Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
   }
 
   private JsonNode getConfig(OracleContainer oracleDb) {
@@ -142,7 +132,7 @@ class OracleSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(getConfig(ORACLE_DB), CONFIGURED_CATALOG, null));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(config, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);

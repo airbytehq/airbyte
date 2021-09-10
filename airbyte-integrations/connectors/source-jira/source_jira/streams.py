@@ -408,9 +408,14 @@ class IssueTypeScreenSchemes(JiraStream):
 class IssueVotes(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
+
+    parse_response_root voters is commented, since it contains the <Users>
+    objects but does not contain information about exactly votes. The
+    original schema self, votes (number), hasVoted (bool) and list of voters.
+    The schema is correct but parse_response_root should not be applied.
     """
 
-    parse_response_root = "voters"
+    # parse_response_root = "voters"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -425,9 +430,11 @@ class IssueVotes(JiraStream):
 class IssueWatchers(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
+
+    parse_response_root is commented for the same reason as issue_voters.
     """
 
-    parse_response_root = "watchers"
+    # parse_response_root = "watchers"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
