@@ -24,10 +24,8 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
-@VisibleForTesting
 public class S3NameTransformer extends ExtendedNameTransformer {
 
   @Override
