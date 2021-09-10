@@ -30,6 +30,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface ConfigPersistence {
@@ -46,6 +47,6 @@ public interface ConfigPersistence {
 
   Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
-  void loadData(ConfigPersistence seedPersistence) throws IOException;
+  void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException;
 
 }

@@ -44,8 +44,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 
 public class ConfigRepository {
 
@@ -284,8 +286,28 @@ public class ConfigRepository {
     return bothConfigTypes;
   }
 
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
-    persistence.loadData(seedPersistence);
+  /**
+   * During migration, this runs through the list of connectors, determining their docker image and
+   * version, for purposes of skipping upgrading in-use definitions.
+   *
+   * @return
+   */
+  public Set<String> listDefinitionsInUseByConnectors(DSLContext ctx) {
+    // The force cast is here because I'm intentionally not cluttering up the ConfigPersistence API
+    // with these calls as this is meant to be a temporary solution. Once we have secrets
+    // coordinates/references
+    // instead of storing the whole config, this lookup will be simpler again.
+    Set<String> definitionIds;
+    if (secretsPersistence != persistence) {
+      definitionIds = ((GoogleSecretsManagerConfigPersistence) secretsPersistence).listDefinitionIdsInUseByConnectors();
+    } else {
+      definitionIds = ((DatabaseConfigPersistence) persistence).listDefinitionIdsInUseByConnectors(ctx);
+    }
+    return ((DatabaseConfigPersistence) persistence).getRepositoriesFromDefinitionIds(ctx, definitionIds);
+  }
+
+  public void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException {
+    persistence.loadData(seedPersistence, connectorRepositoriesInUse);
   }
 
 }

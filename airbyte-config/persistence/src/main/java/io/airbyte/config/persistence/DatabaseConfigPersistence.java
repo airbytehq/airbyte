@@ -77,11 +77,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * Load or update the configs from the seed.
    */
   @Override
-  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
+  public void loadData(ConfigPersistence seedConfigPersistence, Set<String> connectorRepositoriesInUse) throws IOException {
     database.transaction(ctx -> {
       boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where());
       if (isInitialized) {
-        updateConfigsFromSeed(ctx, seedConfigPersistence);
+        updateConfigsFromSeed(ctx, seedConfigPersistence, connectorRepositoriesInUse);
       } else {
         copyConfigsFromSeed(ctx, seedConfigPersistence);
       }
@@ -292,11 +292,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @VisibleForTesting
-  void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
+  void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence, Set<String> connectorRepositoriesInUse) throws SQLException {
     LOGGER.info("Config database has been initialized; updating connector definitions from the seed if necessary...");
 
     try {
-      Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
       LOGGER.info("Connectors in use: {}", connectorRepositoriesInUse);
 
       Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
@@ -404,7 +403,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         connectors can be added manually by users, and their config ids are not always the same
    *         as those in the seed.
    */
-  private Set<String> getConnectorRepositoriesInUse(DSLContext ctx) {
+  public Set<String> listDefinitionIdsInUseByConnectors(DSLContext ctx) {
     Set<String> usedConnectorDefinitionIds = new HashSet<>();
     // query for used source definitions
     usedConnectorDefinitionIds.addAll(ctx
@@ -423,6 +422,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .flatMap(row -> Stream.of(row.value1()))
         .collect(Collectors.toSet()));
 
+    return usedConnectorDefinitionIds;
+
+  }
+
+  public Set<String> getRepositoriesFromDefinitionIds(DSLContext ctx, Set<String> usedConnectorDefinitionIds) {
     return ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConnectorDefinitionIds))

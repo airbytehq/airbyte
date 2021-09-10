@@ -43,7 +43,9 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
@@ -57,7 +59,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * Unit test for the {@link DatabaseConfigPersistence#loadData} method.
+ * Unit test for the {@link ConfigPersistence#loadData} method.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPersistenceTest {
@@ -91,12 +93,12 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB)));
     when(seedPersistence.dumpConfigs()).thenReturn(initialSeeds);
 
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, new HashSet<String>());
     assertRecordCount(2);
     assertHasSource(SOURCE_GITHUB);
     assertHasDestination(DESTINATION_SNOWFLAKE);
     verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), new HashSet<String>());
   }
 
   @Test
@@ -107,14 +109,14 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, new HashSet<String>());
 
     // the new destination is added
     assertRecordCount(3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
     verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), new HashSet<String>());
   }
 
   @Test
@@ -143,7 +145,11 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 
-    configPersistence.loadData(seedPersistence);
+    database.transaction(ctx -> {
+      final Set<String> definitionIdsInUse = configPersistence.listDefinitionIdsInUseByConnectors(ctx);
+      configPersistence.loadData(seedPersistence, definitionIdsInUse);
+      return null;
+    });
     // s3 destination is not updated
     assertHasDestination(DESTINATION_S3);
     assertHasSource(SOURCE_GITHUB);
@@ -160,7 +166,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(snowflakeV2));
 
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, new HashSet<String>());
     assertHasDestination(snowflakeV2);
   }
 

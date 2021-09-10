@@ -28,12 +28,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence {
@@ -45,9 +49,31 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
   }
 
   @Override
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+  public void loadData(ConfigPersistence seedPersistence, Set<String> configsInUse) throws IOException {
     // Don't need to do anything because the seed persistence only contains
     // non-secret configs, which we don't load into the secrets store.
+  }
+
+  /**
+   * Returns the definition ids for every connector we're storing. Hopefully this can be refactored
+   * into not existing once we have secrets as coordinates instead of storing the whole config as a
+   * single secret.
+   */
+  public Set<String> listDefinitionIdsInUseByConnectors() {
+    Set<String> definitionIds = new HashSet<String>();
+    try {
+      List<SourceConnection> sources = listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+      for (SourceConnection source : sources) {
+        definitionIds.add(source.getSourceDefinitionId().toString());
+      }
+      List<DestinationConnection> destinations = listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+      for (DestinationConnection dest : destinations) {
+        definitionIds.add(dest.getDestinationDefinitionId().toString());
+      }
+      return definitionIds;
+    } catch (IOException | JsonValidationException io) {
+      throw new RuntimeException(io);
+    }
   }
 
   /**
