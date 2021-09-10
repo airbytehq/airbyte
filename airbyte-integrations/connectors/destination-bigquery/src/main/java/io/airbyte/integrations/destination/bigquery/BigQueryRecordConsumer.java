@@ -137,6 +137,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           throw new RuntimeException(e);
         }
       } else {
+        long emittedAtSeconds = TimeUnit.SECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+        recordMessage.setEmittedAt(emittedAtSeconds);
         // GCS uploading way, this data will be moved to bigquery in close method
         GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
         gcsCsvWriter.write(UUID.randomUUID(), recordMessage);

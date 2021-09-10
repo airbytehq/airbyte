@@ -15,6 +15,8 @@ This is caused by the Google BigQuery SDK client limitations. For more details p
 At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
 The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
 
+WARNING: The Standard and GCS modes are not backward compatibility yet. Data needs to be synced from scratch to its own table\bucket and different schemas are used.  
+
 ## Overview
 
 The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
@@ -30,7 +32,7 @@ There are two flavors of connectors for this destination:
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `String`. Due to a Google [limitations](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types) for data migration from GCs to BigQuery by its native job - the timestamp (seconds from 1970' can't be used). Only date format, so only String is accepted for us in this case.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
 #### Features
@@ -147,6 +149,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.4.1 | 2021-09-10 | [#5959](https://github.com/airbytehq/airbyte/issues/5959) | Changed amitted_at column's type in schema back to "timestamp" |
 | 0.4.0 | 2021-08-26 | [#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
 | 0.3.12 | 2021-08-03 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
 | 0.3.11 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |

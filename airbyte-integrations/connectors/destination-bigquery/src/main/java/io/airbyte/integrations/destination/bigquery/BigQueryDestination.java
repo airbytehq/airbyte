@@ -80,9 +80,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-      // GCS works with only date\datetime formats, so need to have it a string for a while
-      // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
-      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+
+  // We re-use GCS and S3 modules that contains a different order (ex.
+  // RootLevelFlatteningSheetGenerator) which we can't align for a while for a backward compatibility
+  private static final com.google.cloud.bigquery.Schema SCHEMA_GCS_UPLOADING_TYPE = com.google.cloud.bigquery.Schema.of(
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
   private final BigQuerySQLNameTransformer namingResolver;
@@ -215,9 +220,21 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String tableName = getTargetTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-      BigQueryUtils.createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName,
-          datasetLocation, getBigQuerySchema(stream.getJsonSchema()));
-      final Schema schema = getBigQuerySchema(stream.getJsonSchema());
+      final Schema schema;
+
+      if (isGcsUploadingMode) {
+        LOGGER.info("The GCS uploading mode is selected. "
+            + "Please note that you have to reset your data if previously already migrated using the Standard mode!");
+        BigQueryUtils.createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName,
+            datasetLocation, getBigQueryGcsUploadSchema(stream.getJsonSchema()));
+        schema = getBigQueryGcsUploadSchema(stream.getJsonSchema());
+      } else {
+        BigQueryUtils.createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName,
+            datasetLocation, getBigQuerySchema(stream.getJsonSchema()));
+        schema = getBigQuerySchema(stream.getJsonSchema());
+      }
+      LOGGER.info("This schema will be used for destination: \n" + schema);
+
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
           .newBuilder(TableId.of(schemaName, tmpTableName))
@@ -296,6 +313,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Schema getBigQuerySchema(JsonNode jsonSchema) {
     return SCHEMA;
+  }
+
+  protected Schema getBigQueryGcsUploadSchema(JsonNode jsonSchema) {
+    return SCHEMA_GCS_UPLOADING_TYPE;
   }
 
   private static String getSchema(JsonNode config, ConfiguredAirbyteStream stream) {
