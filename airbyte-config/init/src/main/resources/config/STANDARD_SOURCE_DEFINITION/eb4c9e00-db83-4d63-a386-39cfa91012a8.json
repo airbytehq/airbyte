@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "eb4c9e00-db83-4d63-a386-39cfa91012a8",
+  "name": "Google Search Console (native)",
+  "dockerRepository": "airbyte/source-google-search-console",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-search-console"
+}

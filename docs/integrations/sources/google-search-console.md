@@ -4,20 +4,18 @@
 
 The Google Search Console source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This source wraps the [Singer Google Search Console Tap](https://github.com/singer-io/tap-google-search-console).
-
 ### Output schema
 
 This Source is capable of syncing the following Streams:
 
 * [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 * [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-* [Performance report country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report custom](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report query \(keyword\)](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) (this stream has a long sync time because it is very detailed, use with care)
+* [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 
 ### Data type mapping
 
@@ -45,13 +43,13 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 ### Requirements
 
-* Credentials to a Google Service Account (or Google Service Account with delegated Domain Wide Authority)
-* Email address of the workspace admin who created the Service Account
+* Credentials to a Google Service Account (or Google Service Account with delegated Domain Wide Authority) or Google User Account
 
 ## How to create the client credentials for Google Search Console, to use with Airbyte?
 
 You can either:
 * Use the existing `Service Account` for your Google Project with granted Admin Permissions
+* Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose. 
 * Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
 * Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
 
@@ -92,8 +90,9 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 You should now be ready to use the Google Workspace Admin Reports API connector in Airbyte.
 
+
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.3` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |
