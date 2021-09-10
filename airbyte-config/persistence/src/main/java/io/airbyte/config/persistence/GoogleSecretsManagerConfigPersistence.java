@@ -44,6 +44,12 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
     return "secrets-v1";
   }
 
+  @Override
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    // Don't need to do anything because the seed persistence only contains
+    // non-secret configs, which we don't load into the secrets store.
+  }
+
   /**
    * Determines the secrets manager key name for storing a particular config
    */
