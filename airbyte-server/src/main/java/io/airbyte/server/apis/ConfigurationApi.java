@@ -67,6 +67,8 @@ import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
+import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
+import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -276,7 +278,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
   }
 
-  // SOURCE OAUTH
+  // OAUTH
 
   @Override
   public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceOauthConsentRequest) {
@@ -286,6 +288,32 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest completeSourceOauthRequest) {
     return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
+  }
+
+  @Override
+  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationOauthConsentRequest) {
+    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
+  }
+
+  @Override
+  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest requestBody) {
+    return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
+  }
+
+  @Override
+  public void setInstancewideDestinationOauthParams(SetInstancewideDestinationOauthParamsRequestBody requestBody) {
+    execute(() -> {
+      oAuthHandler.setDestinationInstancewideOauthParams(requestBody);
+      return null;
+    });
+  }
+
+  @Override
+  public void setInstancewideSourceOauthParams(SetInstancewideSourceOauthParamsRequestBody requestBody) {
+    execute(() -> {
+      oAuthHandler.setSourceInstancewideOauthParams(requestBody);
+      return null;
+    });
   }
 
   // SOURCE IMPLEMENTATION
@@ -377,17 +405,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
-  }
-
-  // DESTINATION OAUTH
-  @Override
-  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationOauthConsentRequest) {
-    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
-  }
-
-  @Override
-  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest requestBody) {
-    return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
   }
 
   // DESTINATION IMPLEMENTATION
