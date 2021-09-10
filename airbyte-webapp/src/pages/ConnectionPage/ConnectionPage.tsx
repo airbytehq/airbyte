@@ -6,7 +6,7 @@ import { Routes } from "../routes";
 import LoadingPage from "components/LoadingPage";
 import ConnectionItemPage from "./pages/ConnectionItemPage";
 import CreationFormPage from "./pages/CreationFormPage";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import AllConnectionsPage from "./pages/AllConnectionsPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;

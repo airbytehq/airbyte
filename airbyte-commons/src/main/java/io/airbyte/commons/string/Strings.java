@@ -30,14 +30,18 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 public class Strings {
 
-  public static String join(Iterable<?> iterable, CharSequence separator) {
+  public static String join(final Iterable<?> iterable, final CharSequence separator) {
     return Streams.stream(iterable)
         .map(Object::toString)
         .collect(Collectors.joining(separator));
   }
 
-  public static String addRandomSuffix(String base, String separator, int suffixLength) {
+  public static String addRandomSuffix(final String base, final String separator, final int suffixLength) {
     return base + separator + RandomStringUtils.randomAlphabetic(suffixLength).toLowerCase();
+  }
+
+  public static String safeTrim(final String string) {
+    return string == null ? null : string.trim();
   }
 
 }

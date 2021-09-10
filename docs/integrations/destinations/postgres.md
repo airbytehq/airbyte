@@ -77,4 +77,5 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
-| 0.3.10 | 2021-08-11 | [#5336](https://github.com/airbytehq/airbyte/pull/5336) |  🐛 Destination Postgres: fix \u0000(NULL) value processing |
+| 0.3.10 | 2021-08-11 | [#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000(NULL) value processing |
+| 0.3.11 | 2021-09-07 | [#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |

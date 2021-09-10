@@ -252,7 +252,6 @@ jobs:
       #      - name: Get Docker Space
       #        run: docker run --rm busybox df -h
 
-      # make sure these always run before pushing platform docker images
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
@@ -457,6 +456,9 @@ jobs:
           - role: worker
           EOF
 
+      - name: Check Docker System Info
+        run: docker system info
+
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.2.0
         with:
@@ -476,6 +478,11 @@ jobs:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
+      - name: Show Disk Usage
+        run: |
+          df -h
+          docker system df
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
@@ -484,7 +491,7 @@ jobs:
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
           SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
         run: |
-          IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: Stop Kube Acceptance Test EC2 Runner

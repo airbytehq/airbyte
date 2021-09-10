@@ -29,7 +29,9 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -222,7 +224,34 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
-  public <T> void replaceAllConfigs(final Map<AirbyteConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
+  public SourceOAuthParameter getSourceOAuthParams(final UUID SourceOAuthParameterId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameterId.toString(), SourceOAuthParameter.class);
+  }
+
+  public void writeSourceOAuthParam(final SourceOAuthParameter SourceOAuthParameter) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.getOauthParameterId().toString(), SourceOAuthParameter);
+  }
+
+  public List<SourceOAuthParameter> listSourceOAuthParam() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.class);
+  }
+
+  public DestinationOAuthParameter getDestinationOAuthParams(final UUID destinationOAuthParameterId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameterId.toString(), DestinationOAuthParameter.class);
+  }
+
+  public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameter.getOauthParameterId().toString(),
+        destinationOAuthParameter);
+  }
+
+  public List<DestinationOAuthParameter> listDestinationOAuthParam() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
+  }
+
+  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     // if we're using a single persistence layer, this is the easy route.
     if (persistence == secretsPersistence) {
       persistence.replaceAllConfigs(configs, dryRun);
@@ -230,8 +259,8 @@ public class ConfigRepository {
     }
 
     // Or if we're using secrets storage, split into sets by where they should be stored.
-    Map<AirbyteConfig, Stream<T>> secretConfigs = new LinkedHashMap<AirbyteConfig, Stream<T>>();
-    Map<AirbyteConfig, Stream<T>> nonsecretConfigs = new LinkedHashMap<AirbyteConfig, Stream<T>>();
+    Map<AirbyteConfig, Stream<?>> secretConfigs = new LinkedHashMap<AirbyteConfig, Stream<?>>();
+    Map<AirbyteConfig, Stream<?>> nonsecretConfigs = new LinkedHashMap<AirbyteConfig, Stream<?>>();
     for (AirbyteConfig configType : configs.keySet()) {
       if (configType.isSecret()) {
         secretConfigs.put(configType, configs.get(configType));

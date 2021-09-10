@@ -47,7 +47,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.42";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.44";
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
@@ -68,12 +68,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   @Override
-  public boolean configureDbt(String jobId,
-                              int attempt,
-                              Path jobRoot,
-                              JsonNode config,
-                              ResourceRequirements resourceRequirements,
-                              OperatorDbt dbtConfig)
+  public boolean configureDbt(final String jobId,
+                              final int attempt,
+                              final Path jobRoot,
+                              final JsonNode config,
+                              final ResourceRequirements resourceRequirements,
+                              final OperatorDbt dbtConfig)
       throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
@@ -97,12 +97,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   @Override
-  public boolean normalize(String jobId,
-                           int attempt,
-                           Path jobRoot,
-                           JsonNode config,
-                           ConfiguredAirbyteCatalog catalog,
-                           ResourceRequirements resourceRequirements)
+  public boolean normalize(final String jobId,
+                           final int attempt,
+                           final Path jobRoot,
+                           final JsonNode config,
+                           final ConfiguredAirbyteCatalog catalog,
+                           final ResourceRequirements resourceRequirements)
       throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
@@ -114,11 +114,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
 
-  private boolean runProcess(String jobId,
-                             int attempt,
-                             Path jobRoot,
-                             Map<String, String> files,
-                             ResourceRequirements resourceRequirements,
+  private boolean runProcess(final String jobId,
+                             final int attempt,
+                             final Path jobRoot,
+                             final Map<String, String> files,
+                             final ResourceRequirements resourceRequirements,
                              final String... args)
       throws Exception {
     try {
@@ -130,7 +130,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       WorkerUtils.wait(process);
 
       return process.exitValue() == 0;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       // make sure we kill the process on failure to avoid zombies.
       if (process != null) {
         WorkerUtils.cancelProcess(process);

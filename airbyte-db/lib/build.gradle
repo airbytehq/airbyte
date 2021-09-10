@@ -22,6 +22,9 @@ dependencies {
     // Lombok
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor('org.projectlombok:lombok:1.18.20')
+
+    // MongoDB
+    compile 'org.mongodb:mongodb-driver-sync:4.3.0'
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
