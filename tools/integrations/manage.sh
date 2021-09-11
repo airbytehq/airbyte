@@ -69,6 +69,12 @@ cmd_publish() {
   echo "Publishing new version ($versioned_image)"
   docker push "$versioned_image"
   docker push "$latest_image"
+
+  # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+  local tmp_spec_file; tmp_spec_file=$(mktemp)
+  docker run --rm "$versioned_image" spec | jq .spec > "$tmp_spec_file"
+  gcloud auth activate-service-account --key-file /Users/charles/Downloads/prod-ab-cloud-proj-bdb658ebbe5a.json
+  gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
 }
 
 main() {
