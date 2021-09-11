@@ -78,7 +78,7 @@ def transform_change_audit_stamps(
     return record
 
 
-def date_str_from_date_range(record: Dict, prefix: str):
+def date_str_from_date_range(record: Dict, prefix: str) -> str:
     """
     Makes the ISO8601 format date string from the input <prefix>.<part of the date>
 
@@ -136,7 +136,7 @@ def transform_date_range(
     record.update(**{"start_date": date_str_from_date_range(record, "start"), "end_date": date_str_from_date_range(record, "end")})
     # Cleanup tmp fields & nested used parts
     for key in keys_to_remove:
-        if key in record.keys():
+        if key in record:
             record.pop(key)
     return record
 
@@ -227,7 +227,7 @@ def transform_targeting_criteria(
     """
     targeting_criteria = record.get(dict_key)
     # transform `include`
-    if "include" in targeting_criteria.keys():
+    if "include" in targeting_criteria:
         and_list = targeting_criteria.get("include").get("and")
         for id, and_criteria in enumerate(and_list):
             or_dict = and_criteria.get("or")
@@ -251,7 +251,7 @@ def transform_targeting_criteria(
                 count = count + 1
 
     # transform `exclude` if present
-    if "exclude" in targeting_criteria.keys():
+    if "exclude" in targeting_criteria:
         or_dict = targeting_criteria.get("exclude").get("or")
         updated_exclude = {"or": []}
         count = 0
@@ -348,4 +348,4 @@ def transform_data(records: List) -> Iterable[Mapping]:
         if "variables" in record:
             record = transform_variables(record)
 
-    yield from records
+        yield record

@@ -49,9 +49,12 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
-        self.start_date = config.get("start_date")
-        self.accounts = ",".join(map(str, config.get("account_ids")))
         self.config = config
+
+    @property
+    def accounts(self):
+        """ Property to return the list of the user Account Ids from input """
+        return ",".join(map(str, self.config.get("account_ids")))
 
     def path(self, **kwargs) -> str:
         """ Returns the API endpoint path for stream, from `endpoint` class attribute. """
@@ -137,7 +140,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         return super().records_limit
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        current_stream_state = {self.cursor_field: self.start_date} if not current_stream_state else current_stream_state
+        current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 
@@ -277,10 +280,10 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {self.cursor_field: self.start_date}
+        stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
         parent_stream = self.parent_stream(config=self.config)
-        result_chunks = []
         for record in parent_stream.read_records(**kwargs):
+            result_chunks = []
             for analytics_slice in make_analytics_slices(record, self.parent_values_map, stream_state.get(self.cursor_field)):
                 child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
                 result_chunks.append(child_stream_slice)

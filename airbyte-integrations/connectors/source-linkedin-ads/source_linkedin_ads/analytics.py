@@ -23,6 +23,7 @@
 #
 
 
+from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
@@ -113,7 +114,7 @@ def chunk_analytics_fields(
     fields: List = ANALYTICS_FIELDS_V2,
     base_fields: List = BASE_ANALLYTICS_FIELDS,
     fields_chunk_size: int = FIELDS_CHUNK_SIZE,
-) -> Iterable[Mapping]:
+    ) -> List[List]:
     """
     Chunks the list of available fields into the chunks of equal size.
     """
@@ -127,7 +128,7 @@ def chunk_analytics_fields(
     return chunks
 
 
-def make_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[Mapping]:
+def make_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> List[Dict]:
     """
     Produces date slices from start_date to end_date (if specified),
     otherwise end_date will be present time.
@@ -150,7 +151,7 @@ def make_date_slices(start_date: str, end_date: str = None, window_in_days: int 
     return date_slices
 
 
-def make_analytics_slices(record: Dict, key_value_map: Dict, start_date: str, end_date: str = None) -> Iterable[Mapping]:
+def make_analytics_slices(record: Dict, key_value_map: Dict, start_date: str, end_date: str = None) -> List[Dict]:
     """
     We drive the ability to directly pass the prepared parameters inside the stream_slice.
     The output of this method is ready slices for analytics streams:
@@ -191,16 +192,12 @@ def merge_chunks(chunked_result: Iterable[Mapping[str, Any]], merge_by_key: str)
     into the single structure using any available unique field.
     """
     # Merge the pieces together
-    merged = {}
+    merged = defaultdict(dict)
     for chunk in chunked_result:
-        for key in chunk:
-            head_key = key[merge_by_key]
-            if head_key in merged:
-                merged[head_key].update(key)
-            else:
-                merged[head_key] = key
+        for item in chunk:
+            merged[item[merge_by_key]].update(item)
     # Clean up the result by getting out the values of the merged keys
     result = []
-    for key in merged:
-        result.append(merged.get(key))
+    for item in merged:
+        result.append(merged.get(item))
     return result
