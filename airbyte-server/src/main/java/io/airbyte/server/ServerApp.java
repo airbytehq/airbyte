@@ -33,7 +33,6 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -51,6 +50,7 @@ import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
@@ -170,7 +170,7 @@ public class ServerApp implements ServerRunnable {
   public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
+    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = new ConfigsDatabaseInstance(
@@ -178,10 +178,9 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase)
-        .loadData(ConfigSeedProvider.get(configs))
-        .withValidation();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    configPersistence.loadData(ConfigSeedProvider.get(configs));
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -233,8 +232,10 @@ public class ServerApp implements ServerRunnable {
       final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
       final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
       final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+      final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
       final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
-      final DefaultSynchronousSchedulerClient syncSchedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
+      final DefaultSynchronousSchedulerClient syncSchedulerClient =
+          new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
       final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
 
       return apiFactory.create(

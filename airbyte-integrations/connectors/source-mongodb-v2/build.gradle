@@ -1,0 +1,25 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.mongodb.MongoDbSource'
+}
+
+dependencies {
+    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-protocol:models')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation project(':airbyte-integrations:connectors:source-relational-db')
+
+    compile 'org.mongodb:mongodb-driver-sync:4.3.0'
+
+    testImplementation "org.testcontainers:mongodb:1.15.3"
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}

@@ -1,44 +1,66 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
+    "self": {
+      "type": "string",
+      "description": "The URL of the status.",
+      "readOnly": true
+    },
     "description": {
-      "type": "string"
+      "type": "string",
+      "description": "The description of the status.",
+      "readOnly": true
     },
     "iconUrl": {
-      "type": "string"
-    },
-    "id": {
-      "type": "string"
+      "type": "string",
+      "description": "The URL of the icon used to represent the status.",
+      "readOnly": true
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "The name of the status.",
+      "readOnly": true
     },
-    "self": {
-      "type": "string"
+    "id": {
+      "type": "string",
+      "description": "The ID of the status.",
+      "readOnly": true
     },
     "statusCategory": {
+      "description": "The category assigned to the status.",
+      "readOnly": true,
+      "type": "object",
       "properties": {
-        "colorName": {
-          "type": "string"
+        "self": {
+          "type": "string",
+          "description": "The URL of the status category.",
+          "readOnly": true
         },
         "id": {
-          "type": "integer"
+          "type": "integer",
+          "description": "The ID of the status category.",
+          "format": "int64",
+          "readOnly": true
         },
         "key": {
-          "type": "string"
+          "type": "string",
+          "description": "The key of the status category.",
+          "readOnly": true
+        },
+        "colorName": {
+          "type": "string",
+          "description": "The name of the color used to represent the status category.",
+          "readOnly": true
         },
         "name": {
-          "type": "string"
-        },
-        "self": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the status category.",
+          "readOnly": true
         }
-      },
-      "type": "object"
-    },
-    "untranslatedName": {
-      "type": "string"
+      }
     }
   },
-  "type": "object"
+  "additionalProperties": true,
+  "description": "A status."
 }

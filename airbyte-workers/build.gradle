@@ -1,7 +1,7 @@
 import org.jsonschema2pojo.SourceType
 
 plugins {
-    id 'java-library'
+    id 'application'
     id 'com.github.eirnym.js2p' version '1.0'
     id 'airbyte-integration-test-java'
 }
@@ -22,15 +22,19 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
 
+
+    implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-scheduler:persistence')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
+    testImplementation 'org.postgresql:postgresql:42.2.18'
+    testImplementation "org.flywaydb:flyway-core:7.14.0"
     testImplementation 'org.testcontainers:testcontainers:1.15.3'
     testImplementation 'org.testcontainers:postgresql:1.15.1'
-    testImplementation 'org.postgresql:postgresql:42.2.18'
 
     testImplementation project(':airbyte-commons-docker')
 
@@ -49,4 +53,10 @@ jsonSchema2Pojo {
     generateBuilders = true
     includeConstructors = false
     includeSetters = true
+}
+
+mainClassName = 'io.airbyte.workers.WorkerApp'
+
+application {
+    mainClass = mainClassName
 }

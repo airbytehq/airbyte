@@ -294,6 +294,7 @@ class ProjectAssignments(HarvestSubStream, IncrementalHarvestStream):
 class ReportsBase(HarvestStream, ABC):
     data_field = "results"
     date_param_template = "%Y%m%d"
+    primary_key = None
 
     @property
     @abstractmethod
