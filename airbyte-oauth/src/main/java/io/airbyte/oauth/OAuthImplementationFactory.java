@@ -28,8 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.google.GoogleAdsOauthFlow;
 import io.airbyte.oauth.google.GoogleAnalyticsOauthFlow;
-import io.airbyte.oauth.google.GoogleOAuthFlow;
-
 import java.util.Map;
 
 public class OAuthImplementationFactory {
