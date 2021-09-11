@@ -76,8 +76,9 @@ class BucketSpecCacheSchedulerClientTest {
     assertEquals(new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
   }
 
-  // this is essentially an integration test. run it manually to sanity check that the client can pull
-  // from the spec cache bucket.
+  // todo (cgardens) - this is essentially an integration test. run it manually to sanity check that
+  // the client can pull. from the spec cache bucket. when we have a better setup for integation
+  // testing for the platform we should move it there.
   @Disabled
   @Test
   void testGetsSpecFromBucket() throws IOException {

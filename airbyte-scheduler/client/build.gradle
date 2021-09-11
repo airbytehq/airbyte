@@ -11,6 +11,6 @@ dependencies {
     // todo (cgardens) - remove this dep. just needs temporal client.
     implementation project(':airbyte-workers')
 
-    compile 'com.google.cloud:google-cloud-storage:21.0.0'
+    compile 'com.google.cloud:google-cloud-storage:2.0.1'
 
 }
