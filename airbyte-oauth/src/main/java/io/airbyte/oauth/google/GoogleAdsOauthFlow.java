@@ -24,12 +24,25 @@
 
 package io.airbyte.oauth.google;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.persistence.ConfigRepository;
 
 public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
 
   public GoogleAdsOauthFlow(ConfigRepository configRepository) {
     super(configRepository, "https://www.googleapis.com/auth/adwords");
+  }
+
+  @Override
+  protected String getClientIdUnsafe(JsonNode config) {
+    // the config object containing client ID and secret is nested inside the "credentials" object
+    return super.getClientIdUnsafe(config.get("credentials"));
+  }
+
+  @Override
+  protected String getClientSecretUnsafe(JsonNode config) {
+    // the config object containing client ID and secret is nested inside the "credentials" object
+    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }

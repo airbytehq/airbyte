@@ -37,7 +37,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -101,7 +100,8 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       result.append(queryParameter).append("&");
     }
     return result
-        // TODO state should be randomly generated, and the 2nd step of oauth should verify its value matches the initially generated state value
+        // TODO state should be randomly generated, and the 2nd step of oauth should verify its value
+        // matches the initially generated state value
         .append("state=").append(definitionId.toString()).append("&")
         .append("client_id=").append(clientId).append("&")
         .append("redirect_uri=").append(redirectUrl)
@@ -206,8 +206,8 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * Throws an exception if the client ID cannot be extracted.
-   * Subclasses should override this to parse the config differently.
+   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
+   * parse the config differently.
    *
    * @return
    */
@@ -220,8 +220,8 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   }
 
   /**
-   * Throws an exception if the client secret cannot be extracted.
-   * Subclasses should override this to parse the config differently.
+   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
+   * parse the config differently.
    *
    * @return
    */
