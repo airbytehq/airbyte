@@ -31,6 +31,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 
+from .custom_query_stream import CustomQuery
 from .google_ads import GoogleAds
 from .streams import (
     AccountPerformanceReport,
@@ -61,6 +62,13 @@ class SourceGoogleAds(AbstractSource):
             google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
             account_stream = Accounts(api=google_api)
             list(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+            # Check custom query request validity by sending metric request with non-existant time window
+            for q in config.get("custom_queries", []):
+                q = q.get("query")
+                if CustomQuery.cursor_field in q:
+                    raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
+                req_q = CustomQuery.insert_segments_date_expr(q, "1980-01-01", "1980-01-01")
+                google_api.send_request(req_q)
             return True, None
         except GoogleAdsException as error:
             return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
@@ -70,6 +78,11 @@ class SourceGoogleAds(AbstractSource):
         incremental_stream_config = dict(
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
+
+        custom_query_streams = [
+            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
+            for single_query_config in config.get("custom_queries", [])
+        ]
         return [
             UserLocationReport(**incremental_stream_config),
             AccountPerformanceReport(**incremental_stream_config),
@@ -81,4 +94,4 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(api=google_api),
             Accounts(api=google_api),
             Campaigns(api=google_api),
-        ]
+        ] + custom_query_streams
