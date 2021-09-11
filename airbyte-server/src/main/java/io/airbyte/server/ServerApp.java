@@ -43,10 +43,12 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -125,7 +127,7 @@ public class ServerApp implements ServerRunnable {
     customComponentClasses.forEach(rc::register);
     customComponents.forEach(rc::register);
 
-    ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
+    final ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
     handler.addServlet(configServlet, "/api/*");
 
@@ -167,7 +169,7 @@ public class ServerApp implements ServerRunnable {
     TrackingClientSingleton.get().identify(workspaceId);
   }
 
-  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
+  public static ServerRunnable getServer(final ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
@@ -212,8 +214,8 @@ public class ServerApp implements ServerRunnable {
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-      boolean versionSupportsAutoMigrate =
+      final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      final boolean versionSupportsAutoMigrate =
           new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
         runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
@@ -236,7 +238,9 @@ public class ServerApp implements ServerRunnable {
       final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
       final DefaultSynchronousSchedulerClient syncSchedulerClient =
           new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
-      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
+      final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
+          new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
+      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -253,7 +257,7 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     getServer(new ServerFactory.Api()).start();
   }
 
@@ -261,10 +265,10 @@ public class ServerApp implements ServerRunnable {
    * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
    * no other operation is allowed
    */
-  private static void runAutomaticMigration(ConfigRepository configRepository,
-                                            JobPersistence jobPersistence,
-                                            String airbyteVersion,
-                                            String airbyteDatabaseVersion) {
+  private static void runAutomaticMigration(final ConfigRepository configRepository,
+                                            final JobPersistence jobPersistence,
+                                            final String airbyteVersion,
+                                            final String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
@@ -272,19 +276,19 @@ public class ServerApp implements ServerRunnable {
         airbyteVersion,
         YamlSeedConfigPersistence.get())) {
       runMigration.run();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
     }
   }
 
-  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
-    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+  public static boolean isDatabaseVersionBehindAppVersion(final String airbyteVersion, final String airbyteDatabaseVersion) {
+    final boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
     if (bothVersionsCompatible) {
       return false;
     }
 
-    AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
-    AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
+    final AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
+    final AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
     if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
@@ -293,9 +297,9 @@ public class ServerApp implements ServerRunnable {
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
-  private static void runFlywayMigration(Configs configs, Database configDatabase, Database jobDatabase) {
-    DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
-    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
+  private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {
+    final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
+    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
 
     configDbMigrator.createBaseline();
     jobDbMigrator.createBaseline();
