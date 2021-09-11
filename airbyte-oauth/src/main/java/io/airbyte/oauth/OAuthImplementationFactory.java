@@ -26,6 +26,10 @@ package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.google.GoogleAdsOauthFlow;
+import io.airbyte.oauth.google.GoogleAnalyticsOauthFlow;
+import io.airbyte.oauth.google.GoogleOAuthFlow;
+
 import java.util.Map;
 
 public class OAuthImplementationFactory {
@@ -34,7 +38,8 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(ConfigRepository configRepository) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
-        .put("airbyte/source-google-analytics-v4", new GoogleOAuthFlow(configRepository))
+        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOauthFlow(configRepository))
+        .put("airbyte/source-google-ads", new GoogleAdsOauthFlow(configRepository))
         .build();
   }
 

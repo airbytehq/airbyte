@@ -22,13 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+package io.airbyte.oauth.google;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -38,6 +32,11 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
@@ -46,16 +45,19 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class GoogleOAuthFlowTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String REDIRECT_URL = "https%3A//airbyte.io";
+  private static final String SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
@@ -68,7 +70,7 @@ public class GoogleOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleOAuthFlow = new GoogleOAuthFlow(configRepository, httpClient);
+    googleOAuthFlow = new GoogleOAuthFlow(configRepository, SCOPE, httpClient);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -108,7 +110,7 @@ public class GoogleOAuthFlowTest {
     final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
+        SCOPE,
         definitionId,
         getClientId(),
         REDIRECT_URL);
@@ -128,7 +130,7 @@ public class GoogleOAuthFlowTest {
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
+        SCOPE,
         definitionId,
         getClientId(),
         REDIRECT_URL);

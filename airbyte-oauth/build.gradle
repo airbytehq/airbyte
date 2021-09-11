@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
+    testImplementation project(':airbyte-oauth')
     implementation project(':airbyte-json-validation')
 
-    testImplementation project(':airbyte-oauth')
 }

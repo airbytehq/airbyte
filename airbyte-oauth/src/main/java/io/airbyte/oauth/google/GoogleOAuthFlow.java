@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth;
+package io.airbyte.oauth.google;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -34,6 +34,8 @@ import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
+import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -53,27 +55,29 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
 
   private final HttpClient httpClient;
 
-  private static final String GOOGLE_ANALYTICS_CONSENT_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-  private static final String GOOGLE_ANALYTICS_ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
-  @VisibleForTesting
-  static final String GOOGLE_ANALYTICS_SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
-  private static final List<String> GOOGLE_QUERY_PARAMETERS = List.of(
-      String.format("scope=%s", GOOGLE_ANALYTICS_SCOPE),
-      "access_type=offline",
-      "include_granted_scopes=true",
-      "response_type=code",
-      "prompt=consent");
+  private final String consentUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+  private final String accessTokenUrl = "https://oauth2.googleapis.com/token";
+
+  private final String scope;
+  private final List<String> googleQueryParameters;
 
   private final ConfigRepository configRepository;
 
-  public GoogleOAuthFlow(ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
+  public GoogleOAuthFlow(ConfigRepository configRepository, String scope) {
+    this(configRepository, scope, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
   }
 
   @VisibleForTesting
-  GoogleOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  GoogleOAuthFlow(ConfigRepository configRepository, String scope, HttpClient httpClient) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
+    this.scope = scope;
+    this.googleQueryParameters = List.of(
+        String.format("scope=%s", this.scope),
+        "access_type=offline",
+        "include_granted_scopes=true",
+        "response_type=code",
+        "prompt=consent");
   }
 
   @Override
@@ -99,10 +103,10 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private static String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
-    final StringBuilder result = new StringBuilder(GOOGLE_ANALYTICS_CONSENT_URL)
+  private String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
+    final StringBuilder result = new StringBuilder(consentUrl)
         .append("?");
-    for (String queryParameter : GOOGLE_QUERY_PARAMETERS) {
+    for (String queryParameter : googleQueryParameters) {
       result.append(queryParameter).append("&");
     }
     return result
@@ -161,7 +165,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
         .build();
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(body)))
-        .uri(URI.create(GOOGLE_ANALYTICS_ACCESS_TOKEN_URL))
+        .uri(URI.create(accessTokenUrl))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .build();
     final HttpResponse<String> response;
@@ -171,7 +175,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       if (data.has("refresh_token")) {
         return Map.of("refresh_token", data.get("refresh_token").asText());
       } else {
-        throw new IOException(String.format("Missing 'refresh_token' in query params from %s", GOOGLE_ANALYTICS_ACCESS_TOKEN_URL));
+        throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
       }
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete Google OAuth flow", e);

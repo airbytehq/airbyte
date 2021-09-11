@@ -1184,6 +1184,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideSourceOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/source_oauths/get_consent_url:
     post:
       tags:
@@ -1276,6 +1299,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideDestinationOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1618,52 +1664,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-  /v1/source_oauths/oauth_params/create:
-    post:
-      tags:
-        - oauth
-      summary: >
-        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
-        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
-        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
-        about these variables.
-      operationId: setInstancewideSourceOauthParams
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-  /v1/destination_oauths/oauth_params/create:
-    post:
-      tags:
-        - oauth
-      summary: >
-        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
-        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
-        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
-        about these variables.
-      operationId: setInstancewideDestinationOauthParams
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
 components:
