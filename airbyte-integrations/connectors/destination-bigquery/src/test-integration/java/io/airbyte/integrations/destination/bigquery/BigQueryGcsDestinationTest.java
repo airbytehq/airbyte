@@ -146,7 +146,7 @@ class BigQueryGcsDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests_gcs", "_", 8);
     final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);

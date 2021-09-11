@@ -194,7 +194,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests_standard_acceptance", "_", 8);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
