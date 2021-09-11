@@ -25,6 +25,8 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -54,6 +56,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -257,7 +260,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws InterruptedException {
     tearDownBigQuery();
-    Thread.sleep(20000); //sometimes gradle run may not wait for all threads finishing
+    tearDownGcs();
+    Thread.sleep(20000); // sometimes gradle run may not wait for all threads finishing
   }
 
   private void tearDownBigQuery() {
@@ -272,6 +276,32 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
     }
 
     tornDown = true;
+  }
+
+  /**
+   * Remove all the GCS output from the tests.
+   */
+  protected void tearDownGcs() {
+    JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
+    String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+    String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
+
+    List<KeyVersion> keysToDelete = new LinkedList<>();
+    List<S3ObjectSummary> objects = s3Client
+        .listObjects(gcsBucketName, gcs_bucket_path)
+        .getObjectSummaries();
+    for (S3ObjectSummary object : objects) {
+      keysToDelete.add(new KeyVersion(object.getKey()));
+    }
+
+    if (keysToDelete.size() > 0) {
+      LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
+      // Google Cloud Storage doesn't accept request to delete multiple objects
+      for (KeyVersion keyToDelete : keysToDelete) {
+        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
+      }
+      LOGGER.info("Deleted {} file(s).", keysToDelete.size());
+    }
   }
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
