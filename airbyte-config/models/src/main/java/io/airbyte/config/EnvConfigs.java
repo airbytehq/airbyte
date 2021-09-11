@@ -88,7 +88,7 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
 
   // defaults
-  private static final String DEFAULT_SPEC_CACHE_BUCKET = "airbyte-cloud-spec-cache";
+  private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
