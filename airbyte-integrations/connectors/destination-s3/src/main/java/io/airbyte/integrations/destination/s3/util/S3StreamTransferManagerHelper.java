@@ -80,12 +80,7 @@ public class S3StreamTransferManagerHelper {
         .partSize(partSize);
   }
 
-  /**
-   * Depracated due to https://github.com/airbytehq/airbyte/issues/5720 Use method with partSize args
-   * instead. This one limits uploaded object to 50GB max and will be set as private soon.
-   */
-  @Deprecated
-  public static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client) {
+  private static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client) {
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads. The alternative is first writing the entire
     // output to disk before loading into S3. This is not feasible with large input.
