@@ -57,4 +57,5 @@ Then go to Settings and copy your access token
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-09-10 | [5983](https://github.com/airbytehq/airbyte/pull/5983) | Fix caching for gzip compressed http response |
 | 0.1.0   | 2021-07-06 | [4097](https://github.com/airbytehq/airbyte/pull/4097) | Initial Release |
