@@ -17,6 +17,7 @@ This source is capable of syncing the following streams:
 * [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
 * [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
+* [click_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
 
 *Report streams*
 * [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
@@ -24,6 +25,7 @@ This source is capable of syncing the following streams:
 * [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 * [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 * [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+
 
 ### Features
 
@@ -82,6 +84,12 @@ If for any reason the request gets denied, let us know and we will be able to un
 ## Understanding Google Ads Query Language
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
+
+## Understanding Click View Stream Date Range 
+
+Queries including ClickView must have a filter limiting the results to one day and can be requested for dates back to 90 days before the time of the request.
+(https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
+
 
 ## CHANGELOG
 
