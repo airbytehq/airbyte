@@ -100,3 +100,8 @@
   dockerRepository: airbyte/destination-mongodb
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
+- destinationDefinitionId: 48e72244-f2f7-11eb-9a03-0242ac130003
+  name: S3-Parquet-Singer
+  dockerRepository: airbyte/destination-s3-parquet-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
