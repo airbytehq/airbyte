@@ -231,45 +231,37 @@ def transform_targeting_criteria(
         and_list = targeting_criteria.get("include").get("and")
         for id, and_criteria in enumerate(and_list):
             or_dict = and_criteria.get("or")
-            count = 0
-            num = len(or_dict) - 1
-            while count <= num:
-                key = list(or_dict)[count]
-                value = []
-                if isinstance(or_dict[key], list):
-                    if isinstance(or_dict[key][0], str):
-                        value = or_dict[key]
-                    elif isinstance(or_dict[key][0], dict):
-                        for v in or_dict[key]:
-                            value.append(v)
-                elif isinstance(or_dict[key], dict):
-                    value.append(or_dict[key])
+            for key, value in or_dict.items():
+                values = []
+                if isinstance(value, list):
+                    if isinstance(value[0], str):
+                        values = value
+                    elif isinstance(value[0], dict):
+                        for v in value:
+                            values.append(v)
+                elif isinstance(key, dict):
+                    values.append(key)
                 # Replace the 'or' with {type:value}
                 record["targetingCriteria"]["include"]["and"][id]["type"] = key
-                record["targetingCriteria"]["include"]["and"][id]["values"] = value
+                record["targetingCriteria"]["include"]["and"][id]["values"] = values
                 record["targetingCriteria"]["include"]["and"][id].pop("or")
-                count = count + 1
 
     # transform `exclude` if present
     if "exclude" in targeting_criteria:
         or_dict = targeting_criteria.get("exclude").get("or")
         updated_exclude = {"or": []}
-        count = 0
-        num = len(or_dict) - 1
-        while count <= num:
-            key = list(or_dict)[count]
-            value = []
-            if isinstance(or_dict[key], list):
-                if isinstance(or_dict[key][0], str):
-                    value = or_dict[key]
-                elif isinstance(or_dict[key][0], dict):
-                    for v in or_dict[key]:
+        for key, value in or_dict.items():
+            values = []
+            if isinstance(value, list):
+                if isinstance(value[0], str):
+                    values = value
+                elif isinstance(value[0], dict):
+                    for v in value:
                         value.append(v)
-            elif isinstance(or_dict[key], dict):
-                value.append(or_dict[key])
-            updated_exclude["or"].append({"type": key, "values": value})
-            count = count + 1
-        record["targetingCriteria"]["exclude"].update(**updated_exclude)
+            elif isinstance(value, dict):
+                value.append(value)
+            updated_exclude["or"].append({"type": key, "values": values})
+        record["targetingCriteria"]["exclude"] = updated_exclude
 
     return record
 
@@ -307,25 +299,13 @@ def transform_variables(
     """
 
     variables = record.get(dict_key).get("data")
-    count = 0
-    num = len(variables) - 1
-    while count <= num:
-        key = list(variables)[count]
-        params = variables.get(key)
+    for key, params in variables.items():
         record["variables"]["type"] = key
         record["variables"]["values"] = []
-
-        count2 = 0
-        pnum = len(params) - 1
-        while count2 <= pnum:
-            param_key = list(params)[count2]
-            param_value = params.get(param_key)
-            record["variables"]["values"].append({"key": param_key, "value": param_value})
-            count2 = count2 + 1
-
+        for key, param in params.items():
+            record["variables"]["values"].append({"key": key, "value": param})
+        # Clean the nested structure
         record["variables"].pop("data")
-        count = count + 1
-
     return record
 
 

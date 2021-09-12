@@ -24,7 +24,7 @@
 
 
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping
 
 import pendulum as pdm
 
@@ -114,7 +114,7 @@ def chunk_analytics_fields(
     fields: List = ANALYTICS_FIELDS_V2,
     base_fields: List = BASE_ANALLYTICS_FIELDS,
     fields_chunk_size: int = FIELDS_CHUNK_SIZE,
-    ) -> List[List]:
+) -> Iterable[List]:
     """
     Chunks the list of available fields into the chunks of equal size.
     """
@@ -125,10 +125,10 @@ def chunk_analytics_fields(
         for field in base_fields:
             if field not in chunk:
                 chunk.append(field)
-    return chunks
+    yield from chunks
 
 
-def make_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> List[Dict]:
+def make_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[List]:
     """
     Produces date slices from start_date to end_date (if specified),
     otherwise end_date will be present time.
@@ -148,10 +148,12 @@ def make_date_slices(start_date: str, end_date: str = None, window_in_days: int 
         }
         date_slices.append({"dateRange": date_slice})
         start = slice_end_date
-    return date_slices
+    yield from date_slices
 
 
-def make_analytics_slices(record: Dict, key_value_map: Dict, start_date: str, end_date: str = None) -> List[Dict]:
+def make_analytics_slices(
+    record: Mapping[str, Any], key_value_map: Mapping[str, Any], start_date: str, end_date: str = None
+) -> Iterable[Mapping[str, Any]]:
     """
     We drive the ability to directly pass the prepared parameters inside the stream_slice.
     The output of this method is ready slices for analytics streams:
@@ -165,10 +167,10 @@ def make_analytics_slices(record: Dict, key_value_map: Dict, start_date: str, en
         for date_slice in make_date_slices(start_date, end_date):
             base_slice.update(**date_slice)
             analytics_slices.append(base_slice.copy())
-    return analytics_slices
+    yield from analytics_slices
 
 
-def update_analytics_params(stream_slice: Dict) -> Mapping[str, Any]:
+def update_analytics_params(stream_slice: Mapping[str, Any]) -> Mapping[str, Any]:
     """
     Produces the date range parameters from input stream_slice
     """
@@ -186,7 +188,7 @@ def update_analytics_params(stream_slice: Dict) -> Mapping[str, Any]:
     }
 
 
-def merge_chunks(chunked_result: Iterable[Mapping[str, Any]], merge_by_key: str) -> Iterable[Mapping]:
+def merge_chunks(chunked_result: Iterable[Mapping[str, Any]], merge_by_key: str) -> Iterable[Mapping[str, Any]]:
     """
     We need to merge the chunked API responses
     into the single structure using any available unique field.
@@ -200,4 +202,4 @@ def merge_chunks(chunked_result: Iterable[Mapping[str, Any]], merge_by_key: str)
     result = []
     for item in merged:
         result.append(merged.get(item))
-    return result
+    yield from result

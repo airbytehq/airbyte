@@ -35,7 +35,4 @@ TEST_REQUEST_PRAMS = {}
 
 
 def test_make_analytics_slices():
-
-    actual = make_analytics_slices(test_input_record, TEST_KEY_VALUE_MAP, TEST_START_DATE, TEST_END_DATE)
-
-    assert actual == test_output_slices
+    assert list(make_analytics_slices(test_input_record, TEST_KEY_VALUE_MAP, TEST_START_DATE, TEST_END_DATE)) == test_output_slices

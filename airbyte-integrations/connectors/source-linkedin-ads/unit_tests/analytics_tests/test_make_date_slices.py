@@ -41,4 +41,4 @@ def test_make_date_slices():
         {"dateRange": {"start.day": 30, "start.month": 9, "start.year": 2021, "end.day": 30, "end.month": 10, "end.year": 2021}},
     ]
 
-    assert make_date_slices(TEST_START_DATE, TEST_END_DATE) == expected_output
+    assert list(make_date_slices(TEST_START_DATE, TEST_END_DATE)) == expected_output

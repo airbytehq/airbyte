@@ -56,5 +56,4 @@ def test_chunk_analytics_fields():
         ["field_8", "base_field_1", "base_field_2"],
     ]
 
-    actual_output = chunk_analytics_fields(TEST_ANALYTICS_FIELDS, TEST_BASE_ANALLYTICS_FIELDS, TEST_FIELDS_CHUNK_SIZE)
-    assert actual_output == expected_output
+    assert list(chunk_analytics_fields(TEST_ANALYTICS_FIELDS, TEST_BASE_ANALLYTICS_FIELDS, TEST_FIELDS_CHUNK_SIZE)) == expected_output
