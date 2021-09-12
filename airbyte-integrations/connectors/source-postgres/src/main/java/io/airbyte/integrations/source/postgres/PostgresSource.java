@@ -53,8 +53,11 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -267,10 +270,28 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
+    LOGGER.info("sleeping for 30 seconds");
+    Thread.sleep(Duration.ofSeconds(30).toMillis());
+    printRamUsage();
+    LOGGER.info("sleeping for 30 seconds again");
+    Thread.sleep(Duration.ofSeconds(30).toMillis());
+    printRamUsage();
     final Source source = new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
+
+  public static void printRamUsage() {
+    int mb = 1024 * 1024;
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    LOGGER.info("Initial Memory (xms) : " + xms + "mb");
+    System.out.println("Initial Memory (xms) : " + xms + "mb");
+    LOGGER.info("Max Memory (xmx) : " + xmx + "mb");
+    System.out.println("Max Memory (xmx) : " + xmx + "mb");
+  }
+
 
 }

@@ -31,6 +31,9 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -81,10 +84,27 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   public static void main(final String[] args) throws Exception {
+    LOGGER.info("sleeping for 30 seconds");
+    Thread.sleep(Duration.ofSeconds(30).toMillis());
+    printRamUsage();
+    LOGGER.info("sleeping for 30 seconds again");
+    Thread.sleep(Duration.ofSeconds(30).toMillis());
+    printRamUsage();
     final Destination destination = new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
+  }
+
+  public static void printRamUsage() {
+    int mb = 1024 * 1024;
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    LOGGER.info("Initial Memory (xms) : " + xms + "mb");
+    System.out.println("Initial Memory (xms) : " + xms + "mb");
+    LOGGER.info("Max Memory (xmx) : " + xmx + "mb");
+    System.out.println("Max Memory (xmx) : " + xmx + "mb");
   }
 
 }
