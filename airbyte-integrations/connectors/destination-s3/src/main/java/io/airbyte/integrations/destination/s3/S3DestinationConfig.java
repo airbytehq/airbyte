@@ -24,8 +24,19 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * This class is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3Config}.
+ * It has an extra {@code bucketPath} parameter, which is necessary for more delicate data syncing to S3.
+ */
 public class S3DestinationConfig {
 
   private final String endpoint;
@@ -90,6 +101,28 @@ public class S3DestinationConfig {
 
   public S3FormatConfig getFormatConfig() {
     return formatConfig;
+  }
+
+  public AmazonS3 getS3Client() {
+    final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+
+    if (endpoint == null || endpoint.isEmpty()) {
+      return AmazonS3ClientBuilder.standard()
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .withRegion(bucketRegion)
+          .build();
+    }
+
+    ClientConfiguration clientConfiguration = new ClientConfiguration();
+    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+    return AmazonS3ClientBuilder
+        .standard()
+        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
+        .withPathStyleAccessEnabled(true)
+        .withClientConfiguration(clientConfiguration)
+        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+        .build();
   }
 
 }

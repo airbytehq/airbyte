@@ -56,7 +56,8 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
-  public final Schema parquetSchema;
+  private final Schema parquetSchema;
+  private final String outputFilename;
 
   public S3ParquetWriter(S3DestinationConfig config,
                          AmazonS3 s3Client,
@@ -67,7 +68,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
+    this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -105,6 +106,21 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,
         "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return hadoopConfig;
+  }
+
+  public Schema getParquetSchema() {
+    return parquetSchema;
+  }
+
+  /**
+   * The file path includes prefix and filename, but does not include the bucket name.
+   */
+  public String getOutputFilePath() {
+    return outputPrefix + "/" + outputFilename;
+  }
+
+  public String getOutputFilename() {
+    return outputFilename;
   }
 
   @Override

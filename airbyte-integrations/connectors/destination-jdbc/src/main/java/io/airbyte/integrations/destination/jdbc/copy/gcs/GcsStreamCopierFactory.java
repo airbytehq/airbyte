@@ -54,7 +54,7 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
     try {
       AirbyteStream stream = configuredStream.getStream();
       DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      String schema = StreamCopierFactory.getSchema(stream, configuredSchema, nameTransformer);
+      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
       InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
       GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);

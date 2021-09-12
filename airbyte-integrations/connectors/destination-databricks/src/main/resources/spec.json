@@ -1,49 +1,69 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/databricks",
-  "supportsIncremental": false,
+  "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
-  "supported_destination_sync_modes": ["overwrite"],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Databricks Destination Spec",
     "type": "object",
     "required": [
-      "serverHostname",
-      "httpPath",
-      "pat"
+      "databricks_server_hostname",
+      "databricks_http_path",
+      "databricks_personal_access_token",
+      "s3_bucket_name",
+      "s3_bucket_path",
+      "s3_bucket_region",
+      "s3_access_key_id",
+      "s3_secret_access_key"
     ],
     "additionalProperties": false,
     "properties": {
-      "serverHostname": {
-        "title": "Server Hostname",
+      "databricks_server_hostname": {
+        "title": "Databricks Cluster Server Hostname",
         "type": "string",
         "description": "",
-        "examples": [""]
+        "examples": ["abc-12345678-wxyz.cloud.databricks.com"]
       },
-      "httpPath": {
-        "title": "HTTP Path",
+      "databricks_http_path": {
+        "title": "Databricks Cluster HTTP Path",
         "type": "string",
         "description": "",
-        "examples": [""]
+        "examples": ["sql/protocolvx/o/1234567489/0000-1111111-abcd90"]
       },
-      "pat": {
-        "title": "Personal Access Token",
+      "databricks_port": {
+        "title": "Databricks Cluster Port",
+        "type": "string",
+        "description": "",
+        "default": "443",
+        "examples": ["443"]
+      },
+      "databricks_personal_access_token": {
+        "title": "Databricks Personal Access Token",
         "type": "string",
         "description": "",
         "examples": [""],
         "airbyte_secret": true
       },
-      "schema": {
-        "title": "Database",
+      "database_schema": {
+        "title": "Database Schema",
         "type": "string",
-        "description": ""
+        "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
+        "default": "public",
+        "examples": ["public"]
       },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
         "description": "The name of the S3 bucket to use for intermittent staging of the data.",
         "examples": ["airbyte.staging"]
+      },
+      "s3_bucket_path": {
+        "Title": "S3 Bucket Path",
+        "type": "string",
+        "description": "The directory under the S3 bucket where data will be written.",
+        "examples": ["data_sync/test"]
       },
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
@@ -74,28 +94,24 @@
           "eu-west-2",
           "eu-west-3",
           "sa-east-1",
-          "me-south-1"
+          "me-south-1",
+          "us-gov-east-1",
+          "us-gov-west-1"
         ]
       },
-      "access_key_id": {
+      "s3_access_key_id": {
         "type": "string",
         "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
         "title": "S3 Key Id",
+        "examples": ["A012345678910EXAMPLE"],
         "airbyte_secret": true
       },
-      "secret_access_key": {
+      "s3_secret_access_key": {
+        "title": "S3 Access Key",
         "type": "string",
         "description": "The corresponding secret to the above access key id.",
-        "title": "S3 Access Key",
+        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
         "airbyte_secret": true
-      },
-      "part_size": {
-        "type": "integer",
-        "minimum": 10,
-        "maximum": 100,
-        "examples": ["10"],
-        "description": "Optional. Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
-        "title": "Stream Part Size"
       }
     }
   }

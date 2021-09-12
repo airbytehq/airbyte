@@ -50,7 +50,7 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
     try {
       AirbyteStream stream = configuredStream.getStream();
       DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      String schema = StreamCopierFactory.getSchema(stream, configuredSchema, nameTransformer);
+      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
       AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
       return create(stagingFolder, syncMode, schema, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
