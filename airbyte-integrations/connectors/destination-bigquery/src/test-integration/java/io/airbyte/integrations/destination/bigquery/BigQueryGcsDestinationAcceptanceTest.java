@@ -24,9 +24,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -49,14 +46,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,7 +72,6 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   private static final String CONFIG_CREDS = "credentials_json";
 
   private BigQuery bigquery;
-  private AmazonS3 s3Client; // s3Amazon client is used here to connect to GCS
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
@@ -205,7 +198,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
     final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests_gcs_acceptance", "_", 8);
+    final String datasetId = "airbyte_tests_gcs_acceptance_" + System.currentTimeMillis();
 
     JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
     JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
@@ -242,10 +235,6 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
         DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     dataset = bigquery.create(datasetInfo);
 
-    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
-    this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
-
     tornDown = false;
     Runtime.getRuntime()
         .addShutdownHook(
@@ -258,10 +247,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws InterruptedException {
+  protected void tearDown(TestDestinationEnv testEnv) {
     tearDownBigQuery();
-    tearDownGcs();
-    Thread.sleep(20000); // sometimes gradle run may not wait for all threads finishing
   }
 
   private void tearDownBigQuery() {
@@ -276,32 +263,6 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
     }
 
     tornDown = true;
-  }
-
-  /**
-   * Remove all the GCS output from the tests.
-   */
-  protected void tearDownGcs() {
-    JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
-    String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
-    String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
-
-    List<KeyVersion> keysToDelete = new LinkedList<>();
-    List<S3ObjectSummary> objects = s3Client
-        .listObjects(gcsBucketName, gcs_bucket_path)
-        .getObjectSummaries();
-    for (S3ObjectSummary object : objects) {
-      keysToDelete.add(new KeyVersion(object.getKey()));
-    }
-
-    if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
-      // Google Cloud Storage doesn't accept request to delete multiple objects
-      for (KeyVersion keyToDelete : keysToDelete) {
-        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
-      }
-      LOGGER.info("Deleted {} file(s).", keysToDelete.size());
-    }
   }
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
