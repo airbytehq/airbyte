@@ -110,11 +110,11 @@ public class GoogleAnalyticsOAuthFlowTest {
             .build()))));
     final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        EXPECTED_SCOPE,
-        definitionId,
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
         getClientId(),
-        EXPECTED_REDIRECT_URL);
+        EXPECTED_REDIRECT_URL,
+        EXPECTED_SCOPE,
+        definitionId);
     LOGGER.info(expectedSourceUrl);
     assertEquals(expectedSourceUrl, actualSourceUrl);
   }
@@ -130,11 +130,11 @@ public class GoogleAnalyticsOAuthFlowTest {
             .build()))));
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        EXPECTED_SCOPE,
-        definitionId,
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
         getClientId(),
-        EXPECTED_REDIRECT_URL);
+        EXPECTED_REDIRECT_URL,
+        EXPECTED_SCOPE,
+        definitionId);
     LOGGER.info(expectedDestinationUrl);
     assertEquals(expectedDestinationUrl, actualDestinationUrl);
   }

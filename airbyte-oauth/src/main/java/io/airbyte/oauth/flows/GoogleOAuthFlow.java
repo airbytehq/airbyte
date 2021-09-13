@@ -101,6 +101,9 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+    if (data.has("access_token")) {
+      return Map.of("access_token", data.get("access_token").asText());
+    }
     if (data.has("refresh_token")) {
       return Map.of("refresh_token", data.get("refresh_token").asText());
     } else {
