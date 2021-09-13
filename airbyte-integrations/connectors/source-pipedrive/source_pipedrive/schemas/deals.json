@@ -55,7 +55,7 @@
     },
     "next_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_time": {
       "type": ["null", "string"]
@@ -124,7 +124,7 @@
     },
     "expected_close_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "last_incoming_mail_time": {
       "type": ["null", "string"],

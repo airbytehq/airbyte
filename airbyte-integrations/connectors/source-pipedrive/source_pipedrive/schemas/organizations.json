@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "company_id": {
+      "type": ["null", "number"]
+    },
+    "owner_id": {
+      "type": ["null", "object", "number"],
+      "properties": {
+        "id": {
+          "type": ["null", "number"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "has_pic": {
+          "type": ["null", "number"]
+        },
+        "pic_hash": {
+          "type": ["null", "string"]
+        },
+        "active_flag": {
+          "type": ["null", "boolean"]
+        },
+        "value": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "open_deals_count": {
+      "type": ["null", "number"]
+    },
+    "related_open_deals_count": {
+      "type": ["null", "number"]
+    },
+    "closed_deals_count": {
+      "type": ["null", "number"]
+    },
+    "related_closed_deals_count": {
+      "type": ["null", "number"]
+    },
+    "email_messages_count": {
+      "type": ["null", "number"]
+    },
+    "people_count": {
+      "type": ["null", "number"]
+    },
+    "activities_count": {
+      "type": ["null", "number"]
+    },
+    "done_activities_count": {
+      "type": ["null", "number"]
+    },
+    "undone_activities_count": {
+      "type": ["null", "number"]
+    },
+    "files_count": {
+      "type": ["null", "number"]
+    },
+    "notes_count": {
+      "type": ["null", "number"]
+    },
+    "followers_count": {
+      "type": ["null", "number"]
+    },
+    "won_deals_count": {
+      "type": ["null", "number"]
+    },
+    "related_won_deals_count": {
+      "type": ["null", "number"]
+    },
+    "lost_deals_count": {
+      "type": ["null", "number"]
+    },
+    "related_lost_deals_count": {
+      "type": ["null", "number"]
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "picture_id": {
+      "type": ["null", "object"],
+      "properties": {
+        "item_type": {
+          "type": ["null", "string"]
+        },
+        "item_id": {
+          "type": ["null", "number"]
+        },
+        "active_flag": {
+          "type": ["null", "boolean"]
+        },
+        "add_time": {
+          "type": ["null", "string"]
+        },
+        "update_time": {
+          "type": ["null", "string"]
+        },
+        "added_by_user_id": {
+          "type": ["null", "number"]
+        },
+        "pictures": {
+          "type": ["null", "object"],
+          "properties": {
+            "128": {
+              "type": ["null", "string"]
+            },
+            "512": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "value": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "first_char": {
+      "type": ["null", "string"]
+    },
+    "update_time": {
+      "type": ["null", "string"]
+    },
+    "add_time": {
+      "type": ["null", "string"]
+    },
+    "visible_to": {
+      "type": ["null", "number", "string"]
+    },
+    "next_activity_date": {
+      "type": ["null", "string"]
+    },
+    "next_activity_time": {
+      "type": ["null", "string"]
+    },
+    "next_activity_id": {
+      "type": ["null", "number"]
+    },
+    "last_activity_id": {
+      "type": ["null", "number"]
+    },
+    "last_activity_date": {
+      "type": ["null", "string"]
+    },
+    "label": {
+      "type": ["null", "number"]
+    },
+    "address": {
+      "type": ["null", "string"]
+    },
+    "address_subpremise": {
+      "type": ["null", "string"]
+    },
+    "address_street_number": {
+      "type": ["null", "string"]
+    },
+    "address_route": {
+      "type": ["null", "string"]
+    },
+    "address_sublocality": {
+      "type": ["null", "string"]
+    },
+    "address_locality": {
+      "type": ["null", "string"]
+    },
+    "address_admin_area_level_1": {
+      "type": ["null", "string"]
+    },
+    "address_admin_area_level_2": {
+      "type": ["null", "string"]
+    },
+    "address_country": {
+      "type": ["null", "string"]
+    },
+    "address_postal_code": {
+      "type": ["null", "string"]
+    },
+    "address_formatted_address": {
+      "type": ["null", "string"]
+    },
+    "owner_name": {
+      "type": ["null", "string"]
+    },
+    "cc_email": {
+      "type": ["null", "string"]
+    }
+  }
+}

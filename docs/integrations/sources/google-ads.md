@@ -87,6 +87,7 @@ The Google Ads Query Language can query the Google Ads API. Check out [Google Ad
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.9` | 2021-09-07 | [#5302](https://github.com/airbytehq/airbyte/pull/5302) | Add custom query stream support |
 | `0.1.8` | 2021-08-03 | [#5509](https://github.com/airbytehq/airbyte/pull/5509) | additionalProperties in spec.json |
 | `0.1.7` | 2021-08-03 | [#5422](https://github.com/airbytehq/airbyte/pull/5422) | Correct query to not skip dates |
 | `0.1.6` | 2021-08-03 | [#5423](https://github.com/airbytehq/airbyte/pull/5423) | Added new stream UserLocationReport |

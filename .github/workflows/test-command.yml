@@ -81,6 +81,7 @@ jobs:
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS }}
           SOURCE_BING_ADS_CREDS: ${{ secrets.SOURCE_BING_ADS_CREDS }}
           BIGQUERY_TEST_CREDS: ${{ secrets.BIGQUERY_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
@@ -106,6 +107,8 @@ jobs:
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
           GOOGLE_DIRECTORY_TEST_CREDS: ${{ secrets.GOOGLE_DIRECTORY_TEST_CREDS }}
           GOOGLE_SEARCH_CONSOLE_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_TEST_CREDS }}
+          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS }}
+          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC }}
           GOOGLE_SHEETS_TESTS_CREDS: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS }}
           GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
           GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
@@ -211,6 +214,7 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :bug: ${{env.GRADLE_SCAN_LINK}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner
