@@ -2,21 +2,21 @@ import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService'
 import { Connection } from './types'
 
 class ConnectionService extends AirbyteRequestService {
-    get url() {
-        return 'web_backend/connections'
-    }
+  get url() {
+    return 'web_backend/connections'
+  }
 
-    public async getConnection(
-        connectionId: string,
-        withRefreshedCatalog?: boolean
-    ): Promise<Connection> {
-        const rs = (await this.fetch(`${this.url}/get`, {
-            connectionId,
-            withRefreshedCatalog,
-        })) as any as Connection
+  public async getConnection(
+    connectionId: string,
+    withRefreshedCatalog?: boolean
+  ): Promise<Connection> {
+    const rs = (await this.fetch(`${this.url}/get`, {
+      connectionId,
+      withRefreshedCatalog,
+    })) as any as Connection
 
-        return rs
-    }
+    return rs
+  }
 }
 
 export { ConnectionService }

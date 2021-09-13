@@ -1,5 +1,5 @@
 export enum SyncCatalogFilters {
-  All = "All",
-  Selected = "Selected",
-  NotSelected = "NotSelected",
+  All = 'All',
+  Selected = 'Selected',
+  NotSelected = 'NotSelected',
 }

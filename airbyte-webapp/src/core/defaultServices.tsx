@@ -10,34 +10,31 @@ import { HealthService } from './health/HealthService'
 import { useGetService, useInjectServices } from './servicesProvider'
 
 export const useApiServices = (): void => {
-    const config = useConfig()
-    const middlewares = useGetService<RequestMiddleware[]>(
-        'DefaultRequestMiddlewares'
-    )
+  const config = useConfig()
+  const middlewares = useGetService<RequestMiddleware[]>(
+    'DefaultRequestMiddlewares'
+  )
 
-    useEffect(() => {
-        window._API_URL = config.apiUrl
-    }, [config])
+  useEffect(() => {
+    window._API_URL = config.apiUrl
+  }, [config])
 
-    const services = useMemo(
-        () => ({
-            SourceDefinitionService: new SourceDefinitionService(
-                config.apiUrl,
-                middlewares
-            ),
-            DestinationDefinitionService: new DestinationDefinitionService(
-                config.apiUrl,
-                middlewares
-            ),
-            DeploymentService: new DeploymentService(
-                config.apiUrl,
-                middlewares
-            ),
-            OperationService: new OperationService(config.apiUrl, middlewares),
-            HealthService: new HealthService(config.apiUrl, middlewares),
-        }),
-        [config.apiUrl, middlewares]
-    )
+  const services = useMemo(
+    () => ({
+      SourceDefinitionService: new SourceDefinitionService(
+        config.apiUrl,
+        middlewares
+      ),
+      DestinationDefinitionService: new DestinationDefinitionService(
+        config.apiUrl,
+        middlewares
+      ),
+      DeploymentService: new DeploymentService(config.apiUrl, middlewares),
+      OperationService: new OperationService(config.apiUrl, middlewares),
+      HealthService: new HealthService(config.apiUrl, middlewares),
+    }),
+    [config.apiUrl, middlewares]
+  )
 
-    useInjectServices(services)
+  useInjectServices(services)
 }

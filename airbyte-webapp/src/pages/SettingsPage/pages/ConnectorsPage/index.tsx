@@ -1,4 +1,4 @@
-import SourcesPage from "./SourcesPage";
-import DestinationsPage from "./DestinationsPage";
+import SourcesPage from './SourcesPage'
+import DestinationsPage from './DestinationsPage'
 
-export { SourcesPage, DestinationsPage };
+export { SourcesPage, DestinationsPage }

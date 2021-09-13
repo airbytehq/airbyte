@@ -1,4 +1,4 @@
-import { ArrayOfObjectsEditor } from "./ArrayOfObjectsEditor";
+import { ArrayOfObjectsEditor } from './ArrayOfObjectsEditor'
 
-export default ArrayOfObjectsEditor;
-export { ArrayOfObjectsEditor };
+export default ArrayOfObjectsEditor
+export { ArrayOfObjectsEditor }

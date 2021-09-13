@@ -1,4 +1,4 @@
-import StatusIcon from "./StatusIcon";
+import StatusIcon from './StatusIcon'
 
-export default StatusIcon;
-export { StatusIcon };
+export default StatusIcon
+export { StatusIcon }

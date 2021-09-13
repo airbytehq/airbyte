@@ -5,39 +5,35 @@ import { FormBaseItem } from '@app/core/form/types'
 import { LabelMessage } from './LabelMessage'
 
 type LabelMessageProps = {
-    property: FormBaseItem
-    error: string | undefined
-    touched: boolean
+  property: FormBaseItem
+  error: string | undefined
+  touched: boolean
 }
 
 const Label: React.FC<LabelMessageProps> = ({
-    property,
-    error,
-    touched,
-    children,
+  property,
+  error,
+  touched,
+  children,
 }) => {
-    const labelText = property.title || property.fieldKey
-    const labelRequiredAppendix = property.isRequired ? ' *' : ''
-    const label = `${labelText}${labelRequiredAppendix}`
+  const labelText = property.title || property.fieldKey
+  const labelRequiredAppendix = property.isRequired ? ' *' : ''
+  const label = `${labelText}${labelRequiredAppendix}`
 
-    const displayError = !!error && touched
+  const displayError = !!error && touched
 
-    return (
-        <ControlLabels
-            labelAdditionLength={0}
-            error={displayError}
-            label={label}
-            message={
-                <LabelMessage
-                    property={property}
-                    error={error}
-                    touched={touched}
-                />
-            }
-        >
-            {children}
-        </ControlLabels>
-    )
+  return (
+    <ControlLabels
+      labelAdditionLength={0}
+      error={displayError}
+      label={label}
+      message={
+        <LabelMessage property={property} error={error} touched={touched} />
+      }
+    >
+      {children}
+    </ControlLabels>
+  )
 }
 
 export { Label }

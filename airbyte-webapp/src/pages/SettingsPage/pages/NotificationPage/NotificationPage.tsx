@@ -7,86 +7,81 @@ import HeadTitle from '@app/components/HeadTitle'
 import { Content, SettingsCard } from '../SettingsComponents'
 
 function useAsyncWithTimeout<K, T>(f: (data: K) => Promise<T>) {
-    const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null)
-    const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null)
-    const call = useCallback(
-        async (data: K) => {
-            setSuccessMessage(null)
-            setErrorMessage(null)
-            try {
-                await f(data)
-                setSuccessMessage(
-                    <FormattedMessage id="settings.changeSaved" />
-                )
+  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null)
+  const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null)
+  const call = useCallback(
+    async (data: K) => {
+      setSuccessMessage(null)
+      setErrorMessage(null)
+      try {
+        await f(data)
+        setSuccessMessage(<FormattedMessage id="settings.changeSaved" />)
 
-                setTimeout(() => {
-                    setSuccessMessage(null)
-                }, 2000)
-            } catch (e) {
-                setErrorMessage(<FormattedMessage id="form.someError" />)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 2000)
+      } catch (e) {
+        setErrorMessage(<FormattedMessage id="form.someError" />)
 
-                setTimeout(() => {
-                    setErrorMessage(null)
-                }, 2000)
-            }
-        },
-        [f]
-    )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 2000)
+      }
+    },
+    [f]
+  )
 
-    return {
-        call,
-        successMessage,
-        errorMessage,
-    }
+  return {
+    call,
+    successMessage,
+    errorMessage,
+  }
 }
 
 const NotificationPage: React.FC = () => {
-    const { workspace, updateWebhook, testWebhook } = useWorkspace()
+  const { workspace, updateWebhook, testWebhook } = useWorkspace()
 
-    const {
-        call: onSubmitWebhook,
-        errorMessage,
-        successMessage,
-    } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data))
+  const {
+    call: onSubmitWebhook,
+    errorMessage,
+    successMessage,
+  } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data))
 
-    const onTestWebhook = async (data: WebhookPayload) => {
-        await testWebhook(data)
-    }
+  const onTestWebhook = async (data: WebhookPayload) => {
+    await testWebhook(data)
+  }
 
-    const firstNotification = workspace.notifications?.[0]
+  const firstNotification = workspace.notifications?.[0]
 
-    const initialValues = useMemo(
-        () => ({
-            webhook: firstNotification?.slackConfiguration?.webhook,
-            sendOnSuccess: firstNotification?.sendOnSuccess,
-            sendOnFailure: firstNotification?.sendOnFailure,
-        }),
-        [firstNotification]
-    )
+  const initialValues = useMemo(
+    () => ({
+      webhook: firstNotification?.slackConfiguration?.webhook,
+      sendOnSuccess: firstNotification?.sendOnSuccess,
+      sendOnFailure: firstNotification?.sendOnFailure,
+    }),
+    [firstNotification]
+  )
 
-    return (
-        <>
-            <HeadTitle
-                titles={[
-                    { id: 'sidebar.settings' },
-                    { id: 'settings.notifications' },
-                ]}
-            />
-            <SettingsCard
-                title={<FormattedMessage id="settings.notificationSettings" />}
-            >
-                <Content>
-                    <WebHookForm
-                        webhook={initialValues}
-                        onSubmit={onSubmitWebhook}
-                        onTest={onTestWebhook}
-                        errorMessage={errorMessage}
-                        successMessage={successMessage}
-                    />
-                </Content>
-            </SettingsCard>
-        </>
-    )
+  return (
+    <>
+      <HeadTitle
+        titles={[{ id: 'sidebar.settings' }, { id: 'settings.notifications' }]}
+      />
+      <SettingsCard
+        title={<FormattedMessage id="settings.notificationSettings" />}
+      >
+        <Content>
+          <WebHookForm
+            webhook={initialValues}
+            onSubmit={onSubmitWebhook}
+            onTest={onTestWebhook}
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+          />
+        </Content>
+      </SettingsCard>
+    </>
+  )
 }
 
 export default NotificationPage

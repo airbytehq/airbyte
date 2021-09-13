@@ -1,22 +1,23 @@
-import { MutateShape, Resource, SchemaDetail } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import { MutateShape, Resource, SchemaDetail } from 'rest-hooks'
+import BaseResource from './BaseResource'
 
 export interface Notifications {
-  status: string;
-  message: string;
+  status: string
+  message: string
 }
 
 export default class NotificationsResource
   extends BaseResource
-  implements Notifications {
-  readonly status: string = "";
-  readonly message: string = "";
+  implements Notifications
+{
+  readonly status: string = ''
+  readonly message: string = ''
 
   pk(): string {
-    return "";
+    return ''
   }
 
-  static urlRoot = "notifications";
+  static urlRoot = 'notifications'
 
   static tryShape<T extends typeof Resource>(
     this: T
@@ -24,10 +25,10 @@ export default class NotificationsResource
     return {
       ...super.partialUpdateShape(),
       getFetchKey: (params) =>
-        "POST /notifications/try" + JSON.stringify(params),
+        'POST /notifications/try' + JSON.stringify(params),
       fetch: async (params) =>
-        this.fetch("post", `${this.url(params)}/try`, params),
+        this.fetch('post', `${this.url(params)}/try`, params),
       schema: this,
-    };
+    }
   }
 }

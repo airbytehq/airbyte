@@ -13,39 +13,36 @@ import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
 import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const AllDestinationsPage: React.FC = () => {
-    const { push } = useRouter()
-    const { workspace } = useWorkspace()
-    const { destinations } = useResource(DestinationResource.listShape(), {
-        workspaceId: workspace.workspaceId,
-    })
+  const { push } = useRouter()
+  const { workspace } = useWorkspace()
+  const { destinations } = useResource(DestinationResource.listShape(), {
+    workspaceId: workspace.workspaceId,
+  })
 
-    const onCreateDestination = () =>
-        push(`${Routes.Destination}${Routes.DestinationNew}`)
+  const onCreateDestination = () =>
+    push(`${Routes.Destination}${Routes.DestinationNew}`)
 
-    return (
-        <MainPageWithScroll
-            headTitle={<HeadTitle titles={[{ id: 'admin.destinations' }]} />}
-            pageTitle={
-                <PageTitle
-                    title={<FormattedMessage id="admin.destinations" />}
-                    endComponent={
-                        <Button
-                            onClick={onCreateDestination}
-                            data-id="new-destination"
-                        >
-                            <FormattedMessage id="destination.newDestination" />
-                        </Button>
-                    }
-                />
-            }
-        >
-            {destinations.length ? (
-                <DestinationsTable destinations={destinations} />
-            ) : (
-                <Placeholder resource={ResourceTypes.Destinations} />
-            )}
-        </MainPageWithScroll>
-    )
+  return (
+    <MainPageWithScroll
+      headTitle={<HeadTitle titles={[{ id: 'admin.destinations' }]} />}
+      pageTitle={
+        <PageTitle
+          title={<FormattedMessage id="admin.destinations" />}
+          endComponent={
+            <Button onClick={onCreateDestination} data-id="new-destination">
+              <FormattedMessage id="destination.newDestination" />
+            </Button>
+          }
+        />
+      }
+    >
+      {destinations.length ? (
+        <DestinationsTable destinations={destinations} />
+      ) : (
+        <Placeholder resource={ResourceTypes.Destinations} />
+      )}
+    </MainPageWithScroll>
+  )
 }
 
 export default AllDestinationsPage

@@ -1,3 +1,3 @@
-import AllConnectionsPage from "./AllConnectionsPage";
+import AllConnectionsPage from './AllConnectionsPage'
 
-export default AllConnectionsPage;
+export default AllConnectionsPage

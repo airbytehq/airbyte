@@ -1,9 +1,9 @@
 import React, { Suspense, useMemo } from 'react'
 import {
-    BrowserRouter as Router,
-    Redirect,
-    Route,
-    Switch,
+  BrowserRouter as Router,
+  Redirect,
+  Route,
+  Switch,
 } from 'react-router-dom'
 import { useIntl } from 'react-intl'
 
@@ -25,111 +25,111 @@ import { useApiHealthPoll } from '@app/hooks/services/Health'
 import { WithPageAnalytics } from './withPageAnalytics'
 
 export enum Routes {
-    Preferences = '/preferences',
-    Onboarding = '/onboarding',
+  Preferences = '/preferences',
+  Onboarding = '/onboarding',
 
-    Connections = '/connections',
-    Destination = '/destination',
-    Source = '/source',
-    Connection = '/connection',
-    ConnectionNew = '/new-connection',
-    SourceNew = '/new-source',
-    DestinationNew = '/new-destination',
-    Settings = '/settings',
-    Configuration = '/configuration',
-    Notifications = '/notifications',
-    Metrics = '/metrics',
-    Account = '/account',
-    Root = '/',
+  Connections = '/connections',
+  Destination = '/destination',
+  Source = '/source',
+  Connection = '/connection',
+  ConnectionNew = '/new-connection',
+  SourceNew = '/new-source',
+  DestinationNew = '/new-destination',
+  Settings = '/settings',
+  Configuration = '/configuration',
+  Notifications = '/notifications',
+  Metrics = '/metrics',
+  Account = '/account',
+  Root = '/',
 }
 
 const MainViewRoutes = () => (
-    <MainView>
-        <Suspense fallback={<LoadingPage />}>
-            <Switch>
-                <Route path={Routes.Destination}>
-                    <DestinationPage />
-                </Route>
-                <Route path={Routes.Source}>
-                    <SourcesPage />
-                </Route>
-                <Route path={Routes.Connections}>
-                    <ConnectionPage />
-                </Route>
-                <Route path={Routes.Settings}>
-                    <SettingsPage />
-                </Route>
-                <Route exact path={Routes.Root}>
-                    <SourcesPage />
-                </Route>
-                <Redirect to={Routes.Root} />
-            </Switch>
-        </Suspense>
-    </MainView>
+  <MainView>
+    <Suspense fallback={<LoadingPage />}>
+      <Switch>
+        <Route path={Routes.Destination}>
+          <DestinationPage />
+        </Route>
+        <Route path={Routes.Source}>
+          <SourcesPage />
+        </Route>
+        <Route path={Routes.Connections}>
+          <ConnectionPage />
+        </Route>
+        <Route path={Routes.Settings}>
+          <SettingsPage />
+        </Route>
+        <Route exact path={Routes.Root}>
+          <SourcesPage />
+        </Route>
+        <Redirect to={Routes.Root} />
+      </Switch>
+    </Suspense>
+  </MainView>
 )
 
 const PreferencesRoutes = () => (
-    <Switch>
-        <Route path={Routes.Preferences}>
-            <PreferencesPage />
-        </Route>
-        <Redirect to={Routes.Preferences} />
-    </Switch>
+  <Switch>
+    <Route path={Routes.Preferences}>
+      <PreferencesPage />
+    </Route>
+    <Redirect to={Routes.Preferences} />
+  </Switch>
 )
 
 const OnboardingsRoutes = () => (
-    <Switch>
-        <Route path={Routes.Onboarding}>
-            <OnboardingPage />
-        </Route>
-        <Redirect to={Routes.Onboarding} />
-    </Switch>
+  <Switch>
+    <Route path={Routes.Onboarding}>
+      <OnboardingPage />
+    </Route>
+    <Redirect to={Routes.Onboarding} />
+  </Switch>
 )
 
 function useDemo() {
-    const { formatMessage } = useIntl()
-    const config = useConfig()
+  const { formatMessage } = useIntl()
+  const config = useConfig()
 
-    const demoNotification = useMemo(
-        () => ({
-            id: 'demo.message',
-            title: formatMessage({ id: 'demo.message.title' }),
-            text: formatMessage({ id: 'demo.message.body' }),
-            nonClosable: true,
-        }),
-        [formatMessage]
-    )
+  const demoNotification = useMemo(
+    () => ({
+      id: 'demo.message',
+      title: formatMessage({ id: 'demo.message.title' }),
+      text: formatMessage({ id: 'demo.message.body' }),
+      nonClosable: true,
+    }),
+    [formatMessage]
+  )
 
-    useNotificationService(config.isDemo ? demoNotification : undefined)
+  useNotificationService(config.isDemo ? demoNotification : undefined)
 }
 
 export const Routing: React.FC = () => {
-    const config = useConfig()
+  const config = useConfig()
 
-    useApiHealthPoll()
-    useDemo()
+  useApiHealthPoll()
+  useDemo()
 
-    const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace()
 
-    return (
-        <Router>
-            <Suspense fallback={<LoadingPage />}>
-                {!workspace.initialSetupComplete ? (
-                    <PreferencesRoutes />
-                ) : workspace.displaySetupWizard ? (
-                    <OnboardingsRoutes />
-                ) : (
-                    <>
-                        <WithPageAnalytics />
-                        <MainViewRoutes />
-                    </>
-                )}
-                <SupportChat
-                    papercupsConfig={config.papercups}
-                    customerId={workspace.customerId}
-                    onClick={() => window.open(config.ui.slackLink, '_blank')}
-                />
-            </Suspense>
-        </Router>
-    )
+  return (
+    <Router>
+      <Suspense fallback={<LoadingPage />}>
+        {!workspace.initialSetupComplete ? (
+          <PreferencesRoutes />
+        ) : workspace.displaySetupWizard ? (
+          <OnboardingsRoutes />
+        ) : (
+          <>
+            <WithPageAnalytics />
+            <MainViewRoutes />
+          </>
+        )}
+        <SupportChat
+          papercupsConfig={config.papercups}
+          customerId={workspace.customerId}
+          onClick={() => window.open(config.ui.slackLink, '_blank')}
+        />
+      </Suspense>
+    </Router>
+  )
 }

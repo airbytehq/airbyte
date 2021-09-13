@@ -1,27 +1,27 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { Theme } from "theme";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import React, { useState } from 'react'
+import styled from 'styled-components'
+import { Theme } from 'theme'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons'
 
-import Button from "../Button";
+import Button from '../Button'
 
-type IStyleProps = InputProps & { theme: Theme };
+type IStyleProps = InputProps & { theme: Theme }
 
 const getBackgroundColor = (props: IStyleProps) => {
   if (props.error) {
-    return props.theme.greyColor10;
+    return props.theme.greyColor10
   } else if (props.light) {
-    return props.theme.whiteColor;
+    return props.theme.whiteColor
   }
 
-  return props.theme.greyColor0;
-};
+  return props.theme.greyColor0
+}
 
 export type InputProps = {
-  error?: boolean;
-  light?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  error?: boolean
+  light?: boolean
+} & React.InputHTMLAttributes<HTMLInputElement>
 
 const InputComponent = styled.input<InputProps>`
   outline: none;
@@ -59,28 +59,28 @@ const InputComponent = styled.input<InputProps>`
     pointer-events: none;
     color: ${({ theme }) => theme.greyColor55};
   }
-`;
+`
 
 const Container = styled.div`
   width: 100%;
   position: relative;
-`;
+`
 
 const VisibilityButton = styled(Button)`
   position: absolute;
   right: 2px;
   top: 7px;
-`;
+`
 
 const Input: React.FC<InputProps> = (props) => {
-  const [isContentVisible, setIsContentVisible] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(false)
 
-  if (props.type === "password") {
+  if (props.type === 'password') {
     return (
       <Container>
         <InputComponent
           {...props}
-          type={isContentVisible ? "text" : "password"}
+          type={isContentVisible ? 'text' : 'password'}
         />
         {props.disabled ? null : (
           <VisibilityButton
@@ -92,11 +92,11 @@ const Input: React.FC<InputProps> = (props) => {
           </VisibilityButton>
         )}
       </Container>
-    );
+    )
   }
 
-  return <InputComponent {...props} />;
-};
+  return <InputComponent {...props} />
+}
 
-export default Input;
-export { Input };
+export default Input
+export { Input }

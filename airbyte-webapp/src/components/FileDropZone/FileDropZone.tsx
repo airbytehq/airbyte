@@ -1,8 +1,8 @@
-import React from "react";
-import { DropzoneOptions, useDropzone } from "react-dropzone";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile } from "@fortawesome/free-regular-svg-icons";
+import React from 'react'
+import { DropzoneOptions, useDropzone } from 'react-dropzone'
+import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFile } from '@fortawesome/free-regular-svg-icons'
 
 const Content = styled.div<{ hasFiles: boolean }>`
   width: 100%;
@@ -39,7 +39,7 @@ const Content = styled.div<{ hasFiles: boolean }>`
     pointer-events: none;
     background: ${({ theme }) => theme.greyColor55};
   }
-`;
+`
 
 const FileView = styled.div`
   color: ${({ theme }) => theme.textColor};
@@ -47,21 +47,21 @@ const FileView = styled.div`
   &:first-child {
     margin-top: 7px;
   }
-`;
+`
 
 const FileIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   margin-right: 8px;
-`;
+`
 
 type IProps = {
-  className?: string;
-  mainText?: React.ReactNode;
-  options?: DropzoneOptions;
-};
+  className?: string
+  mainText?: React.ReactNode
+  options?: DropzoneOptions
+}
 
 const FileDropZone: React.FC<IProps> = ({ className, mainText, options }) => {
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone(options);
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone(options)
 
   return (
     <Content
@@ -79,7 +79,7 @@ const FileDropZone: React.FC<IProps> = ({ className, mainText, options }) => {
         ))}
       </div>
     </Content>
-  );
-};
+  )
+}
 
-export default FileDropZone;
+export default FileDropZone

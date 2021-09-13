@@ -1,5 +1,5 @@
-import ImageBlock from "./ImageBlock";
+import ImageBlock from './ImageBlock'
 
-export * from "./ImageBlock";
+export * from './ImageBlock'
 
-export default ImageBlock;
+export default ImageBlock

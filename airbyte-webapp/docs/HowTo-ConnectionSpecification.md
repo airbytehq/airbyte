@@ -4,6 +4,7 @@
 4. edit specifications property to the connectionConfigration you want
 
 e.g.
+
 ```
 {
     "$schema": "http://json-schema.org/draft-07/schema#",

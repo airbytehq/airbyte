@@ -4,9 +4,9 @@ import { useResource } from 'rest-hooks'
 import { useAuth } from '@app/packages/firebaseReact'
 
 import {
-    ServicesProvider,
-    useGetService,
-    useInjectServices,
+  ServicesProvider,
+  useGetService,
+  useInjectServices,
 } from '@app/core/servicesProvider'
 import { useApiServices } from '@app/core/defaultServices'
 import { ConfigProvider } from './ConfigProvider'
@@ -22,17 +22,17 @@ import { RequestMiddleware } from '@app/core/request/RequestMiddleware'
 import { LoadingPage } from '@app/components'
 
 export const useCustomerIdProvider = (): string => {
-    const { user } = useAuthService()
-    return user?.userId ?? ''
+  const { user } = useAuthService()
+  return user?.userId ?? ''
 }
 
 export const useCurrentWorkspaceProvider = (): Workspace => {
-    const { currentWorkspaceId } = useWorkspaceService()
-    const workspace = useResource(WorkspaceResource.detailShape(), {
-        workspaceId: currentWorkspaceId || null,
-    })
+  const { currentWorkspaceId } = useWorkspaceService()
+  const workspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: currentWorkspaceId || null,
+  })
 
-    return workspace
+  return workspace
 }
 
 /**
@@ -41,54 +41,54 @@ export const useCurrentWorkspaceProvider = (): Workspace => {
  * and also adds all overrides of hooks/services
  */
 const AppServicesProvider: React.FC = ({ children }) => {
-    const services = useMemo(
-        () => ({
-            currentWorkspaceProvider: useCurrentWorkspaceProvider,
-            useCustomerIdProvider: useCustomerIdProvider,
-        }),
-        []
-    )
-    return (
-        <ServicesProvider inject={services}>
-            <ConfigProvider>
-                <FirebaseSdkProvider>
-                    <ServiceOverrides>{children}</ServiceOverrides>
-                </FirebaseSdkProvider>
-            </ConfigProvider>
-        </ServicesProvider>
-    )
+  const services = useMemo(
+    () => ({
+      currentWorkspaceProvider: useCurrentWorkspaceProvider,
+      useCustomerIdProvider: useCustomerIdProvider,
+    }),
+    []
+  )
+  return (
+    <ServicesProvider inject={services}>
+      <ConfigProvider>
+        <FirebaseSdkProvider>
+          <ServiceOverrides>{children}</ServiceOverrides>
+        </FirebaseSdkProvider>
+      </ConfigProvider>
+    </ServicesProvider>
+  )
 }
 
 const ServiceOverrides: React.FC = React.memo(({ children }) => {
-    const auth = useAuth()
+  const auth = useAuth()
 
-    const middlewares: RequestMiddleware[] = useMemo(
-        () => [
-            RequestAuthMiddleware({
-                getValue() {
-                    return auth.currentUser?.getIdToken() ?? ''
-                },
-            }),
-        ],
-        [auth]
-    )
+  const middlewares: RequestMiddleware[] = useMemo(
+    () => [
+      RequestAuthMiddleware({
+        getValue() {
+          return auth.currentUser?.getIdToken() ?? ''
+        },
+      }),
+    ],
+    [auth]
+  )
 
-    const { cloudApiUrl } = useConfig()
+  const { cloudApiUrl } = useConfig()
 
-    const inject = useMemo(
-        () => ({
-            UserService: new UserService(cloudApiUrl, middlewares),
-            DefaultRequestMiddlewares: middlewares,
-        }),
-        [cloudApiUrl, middlewares]
-    )
+  const inject = useMemo(
+    () => ({
+      UserService: new UserService(cloudApiUrl, middlewares),
+      DefaultRequestMiddlewares: middlewares,
+    }),
+    [cloudApiUrl, middlewares]
+  )
 
-    useInjectServices(inject)
-    useApiServices()
+  useInjectServices(inject)
+  useApiServices()
 
-    const registeredMiddlewares = useGetService('DefaultRequestMiddlewares')
+  const registeredMiddlewares = useGetService('DefaultRequestMiddlewares')
 
-    return registeredMiddlewares ? <>{children}</> : <LoadingPage />
+  return registeredMiddlewares ? <>{children}</> : <LoadingPage />
 })
 
 export { AppServicesProvider }

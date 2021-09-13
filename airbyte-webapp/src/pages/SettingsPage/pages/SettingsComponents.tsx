@@ -2,13 +2,13 @@ import styled from 'styled-components'
 import { ContentCard } from '@app/components/ContentCard'
 
 export const SettingsCard = styled(ContentCard)`
-    width: 100%;
+  width: 100%;
 
-    &:not(:first-child) {
-        margin-top: 10px;
-    }
+  &:not(:first-child) {
+    margin-top: 10px;
+  }
 `
 
 export const Content = styled.div`
-    padding: 27px 26px 15px;
+  padding: 27px 26px 15px;
 `

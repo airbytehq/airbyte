@@ -5,36 +5,36 @@ import { FormattedMessage } from 'react-intl'
 import { Button, H4, StatusIcon } from '@app/components'
 
 const Block = styled.div`
-    margin: 40px;
-    text-align: center;
+  margin: 40px;
+  text-align: center;
 `
 const Title = styled(H4)`
-    padding: 16px 0 10px;
+  padding: 16px 0 10px;
 `
 
 const AgainButton = styled(Button)`
-    min-width: 239px;
+  min-width: 239px;
 `
 
 type TryAfterErrorBlockProps = {
-    message?: React.ReactNode
-    onClick: () => void
-    additionControl?: React.ReactNode
+  message?: React.ReactNode
+  onClick: () => void
+  additionControl?: React.ReactNode
 }
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({
-    message,
-    onClick,
+  message,
+  onClick,
 }) => (
-    <Block>
-        <StatusIcon success={false} big />
-        <Title center>
-            {message || <FormattedMessage id="form.schemaFailed" />}
-        </Title>
-        <AgainButton onClick={onClick} danger>
-            <FormattedMessage id="form.tryAgain" />
-        </AgainButton>
-    </Block>
+  <Block>
+    <StatusIcon success={false} big />
+    <Title center>
+      {message || <FormattedMessage id="form.schemaFailed" />}
+    </Title>
+    <AgainButton onClick={onClick} danger>
+      <FormattedMessage id="form.tryAgain" />
+    </AgainButton>
+  </Block>
 )
 
 export default TryAfterErrorBlock

@@ -13,34 +13,34 @@ import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
 import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const AllSourcesPage: React.FC = () => {
-    const { push } = useRouter()
-    const { workspace } = useWorkspace()
-    const { sources } = useResource(SourceResource.listShape(), {
-        workspaceId: workspace.workspaceId,
-    })
+  const { push } = useRouter()
+  const { workspace } = useWorkspace()
+  const { sources } = useResource(SourceResource.listShape(), {
+    workspaceId: workspace.workspaceId,
+  })
 
-    const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`)
-    return (
-        <MainPageWithScroll
-            headTitle={<HeadTitle titles={[{ id: 'admin.sources' }]} />}
-            pageTitle={
-                <PageTitle
-                    title={<FormattedMessage id="sidebar.sources" />}
-                    endComponent={
-                        <Button onClick={onCreateSource} data-id="new-source">
-                            <FormattedMessage id="sources.newSource" />
-                        </Button>
-                    }
-                />
-            }
-        >
-            {sources.length ? (
-                <SourcesTable sources={sources} />
-            ) : (
-                <Placeholder resource={ResourceTypes.Sources} />
-            )}
-        </MainPageWithScroll>
-    )
+  const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`)
+  return (
+    <MainPageWithScroll
+      headTitle={<HeadTitle titles={[{ id: 'admin.sources' }]} />}
+      pageTitle={
+        <PageTitle
+          title={<FormattedMessage id="sidebar.sources" />}
+          endComponent={
+            <Button onClick={onCreateSource} data-id="new-source">
+              <FormattedMessage id="sources.newSource" />
+            </Button>
+          }
+        />
+      }
+    >
+      {sources.length ? (
+        <SourcesTable sources={sources} />
+      ) : (
+        <Placeholder resource={ResourceTypes.Sources} />
+      )}
+    </MainPageWithScroll>
+  )
 }
 
 export default AllSourcesPage

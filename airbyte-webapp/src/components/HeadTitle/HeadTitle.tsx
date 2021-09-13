@@ -1,48 +1,48 @@
-import React from "react";
-import { Helmet } from "react-helmet";
-import { useIntl } from "react-intl";
+import React from 'react'
+import { Helmet } from 'react-helmet'
+import { useIntl } from 'react-intl'
 
-const AIRBYTE = "Airbyte";
-const SEPARATOR = "|";
+const AIRBYTE = 'Airbyte'
+const SEPARATOR = '|'
 
 type FormattedHeadTitle = {
-  id: string;
-  values?: Record<string, string>;
-};
+  id: string
+  values?: Record<string, string>
+}
 
 type StringHeadTitle = {
-  title: string;
-};
+  title: string
+}
 
-type HeadTitleDefinition = FormattedHeadTitle | StringHeadTitle;
+type HeadTitleDefinition = FormattedHeadTitle | StringHeadTitle
 
 const isStringTitle = (v: HeadTitleDefinition): v is StringHeadTitle => {
-  return "title" in v;
-};
+  return 'title' in v
+}
 
 type IProps = {
-  titles: HeadTitleDefinition[];
-};
+  titles: HeadTitleDefinition[]
+}
 
 /**
  * Titles defined by {@link HeadTitleDefinition} will be
  * chained together with the {@link SEPARATOR}.
  */
 const HeadTitle: React.FC<IProps> = ({ titles }) => {
-  const intl = useIntl();
+  const intl = useIntl()
 
   const getTitle = (d: HeadTitleDefinition): string => {
     return isStringTitle(d)
       ? d.title
-      : intl.formatMessage({ id: d.id }, d.values);
-  };
+      : intl.formatMessage({ id: d.id }, d.values)
+  }
 
-  const headTitle = titles.map(getTitle).join(` ${SEPARATOR} `);
+  const headTitle = titles.map(getTitle).join(` ${SEPARATOR} `)
   return (
     <Helmet titleTemplate={`${AIRBYTE} ${SEPARATOR} %s`} defaultTitle={AIRBYTE}>
       <title>{headTitle}</title>
     </Helmet>
-  );
-};
+  )
+}
 
-export default HeadTitle;
+export default HeadTitle

@@ -6,18 +6,17 @@ import { ScheduleProperties } from '@app/core/resources/Connection'
 import { equal } from '@app/utils/objects'
 
 type IProps = {
-    value: ScheduleProperties
-    enabled?: boolean
+  value: ScheduleProperties
+  enabled?: boolean
 }
 
 const Content = styled.div<{ enabled?: boolean }>`
-    color: ${({ theme, enabled }) =>
-        !enabled ? theme.greyColor40 : 'inherit'};
+  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : 'inherit')};
 `
 
 const FrequencyCell: React.FC<IProps> = ({ value, enabled }) => {
-    const cellText = FrequencyConfig.find((item) => equal(item.config, value))
-    return <Content enabled={enabled}>{cellText?.text || ''}</Content>
+  const cellText = FrequencyConfig.find((item) => equal(item.config, value))
+  return <Content enabled={enabled}>{cellText?.text || ''}</Content>
 }
 
 export default FrequencyCell

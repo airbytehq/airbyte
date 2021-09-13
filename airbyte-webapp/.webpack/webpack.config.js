@@ -9,72 +9,69 @@ const Dotenv = require('dotenv-webpack')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 const options = {
-    mode: 'none',
-    resolve: {
-        alias: {
-            '@app': path.resolve(__dirname, '../src'),
+  mode: 'none',
+  resolve: {
+    alias: {
+      '@app': path.resolve(__dirname, '../src'),
+    },
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.html'],
+    modules: ['node_modules', 'src'],
+  },
+  resolveLoader: {
+    modules: ['node_modules', 'src'],
+  },
+  entry: {
+    main: ['@babel/polyfill', './src/main.ts'],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.[jt]sx?$/,
+        resolve: {
+          fullySpecified: false,
         },
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.html'],
-        modules: ['node_modules', 'src'],
-    },
-    resolveLoader: {
-        modules: ['node_modules', 'src'],
-    },
-    entry: {
-        main: ['@babel/polyfill', './src/main.ts'],
-    },
-    module: {
-        rules: [
-            {
-                test: /\.[jt]sx?$/,
-                resolve: {
-                    fullySpecified: false,
-                },
-                use: [
-                    {
-                        loader: require.resolve('babel-loader'),
-                        options: {
-                            plugins: [
-                                isDevelopment &&
-                                    require.resolve('react-refresh/babel'),
-                            ].filter(Boolean),
-                        },
-                    },
-                ],
+        use: [
+          {
+            loader: require.resolve('babel-loader'),
+            options: {
+              plugins: [
+                isDevelopment && require.resolve('react-refresh/babel'),
+              ].filter(Boolean),
             },
-            {
-                test: /\.(png|jpe?g|gif|svg)$/i,
-                use: [
-                    {
-                        loader: 'file-loader',
-                    },
-                ],
-            },
+          },
         ],
-    },
-    plugins: [
-        new Dotenv({
-            path:
-                process.env.NODE_ENV === 'production'
-                    ? './.env.prod'
-                    : './.env.dev',
-        }),
-        new CopyWebpackPlugin({
-            patterns: [
-                {
-                    from: 'public',
-                    to: '',
-                    globOptions: {
-                        ignore: ['.gitkeep', '**/.DS_Store', '**/Thumbs.db'],
-                    },
-                },
-            ],
-        }),
-        isDevelopment && new HotModuleReplacementPlugin(),
-        isDevelopment && new ReactRefreshWebpackPlugin(),
-    ].filter(Boolean),
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [
+    new Dotenv({
+      path:
+        process.env.NODE_ENV === 'production' ? './.env.prod' : './.env.dev',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public',
+          to: '',
+          globOptions: {
+            ignore: ['.gitkeep', '**/.DS_Store', '**/Thumbs.db'],
+          },
+        },
+      ],
+    }),
+    isDevelopment && new HotModuleReplacementPlugin(),
+    isDevelopment && new ReactRefreshWebpackPlugin(),
+  ].filter(Boolean),
 }
 
 module.exports = isDevelopment
-    ? webpackMerge(options, require('./webpack.dev'))
-    : webpackMerge(options, require('./webpack.dist'))
+  ? webpackMerge(options, require('./webpack.dev'))
+  : webpackMerge(options, require('./webpack.dist'))

@@ -13,72 +13,72 @@ import DestinationDefinitionResource from '@app/core/resources/DestinationDefini
 import useWorkspace from '@app/hooks/services/useWorkspace'
 
 type IProps = {
-    connections: Connection[]
+  connections: Connection[]
 }
 
 const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
-    const { push } = useRouter()
-    const { workspace } = useWorkspace()
-    const { changeStatus, syncManualConnection } = useSyncActions()
+  const { push } = useRouter()
+  const { workspace } = useWorkspace()
+  const { changeStatus, syncManualConnection } = useSyncActions()
 
-    const { sourceDefinitions } = useResource(
-        SourceDefinitionResource.listShape(),
-        {
-            workspaceId: workspace.workspaceId,
-        }
-    )
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
+    }
+  )
 
-    const { destinationDefinitions } = useResource(
-        DestinationDefinitionResource.listShape(),
-        {
-            workspaceId: workspace.workspaceId,
-        }
-    )
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
+    }
+  )
 
-    const data = getConnectionTableData(
-        connections,
-        sourceDefinitions,
-        destinationDefinitions,
-        'source'
-    )
+  const data = getConnectionTableData(
+    connections,
+    sourceDefinitions,
+    destinationDefinitions,
+    'source'
+  )
 
-    const onChangeStatus = useCallback(
-        async (connectionId: string) => {
-            const connection = connections.find(
-                (item) => item.connectionId === connectionId
-            )
+  const onChangeStatus = useCallback(
+    async (connectionId: string) => {
+      const connection = connections.find(
+        (item) => item.connectionId === connectionId
+      )
 
-            if (connection) {
-                await changeStatus(connection)
-            }
-        },
-        [changeStatus, connections]
-    )
+      if (connection) {
+        await changeStatus(connection)
+      }
+    },
+    [changeStatus, connections]
+  )
 
-    const onSync = useCallback(
-        async (connectionId: string) => {
-            const connection = connections.find(
-                (item) => item.connectionId === connectionId
-            )
-            if (connection) {
-                await syncManualConnection(connection)
-            }
-        },
-        [connections, syncManualConnection]
-    )
+  const onSync = useCallback(
+    async (connectionId: string) => {
+      const connection = connections.find(
+        (item) => item.connectionId === connectionId
+      )
+      if (connection) {
+        await syncManualConnection(connection)
+      }
+    },
+    [connections, syncManualConnection]
+  )
 
-    const clickRow = (source: ITableDataItem) =>
-        push(`${Routes.Connections}/${source.connectionId}`)
+  const clickRow = (source: ITableDataItem) =>
+    push(`${Routes.Connections}/${source.connectionId}`)
 
-    return (
-        <ConnectionTable
-            data={data}
-            onClickRow={clickRow}
-            entity="source"
-            onChangeStatus={onChangeStatus}
-            onSync={onSync}
-        />
-    )
+  return (
+    <ConnectionTable
+      data={data}
+      onClickRow={clickRow}
+      entity="source"
+      onChangeStatus={onChangeStatus}
+      onSync={onSync}
+    />
+  )
 }
 
 export default SourceConnectionTable

@@ -1,5 +1,5 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react'
+import styled from 'styled-components'
 
 const TooltipContainer = styled.div`
   background: ${({ theme }) => theme.textColor90};
@@ -20,12 +20,12 @@ const TooltipContainer = styled.div`
   div:hover > & {
     display: block;
   }
-`;
+`
 
 type TooltipProps = {
-  items: string[];
-  className?: string;
-};
+  items: string[]
+  className?: string
+}
 
 const Tooltip: React.FC<TooltipProps> = ({ items, className }) => {
   return (
@@ -33,11 +33,11 @@ const Tooltip: React.FC<TooltipProps> = ({ items, className }) => {
       {items.map((value, key) => (
         <div key={`tooltip-item-${key}`}>
           {value}
-          {key < items.length - 1 ? "," : null}
+          {key < items.length - 1 ? ',' : null}
         </div>
       ))}
     </TooltipContainer>
-  );
-};
+  )
+}
 
-export default Tooltip;
+export default Tooltip

@@ -6,21 +6,21 @@ import BaseClearView from '@app/components/BaseClearView'
 import { H4 } from '@app/components'
 
 const Content = styled(ContentCard)`
-    width: 100%;
-    max-width: 600px;
-    padding: 50px 15px;
+  width: 100%;
+  max-width: 600px;
+  padding: 50px 15px;
 `
 
 const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({
-    message,
+  message,
 }) => {
-    return (
-        <BaseClearView>
-            <Content>
-                <H4 center>{message}</H4>
-            </Content>
-        </BaseClearView>
-    )
+  return (
+    <BaseClearView>
+      <Content>
+        <H4 center>{message}</H4>
+      </Content>
+    </BaseClearView>
+  )
 }
 
 export { ErrorOccurredView }

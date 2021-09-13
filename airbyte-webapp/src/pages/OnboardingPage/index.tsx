@@ -1,3 +1,3 @@
-import OnboardingPage from "./OnboardingPage";
+import OnboardingPage from './OnboardingPage'
 
-export default OnboardingPage;
+export default OnboardingPage

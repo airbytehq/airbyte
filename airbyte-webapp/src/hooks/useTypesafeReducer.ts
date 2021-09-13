@@ -1,5 +1,5 @@
-import { Reducer, useReducer, useMemo } from "react";
-import { ActionType } from "typesafe-actions";
+import { Reducer, useReducer, useMemo } from 'react'
+import { ActionType } from 'typesafe-actions'
 
 function useTypesafeReducer<
   StateShape,
@@ -9,7 +9,7 @@ function useTypesafeReducer<
   initialState: StateShape,
   actions: Actions
 ): [StateShape, Actions] {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState)
   const boundActions = useMemo(() => {
     function bindActionCreator(
       actionCreator: (...args: any[]) => any,
@@ -18,18 +18,18 @@ function useTypesafeReducer<
       return function (this: any) {
         return dispatcher(
           // eslint-disable-next-line prefer-rest-params
-          actionCreator.apply(this as any, (arguments as any) as any[])
-        );
-      };
+          actionCreator.apply(this as any, arguments as any as any[])
+        )
+      }
     }
 
     const newActions = Object.keys(actions).reduce((a, action) => {
-      a[action] = bindActionCreator(actions[action], dispatch);
-      return a;
-    }, {} as { [key: string]: (...args: any[]) => any });
-    return newActions;
-  }, [dispatch, actions]);
-  return [state, boundActions as Actions];
+      a[action] = bindActionCreator(actions[action], dispatch)
+      return a
+    }, {} as { [key: string]: (...args: any[]) => any })
+    return newActions
+  }, [dispatch, actions])
+  return [state, boundActions as Actions]
 }
 
-export default useTypesafeReducer;
+export default useTypesafeReducer

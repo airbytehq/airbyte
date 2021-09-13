@@ -6,30 +6,30 @@ import { SourceDefinition } from '@app/core/resources/SourceDefinition'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
 
 type IProps = {
-    selectedService: SourceDefinition | DestinationDefinition
-    documentationUrl: string
+  selectedService: SourceDefinition | DestinationDefinition
+  documentationUrl: string
 }
 
 const LinkToInstruction = styled.a`
-    margin-left: 19px;
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 17px;
-    text-decoration: underline;
+  margin-left: 19px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  text-decoration: underline;
 
-    color: ${({ theme }) => theme.primaryColor};
+  color: ${({ theme }) => theme.primaryColor};
 `
 
 const Instruction: React.FC<IProps> = ({
-    selectedService,
-    documentationUrl,
+  selectedService,
+  documentationUrl,
 }) => (
-    <LinkToInstruction href={documentationUrl} target="_blank">
-        <FormattedMessage
-            id="onboarding.instructionsLink"
-            values={{ name: selectedService.name }}
-        />
-    </LinkToInstruction>
+  <LinkToInstruction href={documentationUrl} target="_blank">
+    <FormattedMessage
+      id="onboarding.instructionsLink"
+      values={{ name: selectedService.name }}
+    />
+  </LinkToInstruction>
 )
 
 export default Instruction

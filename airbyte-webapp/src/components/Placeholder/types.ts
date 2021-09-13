@@ -1,5 +1,5 @@
 export enum ResourceTypes {
-  Sources = "sources",
-  Connections = "connections",
-  Destinations = "destinations",
+  Sources = 'sources',
+  Connections = 'connections',
+  Destinations = 'destinations',
 }

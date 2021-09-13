@@ -8,54 +8,52 @@ import TestingConnectionSuccess from './TestingConnectionSuccess'
 import TestingConnectionError from './TestingConnectionError'
 
 type IProps = {
-    formType: 'source' | 'destination' | 'connection'
-    isSubmitting: boolean
-    hasSuccess?: boolean
-    isLoadSchema?: boolean
-    errorMessage?: React.ReactNode
-    additionBottomControls?: React.ReactNode
+  formType: 'source' | 'destination' | 'connection'
+  isSubmitting: boolean
+  hasSuccess?: boolean
+  isLoadSchema?: boolean
+  errorMessage?: React.ReactNode
+  additionBottomControls?: React.ReactNode
 }
 
 const ButtonContainer = styled.div`
-    margin-top: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `
 
 const CreateControls: React.FC<IProps> = ({
-    isSubmitting,
-    formType,
-    hasSuccess,
-    errorMessage,
-    isLoadSchema,
-    additionBottomControls,
+  isSubmitting,
+  formType,
+  hasSuccess,
+  errorMessage,
+  isLoadSchema,
+  additionBottomControls,
 }) => {
-    if (hasSuccess) {
-        return <TestingConnectionSuccess />
-    }
+  if (hasSuccess) {
+    return <TestingConnectionSuccess />
+  }
 
-    if (isSubmitting) {
-        return <TestingConnectionSpinner />
-    }
+  if (isSubmitting) {
+    return <TestingConnectionSpinner />
+  }
 
-    return (
-        <ButtonContainer>
-            {errorMessage ? (
-                <TestingConnectionError errorMessage={errorMessage} />
-            ) : (
-                <div />
-            )}
-            <div>
-                {additionBottomControls || null}
-                <Button type="submit" disabled={isLoadSchema}>
-                    <FormattedMessage
-                        id={`onboarding.${formType}SetUp.buttonText`}
-                    />
-                </Button>
-            </div>
-        </ButtonContainer>
-    )
+  return (
+    <ButtonContainer>
+      {errorMessage ? (
+        <TestingConnectionError errorMessage={errorMessage} />
+      ) : (
+        <div />
+      )}
+      <div>
+        {additionBottomControls || null}
+        <Button type="submit" disabled={isLoadSchema}>
+          <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
+        </Button>
+      </div>
+    </ButtonContainer>
+  )
 }
 
 export default CreateControls

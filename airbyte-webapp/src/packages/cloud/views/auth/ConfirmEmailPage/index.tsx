@@ -1,3 +1,3 @@
-import ConfirmEmailPage from "./ConfirmEmailPage";
+import ConfirmEmailPage from './ConfirmEmailPage'
 
-export { ConfirmEmailPage };
+export { ConfirmEmailPage }

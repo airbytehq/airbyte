@@ -1,14 +1,14 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react'
+import styled from 'styled-components'
 
 const BreadcrumbsContainer = styled.div`
   font-weight: normal;
   cursor: default;
-`;
+`
 
 const LastBreadcrumbsItem = styled.span`
   font-weight: bold;
-`;
+`
 
 const BreadcrumbsItem = styled.div`
   display: inline-block;
@@ -18,14 +18,14 @@ const BreadcrumbsItem = styled.div`
   &:hover {
     opacity: 0.8;
   }
-`;
+`
 
 type IProps = {
-  data: Array<{ name: string | React.ReactNode; onClick?: () => void }>;
-};
+  data: Array<{ name: string | React.ReactNode; onClick?: () => void }>
+}
 
 const Breadcrumbs: React.FC<IProps> = ({ data }) => {
-  const lastIndex = data.length - 1;
+  const lastIndex = data.length - 1
 
   return (
     <BreadcrumbsContainer>
@@ -44,7 +44,7 @@ const Breadcrumbs: React.FC<IProps> = ({ data }) => {
         )
       )}
     </BreadcrumbsContainer>
-  );
-};
+  )
+}
 
-export default Breadcrumbs;
+export default Breadcrumbs

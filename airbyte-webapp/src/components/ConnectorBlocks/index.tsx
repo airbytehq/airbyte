@@ -1,5 +1,5 @@
-import ItemTabs, { StepsTypes } from "./ItemTabs";
-import TableItemTitle from "./TableItemTitle";
-import FormPageContent from "./FormPageContent";
+import ItemTabs, { StepsTypes } from './ItemTabs'
+import TableItemTitle from './TableItemTitle'
+import FormPageContent from './FormPageContent'
 
-export { ItemTabs, StepsTypes, TableItemTitle, FormPageContent };
+export { ItemTabs, StepsTypes, TableItemTitle, FormPageContent }

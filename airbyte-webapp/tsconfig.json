@@ -1,21 +1,19 @@
 {
-    "compilerOptions": {
-        "target": "esnext",
-        "strictNullChecks": true,
-        "noEmit": true,
-        "jsx": "react-jsx",
-        "lib": ["es2019", "dom"],
-        "module": "commonjs",
-        "allowSyntheticDefaultImports": true,
-        "resolveJsonModule": true,
-        "typeRoots": ["./node_modules/@types", "./src/types"],
-        "baseUrl": ".",
-        "paths": {
-            "@app/*": ["src/*"]
-        }
-    },
-    "include": ["./src/**/*"],
-    "exclude": ["node_modules",
-      "build"
-    ]
+  "compilerOptions": {
+    "target": "esnext",
+    "strictNullChecks": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["es2019", "dom"],
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/*"]
+    }
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "build"]
 }

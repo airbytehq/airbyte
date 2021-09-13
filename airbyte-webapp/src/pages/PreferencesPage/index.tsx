@@ -1,3 +1,3 @@
-import PreferencesPage from "./PreferencesPage";
+import PreferencesPage from './PreferencesPage'
 
-export default PreferencesPage;
+export default PreferencesPage

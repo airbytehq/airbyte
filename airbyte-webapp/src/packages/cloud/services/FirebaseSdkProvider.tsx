@@ -3,16 +3,16 @@ import { getAuth } from 'firebase/auth'
 import { useConfig } from '@app/packages/cloud/services/config'
 
 import {
-    FirebaseAppProvider,
-    useFirebaseApp,
-    AuthProvider,
+  FirebaseAppProvider,
+  useFirebaseApp,
+  AuthProvider,
 } from '@app/packages/firebaseReact'
 
 const FirebaseAppSdksProvider: React.FC = ({ children }) => {
-    const firebaseApp = useFirebaseApp()
-    const auth = getAuth(firebaseApp)
+  const firebaseApp = useFirebaseApp()
+  const auth = getAuth(firebaseApp)
 
-    return <AuthProvider sdk={auth}>{children}</AuthProvider>
+  return <AuthProvider sdk={auth}>{children}</AuthProvider>
 }
 
 /**
@@ -20,13 +20,13 @@ const FirebaseAppSdksProvider: React.FC = ({ children }) => {
  * based on airbyte app config and also injecting all required firebase sdks
  */
 const FirebaseSdkProvider: React.FC = ({ children }) => {
-    const config = useConfig()
+  const config = useConfig()
 
-    return (
-        <FirebaseAppProvider firebaseConfig={config.firebase}>
-            <FirebaseAppSdksProvider>{children}</FirebaseAppSdksProvider>
-        </FirebaseAppProvider>
-    )
+  return (
+    <FirebaseAppProvider firebaseConfig={config.firebase}>
+      <FirebaseAppSdksProvider>{children}</FirebaseAppSdksProvider>
+    </FirebaseAppProvider>
+  )
 }
 
 export { FirebaseSdkProvider }

@@ -6,54 +6,54 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Button } from '@app/components'
 type PapercupsConfig = {
-    accountId: string
-    baseUrl: string
-    enableStorytime: boolean
+  accountId: string
+  baseUrl: string
+  enableStorytime: boolean
 }
 
 type IProps = {
-    papercupsConfig: PapercupsConfig
-    customerId: string
-    onClick?: () => void
+  papercupsConfig: PapercupsConfig
+  customerId: string
+  onClick?: () => void
 }
 
 const ChatButton = styled(Button)`
-    width: 50px;
-    height: 50px;
+  width: 50px;
+  height: 50px;
 
-    border-radius: 50%;
-    padding: 0;
+  border-radius: 50%;
+  padding: 0;
 
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
 
-    font-size: 30px;
+  font-size: 30px;
 `
 
 const SupportChat: React.FC<IProps> = ({
-    papercupsConfig,
-    customerId,
-    onClick,
+  papercupsConfig,
+  customerId,
+  onClick,
 }) => {
-    useEffect(() => {
-        if (
-            papercupsConfig.enableStorytime &&
-            process.env.NODE_ENV === 'production'
-        ) {
-            Storytime.init({
-                accountId: papercupsConfig.accountId,
-                baseUrl: papercupsConfig.baseUrl,
-                customer: { external_id: customerId },
-            })
-        }
-    }, [customerId, papercupsConfig])
+  useEffect(() => {
+    if (
+      papercupsConfig.enableStorytime &&
+      process.env.NODE_ENV === 'production'
+    ) {
+      Storytime.init({
+        accountId: papercupsConfig.accountId,
+        baseUrl: papercupsConfig.baseUrl,
+        customer: { external_id: customerId },
+      })
+    }
+  }, [customerId, papercupsConfig])
 
-    return (
-        <ChatButton onClick={onClick}>
-            <FontAwesomeIcon icon={faComment} />
-        </ChatButton>
-    )
+  return (
+    <ChatButton onClick={onClick}>
+      <FontAwesomeIcon icon={faComment} />
+    </ChatButton>
+  )
 }
 
 export default SupportChat

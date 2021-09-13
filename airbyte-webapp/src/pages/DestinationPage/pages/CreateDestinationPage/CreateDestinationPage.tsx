@@ -15,67 +15,65 @@ import HeadTitle from '@app/components/HeadTitle'
 import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const CreateDestinationPage: React.FC = () => {
-    const { push } = useRouter()
-    const { workspace } = useWorkspace()
-    const [successRequest, setSuccessRequest] = useState(false)
-    const [errorStatusRequest, setErrorStatusRequest] = useState<{
-        status: number
-        response: JobInfo
-    } | null>(null)
+  const { push } = useRouter()
+  const { workspace } = useWorkspace()
+  const [successRequest, setSuccessRequest] = useState(false)
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    status: number
+    response: JobInfo
+  } | null>(null)
 
-    const { destinationDefinitions } = useResource(
-        DestinationDefinitionResource.listShape(),
-        {
-            workspaceId: workspace.workspaceId,
-        }
-    )
-    const { createDestination } = useDestination()
-
-    const onSubmitDestinationForm = async (values: {
-        name: string
-        serviceType: string
-        connectionConfiguration?: ConnectionConfiguration
-    }) => {
-        const connector = destinationDefinitions.find(
-            (item) => item.destinationDefinitionId === values.serviceType
-        )
-        setErrorStatusRequest(null)
-        try {
-            const result = await createDestination({
-                values,
-                destinationConnector: connector,
-            })
-            setSuccessRequest(true)
-            setTimeout(() => {
-                setSuccessRequest(false)
-                push(`${Routes.Destination}/${result.destinationId}`)
-            }, 2000)
-        } catch (e) {
-            setErrorStatusRequest(e)
-        }
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
     }
+  )
+  const { createDestination } = useDestination()
 
-    return (
-        <>
-            <HeadTitle titles={[{ id: 'destinations.newDestinationTitle' }]} />
-            <PageTitle
-                withLine
-                title={
-                    <FormattedMessage id="destinations.newDestinationTitle" />
-                }
-            />
-            <FormPageContent>
-                <DestinationForm
-                    afterSelectConnector={() => setErrorStatusRequest(null)}
-                    onSubmit={onSubmitDestinationForm}
-                    destinationDefinitions={destinationDefinitions}
-                    hasSuccess={successRequest}
-                    error={errorStatusRequest}
-                    jobInfo={errorStatusRequest?.response}
-                />
-            </FormPageContent>
-        </>
+  const onSubmitDestinationForm = async (values: {
+    name: string
+    serviceType: string
+    connectionConfiguration?: ConnectionConfiguration
+  }) => {
+    const connector = destinationDefinitions.find(
+      (item) => item.destinationDefinitionId === values.serviceType
     )
+    setErrorStatusRequest(null)
+    try {
+      const result = await createDestination({
+        values,
+        destinationConnector: connector,
+      })
+      setSuccessRequest(true)
+      setTimeout(() => {
+        setSuccessRequest(false)
+        push(`${Routes.Destination}/${result.destinationId}`)
+      }, 2000)
+    } catch (e) {
+      setErrorStatusRequest(e)
+    }
+  }
+
+  return (
+    <>
+      <HeadTitle titles={[{ id: 'destinations.newDestinationTitle' }]} />
+      <PageTitle
+        withLine
+        title={<FormattedMessage id="destinations.newDestinationTitle" />}
+      />
+      <FormPageContent>
+        <DestinationForm
+          afterSelectConnector={() => setErrorStatusRequest(null)}
+          onSubmit={onSubmitDestinationForm}
+          destinationDefinitions={destinationDefinitions}
+          hasSuccess={successRequest}
+          error={errorStatusRequest}
+          jobInfo={errorStatusRequest?.response}
+        />
+      </FormPageContent>
+    </>
+  )
 }
 
 export default CreateDestinationPage

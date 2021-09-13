@@ -1,3 +1,3 @@
-import EmptyResourceBlock from "./EmptyResourceBlock";
+import EmptyResourceBlock from './EmptyResourceBlock'
 
-export default EmptyResourceBlock;
+export default EmptyResourceBlock

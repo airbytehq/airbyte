@@ -5,11 +5,11 @@ import { useDefaultRequestMiddlewares } from '@app/packages/cloud/services/useDe
 import { useConfig } from '@app/packages/cloud/services/config'
 
 export function useGetUserService(): UserService {
-    const requestAuthMiddleware = useDefaultRequestMiddlewares()
-    const { cloudApiUrl } = useConfig()
+  const requestAuthMiddleware = useDefaultRequestMiddlewares()
+  const { cloudApiUrl } = useConfig()
 
-    return useMemo(
-        () => new UserService(cloudApiUrl, requestAuthMiddleware),
-        [cloudApiUrl, requestAuthMiddleware]
-    )
+  return useMemo(
+    () => new UserService(cloudApiUrl, requestAuthMiddleware),
+    [cloudApiUrl, requestAuthMiddleware]
+  )
 }

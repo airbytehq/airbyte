@@ -1,7 +1,7 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import React from 'react'
+import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 
 const CheckBoxInput = styled.input`
   opacity: 0;
@@ -9,7 +9,7 @@ const CheckBoxInput = styled.input`
   height: 0;
   margin: 0;
   position: absolute;
-`;
+`
 
 const CheckBoxContainer = styled.label`
   height: 20px;
@@ -25,7 +25,7 @@ const CheckBoxContainer = styled.label`
   cursor: pointer;
   vertical-align: top;
   position: relative;
-`;
+`
 
 const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
   props
@@ -37,6 +37,6 @@ const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
     <CheckBoxInput {...props} type="checkbox" />
     {props.checked && <FontAwesomeIcon icon={faCheck} />}
   </CheckBoxContainer>
-);
+)
 
-export default CheckBox;
+export default CheckBox

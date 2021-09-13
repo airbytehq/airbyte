@@ -8,11 +8,7 @@
     "prettier/@typescript-eslint",
     "plugin:prettier/recommended"
   ],
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "prettier"
-  ],
+  "plugins": ["react", "@typescript-eslint", "prettier"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -29,9 +25,7 @@
         "ts-expect-error": "allow-with-description"
       }
     ],
-    "@typescript-eslint/ban-types": [
-      "warn"
-    ]
+    "@typescript-eslint/ban-types": ["warn"]
   },
   "parser": "@typescript-eslint/parser"
 }

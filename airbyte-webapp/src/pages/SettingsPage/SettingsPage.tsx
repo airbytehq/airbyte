@@ -19,110 +19,110 @@ import { DestinationsPage, SourcesPage } from './pages/ConnectorsPage'
 import { CategoryItem } from '@app/components/SideMenu/SideMenu'
 
 const Content = styled.div`
-    margin: 0 33px 0 27px;
-    height: 100%;
-    display: flex;
-    flex-direction: row;
+  margin: 0 33px 0 27px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
 `
 const MainView = styled.div`
-    width: 100%;
-    margin-left: 47px;
+  width: 100%;
+  margin-left: 47px;
 `
 
 export type PageConfig = {
-    menuConfig: CategoryItem[]
+  menuConfig: CategoryItem[]
 }
 
 type SettingsPageProps = {
-    pageConfig?: PageConfig
+  pageConfig?: PageConfig
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
-    const { push, pathname } = useRouter()
-    const { countNewSourceVersion, countNewDestinationVersion } = useConnector()
+  const { push, pathname } = useRouter()
+  const { countNewSourceVersion, countNewDestinationVersion } = useConnector()
 
-    const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
+  const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
+    {
+      routes: [
         {
-            routes: [
-                {
-                    path: `${Routes.Settings}${Routes.Account}`,
-                    name: <FormattedMessage id="settings.account" />,
-                    component: AccountPage,
-                },
-                {
-                    path: `${Routes.Settings}${Routes.Source}`,
-                    name: <FormattedMessage id="tables.sources" />,
-                    indicatorCount: countNewSourceVersion,
-                    component: SourcesPage,
-                },
-                {
-                    path: `${Routes.Settings}${Routes.Destination}`,
-                    name: <FormattedMessage id="tables.destinations" />,
-                    indicatorCount: countNewDestinationVersion,
-                    component: DestinationsPage,
-                },
-                {
-                    path: `${Routes.Settings}${Routes.Configuration}`,
-                    name: <FormattedMessage id="admin.configuration" />,
-                    component: ConfigurationsPage,
-                },
-                {
-                    path: `${Routes.Settings}${Routes.Notifications}`,
-                    name: <FormattedMessage id="settings.notifications" />,
-                    component: NotificationPage,
-                },
-                {
-                    path: `${Routes.Settings}${Routes.Metrics}`,
-                    name: <FormattedMessage id="settings.metrics" />,
-                    component: MetricsPage,
-                },
-            ],
+          path: `${Routes.Settings}${Routes.Account}`,
+          name: <FormattedMessage id="settings.account" />,
+          component: AccountPage,
         },
-    ]
+        {
+          path: `${Routes.Settings}${Routes.Source}`,
+          name: <FormattedMessage id="tables.sources" />,
+          indicatorCount: countNewSourceVersion,
+          component: SourcesPage,
+        },
+        {
+          path: `${Routes.Settings}${Routes.Destination}`,
+          name: <FormattedMessage id="tables.destinations" />,
+          indicatorCount: countNewDestinationVersion,
+          component: DestinationsPage,
+        },
+        {
+          path: `${Routes.Settings}${Routes.Configuration}`,
+          name: <FormattedMessage id="admin.configuration" />,
+          component: ConfigurationsPage,
+        },
+        {
+          path: `${Routes.Settings}${Routes.Notifications}`,
+          name: <FormattedMessage id="settings.notifications" />,
+          component: NotificationPage,
+        },
+        {
+          path: `${Routes.Settings}${Routes.Metrics}`,
+          name: <FormattedMessage id="settings.metrics" />,
+          component: MetricsPage,
+        },
+      ],
+    },
+  ]
 
-    const onSelectMenuItem = (newPath: string) => push(newPath)
-    const firstRoute = menuItems?.[0].routes?.[0]?.path
+  const onSelectMenuItem = (newPath: string) => push(newPath)
+  const firstRoute = menuItems?.[0].routes?.[0]?.path
 
-    return (
-        <MainPageWithScroll
-            headTitle={<HeadTitle titles={[{ id: 'sidebar.settings' }]} />}
-            pageTitle={
-                <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
-            }
-        >
-            <Content>
-                <SideMenu
-                    data={menuItems}
-                    onSelect={onSelectMenuItem}
-                    activeItem={pathname}
-                />
+  return (
+    <MainPageWithScroll
+      headTitle={<HeadTitle titles={[{ id: 'sidebar.settings' }]} />}
+      pageTitle={
+        <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
+      }
+    >
+      <Content>
+        <SideMenu
+          data={menuItems}
+          onSelect={onSelectMenuItem}
+          activeItem={pathname}
+        />
 
-                <MainView>
-                    <Suspense fallback={<LoadingPage />}>
-                        <Switch>
-                            {menuItems.flatMap((menuItem) =>
-                                menuItem.routes.map((route) => (
-                                    <Route
-                                        key={`${route.path}`}
-                                        path={`${route.path}`}
-                                        component={route.component}
-                                    />
-                                ))
-                            )}
+        <MainView>
+          <Suspense fallback={<LoadingPage />}>
+            <Switch>
+              {menuItems.flatMap((menuItem) =>
+                menuItem.routes.map((route) => (
+                  <Route
+                    key={`${route.path}`}
+                    path={`${route.path}`}
+                    component={route.component}
+                  />
+                ))
+              )}
 
-                            <Redirect
-                                to={
-                                    firstRoute
-                                        ? `${menuItems?.[0].routes?.[0]?.path}`
-                                        : Routes.Root
-                                }
-                            />
-                        </Switch>
-                    </Suspense>
-                </MainView>
-            </Content>
-        </MainPageWithScroll>
-    )
+              <Redirect
+                to={
+                  firstRoute
+                    ? `${menuItems?.[0].routes?.[0]?.path}`
+                    : Routes.Root
+                }
+              />
+            </Switch>
+          </Suspense>
+        </MainView>
+      </Content>
+    </MainPageWithScroll>
+  )
 }
 
 export default SettingsPage

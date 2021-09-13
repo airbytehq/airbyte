@@ -1,33 +1,33 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react'
+import styled from 'styled-components'
 
-import MenuItem from "./components/MenuItem";
+import MenuItem from './components/MenuItem'
 
 export type SideMenuItem = {
-  path: string;
-  name: string | React.ReactNode;
-  indicatorCount?: number;
-  component: React.ComponentType<any>;
-};
+  path: string
+  name: string | React.ReactNode
+  indicatorCount?: number
+  component: React.ComponentType<any>
+}
 
 export type CategoryItem = {
-  category?: string | React.ReactNode;
-  routes: SideMenuItem[];
-};
+  category?: string | React.ReactNode
+  routes: SideMenuItem[]
+}
 
 type SideMenuProps = {
-  data: CategoryItem[];
-  activeItem?: string;
-  onSelect: (id: string) => void;
-};
+  data: CategoryItem[]
+  activeItem?: string
+  onSelect: (id: string) => void
+}
 
 const Content = styled.nav`
   min-width: 147px;
-`;
+`
 
 const Category = styled.div`
   margin-bottom: 30px;
-`;
+`
 
 const CategoryName = styled.div`
   padding: 5px 8px;
@@ -36,7 +36,7 @@ const CategoryName = styled.div`
   line-height: 12px;
   opacity: 0.5;
   text-transform: uppercase;
-`;
+`
 
 const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
   return (
@@ -58,7 +58,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
         </Category>
       ))}
     </Content>
-  );
-};
+  )
+}
 
-export default SideMenu;
+export default SideMenu

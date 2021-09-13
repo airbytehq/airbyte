@@ -12,95 +12,95 @@ import { buildPathInitialState } from '@app/core/form/uiWidget'
 import { ServiceFormValues } from './types'
 
 function useBuildForm(
-    jsonSchema: JSONSchema7,
-    initialValues?: Partial<ServiceFormValues>
+  jsonSchema: JSONSchema7,
+  initialValues?: Partial<ServiceFormValues>
 ): {
-    initialValues: ServiceFormValues
-    formFields: FormBlock
+  initialValues: ServiceFormValues
+  formFields: FormBlock
 } {
-    const startValues = useMemo<ServiceFormValues>(
-        () => ({
-            name: '',
-            serviceType: '',
-            connectionConfiguration: {},
-            ...initialValues,
-        }),
-        [initialValues]
-    )
+  const startValues = useMemo<ServiceFormValues>(
+    () => ({
+      name: '',
+      serviceType: '',
+      connectionConfiguration: {},
+      ...initialValues,
+    }),
+    [initialValues]
+  )
 
-    const formFields = useMemo<FormBlock>(
-        () => jsonSchemaToUiWidget(jsonSchema),
-        [jsonSchema]
-    )
+  const formFields = useMemo<FormBlock>(
+    () => jsonSchemaToUiWidget(jsonSchema),
+    [jsonSchema]
+  )
 
-    return {
-        initialValues: startValues,
-        formFields,
-    }
+  return {
+    initialValues: startValues,
+    formFields,
+  }
 }
 
 const useBuildUiWidgets = (
-    formFields: FormBlock[] | FormBlock,
-    formValues: ServiceFormValues,
-    uiOverrides?: WidgetConfigMap
+  formFields: FormBlock[] | FormBlock,
+  formValues: ServiceFormValues,
+  uiOverrides?: WidgetConfigMap
 ): {
-    uiWidgetsInfo: WidgetConfigMap
-    setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void
+  uiWidgetsInfo: WidgetConfigMap
+  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void
 } => {
-    const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
-        uiOverrides ?? {}
-    )
+  const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
+    uiOverrides ?? {}
+  )
 
-    // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
-    const mergedState = useMemo(
-        () =>
-            merge(
-                buildPathInitialState(
-                    Array.isArray(formFields) ? formFields : [formFields],
-                    formValues
-                ),
-                merge(overriddenWidgetState, uiOverrides)
-            ),
-        [formFields, formValues, overriddenWidgetState, uiOverrides]
-    )
+  // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
+  const mergedState = useMemo(
+    () =>
+      merge(
+        buildPathInitialState(
+          Array.isArray(formFields) ? formFields : [formFields],
+          formValues
+        ),
+        merge(overriddenWidgetState, uiOverrides)
+      ),
+    [formFields, formValues, overriddenWidgetState, uiOverrides]
+  )
 
-    const setUiWidgetsInfoSubState = useCallback(
-        (widgetId: string, updatedValues: WidgetConfig) =>
-            setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
-        [mergedState, setUiWidgetsInfo]
-    )
+  const setUiWidgetsInfoSubState = useCallback(
+    (widgetId: string, updatedValues: WidgetConfig) =>
+      setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
+    [mergedState, setUiWidgetsInfo]
+  )
 
-    return {
-        uiWidgetsInfo: mergedState,
-        setUiWidgetsInfo: setUiWidgetsInfoSubState,
-    }
+  return {
+    uiWidgetsInfo: mergedState,
+    setUiWidgetsInfo: setUiWidgetsInfoSubState,
+  }
 }
 
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
 const useConstructValidationSchema = (
-    uiWidgetsInfo: WidgetConfigMap,
-    jsonSchema: JSONSchema7
+  uiWidgetsInfo: WidgetConfigMap,
+  jsonSchema: JSONSchema7
 ): AnySchema =>
-    useMemo(
-        () => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo),
-        [uiWidgetsInfo, jsonSchema]
-    )
+  useMemo(
+    () => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo),
+    [uiWidgetsInfo, jsonSchema]
+  )
 
 const usePatchFormik = (): void => {
-    const {
-        setFieldTouched,
-        isSubmitting,
-        isValidating,
-        validationSchema,
-        validateForm,
-        errors,
-    } = useFormikContext()
-    // Formik doesn't validate values again, when validationSchema was changed on the fly.
-    useEffect(() => {
-        validateForm()
-    }, [validateForm, validationSchema])
+  const {
+    setFieldTouched,
+    isSubmitting,
+    isValidating,
+    validationSchema,
+    validateForm,
+    errors,
+  } = useFormikContext()
+  // Formik doesn't validate values again, when validationSchema was changed on the fly.
+  useEffect(() => {
+    validateForm()
+  }, [validateForm, validationSchema])
 
-    /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
+  /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
      Problem described here https://github.com/formium/formik/issues/445
      The problem is next:
 
@@ -112,18 +112,18 @@ const usePatchFormik = (): void => {
 
      This hack just touches all fields on submit.
    */
-    useEffect(() => {
-        if (isSubmitting && !isValidating) {
-            for (const path of Object.keys(flatten(errors))) {
-                setFieldTouched(path, true, false)
-            }
-        }
-    }, [errors, isSubmitting, isValidating, setFieldTouched])
+  useEffect(() => {
+    if (isSubmitting && !isValidating) {
+      for (const path of Object.keys(flatten(errors))) {
+        setFieldTouched(path, true, false)
+      }
+    }
+  }, [errors, isSubmitting, isValidating, setFieldTouched])
 }
 
 export {
-    useBuildForm,
-    useBuildUiWidgets,
-    useConstructValidationSchema,
-    usePatchFormik,
+  useBuildForm,
+  useBuildUiWidgets,
+  useConstructValidationSchema,
+  usePatchFormik,
 }

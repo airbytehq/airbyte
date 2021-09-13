@@ -5,8 +5,8 @@ import styled, { keyframes } from 'styled-components'
 import ContentCard from '@app/components/ContentCard'
 
 export type IProps = {
-    title?: string | React.ReactNode
-    onClose?: () => void
+  title?: string | React.ReactNode
+  onClose?: () => void
 }
 
 const fadeIn = keyframes`
@@ -14,47 +14,47 @@ const fadeIn = keyframes`
 `
 
 const Overlay = styled.div`
-    animation: ${fadeIn} 0.2s ease-out;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 15, 23, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
+  animation: ${fadeIn} 0.2s ease-out;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 15, 23, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
 `
 
 const Modal: React.FC<IProps> = ({ children, title, onClose }) => {
-    const handleUserKeyPress = useCallback((event, closeModal) => {
-        const { keyCode } = event
-        if (keyCode === 27) {
-            closeModal()
-        }
-    }, [])
+  const handleUserKeyPress = useCallback((event, closeModal) => {
+    const { keyCode } = event
+    if (keyCode === 27) {
+      closeModal()
+    }
+  }, [])
 
-    useEffect(() => {
-        onClose &&
-            window.addEventListener('keydown', (event) =>
-                handleUserKeyPress(event, onClose)
-            )
+  useEffect(() => {
+    onClose &&
+      window.addEventListener('keydown', (event) =>
+        handleUserKeyPress(event, onClose)
+      )
 
-        return () => {
-            onClose &&
-                window.removeEventListener('keydown', (event) =>
-                    handleUserKeyPress(event, onClose)
-                )
-        }
-    }, [handleUserKeyPress, onClose])
+    return () => {
+      onClose &&
+        window.removeEventListener('keydown', (event) =>
+          handleUserKeyPress(event, onClose)
+        )
+    }
+  }, [handleUserKeyPress, onClose])
 
-    return createPortal(
-        <Overlay>
-            <ContentCard title={title}>{children}</ContentCard>
-        </Overlay>,
-        document.body
-    )
+  return createPortal(
+    <Overlay>
+      <ContentCard title={title}>{children}</ContentCard>
+    </Overlay>,
+    document.body
+  )
 }
 
 export default Modal

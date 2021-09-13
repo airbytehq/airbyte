@@ -1,1 +1,1 @@
-export * from "./WorkspacePopout";
+export * from './WorkspacePopout'

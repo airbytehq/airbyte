@@ -7,41 +7,36 @@ import AccountForm from './components/AccountForm'
 import { Content, SettingsCard } from '../SettingsComponents'
 
 const AccountPage: React.FC = () => {
-    const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace()
 
-    const {
-        errorMessage,
-        successMessage,
-        // loading,
-        updateData,
-    } = useWorkspaceEditor()
+  const {
+    errorMessage,
+    successMessage,
+    // loading,
+    updateData,
+  } = useWorkspaceEditor()
 
-    const onSubmit = async (data: { email: string }) => {
-        await updateData({ ...workspace, ...data })
-    }
+  const onSubmit = async (data: { email: string }) => {
+    await updateData({ ...workspace, ...data })
+  }
 
-    return (
-        <>
-            <HeadTitle
-                titles={[
-                    { id: 'sidebar.settings' },
-                    { id: 'settings.account' },
-                ]}
-            />
-            <SettingsCard
-                title={<FormattedMessage id="settings.accountSettings" />}
-            >
-                <Content>
-                    <AccountForm
-                        email={workspace.email}
-                        onSubmit={onSubmit}
-                        errorMessage={errorMessage}
-                        successMessage={successMessage}
-                    />
-                </Content>
-            </SettingsCard>
-        </>
-    )
+  return (
+    <>
+      <HeadTitle
+        titles={[{ id: 'sidebar.settings' }, { id: 'settings.account' }]}
+      />
+      <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
+        <Content>
+          <AccountForm
+            email={workspace.email}
+            onSubmit={onSubmit}
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+          />
+        </Content>
+      </SettingsCard>
+    </>
+  )
 }
 
 export default AccountPage

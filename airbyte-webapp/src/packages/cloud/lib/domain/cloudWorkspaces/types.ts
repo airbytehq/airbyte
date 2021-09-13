@@ -1,5 +1,5 @@
 export interface CloudWorkspace {
-  name: string;
-  workspaceId: string;
-  billingUserId: string;
+  name: string
+  workspaceId: string
+  billingUserId: string
 }

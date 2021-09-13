@@ -11,72 +11,67 @@ import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
 import useRouterHook from '@app/hooks/useRouter'
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
-    email: yup.string().email('form.email.error').required('form.empty.error'),
+  email: yup.string().email('form.email.error').required('form.empty.error'),
 })
 
 const ResetPasswordPage: React.FC = () => {
-    const { requirePasswordReset } = useAuthService()
-    const { push } = useRouterHook()
-    const formatMessage = useIntl().formatMessage
+  const { requirePasswordReset } = useAuthService()
+  const { push } = useRouterHook()
+  const formatMessage = useIntl().formatMessage
 
-    return (
-        <div>
-            <FormTitle bold>
-                <FormattedMessage id="login.resetPassword" />
-            </FormTitle>
+  return (
+    <div>
+      <FormTitle bold>
+        <FormattedMessage id="login.resetPassword" />
+      </FormTitle>
 
-            <Formik
-                initialValues={{
-                    email: '',
-                }}
-                validationSchema={ResetPasswordPageValidationSchema}
-                onSubmit={async ({ email }) => {
-                    await requirePasswordReset(email)
-                    push(Routes.ConfirmPasswordReset)
-                }}
-                validateOnBlur={true}
-                validateOnChange={false}
-            >
-                {({ isSubmitting }) => (
-                    <Form>
-                        <FieldItem>
-                            <Field name="email">
-                                {({ field, meta }: FieldProps<string>) => (
-                                    <LabeledInput
-                                        {...field}
-                                        label={
-                                            <FormattedMessage id="login.yourEmail" />
-                                        }
-                                        placeholder={formatMessage({
-                                            id: 'login.yourEmail.placeholder',
-                                        })}
-                                        type="text"
-                                        error={!!meta.error && meta.touched}
-                                        message={
-                                            meta.touched &&
-                                            meta.error &&
-                                            formatMessage({ id: meta.error })
-                                        }
-                                    />
-                                )}
-                            </Field>
-                        </FieldItem>
-                        <BottomBlock>
-                            <Link to={Routes.Login} $light>
-                                <FormattedMessage id="login.backLogin" />
-                            </Link>
-                            <LoadingButton
-                                type="submit"
-                                isLoading={isSubmitting}
-                            >
-                                <FormattedMessage id="login.resetPassword" />
-                            </LoadingButton>
-                        </BottomBlock>
-                    </Form>
+      <Formik
+        initialValues={{
+          email: '',
+        }}
+        validationSchema={ResetPasswordPageValidationSchema}
+        onSubmit={async ({ email }) => {
+          await requirePasswordReset(email)
+          push(Routes.ConfirmPasswordReset)
+        }}
+        validateOnBlur={true}
+        validateOnChange={false}
+      >
+        {({ isSubmitting }) => (
+          <Form>
+            <FieldItem>
+              <Field name="email">
+                {({ field, meta }: FieldProps<string>) => (
+                  <LabeledInput
+                    {...field}
+                    label={<FormattedMessage id="login.yourEmail" />}
+                    placeholder={formatMessage({
+                      id: 'login.yourEmail.placeholder',
+                    })}
+                    type="text"
+                    error={!!meta.error && meta.touched}
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
+                    }
+                  />
                 )}
-            </Formik>
-        </div>
-    )
+              </Field>
+            </FieldItem>
+            <BottomBlock>
+              <Link to={Routes.Login} $light>
+                <FormattedMessage id="login.backLogin" />
+              </Link>
+              <LoadingButton type="submit" isLoading={isSubmitting}>
+                <FormattedMessage id="login.resetPassword" />
+              </LoadingButton>
+            </BottomBlock>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  )
 }
 
 export default ResetPasswordPage

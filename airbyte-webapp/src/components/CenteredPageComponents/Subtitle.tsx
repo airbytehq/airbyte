@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components'
 
 const Subtitle = styled.div`
   font-size: 16px;
@@ -7,6 +7,6 @@ const Subtitle = styled.div`
   letter-spacing: 0.03em;
   color: ${({ theme }) => theme.greyColor70};
   padding-bottom: 10px;
-`;
+`
 
-export default Subtitle;
+export default Subtitle

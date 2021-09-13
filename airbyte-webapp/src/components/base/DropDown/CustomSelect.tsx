@@ -1,9 +1,9 @@
-import styled from "styled-components";
-import Select from "react-select";
+import styled from 'styled-components'
+import Select from 'react-select'
 
 export const CustomSelect = styled(Select)<{
-  $withBorder?: boolean;
-  $error?: boolean;
+  $withBorder?: boolean
+  $error?: boolean
 }>`
   & > .react-select__control {
     height: ${({ $withBorder }) => ($withBorder ? 31 : 36)}px;
@@ -42,4 +42,4 @@ export const CustomSelect = styled(Select)<{
       overflow: visible;
     }
   }
-`;
+`

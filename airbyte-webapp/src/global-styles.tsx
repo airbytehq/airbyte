@@ -1,5 +1,5 @@
-import { createGlobalStyle, ThemeProps } from "styled-components";
-import { Theme } from "./theme";
+import { createGlobalStyle, ThemeProps } from 'styled-components'
+import { Theme } from './theme'
 
 const GlobalStyle = createGlobalStyle<ThemeProps<Theme>>`
   #__next,
@@ -25,6 +25,6 @@ const GlobalStyle = createGlobalStyle<ThemeProps<Theme>>`
   * {
     box-sizing: border-box;
   }
-`;
+`
 
-export default GlobalStyle;
+export default GlobalStyle

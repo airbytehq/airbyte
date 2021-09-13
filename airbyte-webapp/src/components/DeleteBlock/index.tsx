@@ -1,3 +1,3 @@
-import DeleteBlock from "./DeleteBlock";
+import DeleteBlock from './DeleteBlock'
 
-export default DeleteBlock;
+export default DeleteBlock

@@ -2,46 +2,46 @@ import { JSONSchema7Type, JSONSchema7TypeName } from 'json-schema'
 import { AirbyteJSONSchema } from '@app/core/jsonSchema'
 
 type FormItem = {
-    fieldKey: string
-    path: string
-    isRequired: boolean
-    order?: number
-    title?: string
-    description?: string
+  fieldKey: string
+  path: string
+  isRequired: boolean
+  order?: number
+  title?: string
+  description?: string
 }
 
 export type FormBaseItem = {
-    _type: 'formItem'
-    type: JSONSchema7TypeName
-    isSecret?: boolean
-    multiline?: boolean
+  _type: 'formItem'
+  type: JSONSchema7TypeName
+  isSecret?: boolean
+  multiline?: boolean
 } & FormItem &
-    AirbyteJSONSchema
+  AirbyteJSONSchema
 
 type FormGroupItem = {
-    _type: 'formGroup'
-    jsonSchema: AirbyteJSONSchema
-    properties: FormBlock[]
-    isLoading?: boolean
-    default?: JSONSchema7Type
-    examples?: JSONSchema7Type
+  _type: 'formGroup'
+  jsonSchema: AirbyteJSONSchema
+  properties: FormBlock[]
+  isLoading?: boolean
+  default?: JSONSchema7Type
+  examples?: JSONSchema7Type
 } & FormItem
 
 type FormConditionItem = {
-    _type: 'formCondition'
-    conditions: { [key: string]: FormGroupItem | FormBaseItem }
+  _type: 'formCondition'
+  conditions: { [key: string]: FormGroupItem | FormBaseItem }
 } & FormItem
 
 type FormObjectArrayItem = {
-    _type: 'objectArray'
-    properties: FormBlock
+  _type: 'objectArray'
+  properties: FormBlock
 } & FormItem
 
 type FormBlock =
-    | FormGroupItem
-    | FormBaseItem
-    | FormConditionItem
-    | FormObjectArrayItem
+  | FormGroupItem
+  | FormBaseItem
+  | FormConditionItem
+  | FormObjectArrayItem
 
 export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem }
 

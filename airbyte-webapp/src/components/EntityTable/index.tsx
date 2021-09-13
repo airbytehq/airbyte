@@ -1,4 +1,4 @@
-import ImplementationTable from "./ImplementationTable";
-import ConnectionTable from "./ConnectionTable";
+import ImplementationTable from './ImplementationTable'
+import ConnectionTable from './ConnectionTable'
 
-export { ImplementationTable, ConnectionTable };
+export { ImplementationTable, ConnectionTable }

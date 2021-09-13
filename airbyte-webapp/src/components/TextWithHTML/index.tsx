@@ -1,4 +1,4 @@
-import TextWithHTML from "./TextWithHTML";
+import TextWithHTML from './TextWithHTML'
 
-export default TextWithHTML;
-export { TextWithHTML };
+export default TextWithHTML
+export { TextWithHTML }

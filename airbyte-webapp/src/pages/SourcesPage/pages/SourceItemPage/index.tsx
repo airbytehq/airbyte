@@ -1,3 +1,3 @@
-import SourceItemPage from "./SourceItemPage";
+import SourceItemPage from './SourceItemPage'
 
-export default SourceItemPage;
+export default SourceItemPage

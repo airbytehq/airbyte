@@ -1,3 +1,3 @@
 export enum AuthProviders {
-  GoogleIdentityPlatform = "google_identity_platform",
+  GoogleIdentityPlatform = 'google_identity_platform',
 }

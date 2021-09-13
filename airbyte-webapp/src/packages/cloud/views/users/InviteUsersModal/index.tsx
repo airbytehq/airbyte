@@ -1,1 +1,1 @@
-export { InviteUsersModal } from "./InviteUsersModal";
+export { InviteUsersModal } from './InviteUsersModal'

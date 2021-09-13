@@ -4,19 +4,19 @@ import ServiceForm from './ServiceForm'
 import { ContentCard } from '@app/components'
 
 export default {
-    title: 'Views/ServiceForm',
-    component: ServiceForm,
+  title: 'Views/ServiceForm',
+  component: ServiceForm,
 } as ComponentMeta<typeof ServiceForm>
 
 const Template: ComponentStory<typeof ServiceForm> = (args) => (
-    <ContentCard title="Test">
-        <ServiceForm {...args} />
-    </ContentCard>
+  <ContentCard title="Test">
+    <ServiceForm {...args} />
+  </ContentCard>
 )
 
 export const Common = Template.bind({})
 Common.args = {
-    specifications: JSON.parse(`{
+  specifications: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
@@ -87,13 +87,13 @@ Common.args = {
       }
     }
   }`),
-    formType: 'source',
-    availableServices: [],
+  formType: 'source',
+  availableServices: [],
 }
 
 export const Oneof = Template.bind({})
 Oneof.args = {
-    specifications: JSON.parse(`{
+  specifications: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
@@ -157,6 +157,6 @@ Oneof.args = {
       }
     }
   }`),
-    formType: 'source',
-    availableServices: [],
+  formType: 'source',
+  availableServices: [],
 }

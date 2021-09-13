@@ -12,40 +12,40 @@ import DestinationDefinitionResource from '@app/core/resources/DestinationDefini
 import useWorkspace from '@app/hooks/services/useWorkspace'
 
 type IProps = {
-    destinations: Destination[]
+  destinations: Destination[]
 }
 
 const DestinationsTable: React.FC<IProps> = ({ destinations }) => {
-    const { push } = useRouter()
-    const { workspace } = useWorkspace()
-    const { connections } = useResource(ConnectionResource.listShape(), {
-        workspaceId: workspace.workspaceId,
-    })
+  const { push } = useRouter()
+  const { workspace } = useWorkspace()
+  const { connections } = useResource(ConnectionResource.listShape(), {
+    workspaceId: workspace.workspaceId,
+  })
 
-    const { destinationDefinitions } = useResource(
-        DestinationDefinitionResource.listShape(),
-        {
-            workspaceId: workspace.workspaceId,
-        }
-    )
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
+    }
+  )
 
-    const data = getEntityTableData(
-        destinations,
-        connections,
-        destinationDefinitions,
-        'destination'
-    )
+  const data = getEntityTableData(
+    destinations,
+    connections,
+    destinationDefinitions,
+    'destination'
+  )
 
-    const clickRow = (destination: EntityTableDataItem) =>
-        push(`${Routes.Destination}/${destination.entityId}`)
+  const clickRow = (destination: EntityTableDataItem) =>
+    push(`${Routes.Destination}/${destination.entityId}`)
 
-    return (
-        <ImplementationTable
-            data={data}
-            onClickRow={clickRow}
-            entity="destination"
-        />
-    )
+  return (
+    <ImplementationTable
+      data={data}
+      onClickRow={clickRow}
+      entity="destination"
+    />
+  )
 }
 
 export default DestinationsTable

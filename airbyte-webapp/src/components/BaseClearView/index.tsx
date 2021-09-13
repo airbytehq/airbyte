@@ -1,3 +1,3 @@
-import BaseClearView from "./BaseClearView";
+import BaseClearView from './BaseClearView'
 
-export default BaseClearView;
+export default BaseClearView

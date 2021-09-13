@@ -7,35 +7,35 @@ import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons'
 import { Button } from '@app/components'
 
 const SortButtonView = styled(Button)<{ wasActive?: boolean }>`
-    min-width: 18px;
-    font-size: 11px;
-    line-height: 12px;
-    opacity: ${({ wasActive }) => (wasActive ? 1 : 0.4)};
-    pointer-events: all;
-    background: none;
-    border: none;
-    color: inherit;
-    padding: 0;
+  min-width: 18px;
+  font-size: 11px;
+  line-height: 12px;
+  opacity: ${({ wasActive }) => (wasActive ? 1 : 0.4)};
+  pointer-events: all;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
 
-    &:hover {
-        color: inherit;
-    }
+  &:hover {
+    color: inherit;
+  }
 `
 
 type IProps = {
-    lowToLarge?: boolean
-    wasActive?: boolean
-    onClick: () => void
+  lowToLarge?: boolean
+  wasActive?: boolean
+  onClick: () => void
 }
 
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
-    return (
-        <SortButtonView wasActive={wasActive} onClick={onClick} iconOnly>
-            <FontAwesomeIcon
-                icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown}
-            />
-        </SortButtonView>
-    )
+  return (
+    <SortButtonView wasActive={wasActive} onClick={onClick} iconOnly>
+      <FontAwesomeIcon
+        icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown}
+      />
+    </SortButtonView>
+  )
 }
 
 export default SortButton

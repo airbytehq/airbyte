@@ -1,18 +1,18 @@
-import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import { ReadShape, Resource, SchemaDetail } from 'rest-hooks'
+import BaseResource from './BaseResource'
 
 export interface Logs {
-  file?: Blob;
+  file?: Blob
 }
 
 export default class LogsResource extends BaseResource implements Logs {
-  readonly file?: Blob = undefined;
+  readonly file?: Blob = undefined
 
   pk(): string {
-    return "";
+    return ''
   }
 
-  static urlRoot = "logs";
+  static urlRoot = 'logs'
 
   static detailShape<T extends typeof Resource>(
     this: T
@@ -23,14 +23,14 @@ export default class LogsResource extends BaseResource implements Logs {
         params: Readonly<Record<string, string | number>>
       ): Promise<{ file: Blob }> => {
         const file = await this.fetchResponse(
-          "post",
+          'post',
           `${this.url({})}/get`,
           params
-        ).then((res) => res.blob());
+        ).then((res) => res.blob())
 
-        return { file };
+        return { file }
       },
       schema: this,
-    };
+    }
   }
 }

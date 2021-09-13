@@ -1,3 +1,3 @@
-import AllDestinationsPage from "./AllDestinationsPage";
+import AllDestinationsPage from './AllDestinationsPage'
 
-export default AllDestinationsPage;
+export default AllDestinationsPage

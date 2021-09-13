@@ -2,16 +2,16 @@ import merge from 'lodash.merge'
 import { RequestMiddleware } from '@app/core/request/RequestMiddleware'
 
 export interface JwtProvider {
-    getValue(): string | Promise<string>
+  getValue(): string | Promise<string>
 }
 
 export function RequestAuthMiddleware(
-    jwtProvider: JwtProvider
+  jwtProvider: JwtProvider
 ): RequestMiddleware {
-    return async (options: RequestInit) => ({
-        ...options,
-        header: merge(options.headers, {
-            Authorization: `Bearer ${await jwtProvider.getValue()}`,
-        }),
-    })
+  return async (options: RequestInit) => ({
+    ...options,
+    header: merge(options.headers, {
+      Authorization: `Bearer ${await jwtProvider.getValue()}`,
+    }),
+  })
 }

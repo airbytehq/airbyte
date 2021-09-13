@@ -12,32 +12,32 @@ import ConnectionPage from '../ConnectionPage'
 const FallbackRootRedirector = () => <Redirect to={Routes.Destination} />
 
 const DestinationsPage: React.FC = () => {
-    return (
-        <Suspense fallback={<LoadingPage />}>
-            <Switch>
-                <Route path={`${Routes.Destination}${Routes.DestinationNew}`}>
-                    <CreateDestinationPage />
-                </Route>
-                <Route path={Routes.Destination} exact>
-                    <AllDestinationsPage />
-                </Route>
-                <Route
-                    path={[
-                        `${Routes.Destination}${Routes.ConnectionNew}`,
-                        `${Routes.Destination}${Routes.Connection}/:id`,
-                    ]}
-                >
-                    <ConnectionPage />
-                </Route>
-                <Route path={`${Routes.Destination}/:id`}>
-                    <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-                        <DestinationItemPage />
-                    </ErrorBoundary>
-                </Route>
-                <Redirect to={Routes.Root} />
-            </Switch>
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <Switch>
+        <Route path={`${Routes.Destination}${Routes.DestinationNew}`}>
+          <CreateDestinationPage />
+        </Route>
+        <Route path={Routes.Destination} exact>
+          <AllDestinationsPage />
+        </Route>
+        <Route
+          path={[
+            `${Routes.Destination}${Routes.ConnectionNew}`,
+            `${Routes.Destination}${Routes.Connection}/:id`,
+          ]}
+        >
+          <ConnectionPage />
+        </Route>
+        <Route path={`${Routes.Destination}/:id`}>
+          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+            <DestinationItemPage />
+          </ErrorBoundary>
+        </Route>
+        <Redirect to={Routes.Root} />
+      </Switch>
+    </Suspense>
+  )
 }
 
 export default DestinationsPage

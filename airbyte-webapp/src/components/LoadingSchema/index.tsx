@@ -1,3 +1,3 @@
-import LoadingSchema from "./LoadingSchema";
+import LoadingSchema from './LoadingSchema'
 
-export default LoadingSchema;
+export default LoadingSchema
