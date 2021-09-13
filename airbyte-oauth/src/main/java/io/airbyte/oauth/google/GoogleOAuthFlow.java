@@ -39,10 +39,12 @@ import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,8 +57,8 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
 
   private final HttpClient httpClient;
 
-  private final String consentUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-  private final String accessTokenUrl = "https://oauth2.googleapis.com/token";
+  private final static String CONSENT_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+  private final static String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
   private final String scope;
   private final List<String> googleQueryParameters;
@@ -71,7 +73,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   GoogleOAuthFlow(ConfigRepository configRepository, String scope, HttpClient httpClient) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
-    this.scope = scope;
+    this.scope = UrlEncode(scope);
     this.googleQueryParameters = List.of(
         String.format("scope=%s", this.scope),
         "access_type=offline",
@@ -94,7 +96,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   }
 
   private String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
-    final StringBuilder result = new StringBuilder(consentUrl)
+    final StringBuilder result = new StringBuilder(CONSENT_URL)
         .append("?");
     for (String queryParameter : googleQueryParameters) {
       result.append(queryParameter).append("&");
@@ -149,7 +151,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
         .build();
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(body)))
-        .uri(URI.create(accessTokenUrl))
+        .uri(URI.create(ACCESS_TOKEN_URL))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .build();
     final HttpResponse<String> response;
@@ -159,7 +161,10 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       if (data.has("refresh_token")) {
         return Map.of("refresh_token", data.get("refresh_token").asText());
       } else {
-        throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+        // TODO This means the response from Google did not have a refresh token and is probably a
+        // programming error
+        // handle this better
+        throw new IOException(String.format("Missing 'refresh_token' in query params from %s. Response: %s", ACCESS_TOKEN_URL, data));
       }
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete Google OAuth flow", e);
@@ -202,6 +207,14 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       }
     } catch (JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
+    }
+  }
+
+  private String UrlEncode(String s) {
+    try {
+      return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
