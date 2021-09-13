@@ -37,8 +37,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.google.GoogleAnalyticsOauthFlow;
-import io.airbyte.oauth.google.GoogleOAuthFlow;
+import io.airbyte.oauth.flows.GoogleAnalyticsOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,7 +61,7 @@ public class GoogleOAuthFlowIntegrationTest {
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private ConfigRepository configRepository;
-  private GoogleOAuthFlow googleOAuthFlow;
+  private BaseOAuthFlow googleOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
 
@@ -73,7 +72,7 @@ public class GoogleOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    googleOAuthFlow = new GoogleAnalyticsOauthFlow(configRepository);
+    googleOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository);
 
     server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor

@@ -22,15 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth.google;
+package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigRepository;
+import java.net.http.HttpClient;
 
-public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
+public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
 
-  public GoogleAdsOauthFlow(ConfigRepository configRepository) {
-    super(configRepository, "https://www.googleapis.com/auth/adwords");
+  private static final String SCOPE_URL = "https://www.googleapis.com/auth/adwords";
+
+  public GoogleAdsOAuthFlow(ConfigRepository configRepository) {
+    super(configRepository);
+  }
+
+  @VisibleForTesting
+  GoogleAdsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
+  }
+
+  @Override
+  protected String getScopeUrl() {
+    return SCOPE_URL;
   }
 
   @Override
