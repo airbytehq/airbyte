@@ -6,12 +6,12 @@ import * as Sentry from '@sentry/react'
 // sentry asap
 Sentry.init({ dsn: process.env.REACT_APP_SENTRY_DNS })
 
-// const CloudApp = lazy(() => import(`packages/cloud/App`));
+const CloudApp = lazy(() => import(`./packages/cloud/App`))
 const App = lazy(() => import(`./App`))
 
 ReactDOM.render(
     <Suspense fallback={null}>
-        {process.env.REACT_APP_CLOUD ? <App /> : <App />}
+        {process.env.REACT_APP_CLOUD ? <CloudApp /> : <App />}
     </Suspense>,
     document.getElementById('root')
 )

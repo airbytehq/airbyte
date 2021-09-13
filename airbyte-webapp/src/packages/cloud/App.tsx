@@ -4,7 +4,7 @@ import { IntlProvider } from 'react-intl'
 import { CacheProvider } from 'rest-hooks'
 import { QueryClient, QueryClientProvider } from 'react-query'
 
-import GlobalStyle from '../../global-styles'
+import GlobalStyle from '@app/global-styles'
 
 import en from '@app/locales/en.json'
 import cloudLocales from '@app/packages/cloud/locales/en.json'
