@@ -1,7 +1,11 @@
 plugins {
     id "java-library"
+    id 'airbyte-integration-test-java'
 }
 
 dependencies {
-
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-json-validation')
+    testImplementation project(':airbyte-oauth')
 }

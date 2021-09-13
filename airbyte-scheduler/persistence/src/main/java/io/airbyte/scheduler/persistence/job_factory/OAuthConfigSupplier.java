@@ -24,16 +24,17 @@
 
 package io.airbyte.scheduler.persistence.job_factory;
 
+import static com.fasterxml.jackson.databind.node.JsonNodeType.OBJECT;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.UUID;
 
 public class OAuthConfigSupplier {
@@ -50,12 +51,9 @@ public class OAuthConfigSupplier {
   public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
       throws IOException {
     try {
-      configRepository.listSourceOAuthParam().stream()
-          .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
-          .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-          // we prefer params specific to a workspace before global ones (ie workspace is null)
-          .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-              .thenComparing(SourceOAuthParameter::getOauthParameterId))
+      // TODO there will be cases where we shouldn't write oauth params. See
+      // https://github.com/airbytehq/airbyte/issues/5989
+      MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
           .ifPresent(
               sourceOAuthParameter -> injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration()));
       return sourceConnectorConfig;
@@ -67,12 +65,7 @@ public class OAuthConfigSupplier {
   public JsonNode injectDestinationOAuthParameters(UUID destinationDefinitionId, UUID workspaceId, JsonNode destinationConnectorConfig)
       throws IOException {
     try {
-      configRepository.listDestinationOAuthParam().stream()
-          .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
-          .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-          // we prefer params specific to a workspace before global ones (ie workspace is null)
-          .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-              .thenComparing(DestinationOAuthParameter::getOauthParameterId))
+      MoreOAuthParameters.getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId)
           .ifPresent(destinationOAuthParameter -> injectJsonNode((ObjectNode) destinationConnectorConfig,
               (ObjectNode) destinationOAuthParameter.getConfiguration()));
       return destinationConnectorConfig;
@@ -81,15 +74,32 @@ public class OAuthConfigSupplier {
     }
   }
 
-  private void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
+  @VisibleForTesting
+  void injectJsonNode(ObjectNode mainConfig, ObjectNode fromConfig) {
+    // TODO this method might make sense to have as a general utility in Jsons
     for (String key : Jsons.keys(fromConfig)) {
-      if (maskSecrets) {
-        config.set(key, Jsons.jsonNode(SECRET_MASK));
+      if (fromConfig.get(key).getNodeType() == OBJECT) {
+        // nested objects are merged rather than overwrite the contents of the equivalent object in config
+        if (mainConfig.get(key) == null) {
+          injectJsonNode(mainConfig.putObject(key), (ObjectNode) fromConfig.get(key));
+        } else if (mainConfig.get(key).getNodeType() == OBJECT) {
+          injectJsonNode((ObjectNode) mainConfig.get(key), (ObjectNode) fromConfig.get(key));
+        } else {
+          throw new IllegalStateException("Can't merge an object node into a non-object node!");
+        }
       } else {
-        if (!config.has(key) || isSecretMask(config.get(key).asText())) {
-          config.set(key, fromConfig.get(key));
+        if (maskSecrets) {
+          // TODO secrets should be masked with the correct type
+          // https://github.com/airbytehq/airbyte/issues/5990
+          // In the short-term this is not world-ending as all secret fields are currently strings
+          mainConfig.set(key, Jsons.jsonNode(SECRET_MASK));
+        } else {
+          if (!mainConfig.has(key) || isSecretMask(mainConfig.get(key).asText())) {
+            mainConfig.set(key, fromConfig.get(key));
+          }
         }
       }
+
     }
   }
 
