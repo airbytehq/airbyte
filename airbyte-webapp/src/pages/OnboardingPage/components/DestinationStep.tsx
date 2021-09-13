@@ -100,12 +100,7 @@ const DestinationStep: React.FC<IProps> = ({
           hasSuccess={hasSuccess}
           availableServices={availableServices}
           errorMessage={errorMessage}
-          specifications={
-            destinationDefinitionSpecification?.connectionSpecification
-          }
-          documentationUrl={
-            destinationDefinitionSpecification?.documentationUrl
-          }
+          selectedConnector={destinationDefinitionSpecification}
           isLoading={isLoading}
         />
         <JobsLogItem jobInfo={jobInfo} />

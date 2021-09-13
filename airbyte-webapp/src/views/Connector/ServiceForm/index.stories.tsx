@@ -16,7 +16,9 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => (
 
 export const Common = Template.bind({});
 Common.args = {
-  specifications: JSON.parse(`{
+  selectedConnector: {
+    documentationUrl: "",
+    connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
@@ -87,13 +89,16 @@ Common.args = {
       }
     }
   }`),
+  },
   formType: "source",
   availableServices: [],
 };
 
 export const Oneof = Template.bind({});
 Oneof.args = {
-  specifications: JSON.parse(`{
+  selectedConnector: {
+    documentationUrl: "",
+    connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
@@ -157,6 +162,7 @@ Oneof.args = {
       }
     }
   }`),
+  },
   formType: "source",
   availableServices: [],
 };
