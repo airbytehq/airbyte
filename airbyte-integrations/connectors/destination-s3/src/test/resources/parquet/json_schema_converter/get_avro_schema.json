@@ -380,5 +380,31 @@
         }
       ]
     }
+  },
+  {
+    "schemaName": "field_with_bad_first_char",
+    "namespace": "namespace11",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "5filed_name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "field_with_bad_first_char",
+      "namespace": "namespace11",
+      "fields": [
+        {
+          "name": "_5filed_name",
+          "type": ["null", "string"],
+          "doc": "_airbyte_original_name:5filed_name",
+          "default": null
+        }
+      ]
+    }
   }
 ]
