@@ -12,6 +12,7 @@ echo "Loading images into KIND..."
 kind load docker-image airbyte/server:dev --name chart-testing
 kind load docker-image airbyte/scheduler:dev --name chart-testing
 kind load docker-image airbyte/webapp:dev --name chart-testing
+kind load docker-image airbyte/worker:dev --name chart-testing
 kind load docker-image airbyte/db:dev --name chart-testing
 
 echo "Starting app..."
@@ -54,6 +55,23 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
+
+echo "Printing system disk usage..."
+df -h
+
+echo "Printing docker disk usage..."
+docker system df
+
+if [ -n "$CI" ]; then
+  echo "Pruning all images..."
+  docker image prune --all --force
+
+  echo "Printing system disk usage after pruning..."
+  df -h
+
+  echo "Printing docker disk usage after pruning..."
+  docker system df
+fi
 
 echo "Running e2e tests via gradle..."
 KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan

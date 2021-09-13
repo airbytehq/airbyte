@@ -11,8 +11,8 @@
         "title": "Start Date",
         "type": "string",
         "description": "The date from which you'd like to replicate the data",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": "2021-01-01T00:00:00Z"
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$",
+        "examples": ["2021-01-01T00:00:00Z"]
       },
       "access_token": {
         "type": "string",

@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.1.18
+## 0.1.19
 No longer prints full config files on validation error to prevent exposing secrets to log file: https://github.com/airbytehq/airbyte/pull/5879
+
+## 0.1.18
+Fix incremental stream not saved state when internal limit config set.
 
 ## 0.1.17
 Fix mismatching between number of records actually read and number of records in logs by 1: https://github.com/airbytehq/airbyte/pull/5767

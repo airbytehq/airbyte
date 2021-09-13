@@ -8,19 +8,25 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.29.15-alpha
+    newTag: 0.29.17-alpha
   - name: airbyte/scheduler
-    newTag: 0.29.15-alpha
+    newTag: 0.29.17-alpha
   - name: airbyte/server
-    newTag: 0.29.15-alpha
+    newTag: 0.29.17-alpha
   - name: airbyte/webapp
-    newTag: 0.29.15-alpha
+    newTag: 0.29.17-alpha
+  - name: airbyte/worker
+    newTag: 0.29.17-alpha
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
 configMapGenerator:
   - name: airbyte-env
     env: .env
+
+secretGenerator:
+  - name: airbyte-secrets
+    env: .secrets
 
 patchesStrategicMerge:
   - set-resource-limits.yaml
