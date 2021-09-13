@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.sql.Timestamp;
 import java.util.UUID;
 
 /**

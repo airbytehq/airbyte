@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.databricks;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -20,13 +44,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that this
- * implementation creates Parquet staging files, instead of CSV ones.
+ * This implementation is similar to
+ * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
+ * this implementation creates Parquet staging files, instead of CSV ones.
  * <p/>
  * It does the following operations:
- * <li>1. Parquet writer writes data stream into staging parquet file in s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
+ * <li>1. Parquet writer writes data stream into staging parquet file in
+ * s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
  * <li>2. Create a tmp delta table based on the staging parquet file.</li>
- * <li>3. Create the destination delta table based on the tmp delta table schema in s3://<bucket>/<stream-name>.</li>
+ * <li>3. Create the destination delta table based on the tmp delta table schema in
+ * s3://<bucket>/<stream-name>.</li>
  * <li>4. Copy the staging parquet file into the destination delta table.</li>
  * <li>5. Delete the tmp delta table, and the staging parquet file.</li>
  */
@@ -58,7 +85,8 @@ public class DatabricksStreamCopier implements StreamCopier {
                                 ExtendedNameTransformer nameTransformer,
                                 SqlOperations sqlOperations,
                                 S3WriterFactory writerFactory,
-                                Timestamp uploadTime) throws Exception {
+                                Timestamp uploadTime)
+      throws Exception {
     this.schemaName = schema;
     this.streamName = configuredStream.getStream().getName();
     this.destinationSyncMode = configuredStream.getDestinationSyncMode();
@@ -114,7 +142,8 @@ public class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() {
-    // The tmp table is created directly based on the staging file. So no separate copying step is needed.
+    // The tmp table is created directly based on the staging file. So no separate copying step is
+    // needed.
   }
 
   @Override
@@ -170,8 +199,8 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   /**
-   * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method creates
-   * an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
+   * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
+   * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
   static S3DestinationConfig getStagingS3DestinationConfig(S3DestinationConfig config, String stagingFolder) {
     return new S3DestinationConfig(
@@ -182,8 +211,7 @@ public class DatabricksStreamCopier implements StreamCopier {
         config.getAccessKeyId(),
         config.getSecretAccessKey(),
         // use default parquet format config
-        new S3ParquetFormatConfig(MAPPER.createObjectNode())
-    );
+        new S3ParquetFormatConfig(MAPPER.createObjectNode()));
   }
 
 }

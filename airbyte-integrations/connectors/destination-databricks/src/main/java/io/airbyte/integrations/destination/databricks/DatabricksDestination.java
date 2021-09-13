@@ -62,8 +62,7 @@ public class DatabricksDestination extends CopyDestination {
         databricksConfig,
         catalog,
         new DatabricksStreamCopierFactory(),
-        databricksConfig.getDatabaseSchema()
-    );
+        databricksConfig.getDatabaseSchema());
   }
 
   @Override
@@ -99,8 +98,7 @@ public class DatabricksDestination extends CopyDestination {
         DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),
         getDatabricksConnectionString(databricksConfig),
-        DATABRICKS_DRIVER_CLASS
-    );
+        DATABRICKS_DRIVER_CLASS);
   }
 
 }

@@ -45,8 +45,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
    */
   private String schemaFieldName = "schema";
 
-  public CopyDestination() {
-  }
+  public CopyDestination() {}
 
   public CopyDestination(String schemaFieldName) {
     this.schemaFieldName = schemaFieldName;

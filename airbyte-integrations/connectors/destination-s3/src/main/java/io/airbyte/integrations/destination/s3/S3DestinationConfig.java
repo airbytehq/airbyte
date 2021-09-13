@@ -35,8 +35,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 
 /**
- * This class is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3Config}.
- * It has an extra {@code bucketPath} parameter, which is necessary for more delicate data syncing to S3.
+ * This class is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3Config}. It
+ * has an extra {@code bucketPath} parameter, which is necessary for more delicate data syncing to
+ * S3.
  */
 public class S3DestinationConfig {
 
@@ -127,8 +128,8 @@ public class S3DestinationConfig {
   }
 
   /**
-   * @return {@link S3Config} for convenience. The part size should not matter in any use case that gets an {@link S3Config}
-   * from this class. So the default 10 MB is used.
+   * @return {@link S3Config} for convenience. The part size should not matter in any use case that
+   *         gets an {@link S3Config} from this class. So the default 10 MB is used.
    */
   public S3Config getS3Config() {
     return new S3Config(endpoint, bucketName, accessKeyId, secretAccessKey, bucketRegion, 10);
