@@ -6,7 +6,7 @@ import { JobInfo } from '@app/core/resources/Scheduler'
 import { SourceDefinition } from '@app/core/resources/SourceDefinition'
 
 import ContentCard from '@app/components/ContentCard'
-import ServiceForm from 'views/Connector/ServiceForm'
+import ServiceForm from '@app/views/Connector/ServiceForm'
 import { JobsLogItem } from '@app/components/JobItem'
 
 import { useSourceDefinitionSpecificationLoad } from '@app/hooks/services/useSourceHook'

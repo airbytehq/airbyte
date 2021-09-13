@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl'
 import { useResource } from 'rest-hooks'
 
 import ContentCard from '@app/components/ContentCard'
-import ServiceForm from 'views/Connector/ServiceForm'
+import ServiceForm from '@app/views/Connector/ServiceForm'
 import ConnectionBlock from '@app/components/ConnectionBlock'
 import { JobsLogItem } from '@app/components/JobItem'
 

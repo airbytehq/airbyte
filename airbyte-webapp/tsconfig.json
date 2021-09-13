@@ -11,8 +11,7 @@
         "typeRoots": ["./node_modules/@types", "./src/types"],
         "baseUrl": ".",
         "paths": {
-            "@app/*": ["src/*"],
-            "views/*": ["src/views/*"]
+            "@app/*": ["src/*"]
         }
     },
     "include": ["./src/**/*"],

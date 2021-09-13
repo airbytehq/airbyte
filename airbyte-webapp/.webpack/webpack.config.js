@@ -12,9 +12,7 @@ const options = {
     mode: 'none',
     resolve: {
         alias: {
-            // TODO: replace all aliases with `@app/` (+tsconfig.json)
             '@app': path.resolve(__dirname, '../src'),
-            views: path.resolve(__dirname, '../src/views'),
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.html'],
         modules: ['node_modules', 'src'],

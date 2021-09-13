@@ -2,7 +2,7 @@ import React from 'react'
 
 import { FormattedMessage } from 'react-intl'
 import { isVersionError } from '@app/core/request/VersionError'
-import { ErrorOccurredView } from 'views/common/ErrorOccurredView'
+import { ErrorOccurredView } from '@app/views/common/ErrorOccurredView'
 
 type BoundaryState = { errorId?: string; message?: string }
 

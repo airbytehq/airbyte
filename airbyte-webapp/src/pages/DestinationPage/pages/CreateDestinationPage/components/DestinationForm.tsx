@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 
 import ContentCard from '@app/components/ContentCard'
-import ServiceForm from 'views/Connector/ServiceForm'
+import ServiceForm from '@app/views/Connector/ServiceForm'
 import useRouter from '@app/hooks/useRouter'
 import { useDestinationDefinitionSpecificationLoad } from '@app/hooks/services/useDestinationHook'
 import { JobInfo } from '@app/core/resources/Scheduler'

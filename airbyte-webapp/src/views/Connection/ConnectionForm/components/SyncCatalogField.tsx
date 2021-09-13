@@ -8,7 +8,7 @@ import { SyncSchemaStream } from '@app/core/domain/catalog'
 
 import { CheckBox, LabeledRadioButton } from '@app/components'
 import { Cell, Header } from '@app/components/SimpleTableComponents'
-import CatalogTree from 'views/Connection/CatalogTree'
+import CatalogTree from '@app/views/Connection/CatalogTree'
 import Search from './Search'
 import SectionTitle from './SectionTitle'
 import { naturalComparatorBy } from '@app/utils/objects'

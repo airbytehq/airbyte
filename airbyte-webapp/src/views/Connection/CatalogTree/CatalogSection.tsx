@@ -19,7 +19,7 @@ import { TreeRowWrapper } from './components/TreeRowWrapper'
 import {
     ConnectionFormValues,
     SUPPORTED_MODES,
-} from 'views/Connection/ConnectionForm/formConfig'
+} from '@app/views/Connection/ConnectionForm/formConfig'
 import { StreamHeader } from './StreamHeader'
 import { FieldHeader } from './FieldHeader'
 import { FieldRow } from './FieldRow'

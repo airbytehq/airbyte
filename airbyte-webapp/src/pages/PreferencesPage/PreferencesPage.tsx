@@ -4,7 +4,7 @@ import styled from 'styled-components'
 
 import { PageViewContainer } from '@app/components/CenteredPageComponents'
 import { H1 } from '@app/components'
-import { PreferencesForm } from 'views/Settings/PreferencesForm'
+import { PreferencesForm } from '@app/views/Settings/PreferencesForm'
 import HeadTitle from '@app/components/HeadTitle'
 import { useAnalytics } from '@app/hooks/useAnalytics'
 import useWorkspace from '@app/hooks/services/useWorkspace'

@@ -11,7 +11,7 @@ import {
 import { ServiceFormValues } from './types'
 import { ServiceFormContextProvider } from './serviceFormContext'
 import { FormRoot } from './FormRoot'
-import RequestConnectorModal from 'views/Connector/RequestConnectorModal'
+import RequestConnectorModal from '@app/views/Connector/RequestConnectorModal'
 import { SourceDefinition } from '@app/core/resources/SourceDefinition'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
 import { FormBaseItem } from '@app/core/form/types'

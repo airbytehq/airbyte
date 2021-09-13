@@ -11,7 +11,7 @@ import { Routing } from '@app/pages/routes'
 import LoadingPage from './components/LoadingPage'
 import ApiErrorBoundary from './components/ApiErrorBoundary'
 import NotificationService from '@app/hooks/services/Notification'
-import { AnalyticsInitializer } from 'views/common/AnalyticsInitializer'
+import { AnalyticsInitializer } from '@app/views/common/AnalyticsInitializer'
 import {
     useCurrentWorkspace,
     usePickFirstWorkspace,

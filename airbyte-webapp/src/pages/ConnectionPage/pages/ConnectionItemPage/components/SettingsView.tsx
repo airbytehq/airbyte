@@ -11,7 +11,7 @@ import useConnection, {
     ValuesProps,
 } from '@app/hooks/services/useConnectionHook'
 import DeleteBlock from '@app/components/DeleteBlock'
-import ConnectionForm from 'views/Connection/ConnectionForm'
+import ConnectionForm from '@app/views/Connection/ConnectionForm'
 import ResetDataModal from '@app/components/ResetDataModal'
 import { ModalTypes } from '@app/components/ResetDataModal/types'
 import LoadingSchema from '@app/components/LoadingSchema'
