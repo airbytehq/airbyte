@@ -27,6 +27,10 @@ package io.airbyte.oauth.google;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.persistence.ConfigRepository;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
 
   public GoogleAdsOauthFlow(ConfigRepository configRepository) {
@@ -45,4 +49,12 @@ public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
     return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
+  @Override
+  protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String code, String redirectUrl) throws IOException {
+    // the config object containing refresh token is nested inside the "credentials" object
+    Map<String, Object> oauthFlowOutput = super.completeOAuthFlow(clientId, clientSecret, code, redirectUrl);
+    HashMap<String, Object> nestedOutput = new HashMap<>();
+    nestedOutput.put("credentials", oauthFlowOutput);
+    return nestedOutput;
+  }
 }
