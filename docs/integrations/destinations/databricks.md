@@ -1,52 +1,101 @@
 # Databricks
 
-TODO: update this doc
+## Overview
 
-## Sync overview
+This destination syncs data to Databricks cluster. Each stream is written to its own table.
 
-### Output schema
+This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba. Before using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
+## Sync Mode
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
+| Feature | Support | Notes |
+| :--- | :---: | :--- |
+| Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
+| Incremental - Append Sync | ✅ | |
+| Namespaces | ✅ | |
 
-### Data type mapping
+## Configuration
 
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
+Databricks parameters
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
+| Category | Parameter | Type | Notes |
+| :--- | :--- | :---: | :--- |
+| Databricks | Server Hostname | string | Required. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
+| | HTTP Path | string | Required. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
+| | Port | string | Optional. Default to "443". See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
+| | Personal Access Token | string | Required. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html). |
+| Namespace | Database schema | string | Optional. Default to "public". Each data stream will be written to a table under this database schema. |
+| S3 | Bucket Name | string | Name of the bucket to sync data into. |
+| | Bucket Path | string | Subdirectory under the above bucket to sync the data into. |
+| | Region | string | See [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes. |
+| | Access Key ID | string | AWS/Minio credential. |
+| | Secret Access Key | string | AWS/Minio credential. |
+
+⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
+
+## Staging Parquet Files
+
+Data streams are first written as staging Parquet files on S3, and then loaded into Databricks tables. All the staging files will be deleted after the sync is done. For debugging purposes, here is the full path for a staging file:
+
+```
+s3://<bucket-name>/<bucket-path>/<uuid>/<stream-name>
+```
+
+For example:
+
+```
+s3://testing_bucket/data_output_path/98c450be-5b1c-422d-b8b5-6ca9903727d9/users
+     ↑              ↑                ↑                                    ↑
+     |              |                |                                    stream name
+     |              |                database schema
+     |              bucket path
+     bucket name
+```
 
 
-### Features
+## Unmanaged Spark SQL Table
 
-This section should contain a table with the following format:
+Currently, all streams are synced into unmanaged Spark SQL tables. See [documentation](https://docs.databricks.com/data/tables.html#managed-and-unmanaged-tables) for details. In summary, you have full control of the location of the data underlying an unmanaged table. The full path of each data stream is:
 
-| Feature | Supported?(Yes/No) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
+```
+s3://<bucket-name>/<bucket-path>/<database-schema>/<stream-name>
+```
 
-### Performance considerations
+For example:
 
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+```
+s3://testing_bucket/data_output_path/public/users
+     ↑              ↑                ↑      ↑
+     |              |                |      stream name
+     |              |                database schema
+     |              bucket path
+     bucket name
+```
+
+Please keep these data directories on S3. Otherwise, the corresponding tables will have no data in Databricks.
+
+## Output Schema
+
+Each table will have the following columns:
+
+| Column | Type | Notes |
+| :--- | :---: | :--- |
+| `_airbyte_ab_id` | string | UUID. |
+| `_airbyte_emitted_at` | timestamp | Data emission timestamp. |
+| Data fields from the source stream | various | All fields in the staging Parquet files will be expanded in the table. |
+
+Learn how source data is converted to Parquet and the current limitations [here](https://docs.airbyte.io/integrations/destinations/s3#data-schema).
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+1. Credentials for a Databricks cluster. See [documentation](https://docs.databricks.com/clusters/create.html).
+2. Credentials for an S3 bucket. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+3. Grant the Databricks cluster full access to the S3 bucket. Or mount it as Databricks File System (DBFS). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
 
-### Setup guide
+## CHANGELOG
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
-
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 2021-09-14 | [#5998](https://github.com/airbytehq/airbyte/pull/5998) | Initial private release. |

@@ -3,6 +3,11 @@
 This is the repository for the Databricks destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/databricks).
 
+## Databricks JDBC Driver
+This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba. Before downloading and using this driver, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
+
+This connector is currently only available in Airbyte Cloud. To fully build this connector, first download the driver and put it under the `lib` directory. If you don't know how to do it, you should not work on this connector.
+
 ## Local development
 
 #### Building via Gradle
@@ -15,7 +20,7 @@ From the Airbyte repository root, run:
 **If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
 Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
 
-**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
+**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials. The credential note name is `destination databricks creds` in Lastpass.
 
 ### Locally running the connector docker image
 
