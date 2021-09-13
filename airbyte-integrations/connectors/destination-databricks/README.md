@@ -17,10 +17,19 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
-Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
+**If you are a community contributor**, you will need access to AWS S3 and Databricks cluster to run the integration tests:
 
-**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials. The credential note name is `destination databricks creds` in Lastpass.
+- Create a Databricks cluster. See [documentation](https://docs.databricks.com/clusters/create.html).
+- Create an S3 bucket. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+- Grant the Databricks cluster full access to the S3 bucket. Or mount it as Databricks File System (DBFS). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
+- Place both Databricks and S3 credentials in `sample_secrets/config.json`, which conforms to the spec file in `src/main/resources/spec.json`.
+- Rename the directory from `sample_secrets` to `secrets`.
+- Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
+
+**If you are an Airbyte core member**:
+
+- Get the `destination databricks creds` secrets on Last Pass, and put it in `sample_secrets/config.json`.
+- Rename the directory from `sample_secrets` to `secrets`.
 
 ### Locally running the connector docker image
 
