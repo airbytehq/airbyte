@@ -57,33 +57,36 @@ def find_by_path(path_list, value):
                 "customer": {"total_spent": "0.00"},
             },
             {
-                "buyer_accepts_marketing": {"type": ["null", "boolean"]},
-                "total_weight": {"type": ["null", "integer"]},
-                "created_at": {"type": ["null", "string"], "format": "date-time"},
-                "total_line_items_price": {"type": ["null", "number"]},
-                "id": {"type": ["null", "integer"]},
-                "total_tax": {"type": ["null", "number"]},
-                "subtotal_price": {"type": ["null", "number"]},
-                "line_items": {
-                    "items": {
-                        "properties": {
-                            "grams": {"type": ["null", "integer"]},
-                            "line_price": {"type": ["null", "number"]},
-                            "gift_card": {"type": ["null", "boolean"]},
-                            "price": {"type": ["null", "number"]},
+                "type": "object",
+                "properties": {
+                    "buyer_accepts_marketing": {"type": ["null", "boolean"]},
+                    "total_weight": {"type": ["null", "integer"]},
+                    "created_at": {"type": ["null", "string"], "format": "date-time"},
+                    "total_line_items_price": {"type": ["null", "number"]},
+                    "id": {"type": ["null", "integer"]},
+                    "total_tax": {"type": ["null", "number"]},
+                    "subtotal_price": {"type": ["null", "number"]},
+                    "line_items": {
+                        "items": {
+                            "properties": {
+                                "grams": {"type": ["null", "integer"]},
+                                "line_price": {"type": ["null", "number"]},
+                                "gift_card": {"type": ["null", "boolean"]},
+                                "price": {"type": ["null", "number"]},
+                            },
+                            "type": ["null", "object"],
                         },
-                        "type": ["null", "object"],
+                        "type": ["null", "array"],
                     },
-                    "type": ["null", "array"],
+                    "total_discounts": {"type": ["null", "number"]},
+                    "note": {"type": ["null", "string"]},
+                    "shipping_lines": {
+                        "items": {"properties": {"price": {"type": ["null", "number"]}}, "type": ["null", "object"]},
+                        "type": ["null", "array"],
+                    },
+                    "customer": {"type": "object", "properties": {"total_spent": {"type": ["null", "number"]}}},
+                    "total_price": {"type": ["null", "number"]},
                 },
-                "total_discounts": {"type": ["null", "number"]},
-                "note": {"type": ["null", "string"]},
-                "shipping_lines": {
-                    "items": {"properties": {"price": {"type": ["null", "number"]}}, "type": ["null", "object"]},
-                    "type": ["null", "array"],
-                },
-                "customer": {"type": "object", "properties": {"total_spent": {"type": ["null", "number"]}}},
-                "total_price": {"type": ["null", "number"]},
             },
             [
                 {
@@ -131,7 +134,7 @@ def find_by_path(path_list, value):
 )
 def test_transform(transform_object, schema, checks):
     transformer = Transformer(schema)
-    transformer._transform_object(transform_object, schema)
+    transform_object = transformer.transform(transform_object)
     for check in checks:
         expected_value = find_by_path(check.get("path"), transform_object)
         assert isinstance(expected_value, check["expected_type"])

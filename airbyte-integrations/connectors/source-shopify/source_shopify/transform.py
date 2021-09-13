@@ -84,42 +84,33 @@ class Transformer:
 
     def _transform_array(self, array: List[Any], item_properties: Mapping[str, Any]):
         # iterate over items in array, compare schema types and convert if necessary.
-        item_types = self._types_from_schema(item_properties)
-        if item_types:
-            schema_type = self._first_non_null_type(item_types)
-            nested_properties = item_properties.get("properties", {})
-            item_properties = item_properties.get("items", {})
-            for item in array:
-                if schema_type == "object":
-                    self._transform_object(item, nested_properties)
-                if schema_type == "array":
-                    self._transform_array(item, item_properties)
+        for index, record in enumerate(array):
+            array[index] = self.transform(record, item_properties)
+        return array
 
-    def _transform_object(self, transform_object: MutableMapping[str, Any], properties: Mapping[str, Any]):
+    def _transform_object(self, record: MutableMapping[str, Any], properties: Mapping[str, Any]):
         # compare schema types and convert if necessary.
-        for object_property, value in transform_object.items():
+        for object_property, value in record.items():
             if value is None:
                 continue
             if object_property in properties:
-                object_properties = properties.get(object_property)
-                schema_types = self._types_from_schema(object_properties)
-                if not schema_types:
-                    continue
-                value_json_types = self._get_json_types(type(value))
-                schema_type = self._first_non_null_type(schema_types)
-                if not any(value_json_type in schema_types for value_json_type in value_json_types):
-                    if schema_type == "number":
-                        transform_object[object_property] = self._transform_number(value)
-                if schema_type == "object":
-                    nested_properties = object_properties.get("properties", {})
-                    self._transform_object(value, nested_properties)
-                if schema_type == "array":
-                    item_properties = object_properties.get("items", {})
-                    self._transform_array(value, item_properties)
+                object_properties = properties.get(object_property) or {}
+                record[object_property] = self.transform(value, object_properties)
+        return record
 
-    def transform(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping]:
-        # Shopify API returns array of objects
-        # It's need to compare records values with schemas
-        properties = self._schema.get("properties", {})
-        self._transform_object(record, properties)
+    def transform(self, record: MutableMapping[str, Any], schema: Mapping[str, Any] = None) -> Iterable[MutableMapping]:
+        schema = schema if schema is not None else self._schema
+        schema_types = self._types_from_schema(schema)
+        if schema_types:
+            value_json_types = self._get_json_types(type(record))
+            schema_type = self._first_non_null_type(schema_types)
+            if not any(value_json_type in schema_types for value_json_type in value_json_types):
+                if schema_type == "number":
+                    return self._transform_number(record)
+            if schema_type == "object":
+                properties = schema.get("properties", {})
+                return self._transform_object(record, properties)
+            if schema_type == "array":
+                properties = schema.get("items", {})
+                return self._transform_array(record, properties)
         return record
