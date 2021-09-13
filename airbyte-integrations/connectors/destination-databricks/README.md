@@ -6,7 +6,7 @@ For information about how to use this connector within Airbyte, see [the User Do
 ## Databricks JDBC Driver
 This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba. Before downloading and using this driver, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
-This connector is currently only available in Airbyte Cloud. To fully build this connector, first download the driver and put it under the `lib` directory. If you don't know how to do it, you should not work on this connector.
+This connector is currently only available in Airbyte Cloud. To build and publish this connector, first download the driver and put it under the `lib` directory. Please do not publish this connector publicly.
 
 ## Local development
 

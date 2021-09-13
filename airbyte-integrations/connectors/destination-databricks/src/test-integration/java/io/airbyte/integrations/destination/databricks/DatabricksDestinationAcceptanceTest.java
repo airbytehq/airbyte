@@ -150,6 +150,8 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
     Database database = getDatabase(databricksConfig);
+    // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
+    // Databricks, and it incorrectly quotes the schema name
     database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
   }
 

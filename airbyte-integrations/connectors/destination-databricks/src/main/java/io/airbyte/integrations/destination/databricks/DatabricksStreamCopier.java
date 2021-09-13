@@ -33,7 +33,6 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
-import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
