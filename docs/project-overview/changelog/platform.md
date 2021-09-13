@@ -6,6 +6,23 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [09-08-2021 - 0.29.17](https://github.com/airbytehq/airbyte/releases/tag/v0.29.17-alpha)
+* You can now properly cancel deployments when deploying on K8s.
+
+## [09-08-2021 - 0.29.16](https://github.com/airbytehq/airbyte/releases/tag/v0.29.16-alpha)
+* You can now send notifications via webhook for successes and failures on Airbyte syncs.
+* Scheduling jobs and worker jobs are now separated, allowing for workers to be scaled horizontally.
+
+## [09-04-2021 - 0.29.15](https://github.com/airbytehq/airbyte/releases/tag/v0.29.15-alpha)
+* Fixed a bug that made it possible for connector definitions to be duplicated, violating uniqueness.
+
+## [09-02-2021 - 0.29.14](https://github.com/airbytehq/airbyte/releases/tag/v0.29.14-alpha)
+* Nothing of note. 
+
+## [08-27-2021 - 0.29.13](https://github.com/airbytehq/airbyte/releases/tag/v0.29.13-alpha)
+* The scheduler now waits for the server before it creates any databases.
+* You can now apply tolerations for Airbyte Pods on K8s deployments.
+
 ## [08-23-2021 - 0.29.12](https://github.com/airbytehq/airbyte/releases/tag/v0.29.12-alpha)
 * Syncs now have a `max_sync_timeout` that times them out after 3 days.
 * Fixed Kube deploys when logging with Minio.
