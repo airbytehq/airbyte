@@ -93,12 +93,13 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB)));
     when(seedPersistence.dumpConfigs()).thenReturn(initialSeeds);
 
-    configPersistence.loadData(seedPersistence, new HashSet<String>());
+    Set<String> dockerRepoIds = configPersistence.getRepositoriesFromDefinitionIds(configPersistence.listDefinitionIdsInUseByConnectors());
+    configPersistence.loadData(seedPersistence, dockerRepoIds);
     assertRecordCount(2);
     assertHasSource(SOURCE_GITHUB);
     assertHasDestination(DESTINATION_SNOWFLAKE);
     verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), new HashSet<String>());
+    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), any(HashSet.class));
   }
 
   @Test
@@ -109,14 +110,15 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
-    configPersistence.loadData(seedPersistence, new HashSet<String>());
+    Set<String> dockerRepoIds = configPersistence.getRepositoriesFromDefinitionIds(configPersistence.listDefinitionIdsInUseByConnectors());
+    configPersistence.loadData(seedPersistence, dockerRepoIds);
 
     // the new destination is added
     assertRecordCount(3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
     verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), new HashSet<String>());
+    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), any(HashSet.class));
   }
 
   @Test
@@ -145,11 +147,9 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 
-    database.transaction(ctx -> {
-      final Set<String> definitionIdsInUse = configPersistence.listDefinitionIdsInUseByConnectors(ctx);
-      configPersistence.loadData(seedPersistence, definitionIdsInUse);
-      return null;
-    });
+    Set<String> dockerRepoIds = configPersistence.getRepositoriesFromDefinitionIds(configPersistence.listDefinitionIdsInUseByConnectors());
+    configPersistence.loadData(seedPersistence, dockerRepoIds);
+
     // s3 destination is not updated
     assertHasDestination(DESTINATION_S3);
     assertHasSource(SOURCE_GITHUB);
@@ -166,7 +166,8 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(snowflakeV2));
 
-    configPersistence.loadData(seedPersistence, new HashSet<String>());
+    Set<String> dockerRepoIds = configPersistence.getRepositoriesFromDefinitionIds(configPersistence.listDefinitionIdsInUseByConnectors());
+    configPersistence.loadData(seedPersistence, dockerRepoIds);
     assertHasDestination(snowflakeV2);
   }
 

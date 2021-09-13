@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -129,7 +130,7 @@ public class ArchiveHandlerTest {
     seedPersistence = YamlSeedConfigPersistence.get();
     configPersistence = new DatabaseConfigPersistence(database);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, new HashSet<String>());
     secretsPersistence = new FileSystemConfigPersistence(p);
     configRepository = new ConfigRepository(configPersistence, secretsPersistence); // TODO
     // configRepository = new ConfigRepository(configPersistence, configPersistence);
@@ -227,7 +228,7 @@ public class ArchiveHandlerTest {
     assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
 
     // Restore default seed data
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, new HashSet<String>());
     assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
 
     setupWorkspaceData(workspaceId);
@@ -275,7 +276,7 @@ public class ArchiveHandlerTest {
     // (that contains similar connections from importing the same archive)
     archive = archiveHandler.exportWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId));
     configRepository.replaceAllConfigs(Collections.emptyMap(), false);
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, new HashSet<String>());
     setupWorkspaceData(workspaceId);
     uploadRead = archiveHandler.uploadArchiveResource(archive);
     assertEquals(UploadRead.StatusEnum.SUCCEEDED, uploadRead.getStatus());

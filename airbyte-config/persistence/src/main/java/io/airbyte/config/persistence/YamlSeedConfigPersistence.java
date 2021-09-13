@@ -32,13 +32,17 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.init.SeedType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,6 +57,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
       ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
 
   private static final YamlSeedConfigPersistence INSTANCE;
+
   static {
     try {
       INSTANCE = new YamlSeedConfigPersistence();
@@ -100,6 +105,24 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public Set<String> listDefinitionIdsInUseByConnectors() throws IOException {
+    Set<String> definitionIds = new HashSet<String>();
+    {
+      List<SourceConnection> sources = listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+      for (SourceConnection source : sources) {
+        definitionIds.add(source.getSourceDefinitionId().toString());
+      }
+    }
+    {
+      List<DestinationConnection> destinations = listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+      for (DestinationConnection dest : destinations) {
+        definitionIds.add(dest.getDestinationDefinitionId().toString());
+      }
+    }
+    return definitionIds;
+  }
+
+  @Override
   public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) {
     final Map<String, JsonNode> configs = allSeedConfigs.get(CONFIG_SCHEMA_MAP.get(configType));
     if (configs == null) {
@@ -131,7 +154,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+  public void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 

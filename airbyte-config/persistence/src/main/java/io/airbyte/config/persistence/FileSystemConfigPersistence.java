@@ -29,6 +29,9 @@ import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -36,8 +39,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,6 +93,28 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
       return getConfigInternal(configType, configId, clazz);
+    }
+  }
+
+  @Override
+  public Set<String> listDefinitionIdsInUseByConnectors() throws IOException {
+    Set<String> definitionIds = new HashSet<String>();
+    try {
+      {
+        List<SourceConnection> sources = listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+        for (SourceConnection source : sources) {
+          definitionIds.add(source.getSourceDefinitionId().toString());
+        }
+      }
+      {
+        List<DestinationConnection> destinations = listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+        for (DestinationConnection dest : destinations) {
+          definitionIds.add(dest.getDestinationDefinitionId().toString());
+        }
+      }
+      return definitionIds;
+    } catch (JsonValidationException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -200,7 +227,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+  public void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException {
     throw new UnsupportedEncodingException("This method is not supported in this implementation");
   }
 

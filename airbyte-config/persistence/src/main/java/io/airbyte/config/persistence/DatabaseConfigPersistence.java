@@ -403,36 +403,50 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         connectors can be added manually by users, and their config ids are not always the same
    *         as those in the seed.
    */
-  public Set<String> listDefinitionIdsInUseByConnectors(DSLContext ctx) {
+  public Set<String> listDefinitionIdsInUseByConnectors() throws IOException {
     Set<String> usedConnectorDefinitionIds = new HashSet<>();
-    // query for used source definitions
-    usedConnectorDefinitionIds.addAll(ctx
-        .select(field("config_blob ->> 'sourceDefinitionId'", SQLDataType.VARCHAR))
-        .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.SOURCE_CONNECTION.name()))
-        .fetch().stream()
-        .flatMap(row -> Stream.of(row.value1()))
-        .collect(Collectors.toSet()));
-    // query for used destination definitions
-    usedConnectorDefinitionIds.addAll(ctx
-        .select(field("config_blob ->> 'destinationDefinitionId'", SQLDataType.VARCHAR))
-        .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.DESTINATION_CONNECTION.name()))
-        .fetch().stream()
-        .flatMap(row -> Stream.of(row.value1()))
-        .collect(Collectors.toSet()));
-
+    database.transaction(ctx -> {
+      // query for used source definitions
+      usedConnectorDefinitionIds.addAll(ctx
+          .select(field("config_blob ->> 'sourceDefinitionId'", SQLDataType.VARCHAR))
+          .from(AIRBYTE_CONFIGS)
+          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.SOURCE_CONNECTION.name()))
+          .fetch().stream()
+          .flatMap(row -> Stream.of(row.value1()))
+          .collect(Collectors.toSet()));
+      // query for used destination definitions
+      usedConnectorDefinitionIds.addAll(ctx
+          .select(field("config_blob ->> 'destinationDefinitionId'", SQLDataType.VARCHAR))
+          .from(AIRBYTE_CONFIGS)
+          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.DESTINATION_CONNECTION.name()))
+          .fetch().stream()
+          .flatMap(row -> Stream.of(row.value1()))
+          .collect(Collectors.toSet()));
+      return null;
+    });
     return usedConnectorDefinitionIds;
-
   }
 
-  public Set<String> getRepositoriesFromDefinitionIds(DSLContext ctx, Set<String> usedConnectorDefinitionIds) {
-    return ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
-        .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConnectorDefinitionIds))
-        .fetch().stream()
-        .map(Record1::value1)
-        .collect(Collectors.toSet());
+  public Set<String> getRepositoriesFromDefinitionIds(Set<String> usedConnectorDefinitionIds) throws IOException {
+    final Set<String> reps = new HashSet<String>();
+    // reps.addAll(ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
+    database.transaction(ctx -> {
+      System.out.println(ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
+          .from(AIRBYTE_CONFIGS).fetch());
+      return null;
+    });
+
+    database.transaction(ctx -> {
+      reps.addAll(ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
+          .from(AIRBYTE_CONFIGS)
+          .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConnectorDefinitionIds))
+          .fetch().stream()
+          .map(Record1::value1)
+          .collect(Collectors.toSet()));
+      return null;
+    });
+    return reps;
+
   }
 
 }

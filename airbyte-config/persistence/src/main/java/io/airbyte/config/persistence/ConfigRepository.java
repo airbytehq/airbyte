@@ -47,7 +47,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.jooq.DSLContext;
 
 public class ConfigRepository {
 
@@ -292,18 +291,16 @@ public class ConfigRepository {
    *
    * @return
    */
-  public Set<String> listDefinitionsInUseByConnectors(DSLContext ctx) {
-    // The force cast is here because I'm intentionally not cluttering up the ConfigPersistence API
-    // with these calls as this is meant to be a temporary solution. Once we have secrets
-    // coordinates/references
-    // instead of storing the whole config, this lookup will be simpler again.
+  public Set<String> listDefinitionsInUseByConnectors() throws IOException {
+    // Once we have secrets coordinates as references instead of storing the whole config, this lookup
+    // will be simpler again.
     Set<String> definitionIds;
     if (secretsPersistence != persistence) {
-      definitionIds = ((GoogleSecretsManagerConfigPersistence) secretsPersistence).listDefinitionIdsInUseByConnectors();
+      definitionIds = secretsPersistence.listDefinitionIdsInUseByConnectors();
     } else {
-      definitionIds = ((DatabaseConfigPersistence) persistence).listDefinitionIdsInUseByConnectors(ctx);
+      definitionIds = persistence.listDefinitionIdsInUseByConnectors();
     }
-    return ((DatabaseConfigPersistence) persistence).getRepositoriesFromDefinitionIds(ctx, definitionIds);
+    return ((DatabaseConfigPersistence) persistence).getRepositoriesFromDefinitionIds(definitionIds);
   }
 
   public void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException {

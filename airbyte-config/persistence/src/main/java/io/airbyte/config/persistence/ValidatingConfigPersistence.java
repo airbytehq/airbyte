@@ -27,11 +27,16 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 // we force all interaction with disk storage to be effectively single threaded.
@@ -67,6 +72,28 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public Set<String> listDefinitionIdsInUseByConnectors() throws IOException {
+    Set<String> definitionIds = new HashSet<String>();
+    try {
+      {
+        List<SourceConnection> sources = listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+        for (SourceConnection source : sources) {
+          definitionIds.add(source.getSourceDefinitionId().toString());
+        }
+      }
+      {
+        List<DestinationConnection> destinations = listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+        for (DestinationConnection dest : destinations) {
+          definitionIds.add(dest.getDestinationDefinitionId().toString());
+        }
+      }
+      return definitionIds;
+    } catch (JsonValidationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException {
     validateJson(Jsons.jsonNode(config), configType);
     decoratedPersistence.writeConfig(configType, configId, config);
@@ -89,8 +116,8 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
-    decoratedPersistence.loadData(seedPersistence);
+  public void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException {
+    decoratedPersistence.loadData(seedPersistence, connectorRepositoriesInUse);
   }
 
   private <T> void validateJson(T config, AirbyteConfig configType) throws JsonValidationException {

@@ -139,7 +139,8 @@ public class ConfigDumpImporter {
 
       // 4. Import Configs and update connector definitions
       importConfigsFromArchive(sourceRoot, false);
-      configRepository.loadData(seedPersistence);
+
+      configRepository.loadData(seedPersistence, configRepository.listDefinitionsInUseByConnectors());
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
