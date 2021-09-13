@@ -1,0 +1,23 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "identities": {
+      "type": ["null", "array"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "synced_calendars": {
+      "type": ["null", "array"]
+    },
+    "_type": {
+      "type": ["null", "string"]
+    }
+  }
+}

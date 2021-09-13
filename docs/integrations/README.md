@@ -26,6 +26,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
+|[Close.com](./sources/close-com.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
 |[Dixa](./sources/dixa.md) | Alpha |
