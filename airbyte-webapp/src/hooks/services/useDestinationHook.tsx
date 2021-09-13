@@ -6,7 +6,7 @@ import DestinationResource, {
     Destination,
 } from '@app/core/resources/Destination'
 import ConnectionResource, { Connection } from '@app/core/resources/Connection'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import useRouter from '../useRouter'
 import DestinationDefinitionSpecificationResource, {
     DestinationDefinitionSpecification,

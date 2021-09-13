@@ -6,7 +6,7 @@ import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 import useSource from '@app/hooks/services/useSourceHook'
 
 // TODO: create separate component for source and destinations forms
-import SourceForm from 'pages/SourcesPage/pages/CreateSourcePage/components/SourceForm'
+import SourceForm from '@app/pages/SourcesPage/pages/CreateSourcePage/components/SourceForm'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import useWorkspace from '@app/hooks/services/useWorkspace'
 

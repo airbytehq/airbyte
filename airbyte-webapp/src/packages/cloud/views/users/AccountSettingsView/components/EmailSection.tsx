@@ -5,13 +5,13 @@ import { Field, FieldProps, Form, Formik } from 'formik'
 import {
     Content,
     SettingsCard,
-} from 'pages/SettingsPage/pages/SettingsComponents'
+} from '@app/pages/SettingsPage/pages/SettingsComponents'
 import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
 import { LabeledInput } from '@app/components/LabeledInput'
-import NotificationsForm from 'pages/SettingsPage/pages/NotificationPage/components/NotificationsForm'
+import NotificationsForm from '@app/pages/SettingsPage/pages/NotificationPage/components/NotificationsForm'
 import { useCurrentUser } from '@app/packages/cloud/services/auth/AuthService'
 import useWorkspace from '@app/hooks/services/useWorkspace'
-import useWorkspaceEditor from 'pages/SettingsPage/components/useWorkspaceEditor'
+import useWorkspaceEditor from '@app/pages/SettingsPage/components/useWorkspaceEditor'
 
 export const EmailSection: React.FC = () => {
     const formatMessage = useIntl().formatMessage

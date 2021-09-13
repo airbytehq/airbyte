@@ -2,7 +2,7 @@ import React, { Suspense, useMemo, useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 import { useResource } from 'rest-hooks'
 
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import { DropDownRow, ImageBlock } from '@app/components'
 import PageTitle from '@app/components/PageTitle'
 import useRouter from '@app/hooks/useRouter'

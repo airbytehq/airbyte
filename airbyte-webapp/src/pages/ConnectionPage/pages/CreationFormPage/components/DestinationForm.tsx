@@ -6,7 +6,7 @@ import DestinationDefinitionResource from '@app/core/resources/DestinationDefini
 import useDestination from '@app/hooks/services/useDestinationHook'
 
 // TODO: create separate component for source and destinations forms
-import DestinationForm from 'pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm'
+import DestinationForm from '@app/pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import useWorkspace from '@app/hooks/services/useWorkspace'
 

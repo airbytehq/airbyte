@@ -6,7 +6,7 @@ import { Form, Formik, Field, FieldProps } from 'formik'
 import {
     Content,
     SettingsCard,
-} from 'pages/SettingsPage/pages/SettingsComponents'
+} from '@app/pages/SettingsPage/pages/SettingsComponents'
 import { Button, LabeledInput, LoadingButton } from '@app/components'
 import { useWorkspaceService } from '@app/packages/cloud/services/workspaces/WorkspacesService'
 import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'

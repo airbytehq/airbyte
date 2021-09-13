@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import {
     Content,
     SettingsCard,
-} from 'pages/SettingsPage/pages/SettingsComponents'
+} from '@app/pages/SettingsPage/pages/SettingsComponents'
 import { LabeledInput, LoadingButton } from '@app/components'
 import {
     useAuthService,

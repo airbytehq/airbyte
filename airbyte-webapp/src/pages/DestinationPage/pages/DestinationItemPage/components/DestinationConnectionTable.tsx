@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { useResource } from 'rest-hooks'
 
 import { ConnectionTable } from '@app/components/EntityTable'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import useRouter from '@app/hooks/useRouter'
 import { Connection } from '@app/core/resources/Connection'
 import useSyncActions from '@app/components/EntityTable/hooks'

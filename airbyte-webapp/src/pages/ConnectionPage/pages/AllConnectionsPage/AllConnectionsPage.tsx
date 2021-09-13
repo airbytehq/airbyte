@@ -10,7 +10,7 @@ import {
 } from '@app/components'
 import ConnectionResource from '@app/core/resources/Connection'
 import ConnectionsTable from './components/ConnectionsTable'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import useRouter from '@app/hooks/useRouter'
 import HeadTitle from '@app/components/HeadTitle'
 import Placeholder, { ResourceTypes } from '@app/components/Placeholder'

@@ -2,7 +2,7 @@ import React from 'react'
 import { useResource } from 'rest-hooks'
 
 import { ImplementationTable } from '@app/components/EntityTable'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import useRouter from '@app/hooks/useRouter'
 import { Source } from '@app/core/resources/Source'
 import ConnectionResource from '@app/core/resources/Connection'

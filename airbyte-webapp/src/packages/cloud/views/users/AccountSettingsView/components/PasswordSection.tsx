@@ -5,7 +5,7 @@ import { Field, FieldProps, Form, Formik } from 'formik'
 import {
     Content,
     SettingsCard,
-} from 'pages/SettingsPage/pages/SettingsComponents'
+} from '@app/pages/SettingsPage/pages/SettingsComponents'
 import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
 import { LabeledInput } from '@app/components/LabeledInput'
 

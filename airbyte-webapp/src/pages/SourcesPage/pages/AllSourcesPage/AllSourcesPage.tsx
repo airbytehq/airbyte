@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl'
 import { useResource } from 'rest-hooks'
 
 import { Button, MainPageWithScroll } from '@app/components'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import PageTitle from '@app/components/PageTitle'
 import useRouter from '@app/hooks/useRouter'
 import SourcesTable from './components/SourcesTable'

@@ -3,7 +3,7 @@ import { useFetcher, useResource } from 'rest-hooks'
 import { useStatefulResource } from '@rest-hooks/legacy'
 
 import SourceResource, { Source } from '@app/core/resources/Source'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import ConnectionResource, { Connection } from '@app/core/resources/Connection'
 import SourceDefinitionSpecificationResource, {
     SourceDefinitionSpecification,

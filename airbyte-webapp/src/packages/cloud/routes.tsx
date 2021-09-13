@@ -8,16 +8,16 @@ import {
 import { FormattedMessage } from 'react-intl'
 import { useAsync } from 'react-use'
 
-import SourcesPage from 'pages/SourcesPage'
-import DestinationPage from 'pages/DestinationPage'
+import SourcesPage from '@app/pages/SourcesPage'
+import DestinationPage from '@app/pages/DestinationPage'
 import {
     DestinationsPage as SettingsDestinationPage,
     SourcesPage as SettingsSourcesPage,
-} from 'pages/SettingsPage/pages/ConnectorsPage'
-import ConnectionPage from 'pages/ConnectionPage'
-import SettingsPage from 'pages/SettingsPage'
-import ConfigurationsPage from 'pages/SettingsPage/pages/ConfigurationsPage'
-import NotificationPage from 'pages/SettingsPage/pages/NotificationPage'
+} from '@app/pages/SettingsPage/pages/ConnectorsPage'
+import ConnectionPage from '@app/pages/ConnectionPage'
+import SettingsPage from '@app/pages/SettingsPage'
+import ConfigurationsPage from '@app/pages/SettingsPage/pages/ConfigurationsPage'
+import NotificationPage from '@app/pages/SettingsPage/pages/NotificationPage'
 
 import LoadingPage from '@app/components/LoadingPage'
 import MainView from '@app/packages/cloud/views/layout/MainView'
@@ -32,13 +32,13 @@ import {
     useWorkspaceService,
     WorkspaceServiceProvider,
 } from '@app/packages/cloud/services/workspaces/WorkspacesService'
-import { PageConfig } from 'pages/SettingsPage/SettingsPage'
+import { PageConfig } from '@app/pages/SettingsPage/SettingsPage'
 import { WorkspaceSettingsView } from './views/workspaces/WorkspaceSettingsView'
 import { UsersSettingsView } from '@app/packages/cloud/views/users/UsersSettingsView/UsersSettingsView'
 import { AccountSettingsView } from '@app/packages/cloud/views/users/AccountSettingsView/AccountSettingsView'
 import { ConfirmEmailPage } from './views/auth/ConfirmEmailPage'
 import useRouter from '@app/hooks/useRouter'
-import { WithPageAnalytics } from 'pages/withPageAnalytics'
+import { WithPageAnalytics } from '@app/pages/withPageAnalytics'
 
 export enum Routes {
     Preferences = '/preferences',

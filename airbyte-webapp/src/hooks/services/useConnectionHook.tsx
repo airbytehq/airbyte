@@ -16,7 +16,7 @@ import ConnectionResource, {
 import { SyncSchema } from '@app/core/domain/catalog'
 import { SourceDefinition } from '@app/core/resources/SourceDefinition'
 import { Source } from '@app/core/resources/Source'
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import useRouter from '../useRouter'
 import { Destination } from '@app/core/resources/Destination'
 import useWorkspace from './useWorkspace'

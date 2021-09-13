@@ -7,7 +7,7 @@ import en from './locales/en.json'
 import GlobalStyle from './global-styles'
 import { theme } from './theme'
 
-import { Routing } from 'pages/routes'
+import { Routing } from '@app/pages/routes'
 import LoadingPage from './components/LoadingPage'
 import ApiErrorBoundary from './components/ApiErrorBoundary'
 import NotificationService from '@app/hooks/services/Notification'

@@ -4,7 +4,7 @@ import { NetworkErrorBoundary as ErrorBoundary } from 'rest-hooks'
 
 import { Routes } from '../routes'
 import LoadingPage from '@app/components/LoadingPage'
-import ConnectionPage from 'pages/ConnectionPage'
+import ConnectionPage from '@app/pages/ConnectionPage'
 import AllSourcesPage from './pages/AllSourcesPage'
 import CreateSourcePage from './pages/CreateSourcePage'
 import SourceItemPage from './pages/SourceItemPage'

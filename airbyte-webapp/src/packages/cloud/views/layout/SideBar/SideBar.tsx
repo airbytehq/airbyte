@@ -6,7 +6,7 @@ import { faSlack } from '@fortawesome/free-brands-svg-icons'
 import { FormattedMessage } from 'react-intl'
 import { NavLink } from 'react-router-dom'
 
-import { Routes } from 'pages/routes'
+import { Routes } from '@app/pages/routes'
 import { useConfig } from '@app/config'
 
 import useConnector from '@app/hooks/services/useConnector'
