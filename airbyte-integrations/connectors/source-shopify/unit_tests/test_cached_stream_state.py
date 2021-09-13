@@ -25,7 +25,7 @@
 
 import pytest
 from source_shopify.source import Orders
-from source_shopify.utils import BackupStreamState as backup
+from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
 # Define the Stream class for the test
 STREAM = Orders(config={"authenticator": "token"})
@@ -47,7 +47,7 @@ def test_full_refresh(stream, cur_stream_state, latest_record, state_object, exp
     # create the fixure for *args based on input
     args = [stream, cur_stream_state, latest_record]
     # use the external tmp_state_object for this test
-    actual = backup.stream_state_to_tmp(*args, state_object=state_object)
+    actual = stream_state_cache.stream_state_to_tmp(*args, state_object=state_object)
     assert actual == expected_output
 
 
@@ -80,5 +80,5 @@ def test_incremental_sync(stream, cur_stream_state, latest_record, state_object,
     """
     # create the fixure for *args based on input
     args = [stream, cur_stream_state, latest_record]
-    actual = backup.stream_state_to_tmp(*args, state_object=state_object)
+    actual = stream_state_cache.stream_state_to_tmp(*args, state_object=state_object)
     assert actual == expected_output

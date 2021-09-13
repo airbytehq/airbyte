@@ -34,7 +34,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .utils import BackupStreamState as backup
+from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
 
@@ -97,7 +97,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
 
-    @backup.backup_stream_state
+    @stream_state_cache.cache_stream_state
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
@@ -136,7 +136,7 @@ class OrderSubstream(IncrementalShopifyStream):
     ) -> Iterable[Mapping[str, Any]]:
         # get the last saved orders stream state
         orders_stream = Orders(self.config)
-        orders_stream_state = backup.state_backup.get(orders_stream.name)
+        orders_stream_state = stream_state_cache.cached_state.get(orders_stream.name)
         for data in orders_stream.read_records(stream_state=orders_stream_state, **kwargs):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
@@ -305,7 +305,7 @@ class DiscountCodes(IncrementalShopifyStream):
     ) -> Iterable[Mapping[str, Any]]:
         # get the last saved price_rules stream state
         price_rules_stream = PriceRules(self.config)
-        price_rules_stream_state = backup.state_backup.get(price_rules_stream.name)
+        price_rules_stream_state = stream_state_cache.cached_state.get(price_rules_stream.name)
         for data in price_rules_stream.read_records(stream_state=price_rules_stream_state, **kwargs):
             slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)

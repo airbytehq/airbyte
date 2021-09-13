@@ -111,7 +111,7 @@ class ShopifyRateLimiter:
         return decorator
 
 
-class BackupStreamState:
+class EagerlyCachedStreamState:
 
     """
     This is the placeholder for the tmp stream state for each incremental stream,
@@ -119,10 +119,10 @@ class BackupStreamState:
     It holds the `temporary stream state values` before they are updated to have the opportunity to reuse this state.
     """
 
-    state_backup: Dict = {}
+    cached_state: Dict = {}
 
     @staticmethod
-    def stream_state_to_tmp(*args, state_object: Dict = state_backup) -> Dict:
+    def stream_state_to_tmp(*args, state_object: Dict = cached_state) -> Dict:
         """
         Method to save the current stream state for future re-use within slicing.
         The method requires having the temporary `state_object` as placeholder.
@@ -152,10 +152,10 @@ class BackupStreamState:
                 }
         return state_object
 
-    def backup_stream_state(func):
+    def cache_stream_state(func):
         @wraps(func)
         def decorator(*args):
-            BackupStreamState.stream_state_to_tmp(*args)
+            EagerlyCachedStreamState.stream_state_to_tmp(*args)
             return func(*args)
 
         return decorator
