@@ -6,7 +6,7 @@ import { getIn, useFormik } from 'formik'
 
 import { Button, ControlLabels, DropDown, Input } from '@app/components'
 import { Transformation } from '@app/core/domain/connection/operation'
-import { equal } from 'utils/objects'
+import { equal } from '@app/utils/objects'
 import { FormikErrors } from 'formik/dist/types'
 import { useGetService } from '@app/core/servicesProvider'
 import { OperationService } from '../../../core/domain/connection'

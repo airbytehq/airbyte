@@ -2,7 +2,7 @@ import userEvent from '@testing-library/user-event'
 import { findByText, screen, waitFor } from '@testing-library/react'
 
 import ServiceForm from 'views/Connector/ServiceForm'
-import { render } from 'utils/testutils'
+import { render } from '@app/utils/testutils'
 import { ServiceFormValues } from './types'
 import { AirbyteJSONSchema } from '@app/core/jsonSchema'
 

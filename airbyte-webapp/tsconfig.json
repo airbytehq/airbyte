@@ -12,8 +12,6 @@
         "baseUrl": ".",
         "paths": {
             "@app/*": ["src/*"],
-            "types/*": ["src/types/*"],
-            "utils/*": ["src/utils/*"],
             "views/*": ["src/views/*"]
         }
     },

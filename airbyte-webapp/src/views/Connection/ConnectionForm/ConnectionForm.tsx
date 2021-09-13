@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Field, FieldArray, FieldProps, Form, Formik } from 'formik'
 import ResetDataModal from '@app/components/ResetDataModal'
 import { ModalTypes } from '@app/components/ResetDataModal/types'
-import { equal } from 'utils/objects'
+import { equal } from '@app/utils/objects'
 
 import {
     ControlLabels,
@@ -16,7 +16,7 @@ import {
 
 import { useDestinationDefinitionSpecificationLoadAsync } from '@app/hooks/services/useDestinationHook'
 import useWorkspace from '@app/hooks/services/useWorkspace'
-import { createFormErrorMessage } from 'utils/errorStatusMessage'
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
 import { TransformationField } from './components/TransformationField'
 import { NormalizationField } from './components/NormalizationField'
 import { NamespaceField } from './components/NamespaceField'

@@ -21,7 +21,7 @@ import useRouter from '../useRouter'
 import { Destination } from '@app/core/resources/Destination'
 import useWorkspace from './useWorkspace'
 import { Operation } from '@app/core/domain/connection/operation'
-import { equal } from 'utils/objects'
+import { equal } from '@app/utils/objects'
 import { useAnalytics } from '@app/hooks/useAnalytics'
 
 export type ValuesProps = {

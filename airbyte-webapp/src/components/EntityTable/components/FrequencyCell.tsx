@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import FrequencyConfig from '@app/config/FrequencyConfig.json'
 import { ScheduleProperties } from '@app/core/resources/Connection'
-import { equal } from 'utils/objects'
+import { equal } from '@app/utils/objects'
 
 type IProps = {
     value: ScheduleProperties

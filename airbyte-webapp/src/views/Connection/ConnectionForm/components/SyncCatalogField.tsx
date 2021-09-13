@@ -11,7 +11,7 @@ import { Cell, Header } from '@app/components/SimpleTableComponents'
 import CatalogTree from 'views/Connection/CatalogTree'
 import Search from './Search'
 import SectionTitle from './SectionTitle'
-import { naturalComparatorBy } from 'utils/objects'
+import { naturalComparatorBy } from '@app/utils/objects'
 import { SyncCatalogFilters } from './SyncCatalogFilters'
 
 const TreeViewContainer = styled.div`

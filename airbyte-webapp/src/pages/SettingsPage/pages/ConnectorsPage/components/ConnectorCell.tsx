@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import Indicator from '@app/components/Indicator'
-import { getIcon } from 'utils/imageUtils'
+import { getIcon } from '@app/utils/imageUtils'
 
 type IProps = {
     connectorName: string

@@ -12,7 +12,7 @@ import { JobsLogItem } from '@app/components/JobItem'
 import { useSourceDefinitionSpecificationLoad } from '@app/hooks/services/useSourceHook'
 
 import SkipOnboardingButton from './SkipOnboardingButton'
-import { createFormErrorMessage } from 'utils/errorStatusMessage'
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
 import { useAnalytics } from '@app/hooks/useAnalytics'
 
 type IProps = {

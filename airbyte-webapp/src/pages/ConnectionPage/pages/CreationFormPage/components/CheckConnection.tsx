@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl'
 
 import StatusIcon from '@app/components/StatusIcon'
 import { Button, H4, Link, Spinner } from '@app/components'
-import { createFormErrorMessage } from 'utils/errorStatusMessage'
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
 
 type IProps = {
     isLoading?: boolean

@@ -9,7 +9,7 @@ import { JobsLogItem } from '@app/components/JobItem'
 
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 import { useDestinationDefinitionSpecificationLoad } from '@app/hooks/services/useDestinationHook'
-import { createFormErrorMessage } from 'utils/errorStatusMessage'
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
 import { JobInfo } from '@app/core/resources/Scheduler'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'

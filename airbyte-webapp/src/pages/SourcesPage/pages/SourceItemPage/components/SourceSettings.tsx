@@ -12,7 +12,7 @@ import DeleteBlock from '@app/components/DeleteBlock'
 import { Connection } from '@app/core/resources/Connection'
 import { JobInfo } from '@app/core/resources/Scheduler'
 import { JobsLogItem } from '@app/components/JobItem'
-import { createFormErrorMessage } from 'utils/errorStatusMessage'
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 

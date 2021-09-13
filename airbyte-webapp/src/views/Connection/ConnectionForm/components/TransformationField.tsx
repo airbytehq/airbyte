@@ -6,7 +6,7 @@ import TransformationForm from 'views/Connection/TransformationForm'
 import GroupControls from '@app/components/GroupControls'
 import ArrayOfObjectsEditor from '@app/components/ArrayOfObjectsEditor'
 import { Transformation } from '@app/core/domain/connection/operation'
-import { isDefined } from 'utils/common'
+import { isDefined } from '@app/utils/common'
 
 const TransformationField: React.FC<
     ArrayHelpers & {

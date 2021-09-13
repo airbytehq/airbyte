@@ -11,7 +11,7 @@ import {
 import { PropertySection } from './PropertySection'
 import { useServiceForm } from '../serviceFormContext'
 import GroupControls from '@app/components/GroupControls'
-import { naturalComparator } from 'utils/objects'
+import { naturalComparator } from '@app/utils/objects'
 import { IDataItem } from '@app/components/base/DropDown/components/Option'
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {

@@ -18,7 +18,7 @@ import LoadingSchema from '@app/components/LoadingSchema'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
 import { SourceDefinition } from '@app/core/resources/SourceDefinition'
 
-import { equal } from 'utils/objects'
+import { equal } from '@app/utils/objects'
 import EnabledControl from './EnabledControl'
 import { ConnectionNamespaceDefinition } from '@app/core/domain/connection'
 import { useAsyncFn } from 'react-use'

@@ -24,7 +24,7 @@ import { StreamHeader } from './StreamHeader'
 import { FieldHeader } from './FieldHeader'
 import { FieldRow } from './FieldRow'
 
-import { equal, naturalComparatorBy } from 'utils/objects'
+import { equal, naturalComparatorBy } from '@app/utils/objects'
 import { ConnectionNamespaceDefinition } from '@app/core/domain/connection'
 
 const flatten = (

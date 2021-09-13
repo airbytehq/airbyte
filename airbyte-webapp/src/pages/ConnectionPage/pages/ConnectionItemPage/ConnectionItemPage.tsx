@@ -16,7 +16,7 @@ import Link from '@app/components/Link'
 import { Routes } from '../../../routes'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import { equal } from 'utils/objects'
+import { equal } from '@app/utils/objects'
 import { useAnalytics } from '@app/hooks/useAnalytics'
 
 type ConnectionItemPageProps = {
