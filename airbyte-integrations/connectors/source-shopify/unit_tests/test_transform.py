@@ -37,7 +37,7 @@ def find_by_path(path_list, value):
 
 
 @pytest.mark.parametrize(
-    "value, properties, checks",
+    "transform_object, schema, checks",
     [
         (
             {
@@ -129,9 +129,9 @@ def find_by_path(path_list, value):
         )
     ],
 )
-def test_transform(value, properties, checks):
-    transformer = Transformer()
-    transformer._transform_object(value, properties)
+def test_transform(transform_object, schema, checks):
+    transformer = Transformer(schema)
+    transformer._transform_object(transform_object, schema)
     for check in checks:
-        expected_value = find_by_path(check.get("path"), value)
+        expected_value = find_by_path(check.get("path"), transform_object)
         assert isinstance(expected_value, check["expected_type"])

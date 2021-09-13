@@ -52,7 +52,7 @@ class ShopifyStream(HttpStream, ABC):
 
     def __init__(self, shop: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._schema = self.get_json_schema()
+        self._transformer = Transformer(self.get_json_schema())
         self.start_date = start_date
         self.shop = shop
 
@@ -79,13 +79,13 @@ class ShopifyStream(HttpStream, ABC):
 
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        transformer = Transformer()
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
-        yield from transformer.transform(records, self._schema)
+        for record in records:
+            yield self._transformer.transform(record)
 
     @property
     @abstractmethod
