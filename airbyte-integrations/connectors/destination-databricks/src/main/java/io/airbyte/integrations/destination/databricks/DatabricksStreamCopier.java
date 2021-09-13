@@ -103,8 +103,8 @@ public class DatabricksStreamCopier implements StreamCopier {
 
     this.tmpTableLocation = String.format("s3://%s/%s",
         s3Config.getBucketName(), parquetWriter.getOutputPrefix());
-    this.destTableLocation = String.format("s3://%s/%s",
-        s3Config.getBucketName(), S3OutputPathHelper.getOutputPrefix(s3Config.getBucketPath(), configuredStream.getStream()));
+    this.destTableLocation = String.format("s3://%s/%s/%s/%s",
+        s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.getDatabaseSchema(), streamName);
 
     LOGGER.info("[Stream {}] Database schema: {}", streamName, schemaName);
     LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getParquetSchema());
