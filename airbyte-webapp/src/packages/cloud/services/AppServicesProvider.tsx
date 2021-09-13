@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useResource } from 'rest-hooks'
 
-import { useAuth } from 'packages/firebaseReact'
+import { useAuth } from '@app/packages/firebaseReact'
 
 import {
     ServicesProvider,
@@ -15,9 +15,9 @@ import { FirebaseSdkProvider } from './FirebaseSdkProvider'
 import { useWorkspaceService } from './workspaces/WorkspacesService'
 import { useAuthService } from './auth/AuthService'
 import WorkspaceResource, { Workspace } from '@app/core/resources/Workspace'
-import { RequestAuthMiddleware } from 'packages/cloud/lib/auth/RequestAuthMiddleware'
+import { RequestAuthMiddleware } from '@app/packages/cloud/lib/auth/RequestAuthMiddleware'
 import { useConfig } from './config'
-import { UserService } from 'packages/cloud/lib/domain/users'
+import { UserService } from '@app/packages/cloud/lib/domain/users'
 import { RequestMiddleware } from '@app/core/request/RequestMiddleware'
 import { LoadingPage } from '@app/components'
 

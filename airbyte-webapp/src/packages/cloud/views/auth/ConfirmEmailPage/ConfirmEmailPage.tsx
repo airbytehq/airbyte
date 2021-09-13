@@ -9,7 +9,7 @@ import News from '../components/News'
 import {
     useAuthService,
     useCurrentUser,
-} from 'packages/cloud/services/auth/AuthService'
+} from '@app/packages/cloud/services/auth/AuthService'
 
 const Text = styled(H5)`
     padding: 27px 0 30px;

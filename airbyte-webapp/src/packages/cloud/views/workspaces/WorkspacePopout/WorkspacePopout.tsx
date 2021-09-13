@@ -9,7 +9,7 @@ import { IDataItem } from '@app/components/base/DropDown/components/Option'
 import {
     useListWorkspaces,
     useWorkspaceService,
-} from 'packages/cloud/services/workspaces/WorkspacesService'
+} from '@app/packages/cloud/services/workspaces/WorkspacesService'
 import ExitIcon from './components/ExitIcon'
 
 import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'

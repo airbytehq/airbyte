@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useQueryClient } from 'react-query'
 
-import { GoogleAuthService } from 'packages/cloud/lib/auth/GoogleAuthService'
+import { GoogleAuthService } from '@app/packages/cloud/lib/auth/GoogleAuthService'
 import useTypesafeReducer from '@app/hooks/useTypesafeReducer'
 import {
     actions,
@@ -9,10 +9,10 @@ import {
     authStateReducer,
     initialState,
 } from './reducer'
-import { User } from 'packages/cloud/lib/domain/users'
-import { AuthProviders } from 'packages/cloud/lib/auth/AuthProviders'
-import { useGetUserService } from 'packages/cloud/services/users/UserService'
-import { useAuth } from 'packages/firebaseReact'
+import { User } from '@app/packages/cloud/lib/domain/users'
+import { AuthProviders } from '@app/packages/cloud/lib/auth/AuthProviders'
+import { useGetUserService } from '@app/packages/cloud/services/users/UserService'
+import { useAuth } from '@app/packages/firebaseReact'
 
 type AuthContextApi = {
     user: User | null

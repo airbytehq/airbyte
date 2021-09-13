@@ -20,22 +20,22 @@ import ConfigurationsPage from 'pages/SettingsPage/pages/ConfigurationsPage'
 import NotificationPage from 'pages/SettingsPage/pages/NotificationPage'
 
 import LoadingPage from '@app/components/LoadingPage'
-import MainView from 'packages/cloud/views/layout/MainView'
-import { WorkspacesPage } from 'packages/cloud/views/workspaces'
+import MainView from '@app/packages/cloud/views/layout/MainView'
+import { WorkspacesPage } from '@app/packages/cloud/views/workspaces'
 import { useApiHealthPoll } from '@app/hooks/services/Health'
-import { Auth } from 'packages/cloud/views/auth'
-import { useAuthService } from 'packages/cloud/services/auth/AuthService'
+import { Auth } from '@app/packages/cloud/views/auth'
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
 import useConnector from '@app/hooks/services/useConnector'
 
 import {
     useGetWorkspace,
     useWorkspaceService,
     WorkspaceServiceProvider,
-} from 'packages/cloud/services/workspaces/WorkspacesService'
+} from '@app/packages/cloud/services/workspaces/WorkspacesService'
 import { PageConfig } from 'pages/SettingsPage/SettingsPage'
 import { WorkspaceSettingsView } from './views/workspaces/WorkspaceSettingsView'
-import { UsersSettingsView } from 'packages/cloud/views/users/UsersSettingsView/UsersSettingsView'
-import { AccountSettingsView } from 'packages/cloud/views/users/AccountSettingsView/AccountSettingsView'
+import { UsersSettingsView } from '@app/packages/cloud/views/users/UsersSettingsView/UsersSettingsView'
+import { AccountSettingsView } from '@app/packages/cloud/views/users/AccountSettingsView/AccountSettingsView'
 import { ConfirmEmailPage } from './views/auth/ConfirmEmailPage'
 import useRouter from '@app/hooks/useRouter'
 import { WithPageAnalytics } from 'pages/withPageAnalytics'

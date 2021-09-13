@@ -11,8 +11,8 @@ import { LabeledInput, LoadingButton } from '@app/components'
 import {
     useAuthService,
     useCurrentUser,
-} from 'packages/cloud/services/auth/AuthService'
-import { RowFieldItem } from 'packages/cloud/views/auth/components/FormComponents'
+} from '@app/packages/cloud/services/auth/AuthService'
+import { RowFieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
 import { EmailSection } from './components/EmailSection'
 import { PasswordSection } from './components/PasswordSection'
 

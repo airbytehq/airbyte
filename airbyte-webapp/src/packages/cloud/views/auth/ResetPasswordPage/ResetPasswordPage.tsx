@@ -7,7 +7,7 @@ import { BottomBlock, FieldItem, Form } from '../components/FormComponents'
 import { LoadingButton, LabeledInput, Link } from '@app/components'
 import { FormTitle } from '../components/FormTitle'
 import { Routes } from '../../../routes'
-import { useAuthService } from 'packages/cloud/services/auth/AuthService'
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
 import useRouterHook from '@app/hooks/useRouter'
 
 const ResetPasswordPageValidationSchema = yup.object().shape({

@@ -15,8 +15,8 @@ import {
 import { Button, H5, LabeledInput, Link } from '@app/components'
 import { FormTitle } from '../components/FormTitle'
 import CheckBoxControl from '../components/CheckBoxControl'
-import { useAuthService } from 'packages/cloud/services/auth/AuthService'
-import { FieldError } from 'packages/cloud/lib/errors/FieldError'
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
+import { FieldError } from '@app/packages/cloud/lib/errors/FieldError'
 
 const MarginBlock = styled.div`
     margin-bottom: 15px;

@@ -7,7 +7,7 @@ import useRouter from '@app/hooks/useRouter'
 import FormContent from './components/FormContent'
 import News from './components/News'
 
-import { Routes } from 'packages/cloud/routes'
+import { Routes } from '@app/packages/cloud/routes'
 
 import { LoginPage } from './LoginPage'
 import { SignupPage } from './SignupPage'

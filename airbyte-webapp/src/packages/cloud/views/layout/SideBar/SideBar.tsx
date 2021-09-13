@@ -16,7 +16,7 @@ import Indicator from '@app/components/Indicator'
 import Source from 'views/layout/SideBar/components/SourceIcon'
 import Connections from 'views/layout/SideBar/components/ConnectionsIcon'
 import Destination from 'views/layout/SideBar/components/DestinationIcon'
-import { WorkspacePopout } from 'packages/cloud/views/workspaces/WorkspacePopout'
+import { WorkspacePopout } from '@app/packages/cloud/views/workspaces/WorkspacePopout'
 
 const Bar = styled.nav`
     width: 100px;

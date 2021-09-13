@@ -12,7 +12,7 @@ import {
     Modal,
 } from '@app/components'
 import { Cell, Header, Row } from '@app/components/SimpleTableComponents'
-import { useGetUserService } from 'packages/cloud/services/users/UserService'
+import { useGetUserService } from '@app/packages/cloud/services/users/UserService'
 import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
 
 const Content = styled.div`

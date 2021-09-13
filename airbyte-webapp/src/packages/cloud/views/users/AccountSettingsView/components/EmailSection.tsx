@@ -6,10 +6,10 @@ import {
     Content,
     SettingsCard,
 } from 'pages/SettingsPage/pages/SettingsComponents'
-import { FieldItem } from 'packages/cloud/views/auth/components/FormComponents'
+import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
 import { LabeledInput } from '@app/components/LabeledInput'
 import NotificationsForm from 'pages/SettingsPage/pages/NotificationPage/components/NotificationsForm'
-import { useCurrentUser } from 'packages/cloud/services/auth/AuthService'
+import { useCurrentUser } from '@app/packages/cloud/services/auth/AuthService'
 import useWorkspace from '@app/hooks/services/useWorkspace'
 import useWorkspaceEditor from 'pages/SettingsPage/components/useWorkspaceEditor'
 

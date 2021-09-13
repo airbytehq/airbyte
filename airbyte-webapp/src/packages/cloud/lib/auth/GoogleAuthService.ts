@@ -10,8 +10,8 @@ import {
     sendEmailVerification,
 } from 'firebase/auth'
 
-import { FieldError } from 'packages/cloud/lib/errors/FieldError'
-import { ErrorCodes } from 'packages/cloud/services/auth/types'
+import { FieldError } from '@app/packages/cloud/lib/errors/FieldError'
+import { ErrorCodes } from '@app/packages/cloud/services/auth/types'
 import { Provider } from '@app/config'
 
 interface AuthService {

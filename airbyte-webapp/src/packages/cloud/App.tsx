@@ -7,16 +7,16 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import GlobalStyle from '../../global-styles'
 
 import en from '@app/locales/en.json'
-import cloudLocales from 'packages/cloud/locales/en.json'
-import { theme } from 'packages/cloud/theme'
+import cloudLocales from '@app/packages/cloud/locales/en.json'
+import { theme } from '@app/packages/cloud/theme'
 
-import { Routing } from 'packages/cloud/routes'
+import { Routing } from '@app/packages/cloud/routes'
 import LoadingPage from '@app/components/LoadingPage'
 import ApiErrorBoundary from '@app/components/ApiErrorBoundary'
 import NotificationServiceProvider from '@app/hooks/services/Notification'
 import { AnalyticsInitializer } from 'views/common/AnalyticsInitializer'
 import { FeatureService } from '@app/hooks/services/Feature'
-import { AuthenticationProvider } from 'packages/cloud/services/auth/AuthService'
+import { AuthenticationProvider } from '@app/packages/cloud/services/auth/AuthService'
 import { AppServicesProvider } from './services/AppServicesProvider'
 
 const messages = Object.assign({}, en, cloudLocales)

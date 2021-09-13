@@ -12,8 +12,6 @@
         "baseUrl": ".",
         "paths": {
             "@app/*": ["src/*"],
-            "locales/*": ["src/locales/*"],
-            "packages/*": ["src/packages/*"],
             "pages/*": ["src/pages/*"],
             "types/*": ["src/types/*"],
             "utils/*": ["src/utils/*"],

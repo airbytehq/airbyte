@@ -6,7 +6,7 @@ import {
     Content,
     SettingsCard,
 } from 'pages/SettingsPage/pages/SettingsComponents'
-import { FieldItem } from 'packages/cloud/views/auth/components/FormComponents'
+import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
 import { LabeledInput } from '@app/components/LabeledInput'
 
 export const PasswordSection: React.FC = () => {

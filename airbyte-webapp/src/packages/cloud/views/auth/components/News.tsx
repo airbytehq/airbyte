@@ -5,7 +5,7 @@ import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { FormattedMessage } from 'react-intl'
 
 import { useConfig } from '@app/config'
-import { news } from 'packages/cloud/data/news'
+import { news } from '@app/packages/cloud/data/news'
 
 import { H2, H4, H5 } from '@app/components'
 import NewsItem from './NewsItem'

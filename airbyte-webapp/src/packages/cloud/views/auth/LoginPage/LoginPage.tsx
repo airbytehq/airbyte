@@ -3,17 +3,17 @@ import { Field, FieldProps, Formik } from 'formik'
 import * as yup from 'yup'
 import { FormattedMessage, useIntl } from 'react-intl'
 
-import { useAuthService } from 'packages/cloud/services/auth/AuthService'
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
 
 import { LabeledInput, Link, LoadingButton } from '@app/components'
 import {
     BottomBlock,
     FieldItem,
     Form,
-} from 'packages/cloud/views/auth/components/FormComponents'
-import { FormTitle } from 'packages/cloud/views/auth/components/FormTitle'
-import { FieldError } from 'packages/cloud/lib/errors/FieldError'
-import { Routes } from 'packages/cloud/routes'
+} from '@app/packages/cloud/views/auth/components/FormComponents'
+import { FormTitle } from '@app/packages/cloud/views/auth/components/FormTitle'
+import { FieldError } from '@app/packages/cloud/lib/errors/FieldError'
+import { Routes } from '@app/packages/cloud/routes'
 
 const LoginPageValidationSchema = yup.object().shape({
     email: yup.string().email('form.email.error').required('form.empty.error'),

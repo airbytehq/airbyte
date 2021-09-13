@@ -6,8 +6,8 @@ import * as yup from 'yup'
 import { LabeledInput, Link, LoadingButton } from '@app/components'
 import useRouterHook from '@app/hooks/useRouter'
 
-import { Routes } from 'packages/cloud/routes'
-import { useAuthService } from 'packages/cloud/services/auth/AuthService'
+import { Routes } from '@app/packages/cloud/routes'
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
 import { FormTitle } from '../components/FormTitle'
 
 import { BottomBlock, FieldItem, Form } from '../components/FormComponents'
