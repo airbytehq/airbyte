@@ -26,6 +26,7 @@ This Source is capable of syncing the following core Streams:
 * [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+* [PaymentIntents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 
 ### Notes
 
@@ -71,6 +72,7 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.17   | 2021-09-13 | [](https://github.com/airbytehq/airbyte/pull/) | Add `PaymentIntents` stream |
 | 0.1.16   | 2021-07-28 | [4980](https://github.com/airbytehq/airbyte/pull/4980) | Remove Updated field from schemas |
 | 0.1.15   | 2021-07-21 | [4878](https://github.com/airbytehq/airbyte/pull/4878) | Fix incorrect percent_off and discounts data filed types|
 | 0.1.14   | 2021-07-09 | [4669](https://github.com/airbytehq/airbyte/pull/4669) | Subscriptions Stream now returns all kinds of subscriptions (including expired and canceled)|

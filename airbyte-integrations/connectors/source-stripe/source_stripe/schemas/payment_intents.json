@@ -1,0 +1,191 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "amount_capturable": {
+      "type": ["null", "integer"]
+    },
+    "amount_received": {
+      "type": ["null", "integer"]
+    },
+    "application": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "application_fee_amount": {
+      "type": ["null", "integer"]
+    },
+    "canceled_at": {
+      "type": ["null", "integer"]
+    },
+    "cancellation_reason": {
+      "type": ["null", "string"]
+    },
+    "capture_method": {
+      "type": ["null", "string"],
+      "enum": ["automatic", "manual"]
+    },
+    "charges": {
+      "type": ["null", "object"],
+      "properties": {
+        "object": {
+          "type": ["null", "string"]
+        },
+        "data": {
+          "type": ["null", "array"]
+        },
+        "has_more": {
+          "type": ["null", "boolean"]
+        },
+        "total_count": {
+          "type": ["null", "integer"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "client_secret": {
+      "type": ["null", "string"]
+    },
+    "confirmation_method": {
+      "type": ["null", "string"],
+      "enum": ["automatic", "manual"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "description": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "invoice": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "last_payment_error": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "next_action": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "on_behalf_of": {
+      "type": ["null", "string"]
+    },
+    "payment_method": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "payment_method_options": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "payment_method_types": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "receipt_email": {
+      "type": ["null", "string"]
+    },
+    "review": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "setup_future_usage": {
+      "type": ["null", "string"]
+    },
+    "shipping": {
+      "type": ["null", "object"],
+      "properties": {
+        "address": {
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "carrier": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "tracking_number": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "source": {
+      "type": ["null", "string", "object"],
+      "properties": {}
+    },
+    "statement_description": {
+      "type": ["null", "string"]
+    },
+    "statement_descriptor_suffix": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "transfer_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "integer"]
+        },
+        "destination": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "transfer_group": {
+      "type": ["null", "string"]
+    }
+  }
+}

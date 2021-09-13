@@ -101,7 +101,8 @@ class IncrementalStripeStream(StripeStream, ABC):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["created[gte]"] = stream_state.get(self.cursor_field)
+        if stream_state:
+            params["created[gte]"] = stream_state.get(self.cursor_field)
         return params
 
 
@@ -254,6 +255,13 @@ class Refunds(IncrementalStripeStream):
         return "refunds"
 
 
+class PaymentIntents(IncrementalStripeStream):
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "payment_intents"
+
+
 class BankAccounts(StripeStream):
     name = "bank_accounts"
 
@@ -296,6 +304,7 @@ class SourceStripe(AbstractSource):
             InvoiceItems(**args),
             InvoiceLineItems(**args),
             Invoices(**args),
+            PaymentIntents(**args),
             Plans(**args),
             Payouts(**args),
             Products(**args),
