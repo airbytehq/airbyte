@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.destination.gcs.avro;
 
+import static com.amazonaws.services.s3.internal.Constants.MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,6 +40,7 @@ import java.util.List;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileConstants;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class GcsAvroFormatConfigTest {
@@ -112,13 +113,10 @@ class GcsAvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigInvalid() {
-    try {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
       JsonNode invalidConfig = Jsons.deserialize("{ \"codec\": \"bi-directional-bfs\" }");
       S3AvroFormatConfig.parseCodecConfig(invalidConfig);
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    });
   }
 
   @Test
@@ -142,7 +140,7 @@ class GcsAvroFormatConfigTest {
         gcsDestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(6291456, partSizeBytes);
+    assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
@@ -161,7 +159,7 @@ class GcsAvroFormatConfigTest {
         gcsDestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(5242880, partSizeBytes); // 5MB is a default value if nothing provided explicitly
+    assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
 
 }

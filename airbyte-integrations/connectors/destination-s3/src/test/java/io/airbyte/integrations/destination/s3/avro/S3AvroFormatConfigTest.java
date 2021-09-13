@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
+import static com.amazonaws.services.s3.internal.Constants.MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -141,7 +142,7 @@ class S3AvroFormatConfigTest {
         s3DestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(6291456, partSizeBytes);
+    assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
@@ -160,7 +161,7 @@ class S3AvroFormatConfigTest {
         s3DestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(5242880, partSizeBytes); // 5MB is a default value if nothing provided explicitly
+    assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
 
 }
