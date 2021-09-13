@@ -1,30 +1,20 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "baseUrl": "src",
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strictNullChecks": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
+    "compilerOptions": {
+        "target": "esnext",
+        "strictNullChecks": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "lib": ["es2019", "dom"],
+        "module": "commonjs",
+        "allowSyntheticDefaultImports": true,
+        "typeRoots": ["./node_modules/@types", "./src/typings"],
+        "baseUrl": ".",
+        "paths": {
+            "@app/*": ["src/app/*"],
+            "@lib/*": ["src/lib/*"],
+            "@typings/*": ["src/typings/*"]
+        }
+    },
+    "include": ["./src/**/*"],
+    "exclude": ["node_modules", "dist"]
 }
