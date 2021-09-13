@@ -3,7 +3,7 @@
   "version": "0.29.16-alpha",
   "private": true,
   "scripts": {
-    "dist": "webpack -c .webpack/webpack.config",
+    "build": "webpack -c .webpack/webpack.config",
     "lint": "eslint .",
     "prettier:check": "prettier --check --ignore-unknown .",
     "prettier:format": "prettier --write --ignore-unknown .",
