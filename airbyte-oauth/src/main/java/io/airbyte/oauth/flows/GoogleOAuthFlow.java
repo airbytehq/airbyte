@@ -30,6 +30,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -101,14 +102,16 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+    final Map<String, Object> result = new HashMap<>();
     if (data.has("access_token")) {
-      return Map.of("access_token", data.get("access_token").asText());
+      result.put("access_token", data.get("access_token").asText());
     }
     if (data.has("refresh_token")) {
-      return Map.of("refresh_token", data.get("refresh_token").asText());
+      result.put("refresh_token", data.get("refresh_token").asText());
     } else {
       throw new IOException(String.format("Missing 'refresh_token' in query params from %s", ACCESS_TOKEN_URL));
     }
+    return result;
   }
 
 }
