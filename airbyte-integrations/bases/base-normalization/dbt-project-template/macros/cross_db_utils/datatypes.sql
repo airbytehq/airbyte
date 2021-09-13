@@ -83,25 +83,40 @@
 
 {# timestamp with time zone  -------------------------------------------------     #}
 
-{%- macro type_timestamp_with_timezone() -%}
-  {{ adapter.dispatch('type_timestamp_with_timezone')() }}
+{%- macro type_timestamp_with_timezone(timestamp_column) -%}
+  {{ adapter.dispatch('type_timestamp_with_timezone')(timestamp_column) }}
 {%- endmacro -%}
 
-{% macro default__type_timestamp_with_timezone() %}
+{% macro default__type_timestamp_with_timezone(timestamp_column) %}
     timestamp with time zone
 {% endmacro %}
 
-{% macro bigquery__type_timestamp_with_timezone() %}
+{% macro bigquery__type_timestamp_with_timezone(timestamp_column) %}
     timestamp
 {% endmacro %}
 
 {# MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char #}
-{%- macro mysql__type_timestamp_with_timezone() -%}
+{%- macro mysql__type_timestamp_with_timezone(timestamp_column) -%}
     char
 {%- endmacro -%}
 
-{% macro oracle__type_timestamp_with_timezone() %}
+{% macro oracle__type_timestamp_with_timezone(timestamp_column) %}
     varchar2(4000)
+{% endmacro %}
+
+{% macro snowflake__type_timestamp_with_timezone(timestamp_column) %}
+    case
+        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:){2}[0-9]{2} UTC' then to_timestamp_tz({{timestamp_column}} || '+0', 'YYYY-MM-DD HH24:MI:SS UTC TZH')
+
+        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2} \\+[0-9]{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2} \\+[0-9]{1,2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SS TZH')
+        when {{timestamp_column}} regexp ('[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2} UTC') then to_timestamp_tz({{timestamp_column}} || '+0', 'YYYY-MM-DDTHH24:MI:SS UTC TZH')
+
+        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\+[0-9]{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\+[0-9]{1,2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZH')
+        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}UTC' then to_timestamp_tz({{timestamp_column}} || '+0', 'YYYY-MM-DDTHH24:MI:SSUTCTZH')
+        else to_timestamp_tz({{timestamp_column}})
+    end as {{timestamp_column}}
 {% endmacro %}
 
 

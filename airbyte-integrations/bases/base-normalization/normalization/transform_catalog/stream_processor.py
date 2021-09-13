@@ -435,7 +435,9 @@ from {{ from_table }}
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_timestamp_with_time_zone(definition):
-            sql_type = jinja_call("type_timestamp_with_timezone()")
+            if self.destination_type == DestinationType.SNOWFLAKE:
+                return jinja_call(f"type_timestamp_with_timezone({jinja_column})")
+            sql_type = jinja_call(f"type_timestamp_with_timezone({jinja_column})")
         elif is_date(definition):
             sql_type = jinja_call("type_date()")
         elif is_string(definition["type"]):
