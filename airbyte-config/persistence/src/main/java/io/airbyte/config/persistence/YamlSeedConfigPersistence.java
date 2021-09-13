@@ -92,7 +92,8 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public Set<String> getRepositoriesFromDefinitionIds(Set<String> usedConnectorDefinitionIds) throws IOException {
-    throw new UnsupportedOperationException("This should never be needed as seed persistence isn't the source of truth for definitions in use by connectors.");
+    throw new UnsupportedOperationException(
+        "This should never be needed as seed persistence isn't the source of truth for definitions in use by connectors.");
   }
 
   @Override
