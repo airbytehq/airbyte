@@ -33,9 +33,11 @@ import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import io.temporal.common.RetryOptions;
+import io.temporal.common.converter.DataConverter;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.workflow.Functions;
@@ -43,6 +45,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +65,15 @@ public class TemporalUtils {
     return temporalService;
   }
 
-  public static WorkflowClient createTemporalClient(String temporalHost) {
+  public static WorkflowClient createTemporalClient(String temporalHost, String temporalEncryptionKey) {
     final WorkflowServiceStubs temporalService = createTemporalService(temporalHost);
-    return WorkflowClient.newInstance(temporalService);
+    final WorkflowClientOptions.Builder optionsBuilder = WorkflowClientOptions.newBuilder();
+
+    if (StringUtils.isNotBlank(temporalEncryptionKey)) {
+      optionsBuilder.setDataConverter(new EncryptionDataConverter(DataConverter.getDefaultInstance(), temporalEncryptionKey));
+    }
+
+    return WorkflowClient.newInstance(temporalService, optionsBuilder.build());
   }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();

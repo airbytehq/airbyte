@@ -25,6 +25,7 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -49,8 +50,8 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
 
-  public static TemporalClient production(String temporalHost, Path workspaceRoot) {
-    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), workspaceRoot);
+  public static TemporalClient production(String temporalHost, Path workspaceRoot, Configs configs) {
+    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost, configs.getTemporalEncryptionKey()), workspaceRoot);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to

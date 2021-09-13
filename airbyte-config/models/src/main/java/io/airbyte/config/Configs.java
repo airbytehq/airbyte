@@ -118,6 +118,8 @@ public interface Configs {
 
   String getGoogleApplicationCredentials();
 
+  String getTemporalEncryptionKey();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

@@ -198,7 +198,7 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)

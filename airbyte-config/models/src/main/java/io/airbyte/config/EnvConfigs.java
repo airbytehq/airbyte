@@ -86,6 +86,7 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String TEMPORAL_ENCRYPTION_KEY = "TEMPORAL_ENCRYPTION_KEY";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -397,6 +398,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getGoogleApplicationCredentials() {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
+  }
+
+  @Override
+  public String getTemporalEncryptionKey() {
+    return getEnvOrDefault(TEMPORAL_ENCRYPTION_KEY, null);
   }
 
   private String getEnvOrDefault(final String key, final String defaultValue) {
