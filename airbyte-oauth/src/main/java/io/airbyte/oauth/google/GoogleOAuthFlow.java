@@ -39,16 +39,17 @@ import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Following docs from https://developers.google.com/identity/protocols/oauth2/web-server
@@ -61,7 +62,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   private final static String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
   private final String scope;
-  private final List<String> googleQueryParameters;
+  private final Map<String, String> defaultQueryParams;
 
   private final ConfigRepository configRepository;
 
@@ -73,13 +74,15 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   GoogleOAuthFlow(ConfigRepository configRepository, String scope, HttpClient httpClient) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
-    this.scope = UrlEncode(scope);
-    this.googleQueryParameters = List.of(
-        String.format("scope=%s", this.scope),
-        "access_type=offline",
-        "include_granted_scopes=true",
-        "response_type=code",
-        "prompt=consent");
+    this.scope = scope;
+    this.defaultQueryParams = ImmutableMap.<String, String>builder()
+        .put("scope", this.scope)
+        .put("access_type", "offline")
+        .put("include_granted_scopes", "true")
+        .put("response_type", "code")
+        .put("prompt", "consent")
+        .build();
+
   }
 
   @Override
@@ -96,18 +99,18 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   }
 
   private String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
-    final StringBuilder result = new StringBuilder(CONSENT_URL)
-        .append("?");
-    for (String queryParameter : googleQueryParameters) {
-      result.append(queryParameter).append("&");
+    try {
+      URIBuilder uriBuilder = new URIBuilder(CONSENT_URL)
+          .addParameter("state", definitionId.toString())
+          .addParameter("client_id", clientId)
+          .addParameter("redirect_uri", redirectUrl);
+      for (Map.Entry<String, String> queryParameter : defaultQueryParams.entrySet()) {
+        uriBuilder.addParameter(queryParameter.getKey(), queryParameter.getValue());
+      }
+      return uriBuilder.toString();
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
     }
-    return result
-        // TODO state should be randomly generated, and the 2nd step of oauth should verify its value
-        // matches the initially generated state value
-        .append("state=").append(definitionId.toString()).append("&")
-        .append("client_id=").append(clientId).append("&")
-        .append("redirect_uri=").append(redirectUrl)
-        .toString();
   }
 
   @Override
