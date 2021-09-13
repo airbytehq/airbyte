@@ -49,6 +49,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in header_values},
             },
+            supported_sync_modes=["full_refresh"],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -79,6 +80,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in expected_stream_header_values},
             },
+            supported_sync_modes=["full_refresh"],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -96,6 +98,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {"h1": {"type": "string"}},
             },
+            supported_sync_modes=["full_refresh"],
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
@@ -133,12 +136,12 @@ class TestHelpers(unittest.TestCase):
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema),
+                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema),
+                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema, supported_sync_modes=["full_refresh"]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
