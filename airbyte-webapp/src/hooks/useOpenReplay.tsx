@@ -1,18 +1,46 @@
-import { useMemo } from "react";
-import Tracker, { Options } from "@asayerio/tracker";
+import { useMemo } from 'react'
+import Tracker, { Options } from '@asayerio/tracker'
 
-let tracker: Tracker | null = null;
+type MockTracker = {
+    use: () => void
+    active: () => void
+    start: () => void
+    stop: () => void
+    sessionID: () => void
+    userID: () => void
+    userAnonymousID: () => void
+    metadata: () => void
+    event: () => void
+    issue: () => void
+    handleError: () => void
+    handleErrorEvent: () => void
+}
 
-const useTracker = (options: Options): Tracker => {
-  return useMemo(() => {
-    if (!tracker) {
-      tracker = new Tracker(options);
+let tracker: Tracker | MockTracker = {
+    use: () => {},
+    active: () => {},
+    start: () => {},
+    stop: () => {},
+    sessionID: () => {},
+    userID: () => {},
+    userAnonymousID: () => {},
+    metadata: () => {},
+    event: () => {},
+    issue: () => {},
+    handleError: () => {},
+    handleErrorEvent: () => {},
+}
 
-      tracker.start();
-    }
+const useTracker = (options: Options): Tracker | MockTracker => {
+    return useMemo(() => {
+        if (!tracker && process.env.NODE_ENV === 'production') {
+            tracker = new Tracker(options)
 
-    return tracker;
-  }, [options]);
-};
+            tracker.start()
+        }
 
-export default useTracker;
+        return tracker
+    }, [options])
+}
+
+export default useTracker

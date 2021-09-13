@@ -7,14 +7,24 @@
         "lib": ["es2019", "dom"],
         "module": "commonjs",
         "allowSyntheticDefaultImports": true,
-        "typeRoots": ["./node_modules/@types", "./src/typings"],
+        "resolveJsonModule": true,
+        "typeRoots": ["./node_modules/@types", "./src/types"],
         "baseUrl": ".",
         "paths": {
-            "@app/*": ["src/app/*"],
-            "@lib/*": ["src/lib/*"],
-            "@typings/*": ["src/typings/*"]
+            "components/*": ["src/components/*"],
+            "config/*": ["src/config/*"],
+            "core/*": ["src/core/*"],
+            "hooks/*": ["src/hooks/*"],
+            "locales/*": ["src/locales/*"],
+            "packages/*": ["src/packages/*"],
+            "pages/*": ["src/pages/*"],
+            "types/*": ["src/types/*"],
+            "utils/*": ["src/utils/*"],
+            "views/*": ["src/views/*"]
         }
     },
     "include": ["./src/**/*"],
-    "exclude": ["node_modules", "dist"]
+    "exclude": ["node_modules",
+      "build"
+    ]
 }

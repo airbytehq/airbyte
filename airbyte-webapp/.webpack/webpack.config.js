@@ -2,8 +2,9 @@ const path = require('path')
 
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
-const { DefinePlugin, HotModuleReplacementPlugin } = require('webpack')
+const { HotModuleReplacementPlugin } = require('webpack')
 const { merge: webpackMerge } = require('webpack-merge')
+const Dotenv = require('dotenv-webpack')
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -11,7 +12,17 @@ const options = {
     mode: 'none',
     resolve: {
         alias: {
-            'components': path.resolve(__dirname, '../src/app/components'),
+            // TODO: replace all aliases with `@app/` (+tsconfig.json)
+            components: path.resolve(__dirname, '../src/components'),
+            config: path.resolve(__dirname, '../src/config'),
+            core: path.resolve(__dirname, '../src/core'),
+            hooks: path.resolve(__dirname, '../src/hooks'),
+            locales: path.resolve(__dirname, '../src/locales'),
+            packages: path.resolve(__dirname, '../src/packages'),
+            pages: path.resolve(__dirname, '../src/pages'),
+            types: path.resolve(__dirname, '../src/types'),
+            utils: path.resolve(__dirname, '../src/utils'),
+            views: path.resolve(__dirname, '../src/views'),
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.html'],
         modules: ['node_modules', 'src'],
@@ -20,13 +31,15 @@ const options = {
         modules: ['node_modules', 'src'],
     },
     entry: {
-        main: ['@babel/polyfill', './src/index.tsx'],
+        main: ['@babel/polyfill', './src/main.ts'],
     },
     module: {
         rules: [
             {
                 test: /\.[jt]sx?$/,
-                exclude: /node_modules/,
+                resolve: {
+                    fullySpecified: false,
+                },
                 use: [
                     {
                         loader: require.resolve('babel-loader'),
@@ -42,6 +55,12 @@ const options = {
         ],
     },
     plugins: [
+        new Dotenv({
+            path:
+                process.env.NODE_ENV === 'production'
+                    ? './.env.prod'
+                    : './.env.dev',
+        }),
         new CopyWebpackPlugin({
             patterns: [
                 {
@@ -52,11 +71,6 @@ const options = {
                     },
                 },
             ],
-        }),
-        new DefinePlugin({
-            'process.env': {
-                NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-            },
         }),
         isDevelopment && new HotModuleReplacementPlugin(),
         isDevelopment && new ReactRefreshWebpackPlugin(),

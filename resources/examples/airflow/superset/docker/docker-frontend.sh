@@ -18,9 +18,9 @@
 set -e
 
 cd /app/superset-frontend
-npm install -g npm@7
+npm install -g yarn
 npm install -f --no-optional --global webpack webpack-cli
-npm install -f --no-optional
+yarn
 
 echo "Running frontend"
 npm run dev
