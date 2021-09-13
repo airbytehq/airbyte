@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 
 import GlobalStyle from '../../global-styles'
 
-import en from 'locales/en.json'
+import en from '@app/locales/en.json'
 import cloudLocales from 'packages/cloud/locales/en.json'
 import { theme } from 'packages/cloud/theme'
 
