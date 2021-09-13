@@ -63,7 +63,8 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
                                     List<AirbyteRecordMessage> records,
                                     String schemaName,
                                     String tmpTableName) {
-    // do nothing
+    // Do nothing. The records are copied into the table directly from the staging parquet file.
+    // So no manual insertion is needed.
   }
 
 }

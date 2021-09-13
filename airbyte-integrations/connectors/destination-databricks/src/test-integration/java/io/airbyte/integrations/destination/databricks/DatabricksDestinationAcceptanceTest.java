@@ -47,15 +47,12 @@ import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,33 +123,34 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
     this.s3Config = databricksConfig.getS3DestinationConfig();
-    LOGGER.info("Test full path: {}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
+    LOGGER.info("Test full path: s3://{}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
 
     this.s3Client = s3Config.getS3Client();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws SQLException {
-//    // clean up s3
-//    List<KeyVersion> keysToDelete = new LinkedList<>();
-//    List<S3ObjectSummary> objects = s3Client
-//        .listObjects(s3Config.getBucketName(), s3Config.getBucketPath())
-//        .getObjectSummaries();
-//    for (S3ObjectSummary object : objects) {
-//      keysToDelete.add(new KeyVersion(object.getKey()));
-//    }
-//
-//    if (keysToDelete.size() > 0) {
-//      LOGGER.info("Tearing down test bucket path: {}/{}", s3Config.getBucketName(),
-//          s3Config.getBucketPath());
-//      DeleteObjectsResult result = s3Client
-//          .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
-//      LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
-//    }
-//
-//    // clean up database
-//    Database database = getDatabase(databricksConfig);
-//    database.query(ctx -> ctx.dropSchema(databricksConfig.getDatabaseSchema()));
+    // clean up s3
+    List<KeyVersion> keysToDelete = new LinkedList<>();
+    List<S3ObjectSummary> objects = s3Client
+        .listObjects(s3Config.getBucketName(), s3Config.getBucketPath())
+        .getObjectSummaries();
+    for (S3ObjectSummary object : objects) {
+      keysToDelete.add(new KeyVersion(object.getKey()));
+    }
+
+    if (keysToDelete.size() > 0) {
+      LOGGER.info("Tearing down test bucket path: {}/{}", s3Config.getBucketName(),
+          s3Config.getBucketPath());
+      DeleteObjectsResult result = s3Client
+          .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
+      LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
+    }
+
+    // clean up database
+    LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
+    Database database = getDatabase(databricksConfig);
+    database.query(ctx -> ctx.dropSchema(databricksConfig.getDatabaseSchema()));
   }
 
   private static Database getDatabase(DatabricksDestinationConfig databricksConfig) {

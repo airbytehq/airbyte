@@ -22,6 +22,13 @@ import org.slf4j.LoggerFactory;
 /**
  * This implementation is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that this
  * implementation creates Parquet staging files, instead of CSV ones.
+ * <p/>
+ * It does the following operations:
+ * <li>1. Parquet writer writes data stream into staging parquet file in s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
+ * <li>2. Create a tmp delta table based on the staging parquet file.</li>
+ * <li>3. Create the destination delta table based on the tmp delta table schema in s3://<bucket>/<stream-name>.</li>
+ * <li>4. Copy the staging parquet file into the destination delta table.</li>
+ * <li>5. Delete the tmp delta table, and the staging parquet file.</li>
  */
 public class DatabricksStreamCopier implements StreamCopier {
 
@@ -42,13 +49,6 @@ public class DatabricksStreamCopier implements StreamCopier {
   private final String tmpTableLocation;
   private final String destTableLocation;
 
-  /**
-   * <li>1. Parquet writer writes data stream into staging parquet file in s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
-   * <li>2. Create a tmp delta table based on the staging parquet file.</li>
-   * <li>3. Create the destination delta table based on the tmp delta table schema in s3://<bucket>/<stream-name>.</li>
-   * <li>4. Copy the staging parquet file into the destination delta table.</li>
-   * <li>5. Delete the tmp delta table, and the staging parquet file.</li>
-   */
   public DatabricksStreamCopier(String stagingFolder,
                                 String schema,
                                 ConfiguredAirbyteStream configuredStream,
@@ -121,18 +121,20 @@ public class DatabricksStreamCopier implements StreamCopier {
   public String createDestinationTable() throws Exception {
     LOGGER.info("[Stream {}] Creating destination table if it does not exist: {}", streamName, destTableName);
 
-    if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-      sqlOperations.dropTableIfExists(database, schemaName, destTableName);
-    }
+    String createStatement = destinationSyncMode == DestinationSyncMode.OVERWRITE
+        // "create or replace" is the recommended way to replace existing table
+        ? "CREATE OR REPLACE TABLE"
+        : "CREATE TABLE IF NOT EXISTS";
 
     String createTable = String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s " +
+        "%s %s.%s " +
             "USING delta " +
             "LOCATION '%s' " +
             "COMMENT 'Created from stream %s' " +
             "TBLPROPERTIES ('sync_mode' = '%s') " +
             // create the table based on the schema of the tmp table
             "AS SELECT * FROM %s.%s LIMIT 0",
+        createStatement,
         schemaName, destTableName,
         destTableLocation,
         streamName,
