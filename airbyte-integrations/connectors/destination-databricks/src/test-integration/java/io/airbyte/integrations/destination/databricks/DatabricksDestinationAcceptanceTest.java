@@ -150,7 +150,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
     Database database = getDatabase(databricksConfig);
-    database.query(ctx -> ctx.dropSchema(databricksConfig.getDatabaseSchema()));
+    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
   }
 
   private static Database getDatabase(DatabricksDestinationConfig databricksConfig) {
