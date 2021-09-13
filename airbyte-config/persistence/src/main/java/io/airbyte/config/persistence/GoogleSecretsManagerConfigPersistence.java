@@ -76,6 +76,12 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
     }
   }
 
+  @Override
+  public Set<String> getRepositoriesFromDefinitionIds(Set<String> usedConnectorDefinitionIds) throws IOException {
+    throw new UnsupportedOperationException(
+        "Secrets Manager does not store the list of definitions and thus cannot be used to look up docker repositories.");
+  }
+
   /**
    * Determines the secrets manager key name for storing a particular config
    */

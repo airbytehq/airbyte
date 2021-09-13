@@ -181,10 +181,9 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigRepository configRepository = configs.getSecretStoreForConfigs() != null &&
-        configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
-            ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(), new GoogleSecretsManagerConfigPersistence())
-            : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
+    final ConfigRepository configRepository = configs.getSecretStoreForConfigs() != null && configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
+        ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(), new GoogleSecretsManagerConfigPersistence())
+        : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,

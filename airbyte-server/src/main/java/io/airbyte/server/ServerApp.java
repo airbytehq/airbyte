@@ -181,11 +181,10 @@ public class ServerApp implements ServerRunnable {
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
 
-    final ConfigRepository configRepository = configs.getSecretStoreForConfigs() != null &&
-        configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
-            ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(),
-                new GoogleSecretsManagerConfigPersistence())
-            : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
+    final ConfigRepository configRepository = configs.getSecretStoreForConfigs() != null && configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
+        ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(),
+            new GoogleSecretsManagerConfigPersistence())
+        : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
 
     configRepository.loadData(ConfigSeedProvider.get(configs), configRepository.listDefinitionsInUseByConnectors());
 

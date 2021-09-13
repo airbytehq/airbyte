@@ -97,6 +97,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public Set<String> getRepositoriesFromDefinitionIds(Set<String> usedConnectorDefinitionIds) throws IOException {
+    throw new UnsupportedOperationException("Migrate to a database persistence before trying to use the external secrets store.");
+  }
+
+  @Override
   public Set<String> listDefinitionIdsInUseByConnectors() throws IOException {
     Set<String> definitionIds = new HashSet<String>();
     try {

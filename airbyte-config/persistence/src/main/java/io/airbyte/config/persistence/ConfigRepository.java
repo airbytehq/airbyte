@@ -300,7 +300,7 @@ public class ConfigRepository {
     } else {
       definitionIds = persistence.listDefinitionIdsInUseByConnectors();
     }
-    return ((DatabaseConfigPersistence) persistence).getRepositoriesFromDefinitionIds(definitionIds);
+    return persistence.getRepositoriesFromDefinitionIds(definitionIds);
   }
 
   public void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException {

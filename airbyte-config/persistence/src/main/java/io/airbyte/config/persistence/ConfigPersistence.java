@@ -49,6 +49,8 @@ public interface ConfigPersistence {
 
   void loadData(ConfigPersistence seedPersistence, Set<String> connectorRepositoriesInUse) throws IOException;
 
+  Set<String> getRepositoriesFromDefinitionIds(Set<String> usedConnectorDefinitionIds) throws IOException;
+
   Set<String> listDefinitionIdsInUseByConnectors() throws IOException;
 
 }

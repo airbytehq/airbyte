@@ -120,6 +120,11 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     decoratedPersistence.loadData(seedPersistence, connectorRepositoriesInUse);
   }
 
+  @Override
+  public Set<String> getRepositoriesFromDefinitionIds(Set<String> usedConnectorDefinitionIds) throws IOException {
+    return decoratedPersistence.getRepositoriesFromDefinitionIds(usedConnectorDefinitionIds);
+  }
+
   private <T> void validateJson(T config, AirbyteConfig configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));
