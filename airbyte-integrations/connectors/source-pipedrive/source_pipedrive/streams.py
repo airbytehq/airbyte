@@ -98,10 +98,11 @@ class PipedriveStream(HttpStream, ABC):
         """
         records = response.json().get(self.data_field) or []
         for record in records:
-            if record.get(self.data_field):
-                yield record.get(self.data_field)
-            else:
-                yield record
+            record = record.get(self.data_field) or record
+            if self.primary_key in record and record[self.primary_key] is None:
+                # Convert "id: null" fields to "id: 0" since id is primary key and SAT checks if it is not null.
+                record[self.primary_key] = 0
+            yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -136,6 +137,13 @@ class Activities(PipedriveStream):
 
 class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
+
+
+class Organizations(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
 
 
 class Persons(PipedriveStream):
