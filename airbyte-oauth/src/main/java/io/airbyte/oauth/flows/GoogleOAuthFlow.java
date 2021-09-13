@@ -38,8 +38,8 @@ import java.util.UUID;
  */
 public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
 
-  private final String consentUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-  private final String accessTokenUrl = "https://oauth2.googleapis.com/token";
+  private static final String CONSENT_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+  private static final String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
   public GoogleOAuthFlow(ConfigRepository configRepository) {
     super(configRepository);
@@ -51,7 +51,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String getBaseConsentUrl() {
-    return consentUrl;
+    return CONSENT_URL;
   }
 
   @Override
@@ -85,7 +85,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String getAccessTokenUrl() {
-    return accessTokenUrl;
+    return ACCESS_TOKEN_URL;
   }
 
   @Override
@@ -104,7 +104,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
     if (data.has("refresh_token")) {
       return Map.of("refresh_token", data.get("refresh_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", ACCESS_TOKEN_URL));
     }
   }
 

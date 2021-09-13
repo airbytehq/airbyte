@@ -13,8 +13,8 @@ import java.util.UUID;
  */
 public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
-  private final String consentUrl = "https://www.facebook.com/v11.0/dialog/oauth";
-  private final String accessTokenUrl = "https://graph.facebook.com/v11.0/oauth/access_token";
+  private static final String CONSENT_URL = "https://www.facebook.com/v11.0/dialog/oauth";
+  private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v11.0/oauth/access_token";
 
   public FacebookMarketingOAuthFlow(ConfigRepository configRepository) {
     super(configRepository);
@@ -22,7 +22,7 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String getBaseConsentUrl() {
-    return consentUrl;
+    return CONSENT_URL;
   }
 
   @Override
@@ -49,7 +49,7 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String getAccessTokenUrl() {
-    return accessTokenUrl;
+    return ACCESS_TOKEN_URL;
   }
 
   @Override
@@ -68,7 +68,7 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
     if (data.has("access_token")) {
       return Map.of("access_token", data.get("access_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
     }
   }
 }
