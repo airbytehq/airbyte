@@ -14,8 +14,8 @@ import {
     Label,
 } from '@app/components'
 
-import { useDestinationDefinitionSpecificationLoadAsync } from 'hooks/services/useDestinationHook'
-import useWorkspace from 'hooks/services/useWorkspace'
+import { useDestinationDefinitionSpecificationLoadAsync } from '@app/hooks/services/useDestinationHook'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 import { createFormErrorMessage } from 'utils/errorStatusMessage'
 import { TransformationField } from './components/TransformationField'
 import { NormalizationField } from './components/NormalizationField'
@@ -35,7 +35,7 @@ import Connector from './components/Connector'
 import SchemaField from './components/SyncCatalogField'
 import EditControls from './components/EditControls'
 import { Connection, ScheduleProperties } from '@app/core/resources/Connection'
-import { useFeatureService } from 'hooks/services/Feature'
+import { useFeatureService } from '@app/hooks/services/Feature'
 
 const FormContainer = styled(Form)`
     padding: 22px 27px 23px 24px;

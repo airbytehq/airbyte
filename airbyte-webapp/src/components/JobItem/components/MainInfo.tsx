@@ -14,7 +14,7 @@ import { Row, Cell } from '@app/components/SimpleTableComponents'
 import { Button, StatusIcon } from '@app/components'
 import AttemptDetails from './AttemptDetails'
 import Status from '@app/core/statuses'
-import useJob from 'hooks/services/useJob'
+import useJob from '@app/hooks/services/useJob'
 
 type IProps = {
     job: JobApiItem | JobInfo

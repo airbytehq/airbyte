@@ -22,10 +22,10 @@ import NotificationPage from 'pages/SettingsPage/pages/NotificationPage'
 import LoadingPage from '@app/components/LoadingPage'
 import MainView from 'packages/cloud/views/layout/MainView'
 import { WorkspacesPage } from 'packages/cloud/views/workspaces'
-import { useApiHealthPoll } from 'hooks/services/Health'
+import { useApiHealthPoll } from '@app/hooks/services/Health'
 import { Auth } from 'packages/cloud/views/auth'
 import { useAuthService } from 'packages/cloud/services/auth/AuthService'
-import useConnector from 'hooks/services/useConnector'
+import useConnector from '@app/hooks/services/useConnector'
 
 import {
     useGetWorkspace,
@@ -37,7 +37,7 @@ import { WorkspaceSettingsView } from './views/workspaces/WorkspaceSettingsView'
 import { UsersSettingsView } from 'packages/cloud/views/users/UsersSettingsView/UsersSettingsView'
 import { AccountSettingsView } from 'packages/cloud/views/users/AccountSettingsView/AccountSettingsView'
 import { ConfirmEmailPage } from './views/auth/ConfirmEmailPage'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import { WithPageAnalytics } from 'pages/withPageAnalytics'
 
 export enum Routes {

@@ -3,13 +3,13 @@ import { useResource } from 'rest-hooks'
 
 import { ImplementationTable } from '@app/components/EntityTable'
 import { Routes } from 'pages/routes'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import { Source } from '@app/core/resources/Source'
 import ConnectionResource from '@app/core/resources/Connection'
 import { getEntityTableData } from '@app/components/EntityTable/utils'
 import { EntityTableDataItem } from '@app/components/EntityTable/types'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 type IProps = {
     sources: Source[]

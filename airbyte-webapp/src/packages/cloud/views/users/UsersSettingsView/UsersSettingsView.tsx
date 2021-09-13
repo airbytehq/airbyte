@@ -7,7 +7,7 @@ import { useToggle } from 'react-use'
 
 import { Button, H5 } from '@app/components'
 import Table from '@app/components/Table'
-import { useCurrentWorkspace } from 'hooks/services/useWorkspace'
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
 import { useGetUserService } from 'packages/cloud/services/users/UserService'
 import { InviteUsersModal } from 'packages/cloud/views/users/InviteUsersModal'
 

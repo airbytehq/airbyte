@@ -3,14 +3,14 @@ import { useResource } from 'rest-hooks'
 
 import { ConnectionTable } from '@app/components/EntityTable'
 import { Routes } from 'pages/routes'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import { Connection } from '@app/core/resources/Connection'
 import useSyncActions from '@app/components/EntityTable/hooks'
 import { getConnectionTableData } from '@app/components/EntityTable/utils'
 import { ITableDataItem } from '@app/components/EntityTable/types'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 type IProps = {
     connections: Connection[]

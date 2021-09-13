@@ -10,13 +10,13 @@ import { theme } from './theme'
 import { Routing } from 'pages/routes'
 import LoadingPage from './components/LoadingPage'
 import ApiErrorBoundary from './components/ApiErrorBoundary'
-import NotificationService from 'hooks/services/Notification'
+import NotificationService from '@app/hooks/services/Notification'
 import { AnalyticsInitializer } from 'views/common/AnalyticsInitializer'
 import {
     useCurrentWorkspace,
     usePickFirstWorkspace,
-} from 'hooks/services/useWorkspace'
-import { Feature, FeatureService } from 'hooks/services/Feature'
+} from '@app/hooks/services/useWorkspace'
+import { Feature, FeatureService } from '@app/hooks/services/Feature'
 import { ServicesProvider } from '@app/core/servicesProvider'
 import { useApiServices } from '@app/core/defaultServices'
 import { envConfigProvider, windowConfigProvider } from './config'

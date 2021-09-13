@@ -13,7 +13,7 @@ import {
 } from '@app/components'
 import { Cell, Header, Row } from '@app/components/SimpleTableComponents'
 import { useGetUserService } from 'packages/cloud/services/users/UserService'
-import { useCurrentWorkspace } from 'hooks/services/useWorkspace'
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
 
 const Content = styled.div`
     width: 614px;

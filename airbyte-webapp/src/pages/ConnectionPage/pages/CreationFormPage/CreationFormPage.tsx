@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 import { useResource } from 'rest-hooks'
 
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import MainPageWithScroll from '@app/components/MainPageWithScroll'
 import PageTitle from '@app/components/PageTitle'
 import StepsMenu from '@app/components/StepsMenu'

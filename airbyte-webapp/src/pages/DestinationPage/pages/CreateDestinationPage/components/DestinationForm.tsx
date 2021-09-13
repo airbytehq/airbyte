@@ -3,14 +3,14 @@ import { FormattedMessage } from 'react-intl'
 
 import ContentCard from '@app/components/ContentCard'
 import ServiceForm from 'views/Connector/ServiceForm'
-import useRouter from 'hooks/useRouter'
-import { useDestinationDefinitionSpecificationLoad } from 'hooks/services/useDestinationHook'
+import useRouter from '@app/hooks/useRouter'
+import { useDestinationDefinitionSpecificationLoad } from '@app/hooks/services/useDestinationHook'
 import { JobInfo } from '@app/core/resources/Scheduler'
 import { JobsLogItem } from '@app/components/JobItem'
 import { createFormErrorMessage } from 'utils/errorStatusMessage'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import { useAnalytics } from 'hooks/useAnalytics'
+import { useAnalytics } from '@app/hooks/useAnalytics'
 
 type IProps = {
     onSubmit: (values: {

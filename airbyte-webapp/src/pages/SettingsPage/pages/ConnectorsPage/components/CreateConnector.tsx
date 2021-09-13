@@ -4,12 +4,12 @@ import { useFetcher } from 'rest-hooks'
 
 import { Button } from '@app/components'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import { Routes } from 'pages/routes'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
 
 import CreateConnectorModal from './CreateConnectorModal'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 type IProps = {
     type: string

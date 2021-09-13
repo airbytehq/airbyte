@@ -9,7 +9,7 @@ import {
 } from 'pages/SettingsPage/pages/SettingsComponents'
 import { Button, LabeledInput, LoadingButton } from '@app/components'
 import { useWorkspaceService } from 'packages/cloud/services/workspaces/WorkspacesService'
-import { useCurrentWorkspace } from 'hooks/services/useWorkspace'
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
 
 const Header = styled.div`
     display: flex;

@@ -8,14 +8,14 @@ import ConnectionBlock from '@app/components/ConnectionBlock'
 import { JobsLogItem } from '@app/components/JobItem'
 
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import { useDestinationDefinitionSpecificationLoad } from 'hooks/services/useDestinationHook'
+import { useDestinationDefinitionSpecificationLoad } from '@app/hooks/services/useDestinationHook'
 import { createFormErrorMessage } from 'utils/errorStatusMessage'
 import { JobInfo } from '@app/core/resources/Scheduler'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
 
 import SkipOnboardingButton from './SkipOnboardingButton'
-import { useAnalytics } from 'hooks/useAnalytics'
+import { useAnalytics } from '@app/hooks/useAnalytics'
 
 type IProps = {
     availableServices: DestinationDefinition[]

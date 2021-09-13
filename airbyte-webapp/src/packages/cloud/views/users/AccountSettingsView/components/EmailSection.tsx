@@ -10,7 +10,7 @@ import { FieldItem } from 'packages/cloud/views/auth/components/FormComponents'
 import { LabeledInput } from '@app/components/LabeledInput'
 import NotificationsForm from 'pages/SettingsPage/pages/NotificationPage/components/NotificationsForm'
 import { useCurrentUser } from 'packages/cloud/services/auth/AuthService'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 import useWorkspaceEditor from 'pages/SettingsPage/components/useWorkspaceEditor'
 
 export const EmailSection: React.FC = () => {

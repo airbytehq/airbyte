@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react'
 import { FormattedMessage } from 'react-intl'
-import useWorkspace, { WebhookPayload } from 'hooks/services/useWorkspace'
+import useWorkspace, { WebhookPayload } from '@app/hooks/services/useWorkspace'
 import WebHookForm from './components/WebHookForm'
 import HeadTitle from '@app/components/HeadTitle'
 

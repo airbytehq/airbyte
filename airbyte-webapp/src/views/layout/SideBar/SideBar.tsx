@@ -9,7 +9,7 @@ import { NavLink } from 'react-router-dom'
 import { Routes } from 'pages/routes'
 import { useConfig } from '@app/config'
 
-import useConnector from 'hooks/services/useConnector'
+import useConnector from '@app/hooks/services/useConnector'
 import { Link } from '@app/components'
 import Version from '@app/components/Version'
 import Indicator from '@app/components/Indicator'

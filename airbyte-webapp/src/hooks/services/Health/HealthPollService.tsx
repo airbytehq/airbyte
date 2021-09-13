@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useIntl } from 'react-intl'
 
-import { useNotificationService } from 'hooks/services/Notification/NotificationService'
+import { useNotificationService } from '@app/hooks/services/Notification/NotificationService'
 import { HealthService } from '@app/core/health/HealthService'
 import { useConfig } from '@app/config'
 import { useGetService } from '@app/core/servicesProvider'

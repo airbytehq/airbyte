@@ -4,7 +4,7 @@ import { Field, FieldProps, Formik } from 'formik'
 import * as yup from 'yup'
 
 import { LabeledInput, Link, LoadingButton } from '@app/components'
-import useRouterHook from 'hooks/useRouter'
+import useRouterHook from '@app/hooks/useRouter'
 
 import { Routes } from 'packages/cloud/routes'
 import { useAuthService } from 'packages/cloud/services/auth/AuthService'

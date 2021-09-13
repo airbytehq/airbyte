@@ -1,6 +1,6 @@
 import React from 'react'
 import { FormattedMessage } from 'react-intl'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 import HeadTitle from '@app/components/HeadTitle'
 import MetricsForm from './components/MetricsForm'
 import useWorkspaceEditor from '../../components/useWorkspaceEditor'

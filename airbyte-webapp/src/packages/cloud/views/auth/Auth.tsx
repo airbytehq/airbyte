@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { LoadingPage } from '@app/components'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import FormContent from './components/FormContent'
 import News from './components/News'
 

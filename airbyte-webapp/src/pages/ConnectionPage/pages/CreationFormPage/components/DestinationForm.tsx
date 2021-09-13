@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { useResource } from 'rest-hooks'
 
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import useDestination from 'hooks/services/useDestinationHook'
+import useDestination from '@app/hooks/services/useDestinationHook'
 
 // TODO: create separate component for source and destinations forms
 import DestinationForm from 'pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 type IProps = {
     afterSubmit: () => void

@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
 import { Connector } from '@app/core/domain/connector'
-import { useWorkspace } from 'hooks/services/useWorkspace'
+import { useWorkspace } from '@app/hooks/services/useWorkspace'
 
 type ConnectorService = {
     hasNewVersions: boolean

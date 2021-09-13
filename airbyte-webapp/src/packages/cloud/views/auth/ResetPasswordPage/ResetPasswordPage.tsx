@@ -8,7 +8,7 @@ import { LoadingButton, LabeledInput, Link } from '@app/components'
 import { FormTitle } from '../components/FormTitle'
 import { Routes } from '../../../routes'
 import { useAuthService } from 'packages/cloud/services/auth/AuthService'
-import useRouterHook from 'hooks/useRouter'
+import useRouterHook from '@app/hooks/useRouter'
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
     email: yup.string().email('form.email.error').required('form.empty.error'),

@@ -19,9 +19,9 @@ import LoadingPage from '@app/components/LoadingPage'
 import MainView from 'views/layout/MainView'
 import SupportChat from '@app/components/SupportChat'
 
-import { useWorkspace } from 'hooks/services/useWorkspace'
-import { useNotificationService } from 'hooks/services/Notification/NotificationService'
-import { useApiHealthPoll } from 'hooks/services/Health'
+import { useWorkspace } from '@app/hooks/services/useWorkspace'
+import { useNotificationService } from '@app/hooks/services/Notification/NotificationService'
+import { useApiHealthPoll } from '@app/hooks/services/Health'
 import { WithPageAnalytics } from './withPageAnalytics'
 
 export enum Routes {

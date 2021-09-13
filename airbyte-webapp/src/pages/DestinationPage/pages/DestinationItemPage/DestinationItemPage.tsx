@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl'
 import { useResource } from 'rest-hooks'
 
 import PageTitle from '@app/components/PageTitle'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
 import ConnectionResource from '@app/core/resources/Connection'
 import { Routes } from '../../../routes'
@@ -24,7 +24,7 @@ import { getIcon } from 'utils/imageUtils'
 import ImageBlock from '@app/components/ImageBlock'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 import HeadTitle from '@app/components/HeadTitle'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 import { DropDownRow } from '@app/components'
 
 const DestinationItemPage: React.FC = () => {

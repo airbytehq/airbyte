@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react'
 
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import ContentCard from '@app/components/ContentCard'
 import CheckConnection from './CheckConnection'
-import useSource from 'hooks/services/useSourceHook'
+import useSource from '@app/hooks/services/useSourceHook'
 import { Routes } from '../../../../routes'
-import useDestination from 'hooks/services/useDestinationHook'
+import useDestination from '@app/hooks/services/useDestinationHook'
 import { JobsLogItem } from '@app/components/JobItem'
 import { JobInfo } from '@app/core/resources/Scheduler'
 

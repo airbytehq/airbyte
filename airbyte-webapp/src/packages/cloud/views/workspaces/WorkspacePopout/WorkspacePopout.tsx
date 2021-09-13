@@ -12,7 +12,7 @@ import {
 } from 'packages/cloud/services/workspaces/WorkspacesService'
 import ExitIcon from './components/ExitIcon'
 
-import { useCurrentWorkspace } from 'hooks/services/useWorkspace'
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
 
 const BottomElement = styled.div`
     background: ${(props) => props.theme.greyColro0};

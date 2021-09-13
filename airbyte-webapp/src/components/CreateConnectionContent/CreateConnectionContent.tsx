@@ -14,12 +14,14 @@ import TryAfterErrorBlock from './components/TryAfterErrorBlock'
 import { Source } from '@app/core/resources/Source'
 import { Destination } from '@app/core/resources/Destination'
 
-import useConnection, { ValuesProps } from 'hooks/services/useConnectionHook'
-import { useDiscoverSchema } from 'hooks/services/useSchemaHook'
+import useConnection, {
+    ValuesProps,
+} from '@app/hooks/services/useConnectionHook'
+import { useDiscoverSchema } from '@app/hooks/services/useSchemaHook'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
 import { IDataItem } from '@app/components/base/DropDown/components/Option'
-import { useAnalytics } from 'hooks/useAnalytics'
+import { useAnalytics } from '@app/hooks/useAnalytics'
 
 const SkipButton = styled.div`
     margin-top: 6px;

@@ -13,11 +13,11 @@ import JobResource from '@app/core/resources/Job'
 import JobsList from './JobsList'
 import EmptyResource from '@app/components/EmptyResourceBlock'
 import ResetDataModal from '@app/components/ResetDataModal'
-import useConnection from 'hooks/services/useConnectionHook'
-import useLoadingState from 'hooks/useLoadingState'
+import useConnection from '@app/hooks/services/useConnectionHook'
+import useLoadingState from '@app/hooks/useLoadingState'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
 import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import { useAnalytics } from 'hooks/useAnalytics'
+import { useAnalytics } from '@app/hooks/useAnalytics'
 
 type IProps = {
     connection: Connection

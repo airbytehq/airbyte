@@ -2,10 +2,10 @@ import React, { useEffect } from 'react'
 import * as FullStory from '@fullstory/browser'
 
 import { useConfig } from '@app/config'
-import useFullStory from 'hooks/useFullStory'
-import AnalyticsServiceProvider, { useAnalytics } from 'hooks/useAnalytics'
-import useTracker from 'hooks/useOpenReplay'
-import useSegment from 'hooks/useSegment'
+import useFullStory from '@app/hooks/useFullStory'
+import AnalyticsServiceProvider, { useAnalytics } from '@app/hooks/useAnalytics'
+import useTracker from '@app/hooks/useOpenReplay'
+import useSegment from '@app/hooks/useSegment'
 import { useGetService } from '@app/core/servicesProvider'
 
 function WithAnalytics({

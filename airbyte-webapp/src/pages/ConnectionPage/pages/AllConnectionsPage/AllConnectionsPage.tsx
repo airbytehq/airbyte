@@ -11,10 +11,10 @@ import {
 import ConnectionResource from '@app/core/resources/Connection'
 import ConnectionsTable from './components/ConnectionsTable'
 import { Routes } from 'pages/routes'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import HeadTitle from '@app/components/HeadTitle'
 import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const AllConnectionsPage: React.FC = () => {
     const { push } = useRouter()

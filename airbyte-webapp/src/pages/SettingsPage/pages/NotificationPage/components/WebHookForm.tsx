@@ -6,7 +6,7 @@ import * as yup from 'yup'
 
 import { Label, Input, LoadingButton, LabeledToggle } from '@app/components'
 import { Row, Cell } from '@app/components/SimpleTableComponents'
-import { WebhookPayload } from 'hooks/services/useWorkspace'
+import { WebhookPayload } from '@app/hooks/services/useWorkspace'
 import { equal } from 'utils/objects'
 
 const Text = styled.div`

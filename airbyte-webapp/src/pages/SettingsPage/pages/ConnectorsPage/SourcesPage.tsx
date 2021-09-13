@@ -7,9 +7,9 @@ import SourceDefinitionResource, {
     SourceDefinition,
 } from '@app/core/resources/SourceDefinition'
 import { SourceResource } from '@app/core/resources/Source'
-import useConnector from 'hooks/services/useConnector'
+import useConnector from '@app/hooks/services/useConnector'
 import ConnectorsView from './components/ConnectorsView'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const SourcesPage: React.FC = () => {
     const [isUpdateSuccess, setIsUpdateSucces] = useState(false)

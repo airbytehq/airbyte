@@ -4,7 +4,7 @@ import CreateConnectionContent from '@app/components/CreateConnectionContent'
 import { Source } from '@app/core/resources/Source'
 import { Destination } from '@app/core/resources/Destination'
 import { Routes } from '../../routes'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import SkipOnboardingButton from './SkipOnboardingButton'
 
 type IProps = {

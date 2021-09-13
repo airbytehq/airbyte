@@ -5,8 +5,8 @@ import { FormattedMessage } from 'react-intl'
 import ConnectorForm from './components/ConnectorForm'
 
 import { Modal } from '@app/components'
-import useRequestConnector from 'hooks/services/useRequestConnector'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useRequestConnector from '@app/hooks/services/useRequestConnector'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 import { Values } from './types'
 
 type RequestConnectorModalProps = {

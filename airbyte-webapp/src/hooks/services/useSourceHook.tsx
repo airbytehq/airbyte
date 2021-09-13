@@ -12,8 +12,8 @@ import SchedulerResource, { Scheduler } from '@app/core/resources/Scheduler'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import useWorkspace from './useWorkspace'
 
-import useRouter from 'hooks/useRouter'
-import { useAnalytics } from 'hooks/useAnalytics'
+import useRouter from '@app/hooks/useRouter'
+import { useAnalytics } from '@app/hooks/useAnalytics'
 
 type ValuesProps = {
     name: string

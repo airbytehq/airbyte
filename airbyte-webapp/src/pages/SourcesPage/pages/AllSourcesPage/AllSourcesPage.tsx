@@ -5,12 +5,12 @@ import { useResource } from 'rest-hooks'
 import { Button, MainPageWithScroll } from '@app/components'
 import { Routes } from 'pages/routes'
 import PageTitle from '@app/components/PageTitle'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import SourcesTable from './components/SourcesTable'
 import SourceResource from '@app/core/resources/Source'
 import HeadTitle from '@app/components/HeadTitle'
 import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const AllSourcesPage: React.FC = () => {
     const { push } = useRouter()

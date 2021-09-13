@@ -6,9 +6,9 @@ import { useAsyncFn } from 'react-use'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
 import { DestinationResource } from '@app/core/resources/Destination'
 import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import useConnector from 'hooks/services/useConnector'
+import useConnector from '@app/hooks/services/useConnector'
 import ConnectorsView from './components/ConnectorsView'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const DestinationsPage: React.FC = () => {
     const { workspace } = useWorkspace()

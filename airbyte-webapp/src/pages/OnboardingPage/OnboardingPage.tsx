@@ -13,10 +13,10 @@ import StepsMenu from '@app/components/StepsMenu'
 import HeadTitle from '@app/components/HeadTitle'
 import Version from '@app/components/Version'
 
-import useSource, { useSourceList } from 'hooks/services/useSourceHook'
+import useSource, { useSourceList } from '@app/hooks/services/useSourceHook'
 import useDestination, {
     useDestinationList,
-} from 'hooks/services/useDestinationHook'
+} from '@app/hooks/services/useDestinationHook'
 import { JobInfo } from '@app/core/resources/Scheduler'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
@@ -26,7 +26,7 @@ import SourceStep from './components/SourceStep'
 import DestinationStep from './components/DestinationStep'
 import ConnectionStep from './components/ConnectionStep'
 import { StepType } from './types'
-import { useAnalytics } from 'hooks/useAnalytics'
+import { useAnalytics } from '@app/hooks/useAnalytics'
 
 const Content = styled.div<{ big?: boolean }>`
     width: 100%;

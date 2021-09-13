@@ -5,7 +5,7 @@ import { useResource } from 'rest-hooks'
 import { Routes } from 'pages/routes'
 import { DropDownRow, ImageBlock } from '@app/components'
 import PageTitle from '@app/components/PageTitle'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import Breadcrumbs from '@app/components/Breadcrumbs'
 import {
     ItemTabs,
@@ -27,7 +27,7 @@ import DestinationsDefinitionResource from '@app/core/resources/DestinationDefin
 import { getIcon } from 'utils/imageUtils'
 import HeadTitle from '@app/components/HeadTitle'
 import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const SourceItemPage: React.FC = () => {
     const { query, push } = useRouter<{ id: string }>()

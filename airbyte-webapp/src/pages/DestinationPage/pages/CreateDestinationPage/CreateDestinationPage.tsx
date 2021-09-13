@@ -5,14 +5,14 @@ import { useResource } from 'rest-hooks'
 import { Routes } from '../../../routes'
 import PageTitle from '@app/components/PageTitle'
 import DestinationForm from './components/DestinationForm'
-import useRouter from 'hooks/useRouter'
+import useRouter from '@app/hooks/useRouter'
 import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import useDestination from 'hooks/services/useDestinationHook'
+import useDestination from '@app/hooks/services/useDestinationHook'
 import { FormPageContent } from '@app/components/ConnectorBlocks'
 import { JobInfo } from '@app/core/resources/Scheduler'
 import { ConnectionConfiguration } from '@app/core/domain/connection'
 import HeadTitle from '@app/components/HeadTitle'
-import useWorkspace from 'hooks/services/useWorkspace'
+import useWorkspace from '@app/hooks/services/useWorkspace'
 
 const CreateDestinationPage: React.FC = () => {
     const { push } = useRouter()
