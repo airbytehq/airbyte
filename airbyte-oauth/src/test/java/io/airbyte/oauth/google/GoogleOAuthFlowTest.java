@@ -55,8 +55,8 @@ public class GoogleOAuthFlowTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-  private static final String REDIRECT_URL = "https%3A//airbyte.io";
-  private static final String SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
+  private static final String REDIRECT_URL = "https://airbyte.io";
+  private static final String SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
