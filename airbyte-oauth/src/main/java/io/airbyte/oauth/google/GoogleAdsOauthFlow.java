@@ -28,10 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
-
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.util.HashMap;
 import java.util.Map;
 
 public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
@@ -43,7 +41,8 @@ public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
     super(configRepository, SCOPE);
   }
 
-  @VisibleForTesting GoogleAdsOauthFlow(ConfigRepository configRepository, HttpClient client) {
+  @VisibleForTesting
+  GoogleAdsOauthFlow(ConfigRepository configRepository, HttpClient client) {
     super(configRepository, SCOPE, client);
   }
 
@@ -66,4 +65,5 @@ public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
     // the config object containing refresh token is nested inside the "credentials" object
     return Map.of("credentials", super.completeOAuthFlow(clientId, clientSecret, code, redirectUrl));
   }
+
 }

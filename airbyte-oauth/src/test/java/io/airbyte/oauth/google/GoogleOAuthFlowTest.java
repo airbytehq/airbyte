@@ -200,4 +200,5 @@ public class GoogleOAuthFlowTest {
       return credentialsJson.get("client_id").asText();
     }
   }
+
 }
