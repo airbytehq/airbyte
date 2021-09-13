@@ -90,7 +90,6 @@ cmd_publish() {
   docker push "$versioned_image"
   docker push "$latest_image"
 
-
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."
 
