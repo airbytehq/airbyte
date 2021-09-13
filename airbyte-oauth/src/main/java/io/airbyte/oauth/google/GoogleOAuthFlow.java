@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth;
+package io.airbyte.oauth.google;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -34,13 +34,17 @@ import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
+import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,59 +57,53 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
 
   private final HttpClient httpClient;
 
-  private static final String GOOGLE_ANALYTICS_CONSENT_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-  private static final String GOOGLE_ANALYTICS_ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
-  @VisibleForTesting
-  static final String GOOGLE_ANALYTICS_SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
-  private static final List<String> GOOGLE_QUERY_PARAMETERS = List.of(
-      String.format("scope=%s", GOOGLE_ANALYTICS_SCOPE),
-      "access_type=offline",
-      "include_granted_scopes=true",
-      "response_type=code",
-      "prompt=consent");
+  private final static String CONSENT_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+  private final static String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
+
+  private final String scope;
+  private final List<String> googleQueryParameters;
 
   private final ConfigRepository configRepository;
 
-  public GoogleOAuthFlow(ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
+  public GoogleOAuthFlow(ConfigRepository configRepository, String scope) {
+    this(configRepository, scope, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
   }
 
   @VisibleForTesting
-  GoogleOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  GoogleOAuthFlow(ConfigRepository configRepository, String scope, HttpClient httpClient) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
+    this.scope = UrlEncode(scope);
+    this.googleQueryParameters = List.of(
+        String.format("scope=%s", this.scope),
+        "access_type=offline",
+        "include_granted_scopes=true",
+        "response_type=code",
+        "prompt=consent");
   }
 
   @Override
   public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    if (oAuthParamConfig.has("client_id")) {
-      final String clientId = oAuthParamConfig.get("client_id").asText();
-      return getConsentUrl(sourceDefinitionId, clientId, redirectUrl);
-    } else {
-      throw new IOException("Undefined parameter 'client_id' for Google OAuth Flow.");
-    }
+    return getConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
   @Override
   public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    if (oAuthParamConfig.has("client_id")) {
-      final String clientId = oAuthParamConfig.get("client_id").asText();
-      return getConsentUrl(destinationDefinitionId, clientId, redirectUrl);
-    } else {
-      throw new IOException("Undefined parameter 'client_id' for Google OAuth Flow.");
-    }
+    return getConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
-  private static String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
-    final StringBuilder result = new StringBuilder(GOOGLE_ANALYTICS_CONSENT_URL)
+  private String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
+    final StringBuilder result = new StringBuilder(CONSENT_URL)
         .append("?");
-    for (String queryParameter : GOOGLE_QUERY_PARAMETERS) {
+    for (String queryParameter : googleQueryParameters) {
       result.append(queryParameter).append("&");
     }
     return result
+        // TODO state should be randomly generated, and the 2nd step of oauth should verify its value
+        // matches the initially generated state value
         .append("state=").append(definitionId.toString()).append("&")
         .append("client_id=").append(clientId).append("&")
         .append("redirect_uri=").append(redirectUrl)
@@ -118,13 +116,9 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
     if (queryParams.containsKey("code")) {
       final String code = (String) queryParams.get("code");
       final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-      if (oAuthParamConfig.has("client_id") && oAuthParamConfig.has("client_secret")) {
-        final String clientId = oAuthParamConfig.get("client_id").asText();
-        final String clientSecret = oAuthParamConfig.get("client_secret").asText();
-        return completeOAuthFlow(clientId, clientSecret, code, redirectUrl);
-      } else {
-        throw new IOException("Undefined parameter 'client_id' and 'client_secret' for Google OAuth Flow.");
-      }
+      final String clientId = getClientIdUnsafe(oAuthParamConfig);
+      final String clientSecret = getClientSecretUnsafe(oAuthParamConfig);
+      return completeOAuthFlow(clientId, clientSecret, code, redirectUrl);
     } else {
       throw new IOException("Undefined 'code' from consent redirected url.");
     }
@@ -139,13 +133,9 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
     if (queryParams.containsKey("code")) {
       final String code = (String) queryParams.get("code");
       final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-      if (oAuthParamConfig.has("client_id") && oAuthParamConfig.has("client_secret")) {
-        final String clientId = oAuthParamConfig.get("client_id").asText();
-        final String clientSecret = oAuthParamConfig.get("client_secret").asText();
-        return completeOAuthFlow(clientId, clientSecret, code, redirectUrl);
-      } else {
-        throw new IOException("Undefined parameter 'client_id' and 'client_secret' for Google OAuth Flow.");
-      }
+      final String clientId = getClientIdUnsafe(oAuthParamConfig);
+      final String clientSecret = getClientSecretUnsafe(oAuthParamConfig);
+      return completeOAuthFlow(clientId, clientSecret, code, redirectUrl);
     } else {
       throw new IOException("Undefined 'code' from consent redirected url.");
     }
@@ -161,7 +151,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
         .build();
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(body)))
-        .uri(URI.create(GOOGLE_ANALYTICS_ACCESS_TOKEN_URL))
+        .uri(URI.create(ACCESS_TOKEN_URL))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .build();
     final HttpResponse<String> response;
@@ -171,7 +161,10 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       if (data.has("refresh_token")) {
         return Map.of("refresh_token", data.get("refresh_token").asText());
       } else {
-        throw new IOException(String.format("Missing 'refresh_token' in query params from %s", GOOGLE_ANALYTICS_ACCESS_TOKEN_URL));
+        // TODO This means the response from Google did not have a refresh token and is probably a
+        // programming error
+        // handle this better
+        throw new IOException(String.format("Missing 'refresh_token' in query params from %s. Response: %s", ACCESS_TOKEN_URL, data));
       }
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete Google OAuth flow", e);
@@ -214,6 +207,42 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
       }
     } catch (JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
+    }
+  }
+
+  private String UrlEncode(String s) {
+    try {
+      return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
+   * parse the config differently.
+   *
+   * @return
+   */
+  protected String getClientIdUnsafe(JsonNode oauthConfig) {
+    if (oauthConfig.get("client_id") != null) {
+      return oauthConfig.get("client_id").asText();
+    } else {
+      throw new IllegalArgumentException("Undefined parameter 'client_id' for Google OAuth Flow.");
+    }
+  }
+
+  /**
+   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
+   * parse the config differently.
+   *
+   * @return
+   */
+  protected String getClientSecretUnsafe(JsonNode oauthConfig) {
+    if (oauthConfig.get("client_secret") != null) {
+      return oauthConfig.get("client_secret").asText();
+    } else {
+      throw new IllegalArgumentException("Undefined parameter 'client_secret' for Google OAuth Flow.");
     }
   }
 

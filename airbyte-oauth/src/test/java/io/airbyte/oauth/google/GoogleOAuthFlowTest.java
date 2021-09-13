@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth;
+package io.airbyte.oauth.google;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -56,6 +56,7 @@ public class GoogleOAuthFlowTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String REDIRECT_URL = "https%3A//airbyte.io";
+  private static final String SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
@@ -68,7 +69,7 @@ public class GoogleOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleOAuthFlow = new GoogleOAuthFlow(configRepository, httpClient);
+    googleOAuthFlow = new GoogleOAuthFlow(configRepository, SCOPE, httpClient);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -92,8 +93,8 @@ public class GoogleOAuthFlowTest {
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.emptyObject())));
-    assertThrows(IOException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(IOException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
   }
 
   @Test
@@ -108,7 +109,7 @@ public class GoogleOAuthFlowTest {
     final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
+        SCOPE,
         definitionId,
         getClientId(),
         REDIRECT_URL);
@@ -128,7 +129,7 @@ public class GoogleOAuthFlowTest {
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        GoogleOAuthFlow.GOOGLE_ANALYTICS_SCOPE,
+        SCOPE,
         definitionId,
         getClientId(),
         REDIRECT_URL);
