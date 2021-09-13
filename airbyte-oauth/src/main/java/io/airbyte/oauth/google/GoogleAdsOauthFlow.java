@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
+
   @VisibleForTesting
   static final String SCOPE = "https://www.googleapis.com/auth/adwords";
 
@@ -42,8 +43,7 @@ public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
     super(configRepository, SCOPE);
   }
 
-  @VisibleForTesting
-  GoogleAdsOauthFlow(ConfigRepository configRepository, HttpClient client) {
+  @VisibleForTesting GoogleAdsOauthFlow(ConfigRepository configRepository, HttpClient client) {
     super(configRepository, SCOPE, client);
   }
 
@@ -64,9 +64,6 @@ public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
   @Override
   protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String code, String redirectUrl) throws IOException {
     // the config object containing refresh token is nested inside the "credentials" object
-    Map<String, Object> oauthFlowOutput = super.completeOAuthFlow(clientId, clientSecret, code, redirectUrl);
-    HashMap<String, Object> nestedOutput = new HashMap<>();
-    nestedOutput.put("credentials", oauthFlowOutput);
-    return nestedOutput;
+    return Map.of("credentials", super.completeOAuthFlow(clientId, clientSecret, code, redirectUrl));
   }
 }
