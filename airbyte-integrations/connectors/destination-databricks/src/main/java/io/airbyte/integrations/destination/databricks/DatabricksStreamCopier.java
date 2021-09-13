@@ -170,9 +170,10 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   /**
-   * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>.
+   * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method creates
+   * an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
-  private S3DestinationConfig getStagingS3DestinationConfig(S3DestinationConfig config, String stagingFolder) {
+  static S3DestinationConfig getStagingS3DestinationConfig(S3DestinationConfig config, String stagingFolder) {
     return new S3DestinationConfig(
         config.getEndpoint(),
         config.getBucketName(),

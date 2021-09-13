@@ -7,8 +7,8 @@ import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
 public class DatabricksDestinationConfig {
 
-  private static final String DEFAULT_DATABRICKS_PORT = "443";
-  private static final String DEFAULT_DATABASE_SCHEMA = "public";
+  static final String DEFAULT_DATABRICKS_PORT = "443";
+  static final String DEFAULT_DATABASE_SCHEMA = "public";
 
   private final String databricksServerHostname;
   private final String databricksHttpPath;

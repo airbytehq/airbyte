@@ -155,7 +155,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private static Database getDatabase(DatabricksDestinationConfig databricksConfig) {
     return Databases.createDatabase(
-        "token",
+        DatabricksDestination.DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),
         DatabricksDestination.getDatabricksConnectionString(databricksConfig),
         DatabricksDestination.DATABRICKS_DRIVER_CLASS,
