@@ -1,3 +1,3 @@
-import ConnectionBlock from './ConnectionBlock'
+import ConnectionBlock from './ConnectionBlock';
 
-export default ConnectionBlock
+export default ConnectionBlock;

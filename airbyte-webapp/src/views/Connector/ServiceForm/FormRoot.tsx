@@ -1,41 +1,41 @@
-import React from 'react'
-import { Form, useFormikContext } from 'formik'
-import styled from 'styled-components'
+import React from 'react';
+import { Form, useFormikContext } from 'formik';
+import styled from 'styled-components';
 
-import { Spinner } from '@app/components'
+import { Spinner } from '@app/components';
 
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
 
-import { FormBlock } from '@app/core/form/types'
-import { ServiceFormValues } from './types'
-import { useServiceForm } from './serviceFormContext'
-import { FormSection } from './components/FormSection'
-import ShowLoadingMessage from './components/ShowLoadingMessage'
-import EditControls from './components/EditControls'
-import CreateControls from './components/CreateControls'
+import { FormBlock } from '@app/core/form/types';
+import { ServiceFormValues } from './types';
+import { useServiceForm } from './serviceFormContext';
+import { FormSection } from './components/FormSection';
+import ShowLoadingMessage from './components/ShowLoadingMessage';
+import EditControls from './components/EditControls';
+import CreateControls from './components/CreateControls';
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
-`
+`;
 
 const LoaderContainer = styled.div`
   text-align: center;
   padding: 22px 0 23px;
-`
+`;
 
 const LoadingMessage = styled.div`
   margin-top: 10px;
-`
+`;
 
 const FormRoot: React.FC<{
-  formFields: FormBlock
-  selectedService?: SourceDefinition | DestinationDefinition
-  hasSuccess?: boolean
-  additionBottomControls?: React.ReactNode
-  errorMessage?: React.ReactNode
-  successMessage?: React.ReactNode
-  onRetest?: () => void
+  formFields: FormBlock;
+  selectedService?: SourceDefinition | DestinationDefinition;
+  hasSuccess?: boolean;
+  additionBottomControls?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  successMessage?: React.ReactNode;
+  onRetest?: () => void;
 }> = ({
   onRetest,
   formFields,
@@ -46,10 +46,10 @@ const FormRoot: React.FC<{
   additionBottomControls,
 }) => {
   const { resetForm, dirty, isSubmitting, isValid } =
-    useFormikContext<ServiceFormValues>()
+    useFormikContext<ServiceFormValues>();
 
   const { resetUiFormProgress, isLoadingSchema, isEditMode, formType } =
-    useServiceForm()
+    useServiceForm();
 
   return (
     <FormContainer>
@@ -72,8 +72,8 @@ const FormRoot: React.FC<{
           isValid={isValid}
           dirty={dirty}
           resetForm={() => {
-            resetForm()
-            resetUiFormProgress()
+            resetForm();
+            resetUiFormProgress();
           }}
           successMessage={successMessage}
         />
@@ -88,7 +88,7 @@ const FormRoot: React.FC<{
         />
       )}
     </FormContainer>
-  )
-}
+  );
+};
 
-export { FormRoot }
+export { FormRoot };

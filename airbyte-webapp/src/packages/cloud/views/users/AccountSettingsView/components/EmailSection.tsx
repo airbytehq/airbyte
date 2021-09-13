@@ -1,32 +1,32 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { Field, FieldProps, Form, Formik } from 'formik'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Field, FieldProps, Form, Formik } from 'formik';
 
 import {
   Content,
   SettingsCard,
-} from '@app/pages/SettingsPage/pages/SettingsComponents'
-import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
-import { LabeledInput } from '@app/components/LabeledInput'
-import NotificationsForm from '@app/pages/SettingsPage/pages/NotificationPage/components/NotificationsForm'
-import { useCurrentUser } from '@app/packages/cloud/services/auth/AuthService'
-import useWorkspace from '@app/hooks/services/useWorkspace'
-import useWorkspaceEditor from '@app/pages/SettingsPage/components/useWorkspaceEditor'
+} from '@app/pages/SettingsPage/pages/SettingsComponents';
+import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents';
+import { LabeledInput } from '@app/components/LabeledInput';
+import NotificationsForm from '@app/pages/SettingsPage/pages/NotificationPage/components/NotificationsForm';
+import { useCurrentUser } from '@app/packages/cloud/services/auth/AuthService';
+import useWorkspace from '@app/hooks/services/useWorkspace';
+import useWorkspaceEditor from '@app/pages/SettingsPage/components/useWorkspaceEditor';
 
 export const EmailSection: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
-  const user = useCurrentUser()
+  const formatMessage = useIntl().formatMessage;
+  const user = useCurrentUser();
 
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
   const { errorMessage, successMessage, loading, updateData } =
-    useWorkspaceEditor()
+    useWorkspaceEditor();
 
   const onChange = async (data: {
-    news: boolean
-    securityUpdates: boolean
+    news: boolean;
+    securityUpdates: boolean;
   }) => {
-    await updateData({ ...workspace, ...data })
-  }
+    await updateData({ ...workspace, ...data });
+  };
   return (
     <SettingsCard>
       <Content>
@@ -35,7 +35,7 @@ export const EmailSection: React.FC = () => {
             email: user.email,
           }}
           onSubmit={() => {
-            throw new Error('Not implemented')
+            throw new Error('Not implemented');
           }}
         >
           {() => (
@@ -80,5 +80,5 @@ export const EmailSection: React.FC = () => {
         />
       </Content>
     </SettingsCard>
-  )
-}
+  );
+};

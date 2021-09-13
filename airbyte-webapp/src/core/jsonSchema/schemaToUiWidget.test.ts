@@ -1,5 +1,5 @@
-import { jsonSchemaToUiWidget } from './schemaToUiWidget'
-import { AirbyteJSONSchemaDefinition } from './types'
+import { jsonSchemaToUiWidget } from './schemaToUiWidget';
+import { AirbyteJSONSchemaDefinition } from './types';
 
 test('should reformat jsonSchema to internal widget representation', () => {
   const schema: AirbyteJSONSchemaDefinition = {
@@ -22,9 +22,9 @@ test('should reformat jsonSchema to internal widget representation', () => {
         description: 'Password associated with the username.',
       },
     },
-  }
+  };
 
-  const builtSchema = jsonSchemaToUiWidget(schema, 'key')
+  const builtSchema = jsonSchemaToUiWidget(schema, 'key');
 
   const expected = {
     _type: 'formGroup',
@@ -110,10 +110,10 @@ test('should reformat jsonSchema to internal widget representation', () => {
         type: 'string',
       },
     ],
-  }
+  };
 
-  expect(builtSchema).toEqual(expected)
-})
+  expect(builtSchema).toEqual(expected);
+});
 
 test('should reformat jsonSchema to internal widget representation with parent schema', () => {
   const schema: AirbyteJSONSchemaDefinition = {
@@ -123,11 +123,11 @@ test('should reformat jsonSchema to internal widget representation with parent s
     properties: {
       host: { type: 'string', description: 'Hostname of the database.' },
     },
-  }
+  };
 
   const builtSchema = jsonSchemaToUiWidget(schema, 'key', undefined, {
     required: ['key'],
-  })
+  });
 
   const expected = {
     _type: 'formGroup',
@@ -158,10 +158,10 @@ test('should reformat jsonSchema to internal widget representation with parent s
       },
     ],
     title: 'Postgres Source Spec',
-  }
+  };
 
-  expect(builtSchema).toEqual(expected)
-})
+  expect(builtSchema).toEqual(expected);
+});
 
 test('should reformat jsonSchema to internal widget representation when has oneOf', () => {
   const schema: AirbyteJSONSchemaDefinition = {
@@ -198,11 +198,11 @@ test('should reformat jsonSchema to internal widget representation when has oneO
         ],
       },
     },
-  }
+  };
 
   const builtSchema = jsonSchemaToUiWidget(schema, 'key', undefined, {
     required: ['key'],
-  })
+  });
 
   const expected = {
     _type: 'formGroup',
@@ -313,7 +313,7 @@ test('should reformat jsonSchema to internal widget representation when has oneO
       },
     ],
     isRequired: true,
-  }
+  };
 
-  expect(builtSchema).toEqual(expected)
-})
+  expect(builtSchema).toEqual(expected);
+});

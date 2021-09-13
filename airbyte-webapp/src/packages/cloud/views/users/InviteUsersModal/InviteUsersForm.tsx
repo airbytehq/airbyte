@@ -1,11 +1,11 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
-import { Field, FieldProps, Form, Formik } from 'formik'
-import * as yup from 'yup'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
+import { Field, FieldProps, Form, Formik } from 'formik';
+import * as yup from 'yup';
 
-import { Input, ControlLabels, DropDown, Button } from '@app/components'
-import { Values } from './types'
+import { Input, ControlLabels, DropDown, Button } from '@app/components';
+import { Values } from './types';
 
 const Buttons = styled.div`
   width: 100%;
@@ -17,29 +17,29 @@ const Buttons = styled.div`
   & > button {
     margin-left: 5px;
   }
-`
+`;
 
 const ControlLabelsWithMargin = styled(ControlLabels)`
   margin-bottom: 29px;
-`
+`;
 
 const RequestButton = styled(Button)`
   min-width: 105px;
-`
+`;
 
 type ConnectorFormProps = {
-  onSubmit: (values: Values) => void
-  onCancel: () => void
-  currentValues?: Values
-  hasFeedback?: boolean
-}
+  onSubmit: (values: Values) => void;
+  onCancel: () => void;
+  currentValues?: Values;
+  hasFeedback?: boolean;
+};
 
 const requestConnectorValidationSchema = yup.object().shape({
   connectorType: yup.string().required('form.empty.error'),
   name: yup.string().required('form.empty.error'),
   website: yup.string().required('form.empty.error'),
   email: yup.string().email('form.email.error').required('form.empty.error'),
-})
+});
 
 const ConnectorForm: React.FC<ConnectorFormProps> = ({
   onSubmit,
@@ -47,14 +47,14 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
   currentValues,
   hasFeedback,
 }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
   const dropdownData = [
     { value: 'source', label: <FormattedMessage id="connector.source" /> },
     {
       value: 'destination',
       label: <FormattedMessage id="connector.destination" />,
     },
-  ]
+  ];
 
   return (
     <Formik
@@ -89,7 +89,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                   })}
                   error={!!meta.error && meta.touched}
                   onChange={(item) => {
-                    setFieldValue(field.name, item.value)
+                    setFieldValue(field.name, item.value);
                   }}
                 />
               </ControlLabelsWithMargin>
@@ -175,7 +175,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
         </Form>
       )}
     </Formik>
-  )
-}
+  );
+};
 
-export default ConnectorForm
+export default ConnectorForm;

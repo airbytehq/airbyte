@@ -1,3 +1,3 @@
-import FileDropZone from './FileDropZone'
+import FileDropZone from './FileDropZone';
 
-export default FileDropZone
+export default FileDropZone;

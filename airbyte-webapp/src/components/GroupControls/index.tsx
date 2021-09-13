@@ -1,3 +1,3 @@
-import GroupControls from './GroupControls'
+import GroupControls from './GroupControls';
 
-export default GroupControls
+export default GroupControls;

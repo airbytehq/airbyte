@@ -1,29 +1,29 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import Label from '@app/components/Label'
-import LabeledToggle from '@app/components/LabeledToggle'
-import FeedbackBlock from '../../../components/FeedbackBlock'
+import Label from '@app/components/Label';
+import LabeledToggle from '@app/components/LabeledToggle';
+import FeedbackBlock from '../../../components/FeedbackBlock';
 
 export type NotificationsFormProps = {
-  onChange: (data: { news: boolean; securityUpdates: boolean }) => void
+  onChange: (data: { news: boolean; securityUpdates: boolean }) => void;
   preferencesValues: {
-    news: boolean
-    securityUpdates: boolean
-  }
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-  isLoading?: boolean
-}
+    news: boolean;
+    securityUpdates: boolean;
+  };
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  isLoading?: boolean;
+};
 
 const FormItem = styled.div`
   margin-bottom: 10px;
-`
+`;
 
 const Subtitle = styled(Label)`
   padding-bottom: 9px;
-`
+`;
 
 const NotificationsForm: React.FC<NotificationsFormProps> = ({
   onChange,
@@ -52,7 +52,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
             onChange({
               securityUpdates: event.target.checked,
               news: preferencesValues.news,
-            })
+            });
           }}
         />
       </FormItem>
@@ -67,12 +67,12 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
             onChange({
               news: event.target.checked,
               securityUpdates: preferencesValues.securityUpdates,
-            })
+            });
           }}
         />
       </FormItem>
     </>
-  )
-}
+  );
+};
 
-export default NotificationsForm
+export default NotificationsForm;

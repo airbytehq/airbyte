@@ -1,21 +1,21 @@
-import React from 'react'
-import { render as rtlRender, RenderResult } from '@testing-library/react'
-import { ThemeProvider } from 'styled-components'
-import { History, createMemoryHistory } from 'history'
-import { Router } from 'react-router-dom'
-import { IntlProvider } from 'react-intl'
+import React from 'react';
+import { render as rtlRender, RenderResult } from '@testing-library/react';
+import { ThemeProvider } from 'styled-components';
+import { History, createMemoryHistory } from 'history';
+import { Router } from 'react-router-dom';
+import { IntlProvider } from 'react-intl';
 
-import en from '@app/locales/en.json'
+import en from '@app/locales/en.json';
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
-  history?: History
-  container?: HTMLElement
-}
+  history?: History;
+  container?: HTMLElement;
+};
 
 type WrapperProps = {
-  children?: React.ReactNode
-}
+  children?: React.ReactNode;
+};
 
 export function render(
   ui: React.ReactNode,
@@ -34,8 +34,8 @@ export function render(
           </Router>
         </IntlProvider>
       </ThemeProvider>
-    )
+    );
   }
 
-  return rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions })
+  return rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
 }

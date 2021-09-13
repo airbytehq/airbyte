@@ -1,18 +1,18 @@
-import React, { useCallback } from 'react'
-import { FieldProps, Field, setIn, useField } from 'formik'
+import React, { useCallback } from 'react';
+import { FieldProps, Field, setIn, useField } from 'formik';
 
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   SyncSchemaStream,
-} from '@app/core/domain/catalog'
-import { CatalogSection } from './CatalogSection'
+} from '@app/core/domain/catalog';
+import { CatalogSection } from './CatalogSection';
 
 type IProps = {
-  streams: SyncSchemaStream[]
-  destinationSupportedSyncModes: DestinationSyncMode[]
-  onChangeStream: (stream: SyncSchemaStream) => void
-}
+  streams: SyncSchemaStream[];
+  destinationSupportedSyncModes: DestinationSyncMode[];
+  onChangeStream: (stream: SyncSchemaStream) => void;
+};
 
 const CatalogTree: React.FC<IProps> = ({
   streams,
@@ -21,24 +21,24 @@ const CatalogTree: React.FC<IProps> = ({
 }) => {
   const onUpdateStream = useCallback(
     (id: string, newStream: Partial<AirbyteStreamConfiguration>) => {
-      const streamNode = streams.find((streamNode) => streamNode.id === id)
+      const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {
         const newStreamNode = setIn(
           streamNode,
           'config',
           Object.assign({}, streamNode.config, newStream)
-        )
+        );
 
-        onChangeStream(newStreamNode)
+        onChangeStream(newStreamNode);
       }
     },
     [streams, onChangeStream]
-  )
+  );
 
-  const [{ value: namespaceDefinition }] = useField('namespaceDefinition')
-  const [{ value: namespaceFormat }] = useField('namespaceFormat')
-  const [{ value: prefix }] = useField('prefix')
+  const [{ value: namespaceDefinition }] = useField('namespaceDefinition');
+  const [{ value: namespaceFormat }] = useField('namespaceFormat');
+  const [{ value: prefix }] = useField('prefix');
 
   return (
     <>
@@ -62,7 +62,7 @@ const CatalogTree: React.FC<IProps> = ({
         </Field>
       ))}
     </>
-  )
-}
+  );
+};
 
-export default CatalogTree
+export default CatalogTree;

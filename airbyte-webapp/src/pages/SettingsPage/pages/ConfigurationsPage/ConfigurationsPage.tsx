@@ -1,30 +1,30 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { useAsyncFn } from 'react-use'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { useAsyncFn } from 'react-use';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
-import { Button, ContentCard, Link, LoadingButton } from '@app/components'
-import HeadTitle from '@app/components/HeadTitle'
-import { DeploymentService } from '@app/core/resources/DeploymentService'
-import ImportConfigurationModal from './components/ImportConfigurationModal'
-import LogsContent from './components/LogsContent'
-import { useServicesProvider } from '@app/core/servicesProvider'
+import { Button, ContentCard, Link, LoadingButton } from '@app/components';
+import HeadTitle from '@app/components/HeadTitle';
+import { DeploymentService } from '@app/core/resources/DeploymentService';
+import ImportConfigurationModal from './components/ImportConfigurationModal';
+import LogsContent from './components/LogsContent';
+import { useServicesProvider } from '@app/core/servicesProvider';
 
 const Content = styled.div`
   max-width: 813px;
-`
+`;
 
 const ControlContent = styled(ContentCard)`
   margin-top: 12px;
-`
+`;
 
 const ButtonContent = styled.div`
   padding: 29px 28px 27px;
   display: flex;
   align-items: center;
-`
+`;
 
 const Text = styled.div`
   margin-left: 20px;
@@ -33,62 +33,63 @@ const Text = styled.div`
   color: ${({ theme }) => theme.greyColor40};
   white-space: pre-line;
   flex: 1 0 0;
-`
+`;
 
 const DocLink = styled(Link).attrs({ as: 'a' })`
   text-decoration: none;
   display: inline-block;
-`
+`;
 
 const Warning = styled.div`
   font-weight: bold;
-`
+`;
 
 const ConfigurationsPage: React.FC = () => {
-  const config = useConfig()
-  const { getService } = useServicesProvider()
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+  const config = useConfig();
+  const { getService } = useServicesProvider();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   const [{ loading }, onImport] = useAsyncFn(
     async (fileBlob: Blob) => {
       try {
-        const reader = new FileReader()
-        reader.readAsArrayBuffer(fileBlob)
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(fileBlob);
 
         return new Promise((resolve, reject) => {
           reader.onloadend = async (e) => {
             // setError("");
             // setIsLoading(true);
-            const file = e?.target?.result
+            const file = e?.target?.result;
             if (!file) {
-              throw new Error('No file')
+              throw new Error('No file');
             }
             try {
               const deploymentService =
-                getService<DeploymentService>('DeploymentService')
-              await deploymentService.importDeployment(file)
+                getService<DeploymentService>('DeploymentService');
+              await deploymentService.importDeployment(file);
 
-              window.location.reload()
-              resolve(true)
+              window.location.reload();
+              resolve(true);
             } catch (e) {
-              reject(e)
+              reject(e);
             }
-          }
-        })
+          };
+        });
       } catch (e) {
-        setError(e)
+        setError(e);
       }
     },
     [getService]
-  )
+  );
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
-    const deploymentService = getService<DeploymentService>('DeploymentService')
+    const deploymentService =
+      getService<DeploymentService>('DeploymentService');
 
-    const file = await deploymentService.exportDeployment()
-    window.location.assign(file)
-  }, [])
+    const file = await deploymentService.exportDeployment();
+    window.location.assign(file);
+  }, []);
 
   return (
     <Content>
@@ -148,7 +149,7 @@ const ConfigurationsPage: React.FC = () => {
         <LogsContent />
       </ControlContent>
     </Content>
-  )
-}
+  );
+};
 
-export default ConfigurationsPage
+export default ConfigurationsPage;

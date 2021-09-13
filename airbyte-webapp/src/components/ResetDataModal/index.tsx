@@ -1,3 +1,3 @@
-import ResetDataModal from './ResetDataModal'
+import ResetDataModal from './ResetDataModal';
 
-export default ResetDataModal
+export default ResetDataModal;

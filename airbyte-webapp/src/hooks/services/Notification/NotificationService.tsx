@@ -1,17 +1,17 @@
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react';
 
-import SingletonCard from '@app/components/SingletonCard'
+import SingletonCard from '@app/components/SingletonCard';
 
 import {
   Notification,
   NotificationServiceApi,
   NotificationServiceState,
-} from './types'
-import useTypesafeReducer from '@app/hooks/useTypesafeReducer'
-import { actions, initialState, notificationServiceReducer } from './reducer'
+} from './types';
+import useTypesafeReducer from '@app/hooks/useTypesafeReducer';
+import { actions, initialState, notificationServiceReducer } from './reducer';
 
 const notificationServiceContext =
-  React.createContext<NotificationServiceApi | null>(null)
+  React.createContext<NotificationServiceApi | null>(null);
 
 function NotificationService({ children }: { children: React.ReactNode }) {
   const [state, { addNotification, clearAll, deleteNotificationById }] =
@@ -19,7 +19,7 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       notificationServiceReducer,
       initialState,
       actions
-    )
+    );
 
   const notificationService: NotificationServiceApi = useMemo(
     () => ({
@@ -28,12 +28,12 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       clearAll,
     }),
     []
-  )
+  );
 
   const firstNotification =
     state.notifications && state.notifications.length
       ? state.notifications[0]
-      : null
+      : null;
 
   return (
     <>
@@ -50,48 +50,48 @@ function NotificationService({ children }: { children: React.ReactNode }) {
             firstNotification.nonClosable
               ? undefined
               : () => {
-                  deleteNotificationById(firstNotification.id)
-                  firstNotification.onClose?.()
+                  deleteNotificationById(firstNotification.id);
+                  firstNotification.onClose?.();
                 }
           }
         />
       ) : null}
     </>
-  )
+  );
 }
 
 export const useNotificationService: (
   notification?: Notification,
   dependencies?: []
 ) => {
-  registerNotification: (notification: Notification) => void
-  unregisterAllNotifications: () => void
-  unregisterNotificationById: (notificationId: string | number) => void
+  registerNotification: (notification: Notification) => void;
+  unregisterAllNotifications: () => void;
+  unregisterNotificationById: (notificationId: string | number) => void;
 } = (notification, dependencies) => {
-  const notificationService = useContext(notificationServiceContext)
+  const notificationService = useContext(notificationServiceContext);
   if (!notificationService) {
     throw new Error(
       'useNotificationService must be used within a NotificationService.'
-    )
+    );
   }
 
   useEffect(() => {
     if (notification) {
-      notificationService.addNotification(notification)
+      notificationService.addNotification(notification);
     }
     return () => {
       if (notification) {
-        notificationService.deleteNotificationById(notification.id)
+        notificationService.deleteNotificationById(notification.id);
       }
-    }
+    };
     // eslint-disable-next-line
-  }, [notification, notificationService, ...(dependencies || [])])
+  }, [notification, notificationService, ...(dependencies || [])]);
 
   return {
     registerNotification: notificationService.addNotification,
     unregisterNotificationById: notificationService.deleteNotificationById,
     unregisterAllNotifications: notificationService.clearAll,
-  }
-}
+  };
+};
 
-export default React.memo(NotificationService)
+export default React.memo(NotificationService);

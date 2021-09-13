@@ -1,18 +1,18 @@
-import React from 'react'
-import styled from 'styled-components'
-import { components } from 'react-select'
-import { FormattedMessage } from 'react-intl'
-import { MenuListComponentProps } from 'react-select/src/components/Menu'
+import React from 'react';
+import styled from 'styled-components';
+import { components } from 'react-select';
+import { FormattedMessage } from 'react-intl';
+import { MenuListComponentProps } from 'react-select/src/components/Menu';
 
-import { Popout } from '@app/components'
-import { IDataItem } from '@app/components/base/DropDown/components/Option'
+import { Popout } from '@app/components';
+import { IDataItem } from '@app/components/base/DropDown/components/Option';
 import {
   useListWorkspaces,
   useWorkspaceService,
-} from '@app/packages/cloud/services/workspaces/WorkspacesService'
-import ExitIcon from './components/ExitIcon'
+} from '@app/packages/cloud/services/workspaces/WorkspacesService';
+import ExitIcon from './components/ExitIcon';
 
-import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace';
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -21,7 +21,7 @@ const BottomElement = styled.div`
   min-height: 34px;
   border-top: 1px solid ${(props) => props.theme.greyColor20};
   color: ${(props) => props.theme.primaryColor};
-`
+`;
 
 const Block = styled.div`
   cursor: pointer;
@@ -33,21 +33,21 @@ const Block = styled.div`
   &:hover {
     opacity: 0.7;
   }
-`
+`;
 
 const TextBlock = styled.div`
   margin-left: 10px;
   vertical-align: text-top;
   display: inline-block;
-`
+`;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>
+type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
 const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
   children,
   ...props
 }) => {
-  const { selectWorkspace } = useWorkspaceService()
+  const { selectWorkspace } = useWorkspaceService();
   return (
     <>
       <components.MenuList {...props}>{children}</components.MenuList>
@@ -60,15 +60,15 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
         </Block>
       </BottomElement>
     </>
-  )
-}
+  );
+};
 
 const WorkspacePopout: React.FC<{
-  children: (props: { onOpen: () => void; value: any }) => React.ReactNode
+  children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const workspace = useCurrentWorkspace()
-  const { data: workspaces } = useListWorkspaces()
-  const { selectWorkspace } = useWorkspaceService()
+  const workspace = useCurrentWorkspace();
+  const { data: workspaces } = useListWorkspaces();
+  const { selectWorkspace } = useWorkspaceService();
 
   return (
     <Popout
@@ -86,7 +86,7 @@ const WorkspacePopout: React.FC<{
       value={workspace.workspaceId}
       onChange={({ value }) => selectWorkspace(value)}
     />
-  )
-}
+  );
+};
 
-export { WorkspacePopout }
+export { WorkspacePopout };

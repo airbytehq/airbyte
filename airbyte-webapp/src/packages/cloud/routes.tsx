@@ -1,44 +1,44 @@
-import React, { Suspense, useMemo } from 'react'
+import React, { Suspense, useMemo } from 'react';
 import {
   BrowserRouter as Router,
   Redirect,
   Route,
   Switch,
-} from 'react-router-dom'
-import { FormattedMessage } from 'react-intl'
-import { useAsync } from 'react-use'
+} from 'react-router-dom';
+import { FormattedMessage } from 'react-intl';
+import { useAsync } from 'react-use';
 
-import SourcesPage from '@app/pages/SourcesPage'
-import DestinationPage from '@app/pages/DestinationPage'
+import SourcesPage from '@app/pages/SourcesPage';
+import DestinationPage from '@app/pages/DestinationPage';
 import {
   DestinationsPage as SettingsDestinationPage,
   SourcesPage as SettingsSourcesPage,
-} from '@app/pages/SettingsPage/pages/ConnectorsPage'
-import ConnectionPage from '@app/pages/ConnectionPage'
-import SettingsPage from '@app/pages/SettingsPage'
-import ConfigurationsPage from '@app/pages/SettingsPage/pages/ConfigurationsPage'
-import NotificationPage from '@app/pages/SettingsPage/pages/NotificationPage'
+} from '@app/pages/SettingsPage/pages/ConnectorsPage';
+import ConnectionPage from '@app/pages/ConnectionPage';
+import SettingsPage from '@app/pages/SettingsPage';
+import ConfigurationsPage from '@app/pages/SettingsPage/pages/ConfigurationsPage';
+import NotificationPage from '@app/pages/SettingsPage/pages/NotificationPage';
 
-import LoadingPage from '@app/components/LoadingPage'
-import MainView from '@app/packages/cloud/views/layout/MainView'
-import { WorkspacesPage } from '@app/packages/cloud/views/workspaces'
-import { useApiHealthPoll } from '@app/hooks/services/Health'
-import { Auth } from '@app/packages/cloud/views/auth'
-import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
-import useConnector from '@app/hooks/services/useConnector'
+import LoadingPage from '@app/components/LoadingPage';
+import MainView from '@app/packages/cloud/views/layout/MainView';
+import { WorkspacesPage } from '@app/packages/cloud/views/workspaces';
+import { useApiHealthPoll } from '@app/hooks/services/Health';
+import { Auth } from '@app/packages/cloud/views/auth';
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService';
+import useConnector from '@app/hooks/services/useConnector';
 
 import {
   useGetWorkspace,
   useWorkspaceService,
   WorkspaceServiceProvider,
-} from '@app/packages/cloud/services/workspaces/WorkspacesService'
-import { PageConfig } from '@app/pages/SettingsPage/SettingsPage'
-import { WorkspaceSettingsView } from './views/workspaces/WorkspaceSettingsView'
-import { UsersSettingsView } from '@app/packages/cloud/views/users/UsersSettingsView/UsersSettingsView'
-import { AccountSettingsView } from '@app/packages/cloud/views/users/AccountSettingsView/AccountSettingsView'
-import { ConfirmEmailPage } from './views/auth/ConfirmEmailPage'
-import useRouter from '@app/hooks/useRouter'
-import { WithPageAnalytics } from '@app/pages/withPageAnalytics'
+} from '@app/packages/cloud/services/workspaces/WorkspacesService';
+import { PageConfig } from '@app/pages/SettingsPage/SettingsPage';
+import { WorkspaceSettingsView } from './views/workspaces/WorkspaceSettingsView';
+import { UsersSettingsView } from '@app/packages/cloud/views/users/UsersSettingsView/UsersSettingsView';
+import { AccountSettingsView } from '@app/packages/cloud/views/users/AccountSettingsView/AccountSettingsView';
+import { ConfirmEmailPage } from './views/auth/ConfirmEmailPage';
+import useRouter from '@app/hooks/useRouter';
+import { WithPageAnalytics } from '@app/pages/withPageAnalytics';
 
 export enum Routes {
   Preferences = '/preferences',
@@ -73,8 +73,8 @@ export enum Routes {
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   currentWorkspaceId,
 }) => {
-  useGetWorkspace(currentWorkspaceId)
-  const { countNewSourceVersion, countNewDestinationVersion } = useConnector()
+  useGetWorkspace(currentWorkspaceId);
+  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -129,7 +129,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       ],
     }),
     [countNewSourceVersion, countNewDestinationVersion]
-  )
+  );
 
   return (
     <Switch>
@@ -150,12 +150,12 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       </Route>
       <Redirect to={Routes.Connections} />
     </Switch>
-  )
-}
+  );
+};
 
 const MainViewRoutes = () => {
-  useApiHealthPoll()
-  const { currentWorkspaceId } = useWorkspaceService()
+  useApiHealthPoll();
+  const { currentWorkspaceId } = useWorkspaceService();
 
   return (
     <>
@@ -174,20 +174,20 @@ const MainViewRoutes = () => {
         </Switch>
       )}
     </>
-  )
-}
+  );
+};
 
 const VerifyEmailRoute: React.FC = () => {
-  const { query } = useRouter<{ oobCode: string }>()
-  const { verifyEmail } = useAuthService()
+  const { query } = useRouter<{ oobCode: string }>();
+  const { verifyEmail } = useAuthService();
 
-  useAsync(async () => await verifyEmail(query.oobCode), [])
+  useAsync(async () => await verifyEmail(query.oobCode), []);
 
-  return <LoadingPage />
-}
+  return <LoadingPage />;
+};
 
 export const Routing: React.FC = () => {
-  const { user, inited, emailVerified } = useAuthService()
+  const { user, inited, emailVerified } = useAuthService();
 
   return (
     <Router>
@@ -218,5 +218,5 @@ export const Routing: React.FC = () => {
         )}
       </Suspense>
     </Router>
-  )
-}
+  );
+};

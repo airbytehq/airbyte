@@ -1,7 +1,7 @@
-import dayjs from 'dayjs'
+import dayjs from 'dayjs';
 
-import tcLogo from './techcrunch-logo.png'
-import tfirLogo from './tfir-logo.svg'
+import tcLogo from './techcrunch-logo.png';
+import tfirLogo from './tfir-logo.svg';
 
 export const news = [
   {
@@ -14,4 +14,4 @@ export const news = [
     icon: tfirLogo,
     date: dayjs('03/11/2021'),
   },
-]
+];

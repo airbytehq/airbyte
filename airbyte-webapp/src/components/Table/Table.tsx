@@ -1,5 +1,5 @@
-import React, { memo, useMemo } from 'react'
-import styled from 'styled-components'
+import React, { memo, useMemo } from 'react';
+import styled from 'styled-components';
 import {
   Cell,
   Column,
@@ -7,41 +7,41 @@ import {
   SortingRule,
   useSortBy,
   useTable,
-} from 'react-table'
+} from 'react-table';
 
-import { Card } from '@app/components'
+import { Card } from '@app/components';
 
 type IHeaderProps = {
-  headerHighlighted?: boolean
-  collapse?: boolean
-  customWidth?: number
-} & ColumnInstance
+  headerHighlighted?: boolean;
+  collapse?: boolean;
+  customWidth?: number;
+} & ColumnInstance;
 
 type ICellProps = {
-  column: IHeaderProps
-} & Cell
+  column: IHeaderProps;
+} & Cell;
 
 type IThProps = {
-  highlighted?: boolean
-  collapse?: boolean
-  customWidth?: number
-} & React.ThHTMLAttributes<HTMLTableHeaderCellElement>
+  highlighted?: boolean;
+  collapse?: boolean;
+  customWidth?: number;
+} & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
 const TableView = styled(Card).attrs({ as: 'table' })`
   border-spacing: 0;
   width: 100%;
   overflow: hidden;
   max-width: 100%;
-`
+`;
 
 const Tr = styled.tr<{
-  hasClick?: boolean
-  erroredRows?: boolean
+  hasClick?: boolean;
+  erroredRows?: boolean;
 }>`
   background: ${({ theme, erroredRows }) =>
     erroredRows ? theme.dangerTransparentColor : theme.whiteColor};
   cursor: ${({ hasClick }) => (hasClick ? 'pointer' : 'auto')};
-`
+`;
 
 const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
   padding: 16px 13px;
@@ -59,7 +59,7 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
   tr:last-child > & {
     border-bottom: none;
   }
-`
+`;
 
 const Th = styled.th<IThProps>`
   background: ${({ theme }) => theme.textColor};
@@ -78,18 +78,18 @@ const Th = styled.th<IThProps>`
   &:first-child {
     padding-left: 45px;
   }
-`
+`;
 
 type IProps = {
-  columns: Array<IHeaderProps | Column<Record<string, unknown>>>
-  erroredRows?: boolean
+  columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
+  erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
+  data: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onClickRow?: (data: any) => void
+  onClickRow?: (data: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sortBy?: Array<SortingRule<any>>
-}
+  sortBy?: Array<SortingRule<any>>;
+};
 
 const Table: React.FC<IProps> = ({
   columns,
@@ -99,15 +99,15 @@ const Table: React.FC<IProps> = ({
   sortBy,
 }) => {
   const [plugins, config] = useMemo(() => {
-    const pl = []
-    const plConfig: Record<string, unknown> = {}
+    const pl = [];
+    const plConfig: Record<string, unknown> = {};
 
     if (sortBy) {
-      pl.push(useSortBy)
-      plConfig.initialState = { sortBy }
+      pl.push(useSortBy);
+      plConfig.initialState = { sortBy };
     }
-    return [pl, plConfig]
-  }, [sortBy])
+    return [pl, plConfig];
+  }, [sortBy]);
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable(
       {
@@ -116,7 +116,7 @@ const Table: React.FC<IProps> = ({
         data,
       },
       ...plugins
-    )
+    );
 
   return (
     <TableView {...getTableProps()}>
@@ -142,7 +142,7 @@ const Table: React.FC<IProps> = ({
       </thead>
       <tbody {...getTableBodyProps()}>
         {rows.map((row) => {
-          prepareRow(row)
+          prepareRow(row);
           return (
             <Tr
               {...row.getRowProps()}
@@ -163,15 +163,15 @@ const Table: React.FC<IProps> = ({
                     >
                       {cell.render('Cell')}
                     </Td>
-                  )
+                  );
                 })
               }
             </Tr>
-          )
+          );
         })}
       </tbody>
     </TableView>
-  )
-}
+  );
+};
 
-export default memo(Table)
+export default memo(Table);

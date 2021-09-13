@@ -1,9 +1,9 @@
-import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService'
-import { Connection } from './types'
+import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService';
+import { Connection } from './types';
 
 class ConnectionService extends AirbyteRequestService {
   get url() {
-    return 'web_backend/connections'
+    return 'web_backend/connections';
   }
 
   public async getConnection(
@@ -13,10 +13,10 @@ class ConnectionService extends AirbyteRequestService {
     const rs = (await this.fetch(`${this.url}/get`, {
       connectionId,
       withRefreshedCatalog,
-    })) as any as Connection
+    })) as any as Connection;
 
-    return rs
+    return rs;
   }
 }
 
-export { ConnectionService }
+export { ConnectionService };

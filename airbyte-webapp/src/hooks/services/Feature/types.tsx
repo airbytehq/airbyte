@@ -1,10 +1,10 @@
 type Feature = {
-  id: string
-}
+  id: string;
+};
 
 type FeatureServiceApi = {
-  features: Feature[]
-  hasFeature: (featureId: string) => boolean
-}
+  features: Feature[];
+  hasFeature: (featureId: string) => boolean;
+};
 
-export type { Feature, FeatureServiceApi }
+export type { Feature, FeatureServiceApi };

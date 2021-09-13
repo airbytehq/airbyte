@@ -1,9 +1,9 @@
-import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService'
+import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService';
 
 class SourceService extends AirbyteRequestService {
   get url() {
-    return 'sources'
+    return 'sources';
   }
 }
 
-export { SourceService }
+export { SourceService };

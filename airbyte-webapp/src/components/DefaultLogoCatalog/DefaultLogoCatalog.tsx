@@ -11,6 +11,6 @@ const DefaultLogoCatalog = (): JSX.Element => (
       fill="#DBDAFF"
     />
   </svg>
-)
+);
 
-export default DefaultLogoCatalog
+export default DefaultLogoCatalog;

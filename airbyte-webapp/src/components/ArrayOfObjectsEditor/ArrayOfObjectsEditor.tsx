@@ -1,42 +1,42 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
+import { Button } from '@app/components';
 
-import { EditorHeader } from './components/EditorHeader'
-import { EditorRow } from './components/EditorRow'
+import { EditorHeader } from './components/EditorHeader';
+import { EditorRow } from './components/EditorRow';
 
 const ItemsList = styled.div`
   background: ${({ theme }) => theme.greyColor0};
   border-radius: 4px;
-`
+`;
 
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-`
+`;
 
 const SmallButton = styled(Button)`
   margin-left: 8px;
   padding: 6px 8px 7px;
-`
+`;
 
 const Content = styled.div`
   margin-bottom: 20px;
-`
+`;
 
 type ArrayOfObjectsEditorProps<T extends { name: string }> = {
-  items: T[]
-  editableItemIndex?: number | string | null
-  children: (item?: T) => React.ReactNode
-  mainTitle?: React.ReactNode
-  addButtonText?: React.ReactNode
-  onStartEdit: (n: number) => void
-  onCancelEdit?: () => void
-  onDone?: () => void
-  onRemove: (index: number) => void
-}
+  items: T[];
+  editableItemIndex?: number | string | null;
+  children: (item?: T) => React.ReactNode;
+  mainTitle?: React.ReactNode;
+  addButtonText?: React.ReactNode;
+  onStartEdit: (n: number) => void;
+  onCancelEdit?: () => void;
+  onDone?: () => void;
+  onRemove: (index: number) => void;
+};
 
 function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
   props: ArrayOfObjectsEditorProps<T>
@@ -51,20 +51,20 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
     children,
     mainTitle,
     addButtonText,
-  } = props
+  } = props;
   const onAddItem = React.useCallback(
     () => onStartEdit(items.length),
     [onStartEdit, items]
-  )
+  );
 
   const isEditMode =
-    editableItemIndex !== null && editableItemIndex !== undefined
+    editableItemIndex !== null && editableItemIndex !== undefined;
 
   if (isEditMode) {
     const item =
       typeof editableItemIndex === 'number'
         ? items[editableItemIndex]
-        : undefined
+        : undefined;
 
     return (
       <Content>
@@ -88,7 +88,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
           </ButtonContainer>
         ) : null}
       </Content>
-    )
+    );
   }
 
   return (
@@ -113,8 +113,8 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
         </ItemsList>
       ) : null}
     </Content>
-  )
+  );
 }
 
-export { ArrayOfObjectsEditor }
-export type { ArrayOfObjectsEditorProps }
+export { ArrayOfObjectsEditor };
+export type { ArrayOfObjectsEditorProps };

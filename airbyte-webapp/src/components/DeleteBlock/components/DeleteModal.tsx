@@ -1,14 +1,14 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import Modal from '@app/components/Modal'
-import { Button } from '@app/components'
+import Modal from '@app/components/Modal';
+import { Button } from '@app/components';
 export type IProps = {
-  onClose: () => void
-  onSubmit: () => void
-  type: 'source' | 'destination' | 'connection'
-}
+  onClose: () => void;
+  onSubmit: () => void;
+  type: 'source' | 'destination' | 'connection';
+};
 
 const Content = styled.div`
   width: 585px;
@@ -16,17 +16,17 @@ const Content = styled.div`
   line-height: 28px;
   padding: 10px 40px 15px 37px;
   white-space: pre-line;
-`
+`;
 
 const ButtonContent = styled.div`
   padding-top: 28px;
   display: flex;
   justify-content: flex-end;
-`
+`;
 
 const ButtonWithMargin = styled(Button)`
   margin-right: 12px;
-`
+`;
 
 const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
   return (
@@ -46,7 +46,7 @@ const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
         </ButtonContent>
       </Content>
     </Modal>
-  )
-}
+  );
+};
 
-export default DeleteModal
+export default DeleteModal;

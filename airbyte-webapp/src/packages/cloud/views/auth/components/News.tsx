@@ -1,44 +1,44 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGithub } from '@fortawesome/free-brands-svg-icons'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { FormattedMessage } from 'react-intl';
 
-import { useConfig } from '@app/config'
-import { news } from '@app/packages/cloud/data/news'
+import { useConfig } from '@app/config';
+import { news } from '@app/packages/cloud/data/news';
 
-import { H2, H4, H5 } from '@app/components'
-import NewsItem from './NewsItem'
+import { H2, H4, H5 } from '@app/components';
+import NewsItem from './NewsItem';
 
 const Icon = styled.img`
   height: 214px;
   margin: 0 auto 21px;
   display: block;
-`
+`;
 
 const GitBlock = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   margin-top: 17px;
-`
+`;
 
 const GitIcon = styled(FontAwesomeIcon)`
   margin-right: 10px;
   font-size: 36px;
-`
+`;
 
 const GitLink = styled.a`
   text-decoration: none;
   color: ${({ theme }) => theme.textColor};
-`
+`;
 
 const NewsItemStyled = styled(NewsItem)`
   margin-bottom: 12px;
-`
+`;
 
 const News: React.FC = () => {
-  const config = useConfig()
+  const config = useConfig();
   return (
     <>
       <div>
@@ -65,7 +65,7 @@ const News: React.FC = () => {
         </GitBlock>
       </GitLink>
     </>
-  )
-}
+  );
+};
 
-export default News
+export default News;

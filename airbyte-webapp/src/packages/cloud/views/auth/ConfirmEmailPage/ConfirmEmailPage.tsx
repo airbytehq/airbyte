@@ -1,34 +1,34 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedHTMLMessage, FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedHTMLMessage, FormattedMessage } from 'react-intl';
 
-import { H5, Link } from '@app/components'
-import { FormTitle } from '../components/FormTitle'
-import FormContent from '../components/FormContent'
-import News from '../components/News'
+import { H5, Link } from '@app/components';
+import { FormTitle } from '../components/FormTitle';
+import FormContent from '../components/FormContent';
+import News from '../components/News';
 import {
   useAuthService,
   useCurrentUser,
-} from '@app/packages/cloud/services/auth/AuthService'
+} from '@app/packages/cloud/services/auth/AuthService';
 
 const Text = styled(H5)`
   padding: 27px 0 30px;
   margin-right: -40px;
-`
+`;
 
 const Resend = styled(Link)`
   cursor: pointer;
-`
+`;
 
 const TitleBlock = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-`
+`;
 
 const Img = styled.img`
   margin: -5px 0 0 30px;
-`
+`;
 
 const Content = styled.div`
   width: 100%;
@@ -37,13 +37,13 @@ const Content = styled.div`
   display: flex;
   flex-direction: row;
   background: ${({ theme }) => theme.whiteColor};
-`
+`;
 
 const Part = styled.div`
   flex: 1 0 0;
   padding: 20px 36px 39px 46px;
   height: 100%;
-`
+`;
 
 const NewsPart = styled(Part)`
   background: ${({ theme }) => theme.beigeColor};
@@ -51,11 +51,11 @@ const NewsPart = styled(Part)`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-`
+`;
 
 const ConfirmEmailPage: React.FC = () => {
-  const { sendEmailVerification } = useAuthService()
-  const { email } = useCurrentUser()
+  const { sendEmailVerification } = useAuthService();
+  const { email } = useCurrentUser();
 
   return (
     <Content>
@@ -89,6 +89,6 @@ const ConfirmEmailPage: React.FC = () => {
         <News />
       </NewsPart>
     </Content>
-  )
-}
-export default ConfirmEmailPage
+  );
+};
+export default ConfirmEmailPage;

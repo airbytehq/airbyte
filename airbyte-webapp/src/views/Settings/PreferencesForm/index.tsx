@@ -1,4 +1,4 @@
-import PreferencesForm from './PreferencesForm'
+import PreferencesForm from './PreferencesForm';
 
-export default PreferencesForm
-export { PreferencesForm }
+export default PreferencesForm;
+export { PreferencesForm };

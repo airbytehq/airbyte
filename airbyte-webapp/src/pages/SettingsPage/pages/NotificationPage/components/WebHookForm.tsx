@@ -1,13 +1,13 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
-import { Field, FieldProps, Form, Formik } from 'formik'
-import * as yup from 'yup'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
+import { Field, FieldProps, Form, Formik } from 'formik';
+import * as yup from 'yup';
 
-import { Label, Input, LoadingButton, LabeledToggle } from '@app/components'
-import { Row, Cell } from '@app/components/SimpleTableComponents'
-import { WebhookPayload } from '@app/hooks/services/useWorkspace'
-import { equal } from '@app/utils/objects'
+import { Label, Input, LoadingButton, LabeledToggle } from '@app/components';
+import { Row, Cell } from '@app/components/SimpleTableComponents';
+import { WebhookPayload } from '@app/hooks/services/useWorkspace';
+import { equal } from '@app/utils/objects';
 
 const Text = styled.div`
   font-style: normal;
@@ -15,48 +15,48 @@ const Text = styled.div`
   font-size: 13px;
   line-height: 150%;
   padding-bottom: 5px;
-`
+`;
 
 const InputRow = styled(Row)`
   height: auto;
   margin-bottom: 40px;
-`
+`;
 
 const Message = styled(Text)`
   margin: -40px 0 21px;
   padding: 0;
   color: ${({ theme }) => theme.greyColor40};
-`
+`;
 
 const FeedbackCell = styled(Cell)`
   &:last-child {
     text-align: left;
   }
   padding-left: 11px;
-`
+`;
 
 const Success = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.successColor};
-`
+`;
 
 const Error = styled(Success)`
   color: ${({ theme }) => theme.dangerColor};
-`
+`;
 
 const webhookValidationSchema = yup.object().shape({
   webhook: yup.string().url('form.url.error'),
   sendOnSuccess: yup.boolean(),
   sendOnFailure: yup.boolean(),
-})
+});
 
 type WebHookFormProps = {
-  webhook: WebhookPayload
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-  onSubmit: (data: WebhookPayload) => void
-  onTest: (data: WebhookPayload) => void
-}
+  webhook: WebhookPayload;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  onSubmit: (data: WebhookPayload) => void;
+  onTest: (data: WebhookPayload) => void;
+};
 
 const WebHookForm: React.FC<WebHookFormProps> = ({
   webhook,
@@ -65,7 +65,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
   errorMessage,
   onTest,
 }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
   const feedBackBlock = (
     dirty: boolean,
@@ -73,11 +73,11 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
     webhook?: string
   ) => {
     if (successMessage) {
-      return <Success>{successMessage}</Success>
+      return <Success>{successMessage}</Success>;
     }
 
     if (errorMessage) {
-      return <Error>{errorMessage}</Error>
+      return <Error>{errorMessage}</Error>;
     }
 
     if (dirty) {
@@ -85,7 +85,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         <LoadingButton isLoading={isSubmitting} type="submit">
           <FormattedMessage id="form.saveChanges" />
         </LoadingButton>
-      )
+      );
     }
 
     if (webhook) {
@@ -93,11 +93,11 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         <LoadingButton isLoading={isSubmitting} type="submit">
           <FormattedMessage id="settings.test" />
         </LoadingButton>
-      )
+      );
     }
 
-    return null
-  }
+    return null;
+  };
 
   return (
     <Formik
@@ -108,9 +108,9 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
       validationSchema={webhookValidationSchema}
       onSubmit={async (values: WebhookPayload) => {
         if (equal(webhook, values)) {
-          await onTest(values)
+          await onTest(values);
         } else {
-          await onSubmit(values)
+          await onSubmit(values);
         }
       }}
     >
@@ -184,7 +184,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         </Form>
       )}
     </Formik>
-  )
-}
+  );
+};
 
-export default WebHookForm
+export default WebHookForm;

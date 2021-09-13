@@ -1,3 +1,3 @@
-import SupportChat from './SupportChat'
+import SupportChat from './SupportChat';
 
-export default SupportChat
+export default SupportChat;

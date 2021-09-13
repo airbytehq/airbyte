@@ -1,23 +1,23 @@
-import React from 'react'
-import { Field, FieldProps, Formik } from 'formik'
-import * as yup from 'yup'
-import { FormattedMessage, useIntl } from 'react-intl'
+import React from 'react';
+import { Field, FieldProps, Formik } from 'formik';
+import * as yup from 'yup';
+import { FormattedMessage, useIntl } from 'react-intl';
 
-import { BottomBlock, FieldItem, Form } from '../components/FormComponents'
-import { LoadingButton, LabeledInput, Link } from '@app/components'
-import { FormTitle } from '../components/FormTitle'
-import { Routes } from '../../../routes'
-import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
-import useRouterHook from '@app/hooks/useRouter'
+import { BottomBlock, FieldItem, Form } from '../components/FormComponents';
+import { LoadingButton, LabeledInput, Link } from '@app/components';
+import { FormTitle } from '../components/FormTitle';
+import { Routes } from '../../../routes';
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService';
+import useRouterHook from '@app/hooks/useRouter';
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email('form.email.error').required('form.empty.error'),
-})
+});
 
 const ResetPasswordPage: React.FC = () => {
-  const { requirePasswordReset } = useAuthService()
-  const { push } = useRouterHook()
-  const formatMessage = useIntl().formatMessage
+  const { requirePasswordReset } = useAuthService();
+  const { push } = useRouterHook();
+  const formatMessage = useIntl().formatMessage;
 
   return (
     <div>
@@ -31,8 +31,8 @@ const ResetPasswordPage: React.FC = () => {
         }}
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ email }) => {
-          await requirePasswordReset(email)
-          push(Routes.ConfirmPasswordReset)
+          await requirePasswordReset(email);
+          push(Routes.ConfirmPasswordReset);
         }}
         validateOnBlur={true}
         validateOnChange={false}
@@ -71,7 +71,7 @@ const ResetPasswordPage: React.FC = () => {
         )}
       </Formik>
     </div>
-  )
-}
+  );
+};
 
-export default ResetPasswordPage
+export default ResetPasswordPage;

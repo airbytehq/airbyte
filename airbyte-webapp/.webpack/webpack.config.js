@@ -1,12 +1,12 @@
-const path = require('path')
+const path = require('path');
 
-const CopyWebpackPlugin = require('copy-webpack-plugin')
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
-const { HotModuleReplacementPlugin } = require('webpack')
-const { merge: webpackMerge } = require('webpack-merge')
-const Dotenv = require('dotenv-webpack')
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const { HotModuleReplacementPlugin } = require('webpack');
+const { merge: webpackMerge } = require('webpack-merge');
+const Dotenv = require('dotenv-webpack');
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const options = {
   mode: 'none',
@@ -70,8 +70,8 @@ const options = {
     isDevelopment && new HotModuleReplacementPlugin(),
     isDevelopment && new ReactRefreshWebpackPlugin(),
   ].filter(Boolean),
-}
+};
 
 module.exports = isDevelopment
   ? webpackMerge(options, require('./webpack.dev'))
-  : webpackMerge(options, require('./webpack.dist'))
+  : webpackMerge(options, require('./webpack.dist'));

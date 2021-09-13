@@ -1,4 +1,4 @@
-import DefaultLogoCatalog from './DefaultLogoCatalog'
+import DefaultLogoCatalog from './DefaultLogoCatalog';
 
-export * from './DefaultLogoCatalog'
-export { DefaultLogoCatalog }
+export * from './DefaultLogoCatalog';
+export { DefaultLogoCatalog };

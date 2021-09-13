@@ -1,22 +1,22 @@
-import React, { useMemo } from 'react'
-import { useIntl } from 'react-intl'
+import React, { useMemo } from 'react';
+import { useIntl } from 'react-intl';
 
-import { Status } from '../types'
-import StatusIcon from '@app/components/StatusIcon'
+import { Status } from '../types';
+import StatusIcon from '@app/components/StatusIcon';
 
 type AllConnectionsStatusCellProps = {
   connectEntities: {
-    name: string
-    connector: string
-    status: string
-    lastSyncStatus: string
-  }[]
-}
+    name: string;
+    connector: string;
+    status: string;
+    lastSyncStatus: string;
+  }[];
+};
 
 const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
   connectEntities,
 }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
   const active = useMemo(
     () =>
@@ -24,7 +24,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
         (entity) => entity.lastSyncStatus === Status.ACTIVE
       ),
     [connectEntities]
-  )
+  );
 
   const inactive = useMemo(
     () =>
@@ -32,7 +32,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
         (entity) => entity.lastSyncStatus === Status.INACTIVE
       ),
     [connectEntities]
-  )
+  );
 
   const failed = useMemo(
     () =>
@@ -40,7 +40,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
         (entity) => entity.lastSyncStatus === Status.FAILED
       ),
     [connectEntities]
-  )
+  );
 
   const empty = useMemo(
     () =>
@@ -48,10 +48,10 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
         (entity) => entity.lastSyncStatus === Status.EMPTY
       ),
     [connectEntities]
-  )
+  );
 
   if (!connectEntities.length) {
-    return null
+    return null;
   }
 
   return (
@@ -92,7 +92,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
         />
       ) : null}
     </>
-  )
-}
+  );
+};
 
-export default AllConnectionsStatusCell
+export default AllConnectionsStatusCell;

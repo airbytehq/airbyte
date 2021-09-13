@@ -1,8 +1,8 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
+import { Button } from '@app/components';
 
 const Content = styled.div`
   display: flex;
@@ -14,14 +14,14 @@ const Content = styled.div`
   font-size: 14px;
   line-height: 17px;
   margin: 5px 0;
-`
+`;
 
 type EditorHeaderProps = {
-  mainTitle?: React.ReactNode
-  addButtonText?: React.ReactNode
-  itemsCount: number
-  onAddItem: () => void
-}
+  mainTitle?: React.ReactNode;
+  addButtonText?: React.ReactNode;
+  itemsCount: number;
+  onAddItem: () => void;
+};
 
 const EditorHeader: React.FC<EditorHeaderProps> = ({
   itemsCount,
@@ -43,7 +43,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
         {addButtonText || <FormattedMessage id="form.addItems" />}
       </Button>
     </Content>
-  )
-}
+  );
+};
 
-export { EditorHeader }
+export { EditorHeader };

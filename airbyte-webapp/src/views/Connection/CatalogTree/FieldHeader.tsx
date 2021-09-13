@@ -1,11 +1,11 @@
-import React, { memo } from 'react'
-import { Cell } from '@app/components/SimpleTableComponents'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React, { memo } from 'react';
+import { Cell } from '@app/components/SimpleTableComponents';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
 const Name = styled.div<{ depth?: number }>`
   padding-left: ${({ depth }) => (depth ? depth * 59 : 0)}px;
-`
+`;
 
 const FieldHeaderInner: React.FC<{ depth?: number }> = (props) => (
   <>
@@ -29,8 +29,8 @@ const FieldHeaderInner: React.FC<{ depth?: number }> = (props) => (
       <FormattedMessage id="form.field.cursorField" />
     </Cell>
   </>
-)
+);
 
-const FieldHeader = memo(FieldHeaderInner)
+const FieldHeader = memo(FieldHeaderInner);
 
-export { FieldHeader }
+export { FieldHeader };

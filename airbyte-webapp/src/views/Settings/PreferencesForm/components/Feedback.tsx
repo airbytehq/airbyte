@@ -1,11 +1,11 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
-import Spinner from '@app/components/Spinner'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
+import Spinner from '@app/components/Spinner';
 
 export type FeedbackProps = {
-  feedback: string
-}
+  feedback: string;
+};
 
 const Success = styled.div`
   display: inline-block;
@@ -14,14 +14,14 @@ const Success = styled.div`
   font-size: 13px;
   line-height: 16px;
   margin-left: 5px;
-`
+`;
 
 const Loading = styled.div`
   display: inline-block;
   margin: -15px 0 0 5px;
   vertical-align: middle;
   height: 15px;
-`
+`;
 
 const Feedback: React.FC<FeedbackProps> = ({ feedback }) => {
   if (feedback === 'loading') {
@@ -29,17 +29,17 @@ const Feedback: React.FC<FeedbackProps> = ({ feedback }) => {
       <Loading>
         <Spinner small />
       </Loading>
-    )
+    );
   }
   if (feedback === 'success') {
     return (
       <Success>
         <FormattedMessage id="settings.changeSaved" />
       </Success>
-    )
+    );
   }
 
-  return null
-}
+  return null;
+};
 
-export default Feedback
+export default Feedback;

@@ -1,32 +1,32 @@
-import React from 'react'
-import styled from 'styled-components'
-import { CellProps } from 'react-table'
-import { FormattedMessage } from 'react-intl'
-import { useQuery } from 'react-query'
-import { useToggle } from 'react-use'
+import React from 'react';
+import styled from 'styled-components';
+import { CellProps } from 'react-table';
+import { FormattedMessage } from 'react-intl';
+import { useQuery } from 'react-query';
+import { useToggle } from 'react-use';
 
-import { Button, H5 } from '@app/components'
-import Table from '@app/components/Table'
-import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
-import { useGetUserService } from '@app/packages/cloud/services/users/UserService'
-import { InviteUsersModal } from '@app/packages/cloud/views/users/InviteUsersModal'
+import { Button, H5 } from '@app/components';
+import Table from '@app/components/Table';
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace';
+import { useGetUserService } from '@app/packages/cloud/services/users/UserService';
+import { InviteUsersModal } from '@app/packages/cloud/views/users/InviteUsersModal';
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-`
+`;
 
 export const UsersSettingsView: React.FC = () => {
-  const userService = useGetUserService()
-  const { workspaceId } = useCurrentWorkspace()
+  const userService = useGetUserService();
+  const { workspaceId } = useCurrentWorkspace();
   const { data } = useQuery(
     ['users'],
     () => userService.listByWorkspaceId(workspaceId),
     { suspense: true }
-  )
+  );
 
-  const [modalIsOpen, toggleModal] = useToggle(false)
+  const [modalIsOpen, toggleModal] = useToggle(false);
 
   const columns = React.useMemo(
     () => [
@@ -62,7 +62,7 @@ export const UsersSettingsView: React.FC = () => {
       },
     ],
     []
-  )
+  );
   return (
     <>
       <Header>
@@ -76,5 +76,5 @@ export const UsersSettingsView: React.FC = () => {
       <Table data={data ?? []} columns={columns} />
       {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}
     </>
-  )
-}
+  );
+};

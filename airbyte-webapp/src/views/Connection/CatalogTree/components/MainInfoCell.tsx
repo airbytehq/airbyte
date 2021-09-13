@@ -1,27 +1,27 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import React from 'react';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
-import { Cell } from '@app/components/SimpleTableComponents'
-import { CheckBox } from '@app/components'
+import { Cell } from '@app/components/SimpleTableComponents';
+import { CheckBox } from '@app/components';
 
 type MainInfoCellProps = {
-  label: string
-  hideCheckbox?: boolean
-  isItemHasChildren?: boolean
-  depth?: number
-  isItemChecked?: boolean
-  isItemOpen?: boolean
-  onExpand?: () => void
-  onCheckBoxClick?: () => void
-}
+  label: string;
+  hideCheckbox?: boolean;
+  isItemHasChildren?: boolean;
+  depth?: number;
+  isItemChecked?: boolean;
+  isItemOpen?: boolean;
+  onExpand?: () => void;
+  onCheckBoxClick?: () => void;
+};
 
 const ArrowContainer = styled.span`
   padding: 0 9px;
   width: 30px;
   display: inline-block;
-`
+`;
 
 const Arrow = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   font-size: 16px;
@@ -30,17 +30,17 @@ const Arrow = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   transform: ${({ $isOpen }) => $isOpen && 'rotate(90deg)'};
   transition: 0.3s;
   cursor: pointer;
-`
+`;
 
 const MainCell = styled(Cell)`
   overflow: hidden;
-`
+`;
 
 const Content = styled.div<{ depth?: number }>`
   overflow: hidden;
   text-overflow: ellipsis;
   padding-left: ${({ depth = 0 }) => depth * 50}px;
-`
+`;
 
 const ItemLable = styled.span`
   font-weight: 500;
@@ -48,7 +48,7 @@ const ItemLable = styled.span`
   line-height: 18px;
   padding-left: 9px;
   cursor: default;
-`
+`;
 
 const MainInfoCell: React.FC<MainInfoCellProps> = ({
   isItemChecked,
@@ -80,7 +80,7 @@ const MainInfoCell: React.FC<MainInfoCellProps> = ({
         <ItemLable title={label}>{label}</ItemLable>
       </Content>
     </MainCell>
-  )
-}
+  );
+};
 
-export { MainInfoCell }
+export { MainInfoCell };

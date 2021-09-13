@@ -1,19 +1,19 @@
-import React, { useContext, useMemo } from 'react'
+import React, { useContext, useMemo } from 'react';
 
-import { WidgetConfigMap } from '@app/core/form/types'
+import { WidgetConfigMap } from '@app/core/form/types';
 
 type Context = {
-  formType: 'source' | 'destination'
-  isLoadingSchema?: boolean
-  isEditMode?: boolean
-  isRequestConnectorModalOpen: boolean
-  widgetsInfo: WidgetConfigMap
-  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void
-  unfinishedFlows: Record<string, { startValue: string; id: number | string }>
-  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void
-  removeUnfinishedFlow: (key: string) => void
-  resetUiFormProgress: () => void
-}
+  formType: 'source' | 'destination';
+  isLoadingSchema?: boolean;
+  isEditMode?: boolean;
+  isRequestConnectorModalOpen: boolean;
+  widgetsInfo: WidgetConfigMap;
+  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
+  unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
+  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedFlow: (key: string) => void;
+  resetUiFormProgress: () => void;
+};
 
 const context: Context = {
   formType: 'source',
@@ -24,21 +24,21 @@ const context: Context = {
   addUnfinishedFlow: (_key: string, _info?: Record<string, unknown>) => ({}),
   removeUnfinishedFlow: (_key: string) => ({}),
   resetUiFormProgress: () => ({}),
-}
+};
 
-const FormWidgetContext = React.createContext<Context>(context)
+const FormWidgetContext = React.createContext<Context>(context);
 
-const useServiceForm = (): Context => useContext(FormWidgetContext)
+const useServiceForm = (): Context => useContext(FormWidgetContext);
 
 const ServiceFormContextProvider: React.FC<{
-  widgetsInfo: WidgetConfigMap
-  formType: 'source' | 'destination'
-  isLoadingSchema?: boolean
-  isEditMode?: boolean
-  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void
+  widgetsInfo: WidgetConfigMap;
+  formType: 'source' | 'destination';
+  isLoadingSchema?: boolean;
+  isEditMode?: boolean;
+  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
 }> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
   const ctx = useMemo<Context>(() => {
-    const unfinishedFlows = widgetsInfo['_common.unfinishedFlows'] ?? {}
+    const unfinishedFlows = widgetsInfo['_common.unfinishedFlows'] ?? {};
     return {
       widgetsInfo,
       setUiWidgetsInfo,
@@ -60,26 +60,26 @@ const ServiceFormContextProvider: React.FC<{
           )
         ),
       resetUiFormProgress: () => {
-        setUiWidgetsInfo('_common.unfinishedFlows', {})
+        setUiWidgetsInfo('_common.unfinishedFlows', {});
       },
-    }
-  }, [props, widgetsInfo, setUiWidgetsInfo])
+    };
+  }, [props, widgetsInfo, setUiWidgetsInfo]);
 
   return (
     <FormWidgetContext.Provider value={ctx}>
       {children}
     </FormWidgetContext.Provider>
-  )
-}
+  );
+};
 
 const ServiceFormInfo = ({
   children,
 }: {
-  children: (widgetInfo: Context) => React.ReactElement
+  children: (widgetInfo: Context) => React.ReactElement;
 }): React.ReactElement => {
-  const widgetInfo = useServiceForm()
+  const widgetInfo = useServiceForm();
 
-  return children(widgetInfo)
-}
+  return children(widgetInfo);
+};
 
-export { useServiceForm, ServiceFormContextProvider, ServiceFormInfo }
+export { useServiceForm, ServiceFormContextProvider, ServiceFormInfo };

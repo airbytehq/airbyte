@@ -1,26 +1,26 @@
-import { JSONSchema7Definition } from 'json-schema'
-import Status from '@app/core/statuses'
-import { CommonRequestError } from '@app/core/request/CommonRequestError'
+import { JSONSchema7Definition } from 'json-schema';
+import Status from '@app/core/statuses';
+import { CommonRequestError } from '@app/core/request/CommonRequestError';
 
-import { SourceDiscoverSchemaRead } from './api'
-import { SyncSchemaField } from './models'
-import { ConnectionNamespaceDefinition } from '../connection'
-import { SOURCE_NAMESPACE_TAG } from '../connector/source'
+import { SourceDiscoverSchemaRead } from './api';
+import { SyncSchemaField } from './models';
+import { ConnectionNamespaceDefinition } from '../connection';
+import { SOURCE_NAMESPACE_TAG } from '../connector/source';
 
 function toInnerModel(
   result: SourceDiscoverSchemaRead
 ): SourceDiscoverSchemaRead {
   if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
     // @ts-ignore address this case
-    const e = new CommonRequestError(result)
+    const e = new CommonRequestError(result);
     // Generate error with failed status and received logs
-    e._status = 400
+    e._status = 400;
     // @ts-ignore address this case
-    e.response = result.jobInfo
-    throw e
+    e.response = result.jobInfo;
+    throw e;
   }
 
-  return result
+  return result;
 }
 
 const traverseSchemaToField = (
@@ -28,8 +28,8 @@ const traverseSchemaToField = (
   key: string
 ): SyncSchemaField[] => {
   // For the top level we should not insert an extra object
-  return traverseJsonSchemaProperties(jsonSchema, key)[0].fields ?? []
-}
+  return traverseJsonSchemaProperties(jsonSchema, key)[0].fields ?? [];
+};
 
 const traverseJsonSchemaProperties = (
   jsonSchema: JSONSchema7Definition,
@@ -38,10 +38,10 @@ const traverseJsonSchemaProperties = (
   depth = 0
 ): SyncSchemaField[] => {
   if (typeof jsonSchema === 'boolean') {
-    return []
+    return [];
   }
 
-  let fields: SyncSchemaField[] | undefined
+  let fields: SyncSchemaField[] | undefined;
   if (jsonSchema.properties) {
     fields = Object.entries(jsonSchema.properties)
       .flatMap(([k, schema]) =>
@@ -52,7 +52,7 @@ const traverseJsonSchemaProperties = (
           depth + 1
         )
       )
-      .flat(2)
+      .flat(2);
   }
 
   return [
@@ -66,39 +66,39 @@ const traverseJsonSchemaProperties = (
           ? jsonSchema.type.find((t) => t !== 'null') ?? jsonSchema.type[0]
           : jsonSchema.type) ?? 'null',
     },
-  ]
-}
+  ];
+};
 
 type NamespaceOptions =
   | {
       namespaceDefinition:
         | ConnectionNamespaceDefinition.Source
-        | ConnectionNamespaceDefinition.Destination
-      sourceNamespace?: string
+        | ConnectionNamespaceDefinition.Destination;
+      sourceNamespace?: string;
     }
   | {
-      namespaceDefinition: ConnectionNamespaceDefinition.CustomFormat
-      namespaceFormat: string
-      sourceNamespace?: string
-    }
+      namespaceDefinition: ConnectionNamespaceDefinition.CustomFormat;
+      namespaceFormat: string;
+      sourceNamespace?: string;
+    };
 
 function getDestinationNamespace(opt: NamespaceOptions): string {
-  const destinationSetting = '<destination schema>'
+  const destinationSetting = '<destination schema>';
   switch (opt.namespaceDefinition) {
     case ConnectionNamespaceDefinition.Source:
-      return opt.sourceNamespace ?? destinationSetting
+      return opt.sourceNamespace ?? destinationSetting;
     case ConnectionNamespaceDefinition.Destination:
-      return destinationSetting
+      return destinationSetting;
     case ConnectionNamespaceDefinition.CustomFormat:
       if (!opt.sourceNamespace?.trim()) {
-        return destinationSetting
+        return destinationSetting;
       }
 
       return opt.namespaceFormat.replace(
         SOURCE_NAMESPACE_TAG,
         opt.sourceNamespace
-      )
+      );
   }
 }
 
-export { getDestinationNamespace, traverseSchemaToField, toInnerModel }
+export { getDestinationNamespace, traverseSchemaToField, toInnerModel };

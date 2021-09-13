@@ -1,3 +1,3 @@
-import RequestConnectorModal from './RequestConnectorModal'
+import RequestConnectorModal from './RequestConnectorModal';
 
-export default RequestConnectorModal
+export default RequestConnectorModal;

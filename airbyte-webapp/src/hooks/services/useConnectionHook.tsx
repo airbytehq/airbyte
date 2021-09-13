@@ -1,113 +1,113 @@
-import { useCallback, useMemo } from 'react'
-import { useFetcher, useResource } from 'rest-hooks'
+import { useCallback, useMemo } from 'react';
+import { useFetcher, useResource } from 'rest-hooks';
 
-import FrequencyConfig from '@app/config/FrequencyConfig.json'
-import { useConfig } from '@app/config'
+import FrequencyConfig from '@app/config/FrequencyConfig.json';
+import { useConfig } from '@app/config';
 import {
   Connection,
   ConnectionConfiguration,
   ConnectionNamespaceDefinition,
   ConnectionService,
-} from '@app/core/domain/connection'
+} from '@app/core/domain/connection';
 
 import ConnectionResource, {
   ScheduleProperties,
-} from '@app/core/resources/Connection'
-import { SyncSchema } from '@app/core/domain/catalog'
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import { Source } from '@app/core/resources/Source'
-import { Routes } from '@app/pages/routes'
-import useRouter from '../useRouter'
-import { Destination } from '@app/core/resources/Destination'
-import useWorkspace from './useWorkspace'
-import { Operation } from '@app/core/domain/connection/operation'
-import { equal } from '@app/utils/objects'
-import { useAnalytics } from '@app/hooks/useAnalytics'
+} from '@app/core/resources/Connection';
+import { SyncSchema } from '@app/core/domain/catalog';
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
+import { Source } from '@app/core/resources/Source';
+import { Routes } from '@app/pages/routes';
+import useRouter from '../useRouter';
+import { Destination } from '@app/core/resources/Destination';
+import useWorkspace from './useWorkspace';
+import { Operation } from '@app/core/domain/connection/operation';
+import { equal } from '@app/utils/objects';
+import { useAnalytics } from '@app/hooks/useAnalytics';
 
 export type ValuesProps = {
-  schedule: ScheduleProperties | null
-  prefix: string
-  syncCatalog: SyncSchema
-  namespaceDefinition: ConnectionNamespaceDefinition
-  namespaceFormat?: string
-  operations?: Operation[]
-}
+  schedule: ScheduleProperties | null;
+  prefix: string;
+  syncCatalog: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat?: string;
+  operations?: Operation[];
+};
 
 type CreateConnectionProps = {
-  values: ValuesProps
-  source?: Source
-  destination?: Destination
+  values: ValuesProps;
+  source?: Source;
+  destination?: Destination;
   sourceDefinition?:
     | SourceDefinition
-    | { name: string; sourceDefinitionId: string }
-  destinationDefinition?: { name: string; destinationDefinitionId: string }
-}
+    | { name: string; sourceDefinitionId: string };
+  destinationDefinition?: { name: string; destinationDefinitionId: string };
+};
 
 type UpdateConnection = {
-  connectionId: string
-  syncCatalog?: SyncSchema
-  namespaceDefinition: ConnectionNamespaceDefinition
-  namespaceFormat?: string
-  status: string
-  prefix: string
-  schedule?: ScheduleProperties | null
-  operations?: Operation[]
-  withRefreshedCatalog?: boolean
-}
+  connectionId: string;
+  syncCatalog?: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat?: string;
+  status: string;
+  prefix: string;
+  schedule?: ScheduleProperties | null;
+  operations?: Operation[];
+  withRefreshedCatalog?: boolean;
+};
 
 type UpdateStateConnection = {
-  connection: Connection
-  sourceName: string
-  prefix: string
-  connectionConfiguration: ConnectionConfiguration
-  schedule: ScheduleProperties | null
-}
+  connection: Connection;
+  sourceName: string;
+  prefix: string;
+  connectionConfiguration: ConnectionConfiguration;
+  schedule: ScheduleProperties | null;
+};
 
 function useConnectionService(): ConnectionService {
-  const config = useConfig()
+  const config = useConfig();
 
-  return useMemo(() => new ConnectionService(config.apiUrl), [config])
+  return useMemo(() => new ConnectionService(config.apiUrl), [config]);
 }
 
 export const useConnectionLoad = (
   connectionId: string
 ): {
-  connection: Connection
-  refreshConnectionCatalog: () => Promise<Connection>
+  connection: Connection;
+  refreshConnectionCatalog: () => Promise<Connection>;
 } => {
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId,
-  })
+  });
 
-  const connectionService = useConnectionService()
+  const connectionService = useConnectionService();
 
   const refreshConnectionCatalog = async () =>
-    await connectionService.getConnection(connectionId, true)
+    await connectionService.getConnection(connectionId, true);
 
   return {
     connection,
     refreshConnectionCatalog,
-  }
-}
+  };
+};
 
 const useConnection = (): {
-  createConnection: (conn: CreateConnectionProps) => Promise<Connection>
-  updateConnection: (conn: UpdateConnection) => Promise<Connection>
-  updateStateConnection: (conn: UpdateStateConnection) => Promise<void>
-  resetConnection: (connId: string) => Promise<void>
-  deleteConnection: (payload: { connectionId: string }) => Promise<void>
+  createConnection: (conn: CreateConnectionProps) => Promise<Connection>;
+  updateConnection: (conn: UpdateConnection) => Promise<Connection>;
+  updateStateConnection: (conn: UpdateStateConnection) => Promise<void>;
+  resetConnection: (connId: string) => Promise<void>;
+  deleteConnection: (payload: { connectionId: string }) => Promise<void>;
 } => {
-  const { push } = useRouter()
-  const { finishOnboarding, workspace } = useWorkspace()
-  const analyticsService = useAnalytics()
+  const { push } = useRouter();
+  const { finishOnboarding, workspace } = useWorkspace();
+  const analyticsService = useAnalytics();
 
-  const createConnectionResource = useFetcher(ConnectionResource.createShape())
-  const updateConnectionResource = useFetcher(ConnectionResource.updateShape())
+  const createConnectionResource = useFetcher(ConnectionResource.createShape());
+  const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
-  )
-  const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape())
-  const resetConnectionResource = useFetcher(ConnectionResource.reset())
+  );
+  const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
+  const resetConnectionResource = useFetcher(ConnectionResource.reset());
 
   const createConnection = async ({
     values,
@@ -140,11 +140,11 @@ const useConnection = (): {
             }),
           ],
         ]
-      )
+      );
 
       const frequencyData = FrequencyConfig.find((item) =>
         equal(item.config, values.schedule)
-      )
+      );
 
       analyticsService.track('New Connection - Action', {
         action: 'Set up connection',
@@ -154,16 +154,16 @@ const useConnection = (): {
         connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId,
-      })
+      });
       if (workspace.displaySetupWizard) {
-        await finishOnboarding()
+        await finishOnboarding();
       }
 
-      return result
+      return result;
     } catch (e) {
-      throw e
+      throw e;
     }
-  }
+  };
 
   const updateConnection = async ({
     withRefreshedCatalog,
@@ -171,7 +171,7 @@ const useConnection = (): {
   }: UpdateConnection) => {
     const withRefreshedCatalogCleaned = withRefreshedCatalog
       ? { withRefreshedCatalog }
-      : null
+      : null;
 
     return await updateConnectionResource(
       {},
@@ -179,8 +179,8 @@ const useConnection = (): {
         ...formValues,
         ...withRefreshedCatalogCleaned,
       }
-    )
-  }
+    );
+  };
 
   const updateStateConnection = async ({
     connection,
@@ -201,25 +201,25 @@ const useConnection = (): {
           connectionConfiguration: connectionConfiguration,
         },
       }
-    )
-  }
+    );
+  };
 
   const deleteConnection = async ({
     connectionId,
   }: {
-    connectionId: string
+    connectionId: string;
   }) => {
-    await deleteConnectionResource({ connectionId })
+    await deleteConnectionResource({ connectionId });
 
-    push(Routes.Connections)
-  }
+    push(Routes.Connections);
+  };
 
   const resetConnection = useCallback(
     async (connectionId: string) => {
-      await resetConnectionResource({ connectionId })
+      await resetConnectionResource({ connectionId });
     },
     [resetConnectionResource]
-  )
+  );
 
   return {
     createConnection,
@@ -227,6 +227,6 @@ const useConnection = (): {
     updateStateConnection,
     resetConnection,
     deleteConnection,
-  }
-}
-export default useConnection
+  };
+};
+export default useConnection;

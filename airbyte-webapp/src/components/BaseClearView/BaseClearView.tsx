@@ -1,7 +1,7 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import Version from '@app/components/Version'
+import Version from '@app/components/Version';
 
 const Content = styled.div`
   height: 100%;
@@ -11,19 +11,19 @@ const Content = styled.div`
   align-items: center;
   flex-direction: column;
   justify-content: space-between;
-`
+`;
 
 const Img = styled.img`
   width: 90px;
   height: 94px;
   margin-bottom: 20px;
-`
+`;
 
 const MainInfo = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
-`
+`;
 
 const BaseClearView: React.FC = (props) => {
   return (
@@ -34,7 +34,7 @@ const BaseClearView: React.FC = (props) => {
       </MainInfo>
       <Version />
     </Content>
-  )
-}
+  );
+};
 
-export default BaseClearView
+export default BaseClearView;

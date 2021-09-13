@@ -1,44 +1,44 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { useFetcher } from 'rest-hooks'
-import { useAsyncFn } from 'react-use'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { useFetcher } from 'rest-hooks';
+import { useAsyncFn } from 'react-use';
 
-import LogsResource from '@app/core/resources/Logs'
-import { LoadingButton } from '@app/components'
+import LogsResource from '@app/core/resources/Logs';
+import { LoadingButton } from '@app/components';
 
 const Content = styled.div`
   padding: 29px 0 27px;
   text-align: center;
-`
+`;
 
 const LogsButton = styled(LoadingButton)`
   margin: 0 15px;
-`
+`;
 
 const LogsContent: React.FC = () => {
-  const fetchLogs = useFetcher(LogsResource.detailShape())
+  const fetchLogs = useFetcher(LogsResource.detailShape());
 
   const downloadLogs = async (logType: string) => {
-    const { file } = await fetchLogs({ logType })
+    const { file } = await fetchLogs({ logType });
 
-    const element = document.createElement('a')
-    element.href = URL.createObjectURL(file)
-    element.download = `${logType}-logs.txt`
-    document.body.appendChild(element) // Required for this to work in FireFox
-    element.click()
-    document.body.removeChild(element)
-  }
+    const element = document.createElement('a');
+    element.href = URL.createObjectURL(file);
+    element.download = `${logType}-logs.txt`;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+    document.body.removeChild(element);
+  };
 
   const [{ loading: serverLogsLoading }, downloadServerLogs] =
     useAsyncFn(async () => {
-      await downloadLogs('server')
-    }, [downloadLogs])
+      await downloadLogs('server');
+    }, [downloadLogs]);
 
   const [{ loading: schedulerLogsLoading }, downloadSchedulerLogs] =
     useAsyncFn(async () => {
-      await downloadLogs('scheduler')
-    }, [downloadLogs])
+      await downloadLogs('scheduler');
+    }, [downloadLogs]);
 
   return (
     <Content>
@@ -52,7 +52,7 @@ const LogsContent: React.FC = () => {
         <FormattedMessage id="admin.downloadSchedulerLogs" />
       </LogsButton>
     </Content>
-  )
-}
+  );
+};
 
-export default LogsContent
+export default LogsContent;

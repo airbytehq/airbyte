@@ -1,49 +1,49 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { Formik } from 'formik'
-import { JSONSchema7 } from 'json-schema'
+import React, { useCallback, useMemo, useState } from 'react';
+import { Formik } from 'formik';
+import { JSONSchema7 } from 'json-schema';
 
 import {
   useBuildForm,
   useBuildUiWidgets,
   useConstructValidationSchema,
   usePatchFormik,
-} from './useBuildForm'
-import { ServiceFormValues } from './types'
-import { ServiceFormContextProvider } from './serviceFormContext'
-import { FormRoot } from './FormRoot'
-import RequestConnectorModal from '@app/views/Connector/RequestConnectorModal'
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import { FormBaseItem } from '@app/core/form/types'
-import { ConnectorNameControl } from './components/Controls/ConnectorNameControl'
-import { ConnectorServiceTypeControl } from './components/Controls/ConnectorServiceTypeControl'
-import { isSourceDefinition } from '@app/core/domain/connector/source'
+} from './useBuildForm';
+import { ServiceFormValues } from './types';
+import { ServiceFormContextProvider } from './serviceFormContext';
+import { FormRoot } from './FormRoot';
+import RequestConnectorModal from '@app/views/Connector/RequestConnectorModal';
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
+import { FormBaseItem } from '@app/core/form/types';
+import { ConnectorNameControl } from './components/Controls/ConnectorNameControl';
+import { ConnectorServiceTypeControl } from './components/Controls/ConnectorServiceTypeControl';
+import { isSourceDefinition } from '@app/core/domain/connector/source';
 
 type ServiceFormProps = {
-  formType: 'source' | 'destination'
-  availableServices: (SourceDefinition | DestinationDefinition)[]
-  onSubmit: (values: ServiceFormValues) => void
-  onRetest?: (values: ServiceFormValues) => void
-  specifications?: JSONSchema7
-  documentationUrl?: string
-  isLoading?: boolean
-  isEditMode?: boolean
-  allowChangeConnector?: boolean
-  formValues?: Partial<ServiceFormValues>
-  hasSuccess?: boolean
-  additionBottomControls?: React.ReactNode
-  errorMessage?: React.ReactNode
-  successMessage?: React.ReactNode
-  onServiceSelect?: (id: string) => void
-}
+  formType: 'source' | 'destination';
+  availableServices: (SourceDefinition | DestinationDefinition)[];
+  onSubmit: (values: ServiceFormValues) => void;
+  onRetest?: (values: ServiceFormValues) => void;
+  specifications?: JSONSchema7;
+  documentationUrl?: string;
+  isLoading?: boolean;
+  isEditMode?: boolean;
+  allowChangeConnector?: boolean;
+  formValues?: Partial<ServiceFormValues>;
+  hasSuccess?: boolean;
+  additionBottomControls?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  successMessage?: React.ReactNode;
+  onServiceSelect?: (id: string) => void;
+};
 
 const FormikPatch: React.FC = () => {
-  usePatchFormik()
-  return null
-}
+  usePatchFormik();
+  return null;
+};
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
-  const [isOpenRequestModal, setIsOpenRequestModal] = useState(false)
+  const [isOpenRequestModal, setIsOpenRequestModal] = useState(false);
 
   const {
     specifications,
@@ -52,7 +52,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     onSubmit,
     isLoading,
     onRetest,
-  } = props
+  } = props;
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: 'object',
@@ -68,7 +68,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       required: ['name', 'serviceType'],
     }),
     [isLoading, specifications]
-  )
+  );
 
   const uiOverrides = useMemo(
     () => ({
@@ -101,43 +101,43 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       props.isEditMode,
       props.onServiceSelect,
     ]
-  )
+  );
 
-  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues)
+  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
     formFields,
     initialValues,
     uiOverrides
-  )
+  );
 
   const validationSchema = useConstructValidationSchema(
     uiWidgetsInfo,
     jsonSchema
-  )
+  );
 
   const onFormSubmit = useCallback(
     async (values) => {
       const valuesToSend = validationSchema.cast(values, {
         stripUnknown: true,
-      })
-      return onSubmit(valuesToSend)
+      });
+      return onSubmit(valuesToSend);
     },
     [onSubmit, validationSchema]
-  )
+  );
 
   const onRetestForm = useCallback(
     async (values) => {
       if (!onRetest) {
-        return null
+        return null;
       }
       const valuesToSend = validationSchema.cast(values, {
         stripUnknown: true,
-      })
-      return onRetest(valuesToSend)
+      });
+      return onRetest(valuesToSend);
     },
     [onRetest, validationSchema]
-  )
+  );
 
   return (
     <>
@@ -160,9 +160,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             <FormRoot
               {...props}
               onRetest={async () => {
-                setSubmitting(true)
-                await onRetestForm(values)
-                setSubmitting(false)
+                setSubmitting(true);
+                await onRetestForm(values);
+                setSubmitting(false);
               }}
               selectedService={props.availableServices.find(
                 (s) =>
@@ -182,7 +182,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         )}
       </Formik>
     </>
-  )
-}
+  );
+};
 
-export default ServiceForm
+export default ServiceForm;

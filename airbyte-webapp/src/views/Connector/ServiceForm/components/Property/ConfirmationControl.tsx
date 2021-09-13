@@ -1,28 +1,28 @@
-import React, { useRef } from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React, { useRef } from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
+import { Button } from '@app/components';
 
 const ComponentContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-`
+`;
 
 const SmallButton = styled(Button)`
   margin-left: 8px;
   padding: 6px 8px 7px;
-`
+`;
 
 type ConfirmationControlProps = {
-  component: React.ReactElement
-  showButtons?: boolean
-  isEditInProgress?: boolean
-  onStart: () => void
-  onCancel: () => void
-  onDone: () => void
-}
+  component: React.ReactElement;
+  showButtons?: boolean;
+  isEditInProgress?: boolean;
+  onStart: () => void;
+  onCancel: () => void;
+  onDone: () => void;
+};
 
 const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
   isEditInProgress,
@@ -32,19 +32,19 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
   onDone,
   component,
 }) => {
-  const controlRef = useRef<HTMLElement>(null)
+  const controlRef = useRef<HTMLElement>(null);
 
   if (!showButtons) {
-    return <>{component}</>
+    return <>{component}</>;
   }
 
   const handleStartEdit = () => {
     if (controlRef && controlRef.current) {
-      controlRef.current?.removeAttribute?.('disabled')
-      controlRef.current?.focus?.()
+      controlRef.current?.removeAttribute?.('disabled');
+      controlRef.current?.focus?.();
     }
-    onStart()
-  }
+    onStart();
+  };
 
   return (
     <ComponentContainer>
@@ -68,7 +68,7 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
         </SmallButton>
       )}
     </ComponentContainer>
-  )
-}
+  );
+};
 
-export default ConfirmationControl
+export default ConfirmationControl;

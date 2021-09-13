@@ -1,24 +1,24 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useIntl } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { useIntl } from 'react-intl';
 
-import StatusIcon from '@app/components/StatusIcon'
-import ImageBlock from '@app/components/ImageBlock'
-import { Status } from '../types'
+import StatusIcon from '@app/components/StatusIcon';
+import ImageBlock from '@app/components/ImageBlock';
+import { Status } from '../types';
 
 type IProps = {
-  value: string
-  enabled?: boolean
-  status?: string | null
-  icon?: boolean
-  img?: string
-}
+  value: string;
+  enabled?: boolean;
+  status?: string | null;
+  icon?: boolean;
+  img?: string;
+};
 
 const Content = styled.div`
   display: flex;
   align-items: center;
   font-weight: 500;
-`
+`;
 
 const Name = styled.div<{ enabled?: boolean }>`
   white-space: nowrap;
@@ -26,20 +26,20 @@ const Name = styled.div<{ enabled?: boolean }>`
   text-overflow: ellipsis;
   max-width: 500px;
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : 'inherit')};
-`
+`;
 
 const Space = styled.div`
   width: 30px;
   height: 20px;
   opacity: 0;
-`
+`;
 
 const Image = styled(ImageBlock)`
   margin-right: 6px;
-`
+`;
 
 const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
   const title =
     status === Status.EMPTY
       ? formatMessage({
@@ -55,7 +55,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
         })
       : formatMessage({
           id: 'connection.failedSync',
-        })
+        });
 
   return (
     <Content>
@@ -72,7 +72,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
       {icon && <Image small img={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
-  )
-}
+  );
+};
 
-export default NameCell
+export default NameCell;

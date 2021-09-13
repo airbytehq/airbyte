@@ -1,3 +1,3 @@
-import SingletonCard from './SingletonCard'
+import SingletonCard from './SingletonCard';
 
-export default SingletonCard
+export default SingletonCard;

@@ -1,36 +1,36 @@
-import React, { Suspense } from 'react'
-import { ThemeProvider } from 'styled-components'
-import { IntlProvider } from 'react-intl'
-import { CacheProvider } from 'rest-hooks'
+import React, { Suspense } from 'react';
+import { ThemeProvider } from 'styled-components';
+import { IntlProvider } from 'react-intl';
+import { CacheProvider } from 'rest-hooks';
 
-import en from './locales/en.json'
-import GlobalStyle from './global-styles'
-import { theme } from './theme'
+import en from './locales/en.json';
+import GlobalStyle from './global-styles';
+import { theme } from './theme';
 
-import { Routing } from '@app/pages/routes'
-import LoadingPage from './components/LoadingPage'
-import ApiErrorBoundary from './components/ApiErrorBoundary'
-import NotificationService from '@app/hooks/services/Notification'
-import { AnalyticsInitializer } from '@app/views/common/AnalyticsInitializer'
+import { Routing } from '@app/pages/routes';
+import LoadingPage from './components/LoadingPage';
+import ApiErrorBoundary from './components/ApiErrorBoundary';
+import NotificationService from '@app/hooks/services/Notification';
+import { AnalyticsInitializer } from '@app/views/common/AnalyticsInitializer';
 import {
   useCurrentWorkspace,
   usePickFirstWorkspace,
-} from '@app/hooks/services/useWorkspace'
-import { Feature, FeatureService } from '@app/hooks/services/Feature'
-import { ServicesProvider } from '@app/core/servicesProvider'
-import { useApiServices } from '@app/core/defaultServices'
-import { envConfigProvider, windowConfigProvider } from './config'
+} from '@app/hooks/services/useWorkspace';
+import { Feature, FeatureService } from '@app/hooks/services/Feature';
+import { ServicesProvider } from '@app/core/servicesProvider';
+import { useApiServices } from '@app/core/defaultServices';
+import { envConfigProvider, windowConfigProvider } from './config';
 import {
   Config,
   ConfigServiceProvider,
   defaultConfig,
   ValueProvider,
-} from './config'
+} from './config';
 
 function useCustomerIdProvider() {
-  const workspace = useCurrentWorkspace()
+  const workspace = useCurrentWorkspace();
 
-  return workspace.customerId
+  return workspace.customerId;
 }
 
 const Features: Feature[] = [
@@ -40,34 +40,34 @@ const Features: Feature[] = [
   {
     id: 'ALLOW_CUSTOM_DBT',
   },
-]
+];
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
   </ThemeProvider>
-)
+);
 
 const I18NProvider: React.FC = ({ children }) => (
   <IntlProvider locale="en" messages={en}>
     {children}
   </IntlProvider>
-)
+);
 
 const StoreProvider: React.FC = ({ children }) => (
   <CacheProvider>{children}</CacheProvider>
-)
+);
 
 const configProviders: ValueProvider<Config> = [
   envConfigProvider,
   windowConfigProvider,
-]
+];
 
 const services = {
   currentWorkspaceProvider: usePickFirstWorkspace,
   useCustomerIdProvider: useCustomerIdProvider,
-}
+};
 
 const AppServices: React.FC = ({ children }) => (
   <ServicesProvider inject={services}>
@@ -78,12 +78,12 @@ const AppServices: React.FC = ({ children }) => (
       <ServiceOverrides>{children}</ServiceOverrides>
     </ConfigServiceProvider>
   </ServicesProvider>
-)
+);
 
 const ServiceOverrides: React.FC = React.memo(({ children }) => {
-  useApiServices()
-  return <>{children}</>
-})
+  useApiServices();
+  return <>{children}</>;
+});
 
 const App: React.FC = () => {
   return (
@@ -108,7 +108,7 @@ const App: React.FC = () => {
         </I18NProvider>
       </StyleProvider>
     </React.StrictMode>
-  )
-}
+  );
+};
 
-export default App
+export default App;

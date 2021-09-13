@@ -1,9 +1,9 @@
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema'
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 interface AirbyteJSONSchemaProps {
-  airbyte_secret?: boolean
-  multiline?: boolean
-  order?: number
+  airbyte_secret?: boolean;
+  multiline?: boolean;
+  order?: number;
 }
 
 /**
@@ -14,7 +14,7 @@ export type AirbyteJSONSchema = {
     ? boolean
     : Property extends 'properties' | 'patternProperties' | 'definitions'
     ? {
-        [key: string]: AirbyteJSONSchemaDefinition
+        [key: string]: AirbyteJSONSchemaDefinition;
       }
     : JSONSchema7[Property] extends JSONSchema7Definition
     ? AirbyteJSONSchemaDefinition
@@ -24,8 +24,8 @@ export type AirbyteJSONSchema = {
         | JSONSchema7Definition
         | JSONSchema7Definition[]
     ? AirbyteJSONSchemaDefinition | AirbyteJSONSchemaDefinition[]
-    : JSONSchema7[Property]
+    : JSONSchema7[Property];
 } &
-  AirbyteJSONSchemaProps
+  AirbyteJSONSchemaProps;
 
-export type AirbyteJSONSchemaDefinition = AirbyteJSONSchema | boolean
+export type AirbyteJSONSchemaDefinition = AirbyteJSONSchema | boolean;

@@ -1,10 +1,10 @@
-import React from 'react'
-import styled, { keyframes } from 'styled-components'
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
 
 type IProps = {
-  backgroundColor?: string
-  small?: boolean
-}
+  backgroundColor?: string;
+  small?: boolean;
+};
 
 export const SpinAnimation = keyframes`
   0% {
@@ -13,7 +13,7 @@ export const SpinAnimation = keyframes`
   100% {
     transform: rotate(360deg);
   }
-`
+`;
 
 const SpinnerWheel = styled.div<{ small?: boolean }>`
   display: inline-block;
@@ -23,7 +23,7 @@ const SpinnerWheel = styled.div<{ small?: boolean }>`
   border: 4px solid ${({ theme }) => theme.primaryColor12};
   position: relative;
   animation: ${SpinAnimation} 1.5s linear 0s infinite;
-`
+`;
 
 const BreakRec = styled.div<IProps>`
   width: 13px;
@@ -33,12 +33,12 @@ const BreakRec = styled.div<IProps>`
   top: -4px;
   position: relative;
   margin: 0 auto;
-`
+`;
 
 const Spinner: React.FC<IProps> = ({ backgroundColor, small }) => (
   <SpinnerWheel small={small}>
     <BreakRec backgroundColor={backgroundColor} />
   </SpinnerWheel>
-)
+);
 
-export default Spinner
+export default Spinner;

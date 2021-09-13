@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react'
-import { Field, FieldProps } from 'formik'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
+import React, { useMemo } from 'react';
+import { Field, FieldProps } from 'formik';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
-import { ControlLabels, DropDown, Input } from '@app/components'
-import { ConnectionNamespaceDefinition } from '@app/core/domain/connection'
+import { ControlLabels, DropDown, Input } from '@app/components';
+import { ConnectionNamespaceDefinition } from '@app/core/domain/connection';
 
 const NamespaceConfigurationLabel = styled(ControlLabels)`
   flex: 3 0 0;
@@ -14,21 +14,21 @@ const NamespaceConfigurationLabel = styled(ControlLabels)`
   & a {
     color: ${({ theme }) => theme.greyColor40};
   }
-`
+`;
 
 const NamespaceFormatLabel = styled(ControlLabels)`
   margin-left: 21px;
   flex: 5 0 0;
-`
+`;
 
 const Row = styled.div`
   display: flex;
   margin-bottom: 26px;
-`
+`;
 
 const NamespaceField: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
-  const config = useConfig()
+  const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
   const definitions = useMemo(
     () => [
@@ -46,7 +46,7 @@ const NamespaceField: React.FC = () => {
       },
     ],
     []
-  )
+  );
   return (
     <Row>
       <Field name="namespaceDefinition">
@@ -108,7 +108,7 @@ const NamespaceField: React.FC = () => {
         )}
       </Field>
     </Row>
-  )
-}
+  );
+};
 
-export { NamespaceField }
+export { NamespaceField };

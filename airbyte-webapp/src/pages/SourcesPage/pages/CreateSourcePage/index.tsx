@@ -1,3 +1,3 @@
-import CreateSourcePage from './CreateSourcePage'
+import CreateSourcePage from './CreateSourcePage';
 
-export default CreateSourcePage
+export default CreateSourcePage;

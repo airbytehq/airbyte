@@ -1,22 +1,22 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRocket, faBook, faCog } from '@fortawesome/free-solid-svg-icons'
-import { faSlack } from '@fortawesome/free-brands-svg-icons'
-import { FormattedMessage } from 'react-intl'
-import { NavLink } from 'react-router-dom'
+import React from 'react';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRocket, faBook, faCog } from '@fortawesome/free-solid-svg-icons';
+import { faSlack } from '@fortawesome/free-brands-svg-icons';
+import { FormattedMessage } from 'react-intl';
+import { NavLink } from 'react-router-dom';
 
-import { Routes } from '@app/pages/routes'
-import { useConfig } from '@app/config'
+import { Routes } from '@app/pages/routes';
+import { useConfig } from '@app/config';
 
-import useConnector from '@app/hooks/services/useConnector'
-import { Link } from '@app/components'
-import Version from '@app/components/Version'
-import Indicator from '@app/components/Indicator'
+import useConnector from '@app/hooks/services/useConnector';
+import { Link } from '@app/components';
+import Version from '@app/components/Version';
+import Indicator from '@app/components/Indicator';
 
-import Source from './components/SourceIcon'
-import Connections from './components/ConnectionsIcon'
-import Destination from './components/DestinationIcon'
+import Source from './components/SourceIcon';
+import Connections from './components/ConnectionsIcon';
+import Destination from './components/DestinationIcon';
 
 const Bar = styled.nav`
   width: 100px;
@@ -28,13 +28,13 @@ const Bar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-`
+`;
 
 const Menu = styled.ul`
   padding: 0;
   margin: 20px 0 0;
   width: 100%;
-`
+`;
 
 const MenuItem = styled(NavLink)`
   color: ${({ theme }) => theme.greyColor30};
@@ -57,7 +57,7 @@ const MenuItem = styled(NavLink)`
     color: ${({ theme }) => theme.whiteColor};
     background: ${({ theme }) => theme.primaryColor};
   }
-`
+`;
 
 const MenuLinkItem = styled.a`
   color: ${({ theme }) => theme.greyColor30};
@@ -73,36 +73,36 @@ const MenuLinkItem = styled.a`
   line-height: 15px;
   margin-top: 7px;
   text-decoration: none;
-`
+`;
 
 const Text = styled.div`
   margin-top: 7px;
-`
+`;
 
 const DocsIcon = styled(FontAwesomeIcon)`
   font-size: 18px;
   line-height: 18px;
-`
+`;
 
 const HelpIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
   line-height: 21px;
-`
+`;
 
 const SettingsIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 15px;
-`
+`;
 
 const Notification = styled(Indicator)`
   position: absolute;
   top: 11px;
   right: 23px;
-`
+`;
 
 const SideBar: React.FC = () => {
-  const { hasNewVersions } = useConnector()
-  const config = useConfig()
+  const { hasNewVersions } = useConnector();
+  const config = useConfig();
 
   return (
     <Bar>
@@ -193,7 +193,7 @@ const SideBar: React.FC = () => {
         ) : null}
       </Menu>
     </Bar>
-  )
-}
+  );
+};
 
-export default SideBar
+export default SideBar;

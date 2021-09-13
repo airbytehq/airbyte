@@ -1,42 +1,42 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import ContentCard from '@app/components/ContentCard'
-import ImageBlock from '@app/components/ImageBlock'
-import { Header, Row, Cell } from '@app/components/SimpleTableComponents'
-import EnabledControl from './EnabledControl'
-import { Connection } from '@app/core/resources/Connection'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
+import ContentCard from '@app/components/ContentCard';
+import ImageBlock from '@app/components/ImageBlock';
+import { Header, Row, Cell } from '@app/components/SimpleTableComponents';
+import EnabledControl from './EnabledControl';
+import { Connection } from '@app/core/resources/Connection';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
   padding: 23px 20px 20px 23px;
-`
+`;
 
 const Img = styled(ImageBlock)`
   display: inline-block;
   margin-right: 6px;
-`
+`;
 
 const SourceCell = styled(Cell)`
   display: flex;
   align-items: center;
-`
+`;
 
 const EnabledCell = styled(Cell)`
   display: flex;
   align-items: center;
   margin-top: -18px;
-`
+`;
 
 type IProps = {
-  connection: Connection
-  frequencyText?: string
-  destinationDefinition?: DestinationDefinition
-  sourceDefinition?: SourceDefinition
-}
+  connection: Connection;
+  frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
+};
 
 const StatusMainInfo: React.FC<IProps> = ({
   connection,
@@ -76,7 +76,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         </EnabledCell>
       </Row>
     </MainInfo>
-  )
-}
+  );
+};
 
-export default StatusMainInfo
+export default StatusMainInfo;

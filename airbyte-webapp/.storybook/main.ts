@@ -7,11 +7,11 @@ module.exports = {
     'storybook-addon-styled-component-theme/dist',
   ],
   webpackFinal: (config) => {
-    config.resolve.modules.push(process.cwd() + '/node_modules')
-    config.resolve.modules.push(process.cwd() + '/src')
+    config.resolve.modules.push(process.cwd() + '/node_modules');
+    config.resolve.modules.push(process.cwd() + '/src');
 
     // this is needed for working w/ linked folders
-    config.resolve.symlinks = false
-    return config
+    config.resolve.symlinks = false;
+    return config;
   },
-}
+};

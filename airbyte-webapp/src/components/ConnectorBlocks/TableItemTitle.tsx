@@ -1,18 +1,18 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage, useIntl } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage, useIntl } from 'react-intl';
 
-import { Button, DropDownRow, H3, H5 } from '@app/components'
-import { Popout } from '@app/components/base/Popout/Popout'
+import { Button, DropDownRow, H3, H5 } from '@app/components';
+import { Popout } from '@app/components/base/Popout/Popout';
 
 type IProps = {
-  type: 'source' | 'destination'
-  dropDownData: DropDownRow.IDataItem[]
-  onSelect: (item: DropDownRow.IDataItem) => void
-  entity: string
-  entityName: string
-  entityIcon?: React.ReactNode
-}
+  type: 'source' | 'destination';
+  dropDownData: DropDownRow.IDataItem[];
+  onSelect: (item: DropDownRow.IDataItem) => void;
+  entity: string;
+  entityName: string;
+  entityIcon?: React.ReactNode;
+};
 
 const Content = styled.div`
   display: flex;
@@ -20,23 +20,23 @@ const Content = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0 32px 18px 27px;
-`
+`;
 
 const EntityType = styled(H5)`
   color: ${({ theme }) => theme.greyColor55};
-`
+`;
 
 const EntityInfo = styled(Content)`
   justify-content: left;
   padding-top: 15px;
   padding-bottom: 39px;
-`
+`;
 
 const EntityIcon = styled.div`
   margin-right: 15px;
   height: 40px;
   width: 40px;
-`
+`;
 
 const TableItemTitle: React.FC<IProps> = ({
   type,
@@ -46,7 +46,7 @@ const TableItemTitle: React.FC<IProps> = ({
   entityName,
   entityIcon,
 }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
   const options = [
     {
       label: formatMessage({
@@ -56,7 +56,7 @@ const TableItemTitle: React.FC<IProps> = ({
       primary: true,
     },
     ...dropDownData,
-  ]
+  ];
 
   return (
     <>
@@ -90,7 +90,7 @@ const TableItemTitle: React.FC<IProps> = ({
         />
       </Content>
     </>
-  )
-}
+  );
+};
 
-export default TableItemTitle
+export default TableItemTitle;

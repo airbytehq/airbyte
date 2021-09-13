@@ -7,24 +7,24 @@ import {
   SchemaDetail,
   SchemaList,
   schemas,
-} from 'rest-hooks'
+} from 'rest-hooks';
 
-import { parseResponse } from '@app/core/request/AirbyteRequestService'
-import { getService } from '@app/core/servicesProvider'
-import { RequestMiddleware } from '@app/core/request/RequestMiddleware'
+import { parseResponse } from '@app/core/request/AirbyteRequestService';
+import { getService } from '@app/core/servicesProvider';
+import { RequestMiddleware } from '@app/core/request/RequestMiddleware';
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
   static async useFetchInit(init: RequestInit): Promise<RequestInit> {
-    let preparedOptions: RequestInit = init
+    let preparedOptions: RequestInit = init;
     const middlewares =
-      getService<RequestMiddleware[]>('DefaultRequestMiddlewares') ?? []
+      getService<RequestMiddleware[]>('DefaultRequestMiddlewares') ?? [];
 
     for (const middleware of middlewares) {
-      preparedOptions = await middleware(preparedOptions)
+      preparedOptions = await middleware(preparedOptions);
     }
 
-    return preparedOptions
+    return preparedOptions;
   }
 
   /** Perform network request and resolve with HTTP Response */
@@ -38,16 +38,16 @@ export default abstract class BaseResource extends Resource {
       headers: {
         'Content-Type': 'application/json',
       },
-    }
+    };
     if (this.fetchOptionsPlugin) {
-      options = this.fetchOptionsPlugin(options)
+      options = this.fetchOptionsPlugin(options);
     }
     if (body) {
-      options.body = JSON.stringify(body)
+      options.body = JSON.stringify(body);
     }
 
-    const op = await this.useFetchInit(options)
-    return fetch(url, op)
+    const op = await this.useFetchInit(options);
+    return fetch(url, op);
   }
 
   /** Perform network request and resolve with json body */
@@ -56,21 +56,21 @@ export default abstract class BaseResource extends Resource {
     url: string,
     body?: Readonly<Record<string, unknown> | Array<unknown> | string>
   ): Promise<T> {
-    const response = await this.fetchResponse(method, url, body)
+    const response = await this.fetchResponse(method, url, body);
 
-    return parseResponse(response)
+    return parseResponse(response);
   }
 
   static listUrl(_?: Readonly<Record<string, string | number>>): string {
-    return `${this.rootUrl()}${this.urlRoot}`
+    return `${this.rootUrl()}${this.urlRoot}`;
   }
 
   static url(_: Readonly<Record<string, unknown>>): string {
-    return `${this.rootUrl()}${this.urlRoot}`
+    return `${this.rootUrl()}${this.urlRoot}`;
   }
 
   static rootUrl(): string {
-    return window._API_URL
+    return window._API_URL;
   }
 
   static listShape<T extends typeof Resource>(
@@ -87,10 +87,10 @@ export default abstract class BaseResource extends Resource {
           'post',
           `${this.listUrl(params)}/list`,
           { ...params }
-        )
-        return response
+        );
+        return response;
       },
-    }
+    };
   }
 
   static detailShape<T extends typeof Resource>(
@@ -107,10 +107,10 @@ export default abstract class BaseResource extends Resource {
           'post',
           `${this.url(params)}/get`,
           params
-        )
-        return response
+        );
+        return response;
       },
-    }
+    };
   }
 
   static createShape<T extends typeof Resource>(
@@ -128,10 +128,10 @@ export default abstract class BaseResource extends Resource {
           'post',
           `${this.listUrl(params)}/create`,
           body
-        )
-        return response
+        );
+        return response;
       },
-    }
+    };
   }
 
   static deleteShape<T extends typeof Resource>(
@@ -152,10 +152,10 @@ export default abstract class BaseResource extends Resource {
           'post',
           `${this.url(params)}/delete`,
           params
-        )
-        return response
+        );
+        return response;
       },
-    }
+    };
   }
 
   static partialUpdateShape<T extends typeof Resource>(
@@ -173,9 +173,9 @@ export default abstract class BaseResource extends Resource {
           'post',
           `${this.url(params)}/update`,
           body
-        )
-        return response
+        );
+        return response;
       },
-    }
+    };
   }
 }

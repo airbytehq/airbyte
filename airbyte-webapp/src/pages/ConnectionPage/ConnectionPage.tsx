@@ -1,18 +1,18 @@
-import React, { Suspense } from 'react'
-import { Redirect, Route, Switch } from 'react-router-dom'
-import { NetworkErrorBoundary as ErrorBoundary } from 'rest-hooks'
+import React, { Suspense } from 'react';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import { NetworkErrorBoundary as ErrorBoundary } from 'rest-hooks';
 
-import { Routes } from '../routes'
-import LoadingPage from '@app/components/LoadingPage'
-import ConnectionItemPage from './pages/ConnectionItemPage'
-import CreationFormPage from './pages/CreationFormPage'
-import useRouter from '@app/hooks/useRouter'
-import AllConnectionsPage from './pages/AllConnectionsPage'
+import { Routes } from '../routes';
+import LoadingPage from '@app/components/LoadingPage';
+import ConnectionItemPage from './pages/ConnectionItemPage';
+import CreationFormPage from './pages/CreationFormPage';
+import useRouter from '@app/hooks/useRouter';
+import AllConnectionsPage from './pages/AllConnectionsPage';
 
-const FallbackRootRedirector = () => <Redirect to={Routes.Root} />
+const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
 const ConnectionPage: React.FC = () => {
-  const { location } = useRouter()
+  const { location } = useRouter();
 
   return (
     <Suspense fallback={<LoadingPage />}>
@@ -52,7 +52,7 @@ const ConnectionPage: React.FC = () => {
         <Redirect to={Routes.Root} />
       </Switch>
     </Suspense>
-  )
-}
+  );
+};
 
-export default ConnectionPage
+export default ConnectionPage;

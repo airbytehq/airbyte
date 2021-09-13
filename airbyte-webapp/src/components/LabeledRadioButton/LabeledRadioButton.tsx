@@ -1,20 +1,20 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { RadioButton } from '@app/components'
+import { RadioButton } from '@app/components';
 
 type IProps = {
-  message?: React.ReactNode
-  label?: React.ReactNode
-  className?: string
-} & React.InputHTMLAttributes<HTMLInputElement>
+  message?: React.ReactNode;
+  label?: React.ReactNode;
+  className?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 const ControlContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   margin-bottom: 6px;
-`
+`;
 
 const Label = styled.label<{ disabled?: boolean }>`
   padding-left: 7px;
@@ -24,7 +24,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   color: ${({ theme, disabled }) =>
     disabled ? theme.greyColor40 : theme.darkPrimaryColor};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-`
+`;
 
 const AdditionMessage = styled.span`
   padding-left: 5px;
@@ -35,7 +35,7 @@ const AdditionMessage = styled.span`
     text-decoration: underline;
     color: ${({ theme }) => theme.primaryColor};
   }
-`
+`;
 
 const LabeledRadioButton: React.FC<IProps> = (props) => (
   <ControlContainer className={props.className}>
@@ -48,6 +48,6 @@ const LabeledRadioButton: React.FC<IProps> = (props) => (
       <AdditionMessage>{props.message}</AdditionMessage>
     </Label>
   </ControlContainer>
-)
+);
 
-export default LabeledRadioButton
+export default LabeledRadioButton;

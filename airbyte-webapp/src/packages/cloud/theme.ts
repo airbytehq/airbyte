@@ -1,4 +1,4 @@
-import { theme as rootTheme } from './theme'
+import { theme as rootTheme } from './theme';
 
 export const theme = {
   ...rootTheme,
@@ -23,6 +23,6 @@ export const theme = {
     fontSize: '16px',
     lineHeight: '28px',
   },
-}
+};
 
-export type Theme = typeof theme
+export type Theme = typeof theme;

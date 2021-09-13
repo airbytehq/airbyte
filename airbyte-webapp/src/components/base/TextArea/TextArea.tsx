@@ -1,10 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 type TextAreaProps = {
-  error?: boolean
-  light?: boolean
-} & React.TextareaHTMLAttributes<HTMLTextAreaElement>
+  error?: boolean;
+  light?: boolean;
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 const TextArea = styled.textarea<TextAreaProps>`
   outline: none;
@@ -43,7 +43,7 @@ const TextArea = styled.textarea<TextAreaProps>`
     pointer-events: none;
     color: ${({ theme }) => theme.greyColor55};
   }
-`
+`;
 
-export { TextArea }
-export type { TextAreaProps }
+export { TextArea };
+export type { TextAreaProps };

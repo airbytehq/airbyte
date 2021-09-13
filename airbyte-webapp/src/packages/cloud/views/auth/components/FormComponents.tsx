@@ -1,13 +1,13 @@
-import { Form as FormikForm } from 'formik'
-import styled from 'styled-components'
+import { Form as FormikForm } from 'formik';
+import styled from 'styled-components';
 
 const Form = styled(FormikForm)`
   margin-top: 42px;
-`
+`;
 
 const FieldItem = styled.div`
   margin-bottom: 21px;
-`
+`;
 
 const RowFieldItem = styled(FieldItem)`
   display: flex;
@@ -21,7 +21,7 @@ const RowFieldItem = styled(FieldItem)`
       margin-right: 0;
     }
   }
-`
+`;
 
 const BottomBlock = styled.div`
   display: flex;
@@ -30,6 +30,6 @@ const BottomBlock = styled.div`
   align-items: center;
   margin-top: 38px;
   font-size: 11px;
-`
+`;
 
-export { Form, FieldItem, BottomBlock, RowFieldItem }
+export { Form, FieldItem, BottomBlock, RowFieldItem };

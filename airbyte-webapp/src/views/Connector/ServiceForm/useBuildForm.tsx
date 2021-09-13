@@ -1,22 +1,22 @@
-import { AnySchema } from 'yup'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useFormikContext } from 'formik'
-import { JSONSchema7 } from 'json-schema'
-import flatten from 'flat'
-import merge from 'lodash.merge'
+import { AnySchema } from 'yup';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFormikContext } from 'formik';
+import { JSONSchema7 } from 'json-schema';
+import flatten from 'flat';
+import merge from 'lodash.merge';
 
-import { FormBlock, WidgetConfig, WidgetConfigMap } from '@app/core/form/types'
-import { jsonSchemaToUiWidget } from '@app/core/jsonSchema/schemaToUiWidget'
-import { buildYupFormForJsonSchema } from '@app/core/jsonSchema/schemaToYup'
-import { buildPathInitialState } from '@app/core/form/uiWidget'
-import { ServiceFormValues } from './types'
+import { FormBlock, WidgetConfig, WidgetConfigMap } from '@app/core/form/types';
+import { jsonSchemaToUiWidget } from '@app/core/jsonSchema/schemaToUiWidget';
+import { buildYupFormForJsonSchema } from '@app/core/jsonSchema/schemaToYup';
+import { buildPathInitialState } from '@app/core/form/uiWidget';
+import { ServiceFormValues } from './types';
 
 function useBuildForm(
   jsonSchema: JSONSchema7,
   initialValues?: Partial<ServiceFormValues>
 ): {
-  initialValues: ServiceFormValues
-  formFields: FormBlock
+  initialValues: ServiceFormValues;
+  formFields: FormBlock;
 } {
   const startValues = useMemo<ServiceFormValues>(
     () => ({
@@ -26,17 +26,17 @@ function useBuildForm(
       ...initialValues,
     }),
     [initialValues]
-  )
+  );
 
   const formFields = useMemo<FormBlock>(
     () => jsonSchemaToUiWidget(jsonSchema),
     [jsonSchema]
-  )
+  );
 
   return {
     initialValues: startValues,
     formFields,
-  }
+  };
 }
 
 const useBuildUiWidgets = (
@@ -44,12 +44,12 @@ const useBuildUiWidgets = (
   formValues: ServiceFormValues,
   uiOverrides?: WidgetConfigMap
 ): {
-  uiWidgetsInfo: WidgetConfigMap
-  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void
+  uiWidgetsInfo: WidgetConfigMap;
+  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
 } => {
   const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
     uiOverrides ?? {}
-  )
+  );
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
   const mergedState = useMemo(
@@ -62,19 +62,19 @@ const useBuildUiWidgets = (
         merge(overriddenWidgetState, uiOverrides)
       ),
     [formFields, formValues, overriddenWidgetState, uiOverrides]
-  )
+  );
 
   const setUiWidgetsInfoSubState = useCallback(
     (widgetId: string, updatedValues: WidgetConfig) =>
       setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
     [mergedState, setUiWidgetsInfo]
-  )
+  );
 
   return {
     uiWidgetsInfo: mergedState,
     setUiWidgetsInfo: setUiWidgetsInfoSubState,
-  }
-}
+  };
+};
 
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
 const useConstructValidationSchema = (
@@ -84,7 +84,7 @@ const useConstructValidationSchema = (
   useMemo(
     () => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo),
     [uiWidgetsInfo, jsonSchema]
-  )
+  );
 
 const usePatchFormik = (): void => {
   const {
@@ -94,11 +94,11 @@ const usePatchFormik = (): void => {
     validationSchema,
     validateForm,
     errors,
-  } = useFormikContext()
+  } = useFormikContext();
   // Formik doesn't validate values again, when validationSchema was changed on the fly.
   useEffect(() => {
-    validateForm()
-  }, [validateForm, validationSchema])
+    validateForm();
+  }, [validateForm, validationSchema]);
 
   /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
      Problem described here https://github.com/formium/formik/issues/445
@@ -115,15 +115,15 @@ const usePatchFormik = (): void => {
   useEffect(() => {
     if (isSubmitting && !isValidating) {
       for (const path of Object.keys(flatten(errors))) {
-        setFieldTouched(path, true, false)
+        setFieldTouched(path, true, false);
       }
     }
-  }, [errors, isSubmitting, isValidating, setFieldTouched])
-}
+  }, [errors, isSubmitting, isValidating, setFieldTouched]);
+};
 
 export {
   useBuildForm,
   useBuildUiWidgets,
   useConstructValidationSchema,
   usePatchFormik,
-}
+};

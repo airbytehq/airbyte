@@ -1,36 +1,36 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { useIntl } from 'react-intl'
-import { useFetcher, useResource } from 'rest-hooks'
-import { useAsyncFn } from 'react-use'
+import React, { useCallback, useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useFetcher, useResource } from 'rest-hooks';
+import { useAsyncFn } from 'react-use';
 
-import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import { DestinationResource } from '@app/core/resources/Destination'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import useConnector from '@app/hooks/services/useConnector'
-import ConnectorsView from './components/ConnectorsView'
-import useWorkspace from '@app/hooks/services/useWorkspace'
+import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition';
+import { DestinationResource } from '@app/core/resources/Destination';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
+import useConnector from '@app/hooks/services/useConnector';
+import ConnectorsView from './components/ConnectorsView';
+import useWorkspace from '@app/hooks/services/useWorkspace';
 
 const DestinationsPage: React.FC = () => {
-  const { workspace } = useWorkspace()
-  const [isUpdateSuccess, setIsUpdateSuccess] = useState(false)
-  const formatMessage = useIntl().formatMessage
+  const { workspace } = useWorkspace();
+  const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
+  const formatMessage = useIntl().formatMessage;
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
       workspaceId: workspace.workspaceId,
     }
-  )
+  );
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: workspace.workspaceId,
-  })
+  });
 
-  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({})
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
-  )
+  );
 
-  const { hasNewDestinationVersion } = useConnector()
+  const { hasNewDestinationVersion } = useConnector();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
@@ -41,50 +41,50 @@ const DestinationsPage: React.FC = () => {
             destinationDefinitionId: id,
             dockerImageTag: version,
           }
-        )
-        setFeedbackList({ ...feedbackList, [id]: 'success' })
+        );
+        setFeedbackList({ ...feedbackList, [id]: 'success' });
       } catch (e) {
         const messageId =
-          e.status === 422 ? 'form.imageCannotFound' : 'form.someError'
+          e.status === 422 ? 'form.imageCannotFound' : 'form.someError';
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
-        })
+        });
       }
     },
     [feedbackList, formatMessage, updateDestinationDefinition]
-  )
+  );
 
   const usedDestinationDefinitions = useMemo<DestinationDefinition[]>(() => {
-    const destinationDefinitionMap = new Map<string, DestinationDefinition>()
+    const destinationDefinitionMap = new Map<string, DestinationDefinition>();
     destinations.forEach((destination) => {
       const destinationDefinition = destinationDefinitions.find(
         (destinationDefinition) =>
           destinationDefinition.destinationDefinitionId ===
           destination.destinationDefinitionId
-      )
+      );
 
       if (destinationDefinition) {
         destinationDefinitionMap.set(
           destinationDefinition.destinationDefinitionId,
           destinationDefinition
-        )
+        );
       }
-    })
+    });
 
-    return Array.from(destinationDefinitionMap.values())
-  }, [destinations, destinationDefinitions])
+    return Array.from(destinationDefinitionMap.values());
+  }, [destinations, destinationDefinitions]);
 
-  const { updateAllDestinationVersions } = useConnector()
+  const { updateAllDestinationVersions } = useConnector();
 
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
-    setIsUpdateSuccess(false)
-    await updateAllDestinationVersions()
-    setIsUpdateSuccess(true)
+    setIsUpdateSuccess(false);
+    await updateAllDestinationVersions();
+    setIsUpdateSuccess(true);
     setTimeout(() => {
-      setIsUpdateSuccess(false)
-    }, 2000)
-  }, [updateAllDestinationVersions])
+      setIsUpdateSuccess(false);
+    }, 2000);
+  }, [updateAllDestinationVersions]);
 
   return (
     <ConnectorsView
@@ -99,7 +99,7 @@ const DestinationsPage: React.FC = () => {
       onUpdate={onUpdate}
       feedbackList={feedbackList}
     />
-  )
-}
+  );
+};
 
-export default DestinationsPage
+export default DestinationsPage;

@@ -1,5 +1,5 @@
-import { Config } from './types'
-import { uiConfig } from './uiConfig'
+import { Config } from './types';
+import { uiConfig } from './uiConfig';
 
 const defaultConfig: Config = {
   ui: uiConfig,
@@ -22,6 +22,6 @@ const defaultConfig: Config = {
   version: '',
   apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
   isDemo: false,
-}
+};
 
-export { defaultConfig }
+export { defaultConfig };

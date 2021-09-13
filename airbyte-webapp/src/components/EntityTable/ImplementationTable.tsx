@@ -1,26 +1,26 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
-import { CellProps } from 'react-table'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
+import { CellProps } from 'react-table';
 
-import Table from '@app/components/Table'
+import Table from '@app/components/Table';
 
-import LastSyncCell from './components/LastSyncCell'
-import ConnectorCell from './components/ConnectorCell'
-import NameCell from './components/NameCell'
-import ConnectEntitiesCell from './components/ConnectEntitiesCell'
-import { EntityTableDataItem } from './types'
-import AllConnectionsStatusCell from './components/AllConnectionsStatusCell'
+import LastSyncCell from './components/LastSyncCell';
+import ConnectorCell from './components/ConnectorCell';
+import NameCell from './components/NameCell';
+import ConnectEntitiesCell from './components/ConnectEntitiesCell';
+import { EntityTableDataItem } from './types';
+import AllConnectionsStatusCell from './components/AllConnectionsStatusCell';
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
-`
+`;
 
 type IProps = {
-  data: EntityTableDataItem[]
-  entity: 'source' | 'destination'
-  onClickRow?: (data: EntityTableDataItem) => void
-}
+  data: EntityTableDataItem[];
+  entity: 'source' | 'destination';
+  onClickRow?: (data: EntityTableDataItem) => void;
+};
 
 const ImplementationTable: React.FC<IProps> = ({
   data,
@@ -80,7 +80,7 @@ const ImplementationTable: React.FC<IProps> = ({
       },
     ],
     [entity]
-  )
+  );
 
   return (
     <Content>
@@ -91,7 +91,7 @@ const ImplementationTable: React.FC<IProps> = ({
         erroredRows
       />
     </Content>
-  )
-}
+  );
+};
 
-export default ImplementationTable
+export default ImplementationTable;

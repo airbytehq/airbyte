@@ -1,9 +1,9 @@
-import { makeCacheProvider, makeRenderRestHook } from '@rest-hooks/test'
-import { act } from '@testing-library/react-hooks'
+import { makeCacheProvider, makeRenderRestHook } from '@rest-hooks/test';
+import { act } from '@testing-library/react-hooks';
 
-import useConnector from './useConnector'
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
+import useConnector from './useConnector';
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition';
 
 jest.mock('hooks/services/useWorkspace', () => ({
   useWorkspace: () => ({
@@ -11,9 +11,9 @@ jest.mock('hooks/services/useWorkspace', () => ({
       workspaceId: 'workspaceId',
     },
   }),
-}))
+}));
 
-const renderRestHook = makeRenderRestHook(makeCacheProvider)
+const renderRestHook = makeRenderRestHook(makeCacheProvider);
 const results = [
   {
     request: SourceDefinitionResource.listShape(),
@@ -51,44 +51,44 @@ const results = [
       ],
     },
   },
-]
+];
 
 test.skip('should not call sourceDefinition.updateVersion for deprecated call', async () => {
   const { result, waitForNextUpdate } = renderRestHook(() => useConnector(), {
     results,
-  })
+  });
 
   // (sourceDefinitionService.update as jest.Mock).mockResolvedValue([]);
 
   act(() => {
-    result.current.updateAllSourceVersions()
-  })
+    result.current.updateAllSourceVersions();
+  });
 
-  await waitForNextUpdate()
+  await waitForNextUpdate();
 
   // expect(sourceDefinitionService.update).toHaveBeenCalledTimes(1);
   // expect(sourceDefinitionService.update).toHaveBeenCalledWith({
   //   dockerImageTag: "0.0.2",
   //   sourceDefinitionId: "sid1",
   // });
-})
+});
 
 test.skip('should not call destinationDefinition.updateVersion for deprecated call', async () => {
   const { result, waitForNextUpdate } = renderRestHook(() => useConnector(), {
     results,
-  })
+  });
 
   // (destinationDefinitionService.update as jest.Mock).mockResolvedValue([]);
 
   act(() => {
-    result.current.updateAllDestinationVersions()
-  })
+    result.current.updateAllDestinationVersions();
+  });
 
-  await waitForNextUpdate()
+  await waitForNextUpdate();
 
   // expect(destinationDefinitionService.update).toHaveBeenCalledTimes(1);
   // expect(destinationDefinitionService.update).toHaveBeenCalledWith({
   //   dockerImageTag: "0.0.2",
   //   destinationDefinitionId: "did1",
   // });
-})
+});

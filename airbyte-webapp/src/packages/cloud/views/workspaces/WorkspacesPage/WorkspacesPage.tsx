@@ -1,9 +1,9 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { H1, H3 } from '@app/components'
-import WorkspacesList from './components/WorkspacesList'
+import { H1, H3 } from '@app/components';
+import WorkspacesList from './components/WorkspacesList';
 
 const MainContent = styled.div`
   width: 100%;
@@ -12,16 +12,16 @@ const MainContent = styled.div`
   padding: 26px;
   margin: 0 auto;
   text-align: center;
-`
+`;
 
 const Logo = styled.img`
   margin-bottom: 58px;
-`
+`;
 
 const Subtitle = styled(H3)`
   margin: 17px 0 33px;
   line-height: 32px;
-`
+`;
 
 const WorkspacesPage: React.FC = () => {
   return (
@@ -35,7 +35,7 @@ const WorkspacesPage: React.FC = () => {
       </Subtitle>
       <WorkspacesList />
     </MainContent>
-  )
-}
+  );
+};
 
-export default WorkspacesPage
+export default WorkspacesPage;

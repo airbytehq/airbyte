@@ -1,7 +1,7 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
 
-import StepsMenu from '@app/components/StepsMenu'
+import StepsMenu from '@app/components/StepsMenu';
 
 export enum StepsTypes {
   OVERVIEW = 'Overview',
@@ -9,9 +9,9 @@ export enum StepsTypes {
 }
 
 type IProps = {
-  currentStep: string
-  setCurrentStep: (step: string) => void
-}
+  currentStep: string;
+  setCurrentStep: (step: string) => void;
+};
 
 const steps = [
   {
@@ -22,7 +22,7 @@ const steps = [
     id: StepsTypes.SETTINGS,
     name: <FormattedMessage id="tables.settings" />,
   },
-]
+];
 
 const ItemTabs: React.FC<IProps> = ({ currentStep, setCurrentStep }) => {
   return (
@@ -32,7 +32,7 @@ const ItemTabs: React.FC<IProps> = ({ currentStep, setCurrentStep }) => {
       activeStep={currentStep}
       onSelect={setCurrentStep}
     />
-  )
-}
+  );
+};
 
-export default ItemTabs
+export default ItemTabs;

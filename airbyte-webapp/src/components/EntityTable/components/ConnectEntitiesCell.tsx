@@ -1,34 +1,34 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import ImageBlock from '@app/components/ImageBlock'
+import ImageBlock from '@app/components/ImageBlock';
 
 type IProps = {
   values: {
-    name: string
-    connector: string
-  }[]
-  enabled?: boolean
-  entity: 'source' | 'destination'
-}
+    name: string;
+    connector: string;
+  }[];
+  enabled?: boolean;
+  entity: 'source' | 'destination';
+};
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
   align-items: center;
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : 'inheret')};
-`
+`;
 
 const Image = styled(ImageBlock)`
   margin-right: 6px;
-`
+`;
 
 const Connector = styled.div`
   font-weight: normal;
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme }) => theme.greyColor40};
-`
+`;
 
 const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   if (values.length === 1) {
@@ -40,11 +40,11 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
           <Connector>{values[0].connector}</Connector>
         </div>
       </Content>
-    )
+    );
   }
 
   if (!values.length) {
-    return null
+    return null;
   }
 
   return (
@@ -62,7 +62,7 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
         </Connector>
       </div>
     </Content>
-  )
-}
+  );
+};
 
-export default ConnectEntitiesCell
+export default ConnectEntitiesCell;

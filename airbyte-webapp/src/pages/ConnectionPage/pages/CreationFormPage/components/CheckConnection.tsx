@@ -1,19 +1,19 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import StatusIcon from '@app/components/StatusIcon'
-import { Button, H4, Link, Spinner } from '@app/components'
-import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
+import StatusIcon from '@app/components/StatusIcon';
+import { Button, H4, Link, Spinner } from '@app/components';
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage';
 
 type IProps = {
-  isLoading?: boolean
-  success?: boolean
-  type: 'source' | 'destination'
-  error?: number
-  retry?: () => void
-  linkToSettings?: string
-}
+  isLoading?: boolean;
+  success?: boolean;
+  type: 'source' | 'destination';
+  error?: number;
+  retry?: () => void;
+  linkToSettings?: string;
+};
 
 const Content = styled.div`
   min-height: 320px;
@@ -21,25 +21,25 @@ const Content = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-`
+`;
 
 const ErrorMessage = styled.div`
   color: ${({ theme }) => theme.dangerColor};
-`
+`;
 
 const Title = styled(H4)`
   padding: 16px 0 10px;
-`
+`;
 
 const ButtonBox = styled.div`
   min-width: 239px;
   padding-top: 25px;
-`
+`;
 
 const LinkButton = styled(Button)`
   color: ${({ theme }) => theme.whiteColor};
   margin-bottom: 6px;
-`
+`;
 
 const CheckConnection: React.FC<IProps> = ({
   isLoading,
@@ -49,7 +49,7 @@ const CheckConnection: React.FC<IProps> = ({
   linkToSettings,
 }) => {
   if (error) {
-    const errorMessage = createFormErrorMessage({ status: error })
+    const errorMessage = createFormErrorMessage({ status: error });
 
     return (
       <Content>
@@ -67,7 +67,7 @@ const CheckConnection: React.FC<IProps> = ({
           </Button>
         </ButtonBox>
       </Content>
-    )
+    );
   }
 
   if (isLoading) {
@@ -79,7 +79,7 @@ const CheckConnection: React.FC<IProps> = ({
         </Title>
         <FormattedMessage id={`tables.${type}IsValidatingBefore`} />
       </Content>
-    )
+    );
   }
 
   return (
@@ -89,7 +89,7 @@ const CheckConnection: React.FC<IProps> = ({
         <FormattedMessage id="connection.testsPassed" />
       </Title>
     </Content>
-  )
-}
+  );
+};
 
-export default CheckConnection
+export default CheckConnection;

@@ -1,16 +1,16 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { useField } from 'formik'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { useField } from 'formik';
 
-import { Input, ControlLabels } from '@app/components'
-import { FormBaseItem } from '@app/core/form/types'
+import { Input, ControlLabels } from '@app/components';
+import { FormBaseItem } from '@app/core/form/types';
 
 const ConnectorNameControl: React.FC<{
-  property: FormBaseItem
-  formType: 'source' | 'destination'
+  property: FormBaseItem;
+  formType: 'source' | 'destination';
 }> = ({ property, formType }) => {
-  const formatMessage = useIntl().formatMessage
-  const [field, fieldMeta] = useField(property.path)
+  const formatMessage = useIntl().formatMessage;
+  const [field, fieldMeta] = useField(property.path);
 
   return (
     <ControlLabels
@@ -29,7 +29,7 @@ const ConnectorNameControl: React.FC<{
         })}
       />
     </ControlLabels>
-  )
-}
+  );
+};
 
-export { ConnectorNameControl }
+export { ConnectorNameControl };

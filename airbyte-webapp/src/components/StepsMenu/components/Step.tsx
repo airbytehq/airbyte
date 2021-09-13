@@ -1,22 +1,22 @@
-import React from 'react'
-import styled from 'styled-components'
-import StatusIcon from '@app/components/StatusIcon'
-import Status from '@app/core/statuses'
+import React from 'react';
+import styled from 'styled-components';
+import StatusIcon from '@app/components/StatusIcon';
+import Status from '@app/core/statuses';
 
 type IProps = {
-  id: string
-  lightMode?: boolean
-  name: string | React.ReactNode
-  onClick?: (id: string) => void
-  isActive?: boolean
-  num: number
-  status?: string
-}
+  id: string;
+  lightMode?: boolean;
+  name: string | React.ReactNode;
+  onClick?: (id: string) => void;
+  isActive?: boolean;
+  num: number;
+  status?: string;
+};
 
 const StepView = styled.div<{
-  isActive?: boolean
-  lightMode?: boolean
-  nonClickable?: boolean
+  isActive?: boolean;
+  lightMode?: boolean;
+  nonClickable?: boolean;
 }>`
   width: ${({ lightMode }) => (lightMode ? 'auto' : '212px')};
   min-width: ${({ lightMode }) => (lightMode ? '100px' : 'auto')};
@@ -39,7 +39,7 @@ const StepView = styled.div<{
   flex-direction: row;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const Num = styled.div<{ isActive?: boolean }>`
   width: 16px;
@@ -55,7 +55,7 @@ const Num = styled.div<{ isActive?: boolean }>`
   display: inline-block;
   margin-right: 6px;
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
-`
+`;
 
 const Step: React.FC<IProps> = ({
   name,
@@ -68,9 +68,9 @@ const Step: React.FC<IProps> = ({
 }) => {
   const onItemClickItem = () => {
     if (onClick) {
-      onClick(id)
+      onClick(id);
     }
-  }
+  };
 
   return (
     <StepView
@@ -84,7 +84,7 @@ const Step: React.FC<IProps> = ({
       {status ? <StatusIcon success={status !== Status.FAILED} /> : null}
       {name}
     </StepView>
-  )
-}
+  );
+};
 
-export default Step
+export default Step;

@@ -1,15 +1,15 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 type IProps = {
-  name: string | React.ReactNode
-  isActive?: boolean
-  count?: number
-  onClick: () => void
-}
+  name: string | React.ReactNode;
+  isActive?: boolean;
+  count?: number;
+  onClick: () => void;
+};
 
 const Item = styled.div<{
-  isActive?: boolean
+  isActive?: boolean;
 }>`
   width: 100%;
   padding: 6px 8px 7px;
@@ -23,7 +23,7 @@ const Item = styled.div<{
   line-height: 15px;
   color: ${({ theme, isActive }) =>
     isActive ? theme.primaryColor : theme.greyColor60};
-`
+`;
 
 const Counter = styled.div`
   min-width: 12px;
@@ -37,7 +37,7 @@ const Counter = styled.div`
   color: ${({ theme }) => theme.whiteColor};
   display: inline-block;
   margin-left: 5px;
-`
+`;
 
 const MenuItem: React.FC<IProps> = ({ name, isActive, count, onClick }) => {
   return (
@@ -45,7 +45,7 @@ const MenuItem: React.FC<IProps> = ({ name, isActive, count, onClick }) => {
       {name}
       {count ? <Counter>{count}</Counter> : null}
     </Item>
-  )
-}
+  );
+};
 
-export default MenuItem
+export default MenuItem;

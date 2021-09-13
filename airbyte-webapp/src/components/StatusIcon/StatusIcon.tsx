@@ -1,27 +1,27 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faTimes, faBan } from '@fortawesome/free-solid-svg-icons'
+import React from 'react';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faTimes, faBan } from '@fortawesome/free-solid-svg-icons';
 
-import PauseIcon from './components/Pause'
+import PauseIcon from './components/Pause';
 
 type IProps = {
-  success?: boolean
-  title?: string
-  inactive?: boolean
-  empty?: boolean
-  className?: string
-  big?: boolean
-  value?: string | number
-}
+  success?: boolean;
+  title?: string;
+  inactive?: boolean;
+  empty?: boolean;
+  className?: string;
+  big?: boolean;
+  value?: string | number;
+};
 
 const getWidth = (props: IProps) => {
   if (props.big) {
-    return props.value ? 57 : 40
+    return props.value ? 57 : 40;
   }
 
-  return props.value ? 37 : 20
-}
+  return props.value ? 37 : 20;
+};
 
 const Badge = styled.div<IProps>`
   width: ${(props) => getWidth(props)}px;
@@ -44,14 +44,14 @@ const Badge = styled.div<IProps>`
   text-align: center;
   display: inline-block;
   vertical-align: top;
-`
+`;
 
 const Value = styled.span`
   font-weight: 500;
   font-size: 12px;
   padding-left: 3px;
   vertical-align: top;
-`
+`;
 
 const StatusIcon: React.FC<IProps> = (props) => (
   <Badge {...props}>
@@ -66,6 +66,6 @@ const StatusIcon: React.FC<IProps> = (props) => (
     )}
     {props.value && <Value>{props.value}</Value>}
   </Badge>
-)
+);
 
-export default StatusIcon
+export default StatusIcon;

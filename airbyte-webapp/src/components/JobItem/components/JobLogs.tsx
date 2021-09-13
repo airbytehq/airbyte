@@ -1,30 +1,30 @@
-import React, { useState } from 'react'
-import { useResource, useSubscription } from 'rest-hooks'
-import { FormattedMessage } from 'react-intl'
+import React, { useState } from 'react';
+import { useResource, useSubscription } from 'rest-hooks';
+import { FormattedMessage } from 'react-intl';
 
-import JobResource from '@app/core/resources/Job'
-import AttemptDetails from './AttemptDetails'
-import DownloadButton from './DownloadButton'
-import Logs from './Logs'
-import Tabs from './Tabs'
-import CenteredDetails from './CenteredDetails'
-import Status from '@app/core/statuses'
+import JobResource from '@app/core/resources/Job';
+import AttemptDetails from './AttemptDetails';
+import DownloadButton from './DownloadButton';
+import Logs from './Logs';
+import Tabs from './Tabs';
+import CenteredDetails from './CenteredDetails';
+import Status from '@app/core/statuses';
 
 type IProps = {
-  id: number | string
-  jobIsFailed?: boolean
-}
+  id: number | string;
+  jobIsFailed?: boolean;
+};
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
-  const job = useResource(JobResource.detailShape(), { id })
-  useSubscription(JobResource.detailShape(), { id })
+  const job = useResource(JobResource.detailShape(), { id });
+  useSubscription(JobResource.detailShape(), { id });
 
   const [attemptNumber, setAttemptNumber] = useState<number>(
     job.attempts.length ? job.attempts.length - 1 : 0
-  )
+  );
 
   if (!job.attempts.length) {
-    return <Logs />
+    return <Logs />;
   }
 
   const data = job.attempts.map((item, index) => ({
@@ -39,9 +39,9 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
         values={{ number: index + 1 }}
       />
     ),
-  }))
+  }));
 
-  const hasLogs = !!job.logsByAttempt[attemptNumber]?.logLines?.length
+  const hasLogs = !!job.logsByAttempt[attemptNumber]?.logLines?.length;
   return (
     <>
       {job.attempts.length > 1 ? (
@@ -70,7 +70,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
         }
       />
     </>
-  )
-}
+  );
+};
 
-export default JobLogs
+export default JobLogs;

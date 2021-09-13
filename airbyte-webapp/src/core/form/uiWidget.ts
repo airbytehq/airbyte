@@ -1,6 +1,6 @@
-import get from 'lodash.get'
-import { buildYupFormForJsonSchema } from '@app/core/jsonSchema/schemaToYup'
-import { FormBlock, WidgetConfigMap } from './types'
+import get from 'lodash.get';
+import { buildYupFormForJsonSchema } from '@app/core/jsonSchema/schemaToYup';
+import { FormBlock, WidgetConfigMap } from './types';
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],
@@ -14,49 +14,49 @@ export const buildPathInitialState = (
           formItem.properties,
           formValues,
           widgetStateBuilder
-        )
+        );
       case 'formItem':
-        widgetStateBuilder[formItem.path] = {}
-        return widgetStateBuilder
+        widgetStateBuilder[formItem.path] = {};
+        return widgetStateBuilder;
       case 'formCondition':
         const defaultCondition = Object.entries(formItem.conditions).find(
           ([key, subConditionItems]) => {
             switch (subConditionItems._type) {
               case 'formGroup':
-                const selectedValues = get(formValues, subConditionItems.path)
+                const selectedValues = get(formValues, subConditionItems.path);
 
                 const subPathSchema = buildYupFormForJsonSchema({
                   type: 'object',
                   ...subConditionItems.jsonSchema,
-                })
+                });
 
                 if (subPathSchema.isValidSync(selectedValues)) {
-                  return key
+                  return key;
                 }
-                return null
+                return null;
               case 'formItem':
-                return key
+                return key;
             }
 
-            return null
+            return null;
           }
-        )?.[0]
+        )?.[0];
 
         const selectedPath =
-          defaultCondition ?? Object.keys(formItem.conditions)?.[0]
+          defaultCondition ?? Object.keys(formItem.conditions)?.[0];
 
         widgetStateBuilder[formItem.path] = {
           selectedItem: selectedPath,
-        }
+        };
 
         if (formItem.conditions[selectedPath]) {
           return buildPathInitialState(
             [formItem.conditions[selectedPath]],
             formValues,
             widgetStateBuilder
-          )
+          );
         }
     }
 
-    return widgetStateBuilder
-  }, widgetState)
+    return widgetStateBuilder;
+  }, widgetState);

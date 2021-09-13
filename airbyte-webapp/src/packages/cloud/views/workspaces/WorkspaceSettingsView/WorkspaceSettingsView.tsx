@@ -1,20 +1,20 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
-import { Form, Formik, Field, FieldProps } from 'formik'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
+import { Form, Formik, Field, FieldProps } from 'formik';
 
 import {
   Content,
   SettingsCard,
-} from '@app/pages/SettingsPage/pages/SettingsComponents'
-import { Button, LabeledInput, LoadingButton } from '@app/components'
-import { useWorkspaceService } from '@app/packages/cloud/services/workspaces/WorkspacesService'
-import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
+} from '@app/pages/SettingsPage/pages/SettingsComponents';
+import { Button, LabeledInput, LoadingButton } from '@app/components';
+import { useWorkspaceService } from '@app/packages/cloud/services/workspaces/WorkspacesService';
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace';
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-`
+`;
 
 const Buttons = styled.div`
   margin-top: 10px;
@@ -27,13 +27,13 @@ const Buttons = styled.div`
   & > button {
     margin-left: 5px;
   }
-`
+`;
 
 export const WorkspaceSettingsView: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
-  const { selectWorkspace, removeWorkspace } = useWorkspaceService()
-  const { name, workspaceId } = useCurrentWorkspace()
+  const { selectWorkspace, removeWorkspace } = useWorkspaceService();
+  const { name, workspaceId } = useCurrentWorkspace();
   return (
     <>
       <SettingsCard
@@ -113,5 +113,5 @@ export const WorkspaceSettingsView: React.FC = () => {
         }
       />
     </>
-  )
-}
+  );
+};

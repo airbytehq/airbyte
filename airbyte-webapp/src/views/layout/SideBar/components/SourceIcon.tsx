@@ -1,7 +1,7 @@
 const SourceIcon = ({
   color = 'currentColor',
 }: {
-  color?: string
+  color?: string;
 }): JSX.Element => (
   <svg width="22" height="20" viewBox="0 0 22 20" fill="none">
     <path
@@ -9,5 +9,5 @@ const SourceIcon = ({
       fill={color}
     />
   </svg>
-)
-export default SourceIcon
+);
+export default SourceIcon;

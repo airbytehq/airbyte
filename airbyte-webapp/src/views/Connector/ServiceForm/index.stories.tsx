@@ -1,20 +1,20 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react'
+import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import ServiceForm from './ServiceForm'
-import { ContentCard } from '@app/components'
+import ServiceForm from './ServiceForm';
+import { ContentCard } from '@app/components';
 
 export default {
   title: 'Views/ServiceForm',
   component: ServiceForm,
-} as ComponentMeta<typeof ServiceForm>
+} as ComponentMeta<typeof ServiceForm>;
 
 const Template: ComponentStory<typeof ServiceForm> = (args) => (
   <ContentCard title="Test">
     <ServiceForm {...args} />
   </ContentCard>
-)
+);
 
-export const Common = Template.bind({})
+export const Common = Template.bind({});
 Common.args = {
   specifications: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -89,9 +89,9 @@ Common.args = {
   }`),
   formType: 'source',
   availableServices: [],
-}
+};
 
-export const Oneof = Template.bind({})
+export const Oneof = Template.bind({});
 Oneof.args = {
   specifications: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -159,4 +159,4 @@ Oneof.args = {
   }`),
   formType: 'source',
   availableServices: [],
-}
+};

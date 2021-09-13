@@ -1,33 +1,33 @@
-import React from 'react'
+import React from 'react';
 import {
   FormattedMessage,
   FormattedDateParts,
   FormattedTimeParts,
-} from 'react-intl'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
+} from 'react-intl';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleDown } from '@fortawesome/free-solid-svg-icons';
 
-import { JobItem as JobApiItem, Attempt } from '@app/core/resources/Job'
-import { JobInfo } from '@app/core/resources/Scheduler'
-import { Row, Cell } from '@app/components/SimpleTableComponents'
-import { Button, StatusIcon } from '@app/components'
-import AttemptDetails from './AttemptDetails'
-import Status from '@app/core/statuses'
-import useJob from '@app/hooks/services/useJob'
+import { JobItem as JobApiItem, Attempt } from '@app/core/resources/Job';
+import { JobInfo } from '@app/core/resources/Scheduler';
+import { Row, Cell } from '@app/components/SimpleTableComponents';
+import { Button, StatusIcon } from '@app/components';
+import AttemptDetails from './AttemptDetails';
+import Status from '@app/core/statuses';
+import useJob from '@app/hooks/services/useJob';
 
 type IProps = {
-  job: JobApiItem | JobInfo
-  attempts: Attempt[]
-  isOpen?: boolean
-  onExpand: () => void
-  isFailed?: boolean
-  shortInfo?: boolean
-}
+  job: JobApiItem | JobInfo;
+  attempts: Attempt[];
+  isOpen?: boolean;
+  onExpand: () => void;
+  isFailed?: boolean;
+  shortInfo?: boolean;
+};
 
 const MainView = styled(Row)<{
-  isOpen?: boolean
-  isFailed?: boolean
+  isOpen?: boolean;
+  isFailed?: boolean;
 }>`
   cursor: pointer;
   height: 59px;
@@ -40,38 +40,38 @@ const MainView = styled(Row)<{
         : isFailed
         ? theme.dangerTransparentColor
         : theme.greyColor20};
-`
+`;
 
 const Title = styled.div<{ isFailed?: boolean }>`
   position: relative;
   color: ${({ theme, isFailed }) =>
     isFailed ? theme.dangerColor : theme.darkPrimaryColor};
-`
+`;
 
 const ErrorSign = styled(StatusIcon)`
   position: absolute;
   left: -30px;
-`
+`;
 
 const AttemptCount = styled.div`
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme }) => theme.dangerColor};
-`
+`;
 
 const CancelButton = styled(Button)`
   margin-right: 10px;
   padding: 3px 7px;
   z-index: 1;
-`
+`;
 
 const InfoCell = styled(Cell)`
   flex: none;
-`
+`;
 
 const Arrow = styled.div<{
-  isOpen?: boolean
-  isFailed?: boolean
+  isOpen?: boolean;
+  isFailed?: boolean;
 }>`
   transform: ${({ isOpen }) => !isOpen && 'rotate(-90deg)'};
   transition: 0.3s;
@@ -90,7 +90,7 @@ const Arrow = styled.div<{
   div:hover > & {
     opacity: 1;
   }
-`
+`;
 
 const MainInfo: React.FC<IProps> = ({
   job,
@@ -100,16 +100,16 @@ const MainInfo: React.FC<IProps> = ({
   isFailed,
   shortInfo,
 }) => {
-  const { cancelJob } = useJob()
+  const { cancelJob } = useJob();
 
   const onCancelJob = (event: React.SyntheticEvent) => {
-    event.stopPropagation()
-    cancelJob(job.id)
-  }
+    event.stopPropagation();
+    cancelJob(job.id);
+  };
 
   const isNotCompleted =
     job.status &&
-    [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status)
+    [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
 
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
@@ -161,7 +161,7 @@ const MainInfo: React.FC<IProps> = ({
         </Arrow>
       </InfoCell>
     </MainView>
-  )
-}
+  );
+};
 
-export default MainInfo
+export default MainInfo;

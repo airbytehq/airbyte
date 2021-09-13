@@ -1,21 +1,21 @@
-import React, { useMemo } from 'react'
-import { FormattedMessage } from 'react-intl'
+import React, { useMemo } from 'react';
+import { FormattedMessage } from 'react-intl';
 
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-import { DropDownRow } from '@app/components'
-import { MainInfoCell } from './components/MainInfoCell'
-import { Cell } from '@app/components/SimpleTableComponents'
-import { SyncSettingsCell } from './components/SyncSettingsCell'
+import { DropDownRow } from '@app/components';
+import { MainInfoCell } from './components/MainInfoCell';
+import { Cell } from '@app/components/SimpleTableComponents';
+import { SyncSettingsCell } from './components/SyncSettingsCell';
 import {
   DestinationSyncMode,
   SyncMode,
   SyncSchemaStream,
-} from '@app/core/domain/catalog'
-import { Popout } from '@app/components/base/Popout'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSortDown } from '@fortawesome/free-solid-svg-icons'
-import Tooltip from './components/Tooltip'
+} from '@app/core/domain/catalog';
+import { Popout } from '@app/components/base/Popout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSortDown } from '@fortawesome/free-solid-svg-icons';
+import Tooltip from './components/Tooltip';
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   color: ${({ theme }) => theme.greyColor40};
@@ -23,40 +23,40 @@ const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   transform: ${({ isOpen }) => isOpen && 'rotate(180deg)'};
   transition: 0.3s;
   vertical-align: sub;
-`
+`;
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
-`
+`;
 
 type SyncSchema = {
-  syncMode: SyncMode
-  destinationSyncMode: DestinationSyncMode
-}
+  syncMode: SyncMode;
+  destinationSyncMode: DestinationSyncMode;
+};
 
 interface StreamHeaderProps {
-  stream: SyncSchemaStream
-  destName: string
-  destNamespace: string
+  stream: SyncSchemaStream;
+  destName: string;
+  destNamespace: string;
   availableSyncModes: {
-    value: SyncSchema
-  }[]
-  onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void
-  onSelectStream: () => void
+    value: SyncSchema;
+  }[];
+  onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
+  onSelectStream: () => void;
 
-  primitiveFields: string[]
+  primitiveFields: string[];
 
-  pkType: null | 'required' | 'sourceDefined'
-  onPrimaryKeyChange: (pkPath: string[][]) => void
-  cursorType: null | 'required' | 'sourceDefined'
-  onCursorChange: (cursorPath: string[]) => void
+  pkType: null | 'required' | 'sourceDefined';
+  onPrimaryKeyChange: (pkPath: string[][]) => void;
+  cursorType: null | 'required' | 'sourceDefined';
+  onCursorChange: (cursorPath: string[]) => void;
 
-  isRowExpanded: boolean
-  hasFields: boolean
-  onExpand: () => void
+  isRowExpanded: boolean;
+  hasFields: boolean;
+  onExpand: () => void;
 }
 
-const PkPopupComponents = { MultiValue: () => null }
+const PkPopupComponents = { MultiValue: () => null };
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
   stream,
@@ -75,19 +75,19 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   onExpand,
 }) => {
   const { primaryKey, syncMode, cursorField, destinationSyncMode } =
-    stream.config
+    stream.config;
   const syncSchema = useMemo(
     () => ({
       syncMode,
       destinationSyncMode,
     }),
     [syncMode, destinationSyncMode]
-  )
+  );
 
   const dropdownFields = primitiveFields.map((field) => ({
     value: field.split('.'),
     label: field,
-  }))
+  }));
 
   return (
     <>
@@ -126,7 +126,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             isMulti={true}
             isSearchable
             onChange={(options: { value: string[] }[]) => {
-              onPrimaryKeyChange(options.map((op) => op.value))
+              onPrimaryKeyChange(options.map((op) => op.value));
             }}
             placeholder={
               <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
@@ -166,5 +166,5 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         ) : null}
       </Cell>
     </>
-  )
-}
+  );
+};

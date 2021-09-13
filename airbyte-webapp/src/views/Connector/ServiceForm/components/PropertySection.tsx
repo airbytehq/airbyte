@@ -1,30 +1,30 @@
-import React from 'react'
+import React from 'react';
 
-import { useField } from 'formik'
+import { useField } from 'formik';
 
-import { LabeledToggle, TextWithHTML } from '@app/components'
-import { FormBaseItem } from '@app/core/form/types'
-import { Label } from './Property/Label'
-import { Control } from './Property/Control'
-import { useServiceForm } from '../serviceFormContext'
+import { LabeledToggle, TextWithHTML } from '@app/components';
+import { FormBaseItem } from '@app/core/form/types';
+import { Label } from './Property/Label';
+import { Control } from './Property/Control';
+import { useServiceForm } from '../serviceFormContext';
 
 const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({
   property,
   path,
 }) => {
-  const propertyPath = path ?? property.path
-  const formikBag = useField(propertyPath)
-  const [field, meta] = formikBag
+  const propertyPath = path ?? property.path;
+  const formikBag = useField(propertyPath);
+  const [field, meta] = formikBag;
   const {
     addUnfinishedFlow,
     removeUnfinishedFlow,
     unfinishedFlows,
     widgetsInfo,
-  } = useServiceForm()
+  } = useServiceForm();
 
-  const overriddenComponent = widgetsInfo[propertyPath]?.component
+  const overriddenComponent = widgetsInfo[propertyPath]?.component;
   if (overriddenComponent) {
-    return <>{overriddenComponent(property)}</>
+    return <>{overriddenComponent(property)}</>;
   }
 
   if (property.type === 'boolean') {
@@ -35,7 +35,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({
         message={<TextWithHTML text={property.description} />}
         value={field.value ?? property.default}
       />
-    )
+    );
   }
 
   return (
@@ -48,7 +48,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({
         unfinishedFlows={unfinishedFlows}
       />
     </Label>
-  )
-}
+  );
+};
 
-export { PropertySection }
+export { PropertySection };

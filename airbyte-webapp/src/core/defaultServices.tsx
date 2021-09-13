@@ -1,23 +1,23 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react';
 
-import { useConfig } from '@app/config'
-import { RequestMiddleware } from './request/RequestMiddleware'
-import { SourceDefinitionService } from './domain/connector/SourceDefinitionService'
-import { DestinationDefinitionService } from './domain/connector/DestinationDefinitionService'
-import { DeploymentService } from './resources/DeploymentService'
-import { OperationService } from './domain/connection'
-import { HealthService } from './health/HealthService'
-import { useGetService, useInjectServices } from './servicesProvider'
+import { useConfig } from '@app/config';
+import { RequestMiddleware } from './request/RequestMiddleware';
+import { SourceDefinitionService } from './domain/connector/SourceDefinitionService';
+import { DestinationDefinitionService } from './domain/connector/DestinationDefinitionService';
+import { DeploymentService } from './resources/DeploymentService';
+import { OperationService } from './domain/connection';
+import { HealthService } from './health/HealthService';
+import { useGetService, useInjectServices } from './servicesProvider';
 
 export const useApiServices = (): void => {
-  const config = useConfig()
+  const config = useConfig();
   const middlewares = useGetService<RequestMiddleware[]>(
     'DefaultRequestMiddlewares'
-  )
+  );
 
   useEffect(() => {
-    window._API_URL = config.apiUrl
-  }, [config])
+    window._API_URL = config.apiUrl;
+  }, [config]);
 
   const services = useMemo(
     () => ({
@@ -34,7 +34,7 @@ export const useApiServices = (): void => {
       HealthService: new HealthService(config.apiUrl, middlewares),
     }),
     [config.apiUrl, middlewares]
-  )
+  );
 
-  useInjectServices(services)
-}
+  useInjectServices(services);
+};

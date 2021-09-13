@@ -1,17 +1,17 @@
-import React, { Suspense, useState } from 'react'
-import styled from 'styled-components'
+import React, { Suspense, useState } from 'react';
+import styled from 'styled-components';
 
-import { JobItem as JobApiItem, Attempt } from '@app/core/resources/Job'
-import Spinner from '../Spinner'
-import JobLogs from './components/JobLogs'
-import ContentWrapper from './components/ContentWrapper'
-import MainInfo from './components/MainInfo'
-import Status from '@app/core/statuses'
+import { JobItem as JobApiItem, Attempt } from '@app/core/resources/Job';
+import Spinner from '../Spinner';
+import JobLogs from './components/JobLogs';
+import ContentWrapper from './components/ContentWrapper';
+import MainInfo from './components/MainInfo';
+import Status from '@app/core/statuses';
 
 type IProps = {
-  job: JobApiItem
-  attempts: Attempt[]
-}
+  job: JobApiItem;
+  attempts: Attempt[];
+};
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -22,19 +22,19 @@ const Item = styled.div<{ isFailed: boolean }>`
     background: ${({ theme, isFailed }) =>
       isFailed ? theme.dangerTransparentColor : theme.greyColor0};
   }
-`
+`;
 
 const LoadLogs = styled.div`
   background: ${({ theme }) => theme.whiteColor};
   text-align: center;
   padding: 6px 0;
   min-height: 58px;
-`
+`;
 
 const JobItem: React.FC<IProps> = ({ job, attempts }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const onExpand = () => setIsOpen(!isOpen)
-  const isFailed = job.status === Status.FAILED
+  const [isOpen, setIsOpen] = useState(false);
+  const onExpand = () => setIsOpen(!isOpen);
+  const isFailed = job.status === Status.FAILED;
 
   return (
     <Item isFailed={isFailed}>
@@ -59,7 +59,7 @@ const JobItem: React.FC<IProps> = ({ job, attempts }) => {
         </div>
       </ContentWrapper>
     </Item>
-  )
-}
+  );
+};
 
-export default JobItem
+export default JobItem;

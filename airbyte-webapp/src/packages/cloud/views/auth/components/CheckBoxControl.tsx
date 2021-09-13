@@ -1,19 +1,19 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { CheckBox } from '@app/components/base'
+import { CheckBox } from '@app/components/base';
 
 type IProps = {
-  message?: React.ReactNode
-  label?: React.ReactNode
-  checkbox?: boolean
-} & React.InputHTMLAttributes<HTMLInputElement>
+  message?: React.ReactNode;
+  label?: React.ReactNode;
+  checkbox?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 const ToggleContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-`
+`;
 
 const Label = styled.label<{ disabled?: boolean }>`
   padding-left: 7px;
@@ -21,7 +21,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   line-height: 13px;
   color: ${({ theme }) => theme.textColor};
   cursor: pointer;
-`
+`;
 
 const BigCheckBox = styled(CheckBox)`
   height: 25px;
@@ -35,7 +35,7 @@ const BigCheckBox = styled(CheckBox)`
   color: ${({ theme }) => theme.whiteColor};
   font-size: 18px;
   line-height: 18px;
-`
+`;
 
 const CheckBoxControl: React.FC<IProps> = (props) => (
   <ToggleContainer>
@@ -44,6 +44,6 @@ const CheckBoxControl: React.FC<IProps> = (props) => (
       {props.label}
     </Label>
   </ToggleContainer>
-)
+);
 
-export default CheckBoxControl
+export default CheckBoxControl;

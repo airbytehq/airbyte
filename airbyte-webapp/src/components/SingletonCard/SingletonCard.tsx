@@ -1,17 +1,17 @@
-import React from 'react'
-import styled, { keyframes } from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, H5 } from '@app/components'
-import ErrorSign from './components/ErrorSign'
+import { Button, H5 } from '@app/components';
+import ErrorSign from './components/ErrorSign';
 
 type SingletonCardProps = {
-  title: string | React.ReactNode
-  text?: string | React.ReactNode
-  hasError?: boolean
-  onClose?: () => void
-}
+  title: string | React.ReactNode;
+  text?: string | React.ReactNode;
+  hasError?: boolean;
+  onClose?: () => void;
+};
 
 export const SlideUpAnimation = keyframes`
   0% {
@@ -22,7 +22,7 @@ export const SlideUpAnimation = keyframes`
     translate(-50%, 0);
     bottom: 49px;
   }
-`
+`;
 
 const Singleton = styled.div<{ hasError?: boolean }>`
   position: fixed;
@@ -43,7 +43,7 @@ const Singleton = styled.div<{ hasError?: boolean }>`
   align-items: center;
 
   animation: ${SlideUpAnimation} 0.25s linear;
-`
+`;
 
 const Title = styled(H5)<{ hasError?: boolean }>`
   color: ${({ theme, hasError }) =>
@@ -53,7 +53,7 @@ const Title = styled(H5)<{ hasError?: boolean }>`
   font-weight: bold;
   font-size: 15px;
   line-height: 18px;
-`
+`;
 
 const Text = styled.div`
   color: ${({ theme }) => theme.mediumPrimaryColor};
@@ -63,11 +63,11 @@ const Text = styled.div`
   font-size: 14px;
   line-height: 17px;
   margin-top: 5px;
-`
+`;
 
 const CloseButton = styled(Button)`
   margin-left: 10px;
-`
+`;
 
 const SingletonCard: React.FC<SingletonCardProps> = (props) => (
   <Singleton hasError={props.hasError}>
@@ -82,6 +82,6 @@ const SingletonCard: React.FC<SingletonCardProps> = (props) => (
       </CloseButton>
     )}
   </Singleton>
-)
+);
 
-export default SingletonCard
+export default SingletonCard;

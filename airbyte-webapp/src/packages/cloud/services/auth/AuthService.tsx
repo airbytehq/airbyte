@@ -1,34 +1,34 @@
-import React, { useContext, useEffect, useMemo } from 'react'
-import { useQueryClient } from 'react-query'
+import React, { useContext, useEffect, useMemo } from 'react';
+import { useQueryClient } from 'react-query';
 
-import { GoogleAuthService } from '@app/packages/cloud/lib/auth/GoogleAuthService'
-import useTypesafeReducer from '@app/hooks/useTypesafeReducer'
+import { GoogleAuthService } from '@app/packages/cloud/lib/auth/GoogleAuthService';
+import useTypesafeReducer from '@app/hooks/useTypesafeReducer';
 import {
   actions,
   AuthServiceState,
   authStateReducer,
   initialState,
-} from './reducer'
-import { User } from '@app/packages/cloud/lib/domain/users'
-import { AuthProviders } from '@app/packages/cloud/lib/auth/AuthProviders'
-import { useGetUserService } from '@app/packages/cloud/services/users/UserService'
-import { useAuth } from '@app/packages/firebaseReact'
+} from './reducer';
+import { User } from '@app/packages/cloud/lib/domain/users';
+import { AuthProviders } from '@app/packages/cloud/lib/auth/AuthProviders';
+import { useGetUserService } from '@app/packages/cloud/services/users/UserService';
+import { useAuth } from '@app/packages/firebaseReact';
 
 type AuthContextApi = {
-  user: User | null
-  inited: boolean
-  emailVerified: boolean
-  isLoading: boolean
-  login: (values: { email: string; password: string }) => Promise<User | null>
-  signUp: (form: { email: string; password: string }) => Promise<User | null>
-  requirePasswordReset: (email: string) => Promise<void>
-  confirmPasswordReset: (code: string, newPassword: string) => Promise<void>
-  sendEmailVerification: () => Promise<void>
-  verifyEmail: (code: string) => Promise<void>
-  logout: () => void
-}
+  user: User | null;
+  inited: boolean;
+  emailVerified: boolean;
+  isLoading: boolean;
+  login: (values: { email: string; password: string }) => Promise<User | null>;
+  signUp: (form: { email: string; password: string }) => Promise<User | null>;
+  requirePasswordReset: (email: string) => Promise<void>;
+  confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
+  sendEmailVerification: () => Promise<void>;
+  verifyEmail: (code: string) => Promise<void>;
+  logout: () => void;
+};
 
-export const AuthContext = React.createContext<AuthContextApi | null>(null)
+export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [state, { loggedIn, emailVerified, authInited, loggedOut }] =
@@ -36,23 +36,23 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       authStateReducer,
       initialState,
       actions
-    )
-  const auth = useAuth()
-  const userService = useGetUserService()
-  const authService = useMemo(() => new GoogleAuthService(() => auth), [])
+    );
+  const auth = useAuth();
+  const userService = useGetUserService();
+  const authService = useMemo(() => new GoogleAuthService(() => auth), []);
 
   useEffect(() => {
     auth.onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
         // token = await currentUser.getIdToken();
 
-        let user: User | undefined
+        let user: User | undefined;
 
         try {
           user = await userService.getByAuthId(
             currentUser.uid,
             AuthProviders.GoogleIdentityPlatform
-          )
+          );
         } catch (err) {
           if (currentUser.email) {
             user = await userService.create({
@@ -60,20 +60,20 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
               authUserId: currentUser.uid,
               email: currentUser.email,
               name: currentUser.email,
-            })
+            });
           }
         }
 
         if (user) {
-          loggedIn({ user, emailVerified: currentUser.emailVerified })
+          loggedIn({ user, emailVerified: currentUser.emailVerified });
         }
       } else {
-        authInited()
+        authInited();
       }
-    })
-  }, [state.currentUser, loggedIn, authInited])
+    });
+  }, [state.currentUser, loggedIn, authInited]);
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const ctx: AuthContextApi = useMemo(
     () => ({
@@ -81,36 +81,36 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       isLoading: state.loading,
       emailVerified: state.emailVerified,
       async login(values: {
-        email: string
-        password: string
+        email: string;
+        password: string;
       }): Promise<User | null> {
-        await authService.login(values.email, values.password)
+        await authService.login(values.email, values.password);
 
-        return null
+        return null;
       },
       async logout(): Promise<void> {
-        await authService.signOut()
-        loggedOut()
-        await queryClient.invalidateQueries()
+        await authService.signOut();
+        loggedOut();
+        await queryClient.invalidateQueries();
       },
       async requirePasswordReset(email: string): Promise<void> {
-        await authService.resetPassword(email)
+        await authService.resetPassword(email);
       },
       async sendEmailVerification(): Promise<void> {
-        await authService.sendEmailVerifiedLink()
+        await authService.sendEmailVerifiedLink();
       },
       async verifyEmail(code: string): Promise<void> {
-        await authService.confirmEmailVerify(code)
-        emailVerified(true)
+        await authService.confirmEmailVerify(code);
+        emailVerified(true);
       },
       async confirmPasswordReset(code: string, email: string): Promise<void> {
-        await authService.finishResetPassword(code, email)
+        await authService.finishResetPassword(code, email);
       },
       async signUp(form: {
-        email: string
-        password: string
+        email: string;
+        password: string;
       }): Promise<User | null> {
-        await authService.signUp(form.email, form.password)
+        await authService.signUp(form.email, form.password);
         // const user = await userService.create({
         //   authProvider: AuthProviders.GoogleIdentityPlatform,
         //   authUserId: fbUser.user!.uid,
@@ -118,33 +118,33 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         //   name: form.email,
         // });
 
-        await authService.sendEmailVerifiedLink()
-        return null
+        await authService.sendEmailVerifiedLink();
+        return null;
       },
       user: state.currentUser,
     }),
     [state, queryClient, userService]
-  )
+  );
 
-  return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>
-}
+  return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
+};
 
 export const useAuthService = (): AuthContextApi => {
-  const authService = useContext(AuthContext)
+  const authService = useContext(AuthContext);
   if (!authService) {
     throw new Error(
       'useAuthService must be used within a AuthenticationService.'
-    )
+    );
   }
 
-  return authService
-}
+  return authService;
+};
 
 export const useCurrentUser = (): User => {
-  const { user } = useAuthService()
+  const { user } = useAuthService();
   if (!user) {
-    throw new Error('useCurrentUser must be used only within authorised flow')
+    throw new Error('useCurrentUser must be used only within authorised flow');
   }
 
-  return user
-}
+  return user;
+};

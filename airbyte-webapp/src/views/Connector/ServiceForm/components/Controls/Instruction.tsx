@@ -1,14 +1,14 @@
-import { FormattedMessage } from 'react-intl'
-import React from 'react'
-import styled from 'styled-components'
+import { FormattedMessage } from 'react-intl';
+import React from 'react';
+import styled from 'styled-components';
 
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
 
 type IProps = {
-  selectedService: SourceDefinition | DestinationDefinition
-  documentationUrl: string
-}
+  selectedService: SourceDefinition | DestinationDefinition;
+  documentationUrl: string;
+};
 
 const LinkToInstruction = styled.a`
   margin-left: 19px;
@@ -18,7 +18,7 @@ const LinkToInstruction = styled.a`
   text-decoration: underline;
 
   color: ${({ theme }) => theme.primaryColor};
-`
+`;
 
 const Instruction: React.FC<IProps> = ({
   selectedService,
@@ -30,6 +30,6 @@ const Instruction: React.FC<IProps> = ({
       values={{ name: selectedService.name }}
     />
   </LinkToInstruction>
-)
+);
 
-export default Instruction
+export default Instruction;

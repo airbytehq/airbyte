@@ -1,4 +1,4 @@
-import MainPageWithScroll from './MainPageWithScroll'
+import MainPageWithScroll from './MainPageWithScroll';
 
-export default MainPageWithScroll
-export { MainPageWithScroll }
+export default MainPageWithScroll;
+export { MainPageWithScroll };

@@ -1,3 +1,3 @@
-import CreateConnectionContent from './CreateConnectionContent'
+import CreateConnectionContent from './CreateConnectionContent';
 
-export default CreateConnectionContent
+export default CreateConnectionContent;

@@ -1,5 +1,5 @@
-import { TextArea } from './TextArea'
+import { TextArea } from './TextArea';
 
-export * from './TextArea'
+export * from './TextArea';
 
-export default TextArea
+export default TextArea;

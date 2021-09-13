@@ -1,28 +1,28 @@
-import React from 'react'
-import styled from 'styled-components'
-import { components, OptionProps, OptionTypeBase } from 'react-select'
+import React from 'react';
+import styled from 'styled-components';
+import { components, OptionProps, OptionTypeBase } from 'react-select';
 
-import CheckBox from '@app/components/base/CheckBox'
-import Text from './Text'
+import CheckBox from '@app/components/base/CheckBox';
+import Text from './Text';
 
 export type IProps = {
-  data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem
-} & OptionProps<OptionTypeBase, false>
+  data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
+} & OptionProps<OptionTypeBase, false>;
 
 export type IDataItem = {
-  label?: string
-  value?: any
-  groupValue?: string
-  groupValueText?: string
-  img?: React.ReactNode
-  primary?: boolean
-  secondary?: boolean
-  config?: any
-}
+  label?: string;
+  value?: any;
+  groupValue?: string;
+  groupValueText?: string;
+  img?: React.ReactNode;
+  primary?: boolean;
+  secondary?: boolean;
+  config?: any;
+};
 
 export const OptionView = styled.div<{
-  isSelected?: boolean
-  isDisabled?: boolean
+  isSelected?: boolean;
+  isDisabled?: boolean;
 }>`
   display: flex;
   flex-direction: row;
@@ -42,7 +42,7 @@ export const OptionView = styled.div<{
     background: ${({ isSelected, theme }) =>
       isSelected ? theme.primaryColor12 : theme.greyColor0};
   }
-`
+`;
 
 const Option: React.FC<IProps> = (props) => {
   return (
@@ -70,7 +70,7 @@ const Option: React.FC<IProps> = (props) => {
         {props.data.img || null}
       </OptionView>
     </components.Option>
-  )
-}
+  );
+};
 
-export default Option
+export default Option;

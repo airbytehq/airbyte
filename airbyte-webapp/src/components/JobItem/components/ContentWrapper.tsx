@@ -1,10 +1,10 @@
-import React from 'react'
-import pose from 'react-pose'
+import React from 'react';
+import pose from 'react-pose';
 
 type IProps = {
-  children?: React.ReactNode
-  isOpen?: boolean
-}
+  children?: React.ReactNode;
+  isOpen?: boolean;
+};
 
 const itemConfig = {
   open: {
@@ -17,9 +17,9 @@ const itemConfig = {
     opacity: 0,
     transition: 'tween',
   },
-}
+};
 
-const ContentWrapperElement = pose.div(itemConfig)
+const ContentWrapperElement = pose.div(itemConfig);
 
 const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
   return (
@@ -29,7 +29,7 @@ const ContentWrapper: React.FC<IProps> = ({ children, isOpen }) => {
     >
       {children}
     </ContentWrapperElement>
-  )
-}
+  );
+};
 
-export default ContentWrapper
+export default ContentWrapper;

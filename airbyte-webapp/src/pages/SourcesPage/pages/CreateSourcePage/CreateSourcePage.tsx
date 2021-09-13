@@ -1,60 +1,60 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import { useResource } from 'rest-hooks'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useResource } from 'rest-hooks';
 
-import PageTitle from '@app/components/PageTitle'
-import SourceForm from './components/SourceForm'
-import { Routes } from '../../../routes'
-import useRouter from '@app/hooks/useRouter'
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import useSource from '@app/hooks/services/useSourceHook'
-import { FormPageContent } from '@app/components/ConnectorBlocks'
-import { JobInfo } from '@app/core/resources/Scheduler'
-import { ConnectionConfiguration } from '@app/core/domain/connection'
-import HeadTitle from '@app/components/HeadTitle'
-import useWorkspace from '@app/hooks/services/useWorkspace'
+import PageTitle from '@app/components/PageTitle';
+import SourceForm from './components/SourceForm';
+import { Routes } from '../../../routes';
+import useRouter from '@app/hooks/useRouter';
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import useSource from '@app/hooks/services/useSourceHook';
+import { FormPageContent } from '@app/components/ConnectorBlocks';
+import { JobInfo } from '@app/core/resources/Scheduler';
+import { ConnectionConfiguration } from '@app/core/domain/connection';
+import HeadTitle from '@app/components/HeadTitle';
+import useWorkspace from '@app/hooks/services/useWorkspace';
 
 const CreateSourcePage: React.FC = () => {
-  const { push } = useRouter()
-  const [successRequest, setSuccessRequest] = useState(false)
+  const { push } = useRouter();
+  const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number
-    response: JobInfo
-  } | null>(null)
+    status: number;
+    response: JobInfo;
+  } | null>(null);
 
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
       workspaceId: workspace.workspaceId,
     }
-  )
-  const { createSource } = useSource()
+  );
+  const { createSource } = useSource();
 
   const onSubmitSourceStep = async (values: {
-    name: string
-    serviceType: string
-    connectionConfiguration?: ConnectionConfiguration
+    name: string;
+    serviceType: string;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     const connector = sourceDefinitions.find(
       (item) => item.sourceDefinitionId === values.serviceType
-    )
-    setErrorStatusRequest(null)
+    );
+    setErrorStatusRequest(null);
     try {
       const result = await createSource({
         values,
         sourceConnector: connector,
-      })
-      setSuccessRequest(true)
+      });
+      setSuccessRequest(true);
       setTimeout(() => {
-        setSuccessRequest(false)
-        push(`${Routes.Source}/${result.sourceId}`)
-      }, 2000)
+        setSuccessRequest(false);
+        push(`${Routes.Source}/${result.sourceId}`);
+      }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e)
+      setErrorStatusRequest(e);
     }
-  }
+  };
 
   return (
     <>
@@ -74,7 +74,7 @@ const CreateSourcePage: React.FC = () => {
         />
       </FormPageContent>
     </>
-  )
-}
+  );
+};
 
-export default CreateSourcePage
+export default CreateSourcePage;

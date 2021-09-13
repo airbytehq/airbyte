@@ -1,28 +1,28 @@
-import React, { Suspense, useMemo } from 'react'
+import React, { Suspense, useMemo } from 'react';
 import {
   BrowserRouter as Router,
   Redirect,
   Route,
   Switch,
-} from 'react-router-dom'
-import { useIntl } from 'react-intl'
+} from 'react-router-dom';
+import { useIntl } from 'react-intl';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
-import SourcesPage from './SourcesPage'
-import DestinationPage from './DestinationPage'
-import PreferencesPage from './PreferencesPage'
-import OnboardingPage from './OnboardingPage'
-import ConnectionPage from './ConnectionPage'
-import SettingsPage from './SettingsPage'
-import LoadingPage from '@app/components/LoadingPage'
-import MainView from '@app/views/layout/MainView'
-import SupportChat from '@app/components/SupportChat'
+import SourcesPage from './SourcesPage';
+import DestinationPage from './DestinationPage';
+import PreferencesPage from './PreferencesPage';
+import OnboardingPage from './OnboardingPage';
+import ConnectionPage from './ConnectionPage';
+import SettingsPage from './SettingsPage';
+import LoadingPage from '@app/components/LoadingPage';
+import MainView from '@app/views/layout/MainView';
+import SupportChat from '@app/components/SupportChat';
 
-import { useWorkspace } from '@app/hooks/services/useWorkspace'
-import { useNotificationService } from '@app/hooks/services/Notification/NotificationService'
-import { useApiHealthPoll } from '@app/hooks/services/Health'
-import { WithPageAnalytics } from './withPageAnalytics'
+import { useWorkspace } from '@app/hooks/services/useWorkspace';
+import { useNotificationService } from '@app/hooks/services/Notification/NotificationService';
+import { useApiHealthPoll } from '@app/hooks/services/Health';
+import { WithPageAnalytics } from './withPageAnalytics';
 
 export enum Routes {
   Preferences = '/preferences',
@@ -66,7 +66,7 @@ const MainViewRoutes = () => (
       </Switch>
     </Suspense>
   </MainView>
-)
+);
 
 const PreferencesRoutes = () => (
   <Switch>
@@ -75,7 +75,7 @@ const PreferencesRoutes = () => (
     </Route>
     <Redirect to={Routes.Preferences} />
   </Switch>
-)
+);
 
 const OnboardingsRoutes = () => (
   <Switch>
@@ -84,11 +84,11 @@ const OnboardingsRoutes = () => (
     </Route>
     <Redirect to={Routes.Onboarding} />
   </Switch>
-)
+);
 
 function useDemo() {
-  const { formatMessage } = useIntl()
-  const config = useConfig()
+  const { formatMessage } = useIntl();
+  const config = useConfig();
 
   const demoNotification = useMemo(
     () => ({
@@ -98,18 +98,18 @@ function useDemo() {
       nonClosable: true,
     }),
     [formatMessage]
-  )
+  );
 
-  useNotificationService(config.isDemo ? demoNotification : undefined)
+  useNotificationService(config.isDemo ? demoNotification : undefined);
 }
 
 export const Routing: React.FC = () => {
-  const config = useConfig()
+  const config = useConfig();
 
-  useApiHealthPoll()
-  useDemo()
+  useApiHealthPoll();
+  useDemo();
 
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
 
   return (
     <Router>
@@ -131,5 +131,5 @@ export const Routing: React.FC = () => {
         />
       </Suspense>
     </Router>
-  )
-}
+  );
+};

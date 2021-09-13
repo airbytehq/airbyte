@@ -1,26 +1,26 @@
-import React from 'react'
-import * as yup from 'yup'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { Field, FieldProps, Formik } from 'formik'
-import styled from 'styled-components'
+import React from 'react';
+import * as yup from 'yup';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Field, FieldProps, Formik } from 'formik';
+import styled from 'styled-components';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
 import {
   BottomBlock,
   FieldItem,
   Form,
   RowFieldItem,
-} from '../components/FormComponents'
-import { Button, H5, LabeledInput, Link } from '@app/components'
-import { FormTitle } from '../components/FormTitle'
-import CheckBoxControl from '../components/CheckBoxControl'
-import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
-import { FieldError } from '@app/packages/cloud/lib/errors/FieldError'
+} from '../components/FormComponents';
+import { Button, H5, LabeledInput, Link } from '@app/components';
+import { FormTitle } from '../components/FormTitle';
+import CheckBoxControl from '../components/CheckBoxControl';
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService';
+import { FieldError } from '@app/packages/cloud/lib/errors/FieldError';
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
-`
+`;
 
 const SignupPageValidationSchema = yup.object().shape({
   email: yup.string().email('form.email.error').required('form.empty.error'),
@@ -28,13 +28,13 @@ const SignupPageValidationSchema = yup.object().shape({
   name: yup.string().required('form.empty.error'),
   company: yup.string().required('form.empty.error'),
   security: yup.boolean().required('form.empty.error'),
-})
+});
 
 const SignupPage: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
-  const config = useConfig()
+  const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
-  const { signUp } = useAuthService()
+  const { signUp } = useAuthService();
 
   return (
     <div>
@@ -58,9 +58,9 @@ const SignupPage: React.FC = () => {
         onSubmit={async (values, { setFieldError, setStatus }) =>
           signUp(values).catch((err) => {
             if (err instanceof FieldError) {
-              setFieldError(err.field, err.message)
+              setFieldError(err.field, err.message);
             } else {
-              setStatus(err.message)
+              setStatus(err.message);
             }
           })
         }
@@ -221,7 +221,7 @@ const SignupPage: React.FC = () => {
         )}
       </Formik>
     </div>
-  )
-}
+  );
+};
 
-export default SignupPage
+export default SignupPage;

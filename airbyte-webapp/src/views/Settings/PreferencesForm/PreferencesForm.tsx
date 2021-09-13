@@ -1,52 +1,52 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { Field, FieldProps, Form, Formik } from 'formik'
-import * as yup from 'yup'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Field, FieldProps, Form, Formik } from 'formik';
+import * as yup from 'yup';
 
-import { BigButton } from '@app/components/CenteredPageComponents'
-import LabeledInput from '@app/components/LabeledInput'
-import Label from '@app/components/Label'
-import LabeledToggle from '@app/components/LabeledToggle'
-import { useConfig } from '@app/config'
-import EditControls from './components/EditControls'
+import { BigButton } from '@app/components/CenteredPageComponents';
+import LabeledInput from '@app/components/LabeledInput';
+import Label from '@app/components/Label';
+import LabeledToggle from '@app/components/LabeledToggle';
+import { useConfig } from '@app/config';
+import EditControls from './components/EditControls';
 
 export type PreferencesFormProps = {
   onSubmit: (data: {
-    email: string
-    anonymousDataCollection: boolean
-    news: boolean
-    securityUpdates: boolean
-  }) => void
-  isEdit?: boolean
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => void;
+  isEdit?: boolean;
   preferencesValues?: {
-    email?: string
-    anonymousDataCollection: boolean
-    news: boolean
-    securityUpdates: boolean
-  }
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-}
+    email?: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  };
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+};
 
 const ButtonContainer = styled.div`
   text-align: center;
   margin-top: 38px;
-`
+`;
 
 const FormItem = styled.div`
   margin-bottom: 28px;
-`
+`;
 
 const DocsLink = styled.a`
   text-decoration: none;
   color: ${({ theme }) => theme.primaryColor};
   cursor: pointer;
-`
+`;
 
 const Subtitle = styled(Label)`
   padding-bottom: 9px;
-`
+`;
 
 const Text = styled.div`
   font-style: normal;
@@ -54,11 +54,11 @@ const Text = styled.div`
   font-size: 13px;
   line-height: 150%;
   padding-bottom: 9px;
-`
+`;
 
 const preferencesValidationSchema = yup.object().shape({
   email: yup.string().email('form.email.error').required('form.empty.error'),
-})
+});
 
 const PreferencesForm: React.FC<PreferencesFormProps> = ({
   onSubmit,
@@ -67,8 +67,8 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const formatMessage = useIntl().formatMessage
-  const config = useConfig()
+  const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
   return (
     <Formik
@@ -83,7 +83,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
       onSubmit={async (values) => {
-        await onSubmit(values)
+        await onSubmit(values);
       }}
     >
       {({
@@ -113,21 +113,21 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                     formatMessage({ id: meta.error })
                   }
                   onChange={(event) => {
-                    handleChange(event)
+                    handleChange(event);
                     if (isEdit) {
-                      return
+                      return;
                     }
                     if (
                       field.value.length === 0 &&
                       event.target.value.length > 0
                     ) {
-                      setFieldValue('securityUpdates', true)
+                      setFieldValue('securityUpdates', true);
                     } else if (
                       field.value.length > 0 &&
                       event.target.value.length === 0
                     ) {
-                      resetForm()
-                      setFieldValue('email', '')
+                      resetForm();
+                      setFieldValue('email', '');
                     }
                   }}
                 />
@@ -210,7 +210,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
         </Form>
       )}
     </Formik>
-  )
-}
+  );
+};
 
-export default PreferencesForm
+export default PreferencesForm;

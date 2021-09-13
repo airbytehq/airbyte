@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
-import { useIntl } from 'react-intl'
-import * as yup from 'yup'
+import { useMemo } from 'react';
+import { useIntl } from 'react-intl';
+import * as yup from 'yup';
 
 import {
   AirbyteStreamConfiguration,
@@ -8,44 +8,44 @@ import {
   SyncMode,
   SyncSchema,
   SyncSchemaStream,
-} from '@app/core/domain/catalog'
-import { ValuesProps } from '@app/hooks/services/useConnectionHook'
+} from '@app/core/domain/catalog';
+import { ValuesProps } from '@app/hooks/services/useConnectionHook';
 import {
   Normalization,
   NormalizationType,
   Operation,
   OperatorType,
   Transformation,
-} from '@app/core/domain/connection/operation'
-import { DropDownRow } from '@app/components'
-import FrequencyConfig from '@app/config/FrequencyConfig.json'
-import { DestinationDefinitionSpecification } from '@app/core/resources/DestinationDefinitionSpecification'
-import { Connection, ScheduleProperties } from '@app/core/resources/Connection'
-import { ConnectionNamespaceDefinition } from '@app/core/domain/connection'
-import { SOURCE_NAMESPACE_TAG } from '@app/core/domain/connector/source'
-import useWorkspace from '@app/hooks/services/useWorkspace'
+} from '@app/core/domain/connection/operation';
+import { DropDownRow } from '@app/components';
+import FrequencyConfig from '@app/config/FrequencyConfig.json';
+import { DestinationDefinitionSpecification } from '@app/core/resources/DestinationDefinitionSpecification';
+import { Connection, ScheduleProperties } from '@app/core/resources/Connection';
+import { ConnectionNamespaceDefinition } from '@app/core/domain/connection';
+import { SOURCE_NAMESPACE_TAG } from '@app/core/domain/connector/source';
+import useWorkspace from '@app/hooks/services/useWorkspace';
 
 type FormikConnectionFormValues = {
-  schedule?: ScheduleProperties | null
-  prefix: string
-  syncCatalog: SyncSchema
-  namespaceDefinition: ConnectionNamespaceDefinition
-  namespaceFormat: string
-  transformations?: Transformation[]
-  normalization?: NormalizationType
-}
+  schedule?: ScheduleProperties | null;
+  prefix: string;
+  syncCatalog: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat: string;
+  transformations?: Transformation[];
+  normalization?: NormalizationType;
+};
 
-type ConnectionFormValues = ValuesProps
+type ConnectionFormValues = ValuesProps;
 
 const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
   [SyncMode.FullRefresh, DestinationSyncMode.Append],
   [SyncMode.Incremental, DestinationSyncMode.Append],
   [SyncMode.Incremental, DestinationSyncMode.Dedupted],
-]
+];
 
 function useDefaultTransformation(): Transformation {
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
 
   return {
     name: 'My dbt transformations',
@@ -57,7 +57,7 @@ function useDefaultTransformation(): Transformation {
         dbtArguments: 'run',
       },
     },
-  }
+  };
 }
 
 const connectionValidationSchema = yup
@@ -101,14 +101,14 @@ const connectionValidationSchema = yup
             message: '${path} is wrong',
             test: function (value: AirbyteStreamConfiguration) {
               if (!value.selected) {
-                return true
+                return true;
               }
               if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
                 if (value.primaryKey.length === 0) {
                   return this.createError({
                     message: 'connectionForm.primaryKey.required',
                     path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                  })
+                  });
                 }
               }
 
@@ -120,17 +120,17 @@ const connectionValidationSchema = yup
                   return this.createError({
                     message: 'connectionForm.cursorField.required',
                     path: `schema.streams[${this.parent.id}].config.cursorField`,
-                  })
+                  });
                 }
               }
-              return true
+              return true;
             },
           }),
         })
       ),
     }),
   })
-  .noUnknown()
+  .noUnknown();
 
 /**
  * Returns {@link Operation}[]
@@ -145,23 +145,23 @@ const connectionValidationSchema = yup
  */
 function mapFormPropsToOperation(
   values: {
-    transformations?: Transformation[]
-    normalization?: NormalizationType
+    transformations?: Transformation[];
+    normalization?: NormalizationType;
   },
   initialOperations: Operation[] = [],
   workspaceId: string
 ): Operation[] {
-  const newOperations: Operation[] = []
+  const newOperations: Operation[] = [];
 
   if (values.normalization) {
     if (values.normalization !== NormalizationType.RAW) {
       const normalizationOperation = initialOperations.find(
         (op) =>
           op.operatorConfiguration.operatorType === OperatorType.Normalization
-      )
+      );
 
       if (normalizationOperation) {
-        newOperations.push(normalizationOperation)
+        newOperations.push(normalizationOperation);
       } else {
         newOperations.push({
           name: 'Normalization',
@@ -172,23 +172,23 @@ function mapFormPropsToOperation(
               option: values.normalization,
             },
           },
-        })
+        });
       }
     }
   }
 
   if (values.transformations) {
-    newOperations.push(...values.transformations)
+    newOperations.push(...values.transformations);
   }
 
-  return newOperations
+  return newOperations;
 }
 
 function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
   if (streamNode.stream.defaultCursorField.length) {
-    return streamNode.stream.defaultCursorField
+    return streamNode.stream.defaultCursorField;
   }
-  return streamNode.config.cursorField
+  return streamNode.config.cursorField;
 }
 
 // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
@@ -200,7 +200,7 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
         const streamNode: SyncSchemaStream = {
           ...apiNode,
           id: id.toString(),
-        }
+        };
         const node = !streamNode.stream.supportedSyncModes?.length
           ? {
               ...streamNode,
@@ -209,11 +209,11 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
                 supportedSyncModes: [SyncMode.FullRefresh],
               },
             }
-          : streamNode
+          : streamNode;
 
         // If syncMode isn't null - don't change item
         if (node.config.syncMode) {
-          return node
+          return node;
         }
 
         const updateStream = (
@@ -221,15 +221,15 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
         ): SyncSchemaStream => ({
           ...node,
           config: { ...node.config, ...config },
-        })
+        });
 
-        const supportedSyncModes = node.stream.supportedSyncModes
+        const supportedSyncModes = node.stream.supportedSyncModes;
 
         // If syncMode is null, FULL_REFRESH should be selected by default (if it support FULL_REFRESH).
         if (supportedSyncModes.includes(SyncMode.FullRefresh)) {
           return updateStream({
             syncMode: SyncMode.FullRefresh,
-          })
+          });
         }
 
         // If source support INCREMENTAL and not FULL_REFRESH. Set INCREMENTAL
@@ -239,17 +239,17 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
               ? streamNode.config.cursorField
               : getDefaultCursorField(streamNode),
             syncMode: SyncMode.Incremental,
-          })
+          });
         }
 
         // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
         return updateStream({
           syncMode: streamNode.stream.supportedSyncModes[0],
-        })
+        });
       }),
     }),
     [schema.streams]
-  )
+  );
 
 const useInitialValues = (
   connection:
@@ -259,7 +259,7 @@ const useInitialValues = (
   destDefinition: DestinationDefinitionSpecification,
   isEditMode?: boolean
 ) => {
-  const initialSchema = useInitialSchema(connection.syncCatalog)
+  const initialSchema = useInitialSchema(connection.syncCatalog);
 
   return useMemo<FormikConnectionFormValues>(() => {
     const initialValues: FormikConnectionFormValues = {
@@ -270,15 +270,15 @@ const useInitialValues = (
         connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
       // eslint-disable-next-line no-template-curly-in-string
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
-    }
+    };
 
-    const { operations = [] } = connection
+    const { operations = [] } = connection;
 
     if (destDefinition.supportsDbt) {
       initialValues.transformations =
         (operations.filter(
           (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-        ) as Transformation[]) ?? []
+        ) as Transformation[]) ?? [];
     }
 
     if (destDefinition.supportsNormalization) {
@@ -287,22 +287,22 @@ const useInitialValues = (
           (op) =>
             op.operatorConfiguration.operatorType === OperatorType.Normalization
         ) as Normalization
-      )?.operatorConfiguration?.normalization?.option
+      )?.operatorConfiguration?.normalization?.option;
 
       // If no normalization was selected for already present normalization -> Raw is select
       if (!initialNormalization && isEditMode) {
-        initialNormalization = NormalizationType.RAW
+        initialNormalization = NormalizationType.RAW;
       }
 
       initialValues.normalization =
-        initialNormalization ?? NormalizationType.BASIC
+        initialNormalization ?? NormalizationType.BASIC;
     }
 
-    return initialValues
-  }, [initialSchema, connection, isEditMode, destDefinition])
-}
+    return initialValues;
+  }, [initialSchema, connection, isEditMode, destDefinition]);
+};
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
   return useMemo(
     () =>
@@ -321,10 +321,10 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
               ),
       })),
     [formatMessage]
-  )
-}
+  );
+};
 
-export type { ConnectionFormValues, FormikConnectionFormValues }
+export type { ConnectionFormValues, FormikConnectionFormValues };
 export {
   connectionValidationSchema,
   useInitialValues,
@@ -332,4 +332,4 @@ export {
   mapFormPropsToOperation,
   SUPPORTED_MODES,
   useDefaultTransformation,
-}
+};

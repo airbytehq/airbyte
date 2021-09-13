@@ -1,20 +1,20 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage, useIntl } from 'react-intl'
-import * as yup from 'yup'
-import { getIn, useFormik } from 'formik'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage, useIntl } from 'react-intl';
+import * as yup from 'yup';
+import { getIn, useFormik } from 'formik';
 
-import { Button, ControlLabels, DropDown, Input } from '@app/components'
-import { Transformation } from '@app/core/domain/connection/operation'
-import { equal } from '@app/utils/objects'
-import { FormikErrors } from 'formik/dist/types'
-import { useGetService } from '@app/core/servicesProvider'
-import { OperationService } from '../../../core/domain/connection'
+import { Button, ControlLabels, DropDown, Input } from '@app/components';
+import { Transformation } from '@app/core/domain/connection/operation';
+import { equal } from '@app/utils/objects';
+import { FormikErrors } from 'formik/dist/types';
+import { useGetService } from '@app/core/servicesProvider';
+import { OperationService } from '../../../core/domain/connection';
 
 const Content = styled.div`
   display: flex;
   flex-direction: row;
-`
+`;
 
 const Column = styled.div`
   flex: 1 0 0;
@@ -22,26 +22,26 @@ const Column = styled.div`
   &:first-child {
     margin-right: 18px;
   }
-`
+`;
 
 const Label = styled(ControlLabels)`
   margin-bottom: 20px;
-`
+`;
 
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-`
+`;
 
 const SmallButton = styled(Button)`
   margin-left: 8px;
   padding: 6px 8px 7px;
-`
+`;
 
 interface TransformationProps {
-  transformation: Transformation
-  onCancel: () => void
-  onDone: (tr: Transformation) => void
+  transformation: Transformation;
+  onCancel: () => void;
+  onDone: (tr: Transformation) => void;
 }
 
 const validationSchema = yup.object({
@@ -54,43 +54,43 @@ const validationSchema = yup.object({
       gitRepoBranch: yup.string().nullable(),
     }),
   }),
-})
+});
 
 function prepareLabelFields(
   errors: FormikErrors<Transformation>,
   name: string
 ): { error?: boolean; message?: React.ReactNode } {
-  const error = getIn(errors, name)
+  const error = getIn(errors, name);
 
-  const fields: { error?: boolean; message?: React.ReactNode } = {}
+  const fields: { error?: boolean; message?: React.ReactNode } = {};
 
   if (error) {
-    fields.error = true
-    fields.message = <FormattedMessage id={error} />
+    fields.error = true;
+    fields.message = <FormattedMessage id={error} />;
   }
 
-  return fields
+  return fields;
 }
 
 // enum with only one value for the moment
-const TransformationTypes = [{ value: 'custom', label: 'Custom DBT' }]
+const TransformationTypes = [{ value: 'custom', label: 'Custom DBT' }];
 
 const TransformationForm: React.FC<TransformationProps> = ({
   transformation,
   onCancel,
   onDone,
 }) => {
-  const formatMessage = useIntl().formatMessage
-  const operationService = useGetService<OperationService>('OperationService')
+  const formatMessage = useIntl().formatMessage;
+  const operationService = useGetService<OperationService>('OperationService');
 
   const formik = useFormik({
     initialValues: transformation,
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      await operationService.check(values)
-      onDone(values)
+      await operationService.check(values);
+      onDone(values);
     },
-  })
+  });
 
   return (
     <>
@@ -185,7 +185,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
         </SmallButton>
       </ButtonContainer>
     </>
-  )
-}
+  );
+};
 
-export default TransformationForm
+export default TransformationForm;

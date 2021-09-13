@@ -1,32 +1,32 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlay } from '@fortawesome/free-solid-svg-icons'
-import { useResource } from 'rest-hooks'
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import { useResource } from 'rest-hooks';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
-import { Link } from '@app/components'
-import { H2 } from '@app/components'
-import StepsMenu from '@app/components/StepsMenu'
-import HeadTitle from '@app/components/HeadTitle'
-import Version from '@app/components/Version'
+import { Link } from '@app/components';
+import { H2 } from '@app/components';
+import StepsMenu from '@app/components/StepsMenu';
+import HeadTitle from '@app/components/HeadTitle';
+import Version from '@app/components/Version';
 
-import useSource, { useSourceList } from '@app/hooks/services/useSourceHook'
+import useSource, { useSourceList } from '@app/hooks/services/useSourceHook';
 import useDestination, {
   useDestinationList,
-} from '@app/hooks/services/useDestinationHook'
-import { JobInfo } from '@app/core/resources/Scheduler'
-import { ConnectionConfiguration } from '@app/core/domain/connection'
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import useGetStepsConfig from './useStepsConfig'
-import SourceStep from './components/SourceStep'
-import DestinationStep from './components/DestinationStep'
-import ConnectionStep from './components/ConnectionStep'
-import { StepType } from './types'
-import { useAnalytics } from '@app/hooks/useAnalytics'
+} from '@app/hooks/services/useDestinationHook';
+import { JobInfo } from '@app/core/resources/Scheduler';
+import { ConnectionConfiguration } from '@app/core/domain/connection';
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition';
+import useGetStepsConfig from './useStepsConfig';
+import SourceStep from './components/SourceStep';
+import DestinationStep from './components/DestinationStep';
+import ConnectionStep from './components/ConnectionStep';
+import { StepType } from './types';
+import { useAnalytics } from '@app/hooks/useAnalytics';
 
 const Content = styled.div<{ big?: boolean }>`
   width: 100%;
@@ -39,16 +39,16 @@ const Content = styled.div<{ big?: boolean }>`
   align-items: center;
   min-height: 100%;
   overflow: hidden;
-`
+`;
 
 const Main = styled.div`
   width: 100%;
-`
+`;
 
 const Img = styled.img`
   text-align: center;
   width: 100%;
-`
+`;
 
 const MainTitle = styled(H2)`
   margin-top: -39px;
@@ -56,7 +56,7 @@ const MainTitle = styled(H2)`
   color: ${({ theme }) => theme.darkPrimaryColor};
   letter-spacing: 0.008em;
   font-weight: bold;
-`
+`;
 
 const Subtitle = styled.div`
   font-size: 14px;
@@ -64,100 +64,100 @@ const Subtitle = styled.div`
   color: ${({ theme }) => theme.greyColor40};
   text-align: center;
   margin-top: 7px;
-`
+`;
 
 const StepsCover = styled.div`
   margin: 33px 0 28px;
-`
+`;
 
 const TutorialLink = styled(Link)`
   margin-top: 32px;
   font-size: 14px;
   text-align: center;
   display: block;
-`
+`;
 
 const PlayIcon = styled(FontAwesomeIcon)`
   margin-right: 6px;
-`
+`;
 
 const OnboardingPage: React.FC = () => {
-  const analyticsService = useAnalytics()
-  const config = useConfig()
+  const analyticsService = useAnalytics();
+  const config = useConfig();
 
   useEffect(() => {
-    analyticsService.page('Onboarding Page')
-  }, [])
+    analyticsService.page('Onboarding Page');
+  }, []);
 
-  const { sources } = useSourceList()
-  const { destinations } = useDestinationList()
+  const { sources } = useSourceList();
+  const { destinations } = useDestinationList();
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}
-  )
+  );
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {}
-  )
+  );
 
-  const { createSource, recreateSource } = useSource()
-  const { createDestination, recreateDestination } = useDestination()
+  const { createSource, recreateSource } = useSource();
+  const { createDestination, recreateDestination } = useDestination();
 
-  const [successRequest, setSuccessRequest] = useState(false)
+  const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number
-    response: JobInfo
-    message: string
-  } | null>(null)
+    status: number;
+    response: JobInfo;
+    message: string;
+  } | null>(null);
 
   const afterUpdateStep = () => {
-    setSuccessRequest(false)
-    setErrorStatusRequest(null)
-  }
+    setSuccessRequest(false);
+    setErrorStatusRequest(null);
+  };
 
   const { currentStep, setCurrentStep, steps } = useGetStepsConfig(
     !!sources.length,
     !!destinations.length,
     afterUpdateStep
-  )
+  );
 
   const getSourceDefinitionById = (id: string) =>
-    sourceDefinitions.find((item) => item.sourceDefinitionId === id)
+    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
   const getDestinationDefinitionById = (id: string) =>
-    destinationDefinitions.find((item) => item.destinationDefinitionId === id)
+    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
 
   const renderStep = () => {
     if (currentStep === StepType.CREATE_SOURCE) {
       const onSubmitSourceStep = async (values: {
-        name: string
-        serviceType: string
-        sourceId?: string
-        connectionConfiguration?: ConnectionConfiguration
+        name: string;
+        serviceType: string;
+        sourceId?: string;
+        connectionConfiguration?: ConnectionConfiguration;
       }) => {
-        setErrorStatusRequest(null)
-        const sourceConnector = getSourceDefinitionById(values.serviceType)
+        setErrorStatusRequest(null);
+        const sourceConnector = getSourceDefinitionById(values.serviceType);
 
         try {
           if (!!sources.length) {
             await recreateSource({
               values,
               sourceId: sources[0].sourceId,
-            })
+            });
           } else {
-            await createSource({ values, sourceConnector })
+            await createSource({ values, sourceConnector });
           }
 
-          setSuccessRequest(true)
+          setSuccessRequest(true);
           setTimeout(() => {
-            setSuccessRequest(false)
-            setCurrentStep(StepType.CREATE_DESTINATION)
-          }, 2000)
+            setSuccessRequest(false);
+            setCurrentStep(StepType.CREATE_DESTINATION);
+          }, 2000);
         } catch (e) {
-          setErrorStatusRequest(e)
+          setErrorStatusRequest(e);
         }
-      }
+      };
       return (
         <SourceStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
@@ -168,42 +168,42 @@ const OnboardingPage: React.FC = () => {
           error={errorStatusRequest}
           // source={sources.length && !successRequest ? sources[0] : undefined}
         />
-      )
+      );
     }
     if (currentStep === StepType.CREATE_DESTINATION) {
       const onSubmitDestinationStep = async (values: {
-        name: string
-        serviceType: string
-        destinationDefinitionId?: string
-        connectionConfiguration?: ConnectionConfiguration
+        name: string;
+        serviceType: string;
+        destinationDefinitionId?: string;
+        connectionConfiguration?: ConnectionConfiguration;
       }) => {
-        setErrorStatusRequest(null)
+        setErrorStatusRequest(null);
         const destinationConnector = getDestinationDefinitionById(
           values.serviceType
-        )
+        );
 
         try {
           if (!!destinations.length) {
             await recreateDestination({
               values,
               destinationId: destinations[0].destinationId,
-            })
+            });
           } else {
             await createDestination({
               values,
               destinationConnector,
-            })
+            });
           }
 
-          setSuccessRequest(true)
+          setSuccessRequest(true);
           setTimeout(() => {
-            setSuccessRequest(false)
-            setCurrentStep(StepType.SET_UP_CONNECTION)
-          }, 2000)
+            setSuccessRequest(false);
+            setCurrentStep(StepType.SET_UP_CONNECTION);
+          }, 2000);
         } catch (e) {
-          setErrorStatusRequest(e)
+          setErrorStatusRequest(e);
         }
-      }
+      };
       return (
         <DestinationStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
@@ -217,7 +217,7 @@ const OnboardingPage: React.FC = () => {
           //   destinations.length && !successRequest ? destinations[0] : undefined
           // }
         />
-      )
+      );
     }
 
     return (
@@ -226,8 +226,8 @@ const OnboardingPage: React.FC = () => {
         source={sources[0]}
         destination={destinations[0]}
       />
-    )
-  }
+    );
+  };
 
   return (
     <Content big={currentStep === StepType.SET_UP_CONNECTION}>
@@ -256,7 +256,7 @@ const OnboardingPage: React.FC = () => {
       </Main>
       <Version />
     </Content>
-  )
-}
+  );
+};
 
-export default OnboardingPage
+export default OnboardingPage;

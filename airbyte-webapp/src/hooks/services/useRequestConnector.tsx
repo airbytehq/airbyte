@@ -1,16 +1,16 @@
-import { useAnalytics } from '@app/hooks/useAnalytics'
+import { useAnalytics } from '@app/hooks/useAnalytics';
 
 type Values = {
-  connectorType: string
-  name: string
-  website: string
-  email?: string
-}
+  connectorType: string;
+  name: string;
+  website: string;
+  email?: string;
+};
 
 const useRequestConnector = (): {
-  requestConnector: (conn: Values) => void
+  requestConnector: (conn: Values) => void;
 } => {
-  const analyticsService = useAnalytics()
+  const analyticsService = useAnalytics();
 
   const requestConnector = (values: Values) => {
     analyticsService.track('Request a Connector', {
@@ -19,11 +19,11 @@ const useRequestConnector = (): {
       connector_source: values.connectorType === 'source' ? values.name : '',
       connector_destination:
         values.connectorType === 'destination' ? values.name : '',
-    })
-  }
+    });
+  };
 
   return {
     requestConnector,
-  }
-}
-export default useRequestConnector
+  };
+};
+export default useRequestConnector;

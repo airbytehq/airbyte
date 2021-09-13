@@ -1,1 +1,1 @@
-export { UsersSettingsView } from './UsersSettingsView'
+export { UsersSettingsView } from './UsersSettingsView';

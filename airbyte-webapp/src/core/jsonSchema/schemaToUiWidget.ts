@@ -1,5 +1,5 @@
-import { FormBlock } from '@app/core/form/types'
-import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from './types'
+import { FormBlock } from '@app/core/form/types';
+import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from './types';
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -18,7 +18,7 @@ export const jsonSchemaToUiWidget = (
   path: string = key,
   parentSchema?: AirbyteJSONSchemaDefinition
 ): FormBlock => {
-  const isRequired = isKeyRequired(key, parentSchema)
+  const isRequired = isKeyRequired(key, parentSchema);
 
   // TODO: decide what to do with boolean case
   if (typeof jsonSchema === 'boolean') {
@@ -29,14 +29,14 @@ export const jsonSchemaToUiWidget = (
       type: 'null',
       isRequired,
       isSecret: false,
-    }
+    };
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
     const conditions = Object.fromEntries(
       jsonSchema.oneOf.map((condition) => {
         if (typeof condition === 'boolean') {
-          return []
+          return [];
         }
         return [
           condition.title,
@@ -45,9 +45,9 @@ export const jsonSchemaToUiWidget = (
             key,
             path
           ),
-        ]
+        ];
       })
-    )
+    );
 
     return {
       _type: 'formCondition',
@@ -57,7 +57,7 @@ export const jsonSchemaToUiWidget = (
       fieldKey: key,
       conditions,
       isRequired,
-    }
+    };
   }
 
   if (
@@ -73,14 +73,14 @@ export const jsonSchemaToUiWidget = (
       fieldKey: key,
       properties: jsonSchemaToUiWidget(jsonSchema.items, key, path),
       isRequired,
-    }
+    };
   }
 
   if (jsonSchema.type === 'object') {
     const properties = Object.entries(jsonSchema.properties || []).map(
       ([k, schema]) =>
         jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
-    )
+    );
 
     return {
       ...pickDefaultFields(jsonSchema),
@@ -90,7 +90,7 @@ export const jsonSchemaToUiWidget = (
       fieldKey: key,
       properties,
       isRequired,
-    }
+    };
   }
 
   return {
@@ -104,8 +104,8 @@ export const jsonSchemaToUiWidget = (
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
       'null',
-  }
-}
+  };
+};
 
 function isKeyRequired(
   key: string,
@@ -115,9 +115,9 @@ function isKeyRequired(
     (typeof parentSchema !== 'boolean' &&
       Array.isArray(parentSchema?.required) &&
       parentSchema?.required.includes(key)) ||
-    false
+    false;
 
-  return isRequired
+  return isRequired;
 }
 
 const defaultFields: Array<keyof AirbyteJSONSchema> = [
@@ -128,7 +128,7 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
   'order',
   'const',
   'title',
-]
+];
 
 const pickDefaultFields = (
   schema: AirbyteJSONSchema
@@ -139,17 +139,17 @@ const pickDefaultFields = (
         defaultFields.includes(k as keyof AirbyteJSONSchema)
       )
     ),
-  }
+  };
 
   if (
     typeof schema.items === 'object' &&
     !Array.isArray(schema.items) &&
     schema.items.enum
   ) {
-    partialSchema.enum = schema.items.enum
+    partialSchema.enum = schema.items.enum;
   } else if (schema.enum) {
-    partialSchema.enum = schema.enum
+    partialSchema.enum = schema.enum;
   }
 
-  return partialSchema
-}
+  return partialSchema;
+};

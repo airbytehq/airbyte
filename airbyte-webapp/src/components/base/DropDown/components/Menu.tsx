@@ -1,7 +1,7 @@
-import { components, MenuProps } from 'react-select'
-import styled from 'styled-components'
+import { components, MenuProps } from 'react-select';
+import styled from 'styled-components';
 
-import { IDataItem } from './Option'
+import { IDataItem } from './Option';
 
 const Menu = styled(components.Menu)<MenuProps<IDataItem, false>>`
   background: ${({ theme }) => theme.textColor};
@@ -26,6 +26,6 @@ const Menu = styled(components.Menu)<MenuProps<IDataItem, false>>`
       }
     }
   }
-`
+`;
 
-export default Menu
+export default Menu;

@@ -1,35 +1,35 @@
-import { MutateShape, ReadShape, Resource, SchemaDetail } from 'rest-hooks'
-import BaseResource from './BaseResource'
-import { getService } from '@app/core/servicesProvider'
-import { SourceDefinitionService } from '../domain/connector/SourceDefinitionService'
+import { MutateShape, ReadShape, Resource, SchemaDetail } from 'rest-hooks';
+import BaseResource from './BaseResource';
+import { getService } from '@app/core/servicesProvider';
+import { SourceDefinitionService } from '../domain/connector/SourceDefinitionService';
 
 export interface SourceDefinition {
-  sourceDefinitionId: string
-  name: string
-  dockerRepository: string
-  dockerImageTag: string
-  latestDockerImageTag: string
-  documentationUrl: string
-  icon: string
+  sourceDefinitionId: string;
+  name: string;
+  dockerRepository: string;
+  dockerImageTag: string;
+  latestDockerImageTag: string;
+  documentationUrl: string;
+  icon: string;
 }
 
 export default class SourceDefinitionResource
   extends BaseResource
   implements SourceDefinition
 {
-  readonly sourceDefinitionId: string = ''
-  readonly name: string = ''
-  readonly dockerRepository: string = ''
-  readonly dockerImageTag: string = ''
-  readonly latestDockerImageTag: string = ''
-  readonly documentationUrl: string = ''
-  readonly icon: string = ''
+  readonly sourceDefinitionId: string = '';
+  readonly name: string = '';
+  readonly dockerRepository: string = '';
+  readonly dockerImageTag: string = '';
+  readonly latestDockerImageTag: string = '';
+  readonly documentationUrl: string = '';
+  readonly icon: string = '';
 
   pk(): string {
-    return this.sourceDefinitionId?.toString()
+    return this.sourceDefinitionId?.toString();
   }
 
-  static urlRoot = 'source_definitions'
+  static urlRoot = 'source_definitions';
 
   static listShape<T extends typeof Resource>(
     this: T
@@ -42,26 +42,26 @@ export default class SourceDefinitionResource
         const [definition, latestDefinition] = await Promise.all([
           this.fetch('post', `${this.url(params)}/list`, params),
           this.fetch('post', `${this.url(params)}/list_latest`, params),
-        ])
+        ]);
 
         const result: SourceDefinition[] = definition.sourceDefinitions.map(
           (source: SourceDefinition) => {
             const withLatest = latestDefinition.sourceDefinitions.find(
               (latestSource: SourceDefinition) =>
                 latestSource.sourceDefinitionId === source.sourceDefinitionId
-            )
+            );
 
             return {
               ...source,
               latestDockerImageTag: withLatest?.dockerImageTag,
-            }
+            };
           }
-        )
+        );
 
-        return { sourceDefinitions: result }
+        return { sourceDefinitions: result };
       },
       schema: { sourceDefinitions: [this] },
-    }
+    };
   }
 
   static detailShape<T extends typeof Resource>(
@@ -70,7 +70,7 @@ export default class SourceDefinitionResource
     return {
       ...super.detailShape(),
       schema: this,
-    }
+    };
   }
 
   static updateShape<T extends typeof Resource>(
@@ -84,10 +84,10 @@ export default class SourceDefinitionResource
       ): Promise<SourceDefinition> {
         return getService<SourceDefinitionService>(
           'SourceDefinitionService'
-        ).update(body)
+        ).update(body);
       },
       schema: this,
-    }
+    };
   }
 
   static createShape<T extends typeof Resource>(
@@ -96,6 +96,6 @@ export default class SourceDefinitionResource
     return {
       ...super.createShape(),
       schema: this,
-    }
+    };
   }
 }

@@ -1,24 +1,24 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { FieldProps } from 'formik'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { FieldProps } from 'formik';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
-import { LabeledRadioButton, Link } from '@app/components'
-import { NormalizationType } from '@app/core/domain/connection/operation'
+import { LabeledRadioButton, Link } from '@app/components';
+import { NormalizationType } from '@app/core/domain/connection/operation';
 
 const Normalization = styled.div`
   margin: 16px 0;
-`
+`;
 
-type NormalizationBlockProps = FieldProps<string>
+type NormalizationBlockProps = FieldProps<string>;
 
 const NormalizationField: React.FC<NormalizationBlockProps> = ({
   form,
   field,
 }) => {
-  const config = useConfig()
+  const config = useConfig();
 
   return (
     <Normalization>
@@ -49,7 +49,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
         }
       />
     </Normalization>
-  )
-}
+  );
+};
 
-export { NormalizationField }
+export { NormalizationField };

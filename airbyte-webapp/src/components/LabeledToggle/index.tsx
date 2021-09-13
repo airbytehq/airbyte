@@ -1,4 +1,4 @@
-import LabeledToggle from './LabeledToggle'
+import LabeledToggle from './LabeledToggle';
 
-export default LabeledToggle
-export { LabeledToggle }
+export default LabeledToggle;
+export { LabeledToggle };

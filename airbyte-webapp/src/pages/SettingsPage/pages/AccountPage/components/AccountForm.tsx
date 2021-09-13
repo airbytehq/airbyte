@@ -1,17 +1,17 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
-import { Field, FieldProps, Form, Formik } from 'formik'
-import * as yup from 'yup'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
+import { Field, FieldProps, Form, Formik } from 'formik';
+import * as yup from 'yup';
 
-import { LoadingButton } from '@app/components'
-import { Row, Cell } from '@app/components/SimpleTableComponents'
-import LabeledInput from '@app/components/LabeledInput'
+import { LoadingButton } from '@app/components';
+import { Row, Cell } from '@app/components/SimpleTableComponents';
+import LabeledInput from '@app/components/LabeledInput';
 
 const InputRow = styled(Row)`
   height: auto;
   margin-bottom: 40px;
-`
+`;
 
 const ButtonCell = styled(Cell)`
   &:last-child {
@@ -19,37 +19,37 @@ const ButtonCell = styled(Cell)`
   }
   padding-left: 11px;
   height: 9px;
-`
+`;
 
 const EmailForm = styled(Form)`
   position: relative;
-`
+`;
 
 const Response = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.successColor};
   position: absolute;
   bottom: -19px;
-`
+`;
 
 const Error = styled(Response)`
   color: ${({ theme }) => theme.dangerColor};
-`
+`;
 
 const Success = styled.div`
   color: ${({ theme }) => theme.successColor};
-`
+`;
 
 const accountValidationSchema = yup.object().shape({
   email: yup.string().email('form.email.error').required('form.empty.error'),
-})
+});
 
 type AccountFormProps = {
-  email: string
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-  onSubmit: (data: { email: string }) => void
-}
+  email: string;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  onSubmit: (data: { email: string }) => void;
+};
 
 const AccountForm: React.FC<AccountFormProps> = ({
   email,
@@ -57,7 +57,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
   return (
     <Formik
@@ -110,7 +110,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
         </EmailForm>
       )}
     </Formik>
-  )
-}
+  );
+};
 
-export default AccountForm
+export default AccountForm;

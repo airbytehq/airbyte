@@ -1,5 +1,5 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 const Tag = styled.div<{ isSelected?: boolean }>`
   max-width: 100%;
@@ -15,13 +15,13 @@ const Tag = styled.div<{ isSelected?: boolean }>`
   border: 2px solid
     ${({ theme, isSelected }) =>
       isSelected ? theme.primaryColor : theme.mediumPrimaryColor};
-`
+`;
 
 const Text = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`
+`;
 
 const Delete = styled.button`
   border: none;
@@ -38,19 +38,19 @@ const Delete = styled.button`
   &:hover {
     color: ${({ theme }) => theme.greyColor40};
   }
-`
+`;
 
 type IProps = {
-  item: IItemProps
-  isSelected?: boolean
-  disabled?: boolean
-  onDeleteTag: (id: string) => void
-}
+  item: IItemProps;
+  isSelected?: boolean;
+  disabled?: boolean;
+  onDeleteTag: (id: string) => void;
+};
 
 export type IItemProps = {
-  value: string
-  id: string
-}
+  value: string;
+  id: string;
+};
 
 const TagItem: React.FC<IProps> = ({
   item,
@@ -58,14 +58,14 @@ const TagItem: React.FC<IProps> = ({
   isSelected,
   disabled,
 }) => {
-  const clickOnDeleteButton = () => onDeleteTag(item.id)
+  const clickOnDeleteButton = () => onDeleteTag(item.id);
 
   return (
     <Tag isSelected={isSelected}>
       <Text>{item.value}</Text>
       <Delete onClick={clickOnDeleteButton} disabled={disabled}></Delete>
     </Tag>
-  )
-}
+  );
+};
 
-export default TagItem
+export default TagItem;

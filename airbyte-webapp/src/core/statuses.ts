@@ -7,4 +7,4 @@ enum Status {
   CANCELLED = 'cancelled',
 }
 
-export default Status
+export default Status;

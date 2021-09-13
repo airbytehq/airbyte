@@ -1,8 +1,8 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import Spinner from '@app/components/Spinner'
+import Spinner from '@app/components/Spinner';
 
 const LoadingContainer = styled.div`
   font-weight: 600;
@@ -13,11 +13,11 @@ const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const Loader = styled.div`
   margin-right: 10px;
-`
+`;
 
 const TestingConnectionSpinner: React.FC = () => {
   return (
@@ -27,7 +27,7 @@ const TestingConnectionSpinner: React.FC = () => {
       </Loader>
       <FormattedMessage id="form.testingConnection" />
     </LoadingContainer>
-  )
-}
+  );
+};
 
-export default TestingConnectionSpinner
+export default TestingConnectionSpinner;

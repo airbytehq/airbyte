@@ -1,26 +1,26 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import { useResource } from 'rest-hooks'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useResource } from 'rest-hooks';
 
-import { Button, MainPageWithScroll } from '@app/components'
-import { Routes } from '../../../routes'
-import PageTitle from '@app/components/PageTitle'
-import useRouter from '@app/hooks/useRouter'
-import DestinationsTable from './components/DestinationsTable'
-import DestinationResource from '@app/core/resources/Destination'
-import HeadTitle from '@app/components/HeadTitle'
-import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
-import useWorkspace from '@app/hooks/services/useWorkspace'
+import { Button, MainPageWithScroll } from '@app/components';
+import { Routes } from '../../../routes';
+import PageTitle from '@app/components/PageTitle';
+import useRouter from '@app/hooks/useRouter';
+import DestinationsTable from './components/DestinationsTable';
+import DestinationResource from '@app/core/resources/Destination';
+import HeadTitle from '@app/components/HeadTitle';
+import Placeholder, { ResourceTypes } from '@app/components/Placeholder';
+import useWorkspace from '@app/hooks/services/useWorkspace';
 
 const AllDestinationsPage: React.FC = () => {
-  const { push } = useRouter()
-  const { workspace } = useWorkspace()
+  const { push } = useRouter();
+  const { workspace } = useWorkspace();
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: workspace.workspaceId,
-  })
+  });
 
   const onCreateDestination = () =>
-    push(`${Routes.Destination}${Routes.DestinationNew}`)
+    push(`${Routes.Destination}${Routes.DestinationNew}`);
 
   return (
     <MainPageWithScroll
@@ -42,7 +42,7 @@ const AllDestinationsPage: React.FC = () => {
         <Placeholder resource={ResourceTypes.Destinations} />
       )}
     </MainPageWithScroll>
-  )
-}
+  );
+};
 
-export default AllDestinationsPage
+export default AllDestinationsPage;

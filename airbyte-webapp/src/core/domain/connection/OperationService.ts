@@ -1,10 +1,10 @@
-import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService'
-import { Operation } from './operation'
-import Status from '@app/core/statuses'
+import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService';
+import { Operation } from './operation';
+import Status from '@app/core/statuses';
 
 class OperationService extends AirbyteRequestService {
   get url() {
-    return 'operations'
+    return 'operations';
   }
 
   public async check(
@@ -14,17 +14,17 @@ class OperationService extends AirbyteRequestService {
       `${this.url}/check`,
       operation.operatorConfiguration
     )) as any as {
-      status: 'succeeded' | 'failed'
-      message: string
-    }
+      status: 'succeeded' | 'failed';
+      message: string;
+    };
 
     if (rs.status === Status.FAILED) {
       // TODO: place proper error
-      throw new Error('failed')
+      throw new Error('failed');
     }
 
-    return rs as any
+    return rs as any;
   }
 }
 
-export { OperationService }
+export { OperationService };

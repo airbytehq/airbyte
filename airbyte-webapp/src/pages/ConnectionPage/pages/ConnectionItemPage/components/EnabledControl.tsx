@@ -1,12 +1,12 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import { Toggle } from '@app/components'
-import { Connection } from '@app/core/resources/Connection'
-import useConnection from '@app/hooks/services/useConnectionHook'
-import { Status } from '@app/components/EntityTable/types'
-import { useAnalytics } from '@app/hooks/useAnalytics'
+import { Toggle } from '@app/components';
+import { Connection } from '@app/core/resources/Connection';
+import useConnection from '@app/hooks/services/useConnectionHook';
+import { Status } from '@app/components/EntityTable/types';
+import { useAnalytics } from '@app/hooks/useAnalytics';
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -18,26 +18,26 @@ const ToggleLabel = styled.label`
   min-width: 75px;
   text-align: left;
   cursor: pointer;
-`
+`;
 
 const Content = styled.div`
   display: flex;
   align-items: center;
-`
+`;
 
 type IProps = {
-  connection: Connection
-  disabled?: boolean
-  frequencyText?: string
-}
+  connection: Connection;
+  disabled?: boolean;
+  frequencyText?: string;
+};
 
 const EnabledControl: React.FC<IProps> = ({
   connection,
   disabled,
   frequencyText,
 }) => {
-  const { updateConnection } = useConnection()
-  const analyticsService = useAnalytics()
+  const { updateConnection } = useConnection();
+  const analyticsService = useAnalytics();
 
   const onChangeStatus = async () => {
     await updateConnection({
@@ -50,7 +50,7 @@ const EnabledControl: React.FC<IProps> = ({
       operations: connection.operations,
       status:
         connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
-    })
+    });
 
     analyticsService.track('Source - Action', {
       action:
@@ -63,8 +63,8 @@ const EnabledControl: React.FC<IProps> = ({
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
       frequency: frequencyText,
-    })
-  }
+    });
+  };
 
   return (
     <Content>
@@ -84,7 +84,7 @@ const EnabledControl: React.FC<IProps> = ({
         id="toggle-enabled-source"
       />
     </Content>
-  )
-}
+  );
+};
 
-export default EnabledControl
+export default EnabledControl;

@@ -1,14 +1,14 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import Indicator from '@app/components/Indicator'
-import { getIcon } from '@app/utils/imageUtils'
+import Indicator from '@app/components/Indicator';
+import { getIcon } from '@app/utils/imageUtils';
 
 type IProps = {
-  connectorName: string
-  img?: string
-  hasUpdate?: boolean
-}
+  connectorName: string;
+  img?: string;
+  hasUpdate?: boolean;
+};
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
@@ -17,18 +17,18 @@ const Content = styled.div<{ enabled?: boolean }>`
   position: relative;
   margin: -5px 0;
   min-width: 290px;
-`
+`;
 
 const Image = styled.div`
   height: 25px;
   width: 17px;
   margin-right: 9px;
-`
+`;
 
 const Notification = styled(Indicator)`
   position: absolute;
   left: 8px;
-`
+`;
 
 const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate }) => {
   return (
@@ -37,7 +37,7 @@ const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate }) => {
       <Image>{getIcon(img)}</Image>
       {connectorName}
     </Content>
-  )
-}
+  );
+};
 
-export default ConnectorCell
+export default ConnectorCell;

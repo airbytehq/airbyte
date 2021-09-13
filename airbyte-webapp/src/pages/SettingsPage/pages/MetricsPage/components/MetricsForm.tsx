@@ -1,19 +1,19 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import Label from '@app/components/Label'
-import LabeledToggle from '@app/components/LabeledToggle'
-import { useConfig } from '@app/config'
-import FeedbackBlock from '../../../components/FeedbackBlock'
+import Label from '@app/components/Label';
+import LabeledToggle from '@app/components/LabeledToggle';
+import { useConfig } from '@app/config';
+import FeedbackBlock from '../../../components/FeedbackBlock';
 
 export type MetricsFormProps = {
-  onChange: (data: { anonymousDataCollection: boolean }) => void
-  anonymousDataCollection?: boolean
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-  isLoading?: boolean
-}
+  onChange: (data: { anonymousDataCollection: boolean }) => void;
+  anonymousDataCollection?: boolean;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  isLoading?: boolean;
+};
 
 const FormItem = styled.div`
   display: flex;
@@ -21,17 +21,17 @@ const FormItem = styled.div`
   align-items: center;
   min-height: 33px;
   margin-bottom: 10px;
-`
+`;
 
 const DocsLink = styled.a`
   text-decoration: none;
   color: ${({ theme }) => theme.primaryColor};
   cursor: pointer;
-`
+`;
 
 const Subtitle = styled(Label)`
   padding-bottom: 9px;
-`
+`;
 
 const Text = styled.div`
   font-style: normal;
@@ -39,7 +39,7 @@ const Text = styled.div`
   font-size: 13px;
   line-height: 150%;
   padding-bottom: 9px;
-`
+`;
 
 const MetricsForm: React.FC<MetricsFormProps> = ({
   onChange,
@@ -48,7 +48,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
   errorMessage,
   isLoading,
 }) => {
-  const config = useConfig()
+  const config = useConfig();
   return (
     <>
       <Subtitle>
@@ -74,7 +74,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
           onChange={(event) => {
             onChange({
               anonymousDataCollection: event.target.checked,
-            })
+            });
           }}
         />
         <FeedbackBlock
@@ -84,7 +84,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
         />
       </FormItem>
     </>
-  )
-}
+  );
+};
 
-export default MetricsForm
+export default MetricsForm;

@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 export const Row = styled.div`
   display: flex;
@@ -13,20 +13,20 @@ export const Row = styled.div`
   font-weight: normal;
   color: ${({ theme }) => theme.darkPrimaryColor};
   border: none;
-`
+`;
 
 export const Header = styled(Row)`
   font-weight: 600;
   color: ${({ theme }) => theme.textColor};
   height: 17px;
   padding: 0;
-`
+`;
 
 export const Cell = styled.div<{
-  flex?: number
-  light?: boolean
-  lighter?: boolean
-  ellipsis?: boolean
+  flex?: number;
+  light?: boolean;
+  lighter?: boolean;
+  ellipsis?: boolean;
 }>`
   flex: ${({ flex }) => flex || 1} 0 0;
   padding-right: 10px;
@@ -38,4 +38,4 @@ export const Cell = styled.div<{
 
   overflow: ${({ ellipsis }) => (ellipsis ? 'hidden' : 'inherit')};
   text-overflow: ${({ ellipsis }) => (ellipsis ? 'ellipsis' : 'inherit')};
-`
+`;

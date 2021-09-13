@@ -1,7 +1,7 @@
-import styled from 'styled-components'
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import { LazyLog } from 'react-lazylog'
+import styled from 'styled-components';
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import { LazyLog } from 'react-lazylog';
 
 const LogsView = styled.div<{ isEmpty?: boolean }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
@@ -30,14 +30,14 @@ const LogsView = styled.div<{ isEmpty?: boolean }>`
       width: 45px;
     }
   }
-`
+`;
 
 type LogsProps = {
-  logsArray?: string[]
-}
+  logsArray?: string[];
+};
 
 const Logs: React.FC<LogsProps> = ({ logsArray }) => {
-  const logsJoin = logsArray && logsArray.length ? logsArray.join('\n') : ''
+  const logsJoin = logsArray && logsArray.length ? logsArray.join('\n') : '';
 
   return (
     <LogsView isEmpty={!logsArray}>
@@ -54,7 +54,7 @@ const Logs: React.FC<LogsProps> = ({ logsArray }) => {
         <FormattedMessage id="sources.emptyLogs" />
       )}
     </LogsView>
-  )
-}
+  );
+};
 
-export default Logs
+export default Logs;

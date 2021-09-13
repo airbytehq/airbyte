@@ -1,15 +1,15 @@
-import React, { Suspense } from 'react'
-import { Redirect, Route, Switch } from 'react-router-dom'
-import { NetworkErrorBoundary as ErrorBoundary } from 'rest-hooks'
+import React, { Suspense } from 'react';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import { NetworkErrorBoundary as ErrorBoundary } from 'rest-hooks';
 
-import { Routes } from '../routes'
-import LoadingPage from '@app/components/LoadingPage'
-import ConnectionPage from '@app/pages/ConnectionPage'
-import AllSourcesPage from './pages/AllSourcesPage'
-import CreateSourcePage from './pages/CreateSourcePage'
-import SourceItemPage from './pages/SourceItemPage'
+import { Routes } from '../routes';
+import LoadingPage from '@app/components/LoadingPage';
+import ConnectionPage from '@app/pages/ConnectionPage';
+import AllSourcesPage from './pages/AllSourcesPage';
+import CreateSourcePage from './pages/CreateSourcePage';
+import SourceItemPage from './pages/SourceItemPage';
 
-const FallbackRootRedirector = () => <Redirect to={Routes.Root} />
+const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
 const SourcesPage: React.FC = () => {
   return (
@@ -37,7 +37,7 @@ const SourcesPage: React.FC = () => {
         <Redirect to={Routes.Root} />
       </Switch>
     </Suspense>
-  )
-}
+  );
+};
 
-export default SourcesPage
+export default SourcesPage;

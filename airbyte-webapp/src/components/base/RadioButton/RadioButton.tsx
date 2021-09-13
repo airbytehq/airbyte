@@ -1,19 +1,19 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 const RadioButtonInput = styled.input`
   opacity: 0;
   width: 0;
   height: 0;
   margin: 0;
-`
+`;
 
 const Check = styled.div`
   height: 100%;
   width: 100%;
   border-radius: 50%;
   background: ${({ theme }) => theme.primaryColor};
-`
+`;
 
 const RadioButtonContainer = styled.label`
   height: 16px;
@@ -25,7 +25,7 @@ const RadioButtonContainer = styled.label`
   display: inline-block;
   padding: 4px;
   cursor: pointer;
-`
+`;
 
 const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
   props
@@ -38,7 +38,7 @@ const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
       {props.checked && <Check />}
       <RadioButtonInput {...props} type="radio" />
     </RadioButtonContainer>
-  )
-}
+  );
+};
 
-export default RadioButton
+export default RadioButton;

@@ -1,61 +1,61 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
-import * as yup from 'yup'
-import { Field, FieldProps, Form, Formik } from 'formik'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
+import * as yup from 'yup';
+import { Field, FieldProps, Form, Formik } from 'formik';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
-import { Button, LabeledInput, Link, Modal, StatusIcon } from '@app/components'
+import { Button, LabeledInput, Link, Modal, StatusIcon } from '@app/components';
 
 export type IProps = {
-  errorMessage?: string
-  onClose: () => void
+  errorMessage?: string;
+  onClose: () => void;
   onSubmit: (sourceDefinition: {
-    name: string
-    documentationUrl: string
-    dockerImageTag: string
-    dockerRepository: string
-  }) => void
-}
+    name: string;
+    documentationUrl: string;
+    dockerImageTag: string;
+    dockerRepository: string;
+  }) => void;
+};
 
 const Content = styled.div`
   width: 585px;
   padding: 19px 41px 30px 36px;
-`
+`;
 
 const ButtonContent = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-`
+`;
 
 const ButtonWithMargin = styled(Button)`
   margin-right: 12px;
-`
+`;
 
 const Label = styled.div`
   font-weight: bold;
   color: ${({ theme }) => theme.darkPrimaryColor};
   margin-bottom: 8px;
-`
+`;
 
 const FieldContainer = styled.div`
   margin-bottom: 21px;
-`
+`;
 
 const Subtitle = styled.div`
   margin-bottom: 26px;
   font-size: 14px;
   line-height: 21px;
   color: ${({ theme }) => theme.darkPrimaryColor};
-`
+`;
 
 const DocLink = styled(Link).attrs({ as: 'a' })`
   text-decoration: none;
   display: inline-block;
-`
+`;
 
 const Error = styled(StatusIcon)`
   padding-top: 4px;
@@ -64,7 +64,7 @@ const Error = styled(StatusIcon)`
   width: 26px;
   min-width: 26px;
   height: 26px;
-`
+`;
 
 const ErrorBlock = styled.div`
   display: flex;
@@ -75,27 +75,27 @@ const ErrorBlock = styled.div`
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
   max-width: 320px;
-`
+`;
 
 const ErrorText = styled.div`
   font-weight: normal;
   color: ${({ theme }) => theme.dangerColor};
   max-width: 400px;
-`
+`;
 const validationSchema = yup.object().shape({
   name: yup.string().required('form.empty.error'),
   documentationUrl: yup.string().required('form.empty.error'),
   dockerImageTag: yup.string().required('form.empty.error'),
   dockerRepository: yup.string().required('form.empty.error'),
-})
+});
 
 const CreateConnectorModal: React.FC<IProps> = ({
   onClose,
   onSubmit,
   errorMessage,
 }) => {
-  const config = useConfig()
-  const formatMessage = useIntl().formatMessage
+  const config = useConfig();
+  const formatMessage = useIntl().formatMessage;
 
   return (
     <Modal
@@ -126,8 +126,8 @@ const CreateConnectorModal: React.FC<IProps> = ({
           validateOnChange={true}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values)
-            setSubmitting(false)
+            await onSubmit(values);
+            setSubmitting(false);
           }}
         >
           {({ isSubmitting, dirty, isValid }) => (
@@ -233,7 +233,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
         </Formik>
       </Content>
     </Modal>
-  )
-}
+  );
+};
 
-export default CreateConnectorModal
+export default CreateConnectorModal;

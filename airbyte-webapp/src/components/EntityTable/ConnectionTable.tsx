@@ -1,32 +1,32 @@
-import React, { useCallback } from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
-import { CellProps } from 'react-table'
-import queryString from 'query-string'
+import React, { useCallback } from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
+import { CellProps } from 'react-table';
+import queryString from 'query-string';
 
-import Table from '@app/components/Table'
+import Table from '@app/components/Table';
 
-import LastSyncCell from './components/LastSyncCell'
-import ConnectorCell from './components/ConnectorCell'
-import NameCell from './components/NameCell'
-import SortButton from './components/SortButton'
-import FrequencyCell from './components/FrequencyCell'
-import StatusCell from './components/StatusCell'
-import ConnectionSettingsCell from './components/ConnectionSettingsCell'
-import { ITableDataItem, SortOrderEnum } from './types'
-import useRouter from '@app/hooks/useRouter'
+import LastSyncCell from './components/LastSyncCell';
+import ConnectorCell from './components/ConnectorCell';
+import NameCell from './components/NameCell';
+import SortButton from './components/SortButton';
+import FrequencyCell from './components/FrequencyCell';
+import StatusCell from './components/StatusCell';
+import ConnectionSettingsCell from './components/ConnectionSettingsCell';
+import { ITableDataItem, SortOrderEnum } from './types';
+import useRouter from '@app/hooks/useRouter';
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
-`
+`;
 
 type IProps = {
-  data: ITableDataItem[]
-  entity: 'source' | 'destination' | 'connection'
-  onClickRow?: (data: ITableDataItem) => void
-  onChangeStatus: (id: string) => void
-  onSync: (id: string) => void
-}
+  data: ITableDataItem[];
+  entity: 'source' | 'destination' | 'connection';
+  onClickRow?: (data: ITableDataItem) => void;
+  onChangeStatus: (id: string) => void;
+  onSync: (id: string) => void;
+};
 
 const ConnectionTable: React.FC<IProps> = ({
   data,
@@ -35,10 +35,10 @@ const ConnectionTable: React.FC<IProps> = ({
   onChangeStatus,
   onSync,
 }) => {
-  const { query, push } = useRouter()
+  const { query, push } = useRouter();
 
-  const sortBy = query.sortBy || 'entity'
-  const sortOrder = query.order || SortOrderEnum.ASC
+  const sortBy = query.sortBy || 'entity';
+  const sortOrder = query.order || SortOrderEnum.ASC;
 
   const onSortClick = useCallback(
     (field: string) => {
@@ -47,7 +47,7 @@ const ConnectionTable: React.FC<IProps> = ({
           ? SortOrderEnum.ASC
           : sortOrder === SortOrderEnum.ASC
           ? SortOrderEnum.DESC
-          : SortOrderEnum.ASC
+          : SortOrderEnum.ASC;
       push({
         search: queryString.stringify(
           {
@@ -56,27 +56,30 @@ const ConnectionTable: React.FC<IProps> = ({
           },
           { skipNull: true }
         ),
-      })
+      });
     },
     [push, sortBy, sortOrder]
-  )
+  );
 
   const sortData = useCallback(
     (a, b) => {
       const result = a[`${sortBy}Name`]
         .toLowerCase()
-        .localeCompare(b[`${sortBy}Name`].toLowerCase())
+        .localeCompare(b[`${sortBy}Name`].toLowerCase());
 
       if (sortOrder === SortOrderEnum.DESC) {
-        return -1 * result
+        return -1 * result;
       }
 
-      return result
+      return result;
     },
     [sortBy, sortOrder]
-  )
+  );
 
-  const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data])
+  const sortingData = React.useMemo(
+    () => data.sort(sortData),
+    [sortData, data]
+  );
 
   const columns = React.useMemo(
     () => [
@@ -175,7 +178,7 @@ const ConnectionTable: React.FC<IProps> = ({
       },
     ],
     [entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
-  )
+  );
 
   return (
     <Content>
@@ -186,7 +189,7 @@ const ConnectionTable: React.FC<IProps> = ({
         erroredRows
       />
     </Content>
-  )
-}
+  );
+};
 
-export default ConnectionTable
+export default ConnectionTable;

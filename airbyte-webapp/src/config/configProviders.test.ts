@@ -1,19 +1,19 @@
-import { applyProviders } from './configProviders'
-import { DeepPartial, Provider } from './types'
+import { applyProviders } from './configProviders';
+import { DeepPartial, Provider } from './types';
 
 type Value = {
   prop1: {
-    innerProp: string
-    innerProp2: string
-  }
+    innerProp: string;
+    innerProp2: string;
+  };
   prop2: {
-    innerProp: string
-    innerProp2: string
-  }
+    innerProp: string;
+    innerProp2: string;
+  };
   prop3: {
-    innerProp: string
-  }
-}
+    innerProp: string;
+  };
+};
 describe('applyProviders', function () {
   test('should deepMerge config returned from providers', async () => {
     const defaultValue: Value = {
@@ -28,7 +28,7 @@ describe('applyProviders', function () {
       prop3: {
         innerProp: '1',
       },
-    }
+    };
     const providers: Provider<DeepPartial<Value>>[] = [
       async () => ({
         prop1: {
@@ -38,9 +38,9 @@ describe('applyProviders', function () {
           innerProp: 'Tom',
         },
       }),
-    ]
+    ];
 
-    const result = await applyProviders(defaultValue, providers)
+    const result = await applyProviders(defaultValue, providers);
     expect(result).toEqual({
       prop1: {
         innerProp: 'John',
@@ -53,6 +53,6 @@ describe('applyProviders', function () {
       prop3: {
         innerProp: '1',
       },
-    })
-  })
-})
+    });
+  });
+});

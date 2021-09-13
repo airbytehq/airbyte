@@ -1,7 +1,7 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { useConfig } from '@app/config'
+import { useConfig } from '@app/config';
 
 const Content = styled.div<{ primary?: boolean }>`
   color: ${({ theme, primary }) =>
@@ -12,20 +12,20 @@ const Content = styled.div<{ primary?: boolean }>`
   line-height: 15px;
   font-style: italic;
   margin-top: 10px;
-`
+`;
 
 type IProps = {
-  className?: string
-  primary?: boolean
-}
+  className?: string;
+  primary?: boolean;
+};
 
 const Version: React.FC<IProps> = ({ className, primary }) => {
-  const config = useConfig()
+  const config = useConfig();
   return (
     <Content primary={primary} className={className}>
       {config.version}
     </Content>
-  )
-}
+  );
+};
 
-export default Version
+export default Version;

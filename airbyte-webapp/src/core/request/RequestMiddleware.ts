@@ -1,1 +1,1 @@
-export type RequestMiddleware = (options: RequestInit) => Promise<RequestInit>
+export type RequestMiddleware = (options: RequestInit) => Promise<RequestInit>;

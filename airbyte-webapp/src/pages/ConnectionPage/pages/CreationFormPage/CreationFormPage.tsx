@@ -1,27 +1,27 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import { useResource } from 'rest-hooks'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useResource } from 'rest-hooks';
 
-import useRouter from '@app/hooks/useRouter'
-import MainPageWithScroll from '@app/components/MainPageWithScroll'
-import PageTitle from '@app/components/PageTitle'
-import StepsMenu from '@app/components/StepsMenu'
-import { FormPageContent } from '@app/components/ConnectorBlocks'
-import CreateEntityView from './components/CreateEntityView'
-import SourceForm from './components/SourceForm'
-import DestinationForm from './components/DestinationForm'
-import ConnectionBlock from '@app/components/ConnectionBlock'
-import { Routes } from '../../../routes'
-import CreateConnectionContent from '@app/components/CreateConnectionContent'
-import SourceResource from '@app/core/resources/Source'
-import DestinationResource from '@app/core/resources/Destination'
-import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import HeadTitle from '@app/components/HeadTitle'
+import useRouter from '@app/hooks/useRouter';
+import MainPageWithScroll from '@app/components/MainPageWithScroll';
+import PageTitle from '@app/components/PageTitle';
+import StepsMenu from '@app/components/StepsMenu';
+import { FormPageContent } from '@app/components/ConnectorBlocks';
+import CreateEntityView from './components/CreateEntityView';
+import SourceForm from './components/SourceForm';
+import DestinationForm from './components/DestinationForm';
+import ConnectionBlock from '@app/components/ConnectionBlock';
+import { Routes } from '../../../routes';
+import CreateConnectionContent from '@app/components/CreateConnectionContent';
+import SourceResource from '@app/core/resources/Source';
+import DestinationResource from '@app/core/resources/Destination';
+import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition';
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import HeadTitle from '@app/components/HeadTitle';
 
 type IProps = {
-  type: 'source' | 'destination' | 'connection'
-}
+  type: 'source' | 'destination' | 'connection';
+};
 
 export enum StepsTypes {
   CREATE_ENTITY = 'createEntity',
@@ -36,12 +36,12 @@ export enum EntityStepsTypes {
 }
 
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
-  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY)
+  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [currentEntityStep, setCurrentEntityStep] = useState(
     EntityStepsTypes.SOURCE
-  )
+  );
 
-  const { location, push } = useRouter()
+  const { location, push } = useRouter();
   const source = useResource(
     SourceResource.detailShape(),
     location.state?.sourceId
@@ -49,7 +49,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           sourceId: location.state.sourceId,
         }
       : null
-  )
+  );
   const sourceDefinition = useResource(
     SourceDefinitionResource.detailShape(),
     source
@@ -57,7 +57,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           sourceDefinitionId: source.sourceDefinitionId,
         }
       : null
-  )
+  );
 
   const destination = useResource(
     DestinationResource.detailShape(),
@@ -66,7 +66,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           destinationId: location.state.destinationId,
         }
       : null
-  )
+  );
   const destinationDefinition = useResource(
     DestinationDefinitionResource.detailShape(),
     destination
@@ -74,7 +74,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           destinationDefinitionId: destination.destinationDefinitionId,
         }
       : null
-  )
+  );
 
   const renderStep = () => {
     if (
@@ -87,58 +87,58 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
             <CreateEntityView
               type="source"
               afterSuccess={() => {
-                setCurrentEntityStep(EntityStepsTypes.DESTINATION)
+                setCurrentEntityStep(EntityStepsTypes.DESTINATION);
                 if (type === 'connection') {
-                  setCurrentStep(StepsTypes.CREATE_CONNECTOR)
+                  setCurrentStep(StepsTypes.CREATE_CONNECTOR);
                 }
               }}
             />
-          )
+          );
         }
 
         return (
           <SourceForm
             afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.DESTINATION)
+              setCurrentEntityStep(EntityStepsTypes.DESTINATION);
               if (type === 'connection') {
-                setCurrentStep(StepsTypes.CREATE_CONNECTOR)
+                setCurrentStep(StepsTypes.CREATE_CONNECTOR);
               }
             }}
           />
-        )
+        );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
         if (location.state?.destinationId) {
           return (
             <CreateEntityView
               type="destination"
               afterSuccess={() => {
-                setCurrentEntityStep(EntityStepsTypes.CONNECTION)
-                setCurrentStep(StepsTypes.CREATE_CONNECTION)
+                setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }}
             />
-          )
+          );
         }
 
         return (
           <DestinationForm
             afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.CONNECTION)
-              setCurrentStep(StepsTypes.CREATE_CONNECTION)
+              setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+              setCurrentStep(StepsTypes.CREATE_CONNECTION);
             }}
           />
-        )
+        );
       }
     }
 
     const afterSubmitConnection = () => {
       if (type === 'destination') {
-        push(`${Routes.Source}/${source?.sourceId}`)
+        push(`${Routes.Source}/${source?.sourceId}`);
       } else if (type === 'source') {
-        push(`${Routes.Destination}/${destination?.destinationId}`)
+        push(`${Routes.Destination}/${destination?.destinationId}`);
       } else {
-        push(`${Routes.Connections}`)
+        push(`${Routes.Connections}`);
       }
-    }
+    };
 
     return (
       <CreateConnectionContent
@@ -146,8 +146,8 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         destination={destination!}
         afterSubmitConnection={afterSubmitConnection}
       />
-    )
-  }
+    );
+  };
 
   const steps =
     type === 'connection'
@@ -179,18 +179,18 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
             id: StepsTypes.CREATE_CONNECTION,
             name: <FormattedMessage id={'onboarding.setUpConnection'} />,
           },
-        ]
+        ];
 
   const titleId = () => {
     switch (type) {
       case 'connection':
-        return 'connection.newConnectionTitle'
+        return 'connection.newConnectionTitle';
       case 'destination':
-        return 'destinations.newDestinationTitle'
+        return 'destinations.newDestinationTitle';
       case 'source':
-        return 'sources.newSourceTitle'
+        return 'sources.newSourceTitle';
     }
-  }
+  };
 
   return (
     <MainPageWithScroll
@@ -230,7 +230,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         {renderStep()}
       </FormPageContent>
     </MainPageWithScroll>
-  )
-}
+  );
+};
 
-export default CreationFormPage
+export default CreationFormPage;

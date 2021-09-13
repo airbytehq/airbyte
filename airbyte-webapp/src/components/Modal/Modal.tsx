@@ -1,17 +1,17 @@
-import React, { useEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
-import styled, { keyframes } from 'styled-components'
+import React, { useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import styled, { keyframes } from 'styled-components';
 
-import ContentCard from '@app/components/ContentCard'
+import ContentCard from '@app/components/ContentCard';
 
 export type IProps = {
-  title?: string | React.ReactNode
-  onClose?: () => void
-}
+  title?: string | React.ReactNode;
+  onClose?: () => void;
+};
 
 const fadeIn = keyframes`
   from { opacity: 0; }
-`
+`;
 
 const Overlay = styled.div`
   animation: ${fadeIn} 0.2s ease-out;
@@ -25,36 +25,36 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 10;
-`
+`;
 
 const Modal: React.FC<IProps> = ({ children, title, onClose }) => {
   const handleUserKeyPress = useCallback((event, closeModal) => {
-    const { keyCode } = event
+    const { keyCode } = event;
     if (keyCode === 27) {
-      closeModal()
+      closeModal();
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     onClose &&
       window.addEventListener('keydown', (event) =>
         handleUserKeyPress(event, onClose)
-      )
+      );
 
     return () => {
       onClose &&
         window.removeEventListener('keydown', (event) =>
           handleUserKeyPress(event, onClose)
-        )
-    }
-  }, [handleUserKeyPress, onClose])
+        );
+    };
+  }, [handleUserKeyPress, onClose]);
 
   return createPortal(
     <Overlay>
       <ContentCard title={title}>{children}</ContentCard>
     </Overlay>,
     document.body
-  )
-}
+  );
+};
 
-export default Modal
+export default Modal;

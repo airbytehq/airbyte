@@ -1,7 +1,7 @@
 const ExitIcon = ({
   color = 'currentColor',
 }: {
-  color?: string
+  color?: string;
 }): JSX.Element => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
     <path
@@ -9,6 +9,6 @@ const ExitIcon = ({
       fill={color}
     />
   </svg>
-)
+);
 
-export default ExitIcon
+export default ExitIcon;

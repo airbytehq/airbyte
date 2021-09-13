@@ -1,10 +1,10 @@
-import * as React from 'react'
-import styled from 'styled-components'
+import * as React from 'react';
+import styled from 'styled-components';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 
-import { Button } from '@app/components'
+import { Button } from '@app/components';
 
 const SortButtonView = styled(Button)<{ wasActive?: boolean }>`
   min-width: 18px;
@@ -20,13 +20,13 @@ const SortButtonView = styled(Button)<{ wasActive?: boolean }>`
   &:hover {
     color: inherit;
   }
-`
+`;
 
 type IProps = {
-  lowToLarge?: boolean
-  wasActive?: boolean
-  onClick: () => void
-}
+  lowToLarge?: boolean;
+  wasActive?: boolean;
+  onClick: () => void;
+};
 
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
   return (
@@ -35,7 +35,7 @@ const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
         icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown}
       />
     </SortButtonView>
-  )
-}
+  );
+};
 
-export default SortButton
+export default SortButton;

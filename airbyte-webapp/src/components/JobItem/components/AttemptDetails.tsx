@@ -1,22 +1,22 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import dayjs from 'dayjs'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import dayjs from 'dayjs';
 
-import { Attempt } from '@app/core/resources/Job'
-import Status from '@app/core/statuses'
+import { Attempt } from '@app/core/resources/Job';
+import Status from '@app/core/statuses';
 
 type IProps = {
-  className?: string
-  attempt: Attempt
-  configType?: string
-}
+  className?: string;
+  attempt: Attempt;
+  configType?: string;
+};
 
 const Details = styled.div`
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme }) => theme.greyColor40};
-`
+`;
 
 const AttemptDetails: React.FC<IProps> = ({
   attempt,
@@ -31,36 +31,36 @@ const AttemptDetails: React.FC<IProps> = ({
           defaultMessage={configType}
         />
       </Details>
-    )
+    );
   }
 
   const formatBytes = (bytes: number) => {
     if (!bytes) {
       return (
         <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />
-      )
+      );
     }
 
-    const k = 1024
-    const dm = 2
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    const result = parseFloat((bytes / Math.pow(k, i)).toFixed(dm))
+    const k = 1024;
+    const dm = 2;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const result = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
 
     return (
       <FormattedMessage
         id={`sources.count${sizes[i]}`}
         values={{ count: result }}
       />
-    )
-  }
+    );
+  };
 
-  const date1 = dayjs(attempt.createdAt * 1000)
-  const date2 = dayjs(attempt.updatedAt * 1000)
-  const hours = Math.abs(date2.diff(date1, 'hour'))
-  const minutes = Math.abs(date2.diff(date1, 'minute')) - hours * 60
+  const date1 = dayjs(attempt.createdAt * 1000);
+  const date2 = dayjs(attempt.updatedAt * 1000);
+  const hours = Math.abs(date2.diff(date1, 'hour'));
+  const minutes = Math.abs(date2.diff(date1, 'minute')) - hours * 60;
   const seconds =
-    Math.abs(date2.diff(date1, 'second')) - minutes * 60 - hours * 3600
+    Math.abs(date2.diff(date1, 'second')) - minutes * 60 - hours * 3600;
 
   return (
     <Details className={className}>
@@ -92,7 +92,7 @@ const AttemptDetails: React.FC<IProps> = ({
         </span>
       ) : null}
     </Details>
-  )
-}
+  );
+};
 
-export default AttemptDetails
+export default AttemptDetails;

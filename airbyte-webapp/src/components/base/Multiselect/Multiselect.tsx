@@ -1,12 +1,12 @@
-import { Multiselect as ReactMultiselect } from 'react-widgets'
-import styled from 'styled-components'
-import { MultiselectProps as WidgetMultiselectProps } from 'react-widgets/lib/Multiselect'
+import { Multiselect as ReactMultiselect } from 'react-widgets';
+import styled from 'styled-components';
+import { MultiselectProps as WidgetMultiselectProps } from 'react-widgets/lib/Multiselect';
 
 type MultiselectProps = {
-  disabled?: boolean
-  error?: boolean
-  name?: string
-} & WidgetMultiselectProps
+  disabled?: boolean;
+  error?: boolean;
+  name?: string;
+} & WidgetMultiselectProps;
 
 const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
   box-shadow: none;
@@ -131,7 +131,7 @@ const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
       color: ${({ theme }) => theme.greyColor55};
     }
   }
-`
+`;
 
-export { Multiselect }
-export type { MultiselectProps }
+export { Multiselect };
+export type { MultiselectProps };

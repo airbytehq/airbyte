@@ -1,43 +1,43 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
-import Spinner from '@app/components/Spinner'
+import { Button } from '@app/components';
+import Spinner from '@app/components/Spinner';
 
 type IProps = {
-  isSubmitting: boolean
-  isValid: boolean
-  dirty: boolean
-  resetForm: () => void
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-}
+  isSubmitting: boolean;
+  isValid: boolean;
+  dirty: boolean;
+  resetForm: () => void;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+};
 
 const Controls = styled.div`
   margin-top: 34px;
-`
+`;
 
 const ButtonContainer = styled.span`
   margin-left: 10px;
-`
+`;
 
 const Success = styled(ButtonContainer)`
   color: ${({ theme }) => theme.successColor};
   font-size: 14px;
   line-height: 17px;
-`
+`;
 
 const Error = styled(Success)`
   color: ${({ theme }) => theme.dangerColor};
-`
+`;
 
 const SpinnerContainer = styled.div`
   margin: -13px 0 0 10px;
   display: inline-block;
   position: relative;
   top: 10px;
-`
+`;
 
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
@@ -53,16 +53,16 @@ const EditControls: React.FC<IProps> = ({
         <SpinnerContainer>
           <Spinner small />
         </SpinnerContainer>
-      )
+      );
     }
     if (errorMessage) {
-      return <Error>{errorMessage}</Error>
+      return <Error>{errorMessage}</Error>;
     }
     if (successMessage && !dirty) {
-      return <Success data-id="success-result">{successMessage}</Success>
+      return <Success data-id="success-result">{successMessage}</Success>;
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <Controls>
@@ -81,7 +81,7 @@ const EditControls: React.FC<IProps> = ({
       </ButtonContainer>
       {showStatusMessage()}
     </Controls>
-  )
-}
+  );
+};
 
-export default EditControls
+export default EditControls;

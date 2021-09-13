@@ -1,23 +1,23 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import WorkspaceItem from './WorkspaceItem'
-import WorkspacesControl from './WorkspacesControl'
+import WorkspaceItem from './WorkspaceItem';
+import WorkspacesControl from './WorkspacesControl';
 import {
   useListWorkspaces,
   useWorkspaceService,
-} from '@app/packages/cloud/services/workspaces/WorkspacesService'
+} from '@app/packages/cloud/services/workspaces/WorkspacesService';
 
 const Content = styled.div`
   width: 100%;
   max-width: 550px;
   margin: 0 auto;
   padding-bottom: 26px;
-`
+`;
 
 const WorkspacesList: React.FC = () => {
-  const { data: workspaces } = useListWorkspaces()
-  const { selectWorkspace, createWorkspace } = useWorkspaceService()
+  const { data: workspaces } = useListWorkspaces();
+  const { selectWorkspace, createWorkspace } = useWorkspaceService();
 
   return (
     <Content>
@@ -34,7 +34,7 @@ const WorkspacesList: React.FC = () => {
         : null}
       <WorkspacesControl onSubmit={createWorkspace} />
     </Content>
-  )
-}
+  );
+};
 
-export default WorkspacesList
+export default WorkspacesList;

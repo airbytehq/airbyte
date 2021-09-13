@@ -1,11 +1,11 @@
-import { Config } from '@app/config'
+import { Config } from '@app/config';
 
 export type CloudConfigExtension = {
-  cloudApiUrl: string
+  cloudApiUrl: string;
   firebase: {
-    apiKey: string
-    authDomain: string
-  }
-}
+    apiKey: string;
+    authDomain: string;
+  };
+};
 
-export type CloudConfig = Config & CloudConfigExtension
+export type CloudConfig = Config & CloudConfigExtension;

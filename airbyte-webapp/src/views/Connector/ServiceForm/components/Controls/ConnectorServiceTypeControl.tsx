@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo } from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { useField } from 'formik'
-import { components } from 'react-select'
-import { MenuListComponentProps } from 'react-select/src/components/Menu'
-import styled from 'styled-components'
+import React, { useCallback, useMemo } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { useField } from 'formik';
+import { components } from 'react-select';
+import { MenuListComponentProps } from 'react-select/src/components/Menu';
+import styled from 'styled-components';
 
 import {
   ControlLabels,
@@ -11,15 +11,15 @@ import {
   DropDown,
   DropDownRow,
   ImageBlock,
-} from '@app/components'
+} from '@app/components';
 
-import { FormBaseItem } from '@app/core/form/types'
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import { isSourceDefinition } from '@app/core/domain/connector/source'
+import { FormBaseItem } from '@app/core/form/types';
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
+import { isSourceDefinition } from '@app/core/domain/connector/source';
 
-import Instruction from './Instruction'
-import { IDataItem } from '@app/components/base/DropDown/components/Option'
+import Instruction from './Instruction';
+import { IDataItem } from '@app/components/base/DropDown/components/Option';
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -27,7 +27,7 @@ const BottomElement = styled.div`
   width: 100%;
   min-height: 34px;
   border-top: 1px solid ${(props) => props.theme.greyColor20};
-`
+`;
 
 const Block = styled.div`
   cursor: pointer;
@@ -36,9 +36,9 @@ const Block = styled.div`
   &:hover {
     color: ${({ theme }) => theme.primaryColor};
   }
-`
+`;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>
+type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
@@ -54,21 +54,21 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
       </Block>
     </BottomElement>
   </>
-)
+);
 
 const DropdownLabels = styled(ControlLabels)`
   max-width: 202px;
-`
+`;
 
 const ConnectorServiceTypeControl: React.FC<{
-  property: FormBaseItem
-  formType: 'source' | 'destination'
-  availableServices: (SourceDefinition | DestinationDefinition)[]
-  isEditMode?: boolean
-  documentationUrl?: string
-  allowChangeConnector?: boolean
-  onChangeServiceType?: (id: string) => void
-  onOpenRequestConnectorModal: () => void
+  property: FormBaseItem;
+  formType: 'source' | 'destination';
+  availableServices: (SourceDefinition | DestinationDefinition)[];
+  isEditMode?: boolean;
+  documentationUrl?: string;
+  allowChangeConnector?: boolean;
+  onChangeServiceType?: (id: string) => void;
+  onOpenRequestConnectorModal: () => void;
 }> = ({
   property,
   formType,
@@ -79,8 +79,8 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl,
   onOpenRequestConnectorModal,
 }) => {
-  const formatMessage = useIntl().formatMessage
-  const [field, fieldMeta, { setValue }] = useField(property.path)
+  const formatMessage = useIntl().formatMessage;
+  const [field, fieldMeta, { setValue }] = useField(property.path);
 
   const sortedDropDownData = useMemo(
     () =>
@@ -94,7 +94,7 @@ const ConnectorServiceTypeControl: React.FC<{
         }))
         .sort(defaultDataItemSort),
     [availableServices]
-  )
+  );
 
   const selectedService = React.useMemo(
     () =>
@@ -105,19 +105,19 @@ const ConnectorServiceTypeControl: React.FC<{
             : s.destinationDefinitionId) === field.value
       ),
     [field.value, availableServices]
-  )
+  );
 
   const handleSelect = useCallback(
     (item: DropDownRow.IDataItem | null) => {
       if (item) {
-        setValue(item.value)
+        setValue(item.value);
         if (onChangeServiceType) {
-          onChangeServiceType(item.value)
+          onChangeServiceType(item.value);
         }
       }
     },
     [setValue, onChangeServiceType]
-  )
+  );
 
   return (
     <>
@@ -149,7 +149,7 @@ const ConnectorServiceTypeControl: React.FC<{
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export { ConnectorServiceTypeControl }
+export { ConnectorServiceTypeControl };

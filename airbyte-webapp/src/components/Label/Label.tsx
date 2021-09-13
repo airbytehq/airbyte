@@ -1,15 +1,15 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 type IProps = {
-  error?: boolean
-  nextLine?: boolean
-  success?: boolean
-  message?: string | React.ReactNode
-  additionLength?: number
-  className?: string
-  onClick?: (data: unknown) => void
-}
+  error?: boolean;
+  nextLine?: boolean;
+  success?: boolean;
+  message?: string | React.ReactNode;
+  additionLength?: number;
+  className?: string;
+  onClick?: (data: unknown) => void;
+};
 
 const Content = styled.label<{ additionLength?: number | string }>`
   display: block;
@@ -28,7 +28,7 @@ const Content = styled.label<{ additionLength?: number | string }>`
     text-decoration: underline;
     color: ${({ theme }) => theme.primaryColor};
   }
-`
+`;
 
 const MessageText = styled.span<Pick<IProps, 'error' | 'success'>>`
   white-space: break-spaces;
@@ -39,7 +39,7 @@ const MessageText = styled.span<Pick<IProps, 'error' | 'success'>>`
       ? props.theme.successColor
       : props.theme.greyColor40};
   font-size: 13px;
-`
+`;
 
 const Label: React.FC<IProps> = (props) => (
   <Content
@@ -55,6 +55,6 @@ const Label: React.FC<IProps> = (props) => (
       </span>
     )}
   </Content>
-)
+);
 
-export default Label
+export default Label;

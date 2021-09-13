@@ -1,25 +1,25 @@
-import React from 'react'
-import styled from 'styled-components'
-import { components, SingleValueProps, OptionTypeBase } from 'react-select'
+import React from 'react';
+import styled from 'styled-components';
+import { components, SingleValueProps, OptionTypeBase } from 'react-select';
 
-import { IDataItem } from './Option'
-import Text from './Text'
+import { IDataItem } from './Option';
+import Text from './Text';
 
 export type IProps = {
-  data?: IDataItem
-} & SingleValueProps<OptionTypeBase>
+  data?: IDataItem;
+} & SingleValueProps<OptionTypeBase>;
 
 const ItemView = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
-`
+`;
 
 const Icon = styled.div`
   margin-right: 6px;
   display: inline-block;
-`
+`;
 
 const SingleValue: React.FC<IProps> = (props) => {
   return (
@@ -31,7 +31,7 @@ const SingleValue: React.FC<IProps> = (props) => {
         </components.SingleValue>
       </Text>
     </ItemView>
-  )
-}
+  );
+};
 
-export default React.memo(SingleValue)
+export default React.memo(SingleValue);

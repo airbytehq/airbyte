@@ -1,22 +1,22 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button, Spinner, StatusIcon } from '@app/components'
+import { Button, Spinner, StatusIcon } from '@app/components';
 
 type IProps = {
-  isSubmitting: boolean
-  isValid: boolean
-  errorMessage?: React.ReactNode
-  additionBottomControls?: React.ReactNode
-}
+  isSubmitting: boolean;
+  isValid: boolean;
+  errorMessage?: React.ReactNode;
+  additionBottomControls?: React.ReactNode;
+};
 
 const ButtonContainer = styled.div`
   margin-top: 34px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-`
+`;
 
 const LoadingContainer = styled(ButtonContainer)`
   font-weight: 600;
@@ -24,11 +24,11 @@ const LoadingContainer = styled(ButtonContainer)`
   line-height: 17px;
   color: ${({ theme }) => theme.darkPrimaryColor};
   justify-content: center;
-`
+`;
 
 const Loader = styled.div`
   margin-right: 10px;
-`
+`;
 
 const Success = styled(StatusIcon)`
   width: 26px;
@@ -36,12 +36,12 @@ const Success = styled(StatusIcon)`
   height: 26px;
   padding-top: 5px;
   font-size: 17px;
-`
+`;
 
 const Error = styled(Success)`
   padding-top: 4px;
   padding-left: 1px;
-`
+`;
 
 const ErrorBlock = styled.div`
   display: flex;
@@ -51,13 +51,13 @@ const ErrorBlock = styled.div`
   font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
-`
+`;
 
 const ErrorText = styled.div`
   font-weight: normal;
   color: ${({ theme }) => theme.dangerColor};
   max-width: 400px;
-`
+`;
 
 const CreateControls: React.FC<IProps> = ({
   isSubmitting,
@@ -72,7 +72,7 @@ const CreateControls: React.FC<IProps> = ({
         </Loader>
         <FormattedMessage id="form.testingConnection" />
       </LoadingContainer>
-    )
+    );
   }
 
   return (
@@ -95,7 +95,7 @@ const CreateControls: React.FC<IProps> = ({
         </Button>
       </div>
     </ButtonContainer>
-  )
-}
+  );
+};
 
-export default CreateControls
+export default CreateControls;

@@ -1,6 +1,6 @@
-import React from 'react'
-import styled from 'styled-components'
-import { Row } from '@app/components/SimpleTableComponents'
+import React from 'react';
+import styled from 'styled-components';
+import { Row } from '@app/components/SimpleTableComponents';
 
 const RowWrapper = styled.div<{ depth?: number; noBorder?: boolean }>`
   height: 40px;
@@ -10,12 +10,12 @@ const RowWrapper = styled.div<{ depth?: number; noBorder?: boolean }>`
   &:last-child {
     border: ${({ depth = 0 }) => depth > 0 && 'none'};
   }
-`
+`;
 
 const RowContent = styled(Row)`
   height: 100%;
   white-space: nowrap;
-`
+`;
 
 const TreeRowWrapper: React.FC<{ depth?: number; noBorder?: boolean }> = ({
   depth,
@@ -25,6 +25,6 @@ const TreeRowWrapper: React.FC<{ depth?: number; noBorder?: boolean }> = ({
   <RowWrapper depth={depth} noBorder={noBorder}>
     <RowContent>{children}</RowContent>
   </RowWrapper>
-)
+);
 
-export { TreeRowWrapper }
+export { TreeRowWrapper };

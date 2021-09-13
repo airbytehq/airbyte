@@ -1,3 +1,3 @@
-import DestinationPage from './DestinationPage'
+import DestinationPage from './DestinationPage';
 
-export default DestinationPage
+export default DestinationPage;

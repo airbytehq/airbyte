@@ -1,7 +1,7 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import styled from 'styled-components'
-import { Field, FieldArray, FieldProps, Form, Formik } from 'formik'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import styled from 'styled-components';
+import { Field, FieldArray, FieldProps, Form, Formik } from 'formik';
 
 import {
   Button,
@@ -10,44 +10,44 @@ import {
   Input,
   LoadingButton,
   Modal,
-} from '@app/components'
-import { Cell, Header, Row } from '@app/components/SimpleTableComponents'
-import { useGetUserService } from '@app/packages/cloud/services/users/UserService'
-import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace'
+} from '@app/components';
+import { Cell, Header, Row } from '@app/components/SimpleTableComponents';
+import { useGetUserService } from '@app/packages/cloud/services/users/UserService';
+import { useCurrentWorkspace } from '@app/hooks/services/useWorkspace';
 
 const Content = styled.div`
   width: 614px;
   padding: 20px 18px 37px 22px;
-`
+`;
 
 const Controls = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 26px;
-`
+`;
 
 const SendInvitationButton = styled(LoadingButton)`
   margin-left: 10px;
-`
+`;
 
 const FormHeader = styled(Header)`
   margin-bottom: 14px;
-`
+`;
 
 const FormRow = styled(Row)`
   margin-bottom: 8px;
-`
+`;
 
 export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
-  const formatMessage = useIntl().formatMessage
-  const userService = useGetUserService()
-  const { workspaceId } = useCurrentWorkspace()
+  const formatMessage = useIntl().formatMessage;
+  const userService = useGetUserService();
+  const { workspaceId } = useCurrentWorkspace();
   const roleOptions = [
     {
       value: 'admin',
       label: 'admin',
     },
-  ]
+  ];
   return (
     <Modal
       title={<FormattedMessage id="modals.addUser.title" />}
@@ -63,8 +63,8 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
           ],
         }}
         onSubmit={async (values) => {
-          await userService.invite(values.users, workspaceId)
-          props.onClose()
+          await userService.invite(values.users, workspaceId);
+          props.onClose();
         }}
       >
         {({ values, isValid, isSubmitting, dirty }) => (
@@ -138,5 +138,5 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
         )}
       </Formik>
     </Modal>
-  )
-}
+  );
+};

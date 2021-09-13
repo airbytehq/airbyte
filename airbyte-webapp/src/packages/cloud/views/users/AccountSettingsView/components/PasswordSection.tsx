@@ -1,16 +1,16 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { Field, FieldProps, Form, Formik } from 'formik'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Field, FieldProps, Form, Formik } from 'formik';
 
 import {
   Content,
   SettingsCard,
-} from '@app/pages/SettingsPage/pages/SettingsComponents'
-import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
-import { LabeledInput } from '@app/components/LabeledInput'
+} from '@app/pages/SettingsPage/pages/SettingsComponents';
+import { FieldItem } from '@app/packages/cloud/views/auth/components/FormComponents';
+import { LabeledInput } from '@app/components/LabeledInput';
 
 export const PasswordSection: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
   return (
     <SettingsCard>
@@ -22,7 +22,7 @@ export const PasswordSection: React.FC = () => {
             password: '',
           }}
           onSubmit={() => {
-            throw new Error('Not implemented')
+            throw new Error('Not implemented');
           }}
         >
           {() => (
@@ -107,5 +107,5 @@ export const PasswordSection: React.FC = () => {
         </Formik>
       </Content>
     </SettingsCard>
-  )
-}
+  );
+};

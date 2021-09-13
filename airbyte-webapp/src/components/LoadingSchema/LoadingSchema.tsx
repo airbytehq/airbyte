@@ -1,13 +1,13 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import Spinner from '@app/components/Spinner'
+import Spinner from '@app/components/Spinner';
 
 const SpinnerBlock = styled.div`
   margin: 40px;
   text-align: center;
-`
+`;
 
 const FetchMessage = styled.div`
   font-size: 14px;
@@ -15,7 +15,7 @@ const FetchMessage = styled.div`
   color: ${({ theme }) => theme.textColor};
   margin-top: 15px;
   white-space: pre-line;
-`
+`;
 
 const LoadingSchema: React.FC = () => (
   <SpinnerBlock>
@@ -24,6 +24,6 @@ const LoadingSchema: React.FC = () => (
       <FormattedMessage id="onboarding.fetchingSchema" />
     </FetchMessage>
   </SpinnerBlock>
-)
+);
 
-export default LoadingSchema
+export default LoadingSchema;

@@ -1,6 +1,6 @@
-import React from 'react'
-import styled from 'styled-components'
-import { Label, TextWithHTML } from '@app/components'
+import React from 'react';
+import styled from 'styled-components';
+import { Label, TextWithHTML } from '@app/components';
 
 const GroupTitle = styled.div`
   margin-top: -23px;
@@ -13,7 +13,7 @@ const GroupTitle = styled.div`
     min-width: 180px;
     display: inline-block;
   }
-`
+`;
 
 const FormGroup = styled.div`
   margin: 41px 0 27px;
@@ -21,13 +21,13 @@ const FormGroup = styled.div`
   box-sizing: border-box;
   border-radius: 8px;
   padding: 0 20px;
-`
+`;
 
 type GroupControlsProps = {
-  title: React.ReactNode
-  description?: string
-  name?: string
-}
+  title: React.ReactNode;
+  description?: string;
+  name?: string;
+};
 
 const GroupControls: React.FC<GroupControlsProps> = ({
   title,
@@ -41,7 +41,7 @@ const GroupControls: React.FC<GroupControlsProps> = ({
       {description && <Label message={<TextWithHTML text={description} />} />}
       {children}
     </FormGroup>
-  )
-}
+  );
+};
 
-export default GroupControls
+export default GroupControls;

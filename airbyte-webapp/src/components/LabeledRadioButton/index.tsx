@@ -1,4 +1,4 @@
-import LabeledRadioButton from './LabeledRadioButton'
+import LabeledRadioButton from './LabeledRadioButton';
 
-export default LabeledRadioButton
-export { LabeledRadioButton }
+export default LabeledRadioButton;
+export { LabeledRadioButton };

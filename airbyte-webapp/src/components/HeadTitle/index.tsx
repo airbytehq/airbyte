@@ -1,3 +1,3 @@
-import HeadTitle from './HeadTitle'
+import HeadTitle from './HeadTitle';
 
-export default HeadTitle
+export default HeadTitle;

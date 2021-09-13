@@ -1,27 +1,27 @@
-import React, { Suspense, useMemo } from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { faRedoAlt } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useResource } from 'rest-hooks'
+import React, { Suspense, useMemo } from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { faRedoAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useResource } from 'rest-hooks';
 
-import { Button } from '@app/components'
-import LoadingSchema from '@app/components/LoadingSchema'
-import ContentCard from '@app/components/ContentCard'
-import { JobsLogItem } from '@app/components/JobItem'
-import ConnectionForm from '@app/views/Connection/ConnectionForm'
-import TryAfterErrorBlock from './components/TryAfterErrorBlock'
-import { Source } from '@app/core/resources/Source'
-import { Destination } from '@app/core/resources/Destination'
+import { Button } from '@app/components';
+import LoadingSchema from '@app/components/LoadingSchema';
+import ContentCard from '@app/components/ContentCard';
+import { JobsLogItem } from '@app/components/JobItem';
+import ConnectionForm from '@app/views/Connection/ConnectionForm';
+import TryAfterErrorBlock from './components/TryAfterErrorBlock';
+import { Source } from '@app/core/resources/Source';
+import { Destination } from '@app/core/resources/Destination';
 
 import useConnection, {
   ValuesProps,
-} from '@app/hooks/services/useConnectionHook'
-import { useDiscoverSchema } from '@app/hooks/services/useSchemaHook'
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import { IDataItem } from '@app/components/base/DropDown/components/Option'
-import { useAnalytics } from '@app/hooks/useAnalytics'
+} from '@app/hooks/services/useConnectionHook';
+import { useDiscoverSchema } from '@app/hooks/services/useSchemaHook';
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition';
+import { IDataItem } from '@app/components/base/DropDown/components/Option';
+import { useAnalytics } from '@app/hooks/useAnalytics';
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -30,19 +30,19 @@ const SkipButton = styled.div`
     min-width: 239px;
     margin-left: 9px;
   }
-`
+`;
 
 const TryArrow = styled(FontAwesomeIcon)`
   margin: 0 10px -1px 0;
   font-size: 14px;
-`
+`;
 
 type IProps = {
-  additionBottomControls?: React.ReactNode
-  source: Source
-  destination: Destination
-  afterSubmitConnection?: () => void
-}
+  additionBottomControls?: React.ReactNode;
+  source: Source;
+  destination: Destination;
+  afterSubmitConnection?: () => void;
+};
 
 const CreateConnectionContent: React.FC<IProps> = ({
   source,
@@ -50,22 +50,22 @@ const CreateConnectionContent: React.FC<IProps> = ({
   afterSubmitConnection,
   additionBottomControls,
 }) => {
-  const { createConnection } = useConnection()
-  const analyticsService = useAnalytics()
+  const { createConnection } = useConnection();
+  const analyticsService = useAnalytics();
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
-  })
+  });
 
   const destinationDefinition = useResource(
     DestinationDefinitionResource.detailShape(),
     {
       destinationDefinitionId: destination.destinationDefinitionId,
     }
-  )
+  );
 
   const { schema, isLoading, schemaErrorStatus, onDiscoverSchema } =
-    useDiscoverSchema(source?.sourceId)
+    useDiscoverSchema(source?.sourceId);
 
   const connection = useMemo(
     () => ({
@@ -74,14 +74,14 @@ const CreateConnectionContent: React.FC<IProps> = ({
       source,
     }),
     [schema, destination, source]
-  )
+  );
 
   if (isLoading) {
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
         <LoadingSchema />
       </ContentCard>
-    )
+    );
   }
 
   if (schemaErrorStatus) {
@@ -93,7 +93,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
         />
         <JobsLogItem jobInfo={schemaErrorStatus?.response} />
       </ContentCard>
-    )
+    );
   }
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
@@ -109,12 +109,12 @@ const CreateConnectionContent: React.FC<IProps> = ({
         name: destination?.name ?? '',
         destinationDefinitionId: destination?.destinationDefinitionId ?? '',
       },
-    })
+    });
 
     if (afterSubmitConnection) {
-      afterSubmitConnection()
+      afterSubmitConnection();
     }
-  }
+  };
 
   const onSelectFrequency = (item: IDataItem | null) => {
     analyticsService.track('New Connection - Action', {
@@ -124,8 +124,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
       connector_source_definition_id: source?.sourceDefinitionId,
       connector_destination_definition: destination?.destinationName,
       connector_destination_definition_id: destination?.destinationDefinitionId,
-    })
-  }
+    });
+  };
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
@@ -146,7 +146,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
         />
       </Suspense>
     </ContentCard>
-  )
-}
+  );
+};
 
-export default CreateConnectionContent
+export default CreateConnectionContent;

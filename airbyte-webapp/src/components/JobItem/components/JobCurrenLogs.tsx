@@ -1,22 +1,22 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 
-import { Attempt } from '@app/core/resources/Job'
-import AttemptDetails from './AttemptDetails'
-import DownloadButton from './DownloadButton'
-import Logs from './Logs'
-import Tabs from './Tabs'
-import CenteredDetails from './CenteredDetails'
+import { Attempt } from '@app/core/resources/Job';
+import AttemptDetails from './AttemptDetails';
+import DownloadButton from './DownloadButton';
+import Logs from './Logs';
+import Tabs from './Tabs';
+import CenteredDetails from './CenteredDetails';
 
 type IProps = {
-  id: number | string
-  jobIsFailed?: boolean
+  id: number | string;
+  jobIsFailed?: boolean;
   attempts: {
-    attempt: Attempt
-    logs: { logLines: string[] }
-  }[]
-  logs?: { logLines: string[] }
-}
+    attempt: Attempt;
+    logs: { logLines: string[] };
+  }[];
+  logs?: { logLines: string[] };
+};
 
 const JobCurrentLogs: React.FC<IProps> = ({
   id,
@@ -26,7 +26,7 @@ const JobCurrentLogs: React.FC<IProps> = ({
 }) => {
   const [attemptNumber, setAttemptNumber] = useState<number>(
     attempts.length ? attempts.length - 1 : 0
-  )
+  );
 
   const data = attempts?.map((item, index) => ({
     id: index.toString(),
@@ -37,10 +37,10 @@ const JobCurrentLogs: React.FC<IProps> = ({
         values={{ number: index + 1 }}
       />
     ),
-  }))
+  }));
 
-  const logsText = attempts.length ? attempts[attemptNumber].logs : logs
-  const attemptId = attempts.length ? attempts[attemptNumber].attempt.id : ''
+  const logsText = attempts.length ? attempts[attemptNumber].logs : logs;
+  const attemptId = attempts.length ? attempts[attemptNumber].attempt.id : '';
 
   return (
     <>
@@ -65,7 +65,7 @@ const JobCurrentLogs: React.FC<IProps> = ({
       </CenteredDetails>
       <Logs logsArray={logsText?.logLines} />
     </>
-  )
-}
+  );
+};
 
-export default JobCurrentLogs
+export default JobCurrentLogs;

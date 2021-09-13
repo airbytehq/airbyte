@@ -1,8 +1,8 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import StatusIcon from '@app/components/StatusIcon'
+import StatusIcon from '@app/components/StatusIcon';
 
 const LoadingContainer = styled.div`
   font-weight: 600;
@@ -13,7 +13,7 @@ const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const Success = styled(StatusIcon)`
   width: 26px;
@@ -21,7 +21,7 @@ const Success = styled(StatusIcon)`
   height: 26px;
   padding-top: 5px;
   font-size: 17px;
-`
+`;
 
 const TestingConnectionSuccess: React.FC = () => {
   return (
@@ -29,7 +29,7 @@ const TestingConnectionSuccess: React.FC = () => {
       <Success success />
       <FormattedMessage id="form.successTests" />
     </LoadingContainer>
-  )
-}
+  );
+};
 
-export default TestingConnectionSuccess
+export default TestingConnectionSuccess;

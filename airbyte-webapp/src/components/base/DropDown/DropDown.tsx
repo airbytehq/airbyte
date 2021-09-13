@@ -1,25 +1,25 @@
-import React from 'react'
-import { Props } from 'react-select'
-import { SelectComponentsConfig } from 'react-select/src/components'
+import React from 'react';
+import { Props } from 'react-select';
+import { SelectComponentsConfig } from 'react-select/src/components';
 
-import DropdownIndicator from './components/DropdownIndicator'
-import Menu from './components/Menu'
-import SingleValue from './components/SingleValue'
-import Option, { IDataItem } from './components/Option'
+import DropdownIndicator from './components/DropdownIndicator';
+import Menu from './components/Menu';
+import SingleValue from './components/SingleValue';
+import Option, { IDataItem } from './components/Option';
 
-import { equal, naturalComparatorBy } from '@app/utils/objects'
-import { SelectContainer } from './SelectContainer'
-import { CustomSelect } from './CustomSelect'
+import { equal, naturalComparatorBy } from '@app/utils/objects';
+import { SelectContainer } from './SelectContainer';
+import { CustomSelect } from './CustomSelect';
 
-export type OptionType = any
+export type OptionType = any;
 type DropdownProps = Props<OptionType> & {
-  withBorder?: boolean
-  fullText?: boolean
-  error?: boolean
-}
+  withBorder?: boolean;
+  fullText?: boolean;
+  error?: boolean;
+};
 
 const DropDown: React.FC<DropdownProps> = (props) => {
-  const propsComponents = props.components
+  const propsComponents = props.components;
 
   const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
     () =>
@@ -35,13 +35,13 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         ...(propsComponents ?? {}),
       } as any),
     [propsComponents]
-  )
+  );
 
   const currentValue = props.isMulti
     ? props.options?.filter((op) =>
         props.value.find((o: OptionType) => equal(o, op.value))
       )
-    : props.options?.find((op) => equal(op.value, props.value))
+    : props.options?.find((op) => equal(op.value, props.value));
 
   return (
     <CustomSelect
@@ -59,13 +59,13 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       value={currentValue}
       components={components}
     />
-  )
-}
+  );
+};
 
 const defaultDataItemSort = naturalComparatorBy<IDataItem>(
   (dataItem) => dataItem.label || ''
-)
+);
 
-export default DropDown
-export { DropDown, defaultDataItemSort }
-export type { DropdownProps }
+export default DropDown;
+export { DropDown, defaultDataItemSort };
+export type { DropdownProps };

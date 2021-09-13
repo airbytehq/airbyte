@@ -1,22 +1,22 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import ContentCard from '@app/components/ContentCard'
-import { Button } from '@app/components'
-import DeleteModal from './components/DeleteModal'
+import ContentCard from '@app/components/ContentCard';
+import { Button } from '@app/components';
+import DeleteModal from './components/DeleteModal';
 
 type IProps = {
-  type: 'source' | 'destination' | 'connection'
-  onDelete: () => void
-}
+  type: 'source' | 'destination' | 'connection';
+  onDelete: () => void;
+};
 
 const DeleteBlockComponent = styled(ContentCard)`
   margin-top: 12px;
   padding: 29px 28px 27px;
   display: flex;
   align-items: center;
-`
+`;
 
 const Text = styled.div`
   margin-left: 20px;
@@ -24,10 +24,10 @@ const Text = styled.div`
   line-height: 13px;
   color: ${({ theme }) => theme.greyColor40};
   white-space: pre-line;
-`
+`;
 
 const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
@@ -51,7 +51,7 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
         />
       )}
     </>
-  )
-}
+  );
+};
 
-export default DeleteBlock
+export default DeleteBlock;

@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const CenteredDetails = styled.div`
   text-align: center;
@@ -7,6 +7,6 @@ const CenteredDetails = styled.div`
   line-height: 28px;
   color: ${({ theme }) => theme.greyColor40};
   position: relative;
-`
+`;
 
-export default CenteredDetails
+export default CenteredDetails;

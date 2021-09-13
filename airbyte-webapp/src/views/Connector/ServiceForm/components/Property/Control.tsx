@@ -1,5 +1,5 @@
-import React from 'react'
-import { FieldArray, useField } from 'formik'
+import React from 'react';
+import { FieldArray, useField } from 'formik';
 
 import {
   DropDown,
@@ -7,17 +7,17 @@ import {
   Multiselect,
   TextArea,
   TagInput,
-} from '@app/components'
-import ConfirmationControl from './ConfirmationControl'
-import { FormBaseItem } from '@app/core/form/types'
+} from '@app/components';
+import ConfirmationControl from './ConfirmationControl';
+import { FormBaseItem } from '@app/core/form/types';
 
 type IProps = {
-  property: FormBaseItem
-  name: string
-  unfinishedFlows: Record<string, { startValue: string }>
-  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void
-  removeUnfinishedFlow: (key: string) => void
-}
+  property: FormBaseItem;
+  name: string;
+  unfinishedFlows: Record<string, { startValue: string }>;
+  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedFlow: (key: string) => void;
+};
 
 const Control: React.FC<IProps> = ({
   property,
@@ -26,23 +26,23 @@ const Control: React.FC<IProps> = ({
   removeUnfinishedFlow,
   unfinishedFlows,
 }) => {
-  const [field, meta, form] = useField(name)
+  const [field, meta, form] = useField(name);
 
   // TODO: think what to do with other cases
-  let placeholder: string | undefined
+  let placeholder: string | undefined;
 
   switch (typeof property.examples) {
     case 'object':
       if (Array.isArray(property.examples)) {
-        placeholder = property.examples[0] + ''
+        placeholder = property.examples[0] + '';
       }
-      break
+      break;
     case 'number':
-      placeholder = `${property.examples}`
-      break
+      placeholder = `${property.examples}`;
+      break;
     case 'string':
-      placeholder = property.examples
-      break
+      placeholder = property.examples;
+      break;
   }
 
   if (property.type === 'array' && !property.enum) {
@@ -63,14 +63,14 @@ const Control: React.FC<IProps> = ({
           />
         )}
       />
-    )
+    );
   }
 
   if (property.type === 'array' && property.enum) {
     const data =
       property.enum?.length && typeof property.enum[0] !== 'object'
         ? (property.enum as string[] | number[])
-        : undefined
+        : undefined;
     return (
       <Multiselect
         name={name}
@@ -79,10 +79,10 @@ const Control: React.FC<IProps> = ({
         onChange={(dataItems) => form.setValue(dataItems)}
         value={field.value}
       />
-    )
+    );
   }
 
-  const value = field.value ?? property.default
+  const value = field.value ?? property.default;
   if (property.enum) {
     return (
       <DropDown
@@ -97,7 +97,7 @@ const Control: React.FC<IProps> = ({
         }
         value={value}
       />
-    )
+    );
   } else if (property.multiline && !property.isSecret) {
     return (
       <TextArea
@@ -107,11 +107,11 @@ const Control: React.FC<IProps> = ({
         value={value ?? ''}
         rows={3}
       />
-    )
+    );
   } else if (property.isSecret) {
-    const unfinishedSecret = unfinishedFlows[name]
-    const isEditInProgress = !!unfinishedSecret
-    const isFormInEditMode = !!meta.initialValue
+    const unfinishedSecret = unfinishedFlows[name];
+    const isEditInProgress = !!unfinishedSecret;
+    const isFormInEditMode = !!meta.initialValue;
     return (
       <ConfirmationControl
         component={
@@ -137,22 +137,22 @@ const Control: React.FC<IProps> = ({
         isEditInProgress={isEditInProgress}
         onDone={() => removeUnfinishedFlow(name)}
         onStart={() => {
-          addUnfinishedFlow(name, { startValue: field.value })
-          form.setValue('')
+          addUnfinishedFlow(name, { startValue: field.value });
+          form.setValue('');
         }}
         onCancel={() => {
-          removeUnfinishedFlow(name)
+          removeUnfinishedFlow(name);
           if (
             unfinishedSecret &&
             unfinishedSecret.hasOwnProperty('startValue')
           ) {
-            form.setValue(unfinishedSecret.startValue)
+            form.setValue(unfinishedSecret.startValue);
           }
         }}
       />
-    )
+    );
   } else {
-    const inputType = property.type === 'integer' ? 'number' : 'text'
+    const inputType = property.type === 'integer' ? 'number' : 'text';
 
     return (
       <Input
@@ -162,8 +162,8 @@ const Control: React.FC<IProps> = ({
         type={inputType}
         value={value ?? ''}
       />
-    )
+    );
   }
-}
+};
 
-export { Control }
+export { Control };

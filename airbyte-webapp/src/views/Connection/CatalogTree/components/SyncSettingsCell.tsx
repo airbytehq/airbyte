@@ -1,13 +1,13 @@
-import React from 'react'
-import { components } from 'react-select'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React from 'react';
+import { components } from 'react-select';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import { Cell } from '@app/components/SimpleTableComponents'
-import { DropDown, DropdownProps } from '@app/components'
-import Text from '@app/components/base/DropDown/components/Text'
-import { IProps } from '@app/components/base/DropDown/components/SingleValue'
-import { OptionView } from '@app/components/base/DropDown/components/Option'
+import { Cell } from '@app/components/SimpleTableComponents';
+import { DropDown, DropdownProps } from '@app/components';
+import Text from '@app/components/base/DropDown/components/Text';
+import { IProps } from '@app/components/base/DropDown/components/SingleValue';
+import { OptionView } from '@app/components/base/DropDown/components/Option';
 
 const ValueView = styled(components.SingleValue)`
   display: flex;
@@ -18,14 +18,14 @@ const ValueView = styled(components.SingleValue)`
   white-space: normal !important;
   line-height: 12px;
   padding-top: 2px;
-`
+`;
 
 const Separator = styled.div`
   padding: 0 5px;
-`
+`;
 
 const SingleValue: React.FC<IProps> = (props) => {
-  const { syncMode, destinationSyncMode } = props.data.value
+  const { syncMode, destinationSyncMode } = props.data.value;
   return (
     <Text>
       <ValueView {...props}>
@@ -38,23 +38,23 @@ const SingleValue: React.FC<IProps> = (props) => {
         </div>
       </ValueView>
     </Text>
-  )
-}
+  );
+};
 
 const Title = styled.span`
   color: ${({ theme }) => theme.greyColor55};
   font-size: 10px;
   padding-right: 5px;
-`
+`;
 
 const OptionContent = styled(OptionView)`
   justify-content: left;
-`
+`;
 
 const Mode: React.FC<{
-  title: React.ReactNode
-  label: React.ReactNode
-  separator?: string
+  title: React.ReactNode;
+  label: React.ReactNode;
+  separator?: string;
 }> = (props) => {
   return (
     <>
@@ -62,11 +62,11 @@ const Mode: React.FC<{
       <div>{props.label}</div>
       {props.separator ? <Separator>{props.separator}</Separator> : null}
     </>
-  )
-}
+  );
+};
 
 const Option: React.FC<any> = (props) => {
-  const { syncMode, destinationSyncMode } = props.value
+  const { syncMode, destinationSyncMode } = props.value;
 
   return (
     <components.Option {...props}>
@@ -89,8 +89,8 @@ const Option: React.FC<any> = (props) => {
         />
       </OptionContent>
     </components.Option>
-  )
-}
+  );
+};
 
 const SyncSettingsCell: React.FC<DropdownProps> = (props) => {
   return (
@@ -104,7 +104,7 @@ const SyncSettingsCell: React.FC<DropdownProps> = (props) => {
         $withBorder
       />
     </Cell>
-  )
-}
+  );
+};
 
-export { SyncSettingsCell }
+export { SyncSettingsCell };

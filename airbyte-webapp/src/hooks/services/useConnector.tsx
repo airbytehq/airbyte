@@ -1,53 +1,53 @@
-import { useFetcher, useResource } from 'rest-hooks'
-import { useMemo } from 'react'
+import { useFetcher, useResource } from 'rest-hooks';
+import { useMemo } from 'react';
 
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition'
-import { Connector } from '@app/core/domain/connector'
-import { useWorkspace } from '@app/hooks/services/useWorkspace'
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import DestinationDefinitionResource from '@app/core/resources/DestinationDefinition';
+import { Connector } from '@app/core/domain/connector';
+import { useWorkspace } from '@app/hooks/services/useWorkspace';
 
 type ConnectorService = {
-  hasNewVersions: boolean
-  hasNewSourceVersion: boolean
-  hasNewDestinationVersion: boolean
-  countNewSourceVersion: number
-  countNewDestinationVersion: number
-  updateAllSourceVersions: () => void
-  updateAllDestinationVersions: () => void
-}
+  hasNewVersions: boolean;
+  hasNewSourceVersion: boolean;
+  hasNewDestinationVersion: boolean;
+  countNewSourceVersion: number;
+  countNewDestinationVersion: number;
+  updateAllSourceVersions: () => void;
+  updateAllDestinationVersions: () => void;
+};
 
 const useConnector = (): ConnectorService => {
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
       workspaceId: workspace.workspaceId,
     }
-  )
+  );
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
       workspaceId: workspace.workspaceId,
     }
-  )
+  );
 
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()
-  )
+  );
 
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
-  )
+  );
 
   const newSourceDefinitions = useMemo(
     () => sourceDefinitions.filter(Connector.hasNewerVersion),
     [sourceDefinitions]
-  )
+  );
 
   const newDestinationDefinitions = useMemo(
     () => destinationDefinitions.filter(Connector.hasNewerVersion),
     [destinationDefinitions]
-  )
+  );
 
   const updateAllSourceVersions = async () => {
     await Promise.all(
@@ -60,8 +60,8 @@ const useConnector = (): ConnectorService => {
           }
         )
       )
-    )
-  }
+    );
+  };
 
   const updateAllDestinationVersions = async () => {
     await Promise.all(
@@ -74,12 +74,12 @@ const useConnector = (): ConnectorService => {
           }
         )
       )
-    )
-  }
+    );
+  };
 
-  const hasNewSourceVersion = newSourceDefinitions.length > 0
-  const hasNewDestinationVersion = newDestinationDefinitions.length > 0
-  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion
+  const hasNewSourceVersion = newSourceDefinitions.length > 0;
+  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
+  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
 
   return {
     hasNewVersions,
@@ -89,7 +89,7 @@ const useConnector = (): ConnectorService => {
     updateAllDestinationVersions,
     countNewSourceVersion: newSourceDefinitions.length,
     countNewDestinationVersion: newDestinationDefinitions.length,
-  }
-}
+  };
+};
 
-export default useConnector
+export default useConnector;

@@ -1,3 +1,3 @@
-import TransformationForm from './TransformationForm'
+import TransformationForm from './TransformationForm';
 
-export default TransformationForm
+export default TransformationForm;

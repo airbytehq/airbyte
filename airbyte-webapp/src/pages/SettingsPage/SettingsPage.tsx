@@ -1,45 +1,45 @@
-import React, { Suspense } from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { Redirect, Route, Switch } from 'react-router'
+import React, { Suspense } from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { Redirect, Route, Switch } from 'react-router';
 
-import useConnector from '@app/hooks/services/useConnector'
-import MainPageWithScroll from '@app/components/MainPageWithScroll'
-import PageTitle from '@app/components/PageTitle'
-import LoadingPage from '@app/components/LoadingPage'
-import HeadTitle from '@app/components/HeadTitle'
-import SideMenu from '@app/components/SideMenu'
-import { Routes } from '@app/pages/routes'
-import useRouter from '@app/hooks/useRouter'
-import NotificationPage from './pages/NotificationPage'
-import ConfigurationsPage from './pages/ConfigurationsPage'
-import MetricsPage from './pages/MetricsPage'
-import AccountPage from './pages/AccountPage'
-import { DestinationsPage, SourcesPage } from './pages/ConnectorsPage'
-import { CategoryItem } from '@app/components/SideMenu/SideMenu'
+import useConnector from '@app/hooks/services/useConnector';
+import MainPageWithScroll from '@app/components/MainPageWithScroll';
+import PageTitle from '@app/components/PageTitle';
+import LoadingPage from '@app/components/LoadingPage';
+import HeadTitle from '@app/components/HeadTitle';
+import SideMenu from '@app/components/SideMenu';
+import { Routes } from '@app/pages/routes';
+import useRouter from '@app/hooks/useRouter';
+import NotificationPage from './pages/NotificationPage';
+import ConfigurationsPage from './pages/ConfigurationsPage';
+import MetricsPage from './pages/MetricsPage';
+import AccountPage from './pages/AccountPage';
+import { DestinationsPage, SourcesPage } from './pages/ConnectorsPage';
+import { CategoryItem } from '@app/components/SideMenu/SideMenu';
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
   height: 100%;
   display: flex;
   flex-direction: row;
-`
+`;
 const MainView = styled.div`
   width: 100%;
   margin-left: 47px;
-`
+`;
 
 export type PageConfig = {
-  menuConfig: CategoryItem[]
-}
+  menuConfig: CategoryItem[];
+};
 
 type SettingsPageProps = {
-  pageConfig?: PageConfig
-}
+  pageConfig?: PageConfig;
+};
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
-  const { push, pathname } = useRouter()
-  const { countNewSourceVersion, countNewDestinationVersion } = useConnector()
+  const { push, pathname } = useRouter();
+  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -78,10 +78,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         },
       ],
     },
-  ]
+  ];
 
-  const onSelectMenuItem = (newPath: string) => push(newPath)
-  const firstRoute = menuItems?.[0].routes?.[0]?.path
+  const onSelectMenuItem = (newPath: string) => push(newPath);
+  const firstRoute = menuItems?.[0].routes?.[0]?.path;
 
   return (
     <MainPageWithScroll
@@ -122,7 +122,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         </MainView>
       </Content>
     </MainPageWithScroll>
-  )
-}
+  );
+};
 
-export default SettingsPage
+export default SettingsPage;

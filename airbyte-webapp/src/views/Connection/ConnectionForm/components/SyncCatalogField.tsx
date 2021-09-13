@@ -1,18 +1,18 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { FieldProps, setIn } from 'formik'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React, { useCallback, useMemo, useState } from 'react';
+import { FieldProps, setIn } from 'formik';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import type { DestinationSyncMode } from '@app/core/domain/catalog'
-import { SyncSchemaStream } from '@app/core/domain/catalog'
+import type { DestinationSyncMode } from '@app/core/domain/catalog';
+import { SyncSchemaStream } from '@app/core/domain/catalog';
 
-import { CheckBox, LabeledRadioButton } from '@app/components'
-import { Cell, Header } from '@app/components/SimpleTableComponents'
-import CatalogTree from '@app/views/Connection/CatalogTree'
-import Search from './Search'
-import SectionTitle from './SectionTitle'
-import { naturalComparatorBy } from '@app/utils/objects'
-import { SyncCatalogFilters } from './SyncCatalogFilters'
+import { CheckBox, LabeledRadioButton } from '@app/components';
+import { Cell, Header } from '@app/components/SimpleTableComponents';
+import CatalogTree from '@app/views/Connection/CatalogTree';
+import Search from './Search';
+import SectionTitle from './SectionTitle';
+import { naturalComparatorBy } from '@app/utils/objects';
+import { SyncCatalogFilters } from './SyncCatalogFilters';
 
 const TreeViewContainer = styled.div`
   width: 100%;
@@ -21,42 +21,42 @@ const TreeViewContainer = styled.div`
   border-radius: 4px;
   max-height: 600px;
   overflow-y: overlay;
-`
+`;
 
 const SchemaHeader = styled(Header)`
   min-height: 28px;
   margin-bottom: 5px;
-`
+`;
 
 const SchemaTitle = styled(SectionTitle)`
   display: inline-block;
   margin: 0 11px 13px 0;
-`
+`;
 
 const SelectAll = styled.div`
   margin: 0 9px 0 30px;
-`
+`;
 
 const NamespaceTitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   display: flex;
   flex-direction: row;
   align-items: center;
-`
+`;
 
 const SearchContent = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-`
+`;
 
 const RadioButtonControl = styled(LabeledRadioButton)`
   margin: 0 0 0 5px;
-`
+`;
 
 type SchemaViewProps = {
-  additionalControl?: React.ReactNode
-  destinationSupportedSyncModes: DestinationSyncMode[]
-} & FieldProps<SyncSchemaStream[]>
+  additionalControl?: React.ReactNode;
+  destinationSupportedSyncModes: DestinationSyncMode[];
+} & FieldProps<SyncSchemaStream[]>;
 
 const SyncCatalogField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
@@ -64,17 +64,17 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   field,
   form,
 }) => {
-  const { value: streams, name: fieldName } = field
+  const { value: streams, name: fieldName } = field;
 
-  const [searchString, setSearchString] = useState('')
-  const [filterMode, setFilterMode] = useState(SyncCatalogFilters.All)
+  const [searchString, setSearchString] = useState('');
+  const [filterMode, setFilterMode] = useState(SyncCatalogFilters.All);
 
-  const setField = form.setFieldValue
+  const setField = form.setFieldValue;
 
   const onChangeSchema = useCallback(
     (newValue: SyncSchemaStream[]) => setField(fieldName, newValue),
     [fieldName, setField]
-  )
+  );
 
   const onChangeStream = useCallback(
     (newValue: SyncSchemaStream) =>
@@ -82,13 +82,13 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         streams.map((str) => (str.id === newValue.id ? newValue : str))
       ),
     [streams, onChangeSchema]
-  )
+  );
 
   const sortedSchema = useMemo(
     () =>
       streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
     [streams]
-  )
+  );
 
   const filteredStreams = useMemo(() => {
     const filters: Array<(s: SyncSchemaStream) => boolean> = [
@@ -106,25 +106,25 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
             (filterMode === SyncCatalogFilters.NotSelected &&
               !stream.config.selected)
         : null,
-    ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>
+    ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
 
-    return sortedSchema.filter((stream) => filters.every((f) => f(stream)))
-  }, [searchString, filterMode, sortedSchema])
+    return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
+  }, [searchString, filterMode, sortedSchema]);
 
   const hasSelectedItem = useMemo(
     () => filteredStreams.some((streamNode) => streamNode.config.selected),
     [filteredStreams]
-  )
+  );
 
   const onCheckAll = useCallback(() => {
-    const allSelectedValues = !hasSelectedItem
+    const allSelectedValues = !hasSelectedItem;
 
     const newSchema = filteredStreams.map((streamNode) =>
       setIn(streamNode, 'config.selected', allSelectedValues)
-    )
+    );
 
-    onChangeSchema(newSchema)
-  }, [hasSelectedItem, onChangeSchema, filteredStreams])
+    onChangeSchema(newSchema);
+  }, [hasSelectedItem, onChangeSchema, filteredStreams]);
 
   return (
     <>
@@ -138,7 +138,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         <Search onSearch={setSearchString} />
         <RadioButtonControl
           onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters)
+            setFilterMode(value.target.value as SyncCatalogFilters);
           }}
           name="FilterAll"
           value={SyncCatalogFilters.All}
@@ -147,7 +147,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         />
         <RadioButtonControl
           onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters)
+            setFilterMode(value.target.value as SyncCatalogFilters);
           }}
           name="FilterSelected"
           value={SyncCatalogFilters.Selected}
@@ -156,7 +156,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         />
         <RadioButtonControl
           onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters)
+            setFilterMode(value.target.value as SyncCatalogFilters);
           }}
           name="FilterNotSelected"
           value={SyncCatalogFilters.NotSelected}
@@ -198,7 +198,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         />
       </TreeViewContainer>
     </>
-  )
-}
+  );
+};
 
-export default React.memo(SyncCatalogField)
+export default React.memo(SyncCatalogField);

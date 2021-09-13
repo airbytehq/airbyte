@@ -1,9 +1,9 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons'
+import React from 'react';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
-import ImageBlock from '@app/components/ImageBlock'
+import ImageBlock from '@app/components/ImageBlock';
 
 const Content = styled.div`
   height: 36px;
@@ -18,24 +18,24 @@ const Content = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`
+`;
 
 const Icon = styled(ImageBlock)`
   margin-right: 6px;
   display: inline-block;
   vertical-align: sub;
-`
+`;
 
 const ConnectorName = styled.div`
   display: flex;
   align-items: center;
   flex-direction: row;
-`
+`;
 
 type IProps = {
-  name: string
-  icon?: string
-}
+  name: string;
+  icon?: string;
+};
 
 const Connector: React.FC<IProps> = ({ name, icon }) => {
   return (
@@ -46,7 +46,7 @@ const Connector: React.FC<IProps> = ({ name, icon }) => {
       </ConnectorName>
       <FontAwesomeIcon icon={faArrowRight} />
     </Content>
-  )
-}
+  );
+};
 
-export default Connector
+export default Connector;

@@ -1,29 +1,29 @@
-import React, { Suspense } from 'react'
-import { FormattedMessage } from 'react-intl'
-import { useResource } from 'rest-hooks'
+import React, { Suspense } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useResource } from 'rest-hooks';
 
 import {
   Button,
   MainPageWithScroll,
   PageTitle,
   LoadingPage,
-} from '@app/components'
-import ConnectionResource from '@app/core/resources/Connection'
-import ConnectionsTable from './components/ConnectionsTable'
-import { Routes } from '@app/pages/routes'
-import useRouter from '@app/hooks/useRouter'
-import HeadTitle from '@app/components/HeadTitle'
-import Placeholder, { ResourceTypes } from '@app/components/Placeholder'
-import useWorkspace from '@app/hooks/services/useWorkspace'
+} from '@app/components';
+import ConnectionResource from '@app/core/resources/Connection';
+import ConnectionsTable from './components/ConnectionsTable';
+import { Routes } from '@app/pages/routes';
+import useRouter from '@app/hooks/useRouter';
+import HeadTitle from '@app/components/HeadTitle';
+import Placeholder, { ResourceTypes } from '@app/components/Placeholder';
+import useWorkspace from '@app/hooks/services/useWorkspace';
 
 const AllConnectionsPage: React.FC = () => {
-  const { push } = useRouter()
-  const { workspace } = useWorkspace()
+  const { push } = useRouter();
+  const { workspace } = useWorkspace();
   const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: workspace.workspaceId,
-  })
+  });
 
-  const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`)
+  const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`);
 
   return (
     <MainPageWithScroll
@@ -47,7 +47,7 @@ const AllConnectionsPage: React.FC = () => {
         )}
       </Suspense>
     </MainPageWithScroll>
-  )
-}
+  );
+};
 
-export default AllConnectionsPage
+export default AllConnectionsPage;

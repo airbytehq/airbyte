@@ -1,26 +1,26 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { faRedoAlt } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { faRedoAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { LoadingButton } from '@app/components'
+import { LoadingButton } from '@app/components';
 
 const UpdateButton = styled(LoadingButton)`
   margin: -6px 0;
   min-width: 120px;
-`
+`;
 
 const TryArrow = styled(FontAwesomeIcon)`
   margin: 0 10px -1px 0;
   font-size: 14px;
-`
+`;
 
 const UpdateButtonContent = styled.div`
   position: relative;
   display: inline-block;
   margin-left: 5px;
-`
+`;
 
 const ErrorBlock = styled.div`
   color: ${({ theme }) => theme.dangerColor};
@@ -31,14 +31,14 @@ const ErrorBlock = styled.div`
   line-height: 11px;
   right: 0;
   left: -46px;
-`
+`;
 
 type UpdateAllButtonProps = {
-  onUpdate: () => void
-  isLoading: boolean
-  hasError: boolean
-  hasSuccess: boolean
-}
+  onUpdate: () => void;
+  isLoading: boolean;
+  hasError: boolean;
+  hasSuccess: boolean;
+};
 
 const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({
   onUpdate,
@@ -68,7 +68,7 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({
         )}
       </UpdateButton>
     </UpdateButtonContent>
-  )
-}
+  );
+};
 
-export default UpgradeAllButton
+export default UpgradeAllButton;

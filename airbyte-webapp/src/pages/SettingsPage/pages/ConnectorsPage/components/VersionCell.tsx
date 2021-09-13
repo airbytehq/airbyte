@@ -1,23 +1,23 @@
-import React from 'react'
-import { Field, FieldProps, Form, Formik } from 'formik'
-import styled from 'styled-components'
-import { FormattedMessage, useIntl } from 'react-intl'
+import React from 'react';
+import { Field, FieldProps, Form, Formik } from 'formik';
+import styled from 'styled-components';
+import { FormattedMessage, useIntl } from 'react-intl';
 
-import { Input, LoadingButton } from '@app/components'
-import { FormContent } from './PageComponents'
+import { Input, LoadingButton } from '@app/components';
+import { FormContent } from './PageComponents';
 
 type IProps = {
-  version: string
-  currentVersion: string
-  id: string
-  onChange: ({ version, id }: { version: string; id: string }) => void
-  feedback?: 'success' | string
-}
+  version: string;
+  currentVersion: string;
+  id: string;
+  onChange: ({ version, id }: { version: string; id: string }) => void;
+  feedback?: 'success' | string;
+};
 
 const VersionInput = styled(Input)`
   max-width: 145px;
   margin-right: 19px;
-`
+`;
 
 const InputField = styled.div<{ showNote?: boolean }>`
   display: inline-block;
@@ -37,7 +37,7 @@ const InputField = styled.div<{ showNote?: boolean }>`
   &:focus-within:before {
     display: none;
   }
-`
+`;
 
 const SuccessMessage = styled.div`
   color: ${({ theme }) => theme.successColor};
@@ -52,13 +52,13 @@ const SuccessMessage = styled.div`
   align-items: center;
   justify-content: flex-end;
   white-space: break-spaces;
-`
+`;
 
 const ErrorMessage = styled(SuccessMessage)`
   color: ${({ theme }) => theme.dangerColor};
   font-size: 11px;
   line-height: 14px;
-`
+`;
 
 const VersionCell: React.FC<IProps> = ({
   id,
@@ -67,7 +67,7 @@ const VersionCell: React.FC<IProps> = ({
   feedback,
   currentVersion,
 }) => {
-  const formatMessage = useIntl().formatMessage
+  const formatMessage = useIntl().formatMessage;
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
     if (feedback && !dirty) {
@@ -76,14 +76,14 @@ const VersionCell: React.FC<IProps> = ({
           <SuccessMessage>
             <FormattedMessage id="form.savedChange" />
           </SuccessMessage>
-        )
+        );
       } else {
-        return <ErrorMessage>{feedback}</ErrorMessage>
+        return <ErrorMessage>{feedback}</ErrorMessage>;
       }
     }
 
-    return null
-  }
+    return null;
+  };
 
   return (
     <FormContent>
@@ -119,7 +119,7 @@ const VersionCell: React.FC<IProps> = ({
         )}
       </Formik>
     </FormContent>
-  )
-}
+  );
+};
 
-export default VersionCell
+export default VersionCell;

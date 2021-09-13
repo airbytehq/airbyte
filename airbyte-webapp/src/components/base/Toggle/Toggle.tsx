@@ -1,5 +1,5 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 const Switch = styled.label`
   position: relative;
@@ -7,13 +7,13 @@ const Switch = styled.label`
   width: 42px;
   min-width: 42px;
   height: 24px;
-`
+`;
 
 const SwitchInput = styled.input`
   opacity: 0;
   width: 0;
   height: 0;
-`
+`;
 
 const Slider = styled.span`
   position: absolute;
@@ -56,7 +56,7 @@ const Slider = styled.span`
   input:disabled + & {
     cursor: auto;
   }
-`
+`;
 
 const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
   props
@@ -71,7 +71,7 @@ const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
       />
       <Slider />
     </Switch>
-  )
-}
+  );
+};
 
-export default Toggle
+export default Toggle;

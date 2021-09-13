@@ -1,27 +1,27 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
-import TestingConnectionSpinner from './TestingConnectionSpinner'
-import TestingConnectionSuccess from './TestingConnectionSuccess'
-import TestingConnectionError from './TestingConnectionError'
+import { Button } from '@app/components';
+import TestingConnectionSpinner from './TestingConnectionSpinner';
+import TestingConnectionSuccess from './TestingConnectionSuccess';
+import TestingConnectionError from './TestingConnectionError';
 
 type IProps = {
-  formType: 'source' | 'destination' | 'connection'
-  isSubmitting: boolean
-  hasSuccess?: boolean
-  isLoadSchema?: boolean
-  errorMessage?: React.ReactNode
-  additionBottomControls?: React.ReactNode
-}
+  formType: 'source' | 'destination' | 'connection';
+  isSubmitting: boolean;
+  hasSuccess?: boolean;
+  isLoadSchema?: boolean;
+  errorMessage?: React.ReactNode;
+  additionBottomControls?: React.ReactNode;
+};
 
 const ButtonContainer = styled.div`
   margin-top: 34px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-`
+`;
 
 const CreateControls: React.FC<IProps> = ({
   isSubmitting,
@@ -32,11 +32,11 @@ const CreateControls: React.FC<IProps> = ({
   additionBottomControls,
 }) => {
   if (hasSuccess) {
-    return <TestingConnectionSuccess />
+    return <TestingConnectionSuccess />;
   }
 
   if (isSubmitting) {
-    return <TestingConnectionSpinner />
+    return <TestingConnectionSpinner />;
   }
 
   return (
@@ -53,7 +53,7 @@ const CreateControls: React.FC<IProps> = ({
         </Button>
       </div>
     </ButtonContainer>
-  )
-}
+  );
+};
 
-export default CreateControls
+export default CreateControls;

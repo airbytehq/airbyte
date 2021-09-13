@@ -1,6 +1,6 @@
-import DropDown from './DropDown'
-import * as DropDownRow from './components/Option'
+import DropDown from './DropDown';
+import * as DropDownRow from './components/Option';
 
-export * from './DropDown'
-export { DropDownRow }
-export default DropDown
+export * from './DropDown';
+export { DropDownRow };
+export default DropDown;

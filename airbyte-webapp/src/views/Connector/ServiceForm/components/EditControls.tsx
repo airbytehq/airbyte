@@ -1,23 +1,23 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
-import { useServiceForm } from '../serviceFormContext'
-import TestingConnectionSpinner from './TestingConnectionSpinner'
-import TestingConnectionSuccess from './TestingConnectionSuccess'
-import TestingConnectionError from './TestingConnectionError'
+import { Button } from '@app/components';
+import { useServiceForm } from '../serviceFormContext';
+import TestingConnectionSpinner from './TestingConnectionSpinner';
+import TestingConnectionSuccess from './TestingConnectionSuccess';
+import TestingConnectionError from './TestingConnectionError';
 
 type IProps = {
-  isSubmitting: boolean
-  isValid: boolean
-  dirty: boolean
-  resetForm: () => void
-  onRetest?: () => void
-  formType: 'source' | 'destination'
-  successMessage?: React.ReactNode
-  errorMessage?: React.ReactNode
-}
+  isSubmitting: boolean;
+  isValid: boolean;
+  dirty: boolean;
+  resetForm: () => void;
+  onRetest?: () => void;
+  formType: 'source' | 'destination';
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+};
 
 const Controls = styled.div`
   margin-top: 34px;
@@ -25,11 +25,11 @@ const Controls = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-`
+`;
 
 const ButtonContainer = styled.span`
   margin-left: 10px;
-`
+`;
 
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
@@ -41,20 +41,20 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const { unfinishedFlows } = useServiceForm()
+  const { unfinishedFlows } = useServiceForm();
 
   if (isSubmitting) {
-    return <TestingConnectionSpinner />
+    return <TestingConnectionSpinner />;
   }
   const showStatusMessage = () => {
     if (errorMessage) {
-      return <TestingConnectionError errorMessage={errorMessage} />
+      return <TestingConnectionError errorMessage={errorMessage} />;
     }
     if (successMessage) {
-      return <TestingConnectionSuccess />
+      return <TestingConnectionSuccess />;
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <>
@@ -90,7 +90,7 @@ const EditControls: React.FC<IProps> = ({
         )}
       </Controls>
     </>
-  )
-}
+  );
+};
 
-export default EditControls
+export default EditControls;

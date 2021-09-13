@@ -1,1 +1,1 @@
-export * from './HealthPollService'
+export * from './HealthPollService';

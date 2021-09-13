@@ -1,23 +1,23 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-import { Theme } from 'theme'
+import { Theme } from 'theme';
 
 type IProps = {
-  primary?: boolean
-  secondary?: boolean
-  fullText?: boolean
-}
+  primary?: boolean;
+  secondary?: boolean;
+  fullText?: boolean;
+};
 
 const setColor = (props: IProps & { theme: Theme }) => {
   if (props.primary) {
-    return props.theme.primaryColor
+    return props.theme.primaryColor;
   }
   if (props.secondary) {
-    return props.theme.greyColor40
+    return props.theme.greyColor40;
   }
 
-  return 'inherit'
-}
+  return 'inherit';
+};
 
 const Text = styled.div<IProps>`
   white-space: ${({ fullText }) => (fullText ? 'normal' : 'nowrap')};
@@ -34,6 +34,6 @@ const Text = styled.div<IProps>`
   .rw-list-option.rw-state-selected & {
     color: ${({ theme }) => theme.primaryColor};
   }
-`
+`;
 
-export default Text
+export default Text;

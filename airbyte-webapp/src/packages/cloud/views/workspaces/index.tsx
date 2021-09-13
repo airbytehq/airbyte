@@ -1,3 +1,3 @@
-import WorkspacesPage from './WorkspacesPage'
+import WorkspacesPage from './WorkspacesPage';
 
-export { WorkspacesPage }
+export { WorkspacesPage };

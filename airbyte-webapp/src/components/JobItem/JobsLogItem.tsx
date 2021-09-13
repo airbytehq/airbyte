@@ -1,15 +1,15 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React, { useState } from 'react';
+import styled from 'styled-components';
 
-import { JobInfo } from '@app/core/resources/Scheduler'
-import ContentWrapper from './components/ContentWrapper'
-import MainInfo from './components/MainInfo'
-import JobCurrentLogs from './components/JobCurrenLogs'
-import Status from '@app/core/statuses'
+import { JobInfo } from '@app/core/resources/Scheduler';
+import ContentWrapper from './components/ContentWrapper';
+import MainInfo from './components/MainInfo';
+import JobCurrentLogs from './components/JobCurrenLogs';
+import Status from '@app/core/statuses';
 
 type IProps = {
-  jobInfo?: JobInfo
-}
+  jobInfo?: JobInfo;
+};
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-top: 1px solid ${({ theme }) => theme.greyColor20};
@@ -20,17 +20,17 @@ const Item = styled.div<{ isFailed: boolean }>`
     background: ${({ theme, isFailed }) =>
       isFailed ? theme.dangerTransparentColor : theme.greyColor0};
   }
-`
+`;
 
 const JobsLogItem: React.FC<IProps> = ({ jobInfo }) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   if (!jobInfo) {
-    return null
+    return null;
   }
 
-  const onExpand = () => setIsOpen(!isOpen)
-  const isFailed = jobInfo.status === Status.FAILED
+  const onExpand = () => setIsOpen(!isOpen);
+  const isFailed = jobInfo.status === Status.FAILED;
 
   return (
     <Item isFailed={isFailed}>
@@ -55,7 +55,7 @@ const JobsLogItem: React.FC<IProps> = ({ jobInfo }) => {
         </div>
       </ContentWrapper>
     </Item>
-  )
-}
+  );
+};
 
-export default JobsLogItem
+export default JobsLogItem;

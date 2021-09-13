@@ -1,30 +1,30 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { Field, FieldProps, Form, Formik } from 'formik'
-import styled from 'styled-components'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Field, FieldProps, Form, Formik } from 'formik';
+import styled from 'styled-components';
 
 import {
   Content,
   SettingsCard,
-} from '@app/pages/SettingsPage/pages/SettingsComponents'
-import { LabeledInput, LoadingButton } from '@app/components'
+} from '@app/pages/SettingsPage/pages/SettingsComponents';
+import { LabeledInput, LoadingButton } from '@app/components';
 import {
   useAuthService,
   useCurrentUser,
-} from '@app/packages/cloud/services/auth/AuthService'
-import { RowFieldItem } from '@app/packages/cloud/views/auth/components/FormComponents'
-import { EmailSection } from './components/EmailSection'
-import { PasswordSection } from './components/PasswordSection'
+} from '@app/packages/cloud/services/auth/AuthService';
+import { RowFieldItem } from '@app/packages/cloud/views/auth/components/FormComponents';
+import { EmailSection } from './components/EmailSection';
+import { PasswordSection } from './components/PasswordSection';
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-`
+`;
 
 const AccountSettingsView: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
-  const { logout } = useAuthService()
-  const user = useCurrentUser()
+  const formatMessage = useIntl().formatMessage;
+  const { logout } = useAuthService();
+  const user = useCurrentUser();
 
   return (
     <>
@@ -35,7 +35,7 @@ const AccountSettingsView: React.FC = () => {
               name: user.name,
             }}
             onSubmit={() => {
-              throw new Error('Not implemented')
+              throw new Error('Not implemented');
             }}
           >
             {() => (
@@ -83,7 +83,7 @@ const AccountSettingsView: React.FC = () => {
         }
       />
     </>
-  )
-}
+  );
+};
 
-export { AccountSettingsView }
+export { AccountSettingsView };

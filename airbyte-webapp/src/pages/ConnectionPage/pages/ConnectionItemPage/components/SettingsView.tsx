@@ -1,41 +1,41 @@
-import React, { useCallback, useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRedoAlt } from '@fortawesome/free-solid-svg-icons'
+import React, { useCallback, useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 
-import { Button } from '@app/components'
-import ContentCard from '@app/components/ContentCard'
+import { Button } from '@app/components';
+import ContentCard from '@app/components/ContentCard';
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
-} from '@app/hooks/services/useConnectionHook'
-import DeleteBlock from '@app/components/DeleteBlock'
-import ConnectionForm from '@app/views/Connection/ConnectionForm'
-import ResetDataModal from '@app/components/ResetDataModal'
-import { ModalTypes } from '@app/components/ResetDataModal/types'
-import LoadingSchema from '@app/components/LoadingSchema'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
+} from '@app/hooks/services/useConnectionHook';
+import DeleteBlock from '@app/components/DeleteBlock';
+import ConnectionForm from '@app/views/Connection/ConnectionForm';
+import ResetDataModal from '@app/components/ResetDataModal';
+import { ModalTypes } from '@app/components/ResetDataModal/types';
+import LoadingSchema from '@app/components/LoadingSchema';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
 
-import { equal } from '@app/utils/objects'
-import EnabledControl from './EnabledControl'
-import { ConnectionNamespaceDefinition } from '@app/core/domain/connection'
-import { useAsyncFn } from 'react-use'
+import { equal } from '@app/utils/objects';
+import EnabledControl from './EnabledControl';
+import { ConnectionNamespaceDefinition } from '@app/core/domain/connection';
+import { useAsyncFn } from 'react-use';
 
 type IProps = {
-  onAfterSaveSchema: () => void
-  connectionId: string
-  frequencyText?: string
-  destinationDefinition?: DestinationDefinition
-  sourceDefinition?: SourceDefinition
-}
+  onAfterSaveSchema: () => void;
+  connectionId: string;
+  frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
+};
 
 const Content = styled.div`
   max-width: 1279px;
   overflow-x: hidden;
   margin: 18px auto;
-`
+`;
 
 const TitleContainer = styled.div<{ hasButton: boolean }>`
   display: flex;
@@ -43,18 +43,18 @@ const TitleContainer = styled.div<{ hasButton: boolean }>`
   justify-content: space-between;
   align-items: center;
   margin: ${({ hasButton }) => (hasButton ? '-5px 0' : 0)};
-`
+`;
 
 const TryArrow = styled(FontAwesomeIcon)`
   margin: 0 10px -1px 0;
   font-size: 14px;
-`
+`;
 
 const Title = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`
+`;
 
 const Message = styled.div`
   margin: -5px 0 13px;
@@ -62,11 +62,11 @@ const Message = styled.div`
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme }) => theme.greyColor40};
-`
+`;
 
 const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
-`
+`;
 
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
@@ -75,85 +75,85 @@ const SettingsView: React.FC<IProps> = ({
   destinationDefinition,
   sourceDefinition,
 }) => {
-  const [isModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] =
-    useState(false)
-  const [saved, setSaved] = useState(false)
+    useState(false);
+  const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
     namespaceDefinition: ConnectionNamespaceDefinition.Source,
     namespaceFormat: '',
     schedule: null,
     prefix: '',
     syncCatalog: { streams: [] },
-  })
+  });
 
   const { updateConnection, deleteConnection, resetConnection } =
-    useConnection()
+    useConnection();
 
   const onDelete = useCallback(
     () => deleteConnection({ connectionId }),
     [deleteConnection, connectionId]
-  )
+  );
 
   const onReset = useCallback(
     () => resetConnection(connectionId),
     [resetConnection, connectionId]
-  )
+  );
 
   const { connection: initialConnection, refreshConnectionCatalog } =
-    useConnectionLoad(connectionId)
+    useConnectionLoad(connectionId);
 
   const [
     { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
     refreshCatalog,
-  ] = useAsyncFn(refreshConnectionCatalog, [connectionId])
+  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
 
   const connection = activeUpdatingSchemaMode
     ? connectionWithRefreshCatalog
-    : initialConnection
+    : initialConnection;
 
   const onSubmit = async (values: ValuesProps) => {
-    const initialSyncSchema = connection?.syncCatalog
+    const initialSyncSchema = connection?.syncCatalog;
 
     await updateConnection({
       ...values,
       connectionId,
       status: initialConnection.status || '',
       withRefreshedCatalog: activeUpdatingSchemaMode,
-    })
+    });
 
-    setSaved(true)
+    setSaved(true);
     if (!equal(values.syncCatalog, initialSyncSchema)) {
-      onAfterSaveSchema()
+      onAfterSaveSchema();
     }
 
     if (activeUpdatingSchemaMode) {
-      setActiveUpdatingSchemaMode(false)
+      setActiveUpdatingSchemaMode(false);
     }
-  }
+  };
 
   const onSubmitResetModal = async () => {
-    setIsUpdateModalOpen(false)
-    await onSubmit(currentValues)
-  }
+    setIsUpdateModalOpen(false);
+    await onSubmit(currentValues);
+  };
 
   const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
-      setCurrentValues(values)
-      setIsUpdateModalOpen(true)
+      setCurrentValues(values);
+      setIsUpdateModalOpen(true);
     } else {
-      await onSubmit(values)
+      await onSubmit(values);
     }
-  }
+  };
 
   const onEnterRefreshCatalogMode = async () => {
-    setActiveUpdatingSchemaMode(true)
-    await refreshCatalog()
-  }
+    setActiveUpdatingSchemaMode(true);
+    await refreshCatalog();
+  };
 
   const onExitRefreshCatalogMode = () => {
-    setActiveUpdatingSchemaMode(false)
-  }
+    setActiveUpdatingSchemaMode(false);
+  };
 
   const renderUpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
@@ -162,7 +162,7 @@ const SettingsView: React.FC<IProps> = ({
           <TryArrow icon={faRedoAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>
-      )
+      );
     }
     return (
       <Message>
@@ -171,8 +171,8 @@ const SettingsView: React.FC<IProps> = ({
           <FormattedMessage id="form.noteStartSync" />
         </Note>
       </Message>
-    )
-  }
+    );
+  };
 
   return (
     <Content>
@@ -218,7 +218,7 @@ const SettingsView: React.FC<IProps> = ({
         />
       ) : null}
     </Content>
-  )
-}
+  );
+};
 
-export default SettingsView
+export default SettingsView;

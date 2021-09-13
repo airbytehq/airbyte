@@ -1,7 +1,7 @@
 const ConnectionsIcon = ({
   color = 'currentColor',
 }: {
-  color?: string
+  color?: string;
 }): JSX.Element => (
   <svg width="30" height="18" viewBox="0 0 30 18" fill="none">
     <path
@@ -11,6 +11,6 @@ const ConnectionsIcon = ({
       fill={color}
     />
   </svg>
-)
+);
 
-export default ConnectionsIcon
+export default ConnectionsIcon;

@@ -1,17 +1,17 @@
-import { useEffect } from 'react'
-import * as FullStory from '@fullstory/browser'
+import { useEffect } from 'react';
+import * as FullStory from '@fullstory/browser';
 
-let inited = false
+let inited = false;
 
 const useFullStory = (config: FullStory.SnippetOptions): boolean => {
   useEffect(() => {
     if (!inited) {
-      FullStory.init(config)
-      inited = true
+      FullStory.init(config);
+      inited = true;
     }
-  }, [config])
+  }, [config]);
 
-  return inited
-}
+  return inited;
+};
 
-export default useFullStory
+export default useFullStory;

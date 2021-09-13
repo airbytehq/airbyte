@@ -1,1 +1,1 @@
-export * from './WorkspaceSettingsView'
+export * from './WorkspaceSettingsView';

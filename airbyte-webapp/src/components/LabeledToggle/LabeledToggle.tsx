@@ -1,19 +1,19 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { CheckBox, Toggle } from '@app/components/base'
+import { CheckBox, Toggle } from '@app/components/base';
 
 type IProps = {
-  message?: React.ReactNode
-  label?: React.ReactNode
-  checkbox?: boolean
-} & React.InputHTMLAttributes<HTMLInputElement>
+  message?: React.ReactNode;
+  label?: React.ReactNode;
+  checkbox?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 const ToggleContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-`
+`;
 
 const Label = styled.label<{ disabled?: boolean }>`
   padding-left: 7px;
@@ -22,7 +22,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   color: ${({ theme, disabled }) =>
     disabled ? theme.greyColor40 : theme.textColor};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-`
+`;
 
 const AdditionMessage = styled.span`
   padding-left: 5px;
@@ -32,7 +32,7 @@ const AdditionMessage = styled.span`
     text-decoration: underline;
     color: ${({ theme }) => theme.primaryColor};
   }
-`
+`;
 
 const LabeledToggle: React.FC<IProps> = (props) => (
   <ToggleContainer>
@@ -47,6 +47,6 @@ const LabeledToggle: React.FC<IProps> = (props) => (
       <AdditionMessage>{props.message}</AdditionMessage>
     </Label>
   </ToggleContainer>
-)
+);
 
-export default LabeledToggle
+export default LabeledToggle;

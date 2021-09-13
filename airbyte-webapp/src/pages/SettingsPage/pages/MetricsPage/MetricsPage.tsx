@@ -1,21 +1,21 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import useWorkspace from '@app/hooks/services/useWorkspace'
-import HeadTitle from '@app/components/HeadTitle'
-import MetricsForm from './components/MetricsForm'
-import useWorkspaceEditor from '../../components/useWorkspaceEditor'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import useWorkspace from '@app/hooks/services/useWorkspace';
+import HeadTitle from '@app/components/HeadTitle';
+import MetricsForm from './components/MetricsForm';
+import useWorkspaceEditor from '../../components/useWorkspaceEditor';
 
-import { Content, SettingsCard } from '../SettingsComponents'
+import { Content, SettingsCard } from '../SettingsComponents';
 
 const MetricsPage: React.FC = () => {
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
 
   const { errorMessage, successMessage, loading, updateData } =
-    useWorkspaceEditor()
+    useWorkspaceEditor();
 
   const onChange = async (data: { anonymousDataCollection: boolean }) => {
-    await updateData({ ...workspace, ...data })
-  }
+    await updateData({ ...workspace, ...data });
+  };
 
   return (
     <>
@@ -34,7 +34,7 @@ const MetricsPage: React.FC = () => {
         </Content>
       </SettingsCard>
     </>
-  )
-}
+  );
+};
 
-export default MetricsPage
+export default MetricsPage;

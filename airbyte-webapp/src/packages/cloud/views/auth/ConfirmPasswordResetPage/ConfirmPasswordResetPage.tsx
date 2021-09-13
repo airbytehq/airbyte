@@ -1,25 +1,25 @@
-import React from 'react'
-import { FormattedMessage, useIntl } from 'react-intl'
-import { Field, FieldProps, Formik } from 'formik'
-import * as yup from 'yup'
+import React from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Field, FieldProps, Formik } from 'formik';
+import * as yup from 'yup';
 
-import { LabeledInput, Link, LoadingButton } from '@app/components'
-import useRouterHook from '@app/hooks/useRouter'
+import { LabeledInput, Link, LoadingButton } from '@app/components';
+import useRouterHook from '@app/hooks/useRouter';
 
-import { Routes } from '@app/packages/cloud/routes'
-import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
-import { FormTitle } from '../components/FormTitle'
+import { Routes } from '@app/packages/cloud/routes';
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService';
+import { FormTitle } from '../components/FormTitle';
 
-import { BottomBlock, FieldItem, Form } from '../components/FormComponents'
+import { BottomBlock, FieldItem, Form } from '../components/FormComponents';
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   newPassword: yup.string().required('form.empty.error'),
-})
+});
 
 const ResetPasswordConfirmPage: React.FC = () => {
-  const { confirmPasswordReset } = useAuthService()
-  const { push, query } = useRouterHook<{ oobCode: string }>()
-  const formatMessage = useIntl().formatMessage
+  const { confirmPasswordReset } = useAuthService();
+  const { push, query } = useRouterHook<{ oobCode: string }>();
+  const formatMessage = useIntl().formatMessage;
 
   return (
     <div>
@@ -33,8 +33,8 @@ const ResetPasswordConfirmPage: React.FC = () => {
         }}
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ newPassword }) => {
-          await confirmPasswordReset(query.oobCode, newPassword)
-          push(Routes.Login)
+          await confirmPasswordReset(query.oobCode, newPassword);
+          push(Routes.Login);
         }}
         validateOnBlur={true}
         validateOnChange={false}
@@ -75,7 +75,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
         )}
       </Formik>
     </div>
-  )
-}
+  );
+};
 
-export { ResetPasswordConfirmPage }
+export { ResetPasswordConfirmPage };

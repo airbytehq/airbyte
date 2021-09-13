@@ -1,23 +1,23 @@
-import { ConfigProvider } from '@app/config/types'
-import { CloudConfig } from './types'
+import { ConfigProvider } from '@app/config/types';
+import { CloudConfig } from './types';
 
-const CONFIG_PATH = '/config.json'
+const CONFIG_PATH = '/config.json';
 
 const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
-  const response = await fetch(CONFIG_PATH)
+  const response = await fetch(CONFIG_PATH);
 
   if (response.ok) {
     try {
-      const config = await response.json()
+      const config = await response.json();
 
-      return config
+      return config;
     } catch (e) {
-      console.error('error occurred while parsing the json config')
+      console.error('error occurred while parsing the json config');
     }
   }
 
-  return {}
-}
+  return {};
+};
 
 const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
@@ -26,7 +26,7 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
     },
-  }
-}
+  };
+};
 
-export { fileConfigProvider, cloudEnvConfigProvider }
+export { fileConfigProvider, cloudEnvConfigProvider };

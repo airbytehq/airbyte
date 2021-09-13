@@ -1,10 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { FormattedMessage } from 'react-intl'
+import React from 'react';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FormattedMessage } from 'react-intl';
 
-import { Button } from '@app/components'
+import { Button } from '@app/components';
 
 const Content = styled.div`
   display: flex;
@@ -21,7 +21,7 @@ const Content = styled.div`
   &:last-child {
     border: none;
   }
-`
+`;
 
 const Delete = styled(FontAwesomeIcon)`
   color: ${({ theme }) => theme.greyColor55};
@@ -30,14 +30,14 @@ const Delete = styled(FontAwesomeIcon)`
   line-height: 24px;
   margin-left: 7px;
   cursor: pointer;
-`
+`;
 
 type EditorRowProps = {
-  name: string
-  id: number
-  onEdit: (id: number) => void
-  onRemove: (id: number) => void
-}
+  name: string;
+  id: number;
+  onEdit: (id: number) => void;
+  onRemove: (id: number) => void;
+};
 
 const EditorRow: React.FC<EditorRowProps> = ({
   name,
@@ -55,7 +55,7 @@ const EditorRow: React.FC<EditorRowProps> = ({
         <Delete icon={faTimes} onClick={() => onRemove(id)} />
       </div>
     </Content>
-  )
-}
+  );
+};
 
-export { EditorRow }
+export { EditorRow };

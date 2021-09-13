@@ -1,69 +1,69 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react';
 
-import useRouter from '@app/hooks/useRouter'
-import ContentCard from '@app/components/ContentCard'
-import CheckConnection from './CheckConnection'
-import useSource from '@app/hooks/services/useSourceHook'
-import { Routes } from '../../../../routes'
-import useDestination from '@app/hooks/services/useDestinationHook'
-import { JobsLogItem } from '@app/components/JobItem'
-import { JobInfo } from '@app/core/resources/Scheduler'
+import useRouter from '@app/hooks/useRouter';
+import ContentCard from '@app/components/ContentCard';
+import CheckConnection from './CheckConnection';
+import useSource from '@app/hooks/services/useSourceHook';
+import { Routes } from '../../../../routes';
+import useDestination from '@app/hooks/services/useDestinationHook';
+import { JobsLogItem } from '@app/components/JobItem';
+import { JobInfo } from '@app/core/resources/Scheduler';
 
 type IProps = {
-  type: 'source' | 'destination'
-  afterSuccess: () => void
-}
+  type: 'source' | 'destination';
+  afterSuccess: () => void;
+};
 
 const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
-  const { location } = useRouter()
-  const [successRequest, setSuccessRequest] = useState(false)
+  const { location } = useRouter();
+  const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number
-    response: JobInfo
-  } | null>(null)
+    status: number;
+    response: JobInfo;
+  } | null>(null);
 
-  const { checkSourceConnection } = useSource()
-  const { checkDestinationConnection } = useDestination()
+  const { checkSourceConnection } = useSource();
+  const { checkDestinationConnection } = useDestination();
 
   const checkConnectionRequest = useCallback(async () => {
     try {
-      setErrorStatusRequest(null)
-      setSuccessRequest(false)
+      setErrorStatusRequest(null);
+      setSuccessRequest(false);
 
       if (type === 'source') {
         await checkSourceConnection({
           sourceId: `${location.state?.sourceId}`,
-        })
+        });
       } else {
         await checkDestinationConnection({
           destinationId: `${location.state?.destinationId}`,
-        })
+        });
       }
 
-      setSuccessRequest(true)
+      setSuccessRequest(true);
       setTimeout(() => {
-        setSuccessRequest(false)
-        afterSuccess()
-      }, 2000)
+        setSuccessRequest(false);
+        afterSuccess();
+      }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e)
+      setErrorStatusRequest(e);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type])
+  }, [type]);
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       if (location.state) {
-        await checkConnectionRequest()
+        await checkConnectionRequest();
       }
-    })()
-  }, [checkConnectionRequest, checkSourceConnection, location.state, type])
+    })();
+  }, [checkConnectionRequest, checkSourceConnection, location.state, type]);
 
   if (errorStatusRequest) {
     const link =
       type === 'source'
         ? `${Routes.Source}/${location.state?.sourceId}`
-        : `${Routes.Destination}/${location.state?.destinationId}`
+        : `${Routes.Destination}/${location.state?.destinationId}`;
 
     return (
       <ContentCard>
@@ -76,7 +76,7 @@ const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
         />
         <JobsLogItem jobInfo={errorStatusRequest?.response} />
       </ContentCard>
-    )
+    );
   }
 
   return (
@@ -87,7 +87,7 @@ const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
         success={successRequest}
       />
     </ContentCard>
-  )
-}
+  );
+};
 
-export default CreateEntityView
+export default CreateEntityView;

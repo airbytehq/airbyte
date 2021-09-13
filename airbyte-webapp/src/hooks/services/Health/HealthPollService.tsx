@@ -1,46 +1,46 @@
-import { useEffect, useState } from 'react'
-import { useIntl } from 'react-intl'
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
 
-import { useNotificationService } from '@app/hooks/services/Notification/NotificationService'
-import { HealthService } from '@app/core/health/HealthService'
-import { useConfig } from '@app/config'
-import { useGetService } from '@app/core/servicesProvider'
+import { useNotificationService } from '@app/hooks/services/Notification/NotificationService';
+import { HealthService } from '@app/core/health/HealthService';
+import { useConfig } from '@app/config';
+import { useGetService } from '@app/core/servicesProvider';
 
-const HEALTH_NOTIFICATION_ID = 'health.error'
-const HEALTHCHECK_MAX_COUNT = 3
+const HEALTH_NOTIFICATION_ID = 'health.error';
+const HEALTHCHECK_MAX_COUNT = 3;
 
 function useApiHealthPoll(): void {
-  const [count, setCount] = useState(0)
-  const { formatMessage } = useIntl()
-  const { healthCheckInterval } = useConfig()
-  const healthService = useGetService<HealthService>('HealthService')
+  const [count, setCount] = useState(0);
+  const { formatMessage } = useIntl();
+  const { healthCheckInterval } = useConfig();
+  const healthService = useGetService<HealthService>('HealthService');
   const { registerNotification, unregisterNotificationById } =
-    useNotificationService()
+    useNotificationService();
 
   useEffect(() => {
     const errorNotification = {
       id: HEALTH_NOTIFICATION_ID,
       title: formatMessage({ id: 'notifications.error.health' }),
       isError: true,
-    }
+    };
 
     const interval = setInterval(async () => {
       try {
-        await healthService.health()
+        await healthService.health();
         if (count >= HEALTHCHECK_MAX_COUNT) {
-          unregisterNotificationById(HEALTH_NOTIFICATION_ID)
+          unregisterNotificationById(HEALTH_NOTIFICATION_ID);
         }
-        setCount(0)
+        setCount(0);
       } catch (e) {
         if (count < HEALTHCHECK_MAX_COUNT) {
-          setCount((count) => ++count)
+          setCount((count) => ++count);
         } else {
-          registerNotification(errorNotification)
+          registerNotification(errorNotification);
         }
       }
-    }, healthCheckInterval)
+    }, healthCheckInterval);
 
-    return () => clearInterval(interval)
+    return () => clearInterval(interval);
   }, [
     count,
     healthCheckInterval,
@@ -48,7 +48,7 @@ function useApiHealthPoll(): void {
     unregisterNotificationById,
     registerNotification,
     healthService,
-  ])
+  ]);
 }
 
-export { useApiHealthPoll }
+export { useApiHealthPoll };

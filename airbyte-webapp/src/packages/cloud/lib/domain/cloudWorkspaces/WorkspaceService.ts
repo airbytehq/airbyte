@@ -1,22 +1,22 @@
-import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService'
+import { AirbyteRequestService } from '@app/core/request/AirbyteRequestService';
 
-import { CloudWorkspace } from './types'
+import { CloudWorkspace } from './types';
 
 class WorkspaceService extends AirbyteRequestService {
   get url() {
-    return `workspaces`
+    return `workspaces`;
   }
 
   public async create(workspaceCreatPayload: {
-    name: string
+    name: string;
   }): Promise<CloudWorkspace> {
     const workspace = await this.fetch<CloudWorkspace>(
       `${this.url}/create`,
       workspaceCreatPayload
-    )
+    );
 
-    return workspace
+    return workspace;
   }
 }
 
-export { WorkspaceService }
+export { WorkspaceService };

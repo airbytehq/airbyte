@@ -1,6 +1,6 @@
-import merge from 'lodash.merge'
-import { ConfigProvider, DeepPartial, ValueProvider } from './types'
-import { isDefined } from '@app/utils/common'
+import merge from 'lodash.merge';
+import { ConfigProvider, DeepPartial, ValueProvider } from './types';
+import { isDefined } from '@app/utils/common';
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
@@ -20,8 +20,8 @@ const windowConfigProvider: ConfigProvider = async () => {
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,
     isDemo: window.IS_DEMO === 'true',
-  }
-}
+  };
+};
 
 const envConfigProvider: ConfigProvider = async () => {
   return {
@@ -47,22 +47,22 @@ const envConfigProvider: ConfigProvider = async () => {
         ? !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
         : undefined,
     },
-  }
-}
+  };
+};
 
 async function applyProviders<T>(
   defaultValue: T,
   providers: ValueProvider<T>
 ): Promise<T> {
-  let value: DeepPartial<T> = {}
+  let value: DeepPartial<T> = {};
 
   for (const provider of providers) {
-    const partialConfig = await provider()
+    const partialConfig = await provider();
 
-    value = merge(value, partialConfig)
+    value = merge(value, partialConfig);
   }
 
-  return merge(defaultValue, value)
+  return merge(defaultValue, value);
 }
 
-export { windowConfigProvider, envConfigProvider, applyProviders }
+export { windowConfigProvider, envConfigProvider, applyProviders };

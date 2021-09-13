@@ -1,48 +1,50 @@
-import React, { useContext, useMemo } from 'react'
-import { useMutation, useQuery, useQueryClient } from 'react-query'
-import { useLocalStorage } from 'react-use'
-import { useResetter } from 'rest-hooks'
+import React, { useContext, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useLocalStorage } from 'react-use';
+import { useResetter } from 'rest-hooks';
 
-import { CloudWorkspacesService } from '@app/packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService'
-import { useCurrentUser } from '@app/packages/cloud/services/auth/AuthService'
-import { useDefaultRequestMiddlewares } from '@app/packages/cloud/services/useDefaultRequestMiddlewares'
-import { CloudWorkspace } from '@app/packages/cloud/lib/domain/cloudWorkspaces/types'
-import { useConfig } from '@app/packages/cloud/services/config'
+import { CloudWorkspacesService } from '@app/packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService';
+import { useCurrentUser } from '@app/packages/cloud/services/auth/AuthService';
+import { useDefaultRequestMiddlewares } from '@app/packages/cloud/services/useDefaultRequestMiddlewares';
+import { CloudWorkspace } from '@app/packages/cloud/lib/domain/cloudWorkspaces/types';
+import { useConfig } from '@app/packages/cloud/services/config';
 
 type Context = {
-  currentWorkspaceId?: string | null
-  selectWorkspace: (workspaceId: string | null) => void
-  createWorkspace: (name: string) => Promise<CloudWorkspace>
+  currentWorkspaceId?: string | null;
+  selectWorkspace: (workspaceId: string | null) => void;
+  createWorkspace: (name: string) => Promise<CloudWorkspace>;
   removeWorkspace: {
-    mutateAsync: (workspaceId: string) => Promise<void>
-    isLoading: boolean
-  }
-}
+    mutateAsync: (workspaceId: string) => Promise<void>;
+    isLoading: boolean;
+  };
+};
 
-export const WorkspaceServiceContext = React.createContext<Context | null>(null)
+export const WorkspaceServiceContext = React.createContext<Context | null>(
+  null
+);
 
 function useGetWorkspaceService() {
-  const requestAuthMiddleware = useDefaultRequestMiddlewares()
-  const { cloudApiUrl } = useConfig()
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  const { cloudApiUrl } = useConfig();
 
   return useMemo(
     () => new CloudWorkspacesService(cloudApiUrl, requestAuthMiddleware),
     [requestAuthMiddleware, cloudApiUrl]
-  )
+  );
 }
 
 export function useListWorkspaces() {
-  const service = useGetWorkspaceService()
-  const user = useCurrentUser()
+  const service = useGetWorkspaceService();
+  const user = useCurrentUser();
 
   return useQuery('workspaces', () => service.listByUser(user.userId), {
     suspense: true,
-  })
+  });
 }
 
 export function useCreateWorkspace() {
-  const service = useGetWorkspaceService()
-  const queryClient = useQueryClient()
+  const service = useGetWorkspaceService();
+  const queryClient = useQueryClient();
 
   return useMutation(
     async (payload: { name: string; userId: string }) =>
@@ -52,15 +54,15 @@ export function useCreateWorkspace() {
         queryClient.setQueryData<CloudWorkspace[]>('workspaces', (old) => [
           ...(old ?? []),
           result,
-        ])
+        ]);
       },
     }
-  ).mutateAsync
+  ).mutateAsync;
 }
 
 export function useUpdateWorkspace() {
-  const service = useGetWorkspaceService()
-  const queryClient = useQueryClient()
+  const service = useGetWorkspaceService();
+  const queryClient = useQueryClient();
 
   return useMutation(
     async (workspaceId: string) => service.update(workspaceId, { name: '' }),
@@ -69,15 +71,15 @@ export function useUpdateWorkspace() {
         queryClient.setQueryData<CloudWorkspace[]>('workspaces', (old) => [
           ...(old ?? []),
           result,
-        ])
+        ]);
       },
     }
-  ).mutateAsync
+  ).mutateAsync;
 }
 
 export function useRemoveWorkspace() {
-  const service = useGetWorkspaceService()
-  const queryClient = useQueryClient()
+  const service = useGetWorkspaceService();
+  const queryClient = useQueryClient();
 
   return useMutation(
     async (workspaceId: string) => service.remove(workspaceId),
@@ -87,30 +89,30 @@ export function useRemoveWorkspace() {
           'workspaces',
           (old) =>
             old?.filter((workspace) => workspace.workspaceId !== workspaceId)
-        )
+        );
       },
     }
-  )
+  );
 }
 
 export function useGetWorkspace(workspaceId: string) {
-  const service = useGetWorkspaceService()
+  const service = useGetWorkspaceService();
 
   return useQuery(['workspace', workspaceId], () => service.get(workspaceId), {
     suspense: true,
-  })
+  });
 }
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
-  const user = useCurrentUser()
+  const user = useCurrentUser();
   const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
     string | null
-  >(`${user.userId}/workspaceId`, null)
-  const createWorkspace = useCreateWorkspace()
-  const removeWorkspace = useRemoveWorkspace()
+  >(`${user.userId}/workspaceId`, null);
+  const createWorkspace = useCreateWorkspace();
+  const removeWorkspace = useRemoveWorkspace();
 
-  const queryClient = useQueryClient()
-  const resetCache = useResetter()
+  const queryClient = useQueryClient();
+  const resetCache = useResetter();
 
   const ctx = useMemo<Context>(
     () => ({
@@ -122,28 +124,28 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
         }),
       removeWorkspace,
       selectWorkspace: async (workspaceId) => {
-        setCurrentWorkspaceId(workspaceId)
-        await queryClient.resetQueries()
-        resetCache()
+        setCurrentWorkspaceId(workspaceId);
+        await queryClient.resetQueries();
+        resetCache();
       },
     }),
     [currentWorkspaceId, user, createWorkspace, removeWorkspace]
-  )
+  );
 
   return (
     <WorkspaceServiceContext.Provider value={ctx}>
       {children}
     </WorkspaceServiceContext.Provider>
-  )
-}
+  );
+};
 
 export const useWorkspaceService = (): Context => {
-  const workspaceService = useContext(WorkspaceServiceContext)
+  const workspaceService = useContext(WorkspaceServiceContext);
   if (!workspaceService) {
     throw new Error(
       'useWorkspaceService must be used within a WorkspaceServiceProvider.'
-    )
+    );
   }
 
-  return workspaceService
-}
+  return workspaceService;
+};

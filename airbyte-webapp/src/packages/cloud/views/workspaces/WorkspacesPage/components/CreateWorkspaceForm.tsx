@@ -1,24 +1,24 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
-import { Field, FieldProps, Formik, Form } from 'formik'
-import * as yup from 'yup'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
+import { Field, FieldProps, Formik, Form } from 'formik';
+import * as yup from 'yup';
 
-import { LoadingButton, Input } from '@app/components'
+import { LoadingButton, Input } from '@app/components';
 
 type CreateWorkspaceFormProps = {
-  onSubmit: (values: { name: string }) => Promise<void>
-}
+  onSubmit: (values: { name: string }) => Promise<void>;
+};
 
 const CreateWorkspaceFormValidationSchema = yup.object().shape({
   name: yup.string().required('form.empty.error'),
-})
+});
 
 const CreationForm = styled(Form)`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`
+`;
 
 const ClearInput = styled(Input)`
   flex: 1 0 0;
@@ -34,7 +34,7 @@ const ClearInput = styled(Input)`
       error ? `${theme.dangerColor} 1px solid` : 'none'};
     padding: 0 0 2px;
   }
-`
+`;
 
 const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
   onSubmit,
@@ -66,7 +66,7 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
         </CreationForm>
       )}
     </Formik>
-  )
-}
+  );
+};
 
-export default CreateWorkspaceForm
+export default CreateWorkspaceForm;

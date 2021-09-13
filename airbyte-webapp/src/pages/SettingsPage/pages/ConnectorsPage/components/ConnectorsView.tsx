@@ -1,34 +1,34 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import { CellProps } from 'react-table'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import { CellProps } from 'react-table';
 
-import Table from '@app/components/Table'
-import ConnectorCell from './ConnectorCell'
-import ImageCell from './ImageCell'
-import VersionCell from './VersionCell'
-import { Block, FormContentTitle, Title } from './PageComponents'
-import { SourceDefinition } from '@app/core/resources/SourceDefinition'
-import UpgradeAllButton from './UpgradeAllButton'
-import CreateConnector from './CreateConnector'
-import HeadTitle from '@app/components/HeadTitle'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
-import { Connector, ConnectorDefinition } from '@app/core/domain/connector'
-import { WithFeature } from '@app/hooks/services/Feature'
+import Table from '@app/components/Table';
+import ConnectorCell from './ConnectorCell';
+import ImageCell from './ImageCell';
+import VersionCell from './VersionCell';
+import { Block, FormContentTitle, Title } from './PageComponents';
+import { SourceDefinition } from '@app/core/resources/SourceDefinition';
+import UpgradeAllButton from './UpgradeAllButton';
+import CreateConnector from './CreateConnector';
+import HeadTitle from '@app/components/HeadTitle';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
+import { Connector, ConnectorDefinition } from '@app/core/domain/connector';
+import { WithFeature } from '@app/hooks/services/Feature';
 
 type ConnectorsViewProps = {
-  type: 'sources' | 'destinations'
-  isUpdateSuccess: boolean
-  hasNewConnectorVersion?: boolean
-  usedConnectorsDefinitions: SourceDefinition[] | DestinationDefinition[]
-  connectorsDefinitions: SourceDefinition[] | DestinationDefinition[]
-  loading: boolean
-  error?: Error
-  onUpdate: () => void
-  onUpdateVersion: ({ id, version }: { id: string; version: string }) => void
-  feedbackList: Record<string, string>
-}
+  type: 'sources' | 'destinations';
+  isUpdateSuccess: boolean;
+  hasNewConnectorVersion?: boolean;
+  usedConnectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
+  connectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
+  loading: boolean;
+  error?: Error;
+  onUpdate: () => void;
+  onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
+  feedbackList: Record<string, string>;
+};
 
-const defaultSorting = [{ id: 'name' }]
+const defaultSorting = [{ id: 'name' }];
 
 const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   type,
@@ -92,7 +92,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       },
     ],
     [feedbackList, onUpdateVersion]
-  )
+  );
 
   const renderHeaderControls = (section: 'used' | 'available') =>
     ((section === 'used' && usedConnectorsDefinitions.length > 0) ||
@@ -110,7 +110,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           />
         )}
       </div>
-    )
+    );
 
   return (
     <>
@@ -160,7 +160,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         />
       </Block>
     </>
-  )
-}
+  );
+};
 
-export default ConnectorsView
+export default ConnectorsView;

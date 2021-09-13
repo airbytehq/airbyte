@@ -1,36 +1,36 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import styled from 'styled-components'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import styled from 'styled-components';
 
-import Modal from '@app/components/Modal'
-import { Button } from '@app/components'
-import FileDropZone from '@app/components/FileDropZone'
+import Modal from '@app/components/Modal';
+import { Button } from '@app/components';
+import FileDropZone from '@app/components/FileDropZone';
 
 export type IProps = {
-  onClose: () => void
+  onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSubmit: (data: any) => void
-  message?: React.ReactNode
-  isLoading?: boolean
-  error?: Error | null | boolean
-  cleanError?: () => void
-}
+  onSubmit: (data: any) => void;
+  message?: React.ReactNode;
+  isLoading?: boolean;
+  error?: Error | null | boolean;
+  cleanError?: () => void;
+};
 
 const Content = styled.div`
   padding: 18px 37px 28px;
   font-size: 14px;
   line-height: 28px;
   width: 485px;
-`
+`;
 
 const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
-`
+`;
 
 const DropZoneSubtitle = styled.div`
   font-size: 11px;
   font-weight: bold;
-`
+`;
 
 const Bottom = styled.div`
   display: flex;
@@ -38,19 +38,19 @@ const Bottom = styled.div`
   align-items: center;
   flex-direction: row;
   padding-top: 27px;
-`
+`;
 
 const Error = styled.div`
   color: ${({ theme }) => theme.dangerColor};
   font-size: 14px;
   line-height: 17px;
   margin-right: 10px;
-`
+`;
 
 const Note = styled.div`
   padding-top: 8px;
   text-align: center;
-`
+`;
 
 const DropZoneMainText = () => (
   <div>
@@ -59,7 +59,7 @@ const DropZoneMainText = () => (
       <FormattedMessage id="admin.dropZoneSubtitle" />
     </DropZoneSubtitle>
   </div>
-)
+);
 
 const ImportConfigurationModal: React.FC<IProps> = ({
   onClose,
@@ -68,7 +68,7 @@ const ImportConfigurationModal: React.FC<IProps> = ({
   error,
   cleanError,
 }) => {
-  const [usersFile, setUsersFile] = useState<File | null>(null)
+  const [usersFile, setUsersFile] = useState<File | null>(null);
 
   return (
     <Modal
@@ -80,8 +80,8 @@ const ImportConfigurationModal: React.FC<IProps> = ({
           mainText={<DropZoneMainText />}
           options={{
             onDrop: (files) => {
-              setUsersFile(files[0])
-              cleanError?.()
+              setUsersFile(files[0]);
+              cleanError?.();
             },
             maxFiles: 1,
             accept:
@@ -109,7 +109,7 @@ const ImportConfigurationModal: React.FC<IProps> = ({
         </Bottom>
       </Content>
     </Modal>
-  )
-}
+  );
+};
 
-export default ImportConfigurationModal
+export default ImportConfigurationModal;

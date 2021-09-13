@@ -1,23 +1,23 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import Label from '@app/components/Label'
+import Label from '@app/components/Label';
 
 export type ControlLabelsProps = {
-  className?: string
-  error?: boolean
-  success?: boolean
-  nextLine?: boolean
-  message?: React.ReactNode
-  errorMessage?: React.ReactNode
-  labelAdditionLength?: number
-  label?: React.ReactNode
-}
+  className?: string;
+  error?: boolean;
+  success?: boolean;
+  nextLine?: boolean;
+  message?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  labelAdditionLength?: number;
+  label?: React.ReactNode;
+};
 
 const ControlContainer = styled.div`
   width: 100%;
   display: inline-block;
-`
+`;
 
 const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
   <ControlContainer className={props.className}>
@@ -32,6 +32,6 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
     </Label>
     {props.children}
   </ControlContainer>
-)
+);
 
-export { ControlLabels }
+export { ControlLabels };

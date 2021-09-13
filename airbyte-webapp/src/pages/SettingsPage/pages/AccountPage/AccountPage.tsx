@@ -1,24 +1,24 @@
-import React from 'react'
-import { FormattedMessage } from 'react-intl'
-import useWorkspace from '@app/hooks/services/useWorkspace'
-import useWorkspaceEditor from '@app/pages/SettingsPage/components/useWorkspaceEditor'
-import HeadTitle from '@app/components/HeadTitle'
-import AccountForm from './components/AccountForm'
-import { Content, SettingsCard } from '../SettingsComponents'
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import useWorkspace from '@app/hooks/services/useWorkspace';
+import useWorkspaceEditor from '@app/pages/SettingsPage/components/useWorkspaceEditor';
+import HeadTitle from '@app/components/HeadTitle';
+import AccountForm from './components/AccountForm';
+import { Content, SettingsCard } from '../SettingsComponents';
 
 const AccountPage: React.FC = () => {
-  const { workspace } = useWorkspace()
+  const { workspace } = useWorkspace();
 
   const {
     errorMessage,
     successMessage,
     // loading,
     updateData,
-  } = useWorkspaceEditor()
+  } = useWorkspaceEditor();
 
   const onSubmit = async (data: { email: string }) => {
-    await updateData({ ...workspace, ...data })
-  }
+    await updateData({ ...workspace, ...data });
+  };
 
   return (
     <>
@@ -36,7 +36,7 @@ const AccountPage: React.FC = () => {
         </Content>
       </SettingsCard>
     </>
-  )
-}
+  );
+};
 
-export default AccountPage
+export default AccountPage;

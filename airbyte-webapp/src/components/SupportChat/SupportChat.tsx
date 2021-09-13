@@ -1,21 +1,21 @@
-import React, { useEffect } from 'react'
-import { Storytime } from '@papercups-io/storytime'
-import styled from 'styled-components'
-import { faComment } from '@fortawesome/free-regular-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useEffect } from 'react';
+import { Storytime } from '@papercups-io/storytime';
+import styled from 'styled-components';
+import { faComment } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { Button } from '@app/components'
+import { Button } from '@app/components';
 type PapercupsConfig = {
-  accountId: string
-  baseUrl: string
-  enableStorytime: boolean
-}
+  accountId: string;
+  baseUrl: string;
+  enableStorytime: boolean;
+};
 
 type IProps = {
-  papercupsConfig: PapercupsConfig
-  customerId: string
-  onClick?: () => void
-}
+  papercupsConfig: PapercupsConfig;
+  customerId: string;
+  onClick?: () => void;
+};
 
 const ChatButton = styled(Button)`
   width: 50px;
@@ -29,7 +29,7 @@ const ChatButton = styled(Button)`
   right: 25px;
 
   font-size: 30px;
-`
+`;
 
 const SupportChat: React.FC<IProps> = ({
   papercupsConfig,
@@ -45,15 +45,15 @@ const SupportChat: React.FC<IProps> = ({
         accountId: papercupsConfig.accountId,
         baseUrl: papercupsConfig.baseUrl,
         customer: { external_id: customerId },
-      })
+      });
     }
-  }, [customerId, papercupsConfig])
+  }, [customerId, papercupsConfig]);
 
   return (
     <ChatButton onClick={onClick}>
       <FontAwesomeIcon icon={faComment} />
     </ChatButton>
-  )
-}
+  );
+};
 
-export default SupportChat
+export default SupportChat;

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 import {
   Config,
@@ -6,20 +6,20 @@ import {
   ValueProvider,
   envConfigProvider,
   windowConfigProvider,
-} from '@app/config'
+} from '@app/config';
 
 import {
   cloudEnvConfigProvider,
   fileConfigProvider,
   defaultConfig,
-} from './config'
+} from './config';
 
 const configProviders: ValueProvider<Config> = [
   fileConfigProvider,
   cloudEnvConfigProvider,
   windowConfigProvider,
   envConfigProvider,
-]
+];
 
 /**
  * This Provider is responsible for injecting config in context and loading
@@ -32,6 +32,6 @@ const ConfigProvider: React.FC = ({ children }) => (
   >
     {children}
   </ConfigServiceProvider>
-)
+);
 
-export { ConfigProvider }
+export { ConfigProvider };

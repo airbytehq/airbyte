@@ -1,3 +1,3 @@
-import ApiErrorBoundary from './ApiErrorBoundary'
+import ApiErrorBoundary from './ApiErrorBoundary';
 
-export default ApiErrorBoundary
+export default ApiErrorBoundary;

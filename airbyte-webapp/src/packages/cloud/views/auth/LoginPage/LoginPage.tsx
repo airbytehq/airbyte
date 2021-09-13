@@ -1,28 +1,28 @@
-import React from 'react'
-import { Field, FieldProps, Formik } from 'formik'
-import * as yup from 'yup'
-import { FormattedMessage, useIntl } from 'react-intl'
+import React from 'react';
+import { Field, FieldProps, Formik } from 'formik';
+import * as yup from 'yup';
+import { FormattedMessage, useIntl } from 'react-intl';
 
-import { useAuthService } from '@app/packages/cloud/services/auth/AuthService'
+import { useAuthService } from '@app/packages/cloud/services/auth/AuthService';
 
-import { LabeledInput, Link, LoadingButton } from '@app/components'
+import { LabeledInput, Link, LoadingButton } from '@app/components';
 import {
   BottomBlock,
   FieldItem,
   Form,
-} from '@app/packages/cloud/views/auth/components/FormComponents'
-import { FormTitle } from '@app/packages/cloud/views/auth/components/FormTitle'
-import { FieldError } from '@app/packages/cloud/lib/errors/FieldError'
-import { Routes } from '@app/packages/cloud/routes'
+} from '@app/packages/cloud/views/auth/components/FormComponents';
+import { FormTitle } from '@app/packages/cloud/views/auth/components/FormTitle';
+import { FieldError } from '@app/packages/cloud/lib/errors/FieldError';
+import { Routes } from '@app/packages/cloud/routes';
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email('form.email.error').required('form.empty.error'),
   password: yup.string().required('form.empty.error'),
-})
+});
 
 const LoginPage: React.FC = () => {
-  const formatMessage = useIntl().formatMessage
-  const { login } = useAuthService()
+  const formatMessage = useIntl().formatMessage;
+  const { login } = useAuthService();
 
   return (
     <div>
@@ -39,9 +39,9 @@ const LoginPage: React.FC = () => {
         onSubmit={async (values, { setFieldError, setStatus }) =>
           login(values).catch((err) => {
             if (err instanceof FieldError) {
-              setFieldError(err.field, err.message)
+              setFieldError(err.field, err.message);
             } else {
-              setStatus(err.message)
+              setStatus(err.message);
             }
           })
         }
@@ -104,7 +104,7 @@ const LoginPage: React.FC = () => {
         )}
       </Formik>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

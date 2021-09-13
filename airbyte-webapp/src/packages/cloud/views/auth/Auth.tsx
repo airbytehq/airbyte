@@ -1,18 +1,18 @@
-import React, { Suspense } from 'react'
-import styled from 'styled-components'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import React, { Suspense } from 'react';
+import styled from 'styled-components';
+import { Redirect, Route, Switch } from 'react-router-dom';
 
-import { LoadingPage } from '@app/components'
-import useRouter from '@app/hooks/useRouter'
-import FormContent from './components/FormContent'
-import News from './components/News'
+import { LoadingPage } from '@app/components';
+import useRouter from '@app/hooks/useRouter';
+import FormContent from './components/FormContent';
+import News from './components/News';
 
-import { Routes } from '@app/packages/cloud/routes'
+import { Routes } from '@app/packages/cloud/routes';
 
-import { LoginPage } from './LoginPage'
-import { SignupPage } from './SignupPage'
-import { ResetPasswordPage } from './ResetPasswordPage'
-import { ResetPasswordConfirmPage } from './ConfirmPasswordResetPage/ConfirmPasswordResetPage'
+import { LoginPage } from './LoginPage';
+import { SignupPage } from './SignupPage';
+import { ResetPasswordPage } from './ResetPasswordPage';
+import { ResetPasswordConfirmPage } from './ConfirmPasswordResetPage/ConfirmPasswordResetPage';
 
 const Content = styled.div`
   width: 100%;
@@ -21,13 +21,13 @@ const Content = styled.div`
   display: flex;
   flex-direction: row;
   background: ${({ theme }) => theme.whiteColor};
-`
+`;
 
 const Part = styled.div`
   flex: 1 0 0;
   padding: 20px 36px 39px 46px;
   height: 100%;
-`
+`;
 
 const NewsPart = styled(Part)`
   background: ${({ theme }) => theme.beigeColor};
@@ -35,10 +35,10 @@ const NewsPart = styled(Part)`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-`
+`;
 
 const Auth: React.FC = () => {
-  const { pathname } = useRouter()
+  const { pathname } = useRouter();
 
   return (
     <Switch>
@@ -71,7 +71,7 @@ const Auth: React.FC = () => {
         </Content>
       </Route>
     </Switch>
-  )
-}
+  );
+};
 
-export default Auth
+export default Auth;

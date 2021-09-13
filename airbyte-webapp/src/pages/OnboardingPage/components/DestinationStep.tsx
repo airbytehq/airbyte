@@ -1,36 +1,36 @@
-import React, { useState } from 'react'
-import { FormattedMessage } from 'react-intl'
-import { useResource } from 'rest-hooks'
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useResource } from 'rest-hooks';
 
-import ContentCard from '@app/components/ContentCard'
-import ServiceForm from '@app/views/Connector/ServiceForm'
-import ConnectionBlock from '@app/components/ConnectionBlock'
-import { JobsLogItem } from '@app/components/JobItem'
+import ContentCard from '@app/components/ContentCard';
+import ServiceForm from '@app/views/Connector/ServiceForm';
+import ConnectionBlock from '@app/components/ConnectionBlock';
+import { JobsLogItem } from '@app/components/JobItem';
 
-import SourceDefinitionResource from '@app/core/resources/SourceDefinition'
-import { useDestinationDefinitionSpecificationLoad } from '@app/hooks/services/useDestinationHook'
-import { createFormErrorMessage } from '@app/utils/errorStatusMessage'
-import { JobInfo } from '@app/core/resources/Scheduler'
-import { ConnectionConfiguration } from '@app/core/domain/connection'
-import { DestinationDefinition } from '@app/core/resources/DestinationDefinition'
+import SourceDefinitionResource from '@app/core/resources/SourceDefinition';
+import { useDestinationDefinitionSpecificationLoad } from '@app/hooks/services/useDestinationHook';
+import { createFormErrorMessage } from '@app/utils/errorStatusMessage';
+import { JobInfo } from '@app/core/resources/Scheduler';
+import { ConnectionConfiguration } from '@app/core/domain/connection';
+import { DestinationDefinition } from '@app/core/resources/DestinationDefinition';
 
-import SkipOnboardingButton from './SkipOnboardingButton'
-import { useAnalytics } from '@app/hooks/useAnalytics'
+import SkipOnboardingButton from './SkipOnboardingButton';
+import { useAnalytics } from '@app/hooks/useAnalytics';
 
 type IProps = {
-  availableServices: DestinationDefinition[]
-  currentSourceDefinitionId: string
+  availableServices: DestinationDefinition[];
+  currentSourceDefinitionId: string;
   onSubmit: (values: {
-    name: string
-    serviceType: string
-    destinationDefinitionId?: string
-    connectionConfiguration?: ConnectionConfiguration
-  }) => void
-  hasSuccess?: boolean
-  error?: null | { message?: string; status?: number }
-  jobInfo?: JobInfo
-  afterSelectConnector?: () => void
-}
+    name: string;
+    serviceType: string;
+    destinationDefinitionId?: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => void;
+  hasSuccess?: boolean;
+  error?: null | { message?: string; status?: number };
+  jobInfo?: JobInfo;
+  afterSelectConnector?: () => void;
+};
 
 const DestinationStep: React.FC<IProps> = ({
   onSubmit,
@@ -41,43 +41,43 @@ const DestinationStep: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState('')
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState('');
   const { destinationDefinitionSpecification, isLoading } =
-    useDestinationDefinitionSpecificationLoad(destinationDefinitionId)
+    useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
   const currentSource = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: currentSourceDefinitionId,
-  })
-  const analyticsService = useAnalytics()
+  });
+  const analyticsService = useAnalytics();
 
   const onDropDownSelect = (destinationDefinition: string) => {
     const destinationConnector = availableServices.find(
       (s) => s.destinationDefinitionId === destinationDefinition
-    )
+    );
     analyticsService.track('New Destination - Action', {
       action: 'Select a connector',
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
         destinationConnector?.destinationDefinitionId,
-    })
+    });
 
     if (afterSelectConnector) {
-      afterSelectConnector()
+      afterSelectConnector();
     }
 
-    setDestinationDefinitionId(destinationDefinition)
-  }
+    setDestinationDefinitionId(destinationDefinition);
+  };
   const onSubmitForm = async (values: {
-    name: string
-    serviceType: string
+    name: string;
+    serviceType: string;
   }) => {
     await onSubmit({
       ...values,
       destinationDefinitionId:
         destinationDefinitionSpecification?.destinationDefinitionId,
-    })
-  }
+    });
+  };
 
-  const errorMessage = error ? createFormErrorMessage(error) : ''
+  const errorMessage = error ? createFormErrorMessage(error) : '';
 
   return (
     <>
@@ -112,7 +112,7 @@ const DestinationStep: React.FC<IProps> = ({
         <JobsLogItem jobInfo={jobInfo} />
       </ContentCard>
     </>
-  )
-}
+  );
+};
 
-export default DestinationStep
+export default DestinationStep;
