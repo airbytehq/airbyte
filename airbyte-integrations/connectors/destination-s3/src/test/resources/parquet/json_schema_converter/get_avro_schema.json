@@ -401,7 +401,7 @@
         {
           "name": "_5filed_name",
           "type": ["null", "string"],
-          "doc":"_airbyte_original_name:5filed_name",
+          "doc": "_airbyte_original_name:5filed_name",
           "default": null
         }
       ]
