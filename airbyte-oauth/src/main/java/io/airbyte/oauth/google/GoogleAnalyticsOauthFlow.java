@@ -22,32 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth;
+package io.airbyte.oauth.google;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.google.GoogleAdsOauthFlow;
-import io.airbyte.oauth.google.GoogleAnalyticsOauthFlow;
-import java.util.Map;
 
-public class OAuthImplementationFactory {
+public class GoogleAnalyticsOauthFlow extends GoogleOAuthFlow {
 
-  private final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING;
-
-  public OAuthImplementationFactory(ConfigRepository configRepository) {
-    OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
-        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOauthFlow(configRepository))
-        .put("airbyte/source-google-ads", new GoogleAdsOauthFlow(configRepository))
-        .build();
-  }
-
-  public OAuthFlowImplementation create(String imageName) {
-    if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      return OAUTH_FLOW_MAPPING.get(imageName);
-    } else {
-      throw new IllegalStateException(
-          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
-    }
+  public GoogleAnalyticsOauthFlow(ConfigRepository configRepository) {
+    super(configRepository, "https://www.googleapis.com/auth/analytics.readonly");
   }
 
 }
