@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { faComment } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { Button } from 'components'
+import { Button } from '@app/components'
 type PapercupsConfig = {
     accountId: string
     baseUrl: string

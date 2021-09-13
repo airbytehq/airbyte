@@ -1,45 +1,45 @@
-import { ScheduleProperties } from "core/resources/Connection";
+import { ScheduleProperties } from '@app/core/resources/Connection'
 
 type EntityTableDataItem = {
-  entityId: string;
-  entityName: string;
-  connectorName: string;
-  connectEntities: {
-    name: string;
-    connector: string;
-    status: string;
-    lastSyncStatus: string | null;
-  }[];
-  enabled: boolean;
-  lastSync?: number | null;
-  connectorIcon?: string;
-};
+    entityId: string
+    entityName: string
+    connectorName: string
+    connectEntities: {
+        name: string
+        connector: string
+        status: string
+        lastSyncStatus: string | null
+    }[]
+    enabled: boolean
+    lastSync?: number | null
+    connectorIcon?: string
+}
 
 type ITableDataItem = {
-  connectionId: string;
-  entityName: string;
-  connectorName: string;
-  enabled: boolean;
-  isSyncing?: boolean;
-  status?: string;
-  lastSync?: number | null;
-  schedule: ScheduleProperties | null;
-  lastSyncStatus: string | null;
-  connectorIcon?: string;
-  entityIcon?: string;
-};
+    connectionId: string
+    entityName: string
+    connectorName: string
+    enabled: boolean
+    isSyncing?: boolean
+    status?: string
+    lastSync?: number | null
+    schedule: ScheduleProperties | null
+    lastSyncStatus: string | null
+    connectorIcon?: string
+    entityIcon?: string
+}
 
 enum Status {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  FAILED = "failed",
-  EMPTY = "empty",
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
+    FAILED = 'failed',
+    EMPTY = 'empty',
 }
 
 enum SortOrderEnum {
-  DESC = "desc",
-  ASC = "asc",
+    DESC = 'desc',
+    ASC = 'asc',
 }
 
-export type { ITableDataItem, EntityTableDataItem };
-export { Status, SortOrderEnum };
+export type { ITableDataItem, EntityTableDataItem }
+export { Status, SortOrderEnum }

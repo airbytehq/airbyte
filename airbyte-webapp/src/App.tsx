@@ -17,8 +17,8 @@ import {
     usePickFirstWorkspace,
 } from 'hooks/services/useWorkspace'
 import { Feature, FeatureService } from 'hooks/services/Feature'
-import { ServicesProvider } from 'core/servicesProvider'
-import { useApiServices } from 'core/defaultServices'
+import { ServicesProvider } from '@app/core/servicesProvider'
+import { useApiServices } from '@app/core/defaultServices'
 import { envConfigProvider, windowConfigProvider } from './config'
 import {
     Config,

@@ -11,9 +11,7 @@
         "typeRoots": ["./node_modules/@types", "./src/types"],
         "baseUrl": ".",
         "paths": {
-            "components/*": ["src/components/*"],
-            "config/*": ["src/config/*"],
-            "core/*": ["src/core/*"],
+            "@app/*": ["src/*"],
             "hooks/*": ["src/hooks/*"],
             "locales/*": ["src/locales/*"],
             "packages/*": ["src/packages/*"],

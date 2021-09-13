@@ -13,9 +13,7 @@ const options = {
     resolve: {
         alias: {
             // TODO: replace all aliases with `@app/` (+tsconfig.json)
-            components: path.resolve(__dirname, '../src/components'),
-            config: path.resolve(__dirname, '../src/config'),
-            core: path.resolve(__dirname, '../src/core'),
+            '@app': path.resolve(__dirname, '../src'),
             hooks: path.resolve(__dirname, '../src/hooks'),
             locales: path.resolve(__dirname, '../src/locales'),
             packages: path.resolve(__dirname, '../src/packages'),

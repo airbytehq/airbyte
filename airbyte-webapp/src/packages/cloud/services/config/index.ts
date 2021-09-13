@@ -1,26 +1,26 @@
 import {
-  defaultConfig as coreDefaultConfig,
-  useConfig as useCoreConfig,
-} from "config";
-import { CloudConfig, CloudConfigExtension } from "./types";
+    defaultConfig as coreDefaultConfig,
+    useConfig as useCoreConfig,
+} from '@app/config'
+import { CloudConfig, CloudConfigExtension } from './types'
 
 export function useConfig(): CloudConfig {
-  return useCoreConfig<CloudConfig>();
+    return useCoreConfig<CloudConfig>()
 }
 
 const cloudConfigExtensionDefault: CloudConfigExtension = {
-  cloudApiUrl: "",
-  firebase: {
-    apiKey: "",
-    authDomain: "",
-  },
-};
+    cloudApiUrl: '',
+    firebase: {
+        apiKey: '',
+        authDomain: '',
+    },
+}
 
 export const defaultConfig: CloudConfig = Object.assign(
-  {},
-  coreDefaultConfig,
-  cloudConfigExtensionDefault
-);
+    {},
+    coreDefaultConfig,
+    cloudConfigExtensionDefault
+)
 
-export * from "./configProviders";
-export * from "./types";
+export * from './configProviders'
+export * from './types'

@@ -1,9 +1,9 @@
-import { ConnectionConfiguration } from "core/domain/connection";
+import { ConnectionConfiguration } from '@app/core/domain/connection'
 
 type ServiceFormValues = {
-  name: string;
-  serviceType: string;
-  connectionConfiguration: ConnectionConfiguration;
-};
+    name: string
+    serviceType: string
+    connectionConfiguration: ConnectionConfiguration
+}
 
-export type { ServiceFormValues };
+export type { ServiceFormValues }

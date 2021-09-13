@@ -7,11 +7,11 @@ import { FormattedMessage } from 'react-intl'
 import { NavLink } from 'react-router-dom'
 
 import { Routes } from 'pages/routes'
-import { useConfig } from 'config'
+import { useConfig } from '@app/config'
 
 import useConnector from 'hooks/services/useConnector'
-import { Link } from 'components'
-import Indicator from 'components/Indicator'
+import { Link } from '@app/components'
+import Indicator from '@app/components/Indicator'
 
 import Source from 'views/layout/SideBar/components/SourceIcon'
 import Connections from 'views/layout/SideBar/components/ConnectionsIcon'

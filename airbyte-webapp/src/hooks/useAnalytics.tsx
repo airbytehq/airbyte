@@ -1,40 +1,40 @@
-import React, { useContext, useMemo } from "react";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
+import React, { useContext, useMemo } from 'react'
+import { AnalyticsService } from '@app/core/analytics/AnalyticsService'
 
 const analyticsServiceContext = React.createContext<AnalyticsService | null>(
-  null
-);
+    null
+)
 
 function AnalyticsServiceProvider({
-  children,
-  userId,
-  version,
+    children,
+    userId,
+    version,
 }: {
-  children: React.ReactNode;
-  version?: string;
-  userId?: string;
+    children: React.ReactNode
+    version?: string
+    userId?: string
 }) {
-  const analyticsService: AnalyticsService = useMemo(
-    () => new AnalyticsService(userId, version),
-    [version, userId]
-  );
-  return (
-    <analyticsServiceContext.Provider value={analyticsService}>
-      {children}
-    </analyticsServiceContext.Provider>
-  );
+    const analyticsService: AnalyticsService = useMemo(
+        () => new AnalyticsService(userId, version),
+        [version, userId]
+    )
+    return (
+        <analyticsServiceContext.Provider value={analyticsService}>
+            {children}
+        </analyticsServiceContext.Provider>
+    )
 }
 
 export const useAnalytics = (): AnalyticsService => {
-  const analyticsService = useContext(analyticsServiceContext);
+    const analyticsService = useContext(analyticsServiceContext)
 
-  if (!analyticsService) {
-    throw new Error(
-      "analyticsService must be used within a AnalyticsServiceProvider."
-    );
-  }
+    if (!analyticsService) {
+        throw new Error(
+            'analyticsService must be used within a AnalyticsServiceProvider.'
+        )
+    }
 
-  return analyticsService;
-};
+    return analyticsService
+}
 
-export default React.memo(AnalyticsServiceProvider);
+export default React.memo(AnalyticsServiceProvider)
