@@ -39,8 +39,10 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -55,8 +57,8 @@ public class GoogleOAuthFlowTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-  private static final String REDIRECT_URL = "https%3A//airbyte.io";
-  private static final String SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
+  private static final String REDIRECT_URL = "https://airbyte.io";
+  private static final String SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
@@ -108,11 +110,11 @@ public class GoogleOAuthFlowTest {
             .build()))));
     final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        SCOPE,
+        "https://accounts.google.com/o/oauth2/v2/auth?state=%s&client_id=%s&redirect_uri=%s&scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent",
         definitionId,
         getClientId(),
-        REDIRECT_URL);
+        urlEncode(REDIRECT_URL),
+        urlEncode(SCOPE));
     LOGGER.info(expectedSourceUrl);
     assertEquals(expectedSourceUrl, actualSourceUrl);
   }
@@ -126,13 +128,16 @@ public class GoogleOAuthFlowTest {
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", getClientId())
             .build()))));
+    // It would be better to make this comparison agnostic of the order of query params but the URI
+    // class' equals() method
+    // considers URLs with different qparam orders different URIs..
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent&state=%s&client_id=%s&redirect_uri=%s",
-        SCOPE,
+        "https://accounts.google.com/o/oauth2/v2/auth?state=%s&client_id=%s&redirect_uri=%s&scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent",
         definitionId,
         getClientId(),
-        REDIRECT_URL);
+        urlEncode(REDIRECT_URL),
+        urlEncode(SCOPE));
     LOGGER.info(expectedDestinationUrl);
     assertEquals(expectedDestinationUrl, actualDestinationUrl);
   }
@@ -199,6 +204,10 @@ public class GoogleOAuthFlowTest {
       final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
       return credentialsJson.get("client_id").asText();
     }
+  }
+
+  private String urlEncode(String s) {
+    return URLEncoder.encode(s, StandardCharsets.UTF_8);
   }
 
 }
