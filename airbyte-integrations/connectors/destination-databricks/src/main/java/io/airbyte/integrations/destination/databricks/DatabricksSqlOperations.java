@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.databricks;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
@@ -36,6 +37,20 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
     for (String query : queries) {
       database.execute(query);
     }
+  }
+
+  /**
+   * Spark SQL does not support many of the data definition keywords and types as in Postgres.
+   * Reference: https://spark.apache.org/docs/latest/sql-ref-datatypes.html
+   */
+  @Override
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS %s.%s (%s STRING, %s STRING, %s TIMESTAMP);",
+        schemaName, tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override

@@ -33,7 +33,6 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -43,6 +42,10 @@ public class DatabricksDestination extends CopyDestination {
 
   static final String DATABRICKS_USERNAME = "token";
   static final String DATABRICKS_DRIVER_CLASS = "com.simba.spark.jdbc.Driver";
+
+  public DatabricksDestination() {
+    super("database_schema");
+  }
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new DatabricksDestination()).run(args);
@@ -65,7 +68,8 @@ public class DatabricksDestination extends CopyDestination {
 
   @Override
   public void checkPersistence(JsonNode config) {
-    S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config));
+    DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
+    S3StreamCopier.attemptS3WriteAndDelete(databricksConfig.getS3DestinationConfig().getS3Config());
   }
 
   @Override

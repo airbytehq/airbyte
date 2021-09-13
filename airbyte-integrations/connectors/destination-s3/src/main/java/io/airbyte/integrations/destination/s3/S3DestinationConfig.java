@@ -32,6 +32,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 
 /**
  * This class is similar to {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3Config}.
@@ -123,6 +124,14 @@ public class S3DestinationConfig {
         .withClientConfiguration(clientConfiguration)
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
         .build();
+  }
+
+  /**
+   * @return {@link S3Config} for convenience. The part size should not matter in any use case that gets an {@link S3Config}
+   * from this class. So the default 10 MB is used.
+   */
+  public S3Config getS3Config() {
+    return new S3Config(endpoint, bucketName, accessKeyId, secretAccessKey, bucketRegion, 10);
   }
 
 }
