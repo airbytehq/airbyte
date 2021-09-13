@@ -24,17 +24,17 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
 
@@ -49,14 +49,13 @@ class ShopifyStream(HttpStream, ABC):
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
-    def __init__(self, shop: str, start_date: str, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = start_date
-        self.shop = shop
+    def __init__(self, config: Dict):
+        super().__init__(authenticator=config["authenticator"])
+        self.config = config
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.shop}.myshopify.com/admin/api/{self.api_version}/"
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/"
 
     @staticmethod
     def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -72,7 +71,7 @@ class ShopifyStream(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             params["order"] = f"{self.order_field} asc"
-            params[self.filter_field] = self.start_date
+            params[self.filter_field] = self.config["start_date"]
         return params
 
     @limiter.balance_rate_limit()
@@ -89,16 +88,16 @@ class ShopifyStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
-    # Getting page size as 'limit' from parrent class
-    @property
-    def limit(self):
-        return super().limit
 
     # Setting the check point interval to the limit of the records output
-    state_checkpoint_interval = limit
+    @property
+    def state_checkpoint_interval(self) -> int:
+        return super().limit
+
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
 
+    @stream_state_cache.cache_stream_state
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
@@ -118,20 +117,10 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
-
-
-class OrderSubstream(IncrementalShopifyStream):
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date)
-        for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
-            slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class Customers(IncrementalShopifyStream):
@@ -139,6 +128,18 @@ class Customers(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class OrderSubstream(IncrementalShopifyStream):
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        # get the last saved orders stream state
+        orders_stream = Orders(self.config)
+        orders_stream_state = stream_state_cache.cached_state.get(orders_stream.name)
+        for data in orders_stream.read_records(stream_state=orders_stream_state, **kwargs):
+            slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class Orders(IncrementalShopifyStream):
@@ -302,11 +303,12 @@ class DiscountCodes(IncrementalShopifyStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        price_rules_stream = PriceRules(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date)
-        for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
-            discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=discount_slice)
+        # get the last saved price_rules stream state
+        price_rules_stream = PriceRules(self.config)
+        price_rules_stream_state = stream_state_cache.cached_state.get(price_rules_stream.name)
+        for data in price_rules_stream.read_records(stream_state=price_rules_stream_state, **kwargs):
+            slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
@@ -345,21 +347,21 @@ class SourceShopify(AbstractSource):
         Defining streams to run.
         """
 
-        auth = ShopifyAuthenticator(token=config["api_password"])
-        args = {"authenticator": auth, "shop": config["shop"], "start_date": config["start_date"]}
+        config["authenticator"] = ShopifyAuthenticator(token=config["api_password"])
+
         return [
-            Customers(**args),
-            Orders(**args),
-            DraftOrders(**args),
-            Products(**args),
-            AbandonedCheckouts(**args),
-            Metafields(**args),
-            CustomCollections(**args),
-            Collects(**args),
-            OrderRefunds(**args),
-            OrderRisks(**args),
-            Transactions(**args),
-            Pages(**args),
-            PriceRules(**args),
-            DiscountCodes(**args),
+            Customers(config),
+            Orders(config),
+            DraftOrders(config),
+            Products(config),
+            AbandonedCheckouts(config),
+            Metafields(config),
+            CustomCollections(config),
+            Collects(config),
+            OrderRefunds(config),
+            OrderRisks(config),
+            Transactions(config),
+            Pages(config),
+            PriceRules(config),
+            DiscountCodes(config),
         ]
