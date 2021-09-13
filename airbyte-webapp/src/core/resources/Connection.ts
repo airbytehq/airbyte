@@ -1,11 +1,11 @@
 import {
-  FetchOptions,
   FetchShape,
   MutateShape,
   ReadShape,
   Resource,
   SchemaDetail,
-} from "rest-hooks";
+} from "@rest-hooks/legacy";
+import { FetchOptions } from "rest-hooks";
 
 import { SyncSchema } from "core/domain/catalog";
 import { CommonRequestError } from "core/request/CommonRequestError";

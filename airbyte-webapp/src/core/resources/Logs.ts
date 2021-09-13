@@ -1,4 +1,4 @@
-import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import { ReadShape, Resource, SchemaDetail } from "@rest-hooks/legacy";
 import BaseResource from "./BaseResource";
 
 export interface Logs {

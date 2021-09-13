@@ -1,4 +1,9 @@
-import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import {
+  MutateShape,
+  ReadShape,
+  Resource,
+  SchemaDetail,
+} from "@rest-hooks/legacy";
 
 import { getService } from "core/servicesProvider";
 

@@ -1,4 +1,9 @@
-import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import {
+  MutateShape,
+  ReadShape,
+  Resource,
+  SchemaDetail,
+} from "@rest-hooks/legacy";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import BaseResource from "./BaseResource";

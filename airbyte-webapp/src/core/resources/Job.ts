@@ -1,10 +1,10 @@
 import {
-  FetchOptions,
   MutateShape,
   ReadShape,
   Resource,
   SchemaDetail,
-} from "rest-hooks";
+} from "@rest-hooks/legacy";
+import { FetchOptions } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import Status from "../statuses";
 

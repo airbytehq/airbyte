@@ -1,4 +1,4 @@
-import { MutateShape, Resource, SchemaDetail } from "rest-hooks";
+import { MutateShape, Resource, SchemaDetail } from "@rest-hooks/legacy";
 import BaseResource from "./BaseResource";
 
 export interface Notifications {

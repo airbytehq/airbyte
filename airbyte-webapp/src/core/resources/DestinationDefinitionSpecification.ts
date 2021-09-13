@@ -1,4 +1,4 @@
-import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import { ReadShape, Resource, SchemaDetail } from "@rest-hooks/legacy";
 import BaseResource from "./BaseResource";
 import { ConnectionSpecification } from "core/domain/connection";
 import { DestinationSyncMode } from "../domain/catalog";

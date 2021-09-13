@@ -1,13 +1,13 @@
 import {
-  AbstractInstanceType,
   Method,
   MutateShape,
   ReadShape,
   Resource,
   SchemaDetail,
   SchemaList,
-  schemas,
-} from "rest-hooks";
+  Delete,
+} from "@rest-hooks/legacy";
+import { AbstractInstanceType } from "@rest-hooks/normalizr";
 
 import { parseResponse } from "core/request/AirbyteRequestService";
 import { getService } from "core/servicesProvider";
@@ -136,11 +136,7 @@ export default abstract class BaseResource extends Resource {
 
   static deleteShape<T extends typeof Resource>(
     this: T
-  ): MutateShape<
-    schemas.Delete<T>,
-    Readonly<Record<string, unknown>>,
-    unknown
-  > {
+  ): MutateShape<Delete<T>, Readonly<Record<string, unknown>>, unknown> {
     return {
       ...super.deleteShape(),
       getFetchKey: (params: Readonly<Record<string, unknown>>) =>
