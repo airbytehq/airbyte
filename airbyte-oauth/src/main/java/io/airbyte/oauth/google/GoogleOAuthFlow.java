@@ -37,8 +37,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
-import org.apache.http.client.utils.URIBuilder;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,10 +46,10 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Following docs from https://developers.google.com/identity/protocols/oauth2/web-server
@@ -72,7 +70,8 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
     this(configRepository, scope, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
   }
 
-  @VisibleForTesting GoogleOAuthFlow(ConfigRepository configRepository, String scope, HttpClient httpClient) {
+  @VisibleForTesting
+  GoogleOAuthFlow(ConfigRepository configRepository, String scope, HttpClient httpClient) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
     this.scope = scope;

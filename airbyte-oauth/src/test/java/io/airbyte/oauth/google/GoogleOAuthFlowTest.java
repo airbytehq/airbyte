@@ -42,15 +42,12 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import org.apache.commons.io.Charsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -131,7 +128,8 @@ public class GoogleOAuthFlowTest {
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", getClientId())
             .build()))));
-    // It would be better to make this comparison agnostic of the order of query params but the URI class' equals() method
+    // It would be better to make this comparison agnostic of the order of query params but the URI
+    // class' equals() method
     // considers URLs with different qparam orders different URIs..
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
@@ -208,7 +206,7 @@ public class GoogleOAuthFlowTest {
     }
   }
 
-  private String urlEncode(String s){
+  private String urlEncode(String s) {
     return URLEncoder.encode(s, StandardCharsets.UTF_8);
   }
 
