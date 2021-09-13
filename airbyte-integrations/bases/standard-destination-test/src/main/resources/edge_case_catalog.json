@@ -96,6 +96,35 @@
           }
         }
       }
+    },
+    {
+      "name": "stream_name",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "type": "integer"
+          },
+          "some_field": {
+            "type": "string"
+          },
+          "some_next_field": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_name_next",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "type": "integer"
+          },
+          "next_field_name": {
+            "type": "string"
+          }
+        }
+      }
     }
   ]
 }

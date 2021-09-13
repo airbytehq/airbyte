@@ -189,6 +189,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date      | Pull Request | Subject |
 | :------ | :-------- | :-----       | :------ |
+| 0.3.14  | 2021-09-08 | [#5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table  |
 | 0.3.13  | 2021-09-01 | [#5784](https://github.com/airbytehq/airbyte/pull/5784) | Updated query timeout from 30 minutes to 3 hours |
 | 0.3.12  | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.3.11  | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
