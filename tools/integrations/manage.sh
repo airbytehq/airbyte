@@ -72,6 +72,14 @@ cmd_publish() {
 
   # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
   local tmp_spec_file; tmp_spec_file=$(mktemp)
+  docker run --rm "$versioned_image" spec | \
+    # 1. filter out any lines that are not valid json.
+    jq -R "fromjson? | ." | \
+    # 2. grab any json that has a spec in it.
+    # 3. if there are more than one, take the first one.
+    # 4. if there are none, throw an error.
+    jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+    > "$tmp_spec_file"
   docker run --rm "$versioned_image" spec | jq .spec > "$tmp_spec_file"
   gcloud auth activate-service-account --key-file /Users/charles/Downloads/prod-ab-cloud-proj-bdb658ebbe5a.json
   gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
