@@ -34,7 +34,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class PosthogStream(HttpStream, ABC):
-    # url_base = "https://app.posthog.com/api/"
     primary_key = "id"
     data_field = "results"
 
