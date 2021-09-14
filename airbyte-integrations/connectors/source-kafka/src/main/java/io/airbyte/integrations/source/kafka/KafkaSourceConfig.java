@@ -27,10 +27,13 @@ package io.airbyte.integrations.source.kafka;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -46,14 +49,20 @@ import org.slf4j.LoggerFactory;
 public class KafkaSourceConfig {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(KafkaSourceConfig.class);
+  private static KafkaSourceConfig instance;
   private final JsonNode config;
+  private KafkaConsumer<String, JsonNode> consumer;
+  private Set<String> topicsToSubscribe;
 
   private KafkaSourceConfig(JsonNode config) {
     this.config = config;
   }
 
   public static KafkaSourceConfig getKafkaSourceConfig(JsonNode config) {
-    return new KafkaSourceConfig(config);
+    if (instance == null) {
+      instance = new KafkaSourceConfig(config);
+    }
+    return instance;
   }
 
   private KafkaConsumer<String, JsonNode> buildKafkaConsumer(JsonNode config) {
@@ -106,17 +115,28 @@ public class KafkaSourceConfig {
   }
 
   public KafkaConsumer<String, JsonNode> getConsumer() {
-    KafkaConsumer<String, JsonNode> consumer = buildKafkaConsumer(config);
+    if (consumer != null) {
+      return consumer;
+    }
+    consumer = buildKafkaConsumer(config);
 
     JsonNode subscription = config.get("subscription");
     LOGGER.info("Kafka subscribe method: {}", subscription.toString());
     switch (subscription.get("subscription_type").asText()) {
-      case "subscribe" -> consumer.subscribe(Pattern.compile(subscription.get("topic_pattern").asText()));
+      case "subscribe" -> {
+        String topicPattern = subscription.get("topic_pattern").asText();
+        consumer.subscribe(Pattern.compile(topicPattern));
+        topicsToSubscribe = consumer.listTopics().keySet().stream()
+                .filter(topic -> topic.matches(topicPattern))
+                .collect(Collectors.toSet());
+      }
       case "assign" -> {
+        topicsToSubscribe = new HashSet<>();
         String topicPartitions = subscription.get("topic_partitions").asText();
         String[] topicPartitionsStr = topicPartitions.replaceAll("\\s+", "").split(",");
         List<TopicPartition> topicPartitionList = Arrays.stream(topicPartitionsStr).map(topicPartition -> {
           String[] pair = topicPartition.split(":");
+          topicsToSubscribe.add(pair[0]);
           return new TopicPartition(pair[0], Integer.parseInt(pair[1]));
         }).collect(Collectors.toList());
         LOGGER.info("Topic-partition list: {}", topicPartitionList);
@@ -126,7 +146,14 @@ public class KafkaSourceConfig {
     return consumer;
   }
 
-  public KafkaConsumer<String, JsonNode> getTestConsumer() {
+  public Set<String> getTopicsToSubscribe() {
+    if (topicsToSubscribe == null) {
+      getConsumer();
+    }
+    return topicsToSubscribe;
+  }
+
+  public KafkaConsumer<String, JsonNode> getCheckConsumer() {
     return buildKafkaConsumer(config);
   }
 

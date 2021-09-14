@@ -57,7 +57,7 @@ public class KafkaSource extends BaseConnector implements Source {
       final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
         final KafkaSourceConfig kafkaSourceConfig = KafkaSourceConfig.getKafkaSourceConfig(config);
-        final KafkaConsumer<String, JsonNode> consumer = kafkaSourceConfig.getTestConsumer();
+        final KafkaConsumer<String, JsonNode> consumer = kafkaSourceConfig.getCheckConsumer();
         consumer.subscribe(Pattern.compile(testTopic));
         consumer.listTopics();
         consumer.close();
@@ -75,13 +75,7 @@ public class KafkaSource extends BaseConnector implements Source {
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
 
-    Set<String> topicsToSubscribe;
-    JsonNode subscription = config.get("subscription");
-    switch (subscription.get("subscription_type").asText()) {
-      case "subscribe" -> topicsToSubscribe = KafkaHelper.getTopicsFromTopicPattern(subscription);
-      case "assign" -> topicsToSubscribe = KafkaHelper.getTopicsFromPartitionInfo(subscription);
-      default -> topicsToSubscribe = new HashSet<>();
-    }
+    Set<String> topicsToSubscribe = KafkaSourceConfig.getKafkaSourceConfig(config).getTopicsToSubscribe();
     List<AirbyteStream> streams = topicsToSubscribe.stream().map(topic -> CatalogHelpers
         .createAirbyteStream(topic, Field.of("value", JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
