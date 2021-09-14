@@ -103,7 +103,6 @@ cmd_publish() {
       # 4. if there are none, throw an error.
       jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
       > "$tmp_spec_file"
-    docker run --rm "$versioned_image" spec | jq .spec > "$tmp_spec_file"
 
     # use service account key file is provided.
     if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
