@@ -26,12 +26,12 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
 public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Config> {
@@ -43,17 +43,17 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
   public StreamCopier create(String configuredSchema,
                              S3Config s3Config,
                              String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             AirbyteStream stream,
+                             ConfiguredAirbyteStream configuredStream,
                              ExtendedNameTransformer nameTransformer,
                              JdbcDatabase db,
                              SqlOperations sqlOperations) {
     try {
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var schema = getSchema(stream, configuredSchema, nameTransformer);
-      var s3Client = S3StreamCopier.getAmazonS3(s3Config);
+      AirbyteStream stream = configuredStream.getStream();
+      DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
+      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
-      return create(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
+      return create(stagingFolder, syncMode, schema, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -72,13 +72,5 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
                                       ExtendedNameTransformer nameTransformer,
                                       SqlOperations sqlOperations)
       throws Exception;
-
-  private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
-    if (stream.getNamespace() != null) {
-      return nameTransformer.convertStreamName(stream.getNamespace());
-    } else {
-      return nameTransformer.convertStreamName(configuredSchema);
-    }
-  }
 
 }

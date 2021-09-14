@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.avro.file.DataFileReader;

@@ -72,6 +72,10 @@ public abstract class BaseS3Writer implements S3Writer {
     this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
   }
 
+  public String getOutputPrefix() {
+    return outputPrefix;
+  }
+
   /**
    * <li>1. Create bucket if necessary.</li>
    * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>

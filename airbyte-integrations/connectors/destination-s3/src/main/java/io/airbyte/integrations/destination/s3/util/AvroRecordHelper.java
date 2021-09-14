@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,6 +31,9 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 
+/**
+ * Helper methods for unit tests. This is needed by multiple modules, so it is in the src directory.
+ */
 public class AvroRecordHelper {
 
   public static JsonFieldNameUpdater getFieldNameUpdater(String streamName, String namespace, JsonNode streamSchema) {
