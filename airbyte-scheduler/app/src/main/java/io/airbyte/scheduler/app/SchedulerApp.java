@@ -46,7 +46,6 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.temporal.TemporalClient;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -153,6 +152,25 @@ public class SchedulerApp {
     }
   }
 
+  public static void waitForServer(Configs configs) throws InterruptedException {
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api"));
+
+    boolean isHealthy = false;
+    while (!isHealthy) {
+      try {
+        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        isHealthy = healthCheck.getDb();
+      } catch (ApiException e) {
+        LOGGER.info("Waiting for server to become available...");
+        Thread.sleep(2000);
+      }
+    }
+  }
+
   public static void main(String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
@@ -166,7 +184,7 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     // Wait for the server to initialize the database and run migration
-    WorkerApp.waitForServer(configs);
+    waitForServer(configs);
 
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
