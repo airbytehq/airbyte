@@ -106,15 +106,10 @@
 
 {% macro snowflake__type_timestamp_with_timezone(timestamp_column) %}
     case
-        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:){2}[0-9]{2} UTC' then to_timestamp_tz({{timestamp_column}} || '+0', 'YYYY-MM-DD HH24:MI:SS UTC TZH')
-
-        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2} \\+[0-9]{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2} \\+[0-9]{1,2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SS TZH')
-        when {{timestamp_column}} regexp ('[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2} UTC') then to_timestamp_tz({{timestamp_column}} || '+0', 'YYYY-MM-DDTHH24:MI:SS UTC TZH')
-
-        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\+[0-9]{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\+[0-9]{1,2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZH')
-        when {{timestamp_column}} regexp '[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}UTC' then to_timestamp_tz({{timestamp_column}} || '+0', 'YYYY-MM-DDTHH24:MI:SSUTCTZH')
+        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZH')
+        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
         else to_timestamp_tz({{timestamp_column}})
     end as {{timestamp_column}}
 {% endmacro %}
