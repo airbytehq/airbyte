@@ -154,18 +154,17 @@ class FBMarketingStream(Stream, ABC):
             if key not in schema:
                 continue
 
-            items_type = schema[key]["items"]["type"]
             if isinstance(value, dict):
                 self.convert_to_schema_types(record=value, schema=schema[key].get("properties", {}))
             elif isinstance(value, list) and "items" in schema[key]:
                 for record_list_item in value:
-                    if list in self.get_python_type(items_type):
+                    if list in self.get_python_type(schema[key]["items"]["type"]):
                         # TODO Currently we don't have support for list of lists.
                         pass
-                    elif dict in self.get_python_type(items_type):
+                    elif dict in self.get_python_type(schema[key]["items"]["type"]):
                         self.convert_to_schema_types(record=record_list_item, schema=schema[key]["items"]["properties"])
-                    elif not isinstance(record_list_item, self.get_python_type(items_type)):
-                        record[key] = self.get_python_type(items_type)[0](record_list_item)
+                    elif not isinstance(record_list_item, self.get_python_type(schema[key]["items"]["type"])):
+                        record[key] = self.get_python_type(schema[key]["items"]["type"])[0](record_list_item)
             elif not isinstance(value, self.get_python_type(schema[key]["type"])):
                 record[key] = self.get_python_type(schema[key]["type"])[0](value)
 
