@@ -218,8 +218,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_response = self._session.send(create_report_request)
         return report_response.json()[self.data_field]
 
-    def _retrieve_report(self) -> Mapping[str, Any]:
-        report_id = self._create_report()["reportId"]
+    def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
         request_headers = self.request_headers()
         retrieve_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports/{report_id}",
@@ -269,17 +268,20 @@ class ReportsAmazonSPStream(Stream, ABC):
         """
         report_payload = {}
         is_processed = False
+        is_done = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
+        report_id = self._create_report()["reportId"]
 
         # create and retrieve the report
         while not is_processed and seconds_waited < REPORTS_MAX_WAIT_SECONDS:
-            report_payload = self._retrieve_report()
+            report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
             is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
+            is_done = report_payload.get("processingStatus") == "DONE"
             time.sleep(self.sleep_seconds)
 
-        if is_processed:
+        if is_done:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()

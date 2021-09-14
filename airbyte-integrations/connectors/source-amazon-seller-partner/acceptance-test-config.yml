@@ -27,6 +27,7 @@ tests:
           "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT",
           "VendorDirectFulfillmentShipping",
         ]
+      timeout_seconds: 600
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"
