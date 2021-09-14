@@ -21,7 +21,7 @@
           "$ref": "targeting.json#/definitions/id_name_pairs"
         },
         "home_type": {
-          "$ref$": "targeting.json#/definitions/id_name_pairs"
+          "$ref": "targeting.json#/definitions/id_name_pairs"
         },
         "friends_of_connections": {
           "$ref": "targeting.json#/definitions/id_name_pairs"
