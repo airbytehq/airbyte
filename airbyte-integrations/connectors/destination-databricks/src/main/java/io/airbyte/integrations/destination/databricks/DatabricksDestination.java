@@ -40,9 +40,6 @@ import java.util.function.Consumer;
 
 public class DatabricksDestination extends CopyDestination {
 
-  static final String DATABRICKS_USERNAME = "token";
-  static final String DATABRICKS_DRIVER_CLASS = "com.simba.spark.jdbc.Driver";
-
   public DatabricksDestination() {
     super("database_schema");
   }
@@ -95,10 +92,10 @@ public class DatabricksDestination extends CopyDestination {
 
   static JdbcDatabase getDatabase(DatabricksDestinationConfig databricksConfig) {
     return Databases.createJdbcDatabase(
-        DATABRICKS_USERNAME,
+        DatabricksConstants.DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),
         getDatabricksConnectionString(databricksConfig),
-        DATABRICKS_DRIVER_CLASS);
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS);
   }
 
 }

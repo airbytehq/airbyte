@@ -161,7 +161,7 @@ public class DatabricksStreamCopier implements StreamCopier {
             "USING delta " +
             "LOCATION '%s' " +
             "COMMENT 'Created from stream %s' " +
-            "TBLPROPERTIES ('sync_mode' = '%s') " +
+            "TBLPROPERTIES ('airbyte.destinationSyncMode' = '%s', %s) " +
             // create the table based on the schema of the tmp table
             "AS SELECT * FROM %s.%s LIMIT 0",
         createStatement,
@@ -169,6 +169,7 @@ public class DatabricksStreamCopier implements StreamCopier {
         destTableLocation,
         streamName,
         destinationSyncMode.value(),
+        String.join(", ", DatabricksConstants.DEFAULT_TBL_PROPERTIES),
         schemaName, tmpTableName);
     LOGGER.info(createTable);
     database.execute(createTable);

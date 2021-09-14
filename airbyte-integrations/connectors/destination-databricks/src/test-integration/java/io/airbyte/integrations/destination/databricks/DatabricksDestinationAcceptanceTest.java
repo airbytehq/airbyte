@@ -160,10 +160,10 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private static Database getDatabase(DatabricksDestinationConfig databricksConfig) {
     return Databases.createDatabase(
-        DatabricksDestination.DATABRICKS_USERNAME,
+        DatabricksConstants.DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),
         DatabricksDestination.getDatabricksConnectionString(databricksConfig),
-        DatabricksDestination.DATABRICKS_DRIVER_CLASS,
+        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
         SQLDialect.DEFAULT);
   }
 
