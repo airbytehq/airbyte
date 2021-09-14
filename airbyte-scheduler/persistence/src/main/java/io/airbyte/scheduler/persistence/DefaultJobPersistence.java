@@ -686,6 +686,9 @@ public class DefaultJobPersistence implements JobPersistence {
     ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
+  /**
+   * TODO: we need version specific importers to copy data to the database. Issue: #5682.
+   */
   private static void importTable(DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.getTableDefinition();
@@ -698,7 +701,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final Stream<List<?>> data = jsonStream.map(node -> {
         final List<Object> values = new ArrayList<>();
         for (final Field<?> column : columns) {
-          values.add(getJsonNodeValue(column.getName(), node.get(column.getName())));
+          values.add(getJsonNodeValue(node, column.getName()));
         }
         return values;
       });
@@ -765,9 +768,13 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * Convert the JSON @param valueNode and @return Java Values for the @param columnName
+   * @return Java Values for the @param columnName in @param jsonNode
    */
-  private static Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
+  private static Object getJsonNodeValue(final JsonNode jsonNode, final String columnName) {
+    if (!jsonNode.has(columnName)) {
+      return null;
+    }
+    final JsonNode valueNode = jsonNode.get(columnName);
     final JsonNodeType nodeType = valueNode.getNodeType();
     if (nodeType == JsonNodeType.OBJECT) {
       return valueNode.toString();

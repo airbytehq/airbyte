@@ -43,6 +43,7 @@
     * [Cart](integrations/sources/cart.md)
     * [Chargebee](integrations/sources/chargebee.md)
     * [ClickHouse](integrations/sources/clickhouse.md)
+    * [Close.com](integrations/sources/close-com.md)
     * [CockroachDB](integrations/sources/cockroachdb.md)
     * [Db2](integrations/sources/db2.md)
     * [Dixa](integrations/sources/dixa.md)

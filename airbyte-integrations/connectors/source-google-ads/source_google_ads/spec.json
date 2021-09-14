@@ -91,5 +91,15 @@
         }
       }
     }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "oauthFlowInitParameters": [
+        ["credentials", "developer_token"],
+        ["credentials", "client_id"],
+        ["credentials", "client_secret"]
+      ]
+    }
   }
 }

@@ -99,7 +99,7 @@ class SurveymonkeyStream(HttpStream, ABC):
         This API is very very rate limited, we need to reuse everything possible.
         We use the "new_episodes" record mode to save and reuse all requests in slices, details, etc..
         """
-        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
+        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json", decode_compressed_response=True):
             yield from super().read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
