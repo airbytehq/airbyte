@@ -34,11 +34,11 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from base_python import Stream
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 

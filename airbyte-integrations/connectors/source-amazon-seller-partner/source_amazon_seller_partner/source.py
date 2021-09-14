@@ -72,7 +72,7 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceAmazonSellerPartner(AbstractSource):
-    def _get_stream_kwargs(self, config: ConnectorConfig):
+    def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
         boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)

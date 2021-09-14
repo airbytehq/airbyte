@@ -31,7 +31,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from requests.auth import AuthBase
-from requests.compat import urlparse
+from urllib.parse import urlparse
 
 
 class AWSAuthenticator(Oauth2Authenticator):
