@@ -142,7 +142,7 @@ def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: Connector
     try:
         validate(instance=config, schema=spec_schema)
     except ValidationError as validation_error:
-        raise Exception("Config validation error: " + validation_error.message)
+        raise Exception("Config validation error: " + validation_error.message) from None
 
 
 class InternalConfig(BaseModel):
@@ -159,7 +159,8 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
     Break config map object into 2 instances: first is a dict with user defined
     configuration and second is internal config that contains private keys for
     acceptance test configuration.
-    :param config - Dict object that has been loaded from config file.
+    :param
+     config - Dict object that has been loaded from config file.
     :return tuple of user defined config dict with filtered out internal
     parameters and SAT internal config object.
     """
