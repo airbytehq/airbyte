@@ -27,6 +27,7 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -130,13 +131,18 @@ public class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION);
 
+    final SpecFetcher specFetcher = mock(SpecFetcher.class);
+    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
+    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
+    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
         jobPersistence,
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
-        mock(SpecFetcher.class));
+        specFetcher);
   }
 
   @AfterEach
