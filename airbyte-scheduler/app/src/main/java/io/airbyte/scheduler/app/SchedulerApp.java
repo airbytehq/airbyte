@@ -27,6 +27,10 @@ package io.airbyte.scheduler.app;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -154,7 +158,7 @@ public class SchedulerApp {
 
   public static void waitForServer(Configs configs) throws InterruptedException {
     final AirbyteApiClient apiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+        new ApiClient().setScheme("http")
             .setHost(configs.getAirbyteApiHost())
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api"));
