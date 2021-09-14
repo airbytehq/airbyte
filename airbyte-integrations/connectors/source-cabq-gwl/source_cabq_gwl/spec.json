@@ -27,7 +27,7 @@
         "description": "IMAP host"
       },
       "port": {
-        "type": "number",
+        "type": "integer",
         "description": "IMAP port'"
       }
     }
