@@ -56,6 +56,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
+  public final Schema parquetSchema;
 
   public S3ParquetWriter(S3DestinationConfig config,
                          AmazonS3 s3Client,
@@ -88,6 +89,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
     this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
+    this.parquetSchema = schema;
   }
 
   public static Configuration getHadoopConfig(S3DestinationConfig config) {

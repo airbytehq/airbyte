@@ -28,6 +28,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
 public interface StreamCopierFactory<T> {
@@ -35,10 +36,17 @@ public interface StreamCopierFactory<T> {
   StreamCopier create(String configuredSchema,
                       T config,
                       String stagingFolder,
-                      DestinationSyncMode syncMode,
-                      AirbyteStream stream,
+                      ConfiguredAirbyteStream configuredStream,
                       ExtendedNameTransformer nameTransformer,
                       JdbcDatabase db,
                       SqlOperations sqlOperations);
+
+  static String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
+    if (stream.getNamespace() != null) {
+      return nameTransformer.convertStreamName(stream.getNamespace());
+    } else {
+      return nameTransformer.convertStreamName(configuredSchema);
+    }
+  }
 
 }
