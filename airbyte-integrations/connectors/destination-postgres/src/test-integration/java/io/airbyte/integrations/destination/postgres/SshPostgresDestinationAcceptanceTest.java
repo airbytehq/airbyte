@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -38,10 +39,17 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+
+import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
 
 // todo (cgardens) - likely some of this could be further de-duplicated with
 // PostgresDestinationAcceptanceTest.
@@ -55,7 +63,11 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  private String schemaName;
+  private String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+
+  private PostgreSQLContainer<?> db;
+  private GenericContainer bastion;
+  private final Network network = Network.newNetwork();
 
   public abstract Path getConfigFilePath();
 
@@ -66,10 +78,35 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected JsonNode getConfig() {
-    final JsonNode config = getConfigFromSecretsFile();
-    // do everything in a randomly generated schema so that we can wipe it out at the end.
-    ((ObjectNode) config).put("schema", schemaName);
-    return config;
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+            .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+                    .getNetworks()
+                    .get(((Network.NetworkImpl) network).getName())
+                    .getIpAddress()))
+            .put("username", db.getUsername())
+            .put("password", db.getPassword())
+            .put("schema", schemaName)
+            .put("port", db.getExposedPorts().get(0))
+            .put("database", db.getDatabaseName())
+            .put("ssl", false)
+                    .put("tunnel_method",Jsons.jsonNode(ImmutableMap.builder()
+                                    .put("tunnel_host",
+                                            Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
+                                            .getNetworks()
+                                            .get(((Network.NetworkImpl) network).getName())
+                                                    .getIpAddress()))
+                                    .put("tunnel_method", SSH_PASSWORD_AUTH)
+                                    .put("tunnel_port", bastion.getExposedPorts().get(0))
+                                    .put("tunnel_user", "root")
+                                    .put("tunnel_user_password", "root")
+                            .build()))
+            .build());
+//    return q;
+//    final JsonNode config = getConfigFromSecretsFile();
+//    // do everything in a randomly generated schema so that we can wipe it out at the end.
+//    ((ObjectNode) config).put("schema", schemaName);
+//    return config;
   }
 
   private JsonNode getConfigFromSecretsFile() {
@@ -162,8 +199,9 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
+
+    startTestContainers();
     // do everything in a randomly generated schema so that we can wipe it out at the end.
-    schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     SshTunnel.sshWrap(
         getConfig(),
         PostgresDestination.HOST_KEY,
@@ -171,6 +209,33 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
+  }
+
+  private void startTestContainers() {
+    bastion = new GenericContainer(
+            new ImageFromDockerfile()
+                    .withDockerfileFromBuilder(builder ->
+                            builder
+                                    .from("ubuntu:18.04")
+                                    .run("apt-get update")
+                                    .run("apt-get install -y openssh-server")
+                                    .run("mkdir /var/run/sshd")
+                                    .run("echo 'root:root' |chpasswd")
+                                    .run("sed -ri 's/^#?PermitRootLogin\\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config")
+                                    .run("sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config")
+                                    .run("mkdir /root/.ssh")
+                                    .run("apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*")
+                                    .cmd("/usr/sbin/sshd", "-D")
+                                    .build()))
+            .withNetwork(network)
+            .withExposedPorts(22);
+
+    db = new PostgreSQLContainer<>
+            ("postgres:13-alpine")
+            .withNetwork(network);
+
+    db.start();
+    bastion.start();
   }
 
   @Override
