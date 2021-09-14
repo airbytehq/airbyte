@@ -24,9 +24,6 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
@@ -133,25 +130,6 @@ public class WorkerApp {
     }
   }
 
-  public static void waitForServer(Configs configs) throws InterruptedException {
-    final AirbyteApiClient apiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
-            .setHost(configs.getAirbyteApiHost())
-            .setPort(configs.getAirbyteApiPort())
-            .setBasePath("/api"));
-
-    boolean isHealthy = false;
-    while (!isHealthy) {
-      try {
-        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
-        isHealthy = healthCheck.getDb();
-      } catch (ApiException e) {
-        LOGGER.info("Waiting for server to become available...");
-        Thread.sleep(2000);
-      }
-    }
-  }
-
   private static final WorkerOptions getWorkerOptions(int max) {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
@@ -160,8 +138,6 @@ public class WorkerApp {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
-
-    waitForServer(configs);
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
 

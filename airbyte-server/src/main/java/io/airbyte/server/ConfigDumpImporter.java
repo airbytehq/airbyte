@@ -49,10 +49,13 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -90,23 +93,29 @@ public class ConfigDumpImporter {
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
+  private final SpecFetcher specFetcher;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final Path stagedResourceRoot;
 
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence jobPersistence, WorkspaceHelper workspaceHelper) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator());
+  public ConfigDumpImporter(ConfigRepository configRepository,
+                            JobPersistence jobPersistence,
+                            WorkspaceHelper workspaceHelper,
+                            SpecFetcher specFetcher) {
+    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), specFetcher);
   }
 
   @VisibleForTesting
   public ConfigDumpImporter(ConfigRepository configRepository,
                             JobPersistence jobPersistence,
                             WorkspaceHelper workspaceHelper,
-                            JsonSchemaValidator jsonSchemaValidator) {
+                            JsonSchemaValidator jsonSchemaValidator,
+                            SpecFetcher specFetcher) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
+    this.specFetcher = specFetcher;
     try {
       this.stagedResourceRoot = Path.of(TMP_AIRBYTE_STAGED_RESOURCES);
       if (stagedResourceRoot.toFile().exists()) {
@@ -405,15 +414,19 @@ public class ConfigDumpImporter {
               return sourceConnection;
             },
             (sourceConnection) -> {
+              final ConnectorSpecification spec;
               // make sure connector definition exists
               try {
-                if (configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()) == null) {
+                final StandardSourceDefinition sourceDefinition =
+                    configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+                if (sourceDefinition == null) {
                   return;
                 }
+                spec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition);
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeSourceConnection(sourceConnection);
+              configRepository.writeSourceConnection(sourceConnection, spec);
             }));
         case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
         case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(

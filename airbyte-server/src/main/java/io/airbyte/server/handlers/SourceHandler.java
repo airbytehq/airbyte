@@ -93,7 +93,7 @@ public class SourceHandler {
   public SourceRead createSource(SourceCreate sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    ConnectorSpecification spec = getSpecFromSourceDefinitionId(
+    final ConnectorSpecification spec = getSpecFromSourceDefinitionId(
         sourceCreate.getSourceDefinitionId());
     validateSource(spec, sourceCreate.getConnectionConfiguration());
 
@@ -105,7 +105,8 @@ public class SourceHandler {
         sourceCreate.getWorkspaceId(),
         sourceId,
         false,
-        sourceCreate.getConnectionConfiguration());
+        sourceCreate.getConnectionConfiguration(),
+        spec);
 
     // read configuration from db
     return buildSourceRead(sourceId, spec);
@@ -117,7 +118,7 @@ public class SourceHandler {
     final SourceConnection updatedSource = configurationUpdate
         .source(sourceUpdate.getSourceId(), sourceUpdate.getName(),
             sourceUpdate.getConnectionConfiguration());
-    ConnectorSpecification spec = getSpecFromSourceId(updatedSource.getSourceId());
+    final ConnectorSpecification spec = getSpecFromSourceId(updatedSource.getSourceId());
     validateSource(spec, sourceUpdate.getConnectionConfiguration());
 
     // persist
@@ -127,7 +128,8 @@ public class SourceHandler {
         updatedSource.getWorkspaceId(),
         updatedSource.getSourceId(),
         updatedSource.getTombstone(),
-        updatedSource.getConfiguration());
+        updatedSource.getConfiguration(),
+        spec);
 
     // read configuration from db
     return buildSourceRead(sourceUpdate.getSourceId(), spec);
@@ -185,6 +187,9 @@ public class SourceHandler {
       connectionsHandler.deleteConnection(connectionRead);
     }
 
+    final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());
+    validateSource(spec, source.getConnectionConfiguration());
+
     // persist
     persistSourceConnection(
         source.getName(),
@@ -192,7 +197,8 @@ public class SourceHandler {
         source.getWorkspaceId(),
         source.getSourceId(),
         true,
-        source.getConnectionConfiguration());
+        source.getConnectionConfiguration(),
+        spec);
   }
 
   private SourceRead buildSourceRead(UUID sourceId)
@@ -231,10 +237,14 @@ public class SourceHandler {
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    final StandardSourceDefinition sourceDef = configRepository
-        .getStandardSourceDefinition(sourceDefId);
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
+    return getSpecFromSourceDefinitionId(specFetcher, sourceDef);
+  }
+
+  public static ConnectorSpecification getSpecFromSourceDefinitionId(SpecFetcher specFetcher, StandardSourceDefinition sourceDefinition)
+      throws IOException, ConfigNotFoundException {
     final String imageName = DockerUtils
-        .getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+        .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
     return specFetcher.execute(imageName);
   }
 
@@ -243,7 +253,8 @@ public class SourceHandler {
                                        final UUID workspaceId,
                                        final UUID sourceId,
                                        final boolean tombstone,
-                                       final JsonNode configurationJson)
+                                       final JsonNode configurationJson,
+                                       final ConnectorSpecification spec)
       throws JsonValidationException, IOException {
     final SourceConnection sourceConnection = new SourceConnection()
         .withName(name)
@@ -253,7 +264,7 @@ public class SourceHandler {
         .withTombstone(tombstone)
         .withConfiguration(configurationJson);
 
-    configRepository.writeSourceConnection(sourceConnection);
+    configRepository.writeSourceConnection(sourceConnection, spec);
   }
 
   private SourceRead toSourceRead(final SourceConnection sourceConnection,

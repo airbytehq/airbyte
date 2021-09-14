@@ -197,7 +197,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository);
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
+    archiveHandler =
+        new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager, specFetcher);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);

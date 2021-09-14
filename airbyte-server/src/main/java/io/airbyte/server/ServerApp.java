@@ -54,6 +54,7 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -212,13 +213,25 @@ public class ServerApp implements ServerRunnable {
       jobPersistence.setVersion(airbyteVersion);
     }
 
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
+    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
+    final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
+    final DefaultSynchronousSchedulerClient syncSchedulerClient =
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+    final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
+        new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
+    final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
+    final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
+
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
       final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
       final boolean versionSupportsAutoMigrate =
           new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
+        runAutomaticMigration(configRepository, jobPersistence, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
         // After migration, upgrade the DB version
         airbyteDatabaseVersion = jobPersistence.getVersion();
       } else {
@@ -230,17 +243,6 @@ public class ServerApp implements ServerRunnable {
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
-
-      final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
-      final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-      final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-      final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
-      final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
-      final DefaultSynchronousSchedulerClient syncSchedulerClient =
-          new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
-      final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
-          new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
-      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -267,6 +269,7 @@ public class ServerApp implements ServerRunnable {
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,
+                                            final SpecFetcher specFetcher,
                                             final String airbyteVersion,
                                             final String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
@@ -274,7 +277,8 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configRepository,
         airbyteVersion,
-        YamlSeedConfigPersistence.get())) {
+        YamlSeedConfigPersistence.get(),
+        specFetcher)) {
       runMigration.run();
     } catch (final Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

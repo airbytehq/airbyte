@@ -27,6 +27,10 @@ package io.airbyte.scheduler.app;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -46,7 +50,6 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.temporal.TemporalClient;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -153,6 +156,25 @@ public class SchedulerApp {
     }
   }
 
+  public static void waitForServer(Configs configs) throws InterruptedException {
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api"));
+
+    boolean isHealthy = false;
+    while (!isHealthy) {
+      try {
+        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        isHealthy = healthCheck.getDb();
+      } catch (ApiException e) {
+        LOGGER.info("Waiting for server to become available...");
+        Thread.sleep(2000);
+      }
+    }
+  }
+
   public static void main(String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
@@ -166,7 +188,7 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     // Wait for the server to initialize the database and run migration
-    WorkerApp.waitForServer(configs);
+    waitForServer(configs);
 
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
