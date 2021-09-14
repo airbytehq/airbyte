@@ -27,6 +27,9 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.ImportRead;
@@ -49,9 +52,11 @@ import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -126,12 +131,18 @@ public class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION);
 
+    final SpecFetcher specFetcher = mock(SpecFetcher.class);
+    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
+    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
+    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
         jobPersistence,
         new WorkspaceHelper(configRepository, jobPersistence),
-        new NoOpFileTtlManager());
+        new NoOpFileTtlManager(),
+        specFetcher);
   }
 
   @AfterEach
@@ -252,13 +263,19 @@ public class ArchiveHandlerTest {
         .filter(sourceConnection -> secondWorkspaceId.equals(sourceConnection.getWorkspaceId()))
         .map(SourceConnection::getSourceId)
         .collect(Collectors.toList()).get(0);
-    configRepository.writeSourceConnection(new SourceConnection()
+
+    final SourceConnection sourceConnection = new SourceConnection()
         .withWorkspaceId(secondWorkspaceId)
         .withSourceId(secondSourceId)
         .withName("Some new names")
         .withSourceDefinitionId(UUID.randomUUID())
         .withTombstone(false)
-        .withConfiguration(Jsons.emptyObject()));
+        .withConfiguration(Jsons.emptyObject());
+
+    ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
+    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
+
+    configRepository.writeSourceConnection(sourceConnection, emptyConnectorSpec);
 
     // check that first workspace is unchanged even though modifications were made to second workspace
     // (that contains similar connections from importing the same archive)
