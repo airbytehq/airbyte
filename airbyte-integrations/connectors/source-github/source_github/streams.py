@@ -649,16 +649,18 @@ class Commits(IncrementalGithubStream):
         "committer",
     )
 
-    def __init__(self, branches_to_pull: Mapping[str, List[str]], **kwargs):
+    def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
         super().__init__(**kwargs)
         self.branches_to_pull = branches_to_pull
+        self.default_branches = default_branches
 
     """
     Pull commits from each branch of each repository, tracking state for each branch
     """
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"])
         params["sha"] = stream_slice["branch"]
         return params
 
@@ -696,22 +698,26 @@ class Commits(IncrementalGithubStream):
         current_repository = latest_record["repository"]
         current_branch = latest_record["branch"]
 
-        if current_stream_state.get(current_repository, {}).get(current_branch, {}).get(self.cursor_field):
-            state_value = max(latest_cursor_value, current_stream_state[current_repository][current_branch][self.cursor_field])
+        if current_stream_state.get(current_repository):
+            repository_commits_state = current_stream_state[current_repository]
+            if repository_commits_state.get(self.cursor_field):
+                # transfer state from old source version to per-branch version
+                if current_branch == self.default_branches[current_repository]:
+                    state_value = max(latest_cursor_value, repository_commits_state[self.cursor_field])
+                    del repository_commits_state[self.cursor_field]
+            elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
+                state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
         if current_repository not in current_stream_state:
             current_stream_state[current_repository] = {}
         current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str, branch: str = None) -> str:
-        if not branch:
-            return super().get_starting_point(stream_state=stream_state, repository=repository)
-
+    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str, branch: str) -> str:
         start_point = self._start_date
-
         if stream_state and stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field):
-            start_point = max(start_point, stream_state[repository][branch][self.cursor_field])
-
+            return max(start_point, stream_state[repository][branch][self.cursor_field])
+        if branch == self.default_branches[repository]:
+            return super().get_starting_point(stream_state=stream_state, repository=repository)
         return start_point
 
     def read_records(

@@ -141,7 +141,7 @@ class SourceGithub(AbstractSource):
             Collaborators(**full_refresh_args),
             Comments(**incremental_args),
             CommitComments(**incremental_args),
-            Commits(**{**incremental_args, "branches_to_pull": branches_to_pull}),
+            Commits(**{**incremental_args, "branches_to_pull": branches_to_pull, "default_branches": default_branches}),
             Events(**incremental_args),
             IssueEvents(**incremental_args),
             IssueLabels(**full_refresh_args),
