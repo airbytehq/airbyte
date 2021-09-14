@@ -35,6 +35,7 @@ from source_facebook_marketing.streams import (
     Ads,
     AdSets,
     AdsInsights,
+    AdsInsightsActionType,
     AdsInsightsAgeAndGender,
     AdsInsightsCountry,
     AdsInsightsDma,
@@ -124,6 +125,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsRegion(**insights_args),
             AdsInsightsDma(**insights_args),
             AdsInsightsPlatformAndDevice(**insights_args),
+            AdsInsightsActionType(**insights_args),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

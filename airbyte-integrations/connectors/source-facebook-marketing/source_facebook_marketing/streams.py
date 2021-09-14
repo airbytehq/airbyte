@@ -46,16 +46,19 @@ from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url, params):
-    parsed_url = urlparse.urlparse(url)
-    res_query = []
-    for q in parsed_url.query.split("&"):
-        key, value = q.split("=")
-        if key not in params:
-            res_query.append(f"{key}={value}")
-
-    parse_result = parsed_url._replace(query="&".join(res_query))
-    return urlparse.urlunparse(parse_result)
+def remove_params_from_url(url: str, params: [str]) -> str:
+    """
+    Parses a URL and removes the query parameters specified in params
+    :param url: URL
+    :param params: list of query parameters
+    :return: URL with params removed
+    """
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
+    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    return urlparse.urlunparse(
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+    )
 
 
 class FBMarketingStream(Stream, ABC):
@@ -479,3 +482,8 @@ class AdsInsightsDma(AdsInsights):
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
     action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
+
+
+class AdsInsightsActionType(AdsInsights):
+    breakdowns = []
+    action_breakdowns = ["action_type"]

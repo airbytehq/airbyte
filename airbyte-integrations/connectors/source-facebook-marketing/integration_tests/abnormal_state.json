@@ -38,5 +38,9 @@
   "ads_insights_region": {
     "date_start": "2021-07-25T13:34:26Z",
     "include_deleted": true
+  },
+  "ads_insights_action_types": {
+    "date_start": "2021-07-25T13:34:26Z",
+    "include_deleted": true
   }
 }
