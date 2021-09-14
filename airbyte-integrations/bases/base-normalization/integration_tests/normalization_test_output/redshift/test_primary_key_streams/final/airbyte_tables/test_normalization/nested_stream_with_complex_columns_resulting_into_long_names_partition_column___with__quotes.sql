@@ -74,13 +74,13 @@ from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_pa
 
 -- SQL model to build a hash column based on the values of this record
 select
-    *,
     md5(cast(
     
     coalesce(cast(_airbyte_partition_hashid as varchar), '') || '-' || coalesce(cast(currency as varchar), '')
 
- as varchar)) as _airbyte_column___with__quotes_hashid
-from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_column___with__quotes_ab2
+ as varchar)) as _airbyte_column___with__quotes_hashid,
+    tmp.*
+from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_column___with__quotes_ab2 tmp
 -- column___with__quotes at nested_stream_with_complex_columns_resulting_into_long_names/partition/column`_'with"_quotes
 )-- Final base SQL model
 select

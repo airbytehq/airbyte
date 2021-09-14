@@ -3,7 +3,7 @@
 select
     cast(ID as {{ dbt_utils.type_string() }}) as ID,
     CONFLICT_STREAM_ARRAY,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('CONFLICT_STREAM_ARRAY_AB1') }}
 -- CONFLICT_STREAM_ARRAY
 

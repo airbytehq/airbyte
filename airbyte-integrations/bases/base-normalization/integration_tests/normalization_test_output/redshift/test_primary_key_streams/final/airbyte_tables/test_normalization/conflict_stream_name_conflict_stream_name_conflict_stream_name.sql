@@ -29,13 +29,13 @@ from __dbt__CTE__conflict_stream_name_conflict_stream_name_conflict_stream_name_
 
 -- SQL model to build a hash column based on the values of this record
 select
-    *,
     md5(cast(
     
     coalesce(cast(_airbyte_conflict_stream_name_2_hashid as varchar), '') || '-' || coalesce(cast(groups as varchar), '')
 
- as varchar)) as _airbyte_conflict_stream_name_3_hashid
-from __dbt__CTE__conflict_stream_name_conflict_stream_name_conflict_stream_name_ab2
+ as varchar)) as _airbyte_conflict_stream_name_3_hashid,
+    tmp.*
+from __dbt__CTE__conflict_stream_name_conflict_stream_name_conflict_stream_name_ab2 tmp
 -- conflict_stream_name at conflict_stream_name/conflict_stream_name/conflict_stream_name
 )-- Final base SQL model
 select

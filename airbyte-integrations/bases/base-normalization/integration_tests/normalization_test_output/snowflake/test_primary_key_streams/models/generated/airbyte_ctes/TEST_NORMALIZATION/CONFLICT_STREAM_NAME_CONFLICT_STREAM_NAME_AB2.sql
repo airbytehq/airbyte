@@ -3,7 +3,7 @@
 select
     _AIRBYTE_CONFLICT_STREAM_NAME_HASHID,
     cast(CONFLICT_STREAM_NAME as {{ type_json() }}) as CONFLICT_STREAM_NAME,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('CONFLICT_STREAM_NAME_CONFLICT_STREAM_NAME_AB1') }}
 -- CONFLICT_STREAM_NAME at conflict_stream_name/conflict_stream_name
 

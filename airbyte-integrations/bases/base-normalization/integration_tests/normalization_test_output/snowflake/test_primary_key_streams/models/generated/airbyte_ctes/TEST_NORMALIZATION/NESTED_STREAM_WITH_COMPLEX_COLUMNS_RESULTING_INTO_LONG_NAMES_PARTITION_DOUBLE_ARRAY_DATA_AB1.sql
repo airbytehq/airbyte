@@ -4,7 +4,7 @@
 select
     _AIRBYTE_PARTITION_HASHID,
     {{ json_extract_scalar(unnested_column_value('DOUBLE_ARRAY_DATA'), ['id'], ['id']) }} as ID,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION') }} as table_alias
 {{ cross_join_unnest('PARTITION', 'DOUBLE_ARRAY_DATA') }}
 where DOUBLE_ARRAY_DATA is not null

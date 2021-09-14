@@ -80,13 +80,13 @@ from __dbt__CTE__unnest_alias_children_ab1
 
 -- SQL model to build a hash column based on the values of this record
 select
-    *,
     md5(cast(
     
     coalesce(cast(_airbyte_unnest_alias_hashid as varchar), '') || '-' || coalesce(cast(ab_id as varchar), '') || '-' || coalesce(cast(owner as varchar), '')
 
- as varchar)) as _airbyte_children_hashid
-from __dbt__CTE__unnest_alias_children_ab2
+ as varchar)) as _airbyte_children_hashid,
+    tmp.*
+from __dbt__CTE__unnest_alias_children_ab2 tmp
 -- children at unnest_alias/children
 )-- Final base SQL model
 select

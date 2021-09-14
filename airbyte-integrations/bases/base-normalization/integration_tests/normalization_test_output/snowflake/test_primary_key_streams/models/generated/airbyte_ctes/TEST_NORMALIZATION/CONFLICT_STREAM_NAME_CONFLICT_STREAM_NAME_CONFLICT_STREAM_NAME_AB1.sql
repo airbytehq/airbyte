@@ -3,7 +3,7 @@
 select
     _AIRBYTE_CONFLICT_STREAM_NAME_2_HASHID,
     {{ json_extract_scalar('CONFLICT_STREAM_NAME', ['groups'], ['groups']) }} as GROUPS,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('CONFLICT_STREAM_NAME_CONFLICT_STREAM_NAME') }} as table_alias
 where CONFLICT_STREAM_NAME is not null
 -- CONFLICT_STREAM_NAME at conflict_stream_name/conflict_stream_name/conflict_stream_name

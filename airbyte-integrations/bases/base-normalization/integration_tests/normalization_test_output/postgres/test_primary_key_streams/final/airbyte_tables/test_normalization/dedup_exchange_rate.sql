@@ -17,5 +17,5 @@ select
     _airbyte_dedup_exchange_rate_hashid
 from "postgres".test_normalization."dedup_exchange_rate_scd"
 -- dedup_exchange_rate from "postgres".test_normalization._airbyte_raw_dedup_exchange_rate
-where _airbyte_active_row = True
+where _airbyte_active_row = 1
   );

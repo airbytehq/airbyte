@@ -9,17 +9,17 @@ select
     HKD_special___characters_1,
     NZD,
     USD,
-    date as _airbyte_start_at,
-    lag(date) over (
-        partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
-        order by date is null asc, date desc, _airbyte_emitted_at desc
-    ) as _airbyte_end_at,
-    lag(date) over (
-        partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
-        order by date is null asc, date desc, _airbyte_emitted_at desc
-    ) is null as _airbyte_active_row,
-    _airbyte_emitted_at,
-    _airbyte_dedup_exchange_rate_hashid
+  date as _airbyte_start_at,
+  lag(date) over (
+    partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
+    order by date is null asc, date desc, _airbyte_emitted_at desc
+  ) as _airbyte_end_at,
+  case when lag(date) over (
+    partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
+    order by date is null asc, date desc, _airbyte_emitted_at desc
+  ) is null  then 1 else 0 end as _airbyte_active_row,
+  _airbyte_emitted_at,
+  _airbyte_dedup_exchange_rate_hashid
 from {{ ref('dedup_exchange_rate_ab4') }}
 -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 where _airbyte_row_num = 1
