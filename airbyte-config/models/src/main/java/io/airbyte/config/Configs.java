@@ -82,6 +82,8 @@ public interface Configs {
 
   WorkerEnvironment getWorkerEnvironment();
 
+  String getSpecCacheBucket();
+
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
