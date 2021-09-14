@@ -66,16 +66,16 @@ public class WorkerApp {
 
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
-  private final WorkflowServiceStubs temporalService;
+  private final WorkflowClient workflowClient;
   private final MaxWorkersConfig maxWorkers;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
-                   WorkflowServiceStubs temporalService,
+                   WorkflowClient workflowClient,
                    MaxWorkersConfig maxWorkers) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
-    this.temporalService = temporalService;
+    this.workflowClient = workflowClient;
     this.maxWorkers = maxWorkers;
   }
 
@@ -91,7 +91,7 @@ public class WorkerApp {
           }
         });
 
-    final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
+    final WorkerFactory factory = WorkerFactory.newInstance(workflowClient);
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
@@ -173,9 +173,9 @@ public class WorkerApp {
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+    final WorkflowClient workflowClient = TemporalUtils.createTemporalClient(temporalHost, configs.getTemporalEncryptionKey());
 
-    new WorkerApp(workspaceRoot, processFactory, temporalService, configs.getMaxWorkers()).start();
+    new WorkerApp(workspaceRoot, processFactory, workflowClient, configs.getMaxWorkers()).start();
   }
 
 }
