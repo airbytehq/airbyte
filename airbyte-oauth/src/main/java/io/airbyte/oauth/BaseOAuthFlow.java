@@ -33,7 +33,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -73,7 +72,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
-  private String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws UnsupportedEncodingException {
+  private String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
     boolean firstEntry = true;
     final StringBuilder result = new StringBuilder(getBaseConsentUrl()).append("?");
     for (Entry<String, String> entry : getConsentQueryParameters(definitionId, clientId, redirectUrl).entrySet()) {
@@ -82,7 +81,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       } else {
         firstEntry = false;
       }
-      result.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+      result.append(entry.getKey()).append("=").append(UrlEncode(entry.getValue()));
     }
     return result.toString();
   }
@@ -176,7 +175,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private String UrlEncode(String s) {
+  private static String UrlEncode(String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
     } catch (Exception e) {
@@ -212,13 +211,13 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private static String toUrlEncodedString(Map<String, String> body) throws UnsupportedEncodingException {
+  private static String toUrlEncodedString(Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
     for (var entry : body.entrySet()) {
       if (result.length() > 0) {
         result.append("&");
       }
-      result.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+      result.append(entry.getKey()).append("=").append(UrlEncode(entry.getValue()));
     }
     return result.toString();
   }
