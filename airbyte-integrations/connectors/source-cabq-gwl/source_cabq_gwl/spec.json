@@ -5,7 +5,8 @@
     "title": "Cabq Gwl Spec",
     "type": "object",
     "required": ["email_address",
-                "email_password"],
+                "email_password",
+                "host", "port"],
     "additionalProperties": false,
     "properties": {
       "email_address": {
@@ -22,6 +23,14 @@
       "email_subject": {
         "type": "string",
         "description": "find emails with subject that match 'email_subject'"
+      },
+      "host": {
+        "type": "string",
+        "description": "IMAP host"
+      },
+      "port": {
+        "type": "number",
+        "description": "IMAP port'"
       }
     }
   }
