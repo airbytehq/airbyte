@@ -80,7 +80,7 @@ public class KafkaDestinationConfig {
             config.get("socket_connection_setup_timeout_ms").asLong())
         .put(ProducerConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MAX_MS_CONFIG,
             config.get("socket_connection_setup_timeout_max_ms").asLong())
-        .put(ProducerConfig.MAX_BLOCK_MS_CONFIG, config.get("max_block_ms").asLong())
+        .put(ProducerConfig.MAX_BLOCK_MS_CONFIG, config.get("max_block_ms").asInt())
         .put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, config.get("request_timeout_ms").asInt())
         .put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, config.get("delivery_timeout_ms").asInt())
         .put(ProducerConfig.SEND_BUFFER_CONFIG, config.get("send_buffer_bytes").asInt())
