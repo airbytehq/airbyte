@@ -621,8 +621,8 @@ class DealStageHistoryStream(Stream):
 class DealStream(CRMObjectStream):
     """Deals, API v3"""
 
-    def __init__(self, **kwargs):
-        super().__init__(entity="deal", **kwargs)
+    def __init__(self, associations: List[str] = None, **kwargs):
+        super().__init__(entity="deal", associations=associations, **kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
 
     def list(self, fields) -> Iterable:
@@ -634,14 +634,6 @@ class DealStream(CRMObjectStream):
             if record.get("id") and int(record["id"]) in history_by_id:
                 record["dealstage"] = history_by_id[int(record["id"])]
             yield record
-
-
-class DealToContactAssociationsStream(CRMObjectStream):
-    """
-    Deals to Contacts associations
-    """
-    entity = "deal"
-    associations = ["contacts"]
 
 
 class DealPipelineStream(Stream):
