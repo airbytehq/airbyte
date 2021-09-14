@@ -11,14 +11,12 @@
     "properties": {
       "email_address": {
         "type": "string",
-        "description": "describe me",
-        "order": 1
+        "description": "describe me"
       },
       "email_password": {
         "type": "string",
         "description": "Password for 'email_address'",
-        "airbyte_secret": true,
-        "order": 2
+        "airbyte_secret": true
       },
       "email_subject": {
         "type": "string",
