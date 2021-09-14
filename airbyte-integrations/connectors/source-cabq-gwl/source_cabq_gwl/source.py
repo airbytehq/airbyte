@@ -87,6 +87,10 @@ class SourceCabqGwl(Source):
         """
         streams = []
 
+        number = {"anyOf": [
+          {"type": "number"},
+          {"type": "null"}
+        ]}
         stream_name = "GWL"  # Example
         json_schema = {  # Example
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -99,10 +103,10 @@ class SourceCabqGwl(Source):
                            'loc_group': {'type': 'string'},
                            'loc_report_order': {'type': 'string'},
                            'measurement_date': {'type': 'string'},
-                           'reference_elev': {'type': 'number'},
-                           'water_level': {'type': 'number'},
-                           'exact_elev': {'type': 'number'},
-                           'measured_depth_of_well': {'type': 'number'},
+                           'reference_elev': number,
+                           'water_level': number,
+                           'exact_elev': number,
+                           'measured_depth_of_well': number,
                            'depth_unit': {'type': 'string'},
                            'batch_number': {'type': 'string'},
                            'technician': {'type': 'string'},
@@ -115,16 +119,16 @@ class SourceCabqGwl(Source):
                            'lnapl_depth': {'type': 'string'},
                            'lnapl_thickness': {'type': 'string'},
                            'lnapl_density': {'type': 'string'},
-                           'water_depth': {'type': 'number'},
+                           'water_depth': number,
                            'dnapl_cas_rn': {'type': 'string'},
                            'dnapl_depth': {'type': 'string'},
                            'dnapl_thickness': {'type': 'string'},
                            'task_code': {'type': 'string'},
                            'approval_code': {'type': 'string'},
-                           'x_coord': {'type': 'number'},
-                           'y_coord': {'type': 'number'},
-                           'longitude': {'type': 'number'},
-                           'latitude': {'type': 'number'},
+                           'x_coord': number,
+                           'y_coord': number,
+                           'longitude': number,
+                           'latitude': number,
                            }
         }
 
