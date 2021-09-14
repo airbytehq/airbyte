@@ -55,6 +55,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -134,7 +135,8 @@ public class ArchiveHandlerTest {
         configRepository,
         jobPersistence,
         new WorkspaceHelper(configRepository, jobPersistence),
-        new NoOpFileTtlManager());
+        new NoOpFileTtlManager(),
+        mock(SpecFetcher.class));
   }
 
   @AfterEach
@@ -257,12 +259,12 @@ public class ArchiveHandlerTest {
         .collect(Collectors.toList()).get(0);
 
     final SourceConnection sourceConnection = new SourceConnection()
-            .withWorkspaceId(secondWorkspaceId)
-            .withSourceId(secondSourceId)
-            .withName("Some new names")
-            .withSourceDefinitionId(UUID.randomUUID())
-            .withTombstone(false)
-            .withConfiguration(Jsons.emptyObject());
+        .withWorkspaceId(secondWorkspaceId)
+        .withSourceId(secondSourceId)
+        .withName("Some new names")
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withTombstone(false)
+        .withConfiguration(Jsons.emptyObject());
 
     ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());

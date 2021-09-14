@@ -237,10 +237,14 @@ public class SourceHandler {
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    final StandardSourceDefinition sourceDef = configRepository
-        .getStandardSourceDefinition(sourceDefId);
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
+    return getSpecFromSourceDefinitionId(specFetcher, sourceDef);
+  }
+
+  public static ConnectorSpecification getSpecFromSourceDefinitionId(SpecFetcher specFetcher, StandardSourceDefinition sourceDefinition)
+      throws IOException, ConfigNotFoundException {
     final String imageName = DockerUtils
-        .getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+        .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
     return specFetcher.execute(imageName);
   }
 
