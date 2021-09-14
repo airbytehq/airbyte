@@ -4,9 +4,7 @@
       "stream": {
         "name": "sites",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -15,9 +13,7 @@
       "stream": {
         "name": "sitemaps",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -26,10 +22,7 @@
       "stream": {
         "name": "search_analytics_by_country",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -38,10 +31,7 @@
       "stream": {
         "name": "search_analytics_by_date",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -50,10 +40,7 @@
       "stream": {
         "name": "search_analytics_by_device",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -62,10 +49,7 @@
       "stream": {
         "name": "search_analytics_by_page",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -74,10 +58,7 @@
       "stream": {
         "name": "search_analytics_by_query",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -86,10 +67,7 @@
       "stream": {
         "name": "search_analytics_all_fields",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

@@ -5,34 +5,23 @@
     "title": "Google Search Console Spec",
     "type": "object",
     "additionalProperties": false,
-    "required": [
-      "site_urls",
-      "start_date",
-      "authorization"
-    ],
+    "required": ["site_urls", "start_date", "authorization"],
     "properties": {
       "site_urls": {
         "type": "array",
         "description": "Website URLs property; do not include the domain-level property in the list",
-        "examples": [
-          "https://example1.com",
-          "https://example2.com"
-        ]
+        "examples": ["https://example1.com", "https://example2.com"]
       },
       "start_date": {
         "type": "string",
         "description": "The date from which you'd like to replicate data in the format YYYY-MM-DD.",
-        "examples": [
-          "2021-01-01"
-        ],
+        "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
       "end_date": {
         "type": "string",
         "description": "The date from which you'd like to replicate data in the format YYYY-MM-DD. Must be greater or equal start_date field",
-        "examples": [
-          "2021-12-12"
-        ],
+        "examples": ["2021-12-12"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
       "authorization": {
@@ -70,10 +59,7 @@
           },
           {
             "type": "object",
-            "required": [
-              "auth_type",
-              "service_account_info"
-            ],
+            "required": ["auth_type", "service_account_info"],
             "properties": {
               "auth_type": {
                 "type": "string",
