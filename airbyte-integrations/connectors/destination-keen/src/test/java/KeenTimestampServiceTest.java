@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.destination.keen.KeenTimestampService.CursorField;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -54,22 +53,20 @@ public class KeenTimestampServiceTest {
   void shouldInitializeCursorFieldsFromCatalog() throws IOException {
     ConfiguredAirbyteCatalog configuredCatalog = readConfiguredCatalogFromFile("cursors_catalog.json");
 
-    Map<String, KeenTimestampService.CursorField> expectedCursorFieldsMap = Map.ofEntries(
-        entry("StringTypeStream1", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.STRING)),
-        entry("StringTypeStream2", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.STRING)),
-        entry("StringTypeStream3", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.STRING)),
-        entry("NumberTypeStream1", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
-        entry("NumberTypeStream2", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
-        entry("ArrayTypeStream1", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
-        entry("ArrayTypeStream2", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
-        entry("ArrayTypeStream3", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
-        entry("NestedCursorStream", new KeenTimestampService.CursorField(List.of("property1", "inside"), KeenTimestampService.CursorType.NUMBER))
-
-    );
+    Map<String, List<String>> expectedCursorFieldsMap = Map.ofEntries(
+        entry("StringTypeStream1", List.of("property1")),
+        entry("StringTypeStream2", List.of("property1")),
+        entry("StringTypeStream3", List.of("property1")),
+        entry("NumberTypeStream1", List.of("property1")),
+        entry("NumberTypeStream2", List.of("property1")),
+        entry("ArrayTypeStream1", List.of("property1")),
+        entry("ArrayTypeStream2", List.of("property1")),
+        entry("ArrayTypeStream3", List.of("property1")),
+        entry("NestedCursorStream", List.of("property1", "inside")));
 
     KeenTimestampService keenTimestampService = new KeenTimestampService(configuredCatalog, true);
 
-    Map<String, KeenTimestampService.CursorField> cursorFieldMap = keenTimestampService.getStreamCursorFields();
+    Map<String, List<String>> cursorFieldMap = keenTimestampService.getStreamCursorFields();
     Assertions.assertEquals(expectedCursorFieldsMap, cursorFieldMap);
   }
 
@@ -134,7 +131,7 @@ public class KeenTimestampServiceTest {
 
     KeenTimestampService keenTimestampService = new KeenTimestampService(configuredCatalog, true);
 
-    Map<String, CursorField> cursorFieldMap = keenTimestampService.getStreamCursorFields();
+    Map<String, List<String>> cursorFieldMap = keenTimestampService.getStreamCursorFields();
     Assertions.assertEquals(cursorFieldMap.size(), 1);
 
     AirbyteMessage message = buildMessageWithCursorValue(configuredCatalog, "some_text");

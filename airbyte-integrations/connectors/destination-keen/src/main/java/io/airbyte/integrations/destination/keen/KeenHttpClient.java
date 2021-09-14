@@ -26,8 +26,6 @@ package io.airbyte.integrations.destination.keen;
 
 import static io.airbyte.integrations.destination.keen.KeenDestination.KEEN_BASE_API_PATH;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.IOException;
@@ -37,8 +35,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,42 +100,6 @@ public class KeenHttpClient {
     }
 
     return (ArrayNode) objectMapper.readTree(response.body()).get("result");
-  }
-
-  public List<String> getAllCollectionsForProject(String projectId, String apiKey)
-      throws IOException, InterruptedException {
-    URI listCollectionsUri = URI.create(String.format(
-        KEEN_BASE_API_PATH + "/projects/%s/events",
-        projectId));
-
-    HttpRequest request = HttpRequest.newBuilder()
-        .uri(listCollectionsUri)
-        .timeout(Duration.ofSeconds(30))
-        .header("Authorization", apiKey)
-        .header("Content-Type", "application/json")
-        .build();
-
-    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-    List<KeenCollection> keenCollections = objectMapper.readValue(objectMapper.createParser(response.body()),
-        new TypeReference<>() {});
-
-    return keenCollections.stream().map(KeenCollection::getName).collect(Collectors.toList());
-  }
-
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class KeenCollection {
-
-    private String name;
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
   }
 
 }

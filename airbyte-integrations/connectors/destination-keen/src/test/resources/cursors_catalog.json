@@ -11,30 +11,6 @@
       }
     },
     {
-      "name": "WrongTypeStream",
-      "source_defined_cursor": true,
-      "default_cursor_field": ["property1"],
-      "json_schema": {
-        "properties": {
-          "property1": {
-            "type": "wrong"
-          }
-        }
-      }
-    },
-    {
-      "name": "BooleanTypeStream",
-      "source_defined_cursor": true,
-      "default_cursor_field": ["property1"],
-      "json_schema": {
-        "properties": {
-          "property1": {
-            "type": "boolean"
-          }
-        }
-      }
-    },
-    {
       "name": "StringTypeStream1",
       "source_defined_cursor": true,
       "default_cursor_field": ["property1"],
