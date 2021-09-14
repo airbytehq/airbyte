@@ -82,9 +82,10 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
   @Override
   protected JsonNode getFailCheckConfig() {
     JsonNode failCheckJson = Jsons.clone(configJson);
-    // invalid credential
-    ((ObjectNode) failCheckJson).put("s3_access_key_id", "fake-key");
-    ((ObjectNode) failCheckJson).put("s3_secret_access_key", "fake-secret");
+    // set invalid credential
+    ((ObjectNode) failCheckJson.get("data_source"))
+        .put("s3_access_key_id", "fake-key")
+        .put("s3_secret_access_key", "fake-secret");
     return failCheckJson;
   }
 
@@ -114,12 +115,14 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
   @Override
   protected void setup(TestDestinationEnv testEnv) {
     JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
-    JsonNode configJson = Jsons.clone(baseConfigJson);
+
     // Set a random s3 bucket path and database schema for each integration test
     String randomString = RandomStringUtils.randomAlphanumeric(5);
-    ((ObjectNode) configJson)
-        .put("s3_bucket_path", "test_" + randomString)
-        .put("database_schema", "integration_test_" + randomString);
+    JsonNode configJson = Jsons.clone(baseConfigJson);
+    ((ObjectNode) configJson).put("database_schema", "integration_test_" + randomString);
+    JsonNode dataSource = configJson.get("data_source");
+    ((ObjectNode) dataSource).put("s3_bucket_path", "test_" + randomString);
+
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
     this.s3Config = databricksConfig.getS3DestinationConfig();

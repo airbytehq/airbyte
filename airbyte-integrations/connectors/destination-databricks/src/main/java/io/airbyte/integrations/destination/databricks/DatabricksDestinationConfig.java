@@ -29,6 +29,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
+/**
+ * Currently only S3 is supported. So the data source config is always {@link S3DestinationConfig}.
+ */
 public class DatabricksDestinationConfig {
 
   static final String DEFAULT_DATABRICKS_PORT = "443";
@@ -46,24 +49,13 @@ public class DatabricksDestinationConfig {
                                      String databricksPort,
                                      String databricksPersonalAccessToken,
                                      String databaseSchema,
-                                     String s3BucketName,
-                                     String s3BucketPath,
-                                     String s3BucketRegion,
-                                     String s3AccessKeyId,
-                                     String s3SecretAccessKey) {
+                                     S3DestinationConfig s3DestinationConfig) {
     this.databricksServerHostname = databricksServerHostname;
     this.databricksHttpPath = databricksHttpPath;
     this.databricksPort = databricksPort;
     this.databricksPersonalAccessToken = databricksPersonalAccessToken;
     this.databaseSchema = databaseSchema;
-    this.s3DestinationConfig = new S3DestinationConfig(
-        "",
-        s3BucketName,
-        s3BucketPath,
-        s3BucketRegion,
-        s3AccessKeyId,
-        s3SecretAccessKey,
-        getDefaultParquetConfig());
+    this.s3DestinationConfig = s3DestinationConfig;
   }
 
   public static DatabricksDestinationConfig get(JsonNode config) {
@@ -73,11 +65,18 @@ public class DatabricksDestinationConfig {
         config.has("databricks_port") ? config.get("databricks_port").asText() : DEFAULT_DATABRICKS_PORT,
         config.get("databricks_personal_access_token").asText(),
         config.has("database_schema") ? config.get("database_schema").asText() : DEFAULT_DATABASE_SCHEMA,
-        config.get("s3_bucket_name").asText(),
-        config.get("s3_bucket_path").asText(),
-        config.get("s3_bucket_region").asText(),
-        config.get("s3_access_key_id").asText(),
-        config.get("s3_secret_access_key").asText());
+        getDataSource(config.get("data_source")));
+  }
+
+  public static S3DestinationConfig getDataSource(JsonNode dataSource) {
+    return new S3DestinationConfig(
+        "",
+        dataSource.get("s3_bucket_name").asText(),
+        dataSource.get("s3_bucket_path").asText(),
+        dataSource.get("s3_bucket_region").asText(),
+        dataSource.get("s3_access_key_id").asText(),
+        dataSource.get("s3_secret_access_key").asText(),
+        getDefaultParquetConfig());
   }
 
   public String getDatabricksServerHostname() {

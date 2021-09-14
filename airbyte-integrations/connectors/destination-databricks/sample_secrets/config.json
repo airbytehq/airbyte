@@ -4,9 +4,12 @@
   "databricks_port": "443",
   "databricks_personal_access_token": "required",
   "database_schema": "public",
-  "s3_bucket_name": "required",
-  "s3_bucket_path":"required",
-  "s3_bucket_region": "required",
-  "s3_access_key_id": "required",
-  "s3_secret_access_key": "required"
+  "data_source": {
+    "data_source_type": "S3",
+    "s3_bucket_name": "required",
+    "s3_bucket_path":"required",
+    "s3_bucket_region": "required",
+    "s3_access_key_id": "required",
+    "s3_secret_access_key": "required"
+  }
 }
