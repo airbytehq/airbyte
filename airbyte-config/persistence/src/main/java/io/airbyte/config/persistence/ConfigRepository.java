@@ -172,11 +172,9 @@ public class ConfigRepository {
 
   public void writeSourceConnection(final SourceConnection source, final ConnectorSpecification connectorSpecification)
       throws JsonValidationException, IOException {
-    System.out.println("connectorSpecification = " + connectorSpecification);
-    // START: ONLY FOR SANITY CHECKING I'M PASSING CORRECT VALUES
+    // actual validation is only for sanity checking
     final JsonSchemaValidator validator = new JsonSchemaValidator();
     validator.ensure(connectorSpecification.getConnectionSpecification(), source.getConfiguration());
-    // END: ONLY FOR SANITY CHECKING I'M PASSING CORRECT VALUES
 
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
