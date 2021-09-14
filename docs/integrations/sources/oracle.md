@@ -105,5 +105,6 @@ Case sensitive. Defaults to the upper-cased user if empty. If the user does not 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.4   | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038) | Remove automatic filtering of system schemas. |
 | 0.3.3   | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779) | Ability to only discover certain schemas. |
 | 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator. |
