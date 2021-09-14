@@ -188,7 +188,8 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
-  public void writeDestinationConnection(final DestinationConnection destinationConnection) throws JsonValidationException, IOException {
+  public void writeDestinationConnection(final DestinationConnection destinationConnection, final ConnectorSpecification connectorSpecification)
+      throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 

@@ -55,6 +55,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -440,15 +441,19 @@ public class ConfigDumpImporter {
               return destinationConnection;
             },
             (destinationConnection) -> {
+              final ConnectorSpecification spec;
               // make sure connector definition exists
               try {
-                if (configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()) == null) {
+                StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(
+                    destinationConnection.getDestinationDefinitionId());
+                if (destinationDefinition == null) {
                   return;
                 }
+                spec = DestinationHandler.getSpec(specFetcher, destinationDefinition);
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeDestinationConnection(destinationConnection);
+              configRepository.writeDestinationConnection(destinationConnection, spec);
             }));
         case STANDARD_SYNC -> standardSyncs = configs;
         case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
