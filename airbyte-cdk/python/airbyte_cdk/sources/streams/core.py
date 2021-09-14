@@ -24,11 +24,13 @@
 
 
 import inspect
+import logging
+import sys
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.logger import get_logger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
@@ -45,7 +47,7 @@ class Stream(ABC):
     """
 
     # Use self.logger in subclasses to log any messages
-    logger = AirbyteLogger()  # TODO use native "logging" loggers with custom handlers
+    logger = get_logger()
 
     @property
     def name(self) -> str:

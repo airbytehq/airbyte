@@ -22,10 +22,45 @@
 # SOFTWARE.
 #
 
-
+import logging
+import sys
 import traceback
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
+
+
+def get_logger():
+    logging.setLoggerClass(AirbyteNativeLogger)
+    logger = logging.getLogger('airbyte.source.zabbix')
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(stream=sys.stdout)
+    handler.setFormatter(AirbyteLogFormatter())
+    logger.addHandler(handler)
+    return logger
+
+
+class AirbyteLogFormatter(logging.Formatter):
+    def format(self, record):
+        message = super().format(record)
+        log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=record.levelname, message=message))
+        return log_message.json(exclude_unset=True)
+
+
+class AirbyteNativeLogger(logging.Logger):
+    def __init__(self, name):
+        logging.Logger.__init__(self, name)
+        self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
+
+    def log_by_prefix(self, message, default_level):
+        split_line = message.split()
+        first_word = next(iter(split_line), None)
+        if first_word in self.valid_log_types:
+            log_level = first_word
+            rendered_message = " ".join(split_line[1:])
+        else:
+            log_level = default_level
+            rendered_message = message
+        self.log(log_level, rendered_message)
 
 
 class AirbyteLogger:
