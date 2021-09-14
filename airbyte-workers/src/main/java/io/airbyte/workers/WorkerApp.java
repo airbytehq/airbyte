@@ -46,7 +46,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.Config;
 import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
