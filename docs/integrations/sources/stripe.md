@@ -72,7 +72,7 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.17   | 2021-09-13 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Add `PaymentIntents` stream |
+| 0.1.17   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Add `PaymentIntents` stream |
 | 0.1.16   | 2021-07-28 | [4980](https://github.com/airbytehq/airbyte/pull/4980) | Remove Updated field from schemas |
 | 0.1.15   | 2021-07-21 | [4878](https://github.com/airbytehq/airbyte/pull/4878) | Fix incorrect percent_off and discounts data filed types|
 | 0.1.14   | 2021-07-09 | [4669](https://github.com/airbytehq/airbyte/pull/4669) | Subscriptions Stream now returns all kinds of subscriptions (including expired and canceled)|
