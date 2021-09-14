@@ -31,6 +31,6 @@ public interface SourceOperations<QueryResult, SourceType> {
 
   JsonNode rowToJson(QueryResult queryResult) throws Exception;
 
-  JsonSchemaPrimitive getType(SourceType bigQueryType);
+  JsonSchemaPrimitive getType(SourceType sourceType);
 
 }

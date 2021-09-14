@@ -64,7 +64,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
                                             ConfiguredAirbyteCatalog catalog,
                                             Consumer<AirbyteMessage> outputRecordCollector,
                                             StandardNameTransformer namingResolver) {
-    super(bigquery, writeConfigs, catalog, outputRecordCollector);
+    super(bigquery, writeConfigs, catalog, outputRecordCollector, false, false);
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
   }
@@ -83,6 +83,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   }
 
   protected JsonNode formatData(FieldList fields, JsonNode root) {
+    // handles empty objects and arrays
+    if (fields == null) {
+      return root;
+    }
     if (root.isObject()) {
       final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
       return Jsons.jsonNode(Jsons.keys(root).stream()
