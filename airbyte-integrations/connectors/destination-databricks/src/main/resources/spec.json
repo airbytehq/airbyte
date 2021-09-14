@@ -133,6 +133,12 @@
             }
           }
         ]
+      },
+      "purge_staging_data": {
+        "title": "Purge Staging Files and Tables",
+        "type": "boolean",
+        "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
+        "default": true
       }
     }
   }

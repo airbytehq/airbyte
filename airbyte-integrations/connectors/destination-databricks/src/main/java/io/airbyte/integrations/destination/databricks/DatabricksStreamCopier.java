@@ -66,6 +66,7 @@ public class DatabricksStreamCopier implements StreamCopier {
   private final DestinationSyncMode destinationSyncMode;
   private final AmazonS3 s3Client;
   private final S3DestinationConfig s3Config;
+  private final boolean purgeStagingData;
   private final JdbcDatabase database;
   private final DatabricksSqlOperations sqlOperations;
 
@@ -91,6 +92,7 @@ public class DatabricksStreamCopier implements StreamCopier {
     this.destinationSyncMode = configuredStream.getDestinationSyncMode();
     this.s3Client = s3Client;
     this.s3Config = databricksConfig.getS3DestinationConfig();
+    this.purgeStagingData = databricksConfig.isPurgeStagingData();
     this.database = database;
     this.sqlOperations = (DatabricksSqlOperations) sqlOperations;
 
@@ -190,11 +192,13 @@ public class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    LOGGER.info("[Stream {}] Deleting tmp table: {}", streamName, tmpTableName);
-    sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
+    if (purgeStagingData) {
+      LOGGER.info("[Stream {}] Deleting tmp table: {}", streamName, tmpTableName);
+      sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
 
-    LOGGER.info("[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
-    s3Client.deleteObject(s3Config.getBucketName(), parquetWriter.getOutputFilePath());
+      LOGGER.info("[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
+      s3Client.deleteObject(s3Config.getBucketName(), parquetWriter.getOutputFilePath());
+    }
   }
 
   /**

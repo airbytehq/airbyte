@@ -36,12 +36,14 @@ public class DatabricksDestinationConfig {
 
   static final String DEFAULT_DATABRICKS_PORT = "443";
   static final String DEFAULT_DATABASE_SCHEMA = "public";
+  static final boolean DEFAULT_PURGE_STAGING_DATA = true;
 
   private final String databricksServerHostname;
   private final String databricksHttpPath;
   private final String databricksPort;
   private final String databricksPersonalAccessToken;
   private final String databaseSchema;
+  private final boolean purgeStagingData;
   private final S3DestinationConfig s3DestinationConfig;
 
   public DatabricksDestinationConfig(String databricksServerHostname,
@@ -49,12 +51,14 @@ public class DatabricksDestinationConfig {
                                      String databricksPort,
                                      String databricksPersonalAccessToken,
                                      String databaseSchema,
+                                     boolean purgeStagingData,
                                      S3DestinationConfig s3DestinationConfig) {
     this.databricksServerHostname = databricksServerHostname;
     this.databricksHttpPath = databricksHttpPath;
     this.databricksPort = databricksPort;
     this.databricksPersonalAccessToken = databricksPersonalAccessToken;
     this.databaseSchema = databaseSchema;
+    this.purgeStagingData = purgeStagingData;
     this.s3DestinationConfig = s3DestinationConfig;
   }
 
@@ -65,6 +69,7 @@ public class DatabricksDestinationConfig {
         config.has("databricks_port") ? config.get("databricks_port").asText() : DEFAULT_DATABRICKS_PORT,
         config.get("databricks_personal_access_token").asText(),
         config.has("database_schema") ? config.get("database_schema").asText() : DEFAULT_DATABASE_SCHEMA,
+        config.has("purge_staging_data") ? config.get("purge_staging_data").asBoolean() : DEFAULT_PURGE_STAGING_DATA,
         getDataSource(config.get("data_source")));
   }
 
@@ -101,6 +106,10 @@ public class DatabricksDestinationConfig {
 
   public String getDatabaseSchema() {
     return databaseSchema;
+  }
+
+  public boolean isPurgeStagingData() {
+    return purgeStagingData;
   }
 
   public S3DestinationConfig getS3DestinationConfig() {
