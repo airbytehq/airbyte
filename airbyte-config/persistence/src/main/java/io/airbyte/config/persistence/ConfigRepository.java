@@ -37,7 +37,9 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,7 +170,17 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
 
+  @Deprecated
   public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
+  }
+
+  public void writeSourceConnection(final SourceConnection source, final ConnectorSpecification connectorSpecification) throws JsonValidationException, IOException {
+    // START: ONLY FOR SANITY CHECKING I'M PASSING CORRECT VALUES
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+    validator.ensure(connectorSpecification.getConnectionSpecification(), source.getConfiguration());
+    // END: ONLY FOR SANITY CHECKING I'M PASSING CORRECT VALUES
+
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
 
