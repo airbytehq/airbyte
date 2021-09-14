@@ -21,12 +21,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
+import os
+import tempfile
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+import vcr
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -49,6 +51,13 @@ class HttpStream(Stream, ABC):
     def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
         self._session = requests.Session()
+
+    @property
+    def use_cache(self):
+        """
+        Override if needed. If True, all records will be cached.
+        """
+        return False
 
     @property
     @abstractmethod
@@ -315,7 +324,21 @@ class HttpStream(Stream, ABC):
                 data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             )
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            response = self._send_request(request, request_kwargs)
+
+            if self.use_cache:
+                cache_file = tempfile.NamedTemporaryFile()
+                # specify name using hash of stream_slice, because we want to iterate over
+                # all parent stream_slice and cache data in various files
+                file_name = f"{self.name}_{hash(stream_slice)}.yml"
+                # rename file to get specific name to define which file to open
+                os.rename(cache_file.name, file_name)
+
+                with vcr.use_cassette(file_name, record_mode="new_episodes", serializer="json", decode_compressed_response=True):
+                    response = self._send_request(request, request_kwargs)
+
+            else:
+                response = self._send_request(request, request_kwargs)
+
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(response)
@@ -324,3 +347,35 @@ class HttpStream(Stream, ABC):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+
+class HttpSubStream(HttpStream, ABC):
+
+    def __init__(self, parent: HttpStream, authenticator: HttpAuthenticator = NoAuth()):
+        """
+        :param parent: should be the instance of HttpStream class
+        """
+        super().__init__(authenticator)
+        self.parent = parent
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_state=stream_state
+        )
+
+        # iterate over all parent stream slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=stream_slice,
+                stream_state=stream_state
+            )
+
+            # iterate over all parent records with current stream_slice
+            for record in parent_records:
+                yield record

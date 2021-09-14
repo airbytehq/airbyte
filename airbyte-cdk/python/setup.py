@@ -71,6 +71,7 @@ setup(
         "pydantic~=1.6",
         "PyYAML~=5.4",
         "requests",
+        "vcrpy",
     ],
     python_requires=">=3.7.0",
     extras_require={"dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock"]},
