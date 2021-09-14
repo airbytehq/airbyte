@@ -46,8 +46,12 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.bind.DatatypeConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCType> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
 
   /**
    * Map records returned in a result set.

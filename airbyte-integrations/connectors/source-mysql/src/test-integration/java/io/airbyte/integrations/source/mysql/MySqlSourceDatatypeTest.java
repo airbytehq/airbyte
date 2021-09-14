@@ -210,8 +210,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "1", "0")
-            // @TODO returns True/False instead of 1/0.
-            // .addExpectedValues(null, "1", "0")
+            .addExpectedValues(null, "true", "false")
             .build());
 
     addDataTypeTestData(
@@ -234,13 +233,13 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             // .addInsertValues("'0000-00-00 00:00:00'")
             .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("datetime")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'2013-09-05T10:10:02'")
-    // .addExpectedValues("2013-09-05T10:10:02")
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("datetime")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'2013-09-05T10:10:02'")
+            .addExpectedValues("2013-09-05T10:10:02Z")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -294,7 +293,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("varbinary(256)")
             .addInsertValues("null", "'test'")
             // @TODO Returns binary value instead of text
-            // .addExpectedValues(null, "test")
+            .addExpectedValues(null, "test")
             .build());
 
     addDataTypeTestData(

@@ -38,7 +38,9 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -119,28 +121,30 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
     });
 
-    recordMessages.forEach(msg -> {
+    for (AirbyteMessage msg : recordMessages) {
       String streamName = msg.getRecord().getStream();
       List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
+        var a = msg.getRecord().getData().get(getTestColumnName());
         String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
         assertTrue(expectedValuesForStream.contains(value),
-            "Returned value '" + value + "' by streamer " + streamName + " should be in the expected list: " + expectedValuesForStream);
+            "Returned value '" + value + "' by streamer " + streamName
+                + " should be in the expected list: " + expectedValuesForStream);
         expectedValuesForStream.remove(value);
       }
-    });
+    }
 
     expectedValues.forEach((streamName, values) -> assertTrue(values.isEmpty(),
         "The streamer " + streamName + " should return all expected values. Missing values: " + values));
   }
 
-  protected String getValueFromJsonNode(JsonNode jsonNode) {
+  protected String getValueFromJsonNode(JsonNode jsonNode) throws IOException {
     if (jsonNode != null) {
       if (jsonNode.isArray()) {
         return jsonNode.toString();
       }
 
-      String value = jsonNode.asText();
+      String value = (jsonNode.isBinary() ? Arrays.toString(jsonNode.binaryValue()) : jsonNode.asText());
       value = (value != null && value.equals("null") ? null : value);
       return value;
     }
