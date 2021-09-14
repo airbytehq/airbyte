@@ -46,7 +46,7 @@ from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url: str, params: [str]) -> str:
+def remove_params_from_url(url: str, params: List[str]) -> str:
     """
     Parses a URL and removes the query parameters specified in params
     :param url: URL
@@ -121,11 +121,15 @@ class FBMarketingStream(Stream, ABC):
         return record
 
     def get_python_type(self, _types: Union[list, str]) -> tuple:
+        """Converts types from schema to python types. Examples:
+        - `["string", "null"]` will be converted to `(str,)`
+        - `["array", "string", "null"]` will be converted to `(list, str,)`
+        - `"boolean"` will be converted to `(bool,)`
+        """
         types_mapping = {
             "string": str,
             "number": float,
             "integer": int,
-            "null": None,
             "object": dict,
             "array": list,
             "boolean": bool,
@@ -143,23 +147,26 @@ class FBMarketingStream(Stream, ABC):
         This function fixes this and converts `reach` value from `string` to `number`. Same for all fields and all
         types from schema.
         """
+        if not schema:
+            return
+
         for key, value in record.items():
             if key not in schema:
                 continue
 
+            items_type = schema[key]["items"]["type"]
             if isinstance(value, dict):
                 self.convert_to_schema_types(record=value, schema=schema[key].get("properties", {}))
             elif isinstance(value, list) and "items" in schema[key]:
                 for record_list_item in value:
-                    if list in self.get_python_type(schema[key]["items"]["type"]):
+                    if list in self.get_python_type(items_type):
                         # TODO Currently we don't have support for list of lists.
                         pass
-                    elif dict in self.get_python_type(schema[key]["items"]["type"]):
+                    elif dict in self.get_python_type(items_type):
                         self.convert_to_schema_types(record=record_list_item, schema=schema[key]["items"]["properties"])
-                    elif not isinstance(record_list_item, self.get_python_type(schema[key]["items"]["type"])):
-                        record[key] = self.get_python_type(schema[key]["items"]["type"])[0](record_list_item)
-
-            if not isinstance(value, self.get_python_type(schema[key]["type"])):
+                    elif not isinstance(record_list_item, self.get_python_type(items_type)):
+                        record[key] = self.get_python_type(items_type)[0](record_list_item)
+            elif not isinstance(value, self.get_python_type(schema[key]["type"])):
                 record[key] = self.get_python_type(schema[key]["type"])[0](value)
 
     def _read_records(self, params: Mapping[str, Any]) -> Iterable:
