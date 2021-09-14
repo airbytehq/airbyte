@@ -33,6 +33,7 @@ class DestinationType(Enum):
     SNOWFLAKE = "snowflake"
     MYSQL = "mysql"
     ORACLE = "oracle"
+    MSSQL = "mssql"
 
     @classmethod
     def from_string(cls, string_value: str) -> "DestinationType":

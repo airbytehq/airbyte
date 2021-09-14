@@ -44,15 +44,18 @@ class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
-        self.db_names = ["postgres", "mysql"]
+        self.db_names = ["postgres", "mysql", "mssql"]
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
     def setup_db(self):
-        self.setup_postgres_db()
-        self.setup_mysql_db()
+        # TODO: Uncomment this after the tests!
+        # self.setup_postgres_db()
+        # self.setup_mysql_db()
+        self.setup_mssql_db()
+
 
     def setup_postgres_db(self):
         print("Starting localhost postgres container for tests")
@@ -82,7 +85,8 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        time.sleep(120)
+        # TODO: uncomment after the tsts are good!
+        # time.sleep(120)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
@@ -123,6 +127,95 @@ class DbtIntegrationTest(object):
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/mysql.json", "w") as fh:
+            fh.write(json.dumps(config))
+
+    def setup_mssql_db(self):
+        
+        """
+        docker run --rm -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=my_strong_password123" -e "MSSQL_PID=Express" -p 1433:1433 --name sql1 -h sql1 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu \
+        && sleep 15 \
+        && docker exec -it sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P my_strong_password123 -Q "CREATE DATABASE test_normalization"
+        """
+
+
+        print("Starting localhost postgres container for tests")
+        port = self.find_free_port()
+        config = {
+            "host": "localhost",
+            "username": "sa",
+            "password": "integration_tests123",
+            "port": 1433, # port,
+            "database": "master",
+            "schema": self.target_schema,
+        }
+        command_start = [
+            "docker",
+            "run",
+            "--rm",
+            "-t",
+            "-d",
+            "--name",
+            f"{self.container_prefix}_mssql",
+            "-h",
+            f"{self.container_prefix}_mssql",
+            "-e",
+            f'"ACCEPT_EULA=Y"',
+            "-e",
+            f'"SA_PASSWORD={config["password"]}"',
+            "-e",
+            f'"MSSQL_PID=Express"',
+            "-p",
+            f"{config['port']}:1433",
+            # "-d",
+            "mcr.microsoft.com/mssql/server:2017-latest-ubuntu",
+        ]
+        command_create_db = [
+            # Run additional commands to prepare the table
+            "docker",
+            "exec",
+            "-it",
+            f"{self.container_prefix}_mssql",
+            "/opt/mssql-tools/bin/sqlcmd",
+            "-S",
+            config['host'],
+            "-U",
+            config['username'],
+            "-P",
+            config['password'],
+            "-Q",
+            f'"CREATE DATABASE {config["database"]}"',
+        ]
+        command_check_db = [
+            # Run additional commands to prepare the table
+            "docker",
+            "exec",
+            "-it",
+            f"{self.container_prefix}_mssql",
+            "/opt/mssql-tools/bin/sqlcmd",
+            "-S",
+            config['host'],
+            "-U",
+            config['username'],
+            "-P",
+            config['password'],
+            "-Q",
+            f'"SELECT Name from sys.Databases GO"',
+        ]
+        print("Executing: ", " ".join(command_start))
+        subprocess.call(command_start)
+        # time.sleep(2)
+        # print("Executing: ", " ".join(command_check_db))
+        # subprocess.call(command_check_db)
+        #time.sleep(2)
+        #print("Executing: ", " ".join(command_create_db))
+        #subprocess.call(command_create_db)
+        
+        # TODO: uncomment after the tsts are good!
+        # time.sleep(120)
+
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/mssql.json", "w") as fh:
             fh.write(json.dumps(config))
 
     @staticmethod

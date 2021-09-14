@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     libaio-dev \
-    libaio1
+    libaio1 \
+    unixodbc-dev
 RUN mkdir -p /opt/oracle
 RUN wget https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip
 RUN unzip instantclient-basic-linux.x64-19.6.0.0.0dbru.zip -d /opt/oracle
@@ -35,6 +36,7 @@ WORKDIR /airbyte/normalization_code
 RUN pip install .
 RUN pip install dbt-oracle==0.4.3
 RUN pip install git+https://github.com/dbeatty10/dbt-mysql@96655ea9f7fca7be90c9112ce8ffbb5aac1d3716#egg=dbt-mysql
+RUN pip install dbt-sqlserver==0.20.1
 
 
 WORKDIR /airbyte/normalization_code/dbt-template/

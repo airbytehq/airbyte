@@ -77,8 +77,15 @@ def setup_test_path(request):
 # Uncomment the following line as an example on how to run the test against local destinations only...
 # @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
 # Run tests on all destinations:
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+# @pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", [DestinationType.MSSQL])
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
+    """
+    @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
+
+    Uncomment the following line as an example on how to run the test against local destinations only...
+    Run tests on all destinations:
+    """
     print("Testing normalization")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
