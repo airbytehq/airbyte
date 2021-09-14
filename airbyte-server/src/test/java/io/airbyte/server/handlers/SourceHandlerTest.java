@@ -138,7 +138,7 @@ class SourceHandlerTest {
     assertEquals(expectedSourceRead, actualSourceRead);
 
     verify(secretsProcessor).maskSecrets(sourceCreate.getConnectionConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification());
-    verify(configRepository).writeSourceConnection(sourceConnection);
+    verify(configRepository).writeSourceConnection(sourceConnection, connectorSpecification);
     verify(validator).ensure(sourceDefinitionSpecificationRead.getConnectionSpecification(), sourceConnection.getConfiguration());
   }
 
@@ -180,7 +180,7 @@ class SourceHandlerTest {
     assertEquals(expectedSourceRead, actualSourceRead);
 
     verify(secretsProcessor).maskSecrets(newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification());
-    verify(configRepository).writeSourceConnection(expectedSourceConnection);
+    verify(configRepository).writeSourceConnection(expectedSourceConnection, connectorSpecification);
     verify(validator).ensure(sourceDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
 
@@ -261,7 +261,7 @@ class SourceHandlerTest {
 
     sourceHandler.deleteSource(sourceIdRequestBody);
 
-    verify(configRepository).writeSourceConnection(expectedSourceConnection);
+    verify(configRepository).writeSourceConnection(expectedSourceConnection, connectorSpecification);
     verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
     verify(connectionsHandler).deleteConnection(connectionRead);
   }
