@@ -61,8 +61,10 @@ class SourceCabqGwl(Source):
             # Not Implemented
             # client = get_client(logger, config)
             self._client = Client(config)
-            self._client.login()
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            if self._client.login():
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(status=Status.FAILED, message='Invalid credentials')
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
@@ -97,10 +99,10 @@ class SourceCabqGwl(Source):
                            'loc_group': {'type': 'string'},
                            'loc_report_order': {'type': 'string'},
                            'measurement_date': {'type': 'string'},
-                           'reference_elev': {'type': 'string'},
-                           'water_level': {'type': 'string'},
-                           'exact_elev': {'type': 'string'},
-                           'measured_depth_of_well': {'type': 'string'},
+                           'reference_elev': {'type': 'number'},
+                           'water_level': {'type': 'number'},
+                           'exact_elev': {'type': 'number'},
+                           'measured_depth_of_well': {'type': 'number'},
                            'depth_unit': {'type': 'string'},
                            'batch_number': {'type': 'string'},
                            'technician': {'type': 'string'},
@@ -113,16 +115,16 @@ class SourceCabqGwl(Source):
                            'lnapl_depth': {'type': 'string'},
                            'lnapl_thickness': {'type': 'string'},
                            'lnapl_density': {'type': 'string'},
-                           'water_depth': {'type': 'string'},
+                           'water_depth': {'type': 'number'},
                            'dnapl_cas_rn': {'type': 'string'},
                            'dnapl_depth': {'type': 'string'},
                            'dnapl_thickness': {'type': 'string'},
                            'task_code': {'type': 'string'},
                            'approval_code': {'type': 'string'},
-                           'x_coord': {'type': 'string'},
-                           'y_coord': {'type': 'string'},
-                           'longitude': {'type': 'string'},
-                           'latitude': {'type': 'string'},
+                           'x_coord': {'type': 'number'},
+                           'y_coord': {'type': 'number'},
+                           'longitude': {'type': 'number'},
+                           'latitude': {'type': 'number'},
                            }
         }
 
@@ -163,7 +165,7 @@ class SourceCabqGwl(Source):
 
             ret = self._get_records(logger, config, prid)
             if ret is not None:
-                rid, records = ret
+                header, rid, records = ret
                 if records:
                     for data in records:
                         for k, v in data.items():
@@ -189,12 +191,13 @@ class SourceCabqGwl(Source):
             self._client = Client(config)
             self._client.login()
 
-        ret = self._client.fetch_attachment(logger, prev_id)
+        ret = self._client.fetch()
         if ret is not None:
-            header, f = ret
+            header, (fn, f) = ret
+
             dialect = csv.Sniffer().sniff(f.readline())
             f.seek(0)
 
             records = [row for row in csv.DictReader(f, dialect=dialect)]
             # print('sad', records)
-            return header, records
+            return header, fn, records
