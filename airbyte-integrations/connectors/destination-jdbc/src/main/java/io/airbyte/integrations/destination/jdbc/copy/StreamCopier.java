@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -37,7 +36,7 @@ public interface StreamCopier {
   /**
    * Writes a value to a staging file for the stream.
    */
-  void write(UUID id, AirbyteRecordMessage recordMessage) throws Exception;
+  void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception;
 
   /**
    * Closes the writer for the stream to the staging persistence. This method should block until all

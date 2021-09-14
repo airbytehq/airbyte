@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -36,6 +37,8 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,7 +94,8 @@ public class CopyConsumerFactory {
     for (var configuredStream : catalog.getStreams()) {
       var stream = configuredStream.getStream();
       var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
+      var syncMode = configuredStream.getDestinationSyncMode();
+      var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, syncMode, stream, namingResolver, database, sqlOperations);
 
       pairToCopier.put(pair, copier);
     }
@@ -112,7 +116,8 @@ public class CopyConsumerFactory {
         if (sqlOperations.isValidData(recordMessage.getData())) {
           // TODO Truncate json data instead of throwing whole record away?
           // or should we upload it into a special rejected record folder in s3 instead?
-          pairToCopier.get(pair).write(id, recordMessage);
+          var emittedAt = Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()));
+          pairToCopier.get(pair).write(id, Jsons.serialize(recordMessage.getData()), emittedAt);
         } else {
           pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
         }
