@@ -34,7 +34,7 @@ public interface Configs {
 
   String getAirbyteVersion();
 
-  String getAirbyteApiUrl();
+  String getAirbyteApiHost();
 
   int getAirbyteApiPort();
 
@@ -78,9 +78,13 @@ public interface Configs {
 
   WorkerEnvironment getWorkerEnvironment();
 
+  String getSpecCacheBucket();
+
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
+
+  MaxWorkersConfig getMaxWorkers();
 
   String getTemporalHost();
 

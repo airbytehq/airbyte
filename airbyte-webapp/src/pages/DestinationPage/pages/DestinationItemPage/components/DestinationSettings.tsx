@@ -7,7 +7,7 @@ import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
 import { Destination } from "core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import useDestination from "components/hooks/services/useDestinationHook";
+import useDestination from "hooks/services/useDestinationHook";
 import DeleteBlock from "components/DeleteBlock";
 import { Connection } from "core/resources/Connection";
 import { JobInfo } from "core/resources/Scheduler";

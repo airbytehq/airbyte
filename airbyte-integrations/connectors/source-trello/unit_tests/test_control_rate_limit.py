@@ -31,8 +31,10 @@ SLEEP_ON_HIGH_LOAD: float = 9.0
 
 TEST_DATA_FIELD = "some_data_field"
 TEST_RATE_LIMIT_THRESHOLD = 0.1
-TEST_HEADERS_NAME = [("x-rate-limit-api-key-remaining", "x-rate-limit-api-key-max"),
-                     ("x-rate-limit-api-token-remaining", "x-rate-limit-api-token-max")]
+TEST_HEADERS_NAME = [
+    ("x-rate-limit-api-key-remaining", "x-rate-limit-api-key-max"),
+    ("x-rate-limit-api-token-remaining", "x-rate-limit-api-token-max"),
+]
 
 
 def control_request_rate_limit_decorator(threshold: float = 0.05, limit_headers=None):
@@ -47,15 +49,20 @@ def control_request_rate_limit_decorator(threshold: float = 0.05, limit_headers=
         @wraps(func)
         def wrapper_control_request_rate_limit(*args, **kwargs):
             sleep_time = 0
-            free_load = float('inf')
+            free_load = float("inf")
             # find the Response inside args list
             for arg in args:
                 response = arg if type(arg) is requests.models.Response else None
 
             # Get the rate_limits from response
-            rate_limits = [
-                (response.headers.get(rate_remaining_limit_header), response.headers.get(rate_max_limit_header))
-                for rate_remaining_limit_header, rate_max_limit_header in limit_headers] if response else None
+            rate_limits = (
+                [
+                    (response.headers.get(rate_remaining_limit_header), response.headers.get(rate_max_limit_header))
+                    for rate_remaining_limit_header, rate_max_limit_header in limit_headers
+                ]
+                if response
+                else None
+            )
 
             # define current load from rate_limits
             if rate_limits:
@@ -91,7 +98,8 @@ def test_with_load(requests_mock):
         "x-rate-limit-api-token-max": "300",
         "x-rate-limit-api-token-remaining": "10",
         "x-rate-limit-api-key-max": "300",
-        "x-rate-limit-api-key-remaining": "100"}
+        "x-rate-limit-api-key-remaining": "100",
+    }
 
     requests_mock.get("https://test.trello.com/", headers=test_response_header)
     test_response = requests.get("https://test.trello.com/")

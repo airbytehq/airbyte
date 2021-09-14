@@ -1,0 +1,45 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-ads",
+  "connectionSpecification": {
+    "title": "Amazon Ads Spec",
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "title": "Client Id",
+        "description": "Oauth client id <a href=\"https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app\">How to create your Login with Amazon</a>",
+        "name": "Client ID",
+        "type": "string"
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "description": "Oauth client secret <a href=\"https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app\">How to create your Login with Amazon</a>",
+        "name": "Client secret",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "scope": {
+        "title": "Scope",
+        "description": "By default its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management.",
+        "default": "advertising::campaign_management",
+        "name": "Client scope",
+        "examples": ["cpc_advertising:campaign_management"],
+        "type": "string"
+      },
+      "refresh_token": {
+        "title": "Refresh Token",
+        "description": "Oauth 2.0 refresh_token, <a href=\"https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html\">read details here</a>",
+        "name": "Oauth refresh token",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "start_date": {
+        "title": "Start Date",
+        "description": "Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
+        "name": "Start date",
+        "examples": ["2022-10-10", "2022-10-22"],
+        "type": "string"
+      }
+    },
+    "required": ["client_id", "client_secret", "refresh_token"]
+  }
+}

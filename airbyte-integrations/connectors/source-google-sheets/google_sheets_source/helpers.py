@@ -71,7 +71,7 @@ class Helpers(object):
             "properties": {field: {"type": "string"} for field in fields},
         }
 
-        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema)
+        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=["full_refresh"])
 
     @staticmethod
     def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
@@ -149,7 +149,7 @@ class Helpers(object):
         client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-
+        print(f"available_sheets: {available_sheets}")
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:

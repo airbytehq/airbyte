@@ -38,12 +38,10 @@
           "type": ["null", "string"]
         },
         "closedate": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "createdate": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "days_to_close": {
           "type": ["null", "string"]
@@ -109,8 +107,7 @@
           "type": ["null", "string"]
         },
         "hs_createdate": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "hs_date_entered_9567448": {
           "type": ["null", "string"]
@@ -194,8 +191,7 @@
           "type": ["null", "string"]
         },
         "hs_lastmodifieddate": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "hs_latest_meeting_activity": {
           "type": ["null", "string"]
@@ -279,12 +275,10 @@
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_owners": {
-          "type": ["null", "string"],
-          "format": "date"
+          "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "hubspot_owner_id": {
           "type": ["null", "string"]
@@ -316,12 +310,10 @@
       }
     },
     "createdAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "archived": {
       "type": ["null", "boolean"]

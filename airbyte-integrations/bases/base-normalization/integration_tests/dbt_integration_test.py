@@ -82,7 +82,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        time.sleep(120)
+        time.sleep(5)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
@@ -118,7 +118,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        time.sleep(120)
+        time.sleep(5)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
@@ -154,6 +154,12 @@ class DbtIntegrationTest(object):
         else:
             os.chdir(request.fspath.dirname)
 
+    def generate_project_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
+        config_generator = TransformConfig()
+        project_yaml = config_generator.transform_dbt_project(destination_type)
+        config_generator.write_yaml_config(test_root_dir, project_yaml, "dbt_project.yml")
+        return project_yaml
+
     def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
         """
         Each destination requires different settings to connect to. This step generates the adequate profiles.yml
@@ -174,7 +180,7 @@ class DbtIntegrationTest(object):
         else:
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
-        config_generator.write_yaml_config(test_root_dir, profiles_yaml)
+        config_generator.write_yaml_config(test_root_dir, profiles_yaml, "profiles.yml")
         return profiles_config
 
     @staticmethod

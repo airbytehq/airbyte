@@ -14,7 +14,7 @@ dependencies {
     implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
     implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'
 
-    testFixturesImplementation project(':airbyte-db')
+    testFixturesImplementation project(':airbyte-db:lib')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')
 
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'

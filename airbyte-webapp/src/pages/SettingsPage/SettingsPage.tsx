@@ -3,14 +3,14 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { Redirect, Route, Switch } from "react-router";
 
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import LoadingPage from "components/LoadingPage";
 import HeadTitle from "components/HeadTitle";
 import SideMenu from "components/SideMenu";
 import { Routes } from "pages/routes";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import NotificationPage from "./pages/NotificationPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
 import MetricsPage from "./pages/MetricsPage";
@@ -87,10 +87,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
       pageTitle={
-        <PageTitle
-          withLine
-          title={<FormattedMessage id="sidebar.settings" />}
-        />
+        <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
       }
     >
       <Content>

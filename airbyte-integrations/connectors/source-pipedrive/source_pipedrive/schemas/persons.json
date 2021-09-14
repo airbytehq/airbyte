@@ -137,7 +137,7 @@
     },
     "next_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_time": {
       "type": ["null", "string"],

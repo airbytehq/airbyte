@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import config from "config";
+import { useConfig } from "config";
 
 const Content = styled.div<{ primary?: boolean }>`
   color: ${({ theme, primary }) =>
@@ -19,10 +19,13 @@ type IProps = {
   primary?: boolean;
 };
 
-const Version: React.FC<IProps> = ({ className, primary }) => (
-  <Content primary={primary} className={className}>
-    {config.version}
-  </Content>
-);
+const Version: React.FC<IProps> = ({ className, primary }) => {
+  const config = useConfig();
+  return (
+    <Content primary={primary} className={className}>
+      {config.version}
+    </Content>
+  );
+};
 
 export default Version;

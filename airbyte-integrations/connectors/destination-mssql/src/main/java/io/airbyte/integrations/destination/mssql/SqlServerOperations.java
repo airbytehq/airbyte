@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.mssql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -112,7 +113,7 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(String data) {
+  public boolean isValidData(JsonNode data) {
     return true;
   }
 

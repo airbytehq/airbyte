@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "objectType": {
       "type": ["null", "string"]
@@ -15,12 +15,10 @@
       "type": ["null", "boolean"]
     },
     "createdAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     }
   }
 }

@@ -29,6 +29,9 @@ function configuredbt() {
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     # Generate a profiles.yml file for the selected destination/integration type
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
+    # Remove config file as it might still contain sensitive credentials  (for example,
+    # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
+    rm "${CONFIG_FILE}"
     if [[ -n "${CATALOG_FILE}" ]]; then
       # If catalog file is provided, generate normalization models, otherwise skip it
       echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data"
@@ -55,6 +58,9 @@ function configuredbt() {
     # Generate a profiles.yml file for the selected destination/integration type
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
+    # Remove config file as it might still contain sensitive credentials  (for example,
+    # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
+    rm "${CONFIG_FILE}"
   fi
 }
 
@@ -94,8 +100,12 @@ function main() {
   case "$CMD" in
   run)
     configuredbt
+    . /airbyte/sshtunneling.sh
+    openssh $CONFIG_FILE "${PROJECT_DIR}/localsshport.json"
+    trap 'closessh' EXIT
     # Run dbt to compile and execute the generated normalization models
     dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
+    closessh
     ;;
   configure-dbt)
     configuredbt

@@ -11,7 +11,7 @@ application {
 dependencies {
     implementation "org.postgresql:postgresql:42.2.18"
 
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:debezium')
     implementation project(':airbyte-protocol:models')

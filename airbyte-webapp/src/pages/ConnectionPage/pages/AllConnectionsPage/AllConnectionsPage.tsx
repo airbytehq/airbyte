@@ -6,10 +6,10 @@ import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
 import ConnectionResource from "core/resources/Connection";
 import ConnectionsTable from "./components/ConnectionsTable";
 import { Routes } from "pages/routes";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();

@@ -1,5 +1,79 @@
 # Changelog
 
+## 09/09/2021 Summary
+
+We're going over the changes from 0.29.17 and before... and there's a lot of big improvements here, so don't miss them!
+
+**New Source**: Facebook Pages
+**New Destination**: MongoDB
+**New Destination**: DynamoDB
+
+* 🎉 You can now send notifications via webhook for successes and failures on Airbyte syncs. (This is a massive contribution by @Pras, thank you) :tada:
+* 🎉 Scheduling jobs and worker jobs are now separated, allowing for workers to be scaled horizontally.
+* 🎉 When developing a connector, you can now preview what your spec looks like in real time with this process.
+* 🎉 Oracle destination: Now has basic normalization.
+* 🎉 Add XLSB (binary excel) support to the Files source (contributed by Muutech).
+* 🎉 You can now properly cancel K8s deployments.
+
+* ✨ S3 source: Support for Parquet format.
+* ✨ Github source: Branches, repositories, organization users, tags, and pull request stats streams added (contributed by @Christopher Wu).
+* ✨ BigQuery destination: Added GCS upload option.
+* ✨ Salesforce source: Now Airbyte native.
+* ✨ Redshift destination: Optimized for performance.
+
+* 🏗 CDK: :tada: We’ve released a tool to generate JSON Schemas from OpenAPI specs. This should make specifying schemas for API connectors a breeze! :tada:
+* 🏗 CDK: Source Acceptance Tests now verify that connectors correctly format strings which are declared as using date-time and date formats.
+* 🏗 CDK: Add private options to help in testing: _limit and _page_size are now accepted by any CDK connector to minimze your output size for quick iteration while testing.
+
+* 🐛 Fixed a bug that made it possible for connector definitions to be duplicated, violating uniqueness.
+* 🐛 Pipedrive source: Output schemas no longer remove timestamp from fields.
+* 🐛 Github source: Empty repos and negative backoff values are now handled correctly.
+* 🐛 Harvest source: Normalization now works as expected.
+* 🐛 All CDC sources: Removed sleep logic which caused exceptions when loading data from high-volume sources.
+* 🐛 Slack source: Increased number of retries to tolerate flaky retry wait times on the API side.
+* 🐛 Slack source: Sync operations no longer hang indefinitely.
+* 🐛 Jira source: Now uses updated time as the cursor field for incremental sync instead of the created time.
+* 🐛 Intercom source: Fixed inconsistency between schema and output data.
+* 🐛 Hubspot source: Streams with the items property now have their schemas fixed.
+* 🐛 Hubspot source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
+* 🐛 Typeform source: Allows for multiple choices in responses now.
+* 🐛 Shopify source: The type for the amount field is now fixed in the schema.
+* 🐛 Postgres destination: \u0000(NULL) value processing is now fixed.
+
+As usual... thank you to our wonderful contributors this week: Pras, Christopher Wu, Brian M, yahu98, Michele Zuccala, jinnig, and luizgribeiro!
+
+## 09/01/2021 Summary
+
+Got the changes from 0.29.13... with some other surprises!
+
+* 🔥 There's a new way to create Airbyte sources! The team at Faros AI has created a Javascript/Typescript CDK which can be found here and in our docs here. This is absolutely awesome and give a huge thanks to Chalenge Masekera, Christopher Wu, eskrm, and Matthew Tovbin!
+* ✨ New Destination: Azure Blob Storage :sparkles:
+
+**New Source**: Bamboo HR (contributed by @Oren Haliva)
+**New Source**: BigCommerce (contributed by @James Wilson)
+**New Source**: Trello
+**New Source**: Google Analytics V4
+**New Source**: Amazon Ads
+
+* 💎 Alpine Docker images are the new standard for Python connectors, so image sizes have dropped by around 100 MB!
+* ✨ You can now apply tolerations for Airbyte Pods on K8s deployments (contributed by @Pras).
+* 🐛 Shopify source: Rate limit throttling fixed.
+* 📚 We now have a doc on how to deploy Airbyte at scale. Check it out here!
+* 🏗 Airbyte CDK: You can now ignore HTTP status errors and override retry parameters.
+
+As usual, thank you to our awesome contributors: Oren Haliva, Pras, James Wilson, and Muutech.
+
+## 08/26/2021 Summary
+
+New Source: Short.io (contributed by @Apostol Tegko)
+* 💎 GitHub source: Added support for rotating through multiple API tokens!
+* ✨ Syncs are now scheduled with a 3 day timeout (contributed by @Vladimir Remar).
+* ✨ Google Ads source: Added UserLocationReport stream (contributed by @Max Krog).
+* ✨ Cart source: Added the order_items stream.
+* 🐛 Postgres source: Fixed out-of-memory issue with CDC interacting with large JSON blobs.
+* 🐛 Intercom source: Pagination now works as expected.
+
+As always, thank you to our awesome community contributors this week: Apostol Tegko, Vladimir Remar, Max Krog, Pras, Marco Fontana, Troy Harvey, and damianlegawiec!
 ## 08/20/2021 Summary
 
 Hey Airbyte community, we got some patch notes for y'all. Here's all the changes we've pushed since the last update.

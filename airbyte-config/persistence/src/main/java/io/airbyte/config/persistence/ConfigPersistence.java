@@ -42,8 +42,10 @@ public interface ConfigPersistence {
 
   void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
 
-  <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException;
+  void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException;
 
   Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
+
+  void loadData(ConfigPersistence seedPersistence) throws IOException;
 
 }
