@@ -22,9 +22,11 @@
 # SOFTWARE.
 #
 
+import csv
 import json
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
+from io import StringIO
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
@@ -82,19 +84,25 @@ class IterableStream(HttpStream, ABC):
             yield self._convert_timestamp_fields_to_datetime(record)
 
     @staticmethod
-    def _parse_plain_text_to_dict(text: str) -> Dict[str, Any]:
+    def _parse_csv_string_to_dict(csv_string: str) -> Dict[str, Any]:
         """
-        :param text: API endpoint response with plain/text format
+        Parse a response with a csv type to dict object
+        Example:
+            csv_string = "a,b,c
+                          1,2,3"
+
+            output = {"a": 1, "b": 2, "c": 3}
+
+
+        :param csv_string: API endpoint response with csv format
         :return: parsed API response
+
         """
 
-        result = dict()
-        data = text.split("\n")
+        reader = csv.DictReader(StringIO(csv_string), delimiter=",")
+        result = next(reader)
 
-        names = data[0].split(",")
-        raw_values = data[1].split(",")
-
-        for key, value in zip(names, raw_values):
+        for key, value in result.items():
             try:
                 result[key] = int(value)
             except ValueError:
@@ -234,8 +242,8 @@ class CampaignsMetrics(IterableStream):
             yield {"campaign_id": list_record["id"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        plain_text = response.content.decode()
-        yield {"data": self._parse_plain_text_to_dict(plain_text)}
+        content = response.content.decode()
+        yield {"data": self._parse_csv_string_to_dict(content)}
 
 
 class Channels(IterableStream):
@@ -291,13 +299,14 @@ class Events(IterableStream):
     """
     primary_key = None
     data_field = "events"
+    page_size = EVENT_ROWS_LIMIT
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"events/{stream_slice['email']}"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["limit"] = EVENT_ROWS_LIMIT
+        params["limit"] = self.page_size
 
         return params
 
