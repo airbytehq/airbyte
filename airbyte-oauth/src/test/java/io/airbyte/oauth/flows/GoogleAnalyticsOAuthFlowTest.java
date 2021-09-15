@@ -40,10 +40,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -207,4 +205,5 @@ public class GoogleAnalyticsOAuthFlowTest {
       return credentialsJson.get("client_id").asText();
     }
   }
+
 }
