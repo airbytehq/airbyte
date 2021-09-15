@@ -9,12 +9,12 @@ data:
   AWS_SECRET_ACCESS_KEY: {{ .Values.minio.secretKey.password }}
   CONFIG_ROOT: /configs
   DATA_DOCKER_MOUNT: airbyte_data
-  DATABASE_DB: {{ .Values.postgresql.postgresqlDatabase }}
+  DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
   DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
-  DATABASE_PORT: "5432"
-  DATABASE_URL: jdbc:postgresql://airbyte-postgresql:5432/{{ .Values.postgresql.postgresqlDatabase }}
-  DATABASE_USER: {{ .Values.postgresql.postgresqlUsername }}
+  DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
+  DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
+  DATABASE_USER: {{ include "airbyte.database.user" . }}
   DB_DOCKER_MOUNT: airbyte_db
   FULLSTORY: enabled
   GCP_STORAGE_BUCKET: ""

@@ -31,7 +31,7 @@ spec:
         - name: DB # The DB engine to use
           value: "postgresql"
         - name: DB_PORT
-          value: {{ include "airbyte.database.port" . }}
+          value: {{ include "airbyte.database.port" . | quote }}
         - name: POSTGRES_USER
           value: {{ include "airbyte.database.user" . }}
         - name: POSTGRES_PWD

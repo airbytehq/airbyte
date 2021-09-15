@@ -93,21 +93,21 @@ Get the Postgresql credentials secret.
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.host" -}}
-{{- ternary (include "airbyte.postgresql.fullname" .) .Values.externalDatabase.host .Values.postgresql.enabled | quote -}}
+{{- ternary (include "airbyte.postgresql.fullname" .) .Values.externalDatabase.host .Values.postgresql.enabled -}}
 {{- end -}}
 
 {{/*
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.user" -}}
-{{- ternary .Values.postgresql.postgresqlUsername .Values.externalDatabase.user .Values.postgresql.enabled | quote -}}
+{{- ternary .Values.postgresql.postgresqlUsername .Values.externalDatabase.user .Values.postgresql.enabled -}}
 {{- end -}}
 
 {{/*
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.name" -}}
-{{- ternary .Values.postgresql.postgresqlDatabase .Values.externalDatabase.database .Values.postgresql.enabled | quote -}}
+{{- ternary .Values.postgresql.postgresqlDatabase .Values.externalDatabase.database .Values.postgresql.enabled -}}
 {{- end -}}
 
 {{/*
@@ -133,9 +133,18 @@ Add environment variables to configure database values
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.port" -}}
-{{- ternary "5432" .Values.externalDatabase.port .Values.postgresql.enabled | quote -}}
+{{- ternary "5432" .Values.externalDatabase.port .Values.postgresql.enabled -}}
 {{- end -}}
 
+{{/*
+Add environment variables to configure database values
+*/}}
+{{- define "airbyte.database.url" -}}
+{{- $host := (include "airbyte.database.host" .) -}}
+{{- $dbName := (include "airbyte.database.name" .) -}}
+{{- $port := (include "airbyte.database.port" . ) -}}
+{{- printf "jdbc:postgresql://%s:%s/%s" $host $port $dbName -}}
+{{- end -}}
 
 {{/*
 Create a default fully qualified minio name.
