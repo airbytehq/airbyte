@@ -39,7 +39,7 @@
         "examples": ["2021-11-16"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
       },
-      "project_region": {
+      "region": {
         "title": "Project region",
         "type": "object",
         "description": "Where data is stored for your project.",
@@ -58,12 +58,12 @@
             }
           },
           {
-            "title": "Subset of your accounts",
+            "title": "European Union",
             "additionalProperties": false,
             "description": "Project data stored in European Union.",
             "required": ["name"],
             "properties": {
-              "nane": {
+              "name": {
                 "type": "string",
                 "enum": ["eu"],
                 "const": "eu"
