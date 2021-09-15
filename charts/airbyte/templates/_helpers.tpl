@@ -150,14 +150,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Add environment variables to configure minio
 */}}
 {{- define "airbyte.minio.host" -}}
-{{- ternary (include "airbyte.minio.fullname" .) .Values.externalMinio.host .Values.minio.enabled | quote -}}
+{{- ternary (include "airbyte.minio.fullname" .) .Values.externalMinio.host .Values.minio.enabled -}}
 {{- end -}}
 
 {{/*
 Add environment variables to configure minio
 */}}
 {{- define "airbyte.minio.port" -}}
-{{- ternary "9000" .Values.externalMinio.port .Values.minio.enabled | quote -}}
+{{- ternary "9000" .Values.externalMinio.port .Values.minio.enabled -}}
 {{- end -}}
 
 {{- define "airbyte.minio.endpoint" -}}
