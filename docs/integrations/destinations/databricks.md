@@ -17,9 +17,10 @@ Due to legal reasons, this is currently a private connector that is only availab
 | Incremental - Dedupe Sync | ❌ | |
 | Namespaces | ✅ | |
 
-## Configuration
+## Data Source
+Databricks supports various cloud storage as the [data source](https://docs.databricks.com/data/data-sources/index.html). Currently, only Amazon S3 is supported.
 
-Databricks parameters
+## Configuration
 
 | Category | Parameter | Type | Notes |
 | :--- | :--- | :---: | :--- |
@@ -28,8 +29,8 @@ Databricks parameters
 | | Port | string | Optional. Default to "443". See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). |
 | | Personal Access Token | string | Required. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html). |
 | General | Database schema | string | Optional. Default to "public". Each data stream will be written to a table under this database schema. |
-| | Purge Staging Files and Tables | The connector creates staging files and tables on S3. By default they will be purged when the data sync is complete. Set it to `false` for debugging purpose. |
-| S3 | Bucket Name | string | Name of the bucket to sync data into. |
+| | Purge Staging Data | boolean | The connector creates staging files and tables on S3. By default they will be purged when the data sync is complete. Set it to `false` for debugging purpose. |
+| Data Source - S3 | Bucket Name | string | Name of the bucket to sync data into. |
 | | Bucket Path | string | Subdirectory under the above bucket to sync the data into. |
 | | Region | string | See [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes. |
 | | Access Key ID | string | AWS/Minio credential. |
