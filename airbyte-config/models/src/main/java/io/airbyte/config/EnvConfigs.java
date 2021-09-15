@@ -424,7 +424,7 @@ public class EnvConfigs implements Configs {
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info("{} not found or empty, defaulting to {}", key, isSecret ? "*****" : defaultValue);
+      LOGGER.info("Default null or empty environment variable {} to '{}'", key, isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }
