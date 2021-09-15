@@ -58,6 +58,10 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  String getSecretStoreGcpProjectId();
+
+  String getSecretStoreForConfigs();
+
   boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
