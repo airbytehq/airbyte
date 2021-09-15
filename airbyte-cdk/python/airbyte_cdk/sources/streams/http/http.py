@@ -22,12 +22,12 @@
 # SOFTWARE.
 #
 import os
-import tempfile
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 import vcr
+import vcr.cassette as Cassette
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
@@ -52,12 +52,38 @@ class HttpStream(Stream, ABC):
         self._authenticator = authenticator
         self._session = requests.Session()
 
+        if self.use_cache:
+            self.cache_file = self.request_cache()
+            # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
+            self.cass = None
+
+    @property
+    def cache_filename(self):
+        """
+        Override if needed. Return the name of cache file
+        """
+        return f'{self.name}.yml'
+
     @property
     def use_cache(self):
         """
         Override if needed. If True, all records will be cached.
         """
         return False
+
+    def request_cache(self) -> Cassette:
+        """
+        Builds VCR instance.
+        It deletes file everytime we create it, normally should be called only once.
+        We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
+        """
+
+        try:
+            os.remove(self.cache_filename)
+        except FileNotFoundError:
+            pass
+
+        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
 
     @property
     @abstractmethod
@@ -326,14 +352,11 @@ class HttpStream(Stream, ABC):
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
             if self.use_cache:
-                cache_file = tempfile.NamedTemporaryFile()
-                # specify name using hash of stream_slice, because we want to iterate over
-                # all parent stream_slice and cache data in various files
-                file_name = f"{self.name}_{hash(stream_slice)}.yml"
-                # rename file to get specific name to define which file to open
-                os.rename(cache_file.name, file_name)
-
-                with vcr.use_cassette(file_name, record_mode="new_episodes", serializer="json", decode_compressed_response=True):
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cass = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
                     response = self._send_request(request, request_kwargs)
 
             else:
@@ -351,11 +374,11 @@ class HttpStream(Stream, ABC):
 
 class HttpSubStream(HttpStream, ABC):
 
-    def __init__(self, parent: HttpStream, authenticator: HttpAuthenticator = NoAuth()):
+    def __init__(self, parent: HttpStream, **kwargs):
         """
         :param parent: should be the instance of HttpStream class
         """
-        super().__init__(authenticator)
+        super().__init__(**kwargs)
         self.parent = parent
 
     def stream_slices(
@@ -367,7 +390,7 @@ class HttpSubStream(HttpStream, ABC):
                 stream_state=stream_state
         )
 
-        # iterate over all parent stream slices
+        # iterate over all parent stream_slices
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
                 sync_mode=sync_mode,
