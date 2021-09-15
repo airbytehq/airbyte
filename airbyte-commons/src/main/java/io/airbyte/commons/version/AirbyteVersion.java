@@ -31,6 +31,14 @@ import com.google.common.base.Preconditions;
  */
 public class AirbyteVersion {
 
+  /**
+   * We moved the configs from the data volume to the configs database, and introduced Flyway
+   * migration in v0.29. The data volume and the file-based migration are deprecated in v0.30. Users
+   * must first upgrade to the last version before v0.30 to migrate their configs from the data
+   * volume, and integrate with the new Flyway system.
+   */
+  public static final AirbyteVersion MINIMUM_REQUIRED_VERSION = new AirbyteVersion("0.29.17-alpha");
+
   private static final String DEV_VERSION = "dev";
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
@@ -39,6 +47,9 @@ public class AirbyteVersion {
   private final String minor;
   private final String patch;
 
+  /**
+   * Expected input format: x.y.z-w
+   */
   public AirbyteVersion(final String version) {
     Preconditions.checkNotNull(version);
     this.version = version;
@@ -112,6 +123,10 @@ public class AirbyteVersion {
     return compareVersion(patch, another.patch);
   }
 
+  public boolean compatibleWithMinRequiredVersion() {
+    return this.patchVersionCompareTo(MINIMUM_REQUIRED_VERSION) >= 0;
+  }
+
   /**
    * Version string needs to be converted to integer for comparison, because string comparison does
    * not handle version string with different digits correctly. For example:
@@ -132,8 +147,9 @@ public class AirbyteVersion {
     final String cleanVersion2 = version2.replace("\n", "").strip();
     return String.format(
         "Version mismatch between %s and %s.\n" +
-            "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
-        cleanVersion1, cleanVersion2);
+            "Please upgrade to at least %s, or reset your Airbyte Database.\n" +
+            "See more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
+        cleanVersion1, cleanVersion2, MINIMUM_REQUIRED_VERSION.getVersion());
   }
 
   public static boolean isCompatible(final String v1, final String v2) {
