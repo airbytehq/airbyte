@@ -22,4 +22,4 @@
 *.tmproj
 .vscode/
 
-Makefile
+ci.sh
