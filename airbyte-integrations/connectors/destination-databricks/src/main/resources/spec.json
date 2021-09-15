@@ -39,7 +39,7 @@
         "title": "Databricks Personal Access Token",
         "type": "string",
         "description": "",
-        "examples": [""],
+        "examples": ["dapi0123456789abcdefghij0123456789AB"],
         "airbyte_secret": true
       },
       "database_schema": {
