@@ -46,13 +46,17 @@ from .streams import (
     Trends,
 )
 
+DEFAULT_BASE_URL = "https://app.posthog.com"
+
 
 class SourcePosthog(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             _ = pendulum.parse(config["start_date"])
             authenticator = TokenAuthenticator(token=config["api_key"])
-            stream = PingMe(authenticator=authenticator)
+            base_url = config.get("base_url", DEFAULT_BASE_URL)
+
+            stream = PingMe(authenticator=authenticator, base_url=base_url)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
             return True, None
@@ -69,15 +73,17 @@ class SourcePosthog(AbstractSource):
         This stream was requested to be removed due to this reason.
         """
         authenticator = TokenAuthenticator(token=config["api_key"])
+        base_url = config.get("base_url", DEFAULT_BASE_URL)
+
         return [
-            Annotations(authenticator=authenticator, start_date=config["start_date"]),
-            Cohorts(authenticator=authenticator),
-            Events(authenticator=authenticator, start_date=config["start_date"]),
-            EventsSessions(authenticator=authenticator),
-            FeatureFlags(authenticator=authenticator),
-            Insights(authenticator=authenticator),
-            InsightsPath(authenticator=authenticator),
-            InsightsSessions(authenticator=authenticator),
-            Persons(authenticator=authenticator),
-            Trends(authenticator=authenticator),
+            Annotations(authenticator=authenticator, start_date=config["start_date"], base_url=base_url),
+            Cohorts(authenticator=authenticator, base_url=base_url),
+            Events(authenticator=authenticator, start_date=config["start_date"], base_url=base_url),
+            EventsSessions(authenticator=authenticator, base_url=base_url),
+            FeatureFlags(authenticator=authenticator, base_url=base_url),
+            Insights(authenticator=authenticator, base_url=base_url),
+            InsightsPath(authenticator=authenticator, base_url=base_url),
+            InsightsSessions(authenticator=authenticator, base_url=base_url),
+            Persons(authenticator=authenticator, base_url=base_url),
+            Trends(authenticator=authenticator, base_url=base_url),
         ]
