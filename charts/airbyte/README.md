@@ -2,6 +2,13 @@
 
 ## Parameters
 
+### Global Parameters
+
+| Name                  | Description                                  | Value |
+| --------------------- | -------------------------------------------- | ----- |
+| `global.storageClass` | Global StorageClass for Persistent Volume(s) | `""`  |
+
+
 ### Common Parameters
 
 | Name                         | Description                                                                                                         | Value           |
@@ -91,8 +98,8 @@
 | `server.service.type`                       | The service type to use for the API server                       | `ClusterIP`      |
 | `server.service.port`                       | The service port to expose the API server on                     | `8001`           |
 | `server.persistence.accessMode`             | The access mode for the airbyte server pvc                       | `ReadWriteOnce`  |
-| `server.persistence.storageClass`           | The storage class to use for the airbyte server pvc              | `standard`       |
 | `server.persistence.size`                   | The size of the pvc to use for the airbyte server pvc            | `1Gi`            |
+| `server.persistence.storageClass`           | The storage class to use for the airbyte server pvc              | `""`             |
 | `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
 | `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
 

@@ -1,3 +1,10 @@
+## @section Global Parameters
+
+## @param global.storageClass Global StorageClass for Persistent Volume(s)
+##
+global:
+  storageClass: ""
+
 ## @section Common Parameters
 
 ## @param nameOverride String to partially override airbyte.fullname template with a string (will prepend the release name)
@@ -269,12 +276,18 @@ server:
     port: 8001
 
   ## @param server.persistence.accessMode The access mode for the airbyte server pvc
-  ## @param server.persistence.storageClass The storage class to use for the airbyte server pvc
   ## @param server.persistence.size The size of the pvc to use for the airbyte server pvc
   persistence:
-    accessMode: ReadWriteOnce
-    storageClass: standard
     size: 1Gi
+    accessMode: ReadWriteOnce
+    ## @param server.persistence.storageClass The storage class to use for the airbyte server pvc
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    storageClass: ""
 
   ## @param server.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/

@@ -8,7 +8,7 @@ metadata:
 spec:
   accessModes:
   - {{ .Values.server.persistence.accessMode | quote }}
-  storageClassName: {{ .Values.server.persistence.storageClass | quote }}
   resources:
     requests:
       storage: {{ .Values.server.persistence.size | quote }}
+  {{- include "common.storage.class" (dict "persistence" .Values.server.persistence "global" .Values.global) | nindent 2 }}
