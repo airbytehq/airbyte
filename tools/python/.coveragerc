@@ -1,0 +1,7 @@
+[run]
+omit =
+   .venv/*
+   main.py
+   setup.py
+   unit_tests/*
+   integration_tests/*
