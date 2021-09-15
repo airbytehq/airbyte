@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string",
+      "airbyte_secret": true
+    },
+    "nested": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "airbyte_secret": true
+        },
+        "not_password": {
+          "type": "number"
+        }
+      },
+      "required": ["password", "not_password"]
+    }
+  },
+  "required": ["username", "password", "nested"]
+}
