@@ -30,7 +30,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_pipedrive.streams import Activities, ActivityFields, Deals, Leads, Persons, Pipelines, Stages, Users
+from source_pipedrive.streams import Activities, ActivityFields, Deals, Leads, Organizations, Persons, Pipelines, Stages, Users
 
 
 class SourcePipedrive(AbstractSource):
@@ -54,6 +54,7 @@ class SourcePipedrive(AbstractSource):
             ActivityFields(**stream_kwargs),
             Deals(**incremental_stream_kwargs),
             Leads(**stream_kwargs),
+            Organizations(**incremental_stream_kwargs),
             Persons(**incremental_stream_kwargs),
             Pipelines(**incremental_stream_kwargs),
             Stages(**incremental_stream_kwargs),

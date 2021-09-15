@@ -119,7 +119,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
@@ -128,6 +128,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     return allSeedConfigs.entrySet().stream().collect(Collectors.toMap(
         e -> e.getKey().name(),
         e -> e.getValue().values().stream()));
+  }
+
+  @Override
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
 }

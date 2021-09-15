@@ -46,14 +46,18 @@ class TestIntegrationZendeskSupport:
 
     def _test_export_stream(self, stream_cls: type):
         stream = stream_cls(**self.prepare_stream_args())
+        stream.page_size = 1
         record_timestamps = {}
         for record in stream.read_records(sync_mode=None):
             # save the first 5 records
             if len(record_timestamps) > 5:
                 break
-            record_timestamps[record["id"]] = record[stream.cursor_field]
+            if stream._last_end_time not in record_timestamps.values():
+                record_timestamps[record["id"]] = stream._last_end_time
+
+        stream.page_size = 10
         for record_id, timestamp in record_timestamps.items():
-            state = {stream.cursor_field: timestamp}
+            state = {"_last_end_time": timestamp}
             for record in stream.read_records(sync_mode=None, stream_state=state):
                 assert record["id"] != record_id
                 break

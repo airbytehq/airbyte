@@ -25,32 +25,34 @@ if(!System.getenv().containsKey("SUB_BUILD")) {
 }
 
 // shared
+include ':airbyte-api'
 include ':airbyte-commons'
 include ':airbyte-commons-docker'
+include ':airbyte-config:models' // reused by acceptance tests in connector base.
+include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
 include ':airbyte-protocol:models'
 include ':airbyte-queue'
-include ':airbyte-workers' // reused by acceptance tests in connector base.
-include ':airbyte-config:models' // reused by acceptance tests in connector base.
-include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-test-utils'
 
-// platform
+// airbyte-workers has a lot of dependencies.
+include ':airbyte-workers' // reused by acceptance tests in connector base.
+include ':airbyte-analytics' // transitively used by airbyte-workers.
+include ':airbyte-config:init' // transitively used by airbyte-workers.
+include ':airbyte-config:persistence' // transitively used by airbyte-workers.
+include ':airbyte-db:jooq' // transitively used by airbyte-workers.
+include ':airbyte-notification' // transitively used by airbyte-workers.
+include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
+include ':airbyte-scheduler:persistence' // used by airbyte-workers.
+
+// platformm
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    include ':airbyte-analytics'
-    include ':airbyte-api'
     include ':airbyte-cli'
-    include ':airbyte-db:jooq'
-    include ':airbyte-config:init'
-    include ':airbyte-config:persistence'
     include ':airbyte-e2e-testing'
     include ':airbyte-migration'
-    include ':airbyte-notification'
     include ':airbyte-oauth'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
-    include ':airbyte-scheduler:models'
-    include ':airbyte-scheduler:persistence'
     include ':airbyte-server'
     include ':airbyte-webapp'
     include ':airbyte-tests'
@@ -74,6 +76,8 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:bases:debezium'
     include ':tools:code-generator'
 
+    include ':airbyte-oauth'
+
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
     include ':airbyte-integrations:connectors:destination-jdbc'
@@ -81,6 +85,11 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-postgres'
     include ':airbyte-integrations:connectors:destination-redshift'
     include ':airbyte-integrations:connectors:destination-snowflake'
+    include ':airbyte-integrations:connectors:destination-oracle'
+
+    //Needed by destination-bugquery
+    include ':airbyte-integrations:connectors:destination-s3'
+    include ':airbyte-integrations:connectors:destination-gcs'
 }
 
 // connectors

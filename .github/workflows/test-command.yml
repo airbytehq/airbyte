@@ -81,11 +81,14 @@ jobs:
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS }}
           SOURCE_BING_ADS_CREDS: ${{ secrets.SOURCE_BING_ADS_CREDS }}
           BIGQUERY_TEST_CREDS: ${{ secrets.BIGQUERY_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
           CART_TEST_CREDS: ${{ secrets.CART_TEST_CREDS }}
           CHARGEBEE_INTEGRATION_TEST_CREDS: ${{ secrets.CHARGEBEE_INTEGRATION_TEST_CREDS }}
+          DESTINATION_POSTGRES_SSH_KEY_TEST_CREDS: ${{ secrets.DESTINATION_POSTGRES_SSH_KEY_TEST_CREDS }}
+          DESTINATION_POSTGRES_SSH_PWD_TEST_CREDS: ${{ secrets.DESTINATION_POSTGRES_SSH_PWD_TEST_CREDS }}
           DESTINATION_PUBSUB_TEST_CREDS: ${{ secrets.DESTINATION_PUBSUB_TEST_CREDS }}
           DESTINATION_KEEN_TEST_CREDS: ${{ secrets.DESTINATION_KEEN_TEST_CREDS }}
           DESTINATION_KVDB_TEST_CREDS: ${{ secrets.DESTINATION_KVDB_TEST_CREDS }}
@@ -104,6 +107,8 @@ jobs:
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
           GOOGLE_DIRECTORY_TEST_CREDS: ${{ secrets.GOOGLE_DIRECTORY_TEST_CREDS }}
           GOOGLE_SEARCH_CONSOLE_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_TEST_CREDS }}
+          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS }}
+          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC }}
           GOOGLE_SHEETS_TESTS_CREDS: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS }}
           GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
           GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
@@ -127,6 +132,7 @@ jobs:
           PIPEDRIVE_INTEGRATION_TESTS_CREDS: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS }}
           RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
           QUICKBOOKS_TEST_CREDS: ${{ secrets.QUICKBOOKS_TEST_CREDS }}
+          SALESFORCE_BULK_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_BULK_INTEGRATION_TESTS_CREDS }}
           SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
           SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
@@ -164,8 +170,10 @@ jobs:
           DESTINATION_DYNAMODB_TEST_CREDS: ${{ secrets.DESTINATION_DYNAMODB_TEST_CREDS }}
           APIFY_INTEGRATION_TEST_CREDS: ${{ secrets.APIFY_INTEGRATION_TEST_CREDS }}
           SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
+          SOURCE_CLOSE_COM_CREDS: ${{ secrets.SOURCE_CLOSE_COM_CREDS }}
           SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
           SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
+          DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
@@ -187,6 +195,16 @@ jobs:
             **/normalization_test_output/**/build/compiled/airbyte_utils/**
             **/normalization_test_output/**/build/run/airbyte_utils/**
             **/normalization_test_output/**/models/generated/**
+
+      - name: Test coverage reports artifacts
+        if: github.event.inputs.comment-id && success()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-reports
+          path: |
+            **/${{ github.event.inputs.connector }}/htmlcov/**
+          retention-days: 3
+
       - name: Report Status
         if: github.ref == 'refs/heads/master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
@@ -201,6 +219,7 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            ${{env.PYTHON_UNITTEST_COVERAGE_REPORT}}
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1
@@ -208,6 +227,7 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :bug: ${{env.GRADLE_SCAN_LINK}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner

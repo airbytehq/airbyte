@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -55,11 +56,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,12 +80,17 @@ class BigQueryDenormalizedDestinationTest {
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(getData())
           .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(getDataWithEmptyObjectAndArray())
+          .withEmittedAt(NOW.toEpochMilli()));
 
   private JsonNode config;
 
   private BigQuery bigquery;
   private Dataset dataset;
   private ConfiguredAirbyteCatalog catalog;
+  private String datasetId;
 
   private boolean tornDown = true;
 
@@ -98,7 +107,7 @@ class BigQueryDenormalizedDestinationTest {
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
-    final String projectId = credentialsJson.get(BigQueryDestination.CONFIG_PROJECT_ID).asText();
+    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJsonString.getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
@@ -106,22 +115,19 @@ class BigQueryDenormalizedDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
     final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
-
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+    MESSAGE_USERS2.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
-        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, credentialsJsonString)
+        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
@@ -160,16 +166,21 @@ class BigQueryDenormalizedDestinationTest {
     tornDown = true;
   }
 
-  @Test
-  void testNestedWrite() throws Exception {
+  @ParameterizedTest
+  @MethodSource("schemaAndDataProvider")
+  void testNestedWrite(JsonNode schema, AirbyteMessage message) throws Exception {
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
-    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(message);
     consumer.close();
 
     final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
-    final JsonNode expectedUsersJson = MESSAGE_USERS1.getRecord().getData();
+    final JsonNode expectedUsersJson = message.getRecord().getData();
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
     assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
@@ -210,7 +221,14 @@ class BigQueryDenormalizedDestinationTest {
         .collect(Collectors.toList());
   }
 
-  private JsonNode getSchema() {
+  private static Stream<Arguments> schemaAndDataProvider() {
+    return Stream.of(
+        arguments(getSchema(), MESSAGE_USERS1),
+        arguments(getSchemaWithInvalidArrayType(), MESSAGE_USERS1),
+        arguments(getSchema(), MESSAGE_USERS2));
+  }
+
+  private static JsonNode getSchema() {
     return Jsons.deserialize(
         "{\n"
             + "  \"type\": [\n"
@@ -254,6 +272,45 @@ class BigQueryDenormalizedDestinationTest {
 
   }
 
+  private static JsonNode getSchemaWithInvalidArrayType() {
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"type\": [\n"
+            + "    \"object\"\n"
+            + "  ],\n"
+            + "  \"properties\": {\n"
+            + "    \"name\": {\n"
+            + "      \"type\": [\n"
+            + "        \"string\"\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    \"permissions\": {\n"
+            + "      \"type\": [\n"
+            + "        \"array\"\n"
+            + "      ],\n"
+            + "      \"items\": {\n"
+            + "        \"type\": [\n"
+            + "          \"object\"\n"
+            + "        ],\n"
+            + "        \"properties\": {\n"
+            + "          \"domain\": {\n"
+            + "            \"type\": [\n"
+            + "              \"string\"\n"
+            + "            ]\n"
+            + "          },\n"
+            + "          \"grants\": {\n"
+            + "            \"type\": [\n"
+            + "              \"array\"\n" // missed "items" element
+            + "            ]\n"
+            + "          }\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}");
+
+  }
+
   private static JsonNode getData() {
     return Jsons.deserialize(
         "{\n"
@@ -270,6 +327,31 @@ class BigQueryDenormalizedDestinationTest {
             + "      \"grants\": [\n"
             + "        \"read\", \"write\"\n"
             + "      ]\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}");
+
+  }
+
+  private static JsonNode getDataWithEmptyObjectAndArray() {
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"name\": \"Andrii\",\n"
+            + "  \"permissions\": [\n"
+            + "    {\n"
+            + "      \"domain\": \"abs\",\n"
+            + "      \"items\": {},\n" // empty object
+            + "      \"grants\": [\n"
+            + "        \"admin\"\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"domain\": \"tools\",\n"
+            + "      \"grants\": [],\n" // empty array
+            + "      \"items\": {\n" // object with empty array and object
+            + "        \"object\": {},\n"
+            + "        \"array\": []\n"
+            + "      }\n"
             + "    }\n"
             + "  ]\n"
             + "}");

@@ -36,6 +36,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -69,8 +70,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
+  private final JdbcSourceOperations sourceOperations;
+
   public PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+    this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
   }
 
   @Override
@@ -139,7 +143,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           LOGGER.info("Attempting to find the named replication slot using the query: " + ps.toString());
 
           return ps;
-        }, JdbcUtils::rowToJson).collect(toList());
+        }, sourceOperations::rowToJson).collect(toList());
 
         if (matchingSlots.size() != 1) {
           throw new RuntimeException("Expected exactly one replication slot but found " + matchingSlots.size()
@@ -156,7 +160,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
 
           return ps;
-        }, JdbcUtils::rowToJson).collect(toList());
+        }, sourceOperations::rowToJson).collect(toList());
 
         if (matchingPublications.size() != 1) {
           throw new RuntimeException("Expected exactly one publication but found " + matchingPublications.size()

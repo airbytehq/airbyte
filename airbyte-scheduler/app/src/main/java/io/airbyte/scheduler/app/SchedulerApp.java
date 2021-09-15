@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
@@ -49,21 +50,8 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.workers.process.DockerProcessFactory;
-import io.airbyte.workers.process.KubePortManagerSingleton;
-import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalPool;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.util.Config;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -92,43 +80,33 @@ public class SchedulerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
+  private static final int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
-  private static final int KUBE_HEARTBEAT_PORT = 9000;
 
   private final Path workspaceRoot;
-  private final ProcessFactory processFactory;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
   private final JobCleaner jobCleaner;
   private final JobNotifier jobNotifier;
   private final TemporalClient temporalClient;
-  private final WorkflowServiceStubs temporalService;
 
   public SchedulerApp(Path workspaceRoot,
-                      ProcessFactory processFactory,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       JobCleaner jobCleaner,
                       JobNotifier jobNotifier,
-                      TemporalClient temporalClient,
-                      WorkflowServiceStubs temporalService) {
+                      TemporalClient temporalClient) {
     this.workspaceRoot = workspaceRoot;
-    this.processFactory = processFactory;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.jobCleaner = jobCleaner;
     this.jobNotifier = jobNotifier;
     this.temporalClient = temporalClient;
-    this.temporalService = temporalService;
   }
 
   public void start() throws IOException {
-    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory);
-    temporalPool.run();
-
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(SUBMITTER_NUM_THREADS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
@@ -138,7 +116,8 @@ public class SchedulerApp {
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence));
+        new JobTracker(configRepository, jobPersistence),
+        jobNotifier);
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -177,26 +156,9 @@ public class SchedulerApp {
     }
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
-    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      final ApiClient officialClient = Config.defaultClient();
-      final KubernetesClient fabricClient = new DefaultKubernetesClient();
-      final String localIp = InetAddress.getLocalHost().getHostAddress();
-      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
-    } else {
-      return new DockerProcessFactory(
-          configs.getWorkspaceRoot(),
-          configs.getWorkspaceDockerMount(),
-          configs.getLocalDockerMount(),
-          configs.getDockerNetwork());
-    }
-  }
-
-  private static void waitForServer(Configs configs) throws InterruptedException {
+  public static void waitForServer(Configs configs) throws InterruptedException {
     final AirbyteApiClient apiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+        new ApiClient().setScheme("http")
             .setHost(configs.getAirbyteApiHost())
             .setPort(configs.getAirbyteApiPort())
             .setBasePath("/api"));
@@ -235,8 +197,6 @@ public class SchedulerApp {
         configs.getDatabaseUrl())
             .getInitialized();
 
-    final ProcessFactory processFactory = getProcessBuilderFactory(configs);
-
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
@@ -251,26 +211,6 @@ public class SchedulerApp {
         jobPersistence);
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
 
-    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
-      if (supportedWorkers < SUBMITTER_NUM_THREADS) {
-        LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
-            KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
-        SUBMITTER_NUM_THREADS = supportedWorkers;
-      }
-
-      Map<String, String> mdc = MDC.getCopyOfContextMap();
-      Executors.newSingleThreadExecutor().submit(
-          () -> {
-            MDC.setContextMap(mdc);
-            try {
-              new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
-            } catch (Exception e) {
-              throw new RuntimeException(e);
-            }
-          });
-    }
-
     AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
 
     TrackingClientSingleton.initialize(
@@ -280,11 +220,10 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, processFactory, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient, temporalService)
+    new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)
         .start();
   }
 

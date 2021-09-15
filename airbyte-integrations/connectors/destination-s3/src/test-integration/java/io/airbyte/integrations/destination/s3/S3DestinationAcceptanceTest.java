@@ -24,13 +24,9 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
+
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
@@ -112,6 +108,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
+        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -143,27 +140,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     this.config = S3DestinationConfig.getS3DestinationConfig(configJson);
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
-    AWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(),
-        config.getSecretAccessKey());
-    String endpoint = config.getEndpoint();
-
-    if (endpoint.isEmpty()) {
-      this.s3Client = AmazonS3ClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(config.getBucketRegion())
-          .build();
-    } else {
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-      this.s3Client = AmazonS3ClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, config.getBucketRegion()))
-          .withPathStyleAccessEnabled(true)
-          .withClientConfiguration(clientConfiguration)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
-    }
+    this.s3Client = config.getS3Client();
   }
 
   /**

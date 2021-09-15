@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "hooks/services/useWorkspace";
+import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
 
@@ -45,17 +45,22 @@ const NotificationPage: React.FC = () => {
     call: onSubmitWebhook,
     errorMessage,
     successMessage,
-  } = useAsyncWithTimeout(async (data: { webhook: string }) =>
-    updateWebhook(data)
-  );
+  } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data));
 
-  const onTestWebhook = async (data: { webhook: string }) => {
-    await testWebhook(data.webhook);
+  const onTestWebhook = async (data: WebhookPayload) => {
+    await testWebhook(data);
   };
 
-  const initialWebhookUrl = workspace.notifications?.length
-    ? workspace.notifications[0].slackConfiguration.webhook
-    : "";
+  const firstNotification = workspace.notifications?.[0];
+
+  const initialValues = useMemo(
+    () => ({
+      webhook: firstNotification?.slackConfiguration?.webhook,
+      sendOnSuccess: firstNotification?.sendOnSuccess,
+      sendOnFailure: firstNotification?.sendOnFailure,
+    }),
+    [firstNotification]
+  );
 
   return (
     <>
@@ -67,7 +72,7 @@ const NotificationPage: React.FC = () => {
       >
         <Content>
           <WebHookForm
-            notificationUrl={initialWebhookUrl}
+            webhook={initialValues}
             onSubmit={onSubmitWebhook}
             onTest={onTestWebhook}
             errorMessage={errorMessage}

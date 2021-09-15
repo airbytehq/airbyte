@@ -58,7 +58,7 @@ public class Migrations {
   private static final Migration MIGRATION_V_0_26_0 = new MigrationV0_26_0(MIGRATION_V_0_25_0);
   private static final Migration MIGRATION_V_0_27_0 = new MigrationV0_27_0(MIGRATION_V_0_26_0);
   public static final Migration MIGRATION_V_0_28_0 = new MigrationV0_28_0(MIGRATION_V_0_27_0);
-  private static final Migration MIGRATION_V_0_29_0 = new MigrationV0_29_0(MIGRATION_V_0_28_0);
+  public static final Migration MIGRATION_V_0_29_0 = new MigrationV0_29_0(MIGRATION_V_0_28_0);
 
   // all migrations must be added to the list in the order that they should be applied.
   public static final List<Migration> MIGRATIONS = ImmutableList.of(

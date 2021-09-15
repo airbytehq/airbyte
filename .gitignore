@@ -10,9 +10,15 @@ data
 .project
 .settings
 
+# Logs
+acceptance_tests_logs/
+
 # Secrets
 secrets
 !airbyte-integrations/connector-templates/**/secrets
+
+# Test logs
+acceptance_tests_logs
 
 # Python
 *.egg-info
