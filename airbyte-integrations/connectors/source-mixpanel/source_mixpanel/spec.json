@@ -38,6 +38,39 @@
         "description": "The default value to use if no bookmark exists for an endpoint. Default is 1 year ago.",
         "examples": ["2021-11-16"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+      },
+      "project_region": {
+        "title": "Project region",
+        "type": "object",
+        "description": "Where data is stored for your project.",
+        "oneOf": [
+          {
+            "title": "United States",
+            "additionalProperties": false,
+            "description": "Project data stored in United States.",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": ["us"],
+                "const": "us"
+              }
+            }
+          },
+          {
+            "title": "Subset of your accounts",
+            "additionalProperties": false,
+            "description": "Project data stored in European Union.",
+            "required": ["name"],
+            "properties": {
+              "nane": {
+                "type": "string",
+                "enum": ["eu"],
+                "const": "eu"
+              }
+            }
+          }
+        ]
       }
     }
   }

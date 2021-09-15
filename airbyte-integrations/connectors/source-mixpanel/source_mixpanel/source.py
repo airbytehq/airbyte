@@ -56,7 +56,10 @@ class MixpanelStream(HttpStream, ABC):
         send requests with planned delay: 3600/reqs_per_hour_limit seconds
     """
 
-    url_base = "https://mixpanel.com/api/2.0/"
+    @property
+    def url_base(self):
+        prefix = 'eu.' if self.region_name == 'eu' else ''
+        return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
     reqs_per_hour_limit = 400  # 1 req in 9 secs
@@ -64,6 +67,7 @@ class MixpanelStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
+        region_name: str,
         start_date: Union[date, str] = None,
         end_date: Union[date, str] = None,
         date_window_size: int = 30,  # in days
@@ -76,6 +80,7 @@ class MixpanelStream(HttpStream, ABC):
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
+        self.region_name = region_name
 
         super().__init__(authenticator=authenticator)
 
@@ -692,7 +697,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     cursor_field = "time"
     reqs_per_hour_limit = 60  # 1 query per minute
 
-    url_base = "https://data.mixpanel.com/api/2.0/"
+    url_base = "https://data-eu.mixpanel.com/api/2.0/"
 
     def path(self, **kwargs) -> str:
         return "export"
@@ -716,6 +721,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         """
+        if response.text == "terminated early\n":
+            # no data available
+            self.logger.warn(f"Couldn't fetch data from Export API. Response: {response.text}")
+            return []
 
         for record_line in response.text.splitlines():
             record = json.loads(record_line)
@@ -794,7 +803,7 @@ class SourceMixpanel(AbstractSource):
         try:
             response = requests.request(
                 "GET",
-                url="https://mixpanel.com/api/2.0/funnels/list",
+                url="https://eu.mixpanel.com/api/2.0/funnels/list",
                 headers={
                     "Accept": "application/json",
                     **authenticator.get_auth_header(),
