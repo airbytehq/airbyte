@@ -407,7 +407,7 @@ Other progress on connectors:
 
 ## 03/08/2021
 
-* 1 new source connector: [**MongoDB**](https://docs.airbyte.io/integrations/sources/mongodb)
+* 1 new source connector: **MongoDB**
 * **Google Analytics**: Support chunked syncs to avoid sampling
 * **AppStore**: fix bug where the catalog was displayed incorrectly
 
