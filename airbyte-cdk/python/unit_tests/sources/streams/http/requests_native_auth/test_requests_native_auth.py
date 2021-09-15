@@ -32,32 +32,34 @@ from requests import Response
 LOGGER = logging.getLogger(__name__)
 
 
-def test_token_authenticator(mocker):
+def test_token_authenticator():
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token = TokenAuthenticator(token="test-token")
-    header1 = token.get_auth_header()
-    header2 = token.get_auth_header()
+    token_auth = TokenAuthenticator(token="test-token")
+    header1 = token_auth.get_auth_header()
+    header2 = token_auth.get_auth_header()
 
-    mocker.patch.object(requests.sessions.Session, "send", new=lambda self, request, **kwargs: request.headers)
-    request_headers = requests.request(url="https://fake_url", method="FAKE", auth=token)
+    prepared_request = requests.PreparedRequest()
+    prepared_request.headers = {}
+    token_auth(prepared_request)
 
-    assert all(item in request_headers.items() for item in header1.items())
+    assert {"Authorization": "Bearer test-token"} == prepared_request.headers
     assert {"Authorization": "Bearer test-token"} == header1
     assert {"Authorization": "Bearer test-token"} == header2
 
 
-def test_multiple_token_authenticator(mocker):
-    token = MultipleTokenAuthenticator(tokens=["token1", "token2"])
-    header1 = token.get_auth_header()
-    header2 = token.get_auth_header()
-    header3 = token.get_auth_header()
+def test_multiple_token_authenticator():
+    multiple_token_auth = MultipleTokenAuthenticator(tokens=["token1", "token2"])
+    header1 = multiple_token_auth.get_auth_header()
+    header2 = multiple_token_auth.get_auth_header()
+    header3 = multiple_token_auth.get_auth_header()
 
-    mocker.patch.object(requests.sessions.Session, "send", new=lambda self, request, **kwargs: request.headers)
-    request_headers = requests.request(url="https://fake_url", method="FAKE", auth=token)
+    prepared_request = requests.PreparedRequest()
+    prepared_request.headers = {}
+    multiple_token_auth(prepared_request)
 
-    assert all(item in request_headers.items() for item in header2.items())
+    assert {"Authorization": "Bearer token2"} == prepared_request.headers
     assert {"Authorization": "Bearer token1"} == header1
     assert {"Authorization": "Bearer token2"} == header2
     assert {"Authorization": "Bearer token1"} == header3
@@ -153,8 +155,10 @@ class TestOauth2Authenticator:
             client_secret=TestOauth2Authenticator.client_secret,
             refresh_token=TestOauth2Authenticator.refresh_token,
         )
-        mocker.patch.object(oauth, "refresh_access_token", return_value=("access_token", 100))
-        mocker.patch.object(requests.sessions.Session, "send", new=lambda s, request, **kwargs: request.headers)
-        request_headers = requests.request(url="https://fake_url", method="FAKE", auth=oauth)
 
-        assert all(item in request_headers.items() for item in oauth.get_auth_header().items())
+        mocker.patch.object(Oauth2Authenticator, "refresh_access_token", return_value=("access_token", 1000))
+        prepared_request = requests.PreparedRequest()
+        prepared_request.headers = {}
+        oauth(prepared_request)
+
+        assert {"Authorization": "Bearer access_token"} == prepared_request.headers
