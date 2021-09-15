@@ -117,6 +117,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Chargify (Keen)](./destinations/keen.md)| Alpha |
+|[Databricks](./destinations/databricks.md) | Beta |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Kafka](./destinations/kafka.md)| Alpha |
