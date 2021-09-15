@@ -217,7 +217,7 @@ server:
   ##
   podAnnotations: {}
 
-  ## Configure extra options for Serer containers' liveness and readiness probes
+  ## Configure extra options for the server containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
   ## @param server.livenessProbe.enabled Enable livenessProbe on the server
   ## @param server.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
