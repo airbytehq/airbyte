@@ -31,9 +31,10 @@ import java.util.UUID;
 
 public interface OAuthFlowImplementation {
 
-  String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException;
+  String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl, String state) throws IOException, ConfigNotFoundException;
 
-  String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException;
+  String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl, String state)
+      throws IOException, ConfigNotFoundException;
 
   Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
       throws IOException, ConfigNotFoundException;

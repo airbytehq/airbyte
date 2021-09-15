@@ -58,6 +58,7 @@ public class GoogleOAuthFlowTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowTest.class);
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String REDIRECT_URL = "https://airbyte.io";
+  private static final String STATE = "state";
   private static final String SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
 
   private HttpClient httpClient;
@@ -79,8 +80,8 @@ public class GoogleOAuthFlowTest {
 
   @Test
   public void testGetConsentUrlEmptyOAuthParameters() {
-    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE));
+    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE));
   }
 
   @Test
@@ -95,8 +96,8 @@ public class GoogleOAuthFlowTest {
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.emptyObject())));
-    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE));
+    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE));
   }
 
   @Test
@@ -108,10 +109,10 @@ public class GoogleOAuthFlowTest {
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", getClientId())
             .build()))));
-    final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE);
     final String expectedSourceUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?state=%s&client_id=%s&redirect_uri=%s&scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent",
-        definitionId,
+        STATE,
         getClientId(),
         urlEncode(REDIRECT_URL),
         urlEncode(SCOPE));
@@ -131,10 +132,10 @@ public class GoogleOAuthFlowTest {
     // It would be better to make this comparison agnostic of the order of query params but the URI
     // class' equals() method
     // considers URLs with different qparam orders different URIs..
-    final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE);
     final String expectedDestinationUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?state=%s&client_id=%s&redirect_uri=%s&scope=%s&access_type=offline&include_granted_scopes=true&response_type=code&prompt=consent",
-        definitionId,
+        STATE,
         getClientId(),
         urlEncode(REDIRECT_URL),
         urlEncode(SCOPE));

@@ -3001,6 +3001,9 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        state:
+          description: Optional State to include in the consent URL
+          type: string
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -3014,6 +3017,9 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         redirectUrl:
           description: The url to redirect to after getting the user consent
+          type: string
+        state:
+          description: Optional State to include in the consent URL
           type: string
     OAuthConsentRead:
       type: object

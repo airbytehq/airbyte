@@ -59,6 +59,7 @@ public class GoogleOAuthFlowIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowIntegrationTest.class);
   private static final String REDIRECT_URL = "http://localhost/code";
+  private static final String STATE = "state";
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private ConfigRepository configRepository;
@@ -102,7 +103,7 @@ public class GoogleOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, STATE);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...

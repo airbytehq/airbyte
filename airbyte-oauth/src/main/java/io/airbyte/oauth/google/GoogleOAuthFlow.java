@@ -86,22 +86,23 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
   }
 
   @Override
-  public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl, String state)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return getConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
+    return getConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, state);
   }
 
   @Override
-  public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
+  public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl, String state)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return getConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
+    return getConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, state);
   }
 
-  private String getConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
+  private String getConsentUrl(UUID definitionId, String clientId, String redirectUrl, String state) {
     try {
       URIBuilder uriBuilder = new URIBuilder(CONSENT_URL)
-          .addParameter("state", definitionId.toString())
+          .addParameter("state", state)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl);
       for (Map.Entry<String, String> queryParameter : defaultQueryParams.entrySet()) {

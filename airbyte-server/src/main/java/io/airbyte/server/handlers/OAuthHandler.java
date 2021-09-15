@@ -61,7 +61,8 @@ public class OAuthHandler {
     return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
         sourceDefinitionIdRequestBody.getWorkspaceId(),
         sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-        sourceDefinitionIdRequestBody.getRedirectUrl()));
+        sourceDefinitionIdRequestBody.getRedirectUrl(),
+        sourceDefinitionIdRequestBody.getState()));
   }
 
   public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
@@ -71,7 +72,8 @@ public class OAuthHandler {
     return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
         destinationDefinitionIdRequestBody.getWorkspaceId(),
         destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-        destinationDefinitionIdRequestBody.getRedirectUrl()));
+        destinationDefinitionIdRequestBody.getRedirectUrl(),
+        destinationDefinitionIdRequestBody.getState()));
   }
 
   public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest oauthSourceRequestBody)
