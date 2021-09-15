@@ -2560,7 +2560,7 @@ RESERVED_KEYWORDS = {
     DestinationType.SNOWFLAKE.value: SNOWFLAKE,
     DestinationType.MYSQL.value: MYSQL,
     DestinationType.ORACLE.value: ORACLE,
-    DestinationType.ORACLE.value: MSSQL,
+    DestinationType.MSSQL.value: MSSQL,
 }
 
 

@@ -274,9 +274,11 @@ class TransformConfig:
     def transform_mssql(config: Dict[str, Any]):
         print("transform_mssql")
         # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
+        driver_str = "{'ODBC Driver 17 for SQL Server'}"
+        # driver = f'DRIVER={driver_str};SERVER="{config["host"]}";DATABASE="{config["database"]}";UID="{config["username"]}";PWD="{config["password"]}"'
         dbt_config = {
             "type": "sqlserver",
-            "driver": "ODBC Driver 17 for SQL Server",
+            "driver": driver_str,
             "server": config["host"],
             "port": config["port"],
             "schema": config["schema"],
@@ -284,6 +286,7 @@ class TransformConfig:
             "user": config["username"],
             "password": config["password"],
             "authentication": "ActiveDirectoryPassword",
+            # "trusted_connection": True,
         }
         return dbt_config
 

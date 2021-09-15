@@ -4,10 +4,21 @@ USER root
 WORKDIR /tmp
 RUN apt-get update && apt-get install -y \
     wget \
+    curl \
     unzip \
     libaio-dev \
     libaio1 \
-    unixodbc-dev
+    gnupg \
+    gnupg1 \
+    gnupg2
+# Install MS SQL Server dependencies
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
+RUN apt-get update && ACCEPT_EULA=Y apt-get install -y \
+    unixodbc-dev \
+    msodbcsql17 \
+    mssql-tools
+# Install Oracle dependencies
 RUN mkdir -p /opt/oracle
 RUN wget https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip
 RUN unzip instantclient-basic-linux.x64-19.6.0.0.0dbru.zip -d /opt/oracle
@@ -17,7 +28,7 @@ ENV TNS_ADMIN /opt/oracle/instantclient_19_6/network/admin
 RUN pip install cx_Oracle
 
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
-
+# Install SSH Tunneling dependencies 
 RUN apt-get update && apt-get install -y jq sshpass
 
 WORKDIR /airbyte
@@ -29,6 +40,7 @@ COPY normalization ./normalization
 COPY setup.py .
 COPY dbt-project-template/ ./dbt-template/
 
+# Install python dependencies
 WORKDIR /airbyte/base_python_structs
 RUN pip install .
 
@@ -47,5 +59,5 @@ WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.44
+LABEL io.airbyte.version=0.1.45
 LABEL io.airbyte.name=airbyte/normalization
