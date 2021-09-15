@@ -1184,6 +1184,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideSourceOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/source_oauths/get_consent_url:
     post:
       tags:
@@ -1276,6 +1299,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideDestinationOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1618,52 +1664,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-  /v1/source_oauths/oauth_params/create:
-    post:
-      tags:
-        - oauth
-      summary: >
-        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
-        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
-        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
-        about these variables.
-      operationId: setInstancewideSourceOauthParams
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-  /v1/destination_oauths/oauth_params/create:
-    post:
-      tags:
-        - oauth
-      summary: >
-        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
-        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
-        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
-        about these variables.
-      operationId: setInstancewideDestinationOauthParams
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
 components:
@@ -2991,20 +2991,30 @@ components:
       type: object
       required:
         - sourceDefinitionId
+        - workspaceId
+        - redirectUrl
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the user consent
+          type: string
     DestinationOauthConsentRequest:
       type: object
       required:
         - destinationDefinitionId
+        - workspaceId
+        - redirectUrl
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the user consent
+          type: string
     OAuthConsentRead:
       type: object
       required:
@@ -3016,11 +3026,15 @@ components:
       type: object
       required:
         - sourceDefinitionId
+        - workspaceId
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given.
+          type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
@@ -3029,11 +3043,15 @@ components:
       type: object
       required:
         - destinationDefinitionId
+        - workspaceId
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given.
+          type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object

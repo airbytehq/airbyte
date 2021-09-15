@@ -2,6 +2,6 @@
   "destinationDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
   "name": "S3",
   "dockerRepository": "airbyte/destination-s3",
-  "dockerImageTag": "0.1.10",
+  "dockerImageTag": "0.1.11",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/s3"
 }

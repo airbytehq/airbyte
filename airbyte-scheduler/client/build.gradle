@@ -4,10 +4,13 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-config:models')
+    implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
     // todo (cgardens) - remove this dep. just needs temporal client.
     implementation project(':airbyte-workers')
+
+    compile 'com.google.cloud:google-cloud-storage:2.0.1'
 
 }
