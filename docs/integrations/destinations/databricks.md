@@ -18,7 +18,7 @@ Due to legal reasons, this is currently a private connector that is only availab
 | Namespaces | ✅ | |
 
 ## Data Source
-Databricks supports various cloud storage as the data source ([documentation](https://docs.databricks.com/data/data-sources/index.html)). Currently, only Amazon S3 is supported.
+Databricks supports various cloud storage as the [data source](https://docs.databricks.com/data/data-sources/index.html). Currently, only Amazon S3 is supported.
 
 ## Configuration
 
