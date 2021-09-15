@@ -34,6 +34,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -44,6 +45,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.http.client.utils.URIBuilder;
 
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 

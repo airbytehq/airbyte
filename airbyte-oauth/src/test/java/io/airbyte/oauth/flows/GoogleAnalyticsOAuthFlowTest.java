@@ -40,8 +40,10 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -128,6 +130,9 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", getClientId())
             .build()))));
+    // It would be better to make this comparison agnostic of the order of query params but the URI
+    // class' equals() method
+    // considers URLs with different qparam orders different URIs..
     final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
@@ -202,5 +207,4 @@ public class GoogleAnalyticsOAuthFlowTest {
       return credentialsJson.get("client_id").asText();
     }
   }
-
 }
