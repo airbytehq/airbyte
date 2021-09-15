@@ -6,6 +6,17 @@ It can take a while for Airbyte to load data into your destination. Some sources
 data we can sync in a given time. Large amounts of data in your source can also make the initial sync take longer. You can check your
 sync status in your connection detail page that you can access through the destination detail page or the source one.
 
+## **Why my final tables are being recreated everytime?**
+
+Airbyte ingest data into raw tables and apply the process of normalization if you selected in the connection page.
+The normalization runs a full refresh each sync and for some destinations like Snowflake, Redshift, Bigquery this means consume
+resources and more costs. You need to pay attention in what frequency do you want to retrieve your data to not having problems with it.
+One example is: create a connection to sync every 5 minutes with incremental mode will retrive new records into raw tables but apply normalization
+in the all data every sync! If you have tons of data you need to verify if this is right frequency to update your destination.
+
+There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4286) to implement normalization using incremental, this will reduce
+costs and resources in your destination.
+
 ## **What happens if a sync fails?**
 
 You won't lose data when a sync fails, however, no data will be added or updated in your destination.
