@@ -133,6 +133,7 @@
   * [Destinations](integrations/destinations/README.md)
     * [AzureBlobStorage](integrations/destinations/azureblobstorage.md)
     * [BigQuery](integrations/destinations/bigquery.md)
+    * [Databricks](integrations/destinations/databricks.md)
     * [DynamoDB](integrations/destinations/dynamodb.md)
     * [Chargify](integrations/destinations/keen.md)
     * [Google Cloud Storage (GCS)](integrations/destinations/gcs.md)

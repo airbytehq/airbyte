@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Coverage report</title>
+    <link rel="icon" sizes="32x32" href="favicon_32.png">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.ba-throttle-debounce.min.js"></script>
+    <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="coverage_html.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(coverage.index_ready);
+    </script>
+</head>
+<body class="indexfile">
+<div id="header">
+    <div class="content">
+        <h1>Coverage report:
+            <span class="pc_cov">40%</span>
+        </h1>
+        <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
+        <form id="filter_container">
+            <input id="filter" type="text" value="" placeholder="filter..." />
+        </form>
+    </div>
+</div>
+<div class="help_panel">
+    <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
+    <p class="legend">Hot-keys on this page</p>
+    <div>
+    <p class="keyhelp">
+        <span class="key">n</span>
+        <span class="key">s</span>
+        <span class="key">m</span>
+        <span class="key">x</span>
+        <span class="key">c</span> &nbsp; change column sorting
+    </p>
+    </div>
+</div>
+<div id="index">
+    <table class="index">
+        <thead>
+            <tr class="tablehead" title="Click to sort">
+                <th class="name left headerSortDown shortkey_n">Module</th>
+                <th class="shortkey_s">statements</th>
+                <th class="shortkey_m">missing</th>
+                <th class="shortkey_x">excluded</th>
+                <th class="right shortkey_c">coverage</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr class="total">
+                <td class="name left">Total</td>
+                <td>660</td>
+                <td>393</td>
+                <td>0</td>
+                <td class="right" data-ratio="267 660">40%</td>
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr class="file">
+                <td class="name left"><a href="base_python___init___py.html">base_python/__init__.py</a></td>
+                <td>13</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="13 13">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_catalog_helpers_py.html">base_python/catalog_helpers.py</a></td>
+                <td>10</td>
+                <td>6</td>
+                <td>0</td>
+                <td class="right" data-ratio="4 10">40%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk___init___py.html">base_python/cdk/__init__.py</a></td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 0">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_abstract_source_py.html">base_python/cdk/abstract_source.py</a></td>
+                <td>83</td>
+                <td>59</td>
+                <td>0</td>
+                <td class="right" data-ratio="24 83">29%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams___init___py.html">base_python/cdk/streams/__init__.py</a></td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 0">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_auth___init___py.html">base_python/cdk/streams/auth/__init__.py</a></td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 0">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_auth_core_py.html">base_python/cdk/streams/auth/core.py</a></td>
+                <td>8</td>
+                <td>1</td>
+                <td>0</td>
+                <td class="right" data-ratio="7 8">88%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_auth_jwt_py.html">base_python/cdk/streams/auth/jwt.py</a></td>
+                <td>5</td>
+                <td>5</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 5">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_auth_oauth_py.html">base_python/cdk/streams/auth/oauth.py</a></td>
+                <td>37</td>
+                <td>26</td>
+                <td>0</td>
+                <td class="right" data-ratio="11 37">30%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_auth_token_py.html">base_python/cdk/streams/auth/token.py</a></td>
+                <td>9</td>
+                <td>4</td>
+                <td>0</td>
+                <td class="right" data-ratio="5 9">56%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_core_py.html">base_python/cdk/streams/core.py</a></td>
+                <td>63</td>
+                <td>32</td>
+                <td>0</td>
+                <td class="right" data-ratio="31 63">49%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_exceptions_py.html">base_python/cdk/streams/exceptions.py</a></td>
+                <td>10</td>
+                <td>2</td>
+                <td>0</td>
+                <td class="right" data-ratio="8 10">80%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_http_py.html">base_python/cdk/streams/http.py</a></td>
+                <td>67</td>
+                <td>33</td>
+                <td>0</td>
+                <td class="right" data-ratio="34 67">51%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_streams_rate_limiting_py.html">base_python/cdk/streams/rate_limiting.py</a></td>
+                <td>30</td>
+                <td>14</td>
+                <td>0</td>
+                <td class="right" data-ratio="16 30">53%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_utils___init___py.html">base_python/cdk/utils/__init__.py</a></td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 0">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_cdk_utils_casing_py.html">base_python/cdk/utils/casing.py</a></td>
+                <td>4</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="4 4">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_client_py.html">base_python/client.py</a></td>
+                <td>56</td>
+                <td>33</td>
+                <td>0</td>
+                <td class="right" data-ratio="23 56">41%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_entrypoint_py.html">base_python/entrypoint.py</a></td>
+                <td>70</td>
+                <td>56</td>
+                <td>0</td>
+                <td class="right" data-ratio="14 70">20%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_integration_py.html">base_python/integration.py</a></td>
+                <td>52</td>
+                <td>25</td>
+                <td>0</td>
+                <td class="right" data-ratio="27 52">52%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_logger_py.html">base_python/logger.py</a></td>
+                <td>33</td>
+                <td>19</td>
+                <td>0</td>
+                <td class="right" data-ratio="14 33">42%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_schema_helpers_py.html">base_python/schema_helpers.py</a></td>
+                <td>56</td>
+                <td>41</td>
+                <td>0</td>
+                <td class="right" data-ratio="15 56">27%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="base_python_source_py.html">base_python/source.py</a></td>
+                <td>51</td>
+                <td>34</td>
+                <td>0</td>
+                <td class="right" data-ratio="17 51">33%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="main_dev_py.html">main_dev.py</a></td>
+                <td>3</td>
+                <td>3</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 3">0%</td>
+            </tr>
+        </tbody>
+    </table>
+    <p id="no_rows">
+        No items found using the specified filter.
+    </p>
+</div>
+<div id="footer">
+    <div class="content">
+        <p>
+            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
+            created at 2021-09-15 11:00 +0200
+        </p>
+    </div>
+</div>
+</body>
+</html>
