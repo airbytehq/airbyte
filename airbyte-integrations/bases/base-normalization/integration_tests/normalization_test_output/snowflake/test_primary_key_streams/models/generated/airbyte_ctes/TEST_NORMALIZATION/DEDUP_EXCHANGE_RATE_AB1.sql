@@ -9,7 +9,7 @@ select
     {{ json_extract_scalar('_airbyte_data', ['HKD_special___characters'], ['HKD_special___characters']) }} as HKD_SPECIAL___CHARACTERS,
     {{ json_extract_scalar('_airbyte_data', ['NZD'], ['NZD']) }} as NZD,
     {{ json_extract_scalar('_airbyte_data', ['USD'], ['USD']) }} as USD,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }} as table_alias
 -- DEDUP_EXCHANGE_RATE
 
