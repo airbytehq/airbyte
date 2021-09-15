@@ -30,12 +30,12 @@ import sys
 import tempfile
 from typing import Iterable, List
 
-from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.logger import get_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
-logger = AirbyteLogger()
+logger = get_logger()
 
 
 class AirbyteEntrypoint(object):
