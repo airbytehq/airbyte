@@ -38,8 +38,7 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/lever-hiring)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_lever_hiring/spec.json` file.
+**If you are a community contributor**, get the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_lever_hiring/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
