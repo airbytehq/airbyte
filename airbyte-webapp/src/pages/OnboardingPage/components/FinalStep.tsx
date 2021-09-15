@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useResource, useSubscription } from "rest-hooks";
@@ -10,7 +10,9 @@ import { H1, Button } from "components/base";
 import UseCaseBlock from "./UseCaseBlock";
 import ConnectionResource from "core/resources/Connection";
 import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
-// import Status from "core/statuses";
+import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
+import Status from "core/statuses";
+import useWorkspace from "hooks/services/useWorkspace";
 
 type FinalStepProps = {
   useCases?: { id: string; data: React.ReactNode }[];
@@ -44,6 +46,8 @@ const FinalStep: React.FC<FinalStepProps> = ({
   onSync,
   onFinishOnboarding,
 }) => {
+  const { sendFeedback } = useWorkspace();
+  const { feedbackPassed, passFeedback } = useOnboardingService();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId,
   });
@@ -51,6 +55,25 @@ const FinalStep: React.FC<FinalStepProps> = ({
     connectionId: connectionId,
   });
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (
+      connection.latestSyncJobStatus === Status.SUCCEEDED &&
+      !feedbackPassed
+    ) {
+      setIsOpen(true);
+    }
+  }, [connection.latestSyncJobStatus, feedbackPassed]);
+
+  const onSendFeedback = (feedback: string) => {
+    sendFeedback({
+      feedback,
+      source: connection.source,
+      destination: connection.destination,
+    });
+    passFeedback();
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -68,7 +91,10 @@ const FinalStep: React.FC<FinalStepProps> = ({
           img="/videoCover.png"
         />
       </Videos>
-      <ProgressBlock connection={connection} onSync={onSync} />
+      {!feedbackPassed && (
+        <ProgressBlock connection={connection} onSync={onSync} />
+      )}
+
       <Title bold>
         <FormattedMessage
           id="onboarding.useCases"
@@ -91,7 +117,12 @@ const FinalStep: React.FC<FinalStepProps> = ({
         <FormattedMessage id="onboarding.closeOnboarding" />
       </CloseButton>
 
-      {isOpen ? <SyncCompletedModal onClose={() => setIsOpen(false)} /> : null}
+      {isOpen ? (
+        <SyncCompletedModal
+          onClose={() => setIsOpen(false)}
+          onPassFeedback={onSendFeedback}
+        />
+      ) : null}
     </>
   );
 };

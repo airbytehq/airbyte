@@ -6,6 +6,7 @@ import GoodIcon from "./GoodIcon";
 
 type FeedbackButtonProps = {
   isBad?: boolean;
+  onClick: () => void;
 };
 
 const ButtonView = styled.div<FeedbackButtonProps>`
@@ -21,9 +22,11 @@ const ButtonView = styled.div<FeedbackButtonProps>`
   padding-top: ${({ isBad }) => (isBad ? 40 : 32)}px;
 `;
 
-const FeedbackButton: React.FC<FeedbackButtonProps> = ({ isBad }) => {
+const FeedbackButton: React.FC<FeedbackButtonProps> = ({ isBad, onClick }) => {
   return (
-    <ButtonView isBad={isBad}>{isBad ? <BadIcon /> : <GoodIcon />}</ButtonView>
+    <ButtonView isBad={isBad} onClick={onClick}>
+      {isBad ? <BadIcon /> : <GoodIcon />}
+    </ButtonView>
   );
 };
 

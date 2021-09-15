@@ -24,17 +24,18 @@ const FeedbackButtons = styled.div`
 
 type ModalBodyProps = {
   onClose: () => void;
+  onPassFeedback: (feedback: string) => void;
 };
 
-const ModalBody: React.FC<ModalBodyProps> = ({ onClose }) => {
+const ModalBody: React.FC<ModalBodyProps> = ({ onClose, onPassFeedback }) => {
   return (
     <Body>
       <H3 center bold parentColor>
         <FormattedMessage id="onboarding.checkData" />
       </H3>
       <FeedbackButtons>
-        <FeedbackButton isBad />
-        <FeedbackButton />
+        <FeedbackButton isBad onClick={() => onPassFeedback("dislike")} />
+        <FeedbackButton onClick={() => onPassFeedback("like")} />
       </FeedbackButtons>
       <Button secondary onClick={onClose}>
         <FormattedMessage id="onboarding.skipNow" />

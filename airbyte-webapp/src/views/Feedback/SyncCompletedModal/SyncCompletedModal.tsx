@@ -6,13 +6,17 @@ import ModalBody from "./components/ModalBody";
 
 type SyncCompletedModalProps = {
   onClose: () => void;
+  onPassFeedback: (feedback: string) => void;
 };
 
-const SyncCompletedModal: React.FC<SyncCompletedModalProps> = ({ onClose }) => {
+const SyncCompletedModal: React.FC<SyncCompletedModalProps> = ({
+  onClose,
+  onPassFeedback,
+}) => {
   return (
     <Modal>
       <ModalHeader />
-      <ModalBody onClose={onClose} />
+      <ModalBody onClose={onClose} onPassFeedback={onPassFeedback} />
     </Modal>
   );
 };
