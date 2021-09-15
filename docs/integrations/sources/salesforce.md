@@ -45,6 +45,8 @@ If you log in using at [https://login.salesforce.com](https://login.salesforce.c
 
 ## Streams
 
+**Note**: The connector supports reading not only standard streams (listed below), but also reading `Custom Objects`.
+
 List of available streams:
 
 * AIApplication
