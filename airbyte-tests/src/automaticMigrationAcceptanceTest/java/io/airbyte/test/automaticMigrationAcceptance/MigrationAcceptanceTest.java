@@ -51,14 +51,12 @@ import io.airbyte.api.client.model.WorkspaceRead;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -79,15 +77,7 @@ public class MigrationAcceptanceTest {
 
   @Test
   public void testAutomaticMigration() throws Exception {
-    // default to version in env file but can override it.
-    final String targetVersion;
-    if (System.getenv("MIGRATION_TEST_VERSION") != null) {
-      targetVersion = System.getenv("MIGRATION_TEST_VERSION");
-    } else {
-      final Properties prop = new Properties();
-      prop.load(new FileInputStream(ENV_FILE));
-      targetVersion = prop.getProperty("VERSION");
-    }
+    final String targetVersion = "0.29.16-alpha";
     LOGGER.info("Using version: {} as target version", targetVersion);
 
     firstRun();
@@ -95,13 +85,7 @@ public class MigrationAcceptanceTest {
   }
 
   private Consumer<String> logConsumerForServer(Set<String> expectedLogs) {
-    return logLine -> expectedLogs.removeIf(entry -> {
-      if (logLine.contains("Migrating from version")) {
-        System.out.println("logLine = " + logLine);
-        System.out.println("logLine = " + logLine);
-      }
-      return logLine.contains(entry);
-    });
+    return logLine -> expectedLogs.removeIf(logLine::contains);
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -133,7 +117,6 @@ public class MigrationAcceptanceTest {
     return AirbyteVersion.versionWithoutPatch(targetVersion).getVersion();
   }
 
-  @SuppressWarnings("UnstableApiUsage")
   private void secondRun(String targetVersion) throws Exception {
     final Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: " + targetVersion);
@@ -145,7 +128,8 @@ public class MigrationAcceptanceTest {
     logsToExpect.add("Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.");
     logsToExpect.add("Migrations complete. Now on version: " + targetVersionWithoutPatch(targetVersion));
 
-    final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose.yaml").toURI()))
+    final File dockerComposeFile = Path.of(System.getProperty("user.dir")).getParent().resolve("docker-compose.yaml").toFile();
+    final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(dockerComposeFile)
         .setEnv(ENV_FILE)
         // override to use test mounts.
         .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
@@ -153,6 +137,7 @@ public class MigrationAcceptanceTest {
         .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
         .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
         .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
+        .setEnvVariable("VERSION", targetVersion)
         .setLogListener("server", logConsumerForServer(logsToExpect))
         .build();
 
