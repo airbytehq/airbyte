@@ -193,7 +193,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     if (oauthConfig.get("client_id") != null) {
       return oauthConfig.get("client_id").asText();
     } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_id' for Google OAuth Flow.");
+      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
     }
   }
 
@@ -207,7 +207,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     if (oauthConfig.get("client_secret") != null) {
       return oauthConfig.get("client_secret").asText();
     } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_secret' for Google OAuth Flow.");
+      throw new IllegalArgumentException("Undefined parameter 'client_secret' necessary for the OAuth Flow.");
     }
   }
 

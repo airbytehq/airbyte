@@ -25,10 +25,12 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,6 +45,11 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
   public FacebookMarketingOAuthFlow(ConfigRepository configRepository) {
     super(configRepository);
+  }
+
+  @VisibleForTesting
+  FacebookMarketingOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @Override

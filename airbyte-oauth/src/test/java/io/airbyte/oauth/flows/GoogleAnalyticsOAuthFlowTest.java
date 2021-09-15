@@ -37,7 +37,6 @@ import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -62,7 +61,7 @@ public class GoogleAnalyticsOAuthFlowTest {
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
-  private BaseOAuthFlow googleOAuthFlow;
+  private GoogleAnalyticsOAuthFlow googleAnalyticsOAuthFlow;
 
   private UUID workspaceId;
   private UUID definitionId;
@@ -71,7 +70,7 @@ public class GoogleAnalyticsOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository, httpClient);
+    googleAnalyticsOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository, httpClient);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -79,8 +78,8 @@ public class GoogleAnalyticsOAuthFlowTest {
 
   @Test
   public void testGetConsentUrlEmptyOAuthParameters() {
-    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(ConfigNotFoundException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class, () -> googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class, () -> googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
   }
 
   @Test
@@ -95,8 +94,8 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.emptyObject())));
-    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(IllegalArgumentException.class, () -> googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(IllegalArgumentException.class, () -> googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(IllegalArgumentException.class, () -> googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
   }
 
   @Test
@@ -108,7 +107,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", getClientId())
             .build()))));
-    final String actualSourceUrl = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String actualSourceUrl = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
         getClientId(),
@@ -131,7 +130,7 @@ public class GoogleAnalyticsOAuthFlowTest {
     // It would be better to make this comparison agnostic of the order of query params but the URI
     // class' equals() method
     // considers URLs with different qparam orders different URIs..
-    final String actualDestinationUrl = googleOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String actualDestinationUrl = googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedDestinationUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
         getClientId(),
@@ -153,7 +152,7 @@ public class GoogleAnalyticsOAuthFlowTest {
             .put("client_secret", "test_client_secret")
             .build()))));
     final Map<String, Object> queryParams = Map.of();
-    assertThrows(IOException.class, () -> googleOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL));
+    assertThrows(IOException.class, () -> googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL));
   }
 
   @Test
@@ -166,13 +165,12 @@ public class GoogleAnalyticsOAuthFlowTest {
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build()))));
-    final String expectedQueryParams = Jsons.serialize(Map.of(
-        "refresh_token", "refresh_token_response"));
+    final String expectedQueryParams = Jsons.serialize(Map.of("refresh_token", "refresh_token_response"));
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(expectedQueryParams);
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
   }
 
@@ -186,13 +184,13 @@ public class GoogleAnalyticsOAuthFlowTest {
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build()))));
-    final String expectedQueryParams = Jsons.serialize(Map.of(
-        "refresh_token", "refresh_token_response"));
+    final String expectedQueryParams = Jsons.serialize(Map.of("refresh_token", "refresh_token_response"));
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(expectedQueryParams);
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams = googleAnalyticsOAuthFlow
+        .completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
   }
 
