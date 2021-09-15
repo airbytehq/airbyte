@@ -26,14 +26,19 @@
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import json
+import csv
+import pandas as pd
+import numbers
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode, AirbyteMessage, AirbyteRecordMessage, Type
 from datetime import datetime, timedelta
-import json
-import csv
+from io import StringIO
+from dateutil.parser import parse
 
 
 class HttpRequest(HttpStream):
@@ -80,15 +85,65 @@ class HttpRequest(HttpStream):
             return self._body
         return None
 
+    def _make_request(self):
+        http_method = self._http_method.lower()
+        url = self.url_base
+        headers = self._headers
+        body = self._body
+
+        if http_method == "get":
+            r = requests.get(url, headers=headers, json=body)
+        elif http_method == "post":
+            r = requests.post(url, headers=headers, json=body)
+        else:
+            raise Exception(f"Did not recognize http_method: {http_method}")
+
+        return r
+
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+
+        resp = self._make_request()
+        if resp.status_code == 200:
+            if self._response_format == "csv":
+                data = resp.content
+                df = pd.read_csv(StringIO(data.decode('utf-8')), nrows=3, sep=self._response_delimiter)
+                headers = df.columns.tolist()
+            elif self._response_format == "json":
+                data = json.loads(resp.content)
+                df = pd.DataFrame.from_dict(data)
+                headers = df.columns.tolist()
+
+        properties = {}
+        for header in headers:
+            _type = "string"
+            try:
+                if isinstance(df.loc[0, header], numbers.Number):
+                    _type = "number"
+                elif isinstance(df.loc[0, header], dict):
+                    _type = "object"
+
+                parse(df.loc[0, header])
+                _type = "date"
+            except:
+                pass
+
+            properties[header] = {"description": "", "type": _type}
+
+        new_schema = schema
+        new_schema["required"] = []
+        new_schema["properties"] = properties
+
+        return new_schema
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if self._response_format == "csv":
             decoded = response.content.decode('utf-8')
             data = csv.DictReader(decoded.splitlines(), delimiter=self._response_delimiter)
-            for row in data:
-                record = AirbyteRecordMessage(stream="http_request", data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
-                yield AirbyteMessage(type=Type.RECORD, record=record)
+            yield from data
         elif self._response_format == "json":
-            yield response.json()
+            data = json.loads(response.content)
+            yield from data
         else:
             raise Exception("Invalid response format")
 
@@ -197,6 +252,7 @@ class SourceHttpRequest(AbstractSource):
 
         except Exception as e:
             raise e
+
         return {
             "url": url,
             "http_method": config.get("http_method", "GET"),
@@ -208,4 +264,5 @@ class SourceHttpRequest(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         parsed_config = self._parse_config(config)
-        return [HttpRequest(parsed_config["url"], parsed_config["http_method"], parsed_config.get("headers"), parsed_config.get("body"), parsed_config.get("response_format"), parsed_config.get("response_delimiter"))]
+        return [HttpRequest(parsed_config["url"], parsed_config["http_method"], parsed_config.get("headers"), parsed_config.get("body"), parsed_config.get("response_format"),
+                            parsed_config.get("response_delimiter"))]

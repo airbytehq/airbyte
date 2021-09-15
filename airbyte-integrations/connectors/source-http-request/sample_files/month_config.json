@@ -1,1 +1,1 @@
-{"url": "http://dados.cvm.gov.br/dados/FI/DOC/INF_DIARIO/DADOS/inf_diario_fi_{month_year}.csv", "http_method": "GET", "response_format": "csv", "params": "[{\"type\": \"date\", \"unit\": \"month\", \"format\": \"%Y%m\", \"variable\": \"month_year\", \"value\": \"current\"}]"}
+{"url": "http://dados.cvm.gov.br/dados/FI/DOC/INF_DIARIO/DADOS/inf_diario_fi_{month_year}.csv", "http_method": "GET", "response_format": "csv", "params": "[{\"type\": \"date\", \"unit\": \"month\", \"format\": \"%Y%m\", \"variable\": \"month_year\", \"value\": \"current\"}]", "response_delimiter": ";"}
