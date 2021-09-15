@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.29.15-alpha",
+  "version": "0.29.17-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -21,6 +21,10 @@
     "@papercups-io/chat-widget": "^1.1.5",
     "@papercups-io/storytime": "^1.0.6",
     "@rest-hooks/legacy": "^2.0.5",
+    "@sentry/react": "^6.11.0",
+    "@sentry/tracing": "^6.11.0",
+    "@storybook/preset-create-react-app": "^3.2.0",
+    "@storybook/react": "^6.3.2",
     "dayjs": "^1.8.35",
     "firebase": "^9.0.1",
     "flat": "^5.0.2",

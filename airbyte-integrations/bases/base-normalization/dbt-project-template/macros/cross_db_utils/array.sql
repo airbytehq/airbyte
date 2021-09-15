@@ -20,6 +20,10 @@
     cross join unnest({{ array_col }}) as {{ array_col }}
 {%- endmacro %}
 
+{% macro oracle__cross_join_unnest(stream_name, array_col) -%}
+    {% do exceptions.warn("Normalization does not support unnesting for Oracle yet.") %}
+{%- endmacro %}
+
 {% macro postgres__cross_join_unnest(stream_name, array_col) -%}
     cross join jsonb_array_elements(
         case jsonb_typeof({{ array_col }})
@@ -64,6 +68,10 @@
 
 {% macro mysql__unnested_column_value(column_col) -%}
     _airbyte_nested_data
+{%- endmacro %}
+
+{% macro oracle__unnested_column_value(column_col) -%}
+    {{ column_col }}
 {%- endmacro %}
 
 {# unnest_cte -------------------------------------------------     #}

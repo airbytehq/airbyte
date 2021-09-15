@@ -27,7 +27,7 @@ import urllib.parse as urlparse
 from abc import ABC
 from collections import deque
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence, Union
 
 import backoff
 import pendulum
@@ -46,16 +46,19 @@ from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url, params):
-    parsed_url = urlparse.urlparse(url)
-    res_query = []
-    for q in parsed_url.query.split("&"):
-        key, value = q.split("=")
-        if key not in params:
-            res_query.append(f"{key}={value}")
-
-    parse_result = parsed_url._replace(query="&".join(res_query))
-    return urlparse.urlunparse(parse_result)
+def remove_params_from_url(url: str, params: List[str]) -> str:
+    """
+    Parses a URL and removes the query parameters specified in params
+    :param url: URL
+    :param params: list of query parameters
+    :return: URL with params removed
+    """
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
+    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    return urlparse.urlunparse(
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+    )
 
 
 class FBMarketingStream(Stream, ABC):
@@ -107,7 +110,63 @@ class FBMarketingStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         for record in self._read_records(params=self.request_params(stream_state=stream_state)):
-            yield self._extend_record(record, fields=self.fields)
+            yield self.transform(self._extend_record(record, fields=self.fields))
+
+    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Use this method to remove update fields types in record according to schema.
+        """
+        schema = self.get_json_schema()
+        self.convert_to_schema_types(record, schema["properties"])
+        return record
+
+    def get_python_type(self, _types: Union[list, str]) -> tuple:
+        """Converts types from schema to python types. Examples:
+        - `["string", "null"]` will be converted to `(str,)`
+        - `["array", "string", "null"]` will be converted to `(list, str,)`
+        - `"boolean"` will be converted to `(bool,)`
+        """
+        types_mapping = {
+            "string": str,
+            "number": float,
+            "integer": int,
+            "object": dict,
+            "array": list,
+            "boolean": bool,
+        }
+
+        if isinstance(_types, list):
+            return tuple([types_mapping[t] for t in _types if t != "null"])
+
+        return (types_mapping[_types],)
+
+    def convert_to_schema_types(self, record: Mapping[str, Any], schema: Mapping[str, Any]):
+        """
+        Converts values' type from record to appropriate type from schema. For example, let's say we have `reach` value
+        and in schema it has `number` type because it's, well, a number, but from API we are getting `reach` as string.
+        This function fixes this and converts `reach` value from `string` to `number`. Same for all fields and all
+        types from schema.
+        """
+        if not schema:
+            return
+
+        for key, value in record.items():
+            if key not in schema:
+                continue
+
+            if isinstance(value, dict):
+                self.convert_to_schema_types(record=value, schema=schema[key].get("properties", {}))
+            elif isinstance(value, list) and "items" in schema[key]:
+                for record_list_item in value:
+                    if list in self.get_python_type(schema[key]["items"]["type"]):
+                        # TODO Currently we don't have support for list of lists.
+                        pass
+                    elif dict in self.get_python_type(schema[key]["items"]["type"]):
+                        self.convert_to_schema_types(record=record_list_item, schema=schema[key]["items"]["properties"])
+                    elif not isinstance(record_list_item, self.get_python_type(schema[key]["items"]["type"])):
+                        record[key] = self.get_python_type(schema[key]["items"]["type"])[0](record_list_item)
+            elif not isinstance(value, self.get_python_type(schema[key]["type"])):
+                record[key] = self.get_python_type(schema[key]["type"])[0](value)
 
     def _read_records(self, params: Mapping[str, Any]) -> Iterable:
         """Wrapper around query to backoff errors.
@@ -295,7 +354,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 3
+    MAX_ASYNC_JOBS = 10
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
@@ -322,7 +381,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
         for obj in result.get_result():
-            yield obj.export_all_data()
+            yield self.transform(obj.export_all_data())
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
@@ -353,7 +412,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
             job_id = job["report_run_id"]
-            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
+            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete ({job['async_status']})")
             runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":
@@ -479,3 +538,8 @@ class AdsInsightsDma(AdsInsights):
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
     action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
+
+
+class AdsInsightsActionType(AdsInsights):
+    breakdowns = []
+    action_breakdowns = ["action_type"]

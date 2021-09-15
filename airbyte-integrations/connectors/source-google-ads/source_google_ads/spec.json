@@ -67,7 +67,39 @@
         "maximum": 1095,
         "default": 14,
         "examples": [14]
+      },
+      "custom_queries": {
+        "type": "array",
+        "title": "Custom GAQL Queries",
+        "items": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "title": "Custom query",
+              "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression as it used by incremental streams",
+              "examples": [
+                "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign WHERE campaign.status = 'PAUSED'"
+              ]
+            },
+            "table_name": {
+              "type": "string",
+              "title": "Destination table name",
+              "description": "The table name in your destination database for choosen query."
+            }
+          }
+        }
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "oauthFlowInitParameters": [
+        ["credentials", "developer_token"],
+        ["credentials", "client_id"],
+        ["credentials", "client_secret"]
+      ]
     }
   }
 }
