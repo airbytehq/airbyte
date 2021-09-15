@@ -415,7 +415,6 @@ public class ConfigDumpImporter {
               return sourceConnection;
             },
             (sourceConnection) -> {
-              final ConnectorSpecification spec;
               // make sure connector definition exists
               try {
                 final StandardSourceDefinition sourceDefinition =
@@ -423,11 +422,10 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
-                spec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition);
+                configRepository.writeSourceConnection(sourceConnection, SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition));
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeSourceConnection(sourceConnection, spec);
             }));
         case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
         case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
@@ -441,7 +439,6 @@ public class ConfigDumpImporter {
               return destinationConnection;
             },
             (destinationConnection) -> {
-              final ConnectorSpecification spec;
               // make sure connector definition exists
               try {
                 StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(
@@ -449,11 +446,10 @@ public class ConfigDumpImporter {
                 if (destinationDefinition == null) {
                   return;
                 }
-                spec = DestinationHandler.getSpec(specFetcher, destinationDefinition);
+                configRepository.writeDestinationConnection(destinationConnection, DestinationHandler.getSpec(specFetcher, destinationDefinition));
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeDestinationConnection(destinationConnection, spec);
             }));
         case STANDARD_SYNC -> standardSyncs = configs;
         case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
