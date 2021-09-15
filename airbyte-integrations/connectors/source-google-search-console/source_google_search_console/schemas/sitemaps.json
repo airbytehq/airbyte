@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": ["null", "string"]
+    },
+    "lastSubmitted": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "isPending": {
+      "type": ["null", "boolean"]
+    },
+    "isSitemapsIndex": {
+      "type": ["null", "boolean"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "lastDownloaded": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "warnings": {
+      "type": ["null", "string"]
+    },
+    "errors": {
+      "type": ["null", "string"]
+    },
+    "contents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "submitted": {
+            "type": ["null", "string"]
+          },
+          "indexed": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

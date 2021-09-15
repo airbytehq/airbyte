@@ -2,6 +2,6 @@
   "destinationDefinitionId": "8aaf41d0-f6d2-46de-9e79-c9540f828142",
   "name": "Keen",
   "dockerRepository": "airbyte/destination-keen",
-  "dockerImgeTag": "0.1.0",
+  "dockerImageTag": "0.2.0",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/keen"
 }
