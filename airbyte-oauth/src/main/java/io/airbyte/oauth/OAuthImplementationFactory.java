@@ -27,8 +27,8 @@ package io.airbyte.oauth;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
-import io.airbyte.oauth.flows.GoogleAdsOAuthFlow;
-import io.airbyte.oauth.flows.GoogleAnalyticsOAuthFlow;
+import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
+import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import java.util.Map;
 
 public class OAuthImplementationFactory {
