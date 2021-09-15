@@ -70,7 +70,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
   public MySqlSource() {
-    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration(), new MySqlSourceOperations());
   }
 
   private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {

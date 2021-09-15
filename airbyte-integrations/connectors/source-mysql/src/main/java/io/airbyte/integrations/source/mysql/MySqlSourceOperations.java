@@ -24,8 +24,27 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySqlSourceOperations extends JdbcSourceOperations {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceOperations.class);
+
+  @Override
+  protected void putBoolean(ObjectNode node, String columnName, ResultSet resultSet, int index)
+      throws SQLException {
+    node.put(columnName, resultSet.getInt(index) == 1);
+  }
+
+  @Override
+  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index)
+      throws SQLException {
+    node.put(columnName, resultSet.getTime(index).toString());
+  }
 
 }

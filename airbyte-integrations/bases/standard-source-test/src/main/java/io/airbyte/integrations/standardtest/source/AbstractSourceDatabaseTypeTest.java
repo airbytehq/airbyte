@@ -180,8 +180,6 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * @return configured catalog
    */
   private ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    final JsonNode config = getConfig();
-
     return new ConfiguredAirbyteCatalog().withStreams(
         testDataHolders
             .stream()
