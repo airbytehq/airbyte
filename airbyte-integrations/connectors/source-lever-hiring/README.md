@@ -1,7 +1,6 @@
 # Lever Hiring Source
 
 This is the repository for the Lever Hiring source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/lever-hiring).
 
 ## Local development
 
