@@ -15,7 +15,6 @@ import Status from "core/statuses";
 import useWorkspace from "hooks/services/useWorkspace";
 
 type FinalStepProps = {
-  useCases?: { id: string; data: React.ReactNode }[];
   connectionId: string;
   onSync: () => void;
   onFinishOnboarding: () => void;
@@ -41,13 +40,17 @@ const CloseButton = styled(Button)`
 `;
 
 const FinalStep: React.FC<FinalStepProps> = ({
-  useCases,
   connectionId,
   onSync,
   onFinishOnboarding,
 }) => {
   const { sendFeedback } = useWorkspace();
-  const { feedbackPassed, passFeedback } = useOnboardingService();
+  const {
+    feedbackPassed,
+    passFeedback,
+    useCases,
+    skipCase,
+  } = useOnboardingService();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId,
   });
@@ -108,9 +111,12 @@ const FinalStep: React.FC<FinalStepProps> = ({
 
       {useCases &&
         useCases.map((item, key) => (
-          <UseCaseBlock key={item.id} count={key + 1}>
-            {item.data}
-          </UseCaseBlock>
+          <UseCaseBlock
+            key={item}
+            count={key + 1}
+            onSkip={skipCase}
+            id={item}
+          />
         ))}
 
       <CloseButton secondary onClick={onFinishOnboarding}>

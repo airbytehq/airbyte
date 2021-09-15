@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
-import { FormattedMessage } from "react-intl";
 
 import HeadTitle from "components/HeadTitle";
 import useSource, { useSourceList } from "hooks/services/useSourceHook";
@@ -204,26 +203,6 @@ const OnboardingPage: React.FC = () => {
       );
     }
 
-    const useCases = [
-      {
-        id: "replicateMySQL",
-        data: <FormattedMessage id="onboarding.replicateMySQL" />,
-      },
-      {
-        id: "consolidateMarketing",
-        data: <FormattedMessage id="onboarding.consolidateMarketing" />,
-      },
-      {
-        id: "consolidatePayment",
-        data: <FormattedMessage id="onboarding.consolidatePayment" />,
-      },
-      {
-        id: "buildDashboard",
-        data: <FormattedMessage id="onboarding.buildDashboard" />,
-      },
-      { id: "zoomCalls", data: <FormattedMessage id="onboarding.zoomCalls" /> },
-    ];
-
     const onSync = () => syncConnection(connections[0]);
     const onCloseOnboarding = () => {
       finishOnboarding();
@@ -232,7 +211,6 @@ const OnboardingPage: React.FC = () => {
 
     return (
       <FinalStep
-        useCases={useCases}
         connectionId={connections[0].connectionId}
         onSync={onSync}
         onFinishOnboarding={onCloseOnboarding}

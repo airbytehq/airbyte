@@ -6,7 +6,8 @@ import { FormattedMessage } from "react-intl";
 
 type UseCaseBlockProps = {
   count: number;
-  children?: React.ReactNode;
+  id: string;
+  onSkip: (id: string) => void;
 };
 
 const Block = styled(ContentCard)`
@@ -42,14 +43,14 @@ const SkipButton = styled.div`
   cursor: pointer;
 `;
 
-const UseCaseBlock: React.FC<UseCaseBlockProps> = ({ children, count }) => {
+const UseCaseBlock: React.FC<UseCaseBlockProps> = ({ id, count, onSkip }) => {
   return (
     <Block>
       <div>
         <Num>{count}</Num>
-        {children}
+        <FormattedMessage id={`onboarding.${id}`} />
       </div>
-      <SkipButton>
+      <SkipButton onClick={() => onSkip(id)}>
         <FormattedMessage id="onboarding.skip" />
       </SkipButton>
     </Block>

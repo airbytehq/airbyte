@@ -71,7 +71,7 @@ const useWorkspace = (): {
         anonymousDataCollection: workspace.anonymousDataCollection,
         news: workspace.news,
         securityUpdates: workspace.securityUpdates,
-        displaySetupWizard: true,
+        displaySetupWizard: false,
       }
     );
   };
