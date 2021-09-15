@@ -190,7 +190,8 @@ class ConfigDumpImporterTest {
             Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))),
             eq(emptyConnectorSpec));
     verify(configRepository).writeDestinationConnection(
-        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))));
+        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))),
+        eq(emptyConnectorSpec));
     verify(configRepository)
         .writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId).withOperationId(not(eq(operation.getOperationId()))));
     verify(configRepository).writeStandardSync(Jsons.clone(connection).withConnectionId(not(eq(connection.getConnectionId()))));
@@ -241,7 +242,7 @@ class ConfigDumpImporterTest {
     verify(configRepository).writeSourceConnection(
         Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId),
         emptyConnectorSpec);
-    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId));
+    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId), emptyConnectorSpec);
     verify(configRepository).writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId));
     verify(configRepository).writeStandardSync(connection);
   }

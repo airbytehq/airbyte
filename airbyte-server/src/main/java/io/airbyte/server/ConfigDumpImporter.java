@@ -49,12 +49,12 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -414,7 +414,6 @@ public class ConfigDumpImporter {
               return sourceConnection;
             },
             (sourceConnection) -> {
-              final ConnectorSpecification spec;
               // make sure connector definition exists
               try {
                 final StandardSourceDefinition sourceDefinition =
@@ -422,11 +421,10 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
-                spec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition);
+                configRepository.writeSourceConnection(sourceConnection, SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition));
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeSourceConnection(sourceConnection, spec);
             }));
         case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
         case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
@@ -442,13 +440,15 @@ public class ConfigDumpImporter {
             (destinationConnection) -> {
               // make sure connector definition exists
               try {
-                if (configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()) == null) {
+                StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(
+                    destinationConnection.getDestinationDefinitionId());
+                if (destinationDefinition == null) {
                   return;
                 }
+                configRepository.writeDestinationConnection(destinationConnection, DestinationHandler.getSpec(specFetcher, destinationDefinition));
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeDestinationConnection(destinationConnection);
             }));
         case STANDARD_SYNC -> standardSyncs = configs;
         case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(

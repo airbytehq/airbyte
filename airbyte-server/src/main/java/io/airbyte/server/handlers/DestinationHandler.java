@@ -205,11 +205,14 @@ public class DestinationHandler {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
-  private ConnectorSpecification getSpec(UUID destinationDefinitionId)
+  public ConnectorSpecification getSpec(UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return getSpec(specFetcher, configRepository.getStandardDestinationDefinition(destinationDefinitionId));
+  }
+
+  public static ConnectorSpecification getSpec(SpecFetcher specFetcher, StandardDestinationDefinition destinationDef)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return specFetcher.execute(DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag()));
   }
 
   private void persistDestinationConnection(final String name,
@@ -218,7 +221,7 @@ public class DestinationHandler {
                                             final UUID destinationId,
                                             final JsonNode configurationJson,
                                             final boolean tombstone)
-      throws JsonValidationException, IOException {
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withName(name)
         .withDestinationDefinitionId(destinationDefinitionId)
@@ -226,8 +229,7 @@ public class DestinationHandler {
         .withDestinationId(destinationId)
         .withConfiguration(configurationJson)
         .withTombstone(tombstone);
-
-    configRepository.writeDestinationConnection(destinationConnection);
+    configRepository.writeDestinationConnection(destinationConnection, getSpec(destinationDefinitionId));
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
