@@ -2,6 +2,6 @@
   "destinationDefinitionId": "9f760101-60ae-462f-9ee6-b7a9dafd454d",
   "name": "Kafka",
   "dockerRepository": "airbyte/destination-kafka",
-  "dockerImageTag": "0.1.1",
+  "dockerImageTag": "0.1.2",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/kafka"
 }
