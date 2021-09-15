@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -46,8 +48,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
 
 /**
  * When adding a new S3 destination acceptance test, extend this class and do the following:
