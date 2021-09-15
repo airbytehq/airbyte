@@ -144,7 +144,7 @@ public class GoogleOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String code, String redirectUrl) throws IOException {
+  protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String code, String redirectUrl) throws IOException {
     final ImmutableMap<String, String> body = new Builder<String, String>()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)
