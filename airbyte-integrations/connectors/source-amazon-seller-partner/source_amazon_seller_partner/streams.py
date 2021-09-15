@@ -37,8 +37,9 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
@@ -182,6 +183,18 @@ class ReportsAmazonSPStream(Stream, ABC):
     def path(self, document_id: str) -> str:
         return f"{self.path_prefix}/documents/{document_id}"
 
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == 429 or 500 <= response.status_code < 600
+
+    @default_backoff_handler(max_tries=5, factor=5)
+    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+        response: requests.Response = self._session.send(request)
+        if self.should_retry(response):
+            raise DefaultBackoffException(request=request, response=response)
+        else:
+            response.raise_for_status()
+        return response
+
     def _create_prepared_request(
         self, path: str, http_method: str = "GET", headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
@@ -215,7 +228,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             data=json_lib.dumps(report_data),
         )
-        report_response = self._session.send(create_report_request)
+        report_response = self._send_request(create_report_request)
         return report_response.json()[self.data_field]
 
     def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
@@ -224,7 +237,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             path=f"{self.path_prefix}/reports/{report_id}",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
         )
-        retrieve_report_response = self._session.send(retrieve_report_request)
+        retrieve_report_response = self._send_request(retrieve_report_request)
         report_payload = retrieve_report_response.json().get(self.data_field, {})
         return report_payload
 
@@ -290,7 +303,7 @@ class ReportsAmazonSPStream(Stream, ABC):
                 headers=dict(request_headers, **self.authenticator.get_auth_header()),
                 params=self.request_params(),
             )
-            response = self._session.send(request)
+            response = self._send_request(request)
             yield from self.parse_response(response)
         else:
             logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
