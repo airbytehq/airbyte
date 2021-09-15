@@ -1,5 +1,5 @@
 RELEASE_NAME := airbyte
-NAMESPACE := airbyte-test
+NAMESPACE := airbyte
 
 lint:
 	helm lint .
