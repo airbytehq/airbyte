@@ -64,7 +64,7 @@ public class KafkaDestinationConfig {
         .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText())
         .putAll(propertiesByProtocol(config))
         .put(ProducerConfig.CLIENT_ID_CONFIG,
-            config.has("client_id") ? config.get("client_id").asText() : null)
+            config.has("client_id") ? config.get("client_id").asText() : "")
         .put(ProducerConfig.ACKS_CONFIG, config.get("acks").asText())
         .put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, config.get("enable_idempotence").asBoolean())
         .put(ProducerConfig.COMPRESSION_TYPE_CONFIG, config.get("compression_type").asText())
