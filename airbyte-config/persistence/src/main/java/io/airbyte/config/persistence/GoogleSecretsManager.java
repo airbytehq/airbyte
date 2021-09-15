@@ -24,11 +24,14 @@
 
 package io.airbyte.config.persistence;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.ProjectName;
 import com.google.cloud.secretmanager.v1.Replication;
 import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.SecretManagerServiceSettings;
 import com.google.cloud.secretmanager.v1.SecretName;
 import com.google.cloud.secretmanager.v1.SecretPayload;
 import com.google.cloud.secretmanager.v1.SecretVersion;
@@ -36,7 +39,10 @@ import com.google.cloud.secretmanager.v1.SecretVersionName;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import io.airbyte.config.EnvConfigs;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,8 +53,7 @@ import java.util.UUID;
 public class GoogleSecretsManager {
 
   /**
-   * Manual test fixture to make sure you've got your project id set in env and have appropriate creds
-   * to reach/write the secret store.
+   * Manual test fixture to make sure you've got your project id set in env and have appropriate creds to reach/write the secret store.
    */
   public static void main(String[] args) throws Exception {
     // Check that we're configured to a usable GCP project.
@@ -76,13 +81,20 @@ public class GoogleSecretsManager {
   public static String readSecret(String secretId) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "latest");
       AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
       return response.getPayload().getData().toStringUtf8();
     } catch (com.google.api.gax.rpc.NotFoundException e) {
       return null;
     }
+  }
+
+  private static SecretManagerServiceClient getSecretManagerServiceClient() throws IOException {
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream((new EnvConfigs()).getSecretStoreGcpCredentials().getBytes(StandardCharsets.UTF_8)));
+    return SecretManagerServiceClient.create(
+        SecretManagerServiceSettings.newBuilder().setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build());
   }
 
   public static boolean existsSecret(String secretId) throws IOException {

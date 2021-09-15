@@ -93,6 +93,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
+  private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final String SECRET_STORE_FOR_CONFIGS = "SECRET_STORE_CONFIGS_ENABLE";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -199,8 +200,13 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getSecretStoreGcpProjectId() {
+  public String getSecretStoreGcpCredentials() {
     return getEnv(SECRET_STORE_GCP_PROJECT_ID);
+  }
+
+  @Override
+  public String getSecretStoreGcpProjectId() {
+    return getEnv(SECRET_STORE_GCP_CREDENTIALS);
   }
 
   @Override
