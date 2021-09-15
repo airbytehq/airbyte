@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y jq sshpass
 
 WORKDIR /airbyte
 COPY entrypoint.sh .
-COPY build/sshtunneling.sh .
+# COPY build/sshtunneling.sh .
 
 WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
@@ -48,7 +48,7 @@ WORKDIR /airbyte/normalization_code
 RUN pip install .
 RUN pip install dbt-oracle==0.4.3
 RUN pip install git+https://github.com/dbeatty10/dbt-mysql@96655ea9f7fca7be90c9112ce8ffbb5aac1d3716#egg=dbt-mysql
-RUN pip install dbt-sqlserver==0.20.1
+RUN pip install dbt-sqlserver==0.19.3
 
 
 WORKDIR /airbyte/normalization_code/dbt-template/
