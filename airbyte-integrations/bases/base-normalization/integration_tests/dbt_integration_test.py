@@ -173,7 +173,7 @@ class DbtIntegrationTest(object):
             profiles_config = {
                 "credentials_json": json.dumps(credentials),
                 "dataset_id": self.target_schema,
-                "project_id": credentials["project_id"],
+                "project_id": credentials['basic_bigquery_config']["project_id"],
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
