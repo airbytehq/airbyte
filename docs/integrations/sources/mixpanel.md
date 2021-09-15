@@ -56,5 +56,5 @@ If you get `400` response codes, make sure that project region matches mixpanel 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.1` | 2021-09-16 | [](https://github.com/airbytehq/airbyte/issues/) | Added option to select project region |
+| `0.1.1` | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region |
 | `0.1.0` | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | created CDK native mixpanel connector |
