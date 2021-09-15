@@ -62,6 +62,9 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
 
+echo "Running config persistence integration tests"
+SUB_BUILD=PLATFORM SECRET_STORE_GCP_PROJECT_ID=${SECRET_STORE_GCP_PROJECT_ID} SECRET_STORE_FOR_CONFIGS=${SECRET_STORE_FOR_CONFIGS}  ./gradlew :airbyte-config:persistence:integrationTest --scan
+
 echo "Printing system disk usage..."
 df -h
 
