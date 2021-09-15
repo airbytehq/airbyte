@@ -1,1 +1,1 @@
-{"url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.10813/dados/ultimos/1?formato=json", "http_method": "GET"}
+{"url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.10813/dados/ultimos/1?formato=json", "http_method": "GET", "reponse_format": "json"}
