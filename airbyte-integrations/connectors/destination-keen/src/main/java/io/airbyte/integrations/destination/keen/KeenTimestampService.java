@@ -75,9 +75,9 @@ public class KeenTimestampService {
   /**
    * Tries to inject keen.timestamp field to the given message data. If the stream contains cursor
    * field, it's value is tried to be parsed to timestamp. If this procedure fails, stream is removed
-   * from timestamp-parsable stream map, so parsing is not tried for future messages in the same stream.
-   * If parsing succeeds, keen.timestamp field is put as a JSON node to the message data and whole data
-   * is returned. Otherwise, keen.timestamp is set to emittedAt value
+   * from timestamp-parsable stream map, so parsing is not tried for future messages in the same
+   * stream. If parsing succeeds, keen.timestamp field is put as a JSON node to the message data and
+   * whole data is returned. Otherwise, keen.timestamp is set to emittedAt value
    *
    * @param message AirbyteRecordMessage containing record data
    * @return Record data together with keen.timestamp field
