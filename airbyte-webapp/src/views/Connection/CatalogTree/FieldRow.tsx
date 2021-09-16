@@ -45,7 +45,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   return (
     <>
       <FirstCell ellipsis depth={props.depth} flex={1.5}>
-        <NameContainer depth={props.depth} title={props.name}>
+        <NameContainer depth={props.depth} title={path.join(".")}>
           {props.name}
         </NameContainer>
       </FirstCell>

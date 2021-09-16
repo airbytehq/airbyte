@@ -17,7 +17,6 @@ import { Popout } from "components/base/Popout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import Tooltip from "./components/Tooltip";
-import { NESTED_FIELDS_SEPARATOR } from "../../../constants";
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   color: ${({ theme }) => theme.greyColor40};
@@ -92,7 +91,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   const dropdownFields = primitiveFields.map((field) => ({
     value: field.path,
-    label: field.name,
+    label: field.path.join("."),
   }));
 
   return (
@@ -140,13 +139,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             components={PkPopupComponents}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
-                {primaryKey
-                  .map((k) => k.join(NESTED_FIELDS_SEPARATOR))
-                  .join(", ")}
+                {primaryKey.map((k) => k.join(".")).join(", ")}
                 <Arrow icon={faSortDown} />
-                <Tooltip
-                  items={primaryKey.map((k) => k.join(NESTED_FIELDS_SEPARATOR))}
-                />
+                <Tooltip items={primaryKey.map((k) => k.join("."))} />
               </div>
             )}
           />
@@ -165,7 +160,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             onChange={(op) => onCursorChange(op.value)}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
-                {stream.config.cursorField.join(NESTED_FIELDS_SEPARATOR)}
+                {stream.config.cursorField.join(".")}
                 <Arrow icon={faSortDown} />
                 <Tooltip items={stream.config.cursorField} />
               </div>
