@@ -16,6 +16,7 @@ Each stream will be output into its own index in MeiliSearch. Each table will be
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | No |  |
 
 ## Getting started

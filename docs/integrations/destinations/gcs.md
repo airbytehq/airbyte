@@ -12,6 +12,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | :--- | :---: | :--- |
 | Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
 | Incremental - Append Sync | ✅ | |
+| Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | ❌ | Setting a specific bucket path is equivalent to having separate namespaces. |
 
 ## Configuration

@@ -21,6 +21,7 @@ Each stream will output an event in Keen. Each collection will inherit the name 
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | No |  |
 
 ## Getting started

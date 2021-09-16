@@ -12,7 +12,7 @@ The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob
 | :--- | :---: | :--- |
 | Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured blob. |
 | Incremental - Append Sync | ✅ | The append mode would only work for "Append blobs" blobs as per Azure limitations, more details https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs |
-
+| Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
 
 ## Configuration
 
