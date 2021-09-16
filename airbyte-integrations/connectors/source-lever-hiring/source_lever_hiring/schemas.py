@@ -98,14 +98,19 @@ class Note(BaseSchemaModel):
     id: str
     text: str = None
     fields: List[dict]
+    user: str = None
+    secret: bool = None
+    completedAt: int = None
+    deletedAt: int = None
+    createdAt: int
 
 
 class Offer(BaseSchemaModel):
     id: str
     posting: str = None
     createdAt: int
-    status: str
-    creator: str
+    status: str = None
+    creator: str = None
     fields: List[dict]
     signatures: dict
     approved: str = None
