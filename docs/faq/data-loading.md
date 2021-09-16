@@ -8,13 +8,13 @@ sync status in your connection detail page that you can access through the desti
 
 ## **Why my final tables are being recreated everytime?**
 
-Airbyte ingest data into raw tables and apply the process of normalization if you selected in the connection page.
-The normalization runs a full refresh each sync and for some destinations like Snowflake, Redshift, Bigquery this means consume
-resources and more costs. You need to pay attention in what frequency do you want to retrieve your data to not having problems with it.
-One example is: create a connection to sync every 5 minutes with incremental mode will retrive new records into raw tables but apply normalization
-in the all data every sync! If you have tons of data you need to verify if this is right frequency to update your destination.
+Airbyte ingests data into raw tables and applies the process of normalization if you selected it in the connection page.
+The normalization runs a full refresh each sync and for some destinations like Snowflake, Redshift, Bigquery this may incur more
+resource consumption and more costs. You need to pay attention to the frequency that you're retrieving your data to avoid issues.
+For example, if you create a connection to sync every 5 minutes with incremental sync on, it will only retrieve new records into the raw tables but will apply normalization
+to *all* the data in every sync! If you have tons of data, this may not be the right sync frequency for you.
 
-There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4286) to implement normalization using incremental, this will reduce
+There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4286) to implement normalization using incremental, which will reduce
 costs and resources in your destination.
 
 ## **What happens if a sync fails?**
