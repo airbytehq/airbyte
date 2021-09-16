@@ -26,6 +26,7 @@ import { FieldRow } from "./FieldRow";
 
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { NESTED_FIELDS_SEPARATOR } from "../../../constants";
 
 const flatten = (
   fArr: SyncSchemaField[],
@@ -98,7 +99,10 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const pkPaths = useMemo(
-    () => new Set(config.primaryKey.map((pkPath) => pkPath.join("."))),
+    () =>
+      new Set(
+        config.primaryKey.map((pkPath) => pkPath.join(NESTED_FIELDS_SEPARATOR))
+      ),
     [config.primaryKey]
   );
 
@@ -163,15 +167,12 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
-  const primitiveFieldNames = useMemo(
-    () =>
-      flattenedFields
-        .filter(SyncSchemaFieldObject.isPrimitive)
-        .map((field) => field.name),
+  const primitiveFields = useMemo<SyncSchemaField[]>(
+    () => flattenedFields.filter(SyncSchemaFieldObject.isPrimitive),
     [flattenedFields]
   );
 
-  const selectedCursorPath = config.cursorField.join(".");
+  const selectedCursorPath = config.cursorField.join(NESTED_FIELDS_SEPARATOR);
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
@@ -187,7 +188,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
-          primitiveFields={primitiveFieldNames}
+          primitiveFields={primitiveFields}
           pkType={
             pkRequired ? (shouldDefinePk ? "required" : "sourceDefined") : null
           }
@@ -214,6 +215,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
               <TreeRowWrapper depth={1} key={field.name}>
                 <FieldRow
                   depth={1}
+                  path={field.path}
                   name={field.name}
                   type={field.type}
                   destinationName={field.cleanedName}

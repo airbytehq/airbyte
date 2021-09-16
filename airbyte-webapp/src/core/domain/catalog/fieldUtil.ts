@@ -6,6 +6,7 @@ import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
 import { ConnectionNamespaceDefinition } from "../connection";
 import { SOURCE_NAMESPACE_TAG } from "../connector/source";
+import { NESTED_FIELDS_SEPARATOR } from "../../../constants";
 
 function toInnerModel(
   result: SourceDiscoverSchemaRead
@@ -34,7 +35,7 @@ const traverseSchemaToField = (
 const traverseJsonSchemaProperties = (
   jsonSchema: JSONSchema7Definition,
   key: string,
-  path: string = key,
+  path: string[] = [key],
   depth = 0
 ): SyncSchemaField[] => {
   if (typeof jsonSchema === "boolean") {
@@ -48,7 +49,7 @@ const traverseJsonSchemaProperties = (
         traverseJsonSchemaProperties(
           schema,
           k,
-          depth === 0 ? k : `${path}.${k}`,
+          depth === 0 ? [k] : [...path, k],
           depth + 1
         )
       )
@@ -58,7 +59,8 @@ const traverseJsonSchemaProperties = (
   return [
     {
       cleanedName: key,
-      name: path,
+      name: path.join(NESTED_FIELDS_SEPARATOR),
+      path,
       key,
       fields,
       type:

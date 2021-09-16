@@ -21,6 +21,7 @@ const CatalogTree: React.FC<IProps> = ({
 }) => {
   const onUpdateStream = useCallback(
     (id: string, newStream: Partial<AirbyteStreamConfiguration>) => {
+      console.log(newStream);
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {

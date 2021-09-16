@@ -10,12 +10,14 @@ import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import {
   DestinationSyncMode,
   SyncMode,
+  SyncSchemaField,
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { Popout } from "components/base/Popout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import Tooltip from "./components/Tooltip";
+import { NESTED_FIELDS_SEPARATOR } from "../../../constants";
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   color: ${({ theme }) => theme.greyColor40};
@@ -44,7 +46,7 @@ interface StreamHeaderProps {
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
 
-  primitiveFields: string[];
+  primitiveFields: SyncSchemaField[];
 
   pkType: null | "required" | "sourceDefined";
   onPrimaryKeyChange: (pkPath: string[][]) => void;
@@ -89,8 +91,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   );
 
   const dropdownFields = primitiveFields.map((field) => ({
-    value: field.split("."),
-    label: field,
+    value: field.path,
+    label: field.name,
   }));
 
   return (
@@ -138,9 +140,13 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             components={PkPopupComponents}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
-                {primaryKey.map((k) => k.join(".")).join(", ")}
+                {primaryKey
+                  .map((k) => k.join(NESTED_FIELDS_SEPARATOR))
+                  .join(", ")}
                 <Arrow icon={faSortDown} />
-                <Tooltip items={primaryKey.map((k) => k.join("."))} />
+                <Tooltip
+                  items={primaryKey.map((k) => k.join(NESTED_FIELDS_SEPARATOR))}
+                />
               </div>
             )}
           />
@@ -159,7 +165,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             onChange={(op) => onCursorChange(op.value)}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
-                {stream.config.cursorField.join(".")}
+                {stream.config.cursorField.join(NESTED_FIELDS_SEPARATOR)}
                 <Arrow icon={faSortDown} />
                 <Tooltip items={stream.config.cursorField} />
               </div>
