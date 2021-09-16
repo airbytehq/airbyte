@@ -44,9 +44,11 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -76,13 +78,21 @@ class ConfigDumpImporterTest {
   private DestinationConnection destinationConnection;
   private StandardSyncOperation operation;
   private StandardSync connection;
+  private ConnectorSpecification emptyConnectorSpec;
+  private SpecFetcher specFetcher;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     workspaceHelper = mock(WorkspaceHelper.class);
-    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class));
+
+    specFetcher = mock(SpecFetcher.class);
+    emptyConnectorSpec = mock(ConnectorSpecification.class);
+    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
+    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+
+    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();
@@ -176,9 +186,12 @@ class ConfigDumpImporterTest {
     configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
 
     verify(configRepository)
-        .writeSourceConnection(Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))));
+        .writeSourceConnection(
+            Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))),
+            eq(emptyConnectorSpec));
     verify(configRepository).writeDestinationConnection(
-        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))));
+        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))),
+        eq(emptyConnectorSpec));
     verify(configRepository)
         .writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId).withOperationId(not(eq(operation.getOperationId()))));
     verify(configRepository).writeStandardSync(Jsons.clone(connection).withConnectionId(not(eq(connection.getConnectionId()))));
@@ -226,8 +239,10 @@ class ConfigDumpImporterTest {
     final UUID newWorkspaceId = UUID.randomUUID();
     configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
 
-    verify(configRepository).writeSourceConnection(Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId));
-    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId));
+    verify(configRepository).writeSourceConnection(
+        Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId),
+        emptyConnectorSpec);
+    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId), emptyConnectorSpec);
     verify(configRepository).writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId));
     verify(configRepository).writeStandardSync(connection);
   }
