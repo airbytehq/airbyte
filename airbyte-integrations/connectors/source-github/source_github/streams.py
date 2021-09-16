@@ -56,6 +56,16 @@ class GithubStream(HttpStream, ABC):
     cache = request_cache()
     url_base = "https://api.github.com/"
 
+    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
+    # Here's an example of dangerous behavior:
+    # cache = Cassette.use('whatever')
+    # with cache:
+    #     with cache:
+    #         pass
+    #
+    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
+    top_level_stream = True
+
     primary_key = "id"
 
     # GitHub pagination could be from 1 to 100.
@@ -110,7 +120,11 @@ class GithubStream(HttpStream, ABC):
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            if self.top_level_stream:
+                with self.cache:
+                    yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            else:
+                yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             error_msg = str(e)
 
@@ -310,6 +324,8 @@ class PullRequestStats(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
 
+    top_level_stream = False
+
     @property
     def record_keys(self) -> List[str]:
         return list(self.get_json_schema()["properties"].keys())
@@ -337,6 +353,8 @@ class Reviews(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
+
+    top_level_stream = False
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -505,8 +523,7 @@ class PullRequests(SemiIncrementalGithubStream):
         Decide if this a first read or not by the presence of the state object
         """
         self._first_read = not bool(stream_state)
-        with self.cache:
-            yield from super().read_records(stream_state=stream_state, **kwargs)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls"
@@ -697,6 +714,7 @@ class ReviewComments(IncrementalGithubStream):
 class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
+    top_level_stream = False
 
     def __init__(self, **kwargs):
         self._stream_kwargs = deepcopy(kwargs)
