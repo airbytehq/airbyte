@@ -17,13 +17,6 @@ kind load docker-image airbyte/db:dev --name chart-testing
 
 echo "Starting app..."
 
-if [ -n "$CI" ]; then
-  # write out environment variables to the .env file in kube/overlays/dev-integration-test/.env
-   echo "SECRET_STORE_GCP_PROJECT_ID=${SECRET_STORE_GCP_PROJECT_ID}" >> kube/overlays/dev-integration-test/.env
-   echo "SECRET_STORE_FOR_CONFIGS=${SECRET_STORE_FOR_CONFIGS}" >> kube/overlays/dev-integration-test/.env
-   echo "SECRET_STORE_GCP_CREDENTIALS=${SECRET_STORE_GCP_CREDENTIALS}" >> kube/overlays/dev-integration-test/.env
-fi
-
 echo "Applying dev-integration-test manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev-integration-test
 
