@@ -203,7 +203,7 @@ Composite index: unique (resource_owner_type, resource_owner_id).
 ### `SYNC_OPERATION`
 
 YAML reference:
-- [OperatorDbt](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncOperation.yaml)
+- [StandardSyncOperation](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncOperation.yaml)
 
 This table has many-to-one relationship with the `SYNC` table. Each `SYNC` can have multiple `SYNC_OPERATION`s.
 
@@ -217,7 +217,7 @@ This table has many-to-one relationship with the `SYNC` table. Each `SYNC` can h
 ### `NORMALIZATION_OPERATOR`
 
 YAML reference:
-- [OperatorDbt](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/OperatorNormalization.yaml)
+- [OperatorNormalization](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/OperatorNormalization.yaml)
 
 This table has a one-to-one relationship with the `SYNC_OPERATION` table. Each `SYNC_OPERATION` has at most one `NORMALIZATION_OPERATOR`.
 
