@@ -26,6 +26,7 @@ package io.airbyte.config;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface Configs {
@@ -83,6 +84,8 @@ public interface Configs {
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
+
+  Map<String, String> getWorkerNodeSelectors();
 
   MaxWorkersConfig getMaxWorkers();
 

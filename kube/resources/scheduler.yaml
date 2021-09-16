@@ -167,11 +167,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: INTERNAL_API_HOST
-            - name: WORKER_POD_TOLERATIONS
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: WORKER_POD_TOLERATIONS
           volumeMounts:
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds
