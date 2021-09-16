@@ -100,7 +100,7 @@ public class GoogleSecretsManager {
   public static boolean existsSecret(String secretId) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "latest");
       AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
       return true;
@@ -112,7 +112,7 @@ public class GoogleSecretsManager {
   public static void saveSecret(String secretId, String value) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       if (!existsSecret(secretId)) {
         Secret secret = Secret.newBuilder().setReplication(Replication.newBuilder().setAutomatic(
             Replication.Automatic.newBuilder().build()).build()).build();
@@ -128,7 +128,7 @@ public class GoogleSecretsManager {
   public static void deleteSecret(String secretId) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       SecretName secretName = SecretName.of(projectId, secretId);
       client.deleteSecret(secretName);
     }
@@ -137,7 +137,7 @@ public class GoogleSecretsManager {
   public static List<String> listSecretsMatching(String prefix) throws IOException {
     final String PREFIX_REGEX = "projects/\\d+/secrets/";
     List<String> names = new ArrayList<String>();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       client.listSecrets(ProjectName.of(new EnvConfigs().getSecretStoreGcpProjectId())).iterateAll()
           .forEach(
               secret -> {
