@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.22
+Add ability of object normalization according to it's jsonschema.
+
 ## 0.1.21
 Resolve nested schema references and move external references to single schema definitions.
 
