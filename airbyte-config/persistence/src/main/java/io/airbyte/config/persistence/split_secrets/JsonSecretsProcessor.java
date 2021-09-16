@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.converters;
+package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -48,14 +48,14 @@ public class JsonSecretsProcessor {
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
    * input schema are masked.
-   * <p>
+   * <p>f
    * This method masks secrets both at the top level of the configuration object and in nested
    * properties in a oneOf.
    *
    * @param schema Schema containing secret annotations
    * @param obj Object containing potentially secret fields
    */
-  public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
+  public static JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
     // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
       return obj;
@@ -90,7 +90,7 @@ public class JsonSecretsProcessor {
     return copy;
   }
 
-  private static Optional<String> findJsonCombinationNode(JsonNode node) {
+  public static Optional<String> findJsonCombinationNode(JsonNode node) {
     for (String combinationNode : List.of("allOf", "anyOf", "oneOf")) {
       if (node.has(combinationNode) && node.get(combinationNode).isArray()) {
         return Optional.of(combinationNode);
@@ -111,7 +111,7 @@ public class JsonSecretsProcessor {
    * @param schema
    * @return
    */
-  public JsonNode copySecrets(JsonNode src, JsonNode dst, JsonNode schema) {
+  public static JsonNode copySecrets(JsonNode src, JsonNode dst, JsonNode schema) {
     if (!canBeProcessed(schema)) {
       return dst;
     }
@@ -147,11 +147,11 @@ public class JsonSecretsProcessor {
     return dstCopy;
   }
 
-  private static boolean isSecret(JsonNode obj) {
+  public static boolean isSecret(JsonNode obj) {
     return obj.isObject() && obj.has(AIRBYTE_SECRET_FIELD) && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
   }
 
-  private static boolean canBeProcessed(JsonNode schema) {
+  public static boolean canBeProcessed(JsonNode schema) {
     return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
   }
 

@@ -40,9 +40,9 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.JsonSecretsProcessor;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -62,7 +62,6 @@ public class DestinationHandler {
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
-  private final JsonSecretsProcessor secretProcessor;
   private final ConfigurationUpdate configurationUpdate;
 
   @VisibleForTesting
@@ -71,14 +70,12 @@ public class DestinationHandler {
                      final SpecFetcher specFetcher,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
-                     final JsonSecretsProcessor secretsProcessor,
                      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
-    this.secretProcessor = secretsProcessor;
     this.configurationUpdate = configurationUpdate;
   }
 
@@ -90,8 +87,8 @@ public class DestinationHandler {
         configRepository,
         integrationSchemaValidation,
         specFetcher,
-        connectionsHandler, UUID::randomUUID,
-        new JsonSecretsProcessor(),
+        connectionsHandler,
+        UUID::randomUUID,
         new ConfigurationUpdate(configRepository, specFetcher));
   }
 
@@ -240,7 +237,7 @@ public class DestinationHandler {
 
     // remove secrets from config before returning the read
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
-    dci.setConfiguration(secretProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+    dci.setConfiguration(JsonSecretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());

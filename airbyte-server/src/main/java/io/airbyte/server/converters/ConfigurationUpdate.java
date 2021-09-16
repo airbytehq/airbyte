@@ -25,7 +25,6 @@
 package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
@@ -34,6 +33,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -43,17 +43,10 @@ public class ConfigurationUpdate {
 
   private final ConfigRepository configRepository;
   private final SpecFetcher specFetcher;
-  private final JsonSecretsProcessor secretsProcessor;
 
   public ConfigurationUpdate(ConfigRepository configRepository, SpecFetcher specFetcher) {
-    this(configRepository, specFetcher, new JsonSecretsProcessor());
-  }
-
-  @VisibleForTesting
-  ConfigurationUpdate(ConfigRepository configRepository, SpecFetcher specFetcher, JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
     this.specFetcher = specFetcher;
-    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceConnection source(UUID sourceId, String sourceName, JsonNode newConfiguration)
@@ -66,7 +59,7 @@ public class ConfigurationUpdate {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current source to the incoming updated source
-    final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
+    final JsonNode updatedConfiguration = JsonSecretsProcessor.copySecrets(
         persistedSource.getConfiguration(),
         newConfiguration,
         spec.getConnectionSpecification());
@@ -85,7 +78,7 @@ public class ConfigurationUpdate {
     final String imageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current destination to the incoming updated destination
-    final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
+    final JsonNode updatedConfiguration = JsonSecretsProcessor.copySecrets(
         persistedDestination.getConfiguration(),
         newConfiguration,
         spec.getConnectionSpecification());
