@@ -8,6 +8,10 @@ assert_root
 
 echo "Starting app..."
 
+SSGC=test -n "$SECRET_STORE_GCP_CREDENTIALS"
+SSGP=test -n "$SECRET_STORE_GCP_PROJECT_ID"
+echo "...Does SECRET_STORE_GCP_CREDENTIALS have a value? $SSGC $SSGP "
+
 # todo (cgardens) - docker-compose 1.27.3 contained a bug that causes a failure if the volume path
 #  does not exist when the volume is created. It was fixed in 1.27.4. Github actions virtual envs,
 #  however, new ubuntu release upgraded to 1.27.3 on 09/24/20. Once github actions virtual envs
@@ -24,9 +28,7 @@ sleep 10 # TODO need a better way to wait
 # todo (airbyte-jenny), once kube tests are stable, this can potentially be reintegrated to there.
 # it is separate for now because the kube tests are experiencing transient failures.
 echo "Running config persistence integration tests..."
-SSGC=[[ -n $SECRET_STORE_GCP_CREDENTIALS ]]
-SSGP=[[ -n $SECRET_STORE_GCP_PROJECT_ID ]]
-echo "...Does SECRET_STORE_GCP_CREDENTIALS have a value? $SSGC $SSGP "
+
 SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true \
 SECRET_STORE_GCP_CREDENTIALS=${SECRET_STORE_GCP_CREDENTIALS} \
 SECRET_STORE_GCP_PROJECT_ID=${SECRET_STORE_GCP_PROJECT_ID} \
