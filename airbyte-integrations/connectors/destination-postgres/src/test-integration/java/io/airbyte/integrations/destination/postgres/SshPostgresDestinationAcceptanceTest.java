@@ -36,11 +36,6 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
@@ -49,205 +44,207 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
 import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
 
 // todo (cgardens) - likely some of this could be further de-duplicated with
 // PostgresDestinationAcceptanceTest.
+
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
 public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+    private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+    private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  private String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+    private static final String SSH_USER = "sshuser";
+    private static final String SSH_PASSWORD = "secret";
+    private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+    private static final Network network = Network.newNetwork();
 
-  private PostgreSQLContainer<?> db;
-  private GenericContainer bastion;
-  private final Network network = Network.newNetwork();
+    private static PostgreSQLContainer<?> db;
+    private static GenericContainer bastion;
 
-  public abstract Path getConfigFilePath();
+    public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
-  @Override
-  protected String getImageName() {
-    return "airbyte/destination-postgres:dev";
-  }
-
-  @Override
-  protected JsonNode getConfig() {
-
-    return Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-                    .getNetworks()
-                    .get(((Network.NetworkImpl) network).getName())
-                    .getIpAddress()))
-            .put("username", db.getUsername())
-            .put("password", db.getPassword())
-            .put("schema", schemaName)
-            .put("port", db.getExposedPorts().get(0))
-            .put("database", db.getDatabaseName())
-            .put("ssl", false)
-                    .put("tunnel_method",Jsons.jsonNode(ImmutableMap.builder()
-                                    .put("tunnel_host",
-                                            Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
-                                            .getNetworks()
-                                            .get(((Network.NetworkImpl) network).getName())
-                                                    .getIpAddress()))
-                                    .put("tunnel_method", SSH_PASSWORD_AUTH)
-                                    .put("tunnel_port", bastion.getExposedPorts().get(0))
-                                    .put("tunnel_user", "root")
-                                    .put("tunnel_user_password", "root")
-                            .build()))
-            .build());
-//    return q;
-//    final JsonNode config = getConfigFromSecretsFile();
-//    // do everything in a randomly generated schema so that we can wipe it out at the end.
-//    ((ObjectNode) config).put("schema", schemaName);
-//    return config;
-  }
-
-  private JsonNode getConfigFromSecretsFile() {
-    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
-  }
-
-  @Override
-  protected JsonNode getFailCheckConfig() {
-    final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password");
-    return clone;
-  }
-
-  @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
-      throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
-      throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // //tableName = "\"" + tableName + "\"";
-    // }
-    return retrieveRecordsFromTable(tableName, namespace);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
+    @Override
+    protected String getImageName() {
+        return "airbyte/destination-postgres:dev";
     }
-    return result;
-  }
 
-  private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(),
-            config.get("database").asText()));
-  }
+    @Override
+    protected JsonNode getConfig() {
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    final JsonNode config = getConfig();
-    return SshTunnel.sshWrap(
-        config,
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(
-                ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(r -> r.formatJSON(JSON_FORMAT))
-                    .map(Jsons::deserialize)
-                    .collect(Collectors.toList())));
-  }
+        SshTunnel.TunnelMethod tunnelMethod = getTunnelMethod();
 
-  @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+        return Jsons.jsonNode(ImmutableMap.builder()
+                .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+                        .getNetworks()
+                        .get(((Network.NetworkImpl) network).getName())
+                        .getIpAddress()))
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .put("schema", schemaName)
+                .put("port", db.getExposedPorts().get(0))
+                .put("database", db.getDatabaseName())
+                .put("ssl", false)
+                .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
+                        .put("tunnel_host",
+                                Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
+                                        .getNetworks()
+                                        .get(((Network.NetworkImpl) network).getName())
+                                        .getIpAddress()))
+                        .put("tunnel_method", tunnelMethod)
+                        .put("tunnel_port", bastion.getExposedPorts().get(0))
+                        .put("tunnel_user", SSH_USER)
+                        .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
+                        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? IOs.readFile(Path.of("secrets/id_rsa")) : "")
+                        .build()))
+                .build());
+    }
 
-    startTestContainers();
-    // do everything in a randomly generated schema so that we can wipe it out at the end.
-    SshTunnel.sshWrap(
-        getConfig(),
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
-        });
-  }
+    @Override
+    protected JsonNode getFailCheckConfig() {
+        final JsonNode clone = Jsons.clone(getConfig());
+        ((ObjectNode) clone).put("password", "wrong password");
+        return clone;
+    }
 
-  private void startTestContainers() {
-    bastion = new GenericContainer(
-            new ImageFromDockerfile()
-                    .withDockerfileFromBuilder(builder ->
-                            builder
-                                    .from("ubuntu:18.04")
-                                    .run("apt-get update")
-                                    .run("apt-get install -y openssh-server")
-                                    .run("mkdir /var/run/sshd")
-                                    .run("echo 'root:root' |chpasswd")
-                                    .run("sed -ri 's/^#?PermitRootLogin\\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config")
-                                    .run("sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config")
-                                    .run("mkdir /root/.ssh")
-                                    .run("apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*")
-                                    .cmd("/usr/sbin/sshd", "-D")
-                                    .build()))
-            .withNetwork(network)
-            .withExposedPorts(22);
+    @Override
+    protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                             final String streamName,
+                                             final String namespace,
+                                             final JsonNode streamSchema)
+            throws Exception {
+        return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+                .stream()
+                .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+                .collect(Collectors.toList());
+    }
 
-    db = new PostgreSQLContainer<>
-            ("postgres:13-alpine")
-            .withNetwork(network);
+    @Override
+    protected boolean supportsNormalization() {
+        return true;
+    }
 
-    db.start();
-    bastion.start();
-  }
+    @Override
+    protected boolean supportsDBT() {
+        return true;
+    }
 
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    // blow away the test schema at the end.
-    SshTunnel.sshWrap(
-        getConfig(),
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
-        });
-  }
+    @Override
+    protected boolean implementsNamespaces() {
+        return true;
+    }
+
+    @Override
+    protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+            throws Exception {
+        final String tableName = namingResolver.getIdentifier(streamName);
+        // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+        // use quoted names
+        // if (!tableName.startsWith("\"")) {
+        // // Currently, Normalization always quote tables identifiers
+        // //tableName = "\"" + tableName + "\"";
+        // }
+        return retrieveRecordsFromTable(tableName, namespace);
+    }
+
+    @Override
+    protected List<String> resolveIdentifier(final String identifier) {
+        final List<String> result = new ArrayList<>();
+        final String resolved = namingResolver.getIdentifier(identifier);
+        result.add(identifier);
+        result.add(resolved);
+        if (!resolved.startsWith("\"")) {
+            result.add(resolved.toLowerCase());
+            result.add(resolved.toUpperCase());
+        }
+        return result;
+    }
+
+    private static Database getDatabaseFromConfig(final JsonNode config) {
+        return Databases.createPostgresDatabase(
+                config.get("username").asText(),
+                config.get("password").asText(),
+                String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(),
+                        config.get("database").asText()));
+    }
+
+    private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+        final JsonNode config = getConfig();
+        return SshTunnel.sshWrap(
+                config,
+                PostgresDestination.HOST_KEY,
+                PostgresDestination.PORT_KEY,
+                (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
+                        .query(
+                                ctx -> ctx
+                                        .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                                        .stream()
+                                        .map(r -> r.formatJSON(JSON_FORMAT))
+                                        .map(Jsons::deserialize)
+                                        .collect(Collectors.toList())));
+    }
+
+    @Override
+    protected void setup(final TestDestinationEnv testEnv) throws Exception {
+
+        startTestContainers();
+        // do everything in a randomly generated schema so that we can wipe it out at the end.
+        SshTunnel.sshWrap(
+                getConfig(),
+                PostgresDestination.HOST_KEY,
+                PostgresDestination.PORT_KEY,
+                mangledConfig -> {
+                    getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+                });
+    }
+
+    private static void startTestContainers() {
+
+        bastion = new GenericContainer(new ImageFromDockerfile("bastion-test")
+                        .withDockerfile(Paths.get("secrets/Dockerfile")))
+                .withNetwork(network)
+                .withExposedPorts(22);
+
+        db = new PostgreSQLContainer<>("postgres:13-alpine")
+                .withNetwork(network);
+
+        db.start();
+        bastion.start();
+    }
+
+    @Override
+    protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+        // blow away the test schema at the end.
+        SshTunnel.sshWrap(
+                getConfig(),
+                PostgresDestination.HOST_KEY,
+                PostgresDestination.PORT_KEY,
+                mangledConfig -> {
+                    getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
+                });
+
+        stopAndCloseContainers();
+    }
+
+    private static void stopAndCloseContainers() {
+        db.stop();
+        db.close();
+        bastion.stop();
+        bastion.close();
+        network.close();
+    }
 
 }
