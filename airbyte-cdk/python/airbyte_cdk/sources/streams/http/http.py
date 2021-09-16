@@ -394,7 +394,7 @@ class HttpSubStream(HttpStream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
-                sync_mode=sync_mode,
+                sync_mode=SyncMode.full_refresh,
                 cursor_field=cursor_field,
                 stream_state=stream_state
         )
@@ -410,4 +410,4 @@ class HttpSubStream(HttpStream, ABC):
 
             # iterate over all parent records with current stream_slice
             for record in parent_records:
-                yield record
+                yield {"parent": record}
