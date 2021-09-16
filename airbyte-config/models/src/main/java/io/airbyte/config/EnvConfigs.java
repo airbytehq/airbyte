@@ -201,7 +201,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getSecretStoreGcpCredentials() {
-    return getEnv(SECRET_STORE_GCP_PROJECT_ID);
+    return getEnv(SECRET_STORE_GCP_CREDENTIALS);
   }
 
   @Override
