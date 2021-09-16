@@ -17,6 +17,8 @@ import Indicator from "components/Indicator";
 import Source from "./components/SourceIcon";
 import Connections from "./components/ConnectionsIcon";
 import Destination from "./components/DestinationIcon";
+import Onboarding from "./components/OnboardingIcon";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Bar = styled.nav`
   width: 100px;
@@ -103,6 +105,7 @@ const Notification = styled(Indicator)`
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
   const config = useConfig();
+  const { workspace } = useWorkspace();
 
   return (
     <Bar>
@@ -111,6 +114,16 @@ const SideBar: React.FC = () => {
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
+          {workspace.displaySetupWizard ? (
+            <li>
+              <MenuItem to={Routes.Onboarding} activeClassName="active">
+                <Onboarding />
+                <Text>
+                  <FormattedMessage id="sidebar.onboarding" />
+                </Text>
+              </MenuItem>
+            </li>
+          ) : null}
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
               <Connections />

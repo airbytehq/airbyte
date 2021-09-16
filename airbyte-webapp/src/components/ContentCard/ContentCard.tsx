@@ -7,6 +7,7 @@ type IProps = {
   title?: string | React.ReactNode;
   className?: string;
   onClick?: () => void;
+  full?: boolean;
 };
 
 const Title = styled(H5)`
@@ -19,7 +20,7 @@ const Title = styled(H5)`
 `;
 
 const ContentCard: React.FC<IProps> = (props) => (
-  <Card className={props.className} onClick={props.onClick}>
+  <Card className={props.className} onClick={props.onClick} full={props.full}>
     {props.title ? <Title>{props.title}</Title> : null}
     {props.children}
   </Card>

@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { useResource } from "rest-hooks";
 
-import { useConfig } from "config";
-
-import { Link } from "components";
-import { H2 } from "components";
-import StepsMenu from "components/StepsMenu";
 import HeadTitle from "components/HeadTitle";
-import Version from "components/Version";
-
 import useSource, { useSourceList } from "hooks/services/useSourceHook";
 import useDestination, {
   useDestinationList,
 } from "hooks/services/useDestinationHook";
+import useConnection, {
+  useConnectionList,
+} from "hooks/services/useConnectionHook";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -25,65 +18,37 @@ import useGetStepsConfig from "./useStepsConfig";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
+import WelcomeStep from "./components/WelcomeStep";
+import FinalStep from "./components/FinalStep";
+import LetterLine from "./components/LetterLine";
 import { StepType } from "./types";
 import { useAnalytics } from "hooks/useAnalytics";
+import StepsCounter from "./components/StepsCounter";
+import LoadingPage from "components/LoadingPage";
+import useWorkspace from "hooks/services/useWorkspace";
+import useRouterHook from "hooks/useRouter";
+import { Routes } from "pages/routes";
 
-const Content = styled.div<{ big?: boolean }>`
+const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
-  max-width: ${({ big }) => (big ? 1140 : 813)}px;
+  max-width: ${({ big, medium }) => (big ? 1140 : medium ? 730 : 550)}px;
   margin: 0 auto;
-  padding: 33px 0 13px;
+  padding: 75px 0 30px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
   min-height: 100%;
-  overflow: hidden;
+  position: relative;
+  z-index: 2;
 `;
-
-const Main = styled.div`
+const ScreenContent = styled.div`
   width: 100%;
-`;
-
-const Img = styled.img`
-  text-align: center;
-  width: 100%;
-`;
-
-const MainTitle = styled(H2)`
-  margin-top: -39px;
-  font-family: ${({ theme }) => theme.highlightFont};
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  letter-spacing: 0.008em;
-  font-weight: bold;
-`;
-
-const Subtitle = styled.div`
-  font-size: 14px;
-  line-height: 21px;
-  color: ${({ theme }) => theme.greyColor40};
-  text-align: center;
-  margin-top: 7px;
-`;
-
-const StepsCover = styled.div`
-  margin: 33px 0 28px;
-`;
-
-const TutorialLink = styled(Link)`
-  margin-top: 32px;
-  font-size: 14px;
-  text-align: center;
-  display: block;
-`;
-
-const PlayIcon = styled(FontAwesomeIcon)`
-  margin-right: 6px;
+  position: relative;
 `;
 
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalytics();
-  const config = useConfig();
+  const { push } = useRouterHook();
 
   useEffect(() => {
     analyticsService.page("Onboarding Page");
@@ -91,7 +56,8 @@ const OnboardingPage: React.FC = () => {
 
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
-
+  const { connections } = useConnectionList();
+  const { syncConnection } = useConnection();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}
@@ -103,6 +69,7 @@ const OnboardingPage: React.FC = () => {
 
   const { createSource, recreateSource } = useSource();
   const { createDestination, recreateDestination } = useDestination();
+  const { finishOnboarding } = useWorkspace();
 
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -119,6 +86,7 @@ const OnboardingPage: React.FC = () => {
   const { currentStep, setCurrentStep, steps } = useGetStepsConfig(
     !!sources.length,
     !!destinations.length,
+    !!connections.length,
     afterUpdateStep
   );
 
@@ -129,6 +97,11 @@ const OnboardingPage: React.FC = () => {
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
 
   const renderStep = () => {
+    if (currentStep === StepType.INSTRUCTION) {
+      const onStart = () => setCurrentStep(StepType.CREATE_SOURCE);
+      //TODO: add username
+      return <WelcomeStep onSubmit={onStart} userName="" />;
+    }
     if (currentStep === StepType.CREATE_SOURCE) {
       const onSubmitSourceStep = async (values: {
         name: string;
@@ -212,7 +185,6 @@ const OnboardingPage: React.FC = () => {
           availableServices={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          currentSourceDefinitionId={sources[0].sourceDefinitionId}
           // destination={
           //   destinations.length && !successRequest ? destinations[0] : undefined
           // }
@@ -220,42 +192,51 @@ const OnboardingPage: React.FC = () => {
       );
     }
 
+    if (currentStep === StepType.SET_UP_CONNECTION) {
+      return (
+        <ConnectionStep
+          errorStatus={errorStatusRequest?.status}
+          source={sources[0]}
+          destination={destinations[0]}
+          afterSubmitConnection={() => setCurrentStep(StepType.FINAl)}
+        />
+      );
+    }
+
+    const onSync = () => syncConnection(connections[0]);
+    const onCloseOnboarding = () => {
+      finishOnboarding();
+      push(Routes.Root);
+    };
+
     return (
-      <ConnectionStep
-        errorStatus={errorStatusRequest?.status}
-        source={sources[0]}
-        destination={destinations[0]}
+      <FinalStep
+        connectionId={connections[0].connectionId}
+        onSync={onSync}
+        onFinishOnboarding={onCloseOnboarding}
       />
     );
   };
 
   return (
-    <Content big={currentStep === StepType.SET_UP_CONNECTION}>
-      <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
-      <Main>
-        <Img src="/welcome.svg" height={132} />
-        <MainTitle center>
-          <FormattedMessage id="onboarding.title" />
-        </MainTitle>
-        <Subtitle>
-          <FormattedMessage id="onboarding.subtitle" />
-        </Subtitle>
-        <StepsCover>
-          <StepsMenu data={steps} activeStep={currentStep} />
-        </StepsCover>
-        {renderStep()}
-        <TutorialLink
-          as="a"
-          $clear
-          target="_blank"
-          href={config.ui.tutorialLink}
-        >
-          <PlayIcon icon={faPlay} />
-          <FormattedMessage id="onboarding.tutorial" />
-        </TutorialLink>
-      </Main>
-      <Version />
-    </Content>
+    <ScreenContent>
+      {currentStep === StepType.CREATE_SOURCE ? (
+        <LetterLine exit={successRequest} />
+      ) : currentStep === StepType.CREATE_DESTINATION ? (
+        <LetterLine onRight exit={successRequest} />
+      ) : null}
+      <Content
+        big={currentStep === StepType.SET_UP_CONNECTION}
+        medium={
+          currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl
+        }
+      >
+        <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
+        <StepsCounter steps={steps} currentStep={currentStep} />
+
+        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+      </Content>
+    </ScreenContent>
   );
 };
 
