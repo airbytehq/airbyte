@@ -157,15 +157,13 @@ YAML reference:
 - [StandardSync](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSync.yaml)
 - [NamespaceDefinitionType](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/NamespaceDefinitionType.yaml)
 
-The `sourceId` and `destination
-
 | Column | Type  | Required | Default | Notes |
 | ------ | :---: | :---:    | :---:   | ---   |
 | namespace_type | varchar(50) | yes | | String enum: "source", "destination", "customformat". |
 | namespace_format | varchar(255) | | null | E.g. "${SOURCE_NAMESPACE}" |
 | prefix | varchar(255) |
-| source_id | char(36) | yes | | |
-| destination_id | char(36) | yes | | |
+| source_id | char(36) | yes | | Foreign key. Index. |
+| destination_id | char(36) | yes | | Foreign key. Index. |
 | name | varchar(255) | yes | | |
 | catalog | jsonb | yes | | |
 | status | varchar(50) | yes | "inactive" | |
