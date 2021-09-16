@@ -101,7 +101,10 @@ public class GoogleSecretsManager {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
     try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
+      System.out.println("Project ID: " + projectId);
+      System.out.println("Secret ID: " + secretId);
       SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "latest");
+      System.out.println(secretVersionName);
       AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
       return true;
     } catch (com.google.api.gax.rpc.NotFoundException e) {

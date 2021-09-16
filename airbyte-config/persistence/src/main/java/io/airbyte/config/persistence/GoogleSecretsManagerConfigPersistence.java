@@ -116,6 +116,7 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
   @Override
   public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException {
     String keyName = generateKeyNameFromType(configType, configId);
+    System.out.println("keyname " + keyName);
     GoogleSecretsManager.saveSecret(keyName, Jsons.serialize(config));
   }
 
