@@ -24,6 +24,9 @@ sleep 10 # TODO need a better way to wait
 # todo (airbyte-jenny), once kube tests are stable, this can potentially be reintegrated to there.
 # it is separate for now because the kube tests are experiencing transient failures.
 echo "Running config persistence integration tests..."
+SSGC=[[ -n $SECRET_STORE_GCP_CREDENTIALS ]]
+SSGP=[[ -n $SECRET_STORE_GCP_PROJECT_ID ]]
+echo "...Does SECRET_STORE_GCP_CREDENTIALS have a value? $SSGC $SSGP "
 SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true \
 SECRET_STORE_GCP_CREDENTIALS=${SECRET_STORE_GCP_CREDENTIALS} \
 SECRET_STORE_GCP_PROJECT_ID=${SECRET_STORE_GCP_PROJECT_ID} \
