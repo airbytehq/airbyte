@@ -35,7 +35,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .transform import Transformer
+from .transform import DataTypeEnforcer
 from .utils import ShopifyRateLimiter as limiter
 
 
@@ -52,7 +52,7 @@ class ShopifyStream(HttpStream, ABC):
 
     def __init__(self, shop: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._transformer = Transformer(self.get_json_schema())
+        self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.start_date = start_date
         self.shop = shop
 

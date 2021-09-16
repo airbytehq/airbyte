@@ -26,7 +26,7 @@ from decimal import Decimal
 from typing import Any, Iterable, List, Mapping, MutableMapping
 
 
-class Transformer:
+class DataTypeEnforcer:
     """
     Transform class was implemented according to issue #4841
     Shopify API returns price fields as a string and it should be converted to the number
@@ -41,6 +41,8 @@ class Transformer:
     _transform_array(self, array: List[Any], item_properties: Mapping[str, Any])
         Some fields type is array. Items inside array contain price fields, which should be transformed
         This method iterate over items in array, compare schema types and convert if necessary
+    transform(self, field: Any, schema: Mapping[str, Any] = None)
+        Accepts field of Any type and schema, compere type of field and type in schema, convert if necessary
     """
 
     def __init__(self, schema: Mapping[str, Any], **kwargs):
@@ -48,7 +50,7 @@ class Transformer:
         self._schema = schema
 
     @staticmethod
-    def _get_json_types(value_type) -> List[str]:
+    def _get_json_types(value_type: Any) -> List[str]:
         json_types = {
             str: ["string"],
             int: ["integer", "number"],
@@ -98,19 +100,22 @@ class Transformer:
                 record[object_property] = self.transform(value, object_properties)
         return record
 
-    def transform(self, record: MutableMapping[str, Any], schema: Mapping[str, Any] = None) -> Iterable[MutableMapping]:
+    def transform(self, field: Any, schema: Mapping[str, Any] = None) -> Iterable[MutableMapping]:
         schema = schema if schema is not None else self._schema
+        # get available types from schema
         schema_types = self._types_from_schema(schema)
-        if schema_types:
-            value_json_types = self._get_json_types(type(record))
+        if schema_types and field is not None:
+            # if types presented in schema and field is not None, get available JSON Schema types for field
+            # and not null types from schema, check if field JSON Schema types presented in schema
+            field_json_types = self._get_json_types(type(field))
             schema_type = self._first_non_null_type(schema_types)
-            if not any(value_json_type in schema_types for value_json_type in value_json_types):
+            if not any(field_json_type in schema_types for field_json_type in field_json_types):
                 if schema_type == "number":
-                    return self._transform_number(record)
+                    return self._transform_number(field)
             if schema_type == "object":
                 properties = schema.get("properties", {})
-                return self._transform_object(record, properties)
+                return self._transform_object(field, properties)
             if schema_type == "array":
                 properties = schema.get("items", {})
-                return self._transform_array(record, properties)
-        return record
+                return self._transform_array(field, properties)
+        return field
