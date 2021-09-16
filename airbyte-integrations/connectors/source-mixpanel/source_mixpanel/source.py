@@ -58,7 +58,7 @@ class MixpanelStream(HttpStream, ABC):
 
     @property
     def url_base(self):
-        prefix = "eu." if self.region["name"] == "eu" else ""
+        prefix = "eu." if self.region == "EU" else ""
         return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
@@ -67,7 +67,7 @@ class MixpanelStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
-        region: Mapping[str, str] = None,
+        region: str = None,
         start_date: Union[date, str] = None,
         end_date: Union[date, str] = None,
         date_window_size: int = 30,  # in days
@@ -80,7 +80,7 @@ class MixpanelStream(HttpStream, ABC):
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
-        self.region = region if region else {"name": "us"}
+        self.region = region if region else "US"
 
         super().__init__(authenticator=authenticator)
 
@@ -705,7 +705,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     @property
     def url_base(self):
-        prefix = "-eu" if self.region["name"] == "eu" else ""
+        prefix = "-eu" if self.region == "EU" else ""
         return f"https://data{prefix}.mixpanel.com/api/2.0/"
 
     def path(self, **kwargs) -> str:

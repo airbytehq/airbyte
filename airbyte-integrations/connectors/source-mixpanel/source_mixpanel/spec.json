@@ -40,37 +40,9 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
       },
       "region": {
-        "title": "Project region",
-        "type": "object",
-        "description": "Where data is stored for your project.",
-        "oneOf": [
-          {
-            "title": "United States",
-            "additionalProperties": false,
-            "description": "Project data stored in United States.",
-            "required": ["name"],
-            "properties": {
-              "name": {
-                "type": "string",
-                "enum": ["us"],
-                "const": "us"
-              }
-            }
-          },
-          {
-            "title": "European Union",
-            "additionalProperties": false,
-            "description": "Project data stored in European Union.",
-            "required": ["name"],
-            "properties": {
-              "name": {
-                "type": "string",
-                "enum": ["eu"],
-                "const": "eu"
-              }
-            }
-          }
-        ]
+        "type": "string",
+        "enum": ["US", "EU"],
+        "default": "US"
       }
     }
   }

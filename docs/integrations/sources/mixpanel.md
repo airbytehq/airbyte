@@ -49,7 +49,7 @@ The Mixpanel connector should not run into Mixpanel API limitations under normal
 
 Please read [Find API Secret](https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-).
 
-If you get `400` response codes, make sure that project region matches mixpanel account region. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
+Select the correct region (EU or US) for your Mixpanel project. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
 
 
 ## CHANGELOG
