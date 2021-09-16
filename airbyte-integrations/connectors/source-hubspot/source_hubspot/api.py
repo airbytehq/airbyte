@@ -621,8 +621,8 @@ class DealStageHistoryStream(Stream):
 class DealStream(CRMObjectStream):
     """Deals, API v3"""
 
-    def __init__(self, associations: List[str] = None, **kwargs):
-        super().__init__(entity="deal", associations=associations, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(entity="deal", **kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
 
     def list(self, fields) -> Iterable:
