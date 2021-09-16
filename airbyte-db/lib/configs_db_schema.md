@@ -1,28 +1,25 @@
 # Configs Database Schema Draft
 
-This is temporarily file that documents the design of the new configs database. Currently everything lives in the `airbyte_configs` table. We want to normalize it to one table per config type. Relevant issue: [#5479](https://github.com/airbytehq/airbyte/issues/5479).
+This is a temporarily file that documents the design of the new configs database. Currently everything lives in the `airbyte_configs` table. We want to normalize it to one table per config type. Relevant issue: [#5479](https://github.com/airbytehq/airbyte/issues/5479).
 
 ## Convention
 - The tables are as similar to the YAML definition as possible.
   - Table names are in snake case and singular form.
   - Column names are in snake case.
-  - Prefer to keep the type even if it may not be the best SQL type.
-    - For example, currently we use `long` type to track start and end time in standard sync summary. The relevant column in the normalized table will keep this type instead of changing it to timestamp with time zone. The purpose is to try not to change the code logic as much as possible to limit the scope of this project.
 - Use ANSI SQL as much as possible so that we are not locked in Postgres.
   - Each table has an `id` column as the primary key. Its type is `nchar(36)`. The `UUID` type is not used because UUID is not a standard SQL type.
   - String columns are `varchar(255)` by default.
-  - Enum columns are `varchar(50)`. Enum type is not a standard SQL type.
-    - Also modifying enum columns in Postgres requires a migration, and there is now easy way to check if an enum already exists.
-    - We always maintain enums in Java. There is no need to go through all the trouble to do that in the database again.
+  - Enum type is not used, because it is not a standard SQL type. It is replaced with `varchar(50)`.
+    - Also modifying enum columns in Postgres requires a migration, and there is no easy way to check if an enum already exists.
+    - We already maintain enums in Java. There is no need to go through all the trouble to do that in the database again.
 - Assign default column values whenever possible.
 - Foreign keys will be added to relevant tables.
   - The major benefit is that jOOQ can leverage that to generate convenient helper methods to create and query associated records.
-  - The downside is that config import will be tricky. But the config import system will be broken as we add more Flyway migrations, and needs to be redesigned any way.
-  - Foreign key columns are named as `<parent_table_name>_id`.
-  - Foreign key columns are always indexed.
+  - The downside is that config import will be tricky. But the config import system will be broken as we add more Flyway migrations, and needs to be redesigned anyway.
+  - Foreign key columns are named as `<parent_table_name>_id`. They are always indexed.
   - If the referenced table is polymorphic, the foreign key is broken down into two columns: `owner_type` and `owner_id`.
-- For complex properties, the proper will be expanded to its own table.
-  - The property is named as `<parent_table_name>_<property_name>`. For example, `WORKSPACE_NOTIFICATION` specifies the notifications for a `WORKSPACE`.
+- For complex properties, the properties will be expanded to its own table.
+  - The property table is named as `<parent_table_name>_<property_name>`. For example, `WORKSPACE_NOTIFICATION` specifies the notifications for a `WORKSPACE`.
 - Use Table-per-Type to implement table inheritance.
   - Comparison with other approaches: https://stackoverflow.com/a/3579462
   - There is a `<base_table_name>_type` column in the base table so that it is easy to know which child table to query. This column is indexed.
@@ -335,23 +332,22 @@ Input for `DBT_OPERATOR`.
 | dbt_operator_id | char(36) | | | Foreign key. Unique index. |
 | destination_configuration | jsonb | yes | | |
 
-### `OUTPUT`
+### `SYNC_OUTPUT`
 
 YAML reference:
 - Output
   - [StandardSyncOutput](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncOutput.yaml)
   - [ReplicationOutput](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ReplicationOutput.yaml)
-  - The above two models are identical, and merged into one.
 - Summary:
   - [StandardSyncSummary](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncSummary.yaml)
   - [ReplicationAttemptSummary](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ReplicationAttemptSummary.yaml)
   - The above two models are identical, and merged into the output model.
 - [ReplicationStatus](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ReplicationStatus.yaml)
 
-- This table combines two output config types: `STANDARD_SYNC_OUTPUT` and `REPLICATION_OUTPUT`, because these two types are the same.
-- The `STANDARD_SYNC_OUTPUT_SUMMARY` is merged into the output model, since they have a strict one-to-one relationship.
+- This table combines two output config types: `STANDARD_SYNC_OUTPUT` and `REPLICATION_OUTPUT`, because these two types are identical.
+- The `STANDARD_SYNC_OUTPUT_SUMMARY` and `REPLICATION_ATTEMPT_SUMMARY` are merged into the output model, since they are also identical, and the output and output summary have a strict one-to-one relationship.
 - Questions
-  - Currently, why is `STANDARD_SYNC_SUMMARY` defined separately from `STANDARD_SYNC_OUTPUT`?
+  - Currently, why is `STANDARD_SYNC_SUMMARY` defined separately from `STANDARD_SYNC_OUTPUT`? Should I not merge them?
 
 | Column | Type  | Required | Default | Notes |
 | ------ | :---: | :---:    | :---:   | ---   |
@@ -361,5 +357,5 @@ YAML reference:
 | status | varchar(50) | yes | | | String enum: "completed", "failed", "cancelled". |
 | records_synced | bigint | yes | 0 | |
 | bytes_synced | bigint | yes | 0 | |
-| start_time | bigint | yes | | Time in millis. |
-| end_time | bigint | yes | | Time in millis. |
+| start_time | bigint | yes | | Timestamp in millis. |
+| end_time | bigint | yes | | Timestamp in millis. |
