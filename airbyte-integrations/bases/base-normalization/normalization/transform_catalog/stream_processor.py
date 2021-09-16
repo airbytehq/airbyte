@@ -437,7 +437,8 @@ from {{ from_table }}
         elif is_timestamp_with_time_zone(definition):
             sql_type = jinja_call(f"type_timestamp_with_timezone({jinja_column})")
             if self.destination_type == DestinationType.SNOWFLAKE:
-                # snowflake uses case when statement to parse timestamp data
+                # snowflake uses case when statement to parse timestamp field
+                # in this case [cast] operator is not needed as data already converted to timestamp type
                 return sql_type
 
         elif is_date(definition):
