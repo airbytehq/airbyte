@@ -42,29 +42,27 @@ class ConnectorConfig(BaseModel):
         title = "Lever Hiring Spec"
 
     client_id: str = Field(
-        description="",
+        description="The client application id as provided when registering the application with Lever.",
     )
     client_secret: str = Field(
-        description="",
+        description="The application secret as provided when registering the application with Lever.",
         airbyte_secret=True,
     )
     refresh_token: str = Field(
-        description="",
+        description="The refresh token your application will need to submit to get a new access token after it's expired.",
     )
-    is_sandbox: bool = Field(
-        description="",
-    )
+    environment: str = Field(description="Sandbox or Production environment.", enum=["Sandbox", "Production"])
     start_date: str = Field(
-        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        description="UTC date and time in the format 2019-02-25T00:00:00Z. Any data before this date will not be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2021-04-25T00:00:00Z"],
     )
 
 
 class SourceLeverHiring(AbstractSource):
-    URL_SCHEMA = {
-        True: {"login": "https://sandbox-lever.auth0.com/", "api": "https://api.sandbox.lever.co/"},
-        False: {"login": "https://auth.lever.co/", "api": "https://api.lever.co/"},
+    URL_MAP_ACCORDING_ENVIRONMENT = {
+        "Sandbox": {"login": "https://sandbox-lever.auth0.com/", "api": "https://api.sandbox.lever.co/"},
+        "Production": {"login": "https://auth.lever.co/", "api": "https://api.lever.co/"},
     }
 
     def _get_access_token(self, config: Mapping[str, Any]) -> str:
@@ -74,7 +72,7 @@ class SourceLeverHiring(AbstractSource):
             "refresh_token": config["refresh_token"],
             "grant_type": "refresh_token",
         }
-        response = requests.post(f"{self.URL_SCHEMA[config['is_sandbox']]['login']}oauth/token", json=body)
+        response = requests.post(f"{self.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token", json=body)
         response.raise_for_status()
         return response.json()["access_token"]
 
@@ -85,7 +83,7 @@ class SourceLeverHiring(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         access_token = self._get_access_token(config)
         authenticator = TokenAuthenticator(access_token)
-        full_refresh_params = {"authenticator": authenticator, "base_url": self.URL_SCHEMA[config["is_sandbox"]]["api"]}
+        full_refresh_params = {"authenticator": authenticator, "base_url": self.URL_MAP_ACCORDING_ENVIRONMENT[config["environment"]]["api"]}
         stream_params_with_start_date = {**full_refresh_params, "start_dt": int(pendulum.parse(config["start_date"]).timestamp()) * 1000}
         return [
             Applications(**stream_params_with_start_date),
