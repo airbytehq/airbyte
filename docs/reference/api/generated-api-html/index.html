@@ -2296,6 +2296,12 @@ font-style: italic;
   "supportedDestinationSyncModes" : [ null, null ],
   "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "authSpecification" : {
+    "auth_type" : "oauth2.0",
+    "oauth2Specification" : {
+      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
+    }
+  },
   "jobInfo" : {
     "createdAt" : 0,
     "configId" : "configId",
@@ -4641,6 +4647,12 @@ font-style: italic;
     }
   },
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "authSpecification" : {
+    "auth_type" : "oauth2.0",
+    "oauth2Specification" : {
+      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
+    }
+  },
   "jobInfo" : {
     "createdAt" : 0,
     "configId" : "configId",
@@ -6004,6 +6016,7 @@ font-style: italic;
     <li><a href="#AttemptInfoRead"><code>AttemptInfoRead</code> - </a></li>
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
+    <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
     <li><a href="#CompleteDestinationOAuthRequest"><code>CompleteDestinationOAuthRequest</code> - </a></li>
@@ -6058,6 +6071,7 @@ font-style: italic;
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
+    <li><a href="#OAuth2Specification"><code>OAuth2Specification</code> - </a></li>
     <li><a href="#OAuthConsentRead"><code>OAuthConsentRead</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
     <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
@@ -6170,6 +6184,16 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AuthSpecification"><code>AuthSpecification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">auth_type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">oauth2.0</div>
+<div class="param">oauth2Specification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuth2Specification">OAuth2Specification</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="CheckConnectionRead"><code>CheckConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -6410,6 +6434,7 @@ font-style: italic;
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></span>  </div>
+<div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
 <div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
@@ -6657,6 +6682,13 @@ font-style: italic;
           </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="OAuth2Specification"><code>OAuth2Specification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>An object containing any metadata needed to describe this connector's Oauth flow</div>
+    <div class="field-items">
+      <div class="param">oauthFlowInitParameters (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the ConnectorSpecification of the referenced field. For example. Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']] </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="OAuthConsentRead"><code>OAuthConsentRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -6849,6 +6881,7 @@ font-style: italic;
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionSpecification">SourceDefinitionSpecification</a></span>  </div>
+<div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
