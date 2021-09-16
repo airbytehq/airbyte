@@ -1906,6 +1906,34 @@ components:
       description: The specification for what values are required to configure the sourceDefinition.
       type: object
       example: { user: { type: string } }
+    SourceAuthSpecification:
+      $ref: "#/components/schemas/AuthSpecification"
+    AuthSpecification:
+      type: object
+      properties:
+        auth_type:
+          type: string
+          enum: ["oauth2.0"] # Future auth types should be added here
+        oauth2Specification:
+          "$ref": "#/components/schemas/OAuth2Specification"
+    OAuth2Specification:
+      description: An object containing any metadata needed to describe this connector's Oauth flow
+      type: object
+      properties:
+        oauthFlowInitParameters:
+          description:
+            "Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow.
+            Each inner array represents the path in the ConnectorSpecification of the referenced field.
+            For example.
+            Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
+            If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']]
+            If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]"
+          type: array
+          items:
+            description: A list of strings which describes each parameter's path inside the ConnectionSpecification
+            type: array
+            items:
+              type: string
     SourceDefinitionSpecificationRead:
       type: object
       required:
@@ -1918,6 +1946,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        authSpecification:
+          $ref: "#/components/schemas/SourceAuthSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
@@ -2018,6 +2048,8 @@ components:
     DestinationDefinitionId:
       type: string
       format: uuid
+    DestinationAuthSpecification:
+      $ref: "#/components/schemas/AuthSpecification"
     DestinationDefinitionIdRequestBody:
       type: object
       required:
@@ -2101,6 +2133,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        authSpecification:
+          $ref: "#/components/schemas/DestinationAuthSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
         supportedDestinationSyncModes:

@@ -26,6 +26,7 @@ package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
@@ -67,6 +68,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.OauthModelConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -246,11 +248,18 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
-    return new SourceDefinitionSpecificationRead()
+    SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
+
+    Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
+    if (authSpec.isPresent()) {
+      specRead.setAuthSpecification(authSpec.get());
+    }
+
+    return specRead;
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
@@ -260,7 +269,8 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
-    return new DestinationDefinitionSpecificationRead()
+
+    DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
@@ -268,6 +278,13 @@ public class SchedulerHandler {
         .supportsNormalization(spec.getSupportsNormalization())
         .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
+
+    Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
+    if (authSpec.isPresent()) {
+      specRead.setAuthSpecification(authSpec.get());
+    }
+
+    return specRead;
   }
 
   public SynchronousResponse<ConnectorSpecification> getConnectorSpecification(String dockerImage) throws IOException {
@@ -352,7 +369,7 @@ public class SchedulerHandler {
 
   private void cancelTemporalWorkflowIfPresent(long jobId) throws IOException {
     var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
-                                                                                 // specific to a job id, allowing us to do this.
+    // specific to a job id, allowing us to do this.
     var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
     if (workflowId.isPresent()) {
