@@ -10,6 +10,9 @@ import Table from "components/Table";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
+import { User } from "../../../lib/domain/users";
+import useUser from "./hooks/useUser";
+import { useAuthService } from "../../../services/auth/AuthService";
 
 const Header = styled.div`
   display: flex;
@@ -27,6 +30,8 @@ export const UsersSettingsView: React.FC = () => {
   );
 
   const [modalIsOpen, toggleModal] = useToggle(false);
+  const { isDeleting, onDelete } = useUser();
+  const { user } = useAuthService();
 
   const columns = React.useMemo(
     () => [
@@ -52,16 +57,21 @@ export const UsersSettingsView: React.FC = () => {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
         accessor: "status",
-        Cell: (_: CellProps<any>) =>
+        Cell: ({ row }: CellProps<User>) =>
           [
-            <Button secondary>
+            <Button
+              disabled={user?.userId === row.original.userId}
+              secondary
+              onClick={() => onDelete(row.original.userId)}
+              isLoading={isDeleting}
+            >
               <FormattedMessage id="userSettings.user.remove" />
             </Button>,
             // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
-    []
+    [isDeleting, onDelete]
   );
   return (
     <>
