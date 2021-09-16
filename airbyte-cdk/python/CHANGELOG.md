@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.19
-Use standard logger with custom handler
+Use python standard logging instead of custom class
 
 ## 0.1.18
 Fix incremental stream not saved state when internal limit config set.

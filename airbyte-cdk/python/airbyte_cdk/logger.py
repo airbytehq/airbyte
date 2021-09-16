@@ -28,14 +28,13 @@ import traceback
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
-
 TRACE_LEVEL_NUM = 5
 
 
 def get_logger():
     logging.setLoggerClass(AirbyteNativeLogger)
     logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
-    logger = logging.getLogger('airbyte.source.zabbix')
+    logger = logging.getLogger("airbyte.source.zabbix")
     logger.setLevel(TRACE_LEVEL_NUM)
     handler = logging.StreamHandler(stream=sys.stdout)
     handler.setFormatter(AirbyteLogFormatter())
@@ -53,26 +52,22 @@ class AirbyteLogFormatter(logging.Formatter):
 class AirbyteNativeLogger(logging.Logger):
     def __init__(self, name):
         logging.Logger.__init__(self, name)
-        self.valid_log_types = {"FATAL": 50, "ERROR": 40, "WARN": 30, "INFO": 20, "DEBUG": 10, "TRACE": 5}
+        self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
 
     def log_by_prefix(self, msg, default_level):
         split_line = msg.split()
         first_word = next(iter(split_line), None)
         if first_word in self.valid_log_types:
-            log_level = self.valid_log_types.get(first_word)
+            log_level = logging.getLevelName(first_word)
             rendered_message = " ".join(split_line[1:])
         else:
-            log_level = self.valid_log_types.get(default_level, 20)
+            default_level = default_level if default_level in self.valid_log_types else "INFO"
+            log_level = logging.getLevelName(default_level)
             rendered_message = msg
         self.log(log_level, rendered_message)
 
-    def exception(self, msg, *args, exc_info=True, **kwargs):
-        msg = f"{msg}\n{traceback.format_exc()}"
-        self._log(logging.ERROR, msg, args, **kwargs)
-
     def trace(self, msg, *args, **kwargs):
-        if self.isEnabledFor(TRACE_LEVEL_NUM):
-            self._log(TRACE_LEVEL_NUM, msg, args, **kwargs)
+        self._log(TRACE_LEVEL_NUM, msg, args, **kwargs)
 
 
 class AirbyteLogger:
@@ -80,6 +75,7 @@ class AirbyteLogger:
         self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
 
     def log_by_prefix(self, message, default_level):
+        """Custom method, which takes log level from first word of message"""
         split_line = message.split()
         first_word = next(iter(split_line), None)
         if first_word in self.valid_log_types:
