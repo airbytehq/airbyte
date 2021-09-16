@@ -99,6 +99,7 @@ public class ArchiveHandlerTest {
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
   private EnvConfigs configs;
+  private ConnectorSpecification emptyConnectorSpec;
 
   private static class NoOpFileTtlManager extends FileTtlManager {
 
@@ -143,7 +144,7 @@ public class ArchiveHandlerTest {
     jobPersistence.setVersion(VERSION);
 
     final SpecFetcher specFetcher = mock(SpecFetcher.class);
-    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
+    emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
     when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
 
@@ -200,7 +201,7 @@ public class ArchiveHandlerTest {
         .withTombstone(false);
 
     // Write source connection and an old source definition.
-    configRepository.writeSourceConnection(sourceConnection);
+    configRepository.writeSourceConnection(sourceConnection, emptyConnectorSpec);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
 
     // Export, wipe, and import the configs.
@@ -321,7 +322,7 @@ public class ArchiveHandlerTest {
         .withSourceDefinitionId(configRepository.listStandardSources().get(0).getSourceDefinitionId())
         .withName("test-source")
         .withConfiguration(Jsons.emptyObject())
-        .withTombstone(false));
+        .withTombstone(false), emptyConnectorSpec);
     final UUID destinationId = UUID.randomUUID();
     configRepository.writeDestinationConnection(new DestinationConnection()
         .withDestinationId(destinationId)
@@ -329,7 +330,7 @@ public class ArchiveHandlerTest {
         .withDestinationDefinitionId(configRepository.listStandardDestinationDefinitions().get(0).getDestinationDefinitionId())
         .withName("test-destination")
         .withConfiguration(Jsons.emptyObject())
-        .withTombstone(false));
+        .withTombstone(false), emptyConnectorSpec);
   }
 
   private void assertSameConfigDump(Map<String, Stream<JsonNode>> expected, Map<String, Stream<JsonNode>> actual) {
