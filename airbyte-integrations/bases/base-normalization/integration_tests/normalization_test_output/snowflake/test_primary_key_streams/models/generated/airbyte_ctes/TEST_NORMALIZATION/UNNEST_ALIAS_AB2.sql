@@ -3,7 +3,7 @@
 select
     cast(ID as {{ dbt_utils.type_bigint() }}) as ID,
     CHILDREN,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('UNNEST_ALIAS_AB1') }}
 -- UNNEST_ALIAS
 

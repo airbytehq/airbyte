@@ -27,10 +27,12 @@ from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
+from deprecated import deprecated
 
 from .core import HttpAuthenticator
 
 
+@deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.Oauth2Authenticator instead")
 class Oauth2Authenticator(HttpAuthenticator):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.

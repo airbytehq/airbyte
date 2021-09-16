@@ -32,6 +32,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

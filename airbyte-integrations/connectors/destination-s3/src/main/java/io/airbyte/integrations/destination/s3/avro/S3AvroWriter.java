@@ -66,7 +66,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);

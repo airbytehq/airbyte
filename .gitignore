@@ -10,6 +10,9 @@ data
 .project
 .settings
 
+# Logs
+acceptance_tests_logs/
+
 # Secrets
 secrets
 !airbyte-integrations/connector-templates/**/secrets
