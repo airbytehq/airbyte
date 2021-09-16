@@ -26,33 +26,26 @@ package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.ssh.SshBastion;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
-import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
+import static io.airbyte.integrations.base.ssh.SshBastion.*;
 
 // todo (cgardens) - likely some of this could be further de-duplicated with
 // PostgresDestinationAcceptanceTest.
@@ -66,14 +59,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
     private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
     private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
-
-    private static final String SSH_USER = "sshuser";
-    private static final String SSH_PASSWORD = "secret";
     private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
-    private static final Network network = Network.newNetwork();
-
     private static PostgreSQLContainer<?> db;
-    private static GenericContainer bastion;
 
     public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -83,38 +70,12 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
     }
 
     @Override
-    protected JsonNode getConfig() {
-
-        SshTunnel.TunnelMethod tunnelMethod = getTunnelMethod();
-
-        return Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-                        .getNetworks()
-                        .get(((Network.NetworkImpl) network).getName())
-                        .getIpAddress()))
-                .put("username", db.getUsername())
-                .put("password", db.getPassword())
-                .put("schema", schemaName)
-                .put("port", db.getExposedPorts().get(0))
-                .put("database", db.getDatabaseName())
-                .put("ssl", false)
-                .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-                        .put("tunnel_host",
-                                Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
-                                        .getNetworks()
-                                        .get(((Network.NetworkImpl) network).getName())
-                                        .getIpAddress()))
-                        .put("tunnel_method", tunnelMethod)
-                        .put("tunnel_port", bastion.getExposedPorts().get(0))
-                        .put("tunnel_user", SSH_USER)
-                        .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
-                        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? IOs.readFile(Path.of("secrets/id_rsa")) : "")
-                        .build()))
-                .build());
+    protected JsonNode getConfig() throws IOException {
+        return SshBastion.getTunnelConfig(db, schemaName, getTunnelMethod());
     }
 
     @Override
-    protected JsonNode getFailCheckConfig() {
+    protected JsonNode getFailCheckConfig() throws IOException {
         final JsonNode clone = Jsons.clone(getConfig());
         ((ObjectNode) clone).put("password", "wrong password");
         return clone;
@@ -212,17 +173,10 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
     }
 
     private static void startTestContainers() {
-
-        bastion = new GenericContainer(new ImageFromDockerfile("bastion-test")
-                        .withDockerfile(Paths.get("secrets/Dockerfile")))
-                .withNetwork(network)
-                .withExposedPorts(22);
-
+        initAndStartBastion();
         db = new PostgreSQLContainer<>("postgres:13-alpine")
-                .withNetwork(network);
-
+                .withNetwork(getNetWork());
         db.start();
-        bastion.start();
     }
 
     @Override
@@ -236,15 +190,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
                     getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
                 });
 
-        stopAndCloseContainers();
-    }
-
-    private static void stopAndCloseContainers() {
-        db.stop();
-        db.close();
-        bastion.stop();
-        bastion.close();
-        network.close();
+        stopAndCloseContainers(db);
     }
 
 }

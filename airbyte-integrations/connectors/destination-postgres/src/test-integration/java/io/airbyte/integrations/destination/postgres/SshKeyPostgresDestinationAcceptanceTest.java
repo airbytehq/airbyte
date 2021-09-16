@@ -30,7 +30,7 @@ public class SshKeyPostgresDestinationAcceptanceTest extends SshPostgresDestinat
 
     @Override
     public SshTunnel.TunnelMethod getTunnelMethod() {
-        return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
+        return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
     }
 
 }
