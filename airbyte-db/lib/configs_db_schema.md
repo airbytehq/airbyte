@@ -6,7 +6,7 @@ This is temporarily file that documents the design of the new configs database. 
 - The tables are as similar to the YAML definition as possible.
   - Table names are in snake case and singular form.
   - Column names are in snake case.
-  - Prefer to keep the type even if it may not be the best SQL type.\
+  - Prefer to keep the type even if it may not be the best SQL type.
     - For example, currently we use `long` type to track start and end time in standard sync summary. The relevant column in the normalized table will keep this type instead of changing it to timestamp with time zone. The purpose is to try not to change the code logic as much as possible to limit the scope of this project.
 - Use ANSI SQL as much as possible so that we are not locked in Postgres.
   - Each table has an `id` column as the primary key. Its type is `nchar(36)`. The `UUID` type is not used because UUID is not a standard SQL type.
@@ -43,9 +43,10 @@ This is temporarily file that documents the design of the new configs database. 
     - Add new columns
       - Separate tables: need to add new columns to both tables.
       - One table: add new columns to one table.
+      - One table is better.
   - Do we expect the source and definition models to diverge in the future?
-    - If we use one table for both source and definition models, and they diverge in the future, we can use the table-per-type strategy and simply add extra tables for the model that needs extra properties. So this design works.
-  - Cost
+    - If we use one table for both source and definition models, and they diverge in the future, we can use the table-per-type strategy and simply add extra tables for the model that needs extra properties. Still one table is better
+  - Based on the above dimensions, I am leaning towards merging the two tables.
 
 ## Common Columns
 | Column | Type  | Required | Default | Notes |
