@@ -17,12 +17,15 @@ import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
-import useRouter from "../useRouter";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
-import { equal } from "utils/objects";
 import { useAnalytics } from "hooks/useAnalytics";
+import useRouter from "hooks/useRouter";
+import { useGetService } from "core/servicesProvider";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
+
+import { equal } from "utils/objects";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -65,8 +68,13 @@ type UpdateStateConnection = {
 
 function useConnectionService(): ConnectionService {
   const config = useConfig();
+  const middlewares = useGetService<RequestMiddleware[]>(
+    "DefaultRequestMiddlewares"
+  );
 
-  return useMemo(() => new ConnectionService(config.apiUrl), [config]);
+  return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
+    config,
+  ]);
 }
 
 export const useConnectionLoad = (
