@@ -63,8 +63,8 @@ class SecretsHelpersTest {
     final var splitConfig = SecretsHelpers.split(uuidIterator::next, workspaceId, fullConfig, spec);
     final var expectedPartialConfig = Jsons.deserialize(MoreResources.readResource("expected_partial_config.json"));
     final var expectedSecretMapping = Map.of(
-        "workspace_" + workspaceId + "_secret_" + uuids.get(0), "hunter1",
-        "workspace_" + workspaceId + "_secret_" + uuids.get(1), "hunter2");
+        "workspace_" + workspaceId + "_secret_" + uuids.get(0) + "_v1", "hunter1",
+        "workspace_" + workspaceId + "_secret_" + uuids.get(1) + "_v1", "hunter2");
 
     assertEquals(expectedPartialConfig, splitConfig.getPartialConfig());
     assertEquals(expectedSecretMapping, splitConfig.getSecretIdToPayload());

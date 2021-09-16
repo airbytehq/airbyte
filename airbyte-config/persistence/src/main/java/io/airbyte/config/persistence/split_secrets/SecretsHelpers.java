@@ -26,11 +26,16 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.Preconditions;
 import com.jayway.jsonpath.JsonPath;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -44,22 +49,79 @@ public class SecretsHelpers {
   // todo: test an array of secrets - what if you have an array of oneOf? - harddest case is an array
   // of oneofs?
   // todo: CREATION spec + full config -> coordconfig+secrets
-  public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
-    Preconditions.checkArgument(fullConfig instanceof ObjectNode, "Full config must be a JSON object!");
 
-    // todo: get paths for all secrets in the spec
-    final var schema = spec.getConnectionSpecification();
-
-    System.out.println("output = " + JsonPath.read(schema.toString(), "$[?(@.airbyte_secret == true)]").toString());
-    System.out.println("output = " + JsonPath.read(schema.toString(), "$.*.[?(@.airbyte_secret == true)]").toString());
-    JsonNode secretTrees = schema.at(JsonPointer.compile("$[?(@.airbyte_secret == true)]"));
-    System.out.println("secretTrees = " + secretTrees);
-
-    final var secretParents = schema.findParents("airbyte_secret"); // todo: use constant
-
-    for (JsonNode secretParent : secretParents) {
-      System.out.println("secretParent = " + secretParent);
+    public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
+        return split(uuidSupplier, workspaceId, fullConfig, spec.getConnectionSpecification());
     }
+
+  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, JsonNode spec) {
+
+      // todo: check if these are necessary
+      final var obj = fullConfig.deepCopy();
+      final var schema = spec.deepCopy();
+      final var secretMap = new HashMap<String, String>();
+
+      System.out.println("schema = " + schema);
+      Preconditions.checkArgument(JsonSecretsProcessor.canBeProcessed(schema), "Schema is not valid JSONSchema!");
+
+      // get the properties field
+      ObjectNode properties = (ObjectNode) schema.get(JsonSecretsProcessor.PROPERTIES_FIELD);
+      JsonNode copy = obj.deepCopy();
+      // for the property keys
+      for (String key : Jsons.keys(properties)) {
+          JsonNode fieldSchema = properties.get(key);
+          // if the json schema field is an obj and has the airbyte secret field
+          if (JsonSecretsProcessor.isSecret(fieldSchema) && copy.has(key)) {
+              // remove the key put the new key in the coordinate section
+              if (copy.has(key)) {
+                  Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
+                  final var secret = copy.get(key).asText();
+                  final var secretUuid = uuidSupplier.get();
+                  final var secretCoordinate = "workspace_" + workspaceId + "_secret_" + secretUuid + "_v1"; // todo: handle these versions differently! should be exposed from the map as an object
+                  secretMap.put(secretCoordinate, secret);
+                  ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of("_secret", secretCoordinate)));
+              }
+          }
+
+          var combinationKey = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
+          if (combinationKey.isPresent() && copy.has(key)) {
+              var combinationCopy = copy.get(key);
+              var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
+              for (int i = 0; i < arrayNode.size(); i++) {
+                  // Mask field values if any of the combination option is declaring it as secrets
+                  final var combinationSplitConfig = split(uuidSupplier, workspaceId, combinationCopy, arrayNode.get(i));
+                  combinationCopy = combinationSplitConfig.getPartialConfig();
+                  secretMap.putAll(combinationSplitConfig.getSecretIdToPayload());
+              }
+              ((ObjectNode) copy).set(key, combinationCopy);
+          } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && copy.has(key)) {
+              final var nestedSplitConfig = split(uuidSupplier, workspaceId, copy.get(key), fieldSchema);
+              ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
+              secretMap.putAll(nestedSplitConfig.getSecretIdToPayload());
+          }
+      }
+
+      return new SplitSecretConfig(copy, secretMap);
+
+
+
+
+//
+//    Preconditions.checkArgument(fullConfig instanceof ObjectNode, "Full config must be a JSON object!");
+//
+//    // todo: get paths for all secrets in the spec
+//    final var schema = spec.getConnectionSpecification();
+//
+//    System.out.println("output = " + JsonPath.read(schema.toString(), "$[?(@.airbyte_secret == true)]").toString());
+//    System.out.println("output = " + JsonPath.read(schema.toString(), "$.*.[?(@.airbyte_secret == true)]").toString());
+//    JsonNode secretTrees = schema.at(JsonPointer.compile("$[?(@.airbyte_secret == true)]"));
+//    System.out.println("secretTrees = " + secretTrees);
+//
+//    final var secretParents = schema.findParents("airbyte_secret"); // todo: use constant
+//
+//    for (JsonNode secretParent : secretParents) {
+//      System.out.println("secretParent = " + secretParent);
+//    }
 
     // todo: one by one, create coordinates and payloads for each spec
     // todo: construct the partial config
@@ -70,7 +132,6 @@ public class SecretsHelpers {
 
     // return new SplitSecretConfig(partialConfig, secretIdToPayload);
 
-    return null;
   }
 
   // todo: UPDATES old coordconfig+spec+ full config -> coordconfig+secrets

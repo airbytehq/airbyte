@@ -38,12 +38,12 @@ import org.slf4j.LoggerFactory;
 public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
+  public static final String PROPERTIES_FIELD = "properties";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
 
   @VisibleForTesting
   static String SECRETS_MASK = "**********";
-
-  private static final String PROPERTIES_FIELD = "properties";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
@@ -55,6 +55,7 @@ public class JsonSecretsProcessor {
    * @param schema Schema containing secret annotations
    * @param obj Object containing potentially secret fields
    */
+  // todo: fix bug where this doesn't handle non-oneof nesting
   public static JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
     // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
