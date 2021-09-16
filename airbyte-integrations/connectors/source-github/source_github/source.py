@@ -102,9 +102,8 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config["access_token"])
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
-        minimize_fields = config["minimize_fields"]
         organizations = list({org.split("/")[0] for org in repositories})
-        full_refresh_args = {"authenticator": authenticator, "repositories": repositories, "minimize_fields": minimize_fields}
+        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
         organization_args = {"authenticator": authenticator, "organizations": organizations}
 

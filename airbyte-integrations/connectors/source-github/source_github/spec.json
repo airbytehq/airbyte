@@ -23,12 +23,6 @@
         "description": "The date from which you'd like to replicate data for GitHub in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only in the following incremental streams: comments, commits and issues.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      },
-      "minimize_fields": {
-        "type": "boolean",
-        "title": "Minimize large fields",
-        "description": "Minimize certain fields in each stream that can instead be represented by their id. Only their ids will be included in the record.",
-        "default": true
       }
     }
   }

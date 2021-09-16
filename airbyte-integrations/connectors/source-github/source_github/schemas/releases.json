@@ -58,6 +58,9 @@
     "author_id": {
       "type": ["null", "integer"]
     },
+    "author": {
+      "$ref": "user.json"
+    },
     "assets": {
       "type": ["null", "array"],
       "items": {

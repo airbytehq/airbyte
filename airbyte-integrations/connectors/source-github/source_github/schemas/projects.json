@@ -38,6 +38,9 @@
     "creator_id": {
       "type": ["null", "integer"]
     },
+    "creator": {
+      "$ref": "user.json"
+    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
