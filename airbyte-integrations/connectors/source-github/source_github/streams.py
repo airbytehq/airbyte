@@ -64,7 +64,6 @@ class GithubStream(HttpStream, ABC):
 
     # Fields in below variable will be used for data clearing. Put there keys which represent:
     #   - objects `{}`, like `user`, `actor` etc.
-    #   - lists `[]`, like `labels`, `assignees` etc.
     fields_to_minimize = ()
 
     def __init__(self, repositories: List[str], **kwargs):
@@ -172,7 +171,6 @@ class GithubStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], repository: str = None, organization: str = None) -> MutableMapping[str, Any]:
         """
         Use this method to:
-            - remove excessive fields from record;
             - minify subelements in the record. For example, if you have `reviews` record which looks like this:
             {
               "id": 671782869,
@@ -186,9 +184,9 @@ class GithubStream(HttpStream, ABC):
               ... <other fields>
             }
 
-            `user` subelement contains almost all possible fields of user and it's not optimal to store such data in
-            `reviews` record. We may leave only `user.id` field and save in to `user_id` field in the record. So if you
-            need to do something similar with your record you may use this method.
+            We may add `user.id` field and save in to `user_id` field in the
+            record. So if you need to do something similar with your record you
+            may use this method.
         """
         for field in self.fields_to_minimize:
             field_value = record.get(field, None)
