@@ -102,7 +102,7 @@ class BigQuerySourceTest {
 
   @AfterEach
   void tearDown() {
-    //database.cleanDataSet(dataset.getDatasetId().getDataset());
+    database.cleanDataSet(dataset.getDatasetId().getDataset());
   }
 
   @Test
