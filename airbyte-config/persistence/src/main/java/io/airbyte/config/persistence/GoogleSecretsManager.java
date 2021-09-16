@@ -41,7 +41,6 @@ import com.google.protobuf.ByteString;
 import io.airbyte.config.EnvConfigs;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +52,8 @@ import java.util.UUID;
 public class GoogleSecretsManager {
 
   /**
-   * Manual test fixture to make sure you've got your project id set in env and have appropriate creds to reach/write the secret store.
+   * Manual test fixture to make sure you've got your project id set in env and have appropriate creds
+   * to reach/write the secret store.
    */
   public static void main(String[] args) throws Exception {
     // Check that we're configured to a usable GCP project.
