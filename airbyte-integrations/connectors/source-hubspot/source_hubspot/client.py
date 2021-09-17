@@ -58,7 +58,7 @@ class Client(BaseClient):
             "contact_lists": ContactListStream(**common_params),
             "contacts": CRMObjectStream(entity="contact", **common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
-            "deals": DealStream(**common_params),
+            "deals": DealStream(associations=['contacts'], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
             "forms": FormStream(**common_params),
@@ -69,7 +69,6 @@ class Client(BaseClient):
             "subscription_changes": SubscriptionChangeStream(**common_params),
             "tickets": CRMObjectStream(entity="ticket", **common_params),
             "workflows": WorkflowStream(**common_params),
-            "deal_to_contact_associations": CRMObjectStream(entity="deal", associations=['contacts'], **common_params)
         }
 
         super().__init__(**kwargs)
