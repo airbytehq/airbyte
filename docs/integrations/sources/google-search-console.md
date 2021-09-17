@@ -95,4 +95,5 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.1` | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222) | Correct Spec File |
 | `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |
