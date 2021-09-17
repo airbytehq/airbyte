@@ -49,6 +49,10 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
   }
 
   @Override
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    loadData(seedPersistence, new HashSet<String>());
+  }
+
   public void loadData(ConfigPersistence seedPersistence, Set<String> configsInUse) throws IOException {
     // Don't need to do anything because the seed persistence only contains
     // non-secret configs, which we don't load into the secrets store.

@@ -24,11 +24,14 @@
 
 package io.airbyte.config.persistence;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.ProjectName;
 import com.google.cloud.secretmanager.v1.Replication;
 import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.SecretManagerServiceSettings;
 import com.google.cloud.secretmanager.v1.SecretName;
 import com.google.cloud.secretmanager.v1.SecretPayload;
 import com.google.cloud.secretmanager.v1.SecretVersion;
@@ -36,7 +39,9 @@ import com.google.cloud.secretmanager.v1.SecretVersionName;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import io.airbyte.config.EnvConfigs;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -76,7 +81,7 @@ public class GoogleSecretsManager {
   public static String readSecret(String secretId) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "latest");
       AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
       return response.getPayload().getData().toStringUtf8();
@@ -85,10 +90,18 @@ public class GoogleSecretsManager {
     }
   }
 
+
+  private static SecretManagerServiceClient getSecretManagerServiceClient() throws IOException {
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream((new EnvConfigs()).getSecretStoreGcpCredentials().getBytes(StandardCharsets.UTF_8)));
+    return SecretManagerServiceClient.create(
+        SecretManagerServiceSettings.newBuilder().setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build());
+  }
+
   public static boolean existsSecret(String secretId) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "latest");
       AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
       return true;
@@ -100,7 +113,7 @@ public class GoogleSecretsManager {
   public static void saveSecret(String secretId, String value) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       if (!existsSecret(secretId)) {
         Secret secret = Secret.newBuilder().setReplication(Replication.newBuilder().setAutomatic(
             Replication.Automatic.newBuilder().build()).build()).build();
@@ -116,7 +129,7 @@ public class GoogleSecretsManager {
   public static void deleteSecret(String secretId) throws IOException {
     EnvConfigs envConfig = new EnvConfigs();
     String projectId = envConfig.getSecretStoreGcpProjectId();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       SecretName secretName = SecretName.of(projectId, secretId);
       client.deleteSecret(secretName);
     }
@@ -125,7 +138,7 @@ public class GoogleSecretsManager {
   public static List<String> listSecretsMatching(String prefix) throws IOException {
     final String PREFIX_REGEX = "projects/\\d+/secrets/";
     List<String> names = new ArrayList<String>();
-    try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
+    try (SecretManagerServiceClient client = getSecretManagerServiceClient()) {
       client.listSecrets(ProjectName.of(new EnvConfigs().getSecretStoreGcpProjectId())).iterateAll()
           .forEach(
               secret -> {
