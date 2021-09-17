@@ -22,29 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.jsonl;
+package io.airbyte.integrations.destination.gcs.util;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART_SIZE_MB_ARG_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 
-public class S3JsonlFormatConfig implements S3FormatConfig {
+public class ConfigTestUtils {
 
-  private final Long partSize;
+  public static JsonNode getBaseConfig(JsonNode formatConfig) {
+    return Jsons.deserialize("{\n"
+        + "  \"gcs_bucket_name\": \"test-bucket-name\",\n"
+        + "  \"gcs_bucket_path\": \"test_path\",\n"
+        + "  \"gcs_bucket_region\": \"us-east-2\","
+        + "  \"credential\": {\n"
+        + "    \"credential_type\": \"HMAC_KEY\",\n"
+        + "    \"hmac_key_access_id\": \"some_hmac_key\",\n"
+        + "    \"hmac_key_secret\": \"some_key_secret\"\n"
+        + "  },"
+        + "  \"format\": " + formatConfig
+        + "}");
 
-  public S3JsonlFormatConfig(JsonNode formatConfig) {
-    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null;
   }
 
-  @Override
-  public S3Format getFormat() {
-    return S3Format.JSONL;
-  }
-
-  public Long getPartSize() {
-    return partSize;
+  public static void assertBaseConfig(GcsDestinationConfig gcsDestinationConfig) {
+    assertEquals("test-bucket-name", gcsDestinationConfig.getBucketName());
+    assertEquals("test_path", gcsDestinationConfig.getBucketPath());
+    assertEquals("us-east-2", gcsDestinationConfig.getBucketRegion());
   }
 
 }
