@@ -324,7 +324,7 @@
 - sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   name: Recharge
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/recharge
 - sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   name: Harvest
