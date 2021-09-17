@@ -392,7 +392,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       String latestImageTag = configJson.get("dockerImageTag").asText();
-      if (!latestImageTag.equals(connectorInfo.dockerImageTag)) {
+      if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
       } else {
@@ -400,6 +400,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
     }
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  static boolean hasNewVersion(String currentVersion, String latestVersion) {
+    try {
+      return new AirbyteVersion(latestVersion).patchVersionCompareTo(new AirbyteVersion(currentVersion)) > 0;
+    } catch (Exception e) {
+      LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
+      return false;
+    }
   }
 
   /**

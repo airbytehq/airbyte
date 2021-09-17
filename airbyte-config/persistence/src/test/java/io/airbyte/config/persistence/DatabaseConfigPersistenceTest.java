@@ -25,7 +25,9 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -216,6 +218,12 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertRecordCount(2);
     assertHasSource(newSource);
     assertHasSource(SOURCE_GITHUB);
+  }
+
+  @Test
+  public void testHasNewVersion() {
+    assertTrue(DatabaseConfigPersistence.hasNewVersion("0.1.99", "0.2.0"));
+    assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.2.0"));
   }
 
 }
