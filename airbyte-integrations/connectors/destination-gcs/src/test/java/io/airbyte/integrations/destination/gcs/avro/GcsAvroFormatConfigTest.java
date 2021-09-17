@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.avro;
+package io.airbyte.integrations.destination.gcs.avro;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.util.ConfigTestUtils;
+import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import java.util.List;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileConstants;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class S3AvroFormatConfigTest {
+class GcsAvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigNull() {
@@ -112,13 +113,10 @@ class S3AvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigInvalid() {
-    try {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
       JsonNode invalidConfig = Jsons.deserialize("{ \"codec\": \"bi-directional-bfs\" }");
       S3AvroFormatConfig.parseCodecConfig(invalidConfig);
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    });
   }
 
   @Test
@@ -129,17 +127,17 @@ class S3AvroFormatConfigTest {
         + "  \"part_size_mb\": 6\n"
         + "}"));
 
-    S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
-    ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
+    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+        .getGcsDestinationConfig(config);
+    ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
+    S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
     assertEquals("AVRO", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
     StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+        gcsDestinationConfig.getBucketName(), "objectKey", null,
+        gcsDestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
@@ -152,13 +150,13 @@ class S3AvroFormatConfigTest {
         + "  \"format_type\": \"AVRO\"\n"
         + "}"));
 
-    S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
-    ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
+    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+        .getGcsDestinationConfig(config);
+    ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+        gcsDestinationConfig.getBucketName(), "objectKey", null,
+        gcsDestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
