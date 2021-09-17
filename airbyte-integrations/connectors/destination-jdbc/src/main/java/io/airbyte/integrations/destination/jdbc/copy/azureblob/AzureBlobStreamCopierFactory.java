@@ -32,6 +32,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
 public abstract class AzureBlobStreamCopierFactory implements StreamCopierFactory<AzureBlobConfig> {
@@ -43,16 +44,16 @@ public abstract class AzureBlobStreamCopierFactory implements StreamCopierFactor
   public StreamCopier create(String configuredSchema,
                              AzureBlobConfig azureBlobConfig,
                              String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             AirbyteStream stream,
+                             ConfiguredAirbyteStream configuredStream,
                              ExtendedNameTransformer nameTransformer,
                              JdbcDatabase db,
                              SqlOperations sqlOperations) {
     try {
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var streamName = pair.getName();
-      var schema = getSchema(stream, configuredSchema, nameTransformer);
-      var appendBlobClient = AzureBlobStreamCopier.getAppendBlobClient(azureBlobConfig, streamName);
+      AirbyteStream stream = configuredStream.getStream();
+      DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
+      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      String streamName = stream.getName();
+      AppendBlobClient appendBlobClient = AzureBlobStreamCopier.getAppendBlobClient(azureBlobConfig, streamName);
 
       return create(stagingFolder, syncMode, schema, streamName, appendBlobClient, db, azureBlobConfig, nameTransformer, sqlOperations);
     } catch (Exception e) {
@@ -73,13 +74,5 @@ public abstract class AzureBlobStreamCopierFactory implements StreamCopierFactor
                                       ExtendedNameTransformer nameTransformer,
                                       SqlOperations sqlOperations)
       throws Exception;
-
-  private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
-    if (stream.getNamespace() != null) {
-      return nameTransformer.convertStreamName(stream.getNamespace());
-    } else {
-      return nameTransformer.convertStreamName(configuredSchema);
-    }
-  }
 
 }
