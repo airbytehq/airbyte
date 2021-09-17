@@ -40,7 +40,7 @@
           {
             "title": "Replica Set",
             "additionalProperties": false,
-            "required": ["server_addresses", "replica_set"],
+            "required": ["server_addresses"],
             "properties": {
               "server_addresses": {
                 "title": "Server addresses",
@@ -103,7 +103,7 @@
         "title": "TLS connection",
         "type": "boolean",
         "description": "If this switch is enabled, TLS connections will be used to connect to MongoDB.",
-        "default": false,
+        "default": true,
         "order": 5
       }
     }
