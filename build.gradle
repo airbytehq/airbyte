@@ -70,7 +70,8 @@ def createSpotlessTarget = { pattern ->
         'dbt_schema_tests',
         'normalization_test_output',
         'tools',
-        'secrets'
+        'secrets',
+        'charts'
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
