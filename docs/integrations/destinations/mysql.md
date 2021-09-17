@@ -20,6 +20,7 @@ Each stream will be output into its own table in MySQL. Each table will contain 
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
 
 ## Getting started
