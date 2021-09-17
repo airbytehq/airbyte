@@ -206,16 +206,16 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("float")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "10.5")
+            .addExpectedValues(null, "10.5")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "power(10, 308)", "1/power(10, 45)")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)))
+            .addInsertValues("null", "power(10, 308)", "1/power(10, 45)", "10.5")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)), "10.5")
             .build());
 
     addDataTypeTestData(

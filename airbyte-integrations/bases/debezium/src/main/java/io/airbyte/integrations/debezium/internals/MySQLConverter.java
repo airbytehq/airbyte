@@ -61,11 +61,6 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
 
   @Override
   public void converterFor(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
-    LOGGER.warn("converterFor " + field.typeName());
-    LOGGER.warn("converterFor jdbc" + field.jdbcType());
-    LOGGER.warn("converterFor native" + field.nativeType());
-    LOGGER.warn("converterFor exp" + field.typeExpression());
-
     if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
     } else if (Arrays.stream(TEXT_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
