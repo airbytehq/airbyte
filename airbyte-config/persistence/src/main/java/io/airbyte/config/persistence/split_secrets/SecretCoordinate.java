@@ -25,9 +25,7 @@
 package io.airbyte.config.persistence.split_secrets;
 
 import com.google.api.client.util.Preconditions;
-
 import java.util.Objects;
-import java.util.UUID;
 
 public class SecretCoordinate {
 

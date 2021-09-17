@@ -44,4 +44,5 @@ public class SplitSecretConfig {
   public Map<SecretCoordinate, String> getCoordinateToPayload() {
     return coordinateToPayload;
   }
+
 }
