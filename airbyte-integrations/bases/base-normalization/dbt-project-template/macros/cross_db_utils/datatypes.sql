@@ -28,6 +28,10 @@
     json
 {%- endmacro -%}
 
+{%- macro sqlserver__type_json() -%}
+    varchar(max)
+{%- endmacro -%}
+
 
 {# string ------------------------------------------------- #}
 
@@ -37,6 +41,10 @@
 
 {%- macro oracle__type_string() -%}
     varchar2(4000)
+{%- endmacro -%}
+
+{% macro sqlserver__type_string() %}
+    VARCHAR(max)
 {%- endmacro -%}
 
 
@@ -80,6 +88,12 @@
     time
 {% endmacro %}
 
+{% macro sqlserver__type_timestamp() %}
+    {# in TSQL timestamp is really datetime #}
+    {# https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes #}
+    datetime
+{% endmacro %}
+
 
 {# timestamp with time zone  -------------------------------------------------     #}
 
@@ -102,6 +116,12 @@
 
 {% macro oracle__type_timestamp_with_timezone() %}
     varchar2(4000)
+{% endmacro %}
+
+{% macro sqlserver__type_timestamp_with_timezone() %}
+    {# in TSQL timestamp is really datetime #}
+    {# https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes #}
+    datetime
 {% endmacro %}
 
 

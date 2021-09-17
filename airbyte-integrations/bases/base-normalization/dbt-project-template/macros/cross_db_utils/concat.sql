@@ -14,3 +14,7 @@
 {% macro postgres__concat(fields) %}
     {{ dbt_utils.alternative_concat(fields) }}
 {% endmacro %}
+
+{% macro sqlserver__concat(fields) -%}
+    concat({{ fields|join(', ') }}, '')
+{%- endmacro %}

@@ -44,6 +44,10 @@
     cross join table(flatten({{ array_col }})) as {{ array_col }}
 {%- endmacro %}
 
+{% macro sqlserver__cross_join_unnest(stream_name, array_col) -%}
+    {% do exceptions.warn("Normalization does not support unnesting for MSSQL yet.") %}
+{%- endmacro %}
+
 {# unnested_column_value -- this macro is related to unnest_cte #}
 
 {% macro unnested_column_value(column_col) -%}
@@ -71,6 +75,10 @@
 {%- endmacro %}
 
 {% macro oracle__unnested_column_value(column_col) -%}
+    {{ column_col }}
+{%- endmacro %}
+
+{% macro sqlserver__unnested_column_value(column_col) -%}
     {{ column_col }}
 {%- endmacro %}
 

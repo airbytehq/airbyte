@@ -566,6 +566,9 @@ from {{ from_table }}
         order_null = "is null asc"
         if self.destination_type == DestinationType.ORACLE:
             order_null = "asc nulls first"
+        if self.destination_type == DestinationType.MSSQL:
+            # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
+            order_null = "desc"
 
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""

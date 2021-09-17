@@ -138,7 +138,7 @@ class DbtIntegrationTest(object):
             "username": "SA",
             "password": "YourStrong@Passw0rd",
             "port": port,
-            "database": "Test_mssql",
+            "database": "Test_normalization",
             "schema": self.target_schema,
         }
 
@@ -205,13 +205,13 @@ class DbtIntegrationTest(object):
         s.close()
         return addr[1]
 
-    def tear_down_db(self):
+    """ def tear_down_db(self):
         for db_name in self.db_names:
             print(f"Stopping localhost {db_name} container for tests")
             try:
                 subprocess.call(["docker", "kill", f"{self.container_prefix}_{db_name}"])
             except Exception as e:
-                print(f"WARN: Exception while shutting down {db_name}: {e}")
+                print(f"WARN: Exception while shutting down {db_name}: {e}") """
 
     @staticmethod
     def change_current_test_dir(request):
