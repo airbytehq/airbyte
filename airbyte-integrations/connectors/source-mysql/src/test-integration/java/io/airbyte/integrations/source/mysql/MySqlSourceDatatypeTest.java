@@ -232,14 +232,6 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("datetime")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'2013-09-05T10:10:02'")
-            .addExpectedValues("2013-09-05T10:10:02Z")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
             .sourceType("timestamp")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
@@ -252,7 +244,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
             .addInsertValues("null", "'-23:59:59.123456'", "'00:00:00'")
-            .addExpectedValues(null, "23:59:59", "00:00:00")
+            .addExpectedValues(null, "1970-01-01T23:59:59Z", "1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(

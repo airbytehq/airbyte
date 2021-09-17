@@ -20,8 +20,8 @@ If you can't find the data type you are looking for or have any problems feel fr
 | `bigint` | number |  |
 | `binary` | string |  |
 | `blob` | string |  |
-| `date` | string |  |
-| `datetime` | string |  |
+| `date` | string | MySql JDBC driver has limitation. ZERO-DATE value is forbidden. |
+| `datetime` | string | MySql JDBC driver has limitation. ZERO-DATE value is forbidden. |
 | `decimal` | number |  |
 | `decimal(19, 2)` | number |  |
 | `double` | number |  |
@@ -41,8 +41,8 @@ If you can't find the data type you are looking for or have any problems feel fr
 | `string` | string |  |
 | `tinyint` | number |  |
 | `text` | string |  |
-| `time` | string |  |
-| `timestamp` | string |  |
+| `time` | string | MySql JDBC driver has limitation. Value should be in range between 00:00:00 and 23:59:59. |
+| `timestamp` | string | MySql JDBC driver has limitation. ZERO-DATE value is forbidden. |
 | `tinytext` | string |  |
 | `varbinary(256)` | string |  |
 | `varchar` | string |  |
@@ -164,6 +164,7 @@ There may be problems with mapping values in MySQL's datetime field to other rel
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.4.5   | 2021-09-16 | [6093](https://github.com/airbytehq/airbyte/pull/6093) | MySql Source: Fix data processing |
 | 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
 | 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
