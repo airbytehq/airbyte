@@ -26,6 +26,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
 
 #### Target Database
