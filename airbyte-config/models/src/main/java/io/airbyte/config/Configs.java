@@ -58,6 +58,12 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  String getSecretStoreGcpProjectId();
+
+  String getSecretStoreGcpCredentials();
+
+  String getSecretStoreForConfigs();
+
   boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
@@ -78,9 +84,13 @@ public interface Configs {
 
   WorkerEnvironment getWorkerEnvironment();
 
+  String getSpecCacheBucket();
+
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
+
+  MaxWorkersConfig getMaxWorkers();
 
   String getTemporalHost();
 

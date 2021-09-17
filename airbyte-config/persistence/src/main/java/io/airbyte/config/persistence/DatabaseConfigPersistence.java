@@ -44,6 +44,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -75,7 +76,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * Load or update the configs from the seed.
    */
-  public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
+  @Override
+  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
       boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where());
       if (isInitialized) {
@@ -85,7 +87,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
       return null;
     });
-    return this;
   }
 
   public ValidatingConfigPersistence withValidation() {
@@ -158,7 +159,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
     if (dryRun) {
       return;
     }
@@ -271,6 +272,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       this.dockerImageTag = dockerImageTag;
     }
 
+    @Override
+    public String toString() {
+      return String.format("%s: %s (%s)", dockerRepository, dockerImageTag, connectorDefinitionId);
+    }
+
   }
 
   private static class ConnectorCounter {
@@ -291,7 +297,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     try {
       Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
+      LOGGER.info("Connectors in use: {}", connectorRepositoriesInUse);
+
       Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
+      LOGGER.info("Current connector versions: {}", connectorRepositoryToInfoMap.values());
 
       OffsetDateTime timestamp = OffsetDateTime.now();
       int newConnectorCount = 0;
@@ -335,10 +344,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       JsonNode configJson = Jsons.jsonNode(latestDefinition);
       String repository = configJson.get("dockerRepository").asText();
       if (connectorRepositoriesInUse.contains(repository)) {
+        LOGGER.info("Connector {} is in use; skip updating", repository);
         continue;
       }
 
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
+        LOGGER.info("Adding new connector {}: {}", repository, configJson);
         newCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
         continue;
       }
@@ -346,7 +357,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       String latestImageTag = configJson.get("dockerImageTag").asText();
       if (!latestImageTag.equals(connectorInfo.dockerImageTag)) {
+        LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
+      } else {
+        LOGGER.info("Connector {} does not need update: {}", repository, connectorInfo.dockerImageTag);
       }
     }
     return new ConnectorCounter(newCount, updatedCount);
@@ -391,20 +405,27 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         as those in the seed.
    */
   private Set<String> getConnectorRepositoriesInUse(DSLContext ctx) {
-    Field<String> sourceIdField = field("config_blob ->> 'sourceId'", SQLDataType.VARCHAR).as("sourceId");
-    Field<String> destinationIdField = field("config_blob ->> 'destinationId'", SQLDataType.VARCHAR).as("destinationId");
-    Set<String> usedConfigIds = ctx
-        .select(sourceIdField, destinationIdField)
+    Set<String> usedConnectorDefinitionIds = new HashSet<>();
+    // query for used source definitions
+    usedConnectorDefinitionIds.addAll(ctx
+        .select(field("config_blob ->> 'sourceDefinitionId'", SQLDataType.VARCHAR))
         .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC.name()))
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.SOURCE_CONNECTION.name()))
         .fetch().stream()
-        .flatMap(row -> Stream.of(row.getValue(sourceIdField), row.getValue(destinationIdField)))
-        .collect(Collectors.toSet());
-
-    Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
-    return ctx.select(repoField)
+        .flatMap(row -> Stream.of(row.value1()))
+        .collect(Collectors.toSet()));
+    // query for used destination definitions
+    usedConnectorDefinitionIds.addAll(ctx
+        .select(field("config_blob ->> 'destinationDefinitionId'", SQLDataType.VARCHAR))
         .from(AIRBYTE_CONFIGS)
-        .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConfigIds))
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.DESTINATION_CONNECTION.name()))
+        .fetch().stream()
+        .flatMap(row -> Stream.of(row.value1()))
+        .collect(Collectors.toSet()));
+
+    return ctx.select(field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR))
+        .from(AIRBYTE_CONFIGS)
+        .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConnectorDefinitionIds))
         .fetch().stream()
         .map(Record1::value1)
         .collect(Collectors.toSet());

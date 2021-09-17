@@ -226,7 +226,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 * Each message must be on its own line. Multiple messages _cannot_ be sent on the same line.
 * Each message must but serialize to a JSON object that is exactly 1 line. The JSON objects cannot be serialized across multiple lines.
 
-## Recognition
+## Acknowledgements
 
-We have been heavily inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge how some of their choices have helped us bootstrap.
+We'd like to note that we were initially inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge that some of their design choices helped us bootstrap our project. We've since made a lot of modernizations to our protocol and specification, but don't want to forget the tools that helped us get started.
 
