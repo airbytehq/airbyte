@@ -13,7 +13,7 @@ docker-compose up
 
 ## FAQ
 
-If you have any questions about the Airbyte setup and deployment process, head over to our [Getting Started FAQ](../faq/getting-started.md) that answers the following questions and more:
+If you have any questions about the Airbyte setup and deployment process, head over to our [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse that answers the following questions and more:
 
 - How long does it take to set up Airbyte?
 - Where can I see my data once I've run a sync?
