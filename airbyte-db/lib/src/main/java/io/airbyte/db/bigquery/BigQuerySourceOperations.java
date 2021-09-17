@@ -108,9 +108,18 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
       }
     } else if (fieldValue.getAttribute().equals(Attribute.RECORD)) {
       ObjectNode newNode = node.putObject(fieldName);
-      field.getSubFields().forEach(recordField -> {
-        setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode);
-      });
+      FieldList subFields = field.getSubFields();
+      try {
+        // named get doesn't work here with nested arrays and objects; index is the only correlation between
+        // field and field value
+        if (subFields != null && !subFields.isEmpty()) {
+          for (int i = 0; i < subFields.size(); i++) {
+            setJsonField(field.getSubFields().get(i), fieldValue.getRecordValue().get(i), newNode);
+          }
+        }
+      } catch (UnsupportedOperationException e) {
+        LOGGER.error("Failed to parse Object field with name: ", fieldName, e.getMessage());
+      }
     }
   }
 
