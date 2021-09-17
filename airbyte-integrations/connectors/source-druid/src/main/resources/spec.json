@@ -1,0 +1,27 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/druid",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Druid Source Spec",
+    "type": "object",
+    "required": ["model"],
+    "additionalProperties": false,
+    "properties": {
+      "username": {
+        "type": "string",
+        "title": "Username",
+        "description": "Username for Druid"
+      },
+      "password": {
+        "type": "string",
+        "title": "Password",
+        "description": "Password for user"
+      },
+      "model": {
+        "type": "string",
+        "title": "Model Definition",
+        "description": "Model seen by druid JDBC"
+      }
+    }
+  }
+}
