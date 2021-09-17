@@ -161,9 +161,8 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
         messages = list(entrypoint.run(parsed_args))
         assert [_wrap_message(check_value)] == messages
     else:
-        with pytest.raises(Exception) as ex_info:
+        with pytest.raises(Exception, match=r"(?i)Config Validation Error:.*"):
             list(entrypoint.run(parsed_args))
-        assert "Config validation error:" in str(ex_info.value)
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
