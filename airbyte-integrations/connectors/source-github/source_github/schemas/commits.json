@@ -96,14 +96,8 @@
         }
       }
     },
-    "author_id": {
-      "type": ["null", "integer"]
-    },
     "author": {
       "$ref": "user.json"
-    },
-    "committer_id": {
-      "type": ["null", "integer"]
     },
     "committer": {
       "$ref": "user.json"

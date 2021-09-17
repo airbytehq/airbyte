@@ -35,9 +35,6 @@
     "state": {
       "type": ["null", "string"]
     },
-    "creator_id": {
-      "type": ["null", "integer"]
-    },
     "creator": {
       "$ref": "user.json"
     },

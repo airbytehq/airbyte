@@ -15,9 +15,6 @@
       "type": ["null", "object"],
       "properties": {}
     },
-    "repo_id": {
-      "type": ["null", "integer"]
-    },
     "repo": {
       "type": ["null", "object"],
       "properties": {
@@ -32,14 +29,8 @@
         }
       }
     },
-    "actor_id": {
-      "type": ["null", "integer"]
-    },
     "actor": {
       "$ref": "user.json"
-    },
-    "org_id": {
-      "type": ["null", "integer"]
     },
     "org": {
       "type": ["null", "object"],

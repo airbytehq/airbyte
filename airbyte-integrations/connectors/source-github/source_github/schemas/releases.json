@@ -55,9 +55,6 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "author_id": {
-      "type": ["null", "integer"]
-    },
     "author": {
       "$ref": "user.json"
     },

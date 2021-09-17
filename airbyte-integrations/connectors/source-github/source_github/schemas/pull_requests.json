@@ -88,9 +88,6 @@
         }
       }
     },
-    "milestone_id": {
-      "type": ["null", "integer"]
-    },
     "milestone": {
       "type": ["null", "object"],
       "properties": {
@@ -169,9 +166,6 @@
     },
     "merge_commit_sha": {
       "type": ["null", "string"]
-    },
-    "assignee_id": {
-      "type": ["null", "integer"]
     },
     "assignee": {
       "$ref": "user.json"

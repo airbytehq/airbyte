@@ -76,9 +76,6 @@
         }
       }
     },
-    "assignee_id": {
-      "type": ["null", "integer"]
-    },
     "assignee": {
       "$ref": "user.json"
     },
@@ -87,9 +84,6 @@
       "items": {
         "$ref": "user.json"
       }
-    },
-    "milestone_id": {
-      "type": ["null", "integer"]
     },
     "milestone": {
       "type": ["null", "object"],
