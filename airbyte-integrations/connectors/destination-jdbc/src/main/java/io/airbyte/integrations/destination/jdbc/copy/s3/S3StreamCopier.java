@@ -32,7 +32,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -40,14 +39,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -57,6 +49,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class S3StreamCopier implements StreamCopier {
 
@@ -121,9 +117,9 @@ public abstract class S3StreamCopier implements StreamCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
-            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .partSize(s3Config.getPartSize());
+        .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+        .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+        .partSize(s3Config.getPartSize());
     multipartUploadManagers.put(name, manager);
     var outputStream = manager.getMultiPartOutputStreams().get(0);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
@@ -170,7 +166,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    s3StagingFiles.forEach(s3StagingFile -> Exceptions.toRuntime(() ->  {
+    s3StagingFiles.forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
       copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
     }));
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);

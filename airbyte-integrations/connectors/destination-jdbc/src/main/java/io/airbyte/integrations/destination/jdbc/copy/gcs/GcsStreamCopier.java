@@ -58,11 +58,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
 
-  //private final String gcsStagingFile;
   private final Storage storageClient;
   private final GcsConfig gcsConfig;
-  //private final WriteChannel channel;
-  //private final CSVPrinter csvPrinter;
   private final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
   private final String schemaName;
@@ -98,7 +95,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public String prepareStagingFile() {
-    var name = String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" +  streamName);
+    var name = String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + streamName);
     gcsStagingFiles.add(name);
     var blobId = BlobId.of(gcsConfig.getBucketName(), name);
     var blobInfo = BlobInfo.newBuilder(blobId).build();
