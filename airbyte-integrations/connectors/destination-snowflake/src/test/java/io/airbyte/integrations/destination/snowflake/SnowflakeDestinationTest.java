@@ -65,6 +65,21 @@ public class SnowflakeDestinationTest {
   }
 
   @Test
+  @DisplayName("When given Azure credentials should use COPY")
+  public void useAzureBlobCopyStrategyTest() {
+    var stubLoadingMethod = mapper.createObjectNode();
+    stubLoadingMethod.put("azure_blob_storage_account_name", "fake-account");
+    stubLoadingMethod.put("azure_blob_storage_container_name", "fake-container");
+    stubLoadingMethod.put("azure_blob_storage_account_key", "test key");
+    stubLoadingMethod.put("snowflake_azure_external_stage_name", "FAKE_STAGE");
+
+    var stubConfig = mapper.createObjectNode();
+    stubConfig.set("loading_method", stubLoadingMethod);
+
+    assertTrue(SnowflakeDestination.isAzureBlobCopy(stubConfig));
+  }
+
+  @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() {
     var stubLoadingMethod = mapper.createObjectNode();
@@ -72,5 +87,5 @@ public class SnowflakeDestinationTest {
     stubConfig.set("loading_method", stubLoadingMethod);
     assertFalse(SnowflakeDestination.isS3Copy(stubConfig));
   }
-
+  
 }

@@ -37,6 +37,7 @@ public class SnowflakeGcsCopyDestinationAcceptanceTest extends SnowflakeInsertDe
     final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_gcs_config.json")));
     Preconditions.checkArgument(SnowflakeDestination.isGcsCopy(copyConfig));
     Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(copyConfig));
+    Preconditions.checkArgument(!SnowflakeDestination.isAzureBlobCopy(copyConfig));
     return copyConfig;
   }
 

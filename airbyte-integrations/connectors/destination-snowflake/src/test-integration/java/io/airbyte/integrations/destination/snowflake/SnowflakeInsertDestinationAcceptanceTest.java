@@ -62,6 +62,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
     Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(insertConfig));
     Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(insertConfig));
+    Preconditions.checkArgument(!SnowflakeDestination.isAzureBlobCopy(insertConfig));
     return insertConfig;
   }
 
