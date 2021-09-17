@@ -50,26 +50,16 @@ public class SshBastion {
         network = Network.newNetwork();
         bastion = new GenericContainer(
                 new ImageFromDockerfile("bastion-test")
-                .withFileFromClasspath("id_rsa.pub", "bastion/id_rsa.pub")
-                .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
+                        .withFileFromClasspath("id_rsa.pub", "bastion/id_rsa.pub")
+                        .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
                 .withNetwork(network)
                 .withExposedPorts(22);
         bastion.start();
     }
 
-    public static JsonNode getTunnelConfig(JdbcDatabaseContainer<?> db, String schemaName, SshTunnel.TunnelMethod tunnelMethod) throws IOException {
+    public static JsonNode getTunnelConfig(SshTunnel.TunnelMethod tunnelMethod, ImmutableMap.Builder<Object, Object> builderWithSchema) throws IOException {
 
-        return Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-                        .getNetworks()
-                        .get(((Network.NetworkImpl) network).getName())
-                        .getIpAddress()))
-                .put("username", db.getUsername())
-                .put("password", db.getPassword())
-//                .put("schema", schemaName)
-                .put("port", db.getExposedPorts().get(0))
-                .put("database", db.getDatabaseName())
-                .put("ssl", false)
+        return Jsons.jsonNode(builderWithSchema
                 .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
                         .put("tunnel_host",
                                 Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
@@ -83,6 +73,19 @@ public class SshBastion {
                         .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? MoreResources.readResource("bastion/bastion_key") : "")
                         .build()))
                 .build());
+    }
+
+    public static ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(JdbcDatabaseContainer<?> db) {
+        return ImmutableMap.builder()
+                .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+                        .getNetworks()
+                        .get(((Network.NetworkImpl) network).getName())
+                        .getIpAddress()))
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .put("port", db.getExposedPorts().get(0))
+                .put("database", db.getDatabaseName())
+                .put("ssl", false);
     }
 
     public static Network getNetWork() {

@@ -71,7 +71,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
     @Override
     protected JsonNode getConfig() throws IOException {
-        return SshBastion.getTunnelConfig(db, schemaName, getTunnelMethod());
+        return SshBastion.getTunnelConfig(getTunnelMethod(), getBasicDbConfigBuider(db).put("schema", schemaName));
     }
 
     @Override
@@ -174,6 +174,10 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
     private static void startTestContainers() {
         initAndStartBastion();
+        initAndStartJdbcContainer();
+    }
+
+    private static void initAndStartJdbcContainer() {
         db = new PostgreSQLContainer<>("postgres:13-alpine")
                 .withNetwork(getNetWork());
         db.start();

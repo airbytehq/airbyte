@@ -26,18 +26,11 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import io.airbyte.integrations.base.ssh.SshTunnel;
 
-import java.nio.file.Path;
-
 public class SshKeyPostgresSourceAcceptanceTest extends AbstractSshPostgresSourceAcceptanceTest {
 
-  @Override
-  public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-key-config.json");
-  }
-
-  @Override
-  public SshTunnel.TunnelMethod getTunnelMethod() {
-    return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
-  }
+    @Override
+    public SshTunnel.TunnelMethod getTunnelMethod() {
+        return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
+    }
 
 }
