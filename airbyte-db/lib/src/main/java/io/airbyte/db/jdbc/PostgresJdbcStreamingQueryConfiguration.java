@@ -33,7 +33,8 @@ public class PostgresJdbcStreamingQueryConfiguration implements JdbcStreamingQue
   @Override
   public void accept(Connection connection, PreparedStatement preparedStatement) throws SQLException {
     connection.setAutoCommit(false);
-    preparedStatement.setFetchSize(1000);
+    // Trying a larger page size. Later this should be a parameter in configs.
+    preparedStatement.setFetchSize(10000);
   }
 
 }
