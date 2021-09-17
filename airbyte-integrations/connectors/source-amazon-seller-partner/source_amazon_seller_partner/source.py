@@ -72,8 +72,8 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceAmazonSellerPartner(AbstractSource):
-    def _get_stream_kwargs(self, config: ConnectorConfig):
-        self.endpoint, self.marketplace_id, self.region = get_marketplaces(config.aws_environment)[config.region]
+    def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
+        endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
         boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
         role = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
@@ -83,35 +83,46 @@ class SourceAmazonSellerPartner(AbstractSource):
             aws_access_key_id=role_creds.get("AccessKeyId"),
             aws_secret_access_key=role_creds.get("SecretAccessKey"),
             aws_session_token=role_creds.get("SessionToken"),
-            region=self.region,
+            region=region,
         )
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_secret=config.lwa_client_secret,
             client_id=config.lwa_app_id,
             refresh_token=config.refresh_token,
-            host=self.endpoint.replace("https://", ""),
+            host=endpoint.replace("https://", ""),
         )
         stream_kwargs = {
-            "url_base": self.endpoint,
+            "url_base": endpoint,
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
-            "marketplace_ids": [self.marketplace_id],
+            "marketplace_ids": [marketplace_id],
         }
         return stream_kwargs
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        stream_kwargs = self._get_stream_kwargs(config)
-        reports_res = requests.get(
-            url=f"{stream_kwargs['url_base']}{MerchantListingsReports.path_prefix}/reports",
-            headers={**stream_kwargs["authenticator"].get_auth_header(), "content-type": "application/json"},
-            params={"reportTypes": MerchantListingsReports.name},
-            auth=stream_kwargs["aws_signature"],
-        )
-        connected = reports_res.status_code == 200 and reports_res.json().get("payload")
-        return connected, f"Unable to connect to Amazon Seller API with the provided credentials - {reports_res.json()}"
+        """
+        Check connection to Amazon SP API by requesting the list of reports as this endpoint should be available for any config.
+        Validate if response has the expected error code and body.
+        Show error message in case of request exception or unexpected response.
+        """
+
+        error_msg = "Unable to connect to Amazon Seller API with the provided credentials - {error}"
+        try:
+            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+            stream_kwargs = self._get_stream_kwargs(config)
+
+            reports_res = requests.get(
+                url=f"{stream_kwargs['url_base']}{MerchantListingsReports.path_prefix}/reports",
+                headers={**stream_kwargs["authenticator"].get_auth_header(), "content-type": "application/json"},
+                params={"reportTypes": MerchantListingsReports.name},
+                auth=stream_kwargs["aws_signature"],
+            )
+            connected = reports_res.status_code == 200 and reports_res.json().get("payload")
+            return connected, None if connected else error_msg.format(error=reports_res.json())
+        except Exception as error:
+            return False, error_msg.format(error=repr(error))
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """

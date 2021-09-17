@@ -47,5 +47,5 @@
     }
   ],
   "retryOn429": false,
-  "aliveStatusCodes": [200, 206, 403, 429, 503]
+  "aliveStatusCodes": [200, 206, 401, 403, 429, 503]
 }

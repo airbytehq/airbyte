@@ -33,16 +33,21 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
 REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
-VENDOR_API_VERSIONS = "v1"
+VENDORS_API_VERSION = "v1"
+
+REPORTS_MAX_WAIT_SECONDS = 50
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -61,26 +66,6 @@ class AmazonSPStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self._url_base
-
-    def _create_prepared_request(
-        self, path: str, method: str = None, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
-    ) -> requests.PreparedRequest:
-        """
-        Override to make http_method configurable per method call
-        """
-        http_method = method or self.http_method
-        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params}
-        if http_method.upper() in BODY_REQUEST_METHODS:
-            if json and data:
-                raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
-                )
-            elif json:
-                args["json"] = json
-            elif data:
-                args["data"] = data
-
-        return self._session.prepare_request(requests.Request(**args))
 
     def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
         return {"content-type": "application/json"}
@@ -147,129 +132,114 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
-class ReportsAmazonSPStream(AmazonSPStream, ABC):
+class ReportsAmazonSPStream(Stream, ABC):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
 
     Report streams are intended to work as following:
         - create a new report;
-        - wait until it's processed;
         - retrieve the report;
         - retry the retrieval if the report is still not fully processed;
-        - retrieve the report document (if report processing status is done);
-        - decrypt the report document (if report processing status is done);
-        - yield the report document (if report processing status is done) or the report json (if report processing status is **not** done)
+        - retrieve the report document (if report processing status is `DONE`);
+        - decrypt the report document (if report processing status is `DONE`);
+        - yield the report document (if report processing status is `DONE`)
     """
 
     primary_key = None
     path_prefix = f"/reports/{REPORTS_API_VERSION}"
-    wait_seconds = 30
+    sleep_seconds = 30
+    data_field = "payload"
+
+    def __init__(
+        self,
+        url_base: str,
+        aws_signature: AWSSignature,
+        replication_start_date: str,
+        marketplace_ids: List[str],
+        authenticator: HttpAuthenticator = NoAuth(),
+    ):
+        self._authenticator = authenticator
+        self._session = requests.Session()
+        self._url_base = url_base
+        self._session.auth = aws_signature
+        self._replication_start_date = replication_start_date
+        self.marketplace_ids = marketplace_ids
+
+    @property
+    def url_base(self) -> str:
+        return self._url_base
+
+    @property
+    def authenticator(self) -> HttpAuthenticator:
+        return self._authenticator
+
+    def request_params(self) -> MutableMapping[str, Any]:
+        return {"MarketplaceIds": ",".join(self.marketplace_ids)}
+
+    def request_headers(self) -> Mapping[str, Any]:
+        return {"content-type": "application/json"}
+
+    def path(self, document_id: str) -> str:
+        return f"{self.path_prefix}/documents/{document_id}"
 
     def should_retry(self, response: requests.Response) -> bool:
-        should_retry = super().should_retry(response)
-        if not should_retry:
-            should_retry = response.json().get(self.data_field, {}).get("processingStatus") in ["IN_QUEUE", "IN_PROGRESS"]
-        return should_retry
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
-    def backoff_time(self, response: requests.Response):
-        return self.wait_seconds
+    @default_backoff_handler(max_tries=5, factor=5)
+    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+        response: requests.Response = self._session.send(request)
+        if self.should_retry(response):
+            raise DefaultBackoffException(request=request, response=response)
+        else:
+            response.raise_for_status()
+        return response
 
-    def _create_report(self, stream_state: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        request_headers = self.request_headers(stream_state=stream_state)
-        report_data = {"reportType": self.name, "marketplaceIds": self.marketplace_ids}
+    def _create_prepared_request(
+        self, path: str, http_method: str = "GET", headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
+    ) -> requests.PreparedRequest:
+        """
+        Override to make http_method configurable per method call
+        """
+        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        if http_method.upper() in BODY_REQUEST_METHODS:
+            if json and data:
+                raise RequestBodyException(
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                )
+            elif json:
+                args["json"] = json
+            elif data:
+                args["data"] = data
+
+        return self._session.prepare_request(requests.Request(**args))
+
+    def _create_report(self) -> Mapping[str, Any]:
+        request_headers = self.request_headers()
+        replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
+        report_data = {
+            "reportType": self.name,
+            "marketplaceIds": self.marketplace_ids,
+            "createdSince": replication_start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
         create_report_request = self._create_prepared_request(
-            method="POST",
+            http_method="POST",
             path=f"{self.path_prefix}/reports",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             data=json_lib.dumps(report_data),
         )
-        report_response = self._send_request(create_report_request, {})
-
-        time.sleep(self.wait_seconds)
-
+        report_response = self._send_request(create_report_request)
         return report_response.json()[self.data_field]
 
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Get the report document id or report payload if retrieval of the document id is not possible
-        """
-        report_id = self._create_report(stream_state)["reportId"]
-        request_headers = self.request_headers(stream_state=stream_state)
+    def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
+        request_headers = self.request_headers()
         retrieve_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports/{report_id}",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
         )
-        retrieve_report_response = self._send_request(retrieve_report_request, {})
+        retrieve_report_response = self._send_request(retrieve_report_request)
         report_payload = retrieve_report_response.json().get(self.data_field, {})
-        is_done = report_payload.get("processingStatus") == "DONE"
-        if is_done:
-            return [{"document_id": report_payload["reportDocumentId"]}]
-        return [report_payload]
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        """
-        Code execution should not follow there if there are no `document_id` in the stream slice.
-        The necessary override is provided in the `read_records` method.
-        """
-
-        return f"{self.path_prefix}/documents/{stream_slice['document_id']}"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        payload = response.json().get(self.data_field, {})
-        if stream_slice.get("document_id"):
-            document = self.decrypt_report_document(
-                payload.get("url"),
-                payload.get("encryptionDetails", {}).get("initializationVector"),
-                payload.get("encryptionDetails", {}).get("key"),
-                payload.get("encryptionDetails", {}).get("standard"),
-                payload,
-            )
-
-            document_records = csv.DictReader(StringIO(document), delimiter="\t")
-            yield from document_records
-        else:
-            yield payload
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        Override to avoid unnecessary requests.
-        If there are no `document_id` in stream slice, then we will yield the whole slice as a steam record
-        """
-
-        stream_state = stream_state or {}
-        pagination_complete = False
-
-        next_page_token = None
-        if stream_slice.get("document_id"):
-            while not pagination_complete:
-                request_headers = self.request_headers(
-                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-                )
-                request = self._create_prepared_request(
-                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                )
-                request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-                response = self._send_request(request, request_kwargs)
-                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
-        else:
-            yield stream_slice
+        return report_payload
 
     @staticmethod
     def decrypt_aes(content, key, iv):
@@ -291,20 +261,79 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
             return decrypted.decode("iso-8859-1")
         raise Exception([{"message": "Only AES decryption is implemented."}])
 
+    def parse_response(self, response: requests.Response) -> Iterable[Mapping]:
+        payload = response.json().get(self.data_field, {})
+        document = self.decrypt_report_document(
+            payload.get("url"),
+            payload.get("encryptionDetails", {}).get("initializationVector"),
+            payload.get("encryptionDetails", {}).get("key"),
+            payload.get("encryptionDetails", {}).get("standard"),
+            payload,
+        )
+
+        document_records = csv.DictReader(StringIO(document), delimiter="\t")
+        yield from document_records
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Create and retrieve the report.
+        Decrypt and parse the report is its fully proceed, then yield the report document records.
+        """
+        report_payload = {}
+        is_processed = False
+        is_done = False
+        start_time = pendulum.now("utc")
+        seconds_waited = 0
+        report_id = self._create_report()["reportId"]
+
+        # create and retrieve the report
+        while not is_processed and seconds_waited < REPORTS_MAX_WAIT_SECONDS:
+            report_payload = self._retrieve_report(report_id=report_id)
+            seconds_waited = (pendulum.now("utc") - start_time).seconds
+            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
+            is_done = report_payload.get("processingStatus") == "DONE"
+            time.sleep(self.sleep_seconds)
+
+        if is_done:
+            # retrieve and decrypt the report document
+            document_id = report_payload["reportDocumentId"]
+            request_headers = self.request_headers()
+            request = self._create_prepared_request(
+                path=self.path(document_id=document_id),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(),
+            )
+            response = self._send_request(request)
+            yield from self.parse_response(response)
+        else:
+            logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
+
 
 class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
 
 
 class FlatFileOrdersReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """
+
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 
 class FbaInventoryReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/200740930
+    """
+
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
 class FulfilledShipmentsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+    """
+
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
 
 
@@ -313,15 +342,23 @@ class FlatFileOpenListingsReports(ReportsAmazonSPStream):
 
 
 class FbaOrdersReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110
+    """
+
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
 class FbaShipmentsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
+    """
+
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
-    name = "GET_VENDOR_INVENTORY_HEALTH_REPORT"
+    name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
 class Orders(IncrementalAmazonSPStream):
@@ -376,12 +413,12 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
-        return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"
+        return f"/vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params.update({"createdBefore": pendulum.now("utc").strftime(self.time_format)})
         return params

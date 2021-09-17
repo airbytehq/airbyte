@@ -114,9 +114,10 @@ allprojects {
     afterEvaluate { project ->
         def composeDeps = [
                 ":airbyte-config:init",
-                ":airbyte-db",
+                ":airbyte-db:lib",
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
+                ":airbyte-workers",
                 ":airbyte-server",
                 ":airbyte-webapp",
         ].toSet().asImmutable()
@@ -300,7 +301,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-config:init',
 //        ':airbyte-config:models',
 //        ':airbyte-config:persistence',
-//        ':airbyte-db',
+//        ':airbyte-db:lib',
 //        ':airbyte-json-validation',
 //        ':airbyte-migration',
 //        ':airbyte-notification',

@@ -4,118 +4,149 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "anyOf": [
-      {
-        "reportType": {
-          "type": ["null", "string"]
-        },
-        "processingEndTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "processingStatus": {
-          "type": ["null", "string"]
-        },
-        "marketplaceIds": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
-        },
-        "reportDocumentId": {
-          "type": ["null", "string"]
-        },
-        "reportId": {
-          "type": ["null", "string"]
-        },
-        "dataEndTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "createdTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "processingStartTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "dataStartTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        }
-      },
-      {
-        "sku": {
-          "type": ["null", "string"]
-        },
-        "asin": {
-          "type": ["null", "string"]
-        },
-        "price": {
-          "type": ["null", "number"]
-        },
-        "quantity": {
-          "type": ["null", "number"]
-        },
-        "Business Price": {
-          "type": ["null", "number"]
-        },
-        "Quantity Price Type": {
-          "type": ["null", "string"]
-        },
-        "Quantity Lower Bound 1": {
-          "type": ["null", "number"]
-        },
-        "Quantity Price 1": {
-          "type": ["null", "number"]
-        },
-        "Quantity Lower Bound 2": {
-          "type": ["null", "number"]
-        },
-        "Quantity Price 2": {
-          "type": ["null", "number"]
-        },
-        "Quantity Lower Bound 3": {
-          "type": ["null", "number"]
-        },
-        "Quantity Price 3": {
-          "type": ["null", "number"]
-        },
-        "Quantity Lower Bound 4": {
-          "type": ["null", "number"]
-        },
-        "Quantity Price 4": {
-          "type": ["null", "number"]
-        },
-        "Quantity Lower Bound 5": {
-          "type": ["null", "number"]
-        },
-        "Quantity Price 5": {
-          "type": ["null", "number"]
-        },
-        "Progressive Price Type": {
-          "type": ["null", "string"]
-        },
-        "Progressive Lower Bound 1": {
-          "type": ["null", "number"]
-        },
-        "Progressive Price 1": {
-          "type": ["null", "number"]
-        },
-        "Progressive Lower Bound 2": {
-          "type": ["null", "number"]
-        },
-        "Progressive Price 2": {
-          "type": ["null", "number"]
-        },
-        "Progressive Lower Bound 3": {
-          "type": ["null", "number"]
-        },
-        "Progressive Price 3": {
-          "type": ["null", "number"]
-        }
-      }
-    ]
+    "amazon-order-id": {
+      "type": ["null", "string"]
+    },
+    "merchant-order-id": {
+      "type": ["null", "string"]
+    },
+    "shipment-id": {
+      "type": ["null", "string"]
+    },
+    "shipment-item-id": {
+      "type": ["null", "string"]
+    },
+    "amazon-order-item-id": {
+      "type": ["null", "string"]
+    },
+    "merchant-order-item-id": {
+      "type": ["null", "string"]
+    },
+    "purchase-date": {
+      "type": ["null", "string"]
+    },
+    "payments-date": {
+      "type": ["null", "string"]
+    },
+    "shipment-date": {
+      "type": ["null", "string"]
+    },
+    "reporting-date": {
+      "type": ["null", "string"]
+    },
+    "buyer-email": {
+      "type": ["null", "string"]
+    },
+    "buyer-name": {
+      "type": ["null", "string"]
+    },
+    "buyer-phone-number": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "type": ["null", "string"]
+    },
+    "quantity-shipped": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "item-price": {
+      "type": ["null", "string"]
+    },
+    "item-tax": {
+      "type": ["null", "string"]
+    },
+    "shipping-price": {
+      "type": ["null", "string"]
+    },
+    "shipping-tax": {
+      "type": ["null", "string"]
+    },
+    "gift-wrap-price": {
+      "type": ["null", "string"]
+    },
+    "gift-wrap-tax": {
+      "type": ["null", "string"]
+    },
+    "ship-service-level": {
+      "type": ["null", "string"]
+    },
+    "recipient-name": {
+      "type": ["null", "string"]
+    },
+    "ship-address-1": {
+      "type": ["null", "string"]
+    },
+    "ship-address-2": {
+      "type": ["null", "string"]
+    },
+    "ship-address-3": {
+      "type": ["null", "string"]
+    },
+    "ship-city": {
+      "type": ["null", "string"]
+    },
+    "ship-state": {
+      "type": ["null", "string"]
+    },
+    "ship-postal-code": {
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "type": ["null", "string"]
+    },
+    "ship-phone-number": {
+      "type": ["null", "string"]
+    },
+    "bill-address-1": {
+      "type": ["null", "string"]
+    },
+    "bill-address-2": {
+      "type": ["null", "string"]
+    },
+    "bill-address-3": {
+      "type": ["null", "string"]
+    },
+    "bill-city": {
+      "type": ["null", "string"]
+    },
+    "bill-state": {
+      "type": ["null", "string"]
+    },
+    "bill-postal-code": {
+      "type": ["null", "string"]
+    },
+    "bill-country": {
+      "type": ["null", "string"]
+    },
+    "item-promotion-discount": {
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "type": ["null", "string"]
+    },
+    "carrier": {
+      "type": ["null", "string"]
+    },
+    "tracking-number": {
+      "type": ["null", "string"]
+    },
+    "estimated-arrival-date": {
+      "type": ["null", "string"]
+    },
+    "fulfillment-center-id": {
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel": {
+      "type": ["null", "string"]
+    },
+    "sales-channel": {
+      "type": ["null", "string"]
+    }
   }
 }

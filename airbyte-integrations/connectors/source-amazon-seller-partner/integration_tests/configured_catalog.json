@@ -77,7 +77,7 @@
     },
     {
       "stream": {
-        "name": "GET_VENDOR_INVENTORY_HEALTH_REPORT",
+        "name": "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

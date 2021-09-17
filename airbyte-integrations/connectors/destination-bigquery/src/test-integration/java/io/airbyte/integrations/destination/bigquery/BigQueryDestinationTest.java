@@ -126,11 +126,13 @@ class BigQueryDestinationTest {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
 
-    final String projectId = credentialsJson.get(BigQueryDestination.CONFIG_PROJECT_ID).asText();
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJsonString.getBytes()));
+    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
         .setCredentials(credentials)
@@ -155,10 +157,10 @@ class BigQueryDestinationTest {
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
-        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
+        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
@@ -215,7 +217,7 @@ class BigQueryDestinationTest {
 
   @Test
   void testCheckFailure() {
-    ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
+    ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);

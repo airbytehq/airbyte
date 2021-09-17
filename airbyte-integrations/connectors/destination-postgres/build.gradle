@@ -9,7 +9,7 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
@@ -19,6 +19,7 @@ dependencies {
     testImplementation "org.testcontainers:postgresql:1.15.1"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-postgres')
 
     integrationTestJavaImplementation "org.testcontainers:postgresql:1.15.1"
 

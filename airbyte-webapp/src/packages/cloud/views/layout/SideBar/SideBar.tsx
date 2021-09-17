@@ -7,16 +7,18 @@ import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Routes } from "pages/routes";
-import config from "config";
+import { useConfig } from "config";
 
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import { Link } from "components";
 import Indicator from "components/Indicator";
 
 import Source from "views/layout/SideBar/components/SourceIcon";
 import Connections from "views/layout/SideBar/components/ConnectionsIcon";
 import Destination from "views/layout/SideBar/components/DestinationIcon";
+import Onboarding from "views/layout/SideBar/components/OnboardingIcon";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Bar = styled.nav`
   width: 100px;
@@ -122,6 +124,8 @@ const WorkspaceButton = styled.div`
 
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
+  const config = useConfig();
+  const { workspace } = useWorkspace();
 
   return (
     <Bar>
@@ -135,6 +139,16 @@ const SideBar: React.FC = () => {
           )}
         </WorkspacePopout>
         <Menu>
+          {workspace.displaySetupWizard ? (
+            <li>
+              <MenuItem to={Routes.Onboarding} activeClassName="active">
+                <Onboarding />
+                <Text>
+                  <FormattedMessage id="sidebar.onboarding" />
+                </Text>
+              </MenuItem>
+            </li>
+          ) : null}
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
               <Connections />

@@ -26,6 +26,7 @@ package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
@@ -46,7 +47,6 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -68,17 +68,15 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.OauthModelConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -96,7 +94,6 @@ public class SchedulerHandler {
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
-  private final Path workspaceRoot;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
 
@@ -104,7 +101,6 @@ public class SchedulerHandler {
                           SchedulerJobClient schedulerJobClient,
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
-                          Path workspaceRoot,
                           JobNotifier jobNotifier,
                           WorkflowServiceStubs temporalService) {
     this(
@@ -115,7 +111,6 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
-        workspaceRoot,
         jobNotifier,
         temporalService);
   }
@@ -128,7 +123,6 @@ public class SchedulerHandler {
                    JsonSchemaValidator jsonSchemaValidator,
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
-                   Path workspaceRoot,
                    JobNotifier jobNotifier,
                    WorkflowServiceStubs temporalService) {
     this.configRepository = configRepository;
@@ -138,7 +132,6 @@ public class SchedulerHandler {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.specFetcher = specFetcher;
     this.jobPersistence = jobPersistence;
-    this.workspaceRoot = workspaceRoot;
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
   }
@@ -255,11 +248,18 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
-    return new SourceDefinitionSpecificationRead()
+    SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
+
+    Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
+    if (authSpec.isPresent()) {
+      specRead.setAuthSpecification(authSpec.get());
+    }
+
+    return specRead;
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
@@ -269,7 +269,8 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
-    return new DestinationDefinitionSpecificationRead()
+
+    DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
@@ -277,6 +278,13 @@ public class SchedulerHandler {
         .supportsNormalization(spec.getSupportsNormalization())
         .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
+
+    Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
+    if (authSpec.isPresent()) {
+      specRead.setAuthSpecification(authSpec.get());
+    }
+
+    return specRead;
   }
 
   public SynchronousResponse<ConnectorSpecification> getConnectorSpecification(String dockerImage) throws IOException {
@@ -350,26 +358,31 @@ public class SchedulerHandler {
   public JobInfoRead cancelJob(JobIdRequestBody jobIdRequestBody) throws IOException {
     final long jobId = jobIdRequestBody.getId();
 
-    // first prevent this job from being scheduled again
+    // prevent this job from being scheduled again
     jobPersistence.cancelJob(jobId);
+    cancelTemporalWorkflowIfPresent(jobId);
 
-    // second cancel the temporal execution
-    // TODO: this is hacky, resolve https://github.com/airbytehq/airbyte/issues/2564 to avoid this
-    // behavior
-    final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), 0L).getParent();
-    final String workflowId = IOs.readFile(attemptParentDir, TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
-    final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
-        .setWorkflowId(workflowId)
-        .build();
-    final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
-        .setWorkflowExecution(workflowExecution)
-        .setNamespace(TemporalUtils.DEFAULT_NAMESPACE)
-        .build();
-
-    temporalService.blockingStub().requestCancelWorkflowExecution(cancelRequest);
     final Job job = jobPersistence.getJob(jobId);
     jobNotifier.failJob("job was cancelled", job);
     return JobConverter.getJobInfoRead(job);
+  }
+
+  private void cancelTemporalWorkflowIfPresent(long jobId) throws IOException {
+    var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
+    // specific to a job id, allowing us to do this.
+    var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
+
+    if (workflowId.isPresent()) {
+      LOGGER.info("Cancelling workflow: {}", workflowId);
+      final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
+          .setWorkflowId(workflowId.get())
+          .build();
+      final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
+          .setWorkflowExecution(workflowExecution)
+          .setNamespace(TemporalUtils.DEFAULT_NAMESPACE)
+          .build();
+      temporalService.blockingStub().requestCancelWorkflowExecution(cancelRequest);
+    }
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {

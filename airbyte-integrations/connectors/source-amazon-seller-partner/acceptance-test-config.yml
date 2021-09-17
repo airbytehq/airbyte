@@ -13,8 +13,21 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_no_empty_streams.json"
-      empty_streams: []
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams:
+        [
+          "Orders",
+          "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
+          "GET_MERCHANT_LISTINGS_ALL_DATA",
+          "GET_FBA_INVENTORY_AGED_DATA",
+          "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+          "GET_FLAT_FILE_OPEN_LISTINGS_DATA",
+          "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA",
+          "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA",
+          "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT",
+          "VendorDirectFulfillmentShipping",
+        ]
+      timeout_seconds: 600
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"
@@ -22,7 +35,6 @@ tests:
 #     future_state_path: "integration_tests/future_state.json"
 #     cursor_paths:
 #       Orders: ["LastUpdateDate"]
-# TODO: uncomment when Orders (or any other) stream is filled with data. Records streams return different values each time
 #  full_refresh:
 #   - config_path: "secrets/config.json"
 #     configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -115,7 +115,7 @@ class IncrementalOktaStream(OktaStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
-            params["filter"] = f"{self.cursor_field} gt {latest_entry}"
+            params["filter"] = f'{self.cursor_field} gt "{latest_entry}"'
         return params
 
 
