@@ -70,7 +70,7 @@ public class SnowflakeDatabase {
     return new DefaultJdbcDatabase(new SnowflakeConnectionSupplier(config));
   }
 
-  public static final class SnowflakeConnectionSupplier implements CloseableConnectionSupplier {
+  private static final class SnowflakeConnectionSupplier implements CloseableConnectionSupplier {
 
     private final JsonNode config;
 
