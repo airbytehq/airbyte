@@ -110,11 +110,11 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
        * Secondly, we use LocalDateTime to handle this cause it represents DATETIME datatype in JAVA
        */
       if (x instanceof LocalDateTime) {
-        return DataTypeUtils.toISO8601String((LocalDateTime)x);
+        return DataTypeUtils.toISO8601String((LocalDateTime) x);
       } else if (x instanceof LocalDate) {
-        return DataTypeUtils.toISO8601String((LocalDate)x);
+        return DataTypeUtils.toISO8601String((LocalDate) x);
       } else if (x instanceof Duration) {
-        return DataTypeUtils.toISO8601String((Duration)x);
+        return DataTypeUtils.toISO8601String((Duration) x);
       } else if (x instanceof Timestamp) {
         return DataTypeUtils.toISO8601String(((Timestamp) x).toLocalDateTime());
       } else if (x instanceof Number) {

@@ -311,7 +311,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varbinary(256)")
             .addInsertValues("null", "'test'", "'тест'")
-             .addExpectedValues(null, "test", "тест")
+            .addExpectedValues(null, "test", "тест")
             .build());
 
     addDataTypeTestData(

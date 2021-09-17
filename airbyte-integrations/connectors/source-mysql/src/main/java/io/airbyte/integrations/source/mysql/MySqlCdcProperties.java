@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import io.airbyte.integrations.debezium.internals.MySQLConverter;
 import java.util.Properties;
 
 public class MySqlCdcProperties {
