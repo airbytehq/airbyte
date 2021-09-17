@@ -49,7 +49,7 @@ public class S3StreamTransferManagerHelper {
     if (partSize == null) {
       LOGGER.warn(String.format("Part size for StreamTransferManager is not set explicitly. Will use the default one = %sMB. "
           + "Please note server allows up to 10,000 parts to be uploaded for a single object, i.e. 50GB for stream. "
-          + "Fell free to increase partSize arg, but make sure you have enough memory resources allocated", DEFAULT_PART_SIZE_MB));
+          + "Feel free to increase partSize arg, but make sure you have enough memory resources allocated", DEFAULT_PART_SIZE_MB));
       return getDefault(bucketName, objectKey, s3Client);
     }
     if (partSize < DEFAULT_PART_SIZE_MB) {
