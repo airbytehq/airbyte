@@ -149,13 +149,13 @@ class WorkspaceHelperTest {
   @Test
   public void testDestination() throws IOException, JsonValidationException {
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
-    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeDestinationConnection(DEST, emptyConnectorSpec);
 
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
-    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(UUID.randomUUID()));
+    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(UUID.randomUUID()), emptyConnectorSpec);
     final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
@@ -165,7 +165,7 @@ class WorkspaceHelperTest {
     configRepository.writeStandardSource(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE, emptyConnectorSpec);
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
-    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeDestinationConnection(DEST, emptyConnectorSpec);
 
     // set up connection
     configRepository.writeStandardSync(CONNECTION);
@@ -181,7 +181,7 @@ class WorkspaceHelperTest {
     // check that caching is working
     final UUID newWorkspace = UUID.randomUUID();
     configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(newWorkspace), emptyConnectorSpec);
-    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(newWorkspace));
+    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(newWorkspace), emptyConnectorSpec);
     final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
@@ -205,7 +205,7 @@ class WorkspaceHelperTest {
     configRepository.writeStandardSource(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE, emptyConnectorSpec);
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
-    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeDestinationConnection(DEST, emptyConnectorSpec);
     configRepository.writeStandardSync(CONNECTION);
 
     // test jobs

@@ -58,7 +58,7 @@
 - destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   name: MeiliSearch
   dockerRepository: airbyte/destination-meilisearch
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch
 - destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   name: MySQL
@@ -78,7 +78,7 @@
 - destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   name: Kafka
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
 - destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   name: DynamoDB
