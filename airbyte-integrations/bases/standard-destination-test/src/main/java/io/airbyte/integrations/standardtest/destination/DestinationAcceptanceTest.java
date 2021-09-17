@@ -971,11 +971,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteDestination destination = getDestination();
 
     destination.start(destinationConfig, jobRoot);
-    try {
-      messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-    }
+    messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
     destination.notifyEndOfStream();
 
     List<AirbyteMessage> destinationOutput = new ArrayList<>();
