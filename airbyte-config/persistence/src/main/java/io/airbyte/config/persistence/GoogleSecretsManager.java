@@ -90,7 +90,6 @@ public class GoogleSecretsManager {
     }
   }
 
-
   private static SecretManagerServiceClient getSecretManagerServiceClient() throws IOException {
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
         .fromStream(new ByteArrayInputStream((new EnvConfigs()).getSecretStoreGcpCredentials().getBytes(StandardCharsets.UTF_8)));
