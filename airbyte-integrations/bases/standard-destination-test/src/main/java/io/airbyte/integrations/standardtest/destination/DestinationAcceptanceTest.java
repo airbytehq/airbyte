@@ -383,10 +383,9 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(1000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(400, messages).stream().flatMap(List::stream).collect(Collectors.toList());
 
     final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
 
