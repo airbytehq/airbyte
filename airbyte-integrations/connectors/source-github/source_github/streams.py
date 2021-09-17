@@ -680,7 +680,9 @@ class Commits(IncrementalGithubStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"])
+        params["since"] = self.get_starting_point(
+            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
+        )
         params["sha"] = stream_slice["branch"]
         return params
 
