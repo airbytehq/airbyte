@@ -68,9 +68,10 @@ public class SnowflakeDestinationTest {
   @DisplayName("When given Azure credentials should use COPY")
   public void useAzureBlobCopyStrategyTest() {
     var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("azure_blob_storage_account_name", "fake-account");
+    stubLoadingMethod.put("azure_blob_storage_endpoint_domain_name", "fake.domain");
+    stubLoadingMethod.put("azure_blob_storage_account_name", "fakeaccount");
     stubLoadingMethod.put("azure_blob_storage_container_name", "fake-container");
-    stubLoadingMethod.put("azure_blob_storage_account_key", "test key");
+    stubLoadingMethod.put("azure_blob_storage_account_key", "testkey");
     stubLoadingMethod.put("snowflake_azure_external_stage_name", "FAKE_STAGE");
 
     var stubConfig = mapper.createObjectNode();
