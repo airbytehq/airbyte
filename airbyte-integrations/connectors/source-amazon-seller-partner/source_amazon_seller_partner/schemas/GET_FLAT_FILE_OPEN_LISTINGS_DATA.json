@@ -1,67 +1,76 @@
 {
-  "title": "FBA Inventory Aged Data Reports",
-  "description": "FBA Inventory Aged Data Reports",
+  "title": "Flat File Open Listings Data",
+  "description": "Flat File Open Listings Data Reports",
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "sku": {
       "type": ["null", "string"]
     },
-    "fnsku": {
-      "type": ["null", "string"]
-    },
     "asin": {
       "type": ["null", "string"]
     },
-    "product-name": {
+    "price": {
       "type": ["null", "string"]
     },
-    "condition": {
+    "quantity": {
       "type": ["null", "string"]
     },
-    "your-price": {
+    "Business Price": {
       "type": ["null", "string"]
     },
-    "mfn-listing-exists": {
+    "Quantity Price Type": {
       "type": ["null", "string"]
     },
-    "mfn-fulfillable-quantity": {
+    "Quantity Lower Bound 1": {
       "type": ["null", "string"]
     },
-    "afn-listing-exists": {
+    "Quantity Price 1": {
       "type": ["null", "string"]
     },
-    "afn-warehouse-quantity": {
+    "Quantity Lower Bound 2": {
       "type": ["null", "string"]
     },
-    "afn-fulfillable-quantity": {
+    "Quantity Price 2": {
       "type": ["null", "string"]
     },
-    "afn-unsellable-quantity": {
+    "Quantity Lower Bound 3": {
       "type": ["null", "string"]
     },
-    "afn-reserved-quantity": {
+    "Quantity Price 3": {
       "type": ["null", "string"]
     },
-    "afn-total-quantity": {
+    "Quantity Lower Bound 4": {
       "type": ["null", "string"]
     },
-    "per-unit-volume": {
+    "Quantity Price 4": {
       "type": ["null", "string"]
     },
-    "afn-inbound-working-quantity": {
+    "Quantity Lower Bound 5": {
       "type": ["null", "string"]
     },
-    "afn-inbound-shipped-quantity": {
+    "Quantity Price 5": {
       "type": ["null", "string"]
     },
-    "afn-inbound-receiving-quantity": {
+    "Progressive Price Type": {
       "type": ["null", "string"]
     },
-    "afn-future-supply-buyable": {
+    "Progressive Lower Bound 1": {
       "type": ["null", "string"]
     },
-    "afn-reserved-future-supply": {
+    "Progressive Price 1": {
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 2": {
+      "type": ["null", "string"]
+    },
+    "Progressive Price 2": {
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 3": {
+      "type": ["null", "string"]
+    },
+    "Progressive Price 3": {
       "type": ["null", "string"]
     }
   }
