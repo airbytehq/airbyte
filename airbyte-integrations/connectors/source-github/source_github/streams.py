@@ -152,9 +152,14 @@ class GithubStream(HttpStream, ABC):
                 # Some streams are not available for repositories owned by a user instead of an organization.
                 # Handle "404 Client Error: Not Found" errors
                 if isinstance(self, Repositories):
-                    error_msg = f"Syncing `Repositories` stream isn't available for repository `{stream_slice['organization']}`."
+                    error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Users):
+                    error_msg = f"Syncing `Users` stream isn't available for organization `{stream_slice['organization']}`."
                 elif isinstance(self, Organizations):
                     error_msg = f"Syncing `Organizations` stream isn't available for organization `{stream_slice['organization']}`."
+                else:
+                    self.logger.error(f"Undefined error while reading records: {error_msg}")
+                    raise e
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
