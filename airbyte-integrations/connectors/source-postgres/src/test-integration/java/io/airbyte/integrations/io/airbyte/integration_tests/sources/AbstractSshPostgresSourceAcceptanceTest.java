@@ -28,7 +28,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.ssh.SshBastion;
 import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -39,30 +41,45 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static io.airbyte.integrations.base.ssh.SshBastion.*;
+
 public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
-
+  private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+  private static PostgreSQLContainer<?> db;
   private JsonNode config;
 
   public abstract Path getConfigFilePath();
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   // todo (cgardens) - dynamically create data by generating a database with a random name instead of
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
+    startTestContainers();
+//    config = SshBastion.getTunnelConfig(db, schemaName, getTunnelMethod());
+//    config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
+  private static void startTestContainers() {
+    initAndStartBastion();
+    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(getNetWork());
+    db.start();
+  }
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-
+    stopAndCloseContainers(db);
   }
 
   @Override
@@ -76,8 +93,8 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
+  protected JsonNode getConfig() throws IOException {
+    return SshBastion.getTunnelConfig(db, schemaName, getTunnelMethod());
   }
 
   @Override

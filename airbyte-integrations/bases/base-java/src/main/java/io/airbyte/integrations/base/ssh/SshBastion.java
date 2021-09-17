@@ -66,7 +66,7 @@ public class SshBastion {
                         .getIpAddress()))
                 .put("username", db.getUsername())
                 .put("password", db.getPassword())
-                .put("schema", schemaName)
+//                .put("schema", schemaName)
                 .put("port", db.getExposedPorts().get(0))
                 .put("database", db.getDatabaseName())
                 .put("ssl", false)
@@ -80,7 +80,7 @@ public class SshBastion {
                         .put("tunnel_port", bastion.getExposedPorts().get(0))
                         .put("tunnel_user", SSH_USER)
                         .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
-                        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? MoreResources.readResource("bastion/id_rsa") : "")
+                        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? MoreResources.readResource("bastion/bastion_key") : "")
                         .build()))
                 .build());
     }
