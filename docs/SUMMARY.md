@@ -193,6 +193,7 @@
   * [Templates](contributing-to-airbyte/templates/README.md)
     * [Connector Doc Template](contributing-to-airbyte/templates/integration-documentation-template.md)
 * [Understanding Airbyte](understanding-airbyte/README.md)
+  * [Glossary of Terms](understanding-airbyte/glossary.md)
   * [A Beginner's Guide to the AirbyteCatalog](understanding-airbyte/beginners-guide-to-catalog.md)
   * [AirbyteCatalog Reference](understanding-airbyte/catalog.md)
   * [Airbyte Specification](understanding-airbyte/airbyte-specification.md)
