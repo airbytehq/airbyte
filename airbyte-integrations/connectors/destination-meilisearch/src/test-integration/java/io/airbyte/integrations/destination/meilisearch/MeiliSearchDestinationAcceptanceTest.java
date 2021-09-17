@@ -37,6 +37,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.testcontainers.containers.GenericContainer;
@@ -101,10 +102,14 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
     final Index index = meiliSearchClient.index(Names.toAlphanumericAndUnderscore(streamName));
     final String responseString = index.getDocuments();
     final JsonNode response = Jsons.deserialize(responseString);
-    return MoreStreams.toStream(response.iterator())
+     return MoreStreams.toStream(response.iterator())
         // strip out the airbyte primary key because the test cases only expect the data, no the airbyte
         // metadata column.
+        // We also sort the data by "emitted_at" and then remove that column, because the test cases only expect data,
+        // not the airbyte metadata column.
         .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_PK_COLUMN))
+        .sorted(Comparator.comparing(o -> o.get(MeiliSearchDestination.AB_EMITTED_AT_COLUMN).asText()))
+        .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_EMITTED_AT_COLUMN))
         .collect(Collectors.toList());
   }
 
