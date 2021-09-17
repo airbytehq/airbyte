@@ -22,157 +22,170 @@
 # SOFTWARE.
 #
 
-from typing import Any, List, MutableMapping, Type
+from typing import Any, List, MutableMapping, Optional, Type
 
+import pydantic
 from pydantic import BaseModel
+from pydantic.typing import resolve_annotations
 
 
-class BaseSchemaModel(BaseModel):
+class AllOptional(pydantic.main.ModelMetaclass):
+    def __new__(self, name, bases, namespaces, **kwargs):
+        """
+        Iterate through fields and wrap then with typing.Optional type.
+        """
+        annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
+        for base in bases:
+            annotations = {**annotations, **getattr(base, "__annotations__", {})}
+        for field in annotations:
+            if not field.startswith("__"):
+                annotations[field] = Optional[annotations[field]]
+        namespaces["__annotations__"] = annotations
+        return super().__new__(self, name, bases, namespaces, **kwargs)
+
+
+class BaseSchemaModel(BaseModel, metaclass=AllOptional):
     class Config:
         arbitrary_types_allowed = True
 
         @classmethod
         def schema_extra(cls, schema: MutableMapping[str, Any], model: Type["BaseModel"]) -> None:
-            # Modify pydantic generated jsonschema.
-            # Remove "title" and "description" fields to reduce size.
             schema.pop("title", None)
             schema.pop("description", None)
-            # Remove required section so any missing attribute from API wont break object validation.
-            schema.pop("required", None)
             for name, prop in schema.get("properties", {}).items():
                 prop.pop("title", None)
                 prop.pop("description", None)
+                schema.pop("required", None)
                 allow_none = model.__fields__[name].allow_none
-                # Pydantic doesnt treat Union[None, Any] type correctly when
-                # generation jsonschema so we cant set field as nullable (i.e.
-                # field that can have either null and non-null values),
-                # generate this jsonschema value manually.
-                if "type" in prop:
-                    if allow_none:
+                if allow_none:
+                    if "type" in prop:
                         prop["type"] = ["null", prop["type"]]
+                    elif "$ref" in prop:
+                        ref = prop.pop("$ref")
+                        prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
 
 class Application(BaseSchemaModel):
     id: str
     type: str
-    candidateId: str = None
+    candidateId: str
     opportunityId: str
-    posting: str = None
-    postingHiringManager: str = None
-    postingOwner: str = None
-    name: str = None
-    company: str = None
-    phone: dict = None
-    email: str = None
+    posting: str
+    postingHiringManager: str
+    postingOwner: str
+    name: str
+    company: str
+    phone: dict
+    email: str
     links: List[str]
-    comments: str = None
-    user: str = None
+    comments: str
+    user: str
     customQuestions: List[dict]
     createdAt: int
-    archived: dict = None
-    requisitionForHire: dict = None
+    archived: dict
+    requisitionForHire: dict
 
 
 class Interview(BaseSchemaModel):
     id: str
-    panel: str = None
-    subject: str = None
-    note: str = None
+    panel: str
+    subject: str
+    note: str
     interviewers: List[dict]
-    timezone: str = None
+    timezone: str
     createdAt: int
-    date: int = None
-    duration: int = None
-    location: str = None
-    feedbackTemplate: str = None
+    date: int
+    duration: int
+    location: str
+    feedbackTemplate: str
     feedbackForms: List[str]
-    feedbackReminder: str = None
-    user: str = None
-    stage: str = None
-    canceledAt: int = None
+    feedbackReminder: str
+    user: str
+    stage: str
+    canceledAt: int
     postings: List[str]
-    gcalEventUrl: str = None
+    gcalEventUrl: str
 
 
 class Note(BaseSchemaModel):
     id: str
-    text: str = None
+    text: str
     fields: List[dict]
-    user: str = None
-    secret: bool = None
-    completedAt: int = None
-    deletedAt: int = None
+    user: str
+    secret: bool
+    completedAt: int
+    deletedAt: int
     createdAt: int
 
 
 class Offer(BaseSchemaModel):
     id: str
-    posting: str = None
+    posting: str
     createdAt: int
-    status: str = None
-    creator: str = None
+    status: str
+    creator: str
     fields: List[dict]
     signatures: dict
-    approved: str = None
-    approvedAt: int = None
-    sentAt: int = None
-    sentDocument: dict = None
-    signedDocument: dict = None
+    approved: str
+    approvedAt: int
+    sentAt: int
+    sentDocument: dict
+    signedDocument: dict
 
 
 class Opportunity(BaseSchemaModel):
     id: str
-    name: str = None
-    contact: str = None
-    headline: str = None
-    stage: str = None
-    confidentiality: str = None
-    location: str = None
+    name: str
+    contact: str
+    headline: str
+    stage: str
+    confidentiality: str
+    location: str
     phones: List[dict]
     emails: List[str]
     links: List[str]
-    archived: dict = None
+    archived: dict
     tags: List[str]
     sources: List[str]
     stageChanges: List[dict]
-    origin: str = None
-    sourcedBy: str = None
-    owner: str = None
+    origin: str
+    sourcedBy: str
+    owner: str
     followers: List[str]
     applications: List[str]
     createdAt: int
     updatedAt: int
-    lastInteractionAt: int = None
-    lastAdvancedAt: int = None
-    snoozedUntil: int = None
-    urls: dict = None
-    resume: str = None
-    dataProtection: dict = None
+    lastInteractionAt: int
+    lastAdvancedAt: int
+    snoozedUntil: int
+    urls: dict
+    resume: str
+    dataProtection: dict
     isAnonymized: bool
 
 
 class Referral(BaseSchemaModel):
     id: str
-    type: str = None
-    text: str = None
-    instructions: str = None
+    type: str
+    text: str
+    instructions: str
     fields: List[dict]
-    baseTemplateId: str = None
-    user: str = None
-    referrer: str = None
-    stage: str = None
+    baseTemplateId: str
+    user: str
+    referrer: str
+    stage: str
     createdAt: int
-    completedAt: int = None
+    completedAt: int
 
 
 class User(BaseSchemaModel):
     id: str
-    name: str = None
-    username: str = None
-    email: str = None
-    accessRole: str = None
-    photo: str = None
+    name: str
+    username: str
+    email: str
+    accessRole: str
+    photo: str
     createdAt: int
-    deactivatedAt: int = None
-    externalDirectoryId: str = None
-    linkedContactIds: List[str] = None
+    deactivatedAt: int
+    externalDirectoryId: str
+    linkedContactIds: List[str]

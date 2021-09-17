@@ -24,6 +24,7 @@
       "environment": {
         "title": "Environment",
         "description": "Sandbox or Production environment.",
+        "default": "Production",
         "enum": ["Sandbox", "Production"],
         "type": "string"
       },
@@ -35,13 +36,7 @@
         "type": "string"
       }
     },
-    "required": [
-      "client_id",
-      "client_secret",
-      "refresh_token",
-      "environment",
-      "start_date"
-    ]
+    "required": ["client_id", "client_secret", "refresh_token", "start_date"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"]
