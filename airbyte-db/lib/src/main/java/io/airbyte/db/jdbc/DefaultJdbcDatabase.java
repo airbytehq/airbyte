@@ -146,10 +146,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   }
 
-  public CloseableConnectionSupplier getConnectionSupplier() {
-    return connectionSupplier;
-  }
-
   public static final class DataSourceConnectionSupplier implements CloseableConnectionSupplier {
 
     private final DataSource dataSource;

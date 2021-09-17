@@ -88,10 +88,6 @@ public class SnowflakeDatabase {
       // no op.
     }
 
-    public JsonNode getConfig() {
-      return config;
-    }
-
   }
 
 }

@@ -68,18 +68,11 @@
         "title": "Password",
         "order": 6
       },
-      "batch_size": {
-        "description": "Batch size.",
-        "title": "Batch size that will be written to the table with one query. If the batch size is not specified, all records will be added one query.",
-        "type": "integer",
-        "examples": ["1000000"],
-        "order": 7
-      },
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
         "description": "Loading method used to send data to Snowflake.",
-        "order": 8,
+        "order": 7,
         "oneOf": [
           {
             "title": "Standard Inserts",

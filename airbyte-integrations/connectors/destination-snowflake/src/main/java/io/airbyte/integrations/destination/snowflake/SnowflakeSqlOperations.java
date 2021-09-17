@@ -58,12 +58,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   @Override
   public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName)
       throws SQLException {
-    LOGGER.info("actual size of records: {}", records.size());
-    var config = ((SnowflakeDatabase.SnowflakeConnectionSupplier) ((DefaultJdbcDatabase) database).getConnectionSupplier()).getConfig();
-    Map<String, JsonNode> map = new HashMap<>();
-    config.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
-    Integer batchSize = map.containsKey("batch_size") ? map.get("batch_size").intValue() : null;
-    LOGGER.info("batch size: {}", batchSize == null || batchSize <= 0 ? records.size() : batchSize);
+    LOGGER.info("actual size of batch: {}", records.size());
 
     // snowflake query syntax:
     // requires selecting from a set of values in order to invoke the parse_json function.
@@ -75,7 +70,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
         "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
-    SqlOperationsUtils.insertRawRecordsInBatchesQueries(insertQuery, recordQuery, database, records, batchSize);
+    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
   }
 
 }
