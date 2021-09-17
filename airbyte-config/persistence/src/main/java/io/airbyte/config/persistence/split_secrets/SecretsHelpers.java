@@ -77,7 +77,7 @@ public class SecretsHelpers {
                   Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
                   final var secret = copy.get(key).asText();
                   final var secretUuid = uuidSupplier.get();
-                  final var secretCoordinate = "workspace_" + workspaceId + "_secret_" + secretUuid + "_v1"; // todo: handle these versions differently! should be exposed from the map as an object
+                  final var secretCoordinate = "workspace_" + workspaceId + "_secret_" + secretUuid + "_v1";
                   secretMap.put(secretCoordinate, secret);
                   ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of("_secret", secretCoordinate)));
               }
@@ -99,45 +99,16 @@ public class SecretsHelpers {
               ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
               secretMap.putAll(nestedSplitConfig.getSecretIdToPayload());
           }
+          // todo: also support just arrays here
       }
 
       return new SplitSecretConfig(copy, secretMap);
-
-
-
-
-//
-//    Preconditions.checkArgument(fullConfig instanceof ObjectNode, "Full config must be a JSON object!");
-//
-//    // todo: get paths for all secrets in the spec
-//    final var schema = spec.getConnectionSpecification();
-//
-//    System.out.println("output = " + JsonPath.read(schema.toString(), "$[?(@.airbyte_secret == true)]").toString());
-//    System.out.println("output = " + JsonPath.read(schema.toString(), "$.*.[?(@.airbyte_secret == true)]").toString());
-//    JsonNode secretTrees = schema.at(JsonPointer.compile("$[?(@.airbyte_secret == true)]"));
-//    System.out.println("secretTrees = " + secretTrees);
-//
-//    final var secretParents = schema.findParents("airbyte_secret"); // todo: use constant
-//
-//    for (JsonNode secretParent : secretParents) {
-//      System.out.println("secretParent = " + secretParent);
-//    }
-
-    // todo: one by one, create coordinates and payloads for each spec
-    // todo: construct the partial config
-
-    // todo: should we persist things inside here or outside? -> should be inside and should fill the
-    // partial spec with coordinates
     // todo: come up with a better name than partialConfig
-
-    // return new SplitSecretConfig(partialConfig, secretIdToPayload);
-
   }
 
   // todo: UPDATES old coordconfig+spec+ full config -> coordconfig+secrets
-  public static SplitSecretConfig splitUpdate(UUID workspaceId, JsonNode oldPartialConfig, JsonNode newFullConfig, ConnectorSpecification spec) {
-    // todo: only update if the underlying secret changed value? test this specifically
-    return null;
+  public static SplitSecretConfig splitUpdate(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldPartialConfig, JsonNode newFullConfig, ConnectorSpecification spec) {
+      // return null
   }
 
   // todo: READ coordconfig+secets persistence -> full config

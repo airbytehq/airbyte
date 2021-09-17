@@ -55,7 +55,7 @@ public class JsonSecretsProcessor {
    * @param schema Schema containing secret annotations
    * @param obj Object containing potentially secret fields
    */
-  // todo: fix bug where this doesn't handle non-oneof nesting
+  // todo: fix bug where this doesn't handle non-oneof nesting or just arrays
   public static JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
     // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
