@@ -77,7 +77,7 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
       throws Exception {
     final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
     final Optional<Path> streamOutput = allOutputs.stream()
-        .filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getRawTableName(streamName)))
+            .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".jsonl"))
         .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);

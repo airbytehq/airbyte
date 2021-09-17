@@ -47,6 +47,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
+
 /**
  * When adding a new GCS destination acceptance test, extend this class and do the following:
  * <li>Implement {@link #getFormatConfig} that returns a {@link S3FormatConfig}</li>
@@ -107,6 +109,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
+        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(

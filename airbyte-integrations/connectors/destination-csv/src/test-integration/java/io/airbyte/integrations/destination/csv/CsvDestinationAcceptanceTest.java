@@ -80,8 +80,10 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
                                            JsonNode streamSchema)
       throws Exception {
     final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
+
     final Optional<Path> streamOutput =
-        allOutputs.stream().filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getRawTableName(streamName)))
+        allOutputs.stream()
+                .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
             .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
