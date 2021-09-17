@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.21
+Added the ability to use caching for efficient synchronization of nested streams.
+
 ## 0.1.20
 - Allow using `requests.auth.AuthBase` as authenticators instead of custom CDK authenticators.
 - Implement Oauth2Authenticator, MultipleTokenAuthenticator and TokenAuthenticator authenticators.
