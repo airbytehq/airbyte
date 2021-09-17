@@ -188,7 +188,7 @@ public class ConfigRepository {
     final JsonSchemaValidator validator = new JsonSchemaValidator();
     validator.ensure(connectorSpecification.getConnectionSpecification(), source.getConfiguration());
 
-    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
+    secretsPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
 
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
@@ -206,7 +206,7 @@ public class ConfigRepository {
     final JsonSchemaValidator validator = new JsonSchemaValidator();
     validator.ensure(connectorSpecification.getConnectionSpecification(), destinationConnection.getConfiguration());
 
-    persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
+    secretsPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {

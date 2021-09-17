@@ -138,7 +138,7 @@ public class ArchiveHandlerTest {
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence, new HashSet<String>());
     secretsPersistence = new FileSystemConfigPersistence(p);
-    configRepository = new ConfigRepository(configPersistence, secretsPersistence); // TODO
+    configRepository = new ConfigRepository(configPersistence, secretsPersistence);
     // configRepository = new ConfigRepository(configPersistence, configPersistence);
 
     jobPersistence.setVersion(VERSION);
