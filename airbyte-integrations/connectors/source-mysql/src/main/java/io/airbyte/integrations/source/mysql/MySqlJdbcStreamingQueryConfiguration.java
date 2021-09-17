@@ -42,7 +42,7 @@ public class MySqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryC
     // "s3cr3t");
     // We set userCursorFetch in MySqlSource.
     connection.setAutoCommit(false);
-    preparedStatement.setFetchSize(1000);
+    preparedStatement.setFetchSize(50000);
     // If for some reason, you cannot set useCursorFetch in the connection, fall back on this
     // implementation below. It fetches records one at a time, which while inefficient, at least does
     // not risk OOM.

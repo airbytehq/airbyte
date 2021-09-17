@@ -34,7 +34,7 @@ public class MssqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryC
   @Override
   public void accept(Connection connection, PreparedStatement preparedStatement) throws SQLException {
     connection.setAutoCommit(false);
-    preparedStatement.setFetchSize(1000);
+    preparedStatement.setFetchSize(50000);
   }
 
 }
