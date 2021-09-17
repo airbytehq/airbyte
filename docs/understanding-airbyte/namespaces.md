@@ -3,7 +3,7 @@
 ## High-Level Overview
 
 {% hint style="info" %}
-The high-level overview contains all the information you need to use Namespaces. Information past that can be read for educational purposes.
+The high-level overview contains all the information you need to use Namespaces when pulling from APIs. Information past that can be read for advanced or educational purposes.
 {% endhint %}
 
 When looking through our connector docs, you'll notice that some sources and destinations support "Namespaces." They simply allow you to organize and cleanly separate your data into groups in the destination if the destination supports it. If your desired destination doesn't support it, you can ignore this feature.
