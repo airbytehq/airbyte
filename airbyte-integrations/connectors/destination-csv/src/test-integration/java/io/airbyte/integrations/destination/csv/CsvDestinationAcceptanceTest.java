@@ -83,7 +83,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     final Optional<Path> streamOutput =
         allOutputs.stream()
-                .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
+            .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
             .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
