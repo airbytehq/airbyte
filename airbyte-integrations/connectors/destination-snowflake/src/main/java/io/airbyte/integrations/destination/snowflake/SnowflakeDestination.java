@@ -40,7 +40,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   enum DestinationType {
     INSERT,
     COPY_S3,
-    COPY_GCS
+    COPY_GCS,
+    COPY_AZUREBLOB
   }
 
   public SnowflakeDestination() {
@@ -52,7 +53,10 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
-    } else {
+    } else if (isAzureBlobCopy(config)) {
+      return DestinationType.COPY_AZUREBLOB;
+    }  
+    else {
       return DestinationType.INSERT;
     }
   }
@@ -65,15 +69,21 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
+  public static boolean isAzureBlobCopy(JsonNode config) {
+    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("azure_blob_storage_account_name");
+  }
+
   public static Map<DestinationType, Destination> getTypeToDestination() {
     final SnowflakeInsertDestination insertDestination = new SnowflakeInsertDestination();
     final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
     final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
+    final SnowflakeCopyAzureBlobDestination copyAzureBlobDestination = new SnowflakeCopyAzureBlobDestination();
 
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
         DestinationType.COPY_S3, copyS3Destination,
-        DestinationType.COPY_GCS, copyGcsDestination);
+        DestinationType.COPY_GCS, copyGcsDestination,
+        DestinationType.COPY_AZUREBLOB, copyAzureBlobDestination);
   }
 
   public static void main(String[] args) throws Exception {
