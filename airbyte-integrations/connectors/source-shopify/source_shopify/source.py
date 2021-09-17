@@ -34,6 +34,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from .transform import DataTypeEnforcer
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
@@ -51,6 +52,7 @@ class ShopifyStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
+        self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
 
     @property
@@ -78,7 +80,11 @@ class ShopifyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        yield from records
+        # transform method was implemented according to issue 4841
+        # Shopify API returns price fields as a string and it should be converted to number
+        # this solution designed to convert string into number, but in future can be modified for general purpose
+        for record in records:
+            yield self._transformer.transform(record)
 
     @property
     @abstractmethod
