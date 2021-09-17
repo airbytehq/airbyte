@@ -28,16 +28,22 @@ import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.google.api.client.util.Preconditions;
 import com.jayway.jsonpath.JsonPath;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class SecretsHelpers {
 
@@ -126,6 +132,7 @@ public class SecretsHelpers {
       return new SplitSecretConfig(copy, secretMap);
     // todo: come up with a better name than partialConfig
   }
+  // todo: turn this into a generic iterator over all data so it's easier to manage across JsonSecretsprocessor, here, and combine
 
   // todo: UPDATES old coordconfig+spec+ full config -> coordconfig+secrets
   public static SplitSecretConfig splitUpdate(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldPartialConfig, JsonNode newFullConfig, ConnectorSpecification spec) {
@@ -134,8 +141,44 @@ public class SecretsHelpers {
 
   // todo: READ coordconfig+secets persistence -> full config
   // todo: we'll want permissioning here at some point
-  public static JsonNode combine(JsonNode partialConfig, ConfigPersistence secretsPersistence) {
-    return null;
+  public static JsonNode combine(boolean isFirst, JsonNode partialConfig, SecretPersistence secretPersistence) {
+        // todo: add wrapper that hides isFirst
+        // todo: add test to make sure we aren't modifying input jsonnodes ever for any of the tests
+      final var config = isFirst ? partialConfig.deepCopy() : partialConfig;
+
+      System.out.println("========");
+
+      config.fields().forEachRemaining(field -> {
+          System.out.println("field.getKey() = " + field.getKey());
+
+
+            final var node = field.getValue();
+            final var childFields = MoreStreams.toStream(node.fields()).collect(Collectors.toList());
+            for (Map.Entry<String, JsonNode> childField : childFields) {
+                final var childNode = childField.getValue();
+                System.out.println("childField.getKey() = " + childField.getKey());
+
+                if(childField.getKey().equals("_secret")) {
+                    System.out.println("replacing parent");
+                    final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.asText());
+                    ((ObjectNode) config).replace(field.getKey(), new TextNode(secretPersistence.read(coordinate).get())); // todo: handle missing case
+                    break;
+            } else if(childNode.has("_secret")) {
+                    System.out.println("replacing...");
+                    final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.get("_secret").asText());
+                    ((ObjectNode) node).replace(childField.getKey(), new TextNode(secretPersistence.read(coordinate).get())); // todo: handle missing case
+                } else {
+                    System.out.println("not replacing");
+                }
+            }
+
+            if(!(node instanceof ValueNode)) {
+                combine(false, node, secretPersistence);
+            } else {
+                System.out.println("in else: " + node);
+            }
+        });
+    return config;
   }
 
   // todo: figure out oauth here
