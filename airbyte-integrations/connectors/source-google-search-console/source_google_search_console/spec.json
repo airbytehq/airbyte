@@ -1,0 +1,81 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Google Search Console Spec",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["site_urls", "start_date", "authorization"],
+    "properties": {
+      "site_urls": {
+        "type": "array",
+        "description": "Website URLs property; do not include the domain-level property in the list",
+        "examples": ["https://example1.com", "https://example2.com"]
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The date from which you'd like to replicate data in the format YYYY-MM-DD.",
+        "examples": ["2021-01-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      },
+      "end_date": {
+        "type": "string",
+        "description": "The date from which you'd like to replicate data in the format YYYY-MM-DD. Must be greater or equal start_date field",
+        "examples": ["2021-12-12"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      },
+      "authorization": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client"
+              },
+              "client_id": {
+                "type": "string",
+                "description": "Input this field if you want authorize through personal account",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "description": "Input this field if you want authorize through personal account",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "description": "Input this field if you want authorize through personal account",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["auth_type", "service_account_info"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Service"
+              },
+              "service_account_info": {
+                "type": "string",
+                "description": "Input this field if you want authorize through service account",
+                "examples": [
+                  "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

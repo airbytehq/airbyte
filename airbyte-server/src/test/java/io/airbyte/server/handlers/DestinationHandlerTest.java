@@ -71,7 +71,6 @@ class DestinationHandlerTest {
   private ConfigRepository configRepository;
   private StandardDestinationDefinition standardDestinationDefinition;
   private DestinationDefinitionSpecificationRead destinationDefinitionSpecificationRead;
-  private DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody;
   private DestinationConnection destinationConnection;
   private DestinationHandler destinationHandler;
   private ConnectionsHandler connectionsHandler;
@@ -104,8 +103,8 @@ class DestinationHandlerTest {
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
 
-    destinationDefinitionIdRequestBody =
-        new DestinationDefinitionIdRequestBody().destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId());
+    DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
+        standardDestinationDefinition.getDestinationDefinitionId());
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
 
@@ -154,7 +153,7 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
-    verify(configRepository).writeDestinationConnection(destinationConnection);
+    verify(configRepository).writeDestinationConnection(destinationConnection, connectorSpecification);
     verify(secretsProcessor)
         .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
@@ -181,7 +180,7 @@ class DestinationHandlerTest {
 
     destinationHandler.deleteDestination(destinationId);
 
-    verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
+    verify(configRepository).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
     verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
     verify(connectionsHandler).deleteConnection(connectionRead);
   }
@@ -225,7 +224,7 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
     verify(secretsProcessor).maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification());
-    verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
+    verify(configRepository).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
 

@@ -6,6 +6,8 @@ import NotificationsResource, {
 } from "core/resources/Notifications";
 import { useGetService } from "core/servicesProvider";
 import { useAnalytics } from "../useAnalytics";
+import { Source } from "core/resources/Source";
+import { Destination } from "core/resources/Destination";
 
 export const usePickFirstWorkspace = (): Workspace => {
   const { workspaces } = useResource(WorkspaceResource.listShape(), {});
@@ -21,6 +23,12 @@ const useCurrentWorkspace = (): Workspace => {
   return workspaceProviderService();
 };
 
+export type WebhookPayload = {
+  webhook: string;
+  sendOnSuccess: boolean;
+  sendOnFailure: boolean;
+};
+
 const useWorkspace = (): {
   workspace: Workspace;
   updatePreferences: (data: {
@@ -29,8 +37,8 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => Promise<Workspace>;
-  updateWebhook: (data: { webhook: string }) => Promise<Workspace>;
-  testWebhook: (webhook: string) => Promise<Notifications>;
+  updateWebhook: (data: WebhookPayload) => Promise<Workspace>;
+  testWebhook: (data: WebhookPayload) => Promise<Notifications>;
   setInitialSetupConfig: (data: {
     email: string;
     anonymousDataCollection: boolean;
@@ -38,6 +46,15 @@ const useWorkspace = (): {
     securityUpdates: boolean;
   }) => Promise<Workspace>;
   finishOnboarding: (skipStep?: string) => Promise<void>;
+  sendFeedback: ({
+    feedback,
+    source,
+    destination,
+  }: {
+    feedback: string;
+    source: Source;
+    destination: Destination;
+  }) => Promise<void>;
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
@@ -63,6 +80,24 @@ const useWorkspace = (): {
         displaySetupWizard: false,
       }
     );
+  };
+
+  const sendFeedback = async ({
+    feedback,
+    source,
+    destination,
+  }: {
+    feedback: string;
+    source: Source;
+    destination: Destination;
+  }) => {
+    analyticsService.track("Onboarding Feedback", {
+      feedback,
+      connector_source_definition: source?.sourceName,
+      connector_source_definition_id: source?.sourceDefinitionId,
+      connector_destination_definition: destination?.destinationName,
+      connector_destination_definition_id: destination?.destinationDefinitionId,
+    });
   };
 
   const setInitialSetupConfig = async (data: {
@@ -98,18 +133,20 @@ const useWorkspace = (): {
       }
     );
 
-  const testWebhook = async (webhook: string) =>
+  const testWebhook = async (data: WebhookPayload) =>
     await tryWebhookUrl(
       {
         notificationType: "slack",
+        sendOnSuccess: data.sendOnSuccess,
+        sendOnFailure: data.sendOnFailure,
         slackConfiguration: {
-          webhook: webhook,
+          webhook: data.webhook,
         },
       },
       {}
     );
 
-  const updateWebhook = async (data: { webhook: string }) =>
+  const updateWebhook = async (data: WebhookPayload) =>
     await updateWorkspace(
       {},
       {
@@ -122,6 +159,8 @@ const useWorkspace = (): {
         notifications: [
           {
             notificationType: "slack",
+            sendOnSuccess: data.sendOnSuccess,
+            sendOnFailure: data.sendOnFailure,
             slackConfiguration: {
               webhook: data.webhook,
             },
@@ -137,6 +176,7 @@ const useWorkspace = (): {
     updatePreferences,
     updateWebhook,
     testWebhook,
+    sendFeedback,
   };
 };
 

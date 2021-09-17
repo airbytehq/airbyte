@@ -110,7 +110,7 @@ public class PostgresDestinationTest {
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
-        JdbcUtils::rowToJson);
+        JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     assertEquals(
         expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),

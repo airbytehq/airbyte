@@ -44,6 +44,11 @@ jobs:
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
     steps:
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
+          export_default_credentials: true
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
@@ -81,11 +86,14 @@ jobs:
           SOURCE_AWS_CLOUDTRAIL_CREDS: ${{ secrets.SOURCE_AWS_CLOUDTRAIL_CREDS }}
           AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS }}
           SOURCE_BING_ADS_CREDS: ${{ secrets.SOURCE_BING_ADS_CREDS }}
           BIGQUERY_TEST_CREDS: ${{ secrets.BIGQUERY_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
           CART_TEST_CREDS: ${{ secrets.CART_TEST_CREDS }}
           CHARGEBEE_INTEGRATION_TEST_CREDS: ${{ secrets.CHARGEBEE_INTEGRATION_TEST_CREDS }}
+          DESTINATION_POSTGRES_SSH_KEY_TEST_CREDS: ${{ secrets.DESTINATION_POSTGRES_SSH_KEY_TEST_CREDS }}
+          DESTINATION_POSTGRES_SSH_PWD_TEST_CREDS: ${{ secrets.DESTINATION_POSTGRES_SSH_PWD_TEST_CREDS }}
           DESTINATION_PUBSUB_TEST_CREDS: ${{ secrets.DESTINATION_PUBSUB_TEST_CREDS }}
           DESTINATION_KEEN_TEST_CREDS: ${{ secrets.DESTINATION_KEEN_TEST_CREDS }}
           DESTINATION_KVDB_TEST_CREDS: ${{ secrets.DESTINATION_KVDB_TEST_CREDS }}
@@ -104,6 +112,8 @@ jobs:
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
           GOOGLE_DIRECTORY_TEST_CREDS: ${{ secrets.GOOGLE_DIRECTORY_TEST_CREDS }}
           GOOGLE_SEARCH_CONSOLE_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_TEST_CREDS }}
+          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS }}
+          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC }}
           GOOGLE_SHEETS_TESTS_CREDS: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS }}
           GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
           GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
@@ -126,6 +136,7 @@ jobs:
           PIPEDRIVE_INTEGRATION_TESTS_CREDS: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS }}
           RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
           QUICKBOOKS_TEST_CREDS: ${{ secrets.QUICKBOOKS_TEST_CREDS }}
+          SALESFORCE_BULK_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_BULK_INTEGRATION_TESTS_CREDS }}
           SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
           SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
@@ -164,11 +175,13 @@ jobs:
           APIFY_INTEGRATION_TEST_CREDS: ${{ secrets.APIFY_INTEGRATION_TEST_CREDS }}
           DESTINATION_DYNAMODB_TEST_CREDS: ${{ secrets.DESTINATION_DYNAMODB_TEST_CREDS }}
           SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
+          SOURCE_CLOSE_COM_CREDS: ${{ secrets.SOURCE_CLOSE_COM_CREDS }}
           SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
           SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
+          DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
       - run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }}
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         name: publish ${{ github.event.inputs.connector }}
         id: publish
         env:

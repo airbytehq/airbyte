@@ -407,7 +407,7 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
+          ec2-image-id: ami-0717900bad4b648ca
           ec2-instance-type: c5.2xlarge
           subnet-id: subnet-0469a9e68a379c1d3
           security-group-id: sg-0793f3c9413f21970
@@ -456,6 +456,9 @@ jobs:
           - role: worker
           EOF
 
+      - name: Check Docker System Info
+        run: docker system info
+
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.2.0
         with:
@@ -475,13 +478,18 @@ jobs:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
+      - name: Show Disk Usage
+        run: |
+          df -h
+          docker system df
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
           HOME: /home/runner
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
         run: |
-          IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: Stop Kube Acceptance Test EC2 Runner

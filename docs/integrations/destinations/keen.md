@@ -21,6 +21,7 @@ Each stream will output an event in Keen. Each collection will inherit the name 
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | No |  |
 
 ## Getting started
@@ -61,4 +62,9 @@ Now you should have all the parameters needed to configure Keen destination.
 * **Infer Timestamp**
 
 ## CHANGELOG
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.0   | 2021-09-10 | [#5973](https://github.com/airbytehq/airbyte/pull/5973) | Fix timestamp inference for complex schemas |
+| 0.1.0   | 2021-08-18 | [#5339](https://github.com/airbytehq/airbyte/pull/5339) | Keen Destination Release! |
 

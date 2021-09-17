@@ -25,6 +25,10 @@
     array_to_string({{ array_column }}, "|", "")
 {%- endmacro %}
 
+{% macro oracle__array_to_string(array_column) -%}
+    cast({{ array_column }} as varchar2(4000))
+{%- endmacro %}
+
 {# cast_to_boolean -------------------------------------------------     #}
 {% macro cast_to_boolean(field) -%}
     {{ adapter.dispatch('cast_to_boolean')(field) }}

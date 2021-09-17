@@ -26,6 +26,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
+|[Close.com](./sources/close-com.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
 |[Dixa](./sources/dixa.md) | Alpha |
@@ -33,6 +34,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Drupal](./sources/drupal.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
 |[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
+|[Facebook Pages](./sources/facebook-pages.md)| Alpha |
 |[Files](./sources/file.md)| Certified |
 |[Freshdesk](./sources/freshdesk.md)| Certified |
 |[GitHub](./sources/github.md)| Beta |
@@ -64,7 +66,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Microsoft Dynamics NAV](./sources/microsoft-dynamics-nav.md)| Beta |
 |[Microsoft Teams](./sources/microsoft-teams.md)| Certified |
 |[Mixpanel](./sources/mixpanel.md)| Beta |
-|[Mongo DB](./sources/mongodb.md)| Alpha |
+|[Mongo DB](./sources/mongodb-v2.md)| Beta |
 |[MySQL](./sources/mysql.md)| Certified |
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
@@ -115,6 +117,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Chargify (Keen)](./destinations/keen.md)| Alpha |
+|[Databricks](./destinations/databricks.md) | Beta |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Kafka](./destinations/kafka.md)| Alpha |

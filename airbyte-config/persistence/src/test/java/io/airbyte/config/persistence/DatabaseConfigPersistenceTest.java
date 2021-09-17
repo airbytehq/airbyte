@@ -97,7 +97,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
 
-    final Map<AirbyteConfig, Stream<Object>> newConfigs = Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
+    final Map<AirbyteConfig, Stream<?>> newConfigs = Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
 
     configPersistence.replaceAllConfigs(newConfigs, true);
 

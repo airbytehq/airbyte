@@ -12,6 +12,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | :--- | :---: | :--- |
 | Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
 | Incremental - Append Sync | ✅ | |
+| Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | ❌ | Setting a specific bucket path is equivalent to having separate namespaces. |
 
 ## Configuration
@@ -372,4 +373,5 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.1 | 2021-08-26 | [#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery (GCS Staging upload type) |
 | 0.1.0 | 2021-07-16 | [#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release. |
