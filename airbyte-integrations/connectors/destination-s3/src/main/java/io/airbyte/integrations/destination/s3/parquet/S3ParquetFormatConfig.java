@@ -59,6 +59,12 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
     return S3Format.PARQUET;
   }
 
+  @Override
+  public Long getPartSize() {
+    // not applicable for Parquet format
+    return null;
+  }
+
   public CompressionCodecName getCompressionCodec() {
     return compressionCodec;
   }

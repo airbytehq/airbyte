@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART_SIZE_MB_ARG_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
@@ -32,9 +34,11 @@ import org.apache.avro.file.CodecFactory;
 public class S3AvroFormatConfig implements S3FormatConfig {
 
   private final CodecFactory codecFactory;
+  private final Long partSize;
 
   public S3AvroFormatConfig(JsonNode formatConfig) {
     this.codecFactory = parseCodecConfig(formatConfig.get("compression_codec"));
+    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null;
   }
 
   public static CodecFactory parseCodecConfig(JsonNode compressionCodecConfig) {
@@ -100,6 +104,10 @@ public class S3AvroFormatConfig implements S3FormatConfig {
 
   public CodecFactory getCodecFactory() {
     return codecFactory;
+  }
+
+  public Long getPartSize() {
+    return partSize;
   }
 
   @Override
