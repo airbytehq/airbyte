@@ -22,6 +22,8 @@
 # SOFTWARE.
 #
 
+import time
+
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http.auth import NoAuth
@@ -70,6 +72,7 @@ def test_reports_stream_send_request_backoff_exception(mocker, caplog, reports_s
     response = requests.Response()
     response.status_code = 429
     mocker.patch.object(requests.Session, "send", return_value=response)
+    mocker.patch.object(time, "sleep", return_value=None)
 
     with pytest.raises(DefaultBackoffException):
         reports_stream._send_request(request=requests.PreparedRequest())
