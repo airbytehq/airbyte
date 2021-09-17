@@ -51,15 +51,16 @@ public class SecretsHelpers {
   // todo: CREATION spec + full config -> coordconfig+secrets
 
     public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
-        return split(uuidSupplier, workspaceId, fullConfig, spec.getConnectionSpecification());
+        return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification());
     }
 
-  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, JsonNode spec) {
+  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldConfig, JsonNode fullConfig, JsonNode spec) {
 
+      final var old = oldConfig.deepCopy();
       // todo: check if these are necessary
       final var obj = fullConfig.deepCopy();
       final var schema = spec.deepCopy();
-      final var secretMap = new HashMap<String, String>();
+      final var secretMap = new HashMap<SecretCoordinate, String>();
 
       System.out.println("schema = " + schema);
       Preconditions.checkArgument(JsonSecretsProcessor.canBeProcessed(schema), "Schema is not valid JSONSchema!");
@@ -73,14 +74,30 @@ public class SecretsHelpers {
           // if the json schema field is an obj and has the airbyte secret field
           if (JsonSecretsProcessor.isSecret(fieldSchema) && copy.has(key)) {
               // remove the key put the new key in the coordinate section
-              if (copy.has(key)) {
                   Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
                   final var secret = copy.get(key).asText();
-                  final var secretUuid = uuidSupplier.get();
-                  final var secretCoordinate = "workspace_" + workspaceId + "_secret_" + secretUuid + "_v1";
+                  UUID secretUuid;
+
+                  String coordinateBase = null;
+                  var version = 1L;
+                  if(old.has(key)) {
+                      final var oldSecret = old.get(key);
+
+                      if(oldSecret.has("_secret")) {
+                          var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get("_secret").asText());
+                          coordinateBase = oldCoordinate.getCoordinateBase();
+                          version = oldCoordinate.getVersion() + 1;
+                      }
+                  }
+
+                  if(coordinateBase == null) {
+                      coordinateBase =  "workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+                  }
+
+                  final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
+
                   secretMap.put(secretCoordinate, secret);
-                  ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of("_secret", secretCoordinate)));
-              }
+                  ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
           }
 
           var combinationKey = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
@@ -89,15 +106,19 @@ public class SecretsHelpers {
               var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
               for (int i = 0; i < arrayNode.size(); i++) {
                   // Mask field values if any of the combination option is declaring it as secrets
-                  final var combinationSplitConfig = split(uuidSupplier, workspaceId, combinationCopy, arrayNode.get(i));
+                  final var newOld = old.has(key) ? old.get("key") : Jsons.emptyObject();
+                  System.out.println("newOld 1 = " + newOld);
+                  final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i));
                   combinationCopy = combinationSplitConfig.getPartialConfig();
-                  secretMap.putAll(combinationSplitConfig.getSecretIdToPayload());
+                  secretMap.putAll(combinationSplitConfig.getCoordinateToPayload());
               }
               ((ObjectNode) copy).set(key, combinationCopy);
           } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && copy.has(key)) {
-              final var nestedSplitConfig = split(uuidSupplier, workspaceId, copy.get(key), fieldSchema);
+              final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
+              System.out.println("newOld 2 = " + newOld);
+              final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema);
               ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
-              secretMap.putAll(nestedSplitConfig.getSecretIdToPayload());
+              secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
           }
           // todo: also support just arrays here
       }
@@ -108,7 +129,7 @@ public class SecretsHelpers {
 
   // todo: UPDATES old coordconfig+spec+ full config -> coordconfig+secrets
   public static SplitSecretConfig splitUpdate(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldPartialConfig, JsonNode newFullConfig, ConnectorSpecification spec) {
-      // return null
+      return split(uuidSupplier, workspaceId, oldPartialConfig, newFullConfig, spec.getConnectionSpecification());
   }
 
   // todo: READ coordconfig+secets persistence -> full config

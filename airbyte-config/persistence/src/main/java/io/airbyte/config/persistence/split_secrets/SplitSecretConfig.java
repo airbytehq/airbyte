@@ -30,19 +30,18 @@ import java.util.Map;
 public class SplitSecretConfig {
 
   private final JsonNode partialConfig;
-  private final Map<String, String> secretIdToPayload;
+  private final Map<SecretCoordinate, String> coordinateToPayload;
 
-  public SplitSecretConfig(final JsonNode partialConfig, final Map<String, String> secretIdToPayload) {
+  public SplitSecretConfig(final JsonNode partialConfig, final Map<SecretCoordinate, String> coordinateToPayload) {
     this.partialConfig = partialConfig;
-    this.secretIdToPayload = secretIdToPayload;
+    this.coordinateToPayload = coordinateToPayload;
   }
 
   public JsonNode getPartialConfig() {
     return partialConfig;
   }
 
-  public Map<String, String> getSecretIdToPayload() {
-    return secretIdToPayload;
+  public Map<SecretCoordinate, String> getCoordinateToPayload() {
+    return coordinateToPayload;
   }
-
 }

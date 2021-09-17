@@ -24,24 +24,42 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
+import com.google.api.client.util.Preconditions;
+
 import java.util.Objects;
 import java.util.UUID;
 
-public class GsmSecretCoordinate {
+public class SecretCoordinate {
 
-  private final UUID workspaceId;
-  private final UUID secretId;
+  private final String coordinateBase;
+  private final long version;
 
   // todo: Should the version be exposed here? WHat should this look like for OAuth secrets?
   // todo: Should everything use the smae persistence interface with the config writing?
-  public GsmSecretCoordinate(final UUID workspaceId, final UUID secretId) {
-    this.workspaceId = workspaceId;
-    this.secretId = secretId;
+  public SecretCoordinate(final String coordinateBase, final long version) {
+    this.coordinateBase = coordinateBase;
+    this.version = version;
   }
 
+  public static SecretCoordinate fromFullCoordinate(String fullCoordinate) {
+    final var splits = fullCoordinate.split("_v");
+    Preconditions.checkArgument(splits.length == 2);
+
+    return new SecretCoordinate(splits[0], Long.parseLong(splits[1]));
+  }
+
+  public String getCoordinateBase() {
+    return coordinateBase;
+  }
+
+  public long getVersion() {
+    return version;
+  }
+
+  // todo: test
   @Override
   public String toString() {
-    return "workspace_" + workspaceId + "_secret_" + secretId;
+    return coordinateBase + "_v" + version;
   }
 
   @Override
@@ -50,7 +68,7 @@ public class GsmSecretCoordinate {
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    GsmSecretCoordinate that = (GsmSecretCoordinate) o;
+    SecretCoordinate that = (SecretCoordinate) o;
     return toString().equals(that.toString());
   }
 

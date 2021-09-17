@@ -63,11 +63,11 @@ class SecretsHelpersTest {
     final var splitConfig = SecretsHelpers.split(uuidIterator::next, workspaceId, fullConfig, spec);
     final var expectedPartialConfig = Jsons.deserialize(MoreResources.readResource("expected_partial_config.json"));
     final var expectedSecretMapping = Map.of(
-        "workspace_" + workspaceId + "_secret_" + uuids.get(0) + "_v1", "hunter1",
-        "workspace_" + workspaceId + "_secret_" + uuids.get(1) + "_v1", "hunter2");
+        new SecretCoordinate("workspace_" + workspaceId + "_secret_" + uuids.get(0), 1), "hunter1",
+            new SecretCoordinate("workspace_" + workspaceId + "_secret_" + uuids.get(1), 1), "hunter2");
 
     assertEquals(expectedPartialConfig, splitConfig.getPartialConfig());
-    assertEquals(expectedSecretMapping, splitConfig.getSecretIdToPayload());
+    assertEquals(expectedSecretMapping, splitConfig.getCoordinateToPayload());
 
     // check that keys for Google Secrets Manger fit the requirements:
     // A secret ID is a string with a maximum length of 255 characters and can contain
@@ -80,10 +80,20 @@ class SecretsHelpersTest {
     assertFalse(gsmKeyCharacterPattern.matcher("/").matches());
 
     // check every key
-    splitConfig.getSecretIdToPayload().keySet().forEach(key -> {
-      assertTrue(gsmKeyCharacterPattern.matcher(key).matches(), "Invalid character in key: " + key);
-      assertTrue(key.length() <= 255, "Key is too long: " + key.length());
+    splitConfig.getCoordinateToPayload().keySet().forEach(key -> {
+      assertTrue(gsmKeyCharacterPattern.matcher(key.toString()).matches(), "Invalid character in key: " + key);
+      assertTrue(key.toString().length() <= 255, "Key is too long: " + key.toString().length());
     });
+
+    SplitSecretConfig updatedSplit = SecretsHelpers.splitUpdate(uuidIterator::next, workspaceId, expectedPartialConfig, fullConfig, spec);
+    System.out.println("updatedSplit = " + updatedSplit);
+    final var expectedPartialConfig2 = Jsons.deserialize(MoreResources.readResource("expected_updated_partial_config.json"));
+    final var expectedSecretMapping2 = Map.of(
+            new SecretCoordinate("workspace_" + workspaceId + "_secret_" + uuids.get(0), 2), "hunter1",
+            new SecretCoordinate("workspace_" + workspaceId + "_secret_" + uuids.get(1), 2), "hunter2");
+
+    assertEquals(expectedPartialConfig2, updatedSplit.getPartialConfig());
+    assertEquals(expectedSecretMapping2, updatedSplit.getCoordinateToPayload());
   }
 
   @Test
