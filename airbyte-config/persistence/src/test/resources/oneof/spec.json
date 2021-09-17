@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "password1": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "key1": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key2": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "non-secret": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "password2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "key1": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key2": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "non-secret": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "password3": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "key1": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "key2": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "non-secret": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": ["username", "password1", "password2", "password3"]
+}

@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -59,7 +60,8 @@ public class SecretsHelpersTest {
     return Stream.of(
             new OptionalPasswordTestCase(),
             new SimpleTestCase(),
-            new NestedObjectTestCase()
+            new NestedObjectTestCase(),
+            new OneOfTestCase()
     ).map(Arguments::of);
   }
 
@@ -96,6 +98,7 @@ public class SecretsHelpersTest {
   @MethodSource("provideTestCases")
   void testSplitUpdate(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
+    System.out.println("testCase.getPartialConfig() = " + testCase.getPartialConfig());
     SplitSecretConfig updatedSplit = SecretsHelpers.splitUpdate(
             uuidIterator::next,
             WORKSPACE_ID,

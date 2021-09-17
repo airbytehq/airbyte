@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class SecretsHelpers {
-
+  // todo: add airbyte_ prefix so our secrets are identifiable in the store
   // todo: double check oauth stuff that's already in place
   // todo: create an in memory singleton map secrets store implementation for testing
   // todo: create a separate persistence for secrets that doesn't have config types, is just string to
@@ -105,9 +105,7 @@ public class SecretsHelpers {
         var combinationCopy = copy.get(key);
         var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
         for (int i = 0; i < arrayNode.size(); i++) {
-          // Mask field values if any of the combination option is declaring it as secrets
-          final var newOld = old.has(key) ? old.get("key") : Jsons.emptyObject();
-          System.out.println("newOld 1 = " + newOld);
+          final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
           final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i));
           combinationCopy = combinationSplitConfig.getPartialConfig();
           secretMap.putAll(combinationSplitConfig.getCoordinateToPayload());
