@@ -79,7 +79,7 @@ class RechargeStream(HttpStream, ABC):
 
 class IncrementalRechargeStream(RechargeStream, ABC):
 
-    cursor_field = "created_at"
+    cursor_field = "updated_at"
 
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)

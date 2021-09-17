@@ -46,3 +46,9 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 Please read [How to generate your API token](https://support.rechargepayments.com/hc/en-us/articles/360008829993-ReCharge-API-).
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.2  | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149) | Change `cursor_field` for Incremental streams |
+|
