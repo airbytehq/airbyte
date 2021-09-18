@@ -91,7 +91,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
@@ -107,7 +106,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
@@ -122,7 +120,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
@@ -136,33 +133,38 @@ public class LogClientSingleton {
       throw new NotImplementedException("Local log deletes not supported.");
     }
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
   public static void setJobMdc(Path path) {
-    if (shouldUseLocalLogs(new EnvConfigs())) {
+    var configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs)) {
       LOGGER.debug("Setting docker job mdc");
       MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     } else {
       LOGGER.debug("Setting kube job mdc");
+      var logConfigs = new LogConfigDelegator(configs);
+      createCloudClientIfNull(logConfigs);
       MDC.put(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     }
   }
 
   public static void setWorkspaceMdc(Path path) {
-    if (shouldUseLocalLogs(new EnvConfigs())) {
+    var configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs)) {
       LOGGER.debug("Setting docker workspace mdc");
       MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
     } else {
       LOGGER.debug("Setting kube workspace mdc");
+      var logConfigs = new LogConfigDelegator(configs);
+      createCloudClientIfNull(logConfigs);
       MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.toString());
     }
   }
 
   private static boolean shouldUseLocalLogs(Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
+    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER);
   }
 
   private static void createCloudClientIfNull(LogConfigs configs) {

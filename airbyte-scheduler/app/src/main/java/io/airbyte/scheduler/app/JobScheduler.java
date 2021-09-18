@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -92,7 +91,7 @@ public class JobScheduler implements Runnable {
   }
 
   private void scheduleSyncJobs() throws IOException {
-    final AtomicInteger jobsScheduled = new AtomicInteger();
+    int jobsScheduled = 0;
     final List<StandardSync> activeConnections = getAllActiveConnections();
 
     for (StandardSync connection : activeConnections) {
@@ -100,11 +99,12 @@ public class JobScheduler implements Runnable {
 
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
+        jobsScheduled++;
       }
     }
-    int jobsScheduledCount = jobsScheduled.get();
-    if (jobsScheduledCount > 0) {
-      LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
+
+    if (jobsScheduled > 0) {
+      LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}", activeConnections.size(), jobsScheduled);
     }
   }
 
