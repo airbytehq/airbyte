@@ -36,6 +36,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigSchemaMigrationSupport;
+import io.airbyte.config.Configs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.Database;
@@ -74,12 +75,47 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
+   * Initialize the config persistence.
+   * <li>If the database has been initialized, update connector definition from YAML seed.</li>
+   * <li>Otherwise, there are two possibilities.</li>
+   * <li>The first case is a new deployment, which means there is no local config directory (because
+   * we no longer create it in newer Airbyte versions). We can initialize the database by copying the
+   * YAML seed.</li>
+   * <li>The second case is a migration from an old version that relies on file system config
+   * persistence. We need to copy the existing configs from local files, and then update connector
+   * definitions from YAML seed.</li>
+   */
+  public void initialize(Configs serverConfigs, ConfigPersistence yamlSeedPersistence) throws IOException {
+    database.transaction(ctx -> {
+      boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
+      if (isInitialized) {
+        LOGGER.info("Config persistence has been initialized; load YAML seed to update connector definitions");
+        updateConfigsFromSeed(ctx, yamlSeedPersistence);
+        return null;
+      }
+
+      boolean hasExistingFileConfigs = FileSystemConfigPersistence.hasExistingConfigs(serverConfigs.getConfigRoot());
+      if (hasExistingFileConfigs) {
+        LOGGER.info("Config persistence needs initialization; load seed from existing local config directory, and update from YAML seed");
+        ConfigPersistence fileSystemPersistence = new FileSystemConfigPersistence(serverConfigs.getConfigRoot());
+        copyConfigsFromSeed(ctx, fileSystemPersistence);
+        updateConfigsFromSeed(ctx, yamlSeedPersistence);
+        return null;
+      }
+
+      LOGGER.info("Config persistence needs initialization; there is no local config directory; load YAML seed");
+      copyConfigsFromSeed(ctx, yamlSeedPersistence);
+      return null;
+    });
+  }
+
+  /**
    * Load or update the configs from the seed.
    */
   @Override
   public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
-      boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where());
+      boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
       if (isInitialized) {
         updateConfigsFromSeed(ctx, seedConfigPersistence);
       } else {
@@ -239,7 +275,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   void copyConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
-    LOGGER.info("Loading data to config database...");
+    LOGGER.info("Loading seed data to config database...");
 
     Map<String, Stream<JsonNode>> seedConfigs;
     try {
@@ -293,7 +329,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
-    LOGGER.info("Config database has been initialized; updating connector definitions from the seed if necessary...");
+    LOGGER.info("Updating connector definitions from the seed if necessary...");
 
     try {
       Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
@@ -356,7 +392,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       String latestImageTag = configJson.get("dockerImageTag").asText();
-      if (!latestImageTag.equals(connectorInfo.dockerImageTag)) {
+      if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
       } else {
@@ -364,6 +400,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
     }
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  static boolean hasNewVersion(String currentVersion, String latestVersion) {
+    try {
+      return new AirbyteVersion(latestVersion).patchVersionCompareTo(new AirbyteVersion(currentVersion)) > 0;
+    } catch (Exception e) {
+      LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
+      return false;
+    }
   }
 
   /**
