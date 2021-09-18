@@ -58,7 +58,8 @@
 {%- endmacro %}
 
 {% macro sqlserver__format_json_path(json_path_list) -%}
-  {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
+    {# -- '$."x"."y"."z"' #}
+    {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
 {%- endmacro %}
 
 {# json_extract -------------------------------------------------     #}
@@ -116,7 +117,7 @@
 {%- endmacro %}
 
 {% macro sqlserver__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    json_query({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}

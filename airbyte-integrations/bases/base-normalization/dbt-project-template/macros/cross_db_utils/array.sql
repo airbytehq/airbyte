@@ -4,6 +4,7 @@
     - Snowflake: flatten() -> https://docs.snowflake.com/en/sql-reference/functions/flatten.html
     - Redshift: -> https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/
     - postgres: unnest() -> https://www.postgresqltutorial.com/postgresql-array/
+    - MSSQL: openjson() –> https://docs.microsoft.com/en-us/sql/relational-databases/json/validate-query-and-change-json-data-with-built-in-functions-sql-server?view=sql-server-ver15
 #}
 
 {# cross_join_unnest -------------------------------------------------     #}
@@ -45,7 +46,7 @@
 {%- endmacro %}
 
 {% macro sqlserver__cross_join_unnest(stream_name, array_col) -%}
-    {% do exceptions.warn("Normalization does not support unnesting for MSSQL yet.") %}
+    CROSS APPLY OPENJSON({{ array_col }}) AS {{ array_col }}
 {%- endmacro %}
 
 {# unnested_column_value -- this macro is related to unnest_cte #}
@@ -79,7 +80,8 @@
 {%- endmacro %}
 
 {% macro sqlserver__unnested_column_value(column_col) -%}
-    {{ column_col }}
+    {# -- unnested array/sub_array will be located in `value` column afterwards, we need to address to it --#}
+    {{ column_col }}.value
 {%- endmacro %}
 
 {# unnest_cte -------------------------------------------------     #}
