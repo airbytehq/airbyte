@@ -40,7 +40,6 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,12 +69,12 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
     }
 
     @Override
-    protected JsonNode getConfig() throws IOException {
+    protected JsonNode getConfig() throws Exception {
         return SshBastion.getTunnelConfig(getTunnelMethod(), getBasicDbConfigBuider(db).put("schema", schemaName));
     }
 
     @Override
-    protected JsonNode getFailCheckConfig() throws IOException {
+    protected JsonNode getFailCheckConfig() throws Exception {
         final JsonNode clone = Jsons.clone(getConfig());
         ((ObjectNode) clone).put("password", "wrong password");
         return clone;

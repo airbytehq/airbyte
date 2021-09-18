@@ -27,7 +27,6 @@ package io.airbyte.integrations.base.ssh;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
@@ -50,14 +49,14 @@ public class SshBastion {
         network = Network.newNetwork();
         bastion = new GenericContainer(
                 new ImageFromDockerfile("bastion-test")
-                        .withFileFromClasspath("id_rsa.pub", "bastion/id_rsa.pub")
                         .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
                 .withNetwork(network)
                 .withExposedPorts(22);
         bastion.start();
     }
 
-    public static JsonNode getTunnelConfig(SshTunnel.TunnelMethod tunnelMethod, ImmutableMap.Builder<Object, Object> builderWithSchema) throws IOException {
+    public static JsonNode getTunnelConfig(SshTunnel.TunnelMethod tunnelMethod, ImmutableMap.Builder<Object, Object> builderWithSchema)
+            throws IOException, InterruptedException {
 
         return Jsons.jsonNode(builderWithSchema
                 .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
@@ -70,7 +69,7 @@ public class SshBastion {
                         .put("tunnel_port", bastion.getExposedPorts().get(0))
                         .put("tunnel_user", SSH_USER)
                         .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
-                        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? MoreResources.readResource("bastion/bastion_key") : "")
+                        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
                         .build()))
                 .build());
     }
