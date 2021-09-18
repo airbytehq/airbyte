@@ -163,7 +163,7 @@ def make_analytics_slices(
     # add chunked fields, date_slices to the base_slice
     analytics_slices = []
     for fields_set in chunk_analytics_fields():
-        base_slice.update(**{"fields": ",".join(map(str, fields_set))})
+        base_slice["fields"] = ",".join(map(str, fields_set))
         for date_slice in make_date_slices(start_date, end_date):
             base_slice.update(**date_slice)
             analytics_slices.append(base_slice.copy())

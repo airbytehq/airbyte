@@ -42,7 +42,7 @@ def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
     """
     result = {}
     for key in key_value_map:
-        value = record[key_value_map.get(key)]
+        value = record.get(key_value_map[key])
         if value:
             result[key] = value
     return result
@@ -72,7 +72,7 @@ def transform_change_audit_stamps(
     for prop in props:
         # Update dict with flatten key:value
         for field in fields:
-            record.update(**{prop: pdm.from_timestamp(target_dict.get(prop).get(field) / 1000).to_datetime_string()})
+            record[prop] = pdm.from_timestamp(target_dict.get(prop).get(field) / 1000).to_datetime_string()
     record.pop(dict_key)
 
     return record
