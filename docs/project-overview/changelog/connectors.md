@@ -10,6 +10,49 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 9/9/2021
+
+New source:
+* [**Facebook Pages**](https://docs.airbyte.io/integrations/sources/facebook-pages)
+
+New destinations:
+* [**MongoDB**](https://docs.airbyte.io/integrations/destinations/mongodb)
+* [**DynamoDB**](https://docs.airbyte.io/integrations/destinations/dynamodb)
+
+New features:
+* **S3** source: Support for Parquet format.
+* **Github** source: Branches, repositories, organization users, tags, and pull request stats streams added (contributed by @Christopher Wu).
+* **BigQuery** destination: Added GCS upload option.
+* **Salesforce** source: Now Airbyte native.
+* **Redshift** destination: Optimized for performance.
+
+Bug fixes:
+* **Pipedrive** source: Output schemas no longer remove timestamp from fields.
+* **Github** source: Empty repos and negative backoff values are now handled correctly.
+* **Harvest** source: Normalization now works as expected.
+* **All CDC sources**: Removed sleep logic which caused exceptions when loading data from high-volume sources.
+* **Slack** source: Increased number of retries to tolerate flaky retry wait times on the API side.
+* **Slack** source: Sync operations no longer hang indefinitely.
+* **Jira** source: Now uses updated time as the cursor field for incremental sync instead of the created time.
+* **Intercom** source: Fixed inconsistency between schema and output data.
+* **Hubspot** source: Streams with the items property now have their schemas fixed.
+* **Hubspot** source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
+* **Typeform** source: Allows for multiple choices in responses now.
+* **Shopify** source: The type for the amount field is now fixed in the schema.
+* **Postgres** destination: \u0000(NULL) value processing is now fixed.
+
+## 9/1/2021
+
+New sources:
+* [**Bamboo HR**](https://docs.airbyte.io/integrations/sources/bamboo-hr)
+* [**BigCommerce**](https://docs.airbyte.io/integrations/sources/bigcommerce)
+* [**Trello**](https://docs.airbyte.io/integrations/sources/trello)
+* [**Google Analytics V4**](https://docs.airbyte.io/integrations/sources/google-analytics-v4)
+* [**Amazon Ads**](https://docs.airbyte.io/integrations/sources/google-analytics-v4)
+
+Bug fixes:
+* **Shopify** source: Rate limit throttling fixed.
+
 ## 8/26/2021
 
 New source: 
@@ -364,7 +407,7 @@ Other progress on connectors:
 
 ## 03/08/2021
 
-* 1 new source connector: [**MongoDB**](https://docs.airbyte.io/integrations/sources/mongodb)
+* 1 new source connector: **MongoDB**
 * **Google Analytics**: Support chunked syncs to avoid sampling
 * **AppStore**: fix bug where the catalog was displayed incorrectly
 

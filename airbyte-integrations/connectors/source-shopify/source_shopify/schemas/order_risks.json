@@ -14,7 +14,7 @@
       "type": ["null", "string"]
     },
     "score": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "recommendation": {
       "type": ["null", "string"]

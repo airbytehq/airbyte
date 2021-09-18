@@ -32,16 +32,19 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -92,7 +95,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.s3Client = client;
     this.s3Config = s3Config;
 
-    this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
+    this.s3StagingFile = prepareS3StagingFile(stagingFolder, streamName);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
@@ -118,9 +121,52 @@ public abstract class S3StreamCopier implements StreamCopier {
     }
   }
 
+  public S3StreamCopier(String stagingFolder,
+                        DestinationSyncMode destSyncMode,
+                        String schema,
+                        String streamName,
+                        String s3FileName,
+                        AmazonS3 client,
+                        JdbcDatabase db,
+                        S3Config s3Config,
+                        ExtendedNameTransformer nameTransformer,
+                        SqlOperations sqlOperations) {
+    this.destSyncMode = destSyncMode;
+    this.schemaName = schema;
+    this.streamName = streamName;
+    this.db = db;
+    this.nameTransformer = nameTransformer;
+    this.sqlOperations = sqlOperations;
+    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
+    this.s3Client = client;
+    this.s3Config = s3Config;
+
+    this.s3StagingFile = prepareS3StagingFile(stagingFolder, s3FileName);
+    LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
+    this.multipartUploadManager =
+        new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
+            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+            .partSize(s3Config.getPartSize());
+    this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
+
+    var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+    try {
+      this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String prepareS3StagingFile(String stagingFolder, String s3FileName) {
+    return String.join("/", stagingFolder, schemaName, s3FileName);
+  }
+
   @Override
-  public void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception {
-    csvPrinter.printRecord(id, jsonDataString, emittedAt);
+  public void write(UUID id, AirbyteRecordMessage recordMessage) throws Exception {
+    csvPrinter.printRecord(id,
+        Jsons.serialize(recordMessage.getData()),
+        Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
   }
 
   @Override
@@ -161,7 +207,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
+  public String generateMergeStatement(String destTableName) {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {

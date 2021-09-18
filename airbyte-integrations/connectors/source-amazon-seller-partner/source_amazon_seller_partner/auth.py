@@ -26,12 +26,12 @@ import hashlib
 import hmac
 import urllib.parse
 from typing import Any, Mapping
+from urllib.parse import urlparse
 
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from requests.auth import AuthBase
-from requests.compat import urlparse
 
 
 class AWSAuthenticator(Oauth2Authenticator):
