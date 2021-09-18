@@ -43,14 +43,18 @@ The Mixpanel connector should not run into Mixpanel API limitations under normal
 
 * Mixpanel API Secret
 
+* Project region `US` or `EU`
+
 ### Setup guide
 
 Please read [Find API Secret](https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-).
 
+Select the correct region (EU or US) for your Mixpanel project. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
 
 
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.1` | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region |
 | `0.1.0` | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | created CDK native mixpanel connector |
