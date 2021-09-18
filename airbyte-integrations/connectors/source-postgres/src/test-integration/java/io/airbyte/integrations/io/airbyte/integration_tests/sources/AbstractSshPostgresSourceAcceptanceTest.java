@@ -63,7 +63,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
 
     }
 
-    private static void startTestContainers() throws Exception {
+    private static void startTestContainers() {
         initAndStartBastion();
         initAndStartJdbcContainer();
     }
