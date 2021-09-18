@@ -87,6 +87,7 @@ class DbtIntegrationTest(object):
         subprocess.call(commands)
         # TODO: uncomment after the tsts are good!
         # time.sleep(120)
+        time.sleep(5)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
@@ -122,7 +123,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        time.sleep(120)
+        time.sleep(5)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
