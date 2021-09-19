@@ -37,6 +37,7 @@ import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView"
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import OnboardingPage from "pages/OnboardingPage";
+import CreditsPage from "pages/CreditsPage";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
@@ -62,6 +63,7 @@ export enum Routes {
   Configuration = "/configuration",
   AccessManagement = "/access-management",
   Notifications = "/notifications",
+  Credits = "/credits",
 
   // Auth routes
   Signup = "/signup",
@@ -147,6 +149,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       </Route>
       <Route path={Routes.Settings}>
         <SettingsPage pageConfig={pageConfig} />
+      </Route>
+      <Route path={Routes.Credits}>
+        <CreditsPage />
       </Route>
       {workspace.displaySetupWizard && (
         <Route exact path={Routes.Onboarding}>

@@ -14,6 +14,7 @@ import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
+import CreditsPage from "./CreditsPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
@@ -40,6 +41,7 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  Credits = "/credits",
   Root = "/",
 }
 
@@ -61,6 +63,9 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Settings}>
             <SettingsPage />
+          </Route>
+          <Route path={Routes.Credits}>
+            <CreditsPage />
           </Route>
           {workspace.displaySetupWizard && (
             <Route path={Routes.Onboarding}>
