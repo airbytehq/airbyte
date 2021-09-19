@@ -25,3 +25,10 @@ properties:
     type: string
   icon:
     type: string
+  sourcetype:
+    type: string
+    enum:
+      - api
+      - file
+      - database
+      - custom
