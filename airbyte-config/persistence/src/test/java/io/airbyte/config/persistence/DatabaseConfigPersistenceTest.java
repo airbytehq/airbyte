@@ -49,7 +49,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * See {@link DatabaseConfigPersistenceLoadDataTest} and
- * {@link DatabaseConfigPersistenceInitializeTest} for testing of those methods.
+ * {@link DatabaseConfigPersistenceMigrateFileConfigsTest} for testing of those methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 

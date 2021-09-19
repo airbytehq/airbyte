@@ -25,7 +25,6 @@
 package io.airbyte.config.persistence;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -34,16 +33,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
@@ -51,34 +44,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 
 /**
- * Unit test for the {@link DatabaseConfigPersistence#initialize} method.
+ * Unit test for the {@link DatabaseConfigPersistence#migrateFileConfigs} method.
  */
-public class DatabaseConfigPersistenceInitializeTest extends BaseDatabaseConfigPersistenceTest {
+public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabaseConfigPersistenceTest {
 
-  // mock YAML seed connector definitions
-  private static final List<StandardSourceDefinition> SEED_SOURCES = List.of(SOURCE_GITHUB);
-  private static final List<StandardDestinationDefinition> SEED_DESTINATIONS = List.of(DESTINATION_SNOWFLAKE);
-
-  private static final ConfigPersistence SEED_PERSISTENCE = mock(ConfigPersistence.class);
   private static Path ROOT_PATH;
-
   private final Configs configs = mock(Configs.class);
 
   @BeforeAll
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
-
-    when(SEED_PERSISTENCE.dumpConfigs()).thenReturn(Map.of(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), SEED_SOURCES.stream().map(Jsons::jsonNode),
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), SEED_DESTINATIONS.stream().map(Jsons::jsonNode)));
-    when(SEED_PERSISTENCE.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
-        .thenReturn(SEED_SOURCES);
-    when(SEED_PERSISTENCE.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
-        .thenReturn(SEED_DESTINATIONS);
   }
 
   @AfterAll
@@ -90,7 +68,7 @@ public class DatabaseConfigPersistenceInitializeTest extends BaseDatabaseConfigP
   public void resetPersistence() throws Exception {
     ROOT_PATH = Files.createTempDirectory(
         Files.createDirectories(Path.of("/tmp/airbyte_tests")),
-        DatabaseConfigPersistenceInitializeTest.class.getSimpleName() + UUID.randomUUID());
+        DatabaseConfigPersistenceMigrateFileConfigsTest.class.getSimpleName() + UUID.randomUUID());
 
     reset(configs);
     when(configs.getConfigRoot()).thenReturn(ROOT_PATH);
@@ -101,49 +79,43 @@ public class DatabaseConfigPersistenceInitializeTest extends BaseDatabaseConfigP
   }
 
   @Test
-  @DisplayName("When database is not initialized, and there is no local config dir, copy from seed")
+  @DisplayName("When database is not initialized, and there is no local config dir, do nothing")
   public void testNewDeployment() throws Exception {
-    configPersistence.initialize(configs, SEED_PERSISTENCE);
+    configPersistence.migrateFileConfigs(configs);
 
-    assertRecordCount(2);
-    assertHasSource(SOURCE_GITHUB);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
+    assertRecordCount(0);
 
-    verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
     verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   @Test
-  @DisplayName("When database is not initialized, and there is local config dir, copy from local and update from seed")
+  @DisplayName("When database is not initialized, and there is local config dir, copy from local dir")
   public void testMigrationDeployment() throws Exception {
     prepareLocalFilePersistence();
 
-    configPersistence.initialize(configs, SEED_PERSISTENCE);
+    configPersistence.migrateFileConfigs(configs);
 
-    assertRecordCount(3);
+    assertRecordCount(2);
     assertHasSource(SOURCE_GITHUB);
     assertHasDestination(DESTINATION_S3);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
 
-    InOrder callOrder = inOrder(configPersistence);
-    callOrder.verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    callOrder.verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   @Test
-  @DisplayName("When database has been initialized, ignore local config dir, and update from seed")
+  @DisplayName("When database has been initialized, do nothing")
   public void testUpdateDeployment() throws Exception {
     prepareLocalFilePersistence();
     writeSource(configPersistence, SOURCE_GITHUB);
 
-    configPersistence.initialize(configs, SEED_PERSISTENCE);
+    configPersistence.migrateFileConfigs(configs);
 
-    assertRecordCount(2);
+    assertRecordCount(1);
     assertHasSource(SOURCE_GITHUB);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
 
     verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   private void prepareLocalFilePersistence() throws Exception {

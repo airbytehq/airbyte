@@ -98,7 +98,6 @@ public class MigrationAcceptanceTest {
     return logLine -> expectedLogs.removeIf(entry -> {
       if (logLine.contains("Migrating from version")) {
         System.out.println("logLine = " + logLine);
-        System.out.println("logLine = " + logLine);
       }
       return logLine.contains(entry);
     });

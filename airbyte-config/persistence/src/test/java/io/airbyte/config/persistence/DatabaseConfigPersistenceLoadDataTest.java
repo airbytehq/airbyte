@@ -26,16 +26,13 @@ package io.airbyte.config.persistence;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -43,9 +40,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -84,26 +79,10 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
 
   @Test
   @Order(1)
-  @DisplayName("When database is empty, seed should be copied to the database")
-  public void testCopyConfigsToEmptyDatabase() throws Exception {
-    Map<String, Stream<JsonNode>> initialSeeds = Map.of(
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_SNOWFLAKE)),
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB)));
-    when(seedPersistence.dumpConfigs()).thenReturn(initialSeeds);
-
-    configPersistence.loadData(seedPersistence);
-    assertRecordCount(2);
-    assertHasSource(SOURCE_GITHUB);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
-    verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-  }
-
-  @Test
-  @Order(2)
-  @DisplayName("When database is not empty, configs should be updated")
+  @DisplayName("When database is empty, configs should be inserted")
   public void testUpdateConfigsInNonEmptyDatabase() throws Exception {
-    // the seed has two destinations, one of which (S3) is new
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(Lists.newArrayList(SOURCE_GITHUB));
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
@@ -113,12 +92,11 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     assertRecordCount(3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
-    verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
     verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   @Test
-  @Order(3)
+  @Order(2)
   @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
     // the seed has a newer version of s3 destination and github source
@@ -150,7 +128,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   }
 
   @Test
-  @Order(4)
+  @Order(3)
   @DisplayName("When a connector is not in use, its definition should be updated")
   public void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination
