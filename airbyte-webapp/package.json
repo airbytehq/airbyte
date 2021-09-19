@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.29.20-alpha",
+  "version": "0.29.21-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
