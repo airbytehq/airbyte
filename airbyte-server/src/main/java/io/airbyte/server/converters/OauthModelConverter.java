@@ -22,24 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.server.converters;
 
-import io.airbyte.config.Configs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.api.model.AuthSpecification;
+import io.airbyte.api.model.OAuth2Specification;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.Optional;
 
-public class ConfigSeedProvider {
+public class OauthModelConverter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigSeedProvider.class);
-
-  public static ConfigPersistence get(Configs configs) {
-    if (FileSystemConfigPersistence.hasExistingConfigs(configs.getConfigRoot())) {
-      LOGGER.info("There is existing local config directory; seed from the config volume");
-      return new FileSystemConfigPersistence(configs.getConfigRoot());
-    } else {
-      LOGGER.info("There is no existing local config directory; seed from YAML files");
-      return YamlSeedConfigPersistence.get();
+  public static Optional<AuthSpecification> getAuthSpec(ConnectorSpecification spec) {
+    if (spec.getAuthSpecification() == null) {
+      return Optional.empty();
     }
+    io.airbyte.protocol.models.AuthSpecification incomingAuthSpec = spec.getAuthSpecification();
+
+    AuthSpecification authSpecification = new AuthSpecification();
+    if (incomingAuthSpec.getAuthType() == io.airbyte.protocol.models.AuthSpecification.AuthType.OAUTH_2_0) {
+      authSpecification.authType(AuthSpecification.AuthTypeEnum.OAUTH2_0)
+          .oauth2Specification(new OAuth2Specification()
+              .oauthFlowInitParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowInitParameters()));
+    }
+
+    return Optional.ofNullable(authSpecification);
   }
 
 }
