@@ -56,10 +56,6 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   </>
 );
 
-const DropdownLabels = styled(ControlLabels)`
-  max-width: 202px;
-`;
-
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
   formType: "source" | "destination";
@@ -121,7 +117,7 @@ const ConnectorServiceTypeControl: React.FC<{
 
   return (
     <>
-      <DropdownLabels
+      <ControlLabels
         label={formatMessage({
           id: `form.${formType}Type`,
         })}
@@ -141,7 +137,7 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
         />
-      </DropdownLabels>
+      </ControlLabels>
       {selectedService && documentationUrl && (
         <Instruction
           selectedService={selectedService}
