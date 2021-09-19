@@ -100,17 +100,27 @@ public class DruidSource extends AbstractJdbcSource implements Source {
     return "\"";
   }
 
+  public static JdbcDatabase createDruidDatabase(final String username,
+		                                 final String password,
+						 final String jdbcConnectionSring,
+						 final String driverClassName)
+  {
+    final BasicDataSource connectionPool = new BasicDataSource();
+    connectionPool.setDefaultReadOnly(true);
+    connectionPool.setUsername(username);
+    connectionPool.setPassword(password);
+    connectionPool.setUrl(jdbcConnectionSring);
+    connectionPool.setDriverClassName(driverClassName);
+    return new DefaultJdbcDatabase(connectionPool);
+  }
+
   @Override
   public JdbcDatabase createDatabase(JsonNode config) throws SQLException {
     JsonNode jdbcConfig = toDatabaseConfig(config);
-
-    final BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDefaultReadOnly(true);
-    connectionPool.setDriverClassName(DRIVER_CLASS);
-    connectionPool.setUsername(jdbcConfig.get("username").asText());
-    connectionPool.setPassword(jdbcConfig.get("password").asText());
-    connectionPool.setUrl(jdbcConfig.get("jdbc_url").asText());
-    return new DefaultJdbcDatabase(connectionPool);
+    return (createDruidDatabase(jdbcConfig.get("username").asText(),
+			        jdbcConfig.get("password").asText(),
+                                jdbcConfig.get("jdbc_url").asText(),
+		                DRIVER_CLASS));
   }
 
   @Override
@@ -118,6 +128,11 @@ public class DruidSource extends AbstractJdbcSource implements Source {
     return Collections.singleton("system");
   }
 
+  // We need to override this method to handle __time comumn from druid. Druid stores the time
+  // column with the type value '1111' which is a implementation specific type. The standard method defined
+  // in AbstractJdbcSource sets the type as JDBCType::OTHER which is not understood by the later
+  // code. We force the type of this column to JDBCType:BIGINT, since airbyte sees is pretty much like
+  // BIGINT. 
   @Override
   protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database, String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());

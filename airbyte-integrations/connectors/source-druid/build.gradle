@@ -19,8 +19,6 @@ dependencies {
     implementation 'org.apache.calcite:calcite-core:1.27.0'
     implementation 'org.apache.calcite:calcite-linq4j:1.27.0'
 
-    //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
-
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
