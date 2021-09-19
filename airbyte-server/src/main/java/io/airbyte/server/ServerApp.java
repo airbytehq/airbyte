@@ -238,10 +238,10 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
-    runFlywayMigration(configs, configDatabase, jobDatabase);
-
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
+
+      runFlywayMigration(configs, configDatabase, jobDatabase);
 
       return apiFactory.create(
           schedulerJobClient,
