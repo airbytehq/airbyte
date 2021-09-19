@@ -11,7 +11,7 @@ required:
   - status
   - created_at
   - updated_at
-additionalProperties: true
+additionalProperties: false
 properties:
   id:
     type: number
@@ -25,6 +25,8 @@ properties:
     type: ["null", object]
   status:
     type: string
+  temporal_workflow_id:
+    type: [ "null", string ]
   created_at:
     # todo should be datetime.
     type: string
