@@ -75,8 +75,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * If this is a migration deployment from an old version that relies on file system config persistence,
-   * copy the existing configs from local files.
+   * If this is a migration deployment from an old version that relies on file system config
+   * persistence, copy the existing configs from local files.
    */
   public void migrateFileConfigs(Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
