@@ -181,7 +181,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-    configPersistence.initialize(configs, YamlSeedConfigPersistence.get());
+    configPersistence.migrateFileConfigs(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
@@ -242,6 +242,7 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Starting server...");
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
+      configPersistence.loadData(YamlSeedConfigPersistence.get());
 
       return apiFactory.create(
           schedulerJobClient,
