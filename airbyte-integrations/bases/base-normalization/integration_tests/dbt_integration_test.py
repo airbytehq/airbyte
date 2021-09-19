@@ -131,15 +131,15 @@ class DbtIntegrationTest(object):
             fh.write(json.dumps(config))
 
     def setup_mssql_db(self):
-        print("Starting localhost MSSQL container for tests")
+        print("Starting localhost MS SQL Server container for tests")
         self.container_prefix = f"test_{self.random_string(3)}"
         port = self.find_free_port()
         config = {
             "host": "localhost",
             "username": "SA",
-            "password": "YourStrong@Passw0rd",
+            "password": "integration-tests",
             "port": port,
-            "database": "Test_normalization",
+            "database": self.target_schema,
             "schema": self.target_schema,
         }
 
