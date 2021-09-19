@@ -143,19 +143,6 @@ class MigrationIntegrationTest {
   }
 
   @Test
-  void testInvalidInputRecord() throws IOException {
-    // attempt to input records that have foobar added. the input schema does NOT include foobar.
-    final Map<ResourceId, List<JsonNode>> invalidInputRecords = addFooBarToAllRecordsExceptMetadata(V0_14_0_TEST_RECORDS);
-    writeInputArchive(inputRoot, invalidInputRecords, TEST_MIGRATIONS.get(0).getVersion());
-    final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
-
-    final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
-    final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, targetVersion);
-
-    assertThrows(IllegalArgumentException.class, () -> migrate.run(config));
-  }
-
-  @Test
   void testInvalidOutputRecord() throws IOException {
     writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
 
