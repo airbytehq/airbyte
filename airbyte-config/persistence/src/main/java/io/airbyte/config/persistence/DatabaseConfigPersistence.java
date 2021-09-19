@@ -75,52 +75,31 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Initialize the config persistence.
-   * <li>If the database has been initialized, update connector definition from YAML seed.</li>
-   * <li>Otherwise, there are two possibilities.</li>
-   * <li>The first case is a new deployment, which means there is no local config directory (because
-   * we no longer create it in newer Airbyte versions). We can initialize the database by copying the
-   * YAML seed.</li>
-   * <li>The second case is a migration from an old version that relies on file system config
-   * persistence. We need to copy the existing configs from local files, and then update connector
-   * definitions from YAML seed.</li>
+   * If this is a migration deployment from an old version that relies on file system config
+   * persistence, copy the existing configs from local files.
    */
-  public void initialize(Configs serverConfigs, ConfigPersistence yamlSeedPersistence) throws IOException {
+  public void migrateFileConfigs(Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
-      boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
+      final boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
       if (isInitialized) {
-        LOGGER.info("Config persistence has been initialized; load YAML seed to update connector definitions");
-        updateConfigsFromSeed(ctx, yamlSeedPersistence);
         return null;
       }
 
-      boolean hasExistingFileConfigs = FileSystemConfigPersistence.hasExistingConfigs(serverConfigs.getConfigRoot());
+      final boolean hasExistingFileConfigs = FileSystemConfigPersistence.hasExistingConfigs(serverConfigs.getConfigRoot());
       if (hasExistingFileConfigs) {
-        LOGGER.info("Config persistence needs initialization; load seed from existing local config directory, and update from YAML seed");
+        LOGGER.info("Load existing local config directory into configs database");
         ConfigPersistence fileSystemPersistence = new FileSystemConfigPersistence(serverConfigs.getConfigRoot());
         copyConfigsFromSeed(ctx, fileSystemPersistence);
-        updateConfigsFromSeed(ctx, yamlSeedPersistence);
-        return null;
       }
 
-      LOGGER.info("Config persistence needs initialization; there is no local config directory; load YAML seed");
-      copyConfigsFromSeed(ctx, yamlSeedPersistence);
       return null;
     });
   }
 
-  /**
-   * Load or update the configs from the seed.
-   */
   @Override
   public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
-      boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
-      if (isInitialized) {
-        updateConfigsFromSeed(ctx, seedConfigPersistence);
-      } else {
-        copyConfigsFromSeed(ctx, seedConfigPersistence);
-      }
+      updateConfigsFromSeed(ctx, seedConfigPersistence);
       return null;
     });
   }
