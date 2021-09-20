@@ -138,7 +138,23 @@ class GithubStream(HttpStream, ABC):
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
-                error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+                error_msg = f"Syncing `Team` stream isn't available for organization `{stream_slice['organization']}`."
+            elif e.response.status_code == requests.codes.GONE and "/projects?" in error_msg:
+                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.NOT_FOUND and "/orgs/" in error_msg:
+                # Some streams are not available for repositories owned by a user instead of an organization.
+                # Handle "404 Client Error: Not Found" errors
+                if isinstance(self, Repositories):
+                    error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Users):
+                    error_msg = f"Syncing `Users` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Organizations):
+                    error_msg = f"Syncing `Organizations` stream isn't available for organization `{stream_slice['organization']}`."
+                else:
+                    self.logger.error(f"Undefined error while reading records: {error_msg}")
+                    raise e
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
