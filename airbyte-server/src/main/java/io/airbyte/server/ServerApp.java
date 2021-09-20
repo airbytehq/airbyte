@@ -34,7 +34,6 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.GoogleSecretsManagerConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
@@ -183,6 +182,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+<<<<<<< HEAD
 
     final ConfigRepository configRepository = configs.getSecretStoreForConfigs() != null && configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
         ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(),
@@ -190,6 +190,10 @@ public class ServerApp implements ServerRunnable {
         : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
 
     configRepository.loadData(ConfigSeedProvider.get(configs), configRepository.listDefinitionsInUseByConnectors());
+=======
+    configPersistence.migrateFileConfigs(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
+>>>>>>> master
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -245,10 +249,11 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
-    runFlywayMigration(configs, configDatabase, jobDatabase);
-
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
+
+      runFlywayMigration(configs, configDatabase, jobDatabase);
+      configPersistence.loadData(YamlSeedConfigPersistence.get());
 
       return apiFactory.create(
           schedulerJobClient,

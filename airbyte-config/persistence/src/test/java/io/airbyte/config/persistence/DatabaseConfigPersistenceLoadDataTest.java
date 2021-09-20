@@ -106,7 +106,8 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @Order(2)
   @DisplayName("When database is not empty, configs should be updated")
   public void testUpdateConfigsInNonEmptyDatabase() throws Exception {
-    // the seed has two destinations, one of which (S3) is new
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(Lists.newArrayList(SOURCE_GITHUB));
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
@@ -122,7 +123,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   }
 
   @Test
-  @Order(3)
+  @Order(2)
   @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
     // the seed has a newer version of s3 destination and github source
@@ -156,7 +157,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   }
 
   @Test
-  @Order(4)
+  @Order(3)
   @DisplayName("When a connector is not in use, its definition should be updated")
   public void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination

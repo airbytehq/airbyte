@@ -2,7 +2,7 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. `Java 14`
+1. [`Java 14`](https://jdk.java.net/archive/)
 2. `Node 14`
 3. `Python 3.7`
 4. `Docker`
@@ -11,7 +11,7 @@ The following technologies are required to build Airbyte locally.
 7. `CMake`
 
 {% hint style="info" %}
-Manually switching between different language versions can get hairy. We recommend using a version manager such as `pyenv` or `jenv`.
+Manually switching between different language versions can get hairy. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
 {% endhint %}
 
 To start contributing:
