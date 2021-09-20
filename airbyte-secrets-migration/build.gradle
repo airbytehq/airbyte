@@ -1,0 +1,16 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.secretsmigration.MigrationsSource'
+}
+
+dependencies {
+    implementation project(':airbyte-db:lib')
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    integrationTestJavaImplementation project(':airbyte-secrets-migration')
+}
+
