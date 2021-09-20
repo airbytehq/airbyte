@@ -4,9 +4,6 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-
 import { FormBlock } from "core/form/types";
 import { ServiceFormValues } from "./types";
 import { useServiceForm } from "./serviceFormContext";
@@ -14,6 +11,11 @@ import { FormSection } from "./components/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
 import CreateControls from "./components/CreateControls";
+import { AuthButton } from "./components/AuthButton";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+} from "core/domain/connector";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -30,7 +32,8 @@ const LoadingMessage = styled.div`
 
 const FormRoot: React.FC<{
   formFields: FormBlock;
-  selectedService?: SourceDefinition | DestinationDefinition;
+  selectedService?: ConnectorDefinition;
+  selectedConnector?: ConnectorDefinitionSpecification;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
@@ -41,6 +44,7 @@ const FormRoot: React.FC<{
   formFields,
   successMessage,
   selectedService,
+  selectedConnector,
   errorMessage,
   hasSuccess,
   additionBottomControls,
@@ -62,6 +66,9 @@ const FormRoot: React.FC<{
   return (
     <FormContainer>
       <FormSection blocks={formFields} />
+      {selectedConnector?.authSpecification && (
+        <AuthButton connector={selectedConnector} />
+      )}
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />

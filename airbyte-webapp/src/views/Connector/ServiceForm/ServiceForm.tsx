@@ -21,7 +21,6 @@ import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
-import { AuthButton } from "./components/AuthButton";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
@@ -181,11 +180,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               selectedService={props.availableServices.find(
                 (s) => Connector.id(s) === values.serviceType
               )}
+              selectedConnector={props.selectedConnector}
               formFields={formFields}
             />
-            {selectedConnector?.authSpecification && (
-              <AuthButton connector={selectedConnector} />
-            )}
             {isOpenRequestModal && (
               <RequestConnectorModal
                 connectorType={formType}
