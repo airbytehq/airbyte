@@ -25,7 +25,7 @@ properties:
     type: string
   icon:
     type: string
-  sourcetype:
+  sourceType:
     type: string
     enum:
       - api
