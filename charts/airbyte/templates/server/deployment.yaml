@@ -43,11 +43,19 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: CONFIG_ROOT
+        {{- if .Values.postgresql.enabled }}
         - name: DATABASE_PASSWORD
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: DATABASE_PASSWORD
+        {{- else }}
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.externalDatabase.existingSecret }}
+              key: {{ .Values.externalDatabase.existingSecretPasswordKey }}
+        {{- end }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
