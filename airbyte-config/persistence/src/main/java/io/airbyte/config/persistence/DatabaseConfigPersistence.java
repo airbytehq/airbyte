@@ -285,7 +285,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final String dockerRepository;
     final String dockerImageTag;
 
-    private ConnectorInfo(String definitionId, JsonNode definition) {
+    ConnectorInfo(String definitionId, JsonNode definition) {
       this.definitionId = definitionId;
       this.definition = definition;
       this.dockerRepository = definition.get("dockerRepository").asText();
@@ -351,12 +351,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *        will not be updated. This is necessary because the new connector version may not be
    *        backward compatible.
    */
-  private <T> ConnectorCounter updateConnectorDefinitions(DSLContext ctx,
-                                                          OffsetDateTime timestamp,
-                                                          AirbyteConfig configType,
-                                                          List<T> latestDefinitions,
-                                                          Set<String> connectorRepositoriesInUse,
-                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
+  @VisibleForTesting
+  <T> ConnectorCounter updateConnectorDefinitions(DSLContext ctx,
+                                                  OffsetDateTime timestamp,
+                                                  AirbyteConfig configType,
+                                                  List<T> latestDefinitions,
+                                                  Set<String> connectorRepositoriesInUse,
+                                                  Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
       throws IOException {
     int newCount = 0;
     int updatedCount = 0;
@@ -379,7 +380,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {
         if (newFields.size() == 0) {
-          LOGGER.info("Connector {} is in use; skip updating", repository);
+          LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
         } else {
           // Add new fields to the connector definition
           JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);

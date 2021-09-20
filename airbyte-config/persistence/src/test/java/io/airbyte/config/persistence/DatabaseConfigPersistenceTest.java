@@ -50,8 +50,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest} and
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest} for testing of those methods.
+ * See {@link DatabaseConfigPersistenceLoadDataTest},
+ * {@link DatabaseConfigPersistenceMigrateFileConfigsTest}, and
+ * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
