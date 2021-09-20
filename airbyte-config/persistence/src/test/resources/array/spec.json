@@ -11,6 +11,18 @@
         "type": "string",
         "airbyte_secret": true
       }
+    },
+    "rotating_key_objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string",
+            "airbyte_secret": true
+          }
+        }
+      }
     }
   },
   "required": ["username", "rotating_keys"]

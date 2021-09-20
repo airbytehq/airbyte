@@ -59,10 +59,10 @@ public class SecretsHelpersTest {
 
   private static Stream<Arguments> provideTestCases() {
     return Stream.of(
-//            new OptionalPasswordTestCase(),
-//            new SimpleTestCase(),
-//            new NestedObjectTestCase(),
-//            new OneOfTestCase(),
+            new OptionalPasswordTestCase(),
+            new SimpleTestCase(),
+            new NestedObjectTestCase(),
+            new OneOfTestCase(),
             new ArrayTestCase()
     ).map(Arguments::of);
   }
