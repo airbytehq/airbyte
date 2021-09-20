@@ -53,6 +53,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             for _slice in stream_slice:
                 sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
                 next(sites_gen)
+            return True, None
 
         except Exception as error:
             return (
