@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -99,7 +101,7 @@ public class SecretsHelpersTest {
   @MethodSource("provideTestCases")
   void testSplitUpdate(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
-    SplitSecretConfig updatedSplit = SecretsHelpers.splitUpdate(
+    final var updatedSplit = SecretsHelpers.splitUpdate(
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getPartialConfig(),
@@ -119,8 +121,47 @@ public class SecretsHelpersTest {
     final var actualCombinedConfig = SecretsHelpers.combine(testCase.getPartialConfig(), secretPersistence);
 
     assertEquals(testCase.getFullConfig(), actualCombinedConfig);
+  }
 
+  @Test
+  void testMissingSecretShouldThrowException() {
     // todo: test case where it can't find secret -> should throw exception
+  }
+
+  @Test
+  void testUpdatingSecretsOneAtATime() {
+    final var uuidIterator = UUIDS.iterator();
+    final var testCase = new NestedObjectTestCase();
+
+    final var splitConfig = SecretsHelpers.split(
+            uuidIterator::next,
+            WORKSPACE_ID,
+            testCase.getFullConfig(),
+            testCase.getSpec());
+
+    assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
+    assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
+
+    final var updatedSplit1 = SecretsHelpers.splitUpdate(
+            uuidIterator::next,
+            WORKSPACE_ID,
+            testCase.getPartialConfig(),
+            testCase.getFullConfigUpdate1(),
+            testCase.getSpec());
+
+    assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
+    assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
+
+    final var updatedSplit2 = SecretsHelpers.splitUpdate(
+            uuidIterator::next,
+            WORKSPACE_ID,
+            updatedSplit1.getPartialConfig(),
+            testCase.getFullConfigUpdate2(),
+            testCase.getSpec());
+
+    assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
+    assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
+
   }
 
 }

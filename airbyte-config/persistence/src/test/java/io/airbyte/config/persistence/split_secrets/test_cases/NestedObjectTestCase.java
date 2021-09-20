@@ -24,6 +24,8 @@
 
 package io.airbyte.config.persistence.split_secrets.test_cases;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpersTest;
@@ -60,6 +62,36 @@ public class NestedObjectTestCase implements SecretsTestCase {
       secretPersistence.write(new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1),
           "hunter2");
     };
+  }
+
+  // the following helpers are for the custom test suite for evaluating updating individual secret versions
+
+  public JsonNode getUpdatedPartialConfigAfterUpdate1() {
+    return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config_update1.json"));
+  }
+
+  public JsonNode getUpdatedPartialConfigAfterUpdate2() {
+    return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config_update2.json"));
+  }
+
+  public JsonNode getFullConfigUpdate1() {
+    return Exceptions.toRuntime(() -> getNodeResource(getName(), "full_config_update1.json"));
+  }
+
+  public JsonNode getFullConfigUpdate2() {
+    return Exceptions.toRuntime(() -> getNodeResource(getName(), "full_config_update2.json"));
+  }
+
+  public Map<SecretCoordinate, String> getSecretMapAfterUpdate1() {
+    return Map.of(
+            new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter3",
+            new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1), "hunter2");
+  }
+
+  public Map<SecretCoordinate, String> getSecretMapAfterUpdate2() {
+    return Map.of(
+            new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter3",
+            new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "hunter4");
   }
 
 }
