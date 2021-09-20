@@ -43,14 +43,8 @@ import java.util.stream.Collectors;
 
 public class SecretsHelpers {
   // todo: add airbyte_ prefix so our secrets are identifiable in the store
-  // todo: double check oauth stuff that's already in place
-  // todo: create an in memory singleton map secrets store implementation for testing
-  // todo: create a separate persistence for secrets that doesn't have config types, is just string to
-  // string and allows configuration for a specific prefix
-  // todo: test behavior for optional secrets (like the switching in files for example)
   // todo: test an array of secrets - what if you have an array of oneOf? - harddest case is an array
   // of oneofs?
-  // todo: CREATION spec + full config -> coordconfig+secrets
 
   public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
     return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification());
@@ -78,7 +72,6 @@ public class SecretsHelpers {
         // remove the key put the new key in the coordinate section
         Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
         final var secret = copy.get(key).asText();
-        UUID secretUuid;
 
         String coordinateBase = null;
         var version = 1L;
@@ -120,18 +113,50 @@ public class SecretsHelpers {
         ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
         secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && copy.has(key)) {
-        final var arrayElements = MoreStreams.toStream(copy.get("key").fields()).collect(Collectors.toList()); // todo: replace one by one using a synthetic replacement (does it need primitives or what)
+        final var itemType = fieldSchema.get("items").get("type");
+        System.out.println("itemType = " + itemType);
+        if(itemType == null) {
+          throw new NotImplementedException();
+        } else if(itemType.asText().equals("string") && fieldSchema.get("items").has("airbyte_secret")) {
+          final var newOld =  old.has(key) ? old.get(key) : Jsons.emptyObject();
+          for (int i = 0; i < copy.get(key).size(); i++) {
+            String coordinateBase = null;
+            var version = 1L;
+            if (newOld.has(i)) {
+              final var oldSecret = newOld.get(i);
+
+              if (oldSecret.has("_secret")) {
+                var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get("_secret").asText());
+                coordinateBase = oldCoordinate.getCoordinateBase();
+                version = oldCoordinate.getVersion() + 1;
+              }
+            }
+
+            if (coordinateBase == null) {
+              coordinateBase = "workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+            }
+
+            final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
+
+            secretMap.put(secretCoordinate, copy.get(key).get(i).asText());
+            ((ArrayNode) copy.get(key)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
+          }
+        } else if (itemType.asText().equals("object")) {
+          final var newOld =  old.has(key) ? old.get(key) : Jsons.emptyObject();
+          for (int i = 0; i < copy.get(key).size(); i++) {
+            final var newOldElement =  newOld.has(i) ? newOld.get(i) : Jsons.emptyObject();
+            final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, copy.get(key).get(i), fieldSchema.get("items"));
+            secretMap.putAll(splitSecret.getCoordinateToPayload());
+            ((ArrayNode) copy.get(key)).set(i, splitSecret.getPartialConfig());
+          }
+        }
       }
       // todo: also support just arrays here
     }
 
     return new SplitSecretConfig(copy, secretMap);
-    // todo: come up with a better name than partialConfig
   }
-  // todo: turn this into a generic iterator over all data so it's easier to manage across
-  // JsonSecretsprocessor, here, and combine
 
-  // todo: UPDATES old coordconfig+spec+ full config -> coordconfig+secrets
   public static SplitSecretConfig splitUpdate(Supplier<UUID> uuidSupplier,
                                               UUID workspaceId,
                                               JsonNode oldPartialConfig,
@@ -142,9 +167,6 @@ public class SecretsHelpers {
 
   // todo: determine if versions should always upgrade or if it should check before incrementing to
   // see if it's the same value?
-
-  // todo: READ coordconfig+secets persistence -> full config
-  // todo: we'll want permissioning here at some point
 
   public static JsonNode combine(JsonNode partialConfig, SecretPersistence secretPersistence) {
     return combine(true, partialConfig, secretPersistence);

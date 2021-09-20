@@ -5,7 +5,7 @@
     "username": {
       "type": "string"
     },
-    "rotating_keys": {
+    "rotating_key_strings": {
       "type": "array",
       "items": {
         "type": "string",

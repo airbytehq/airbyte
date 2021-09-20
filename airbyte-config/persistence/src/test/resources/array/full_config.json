@@ -1,6 +1,6 @@
 {
   "username": "charles",
-  "rotating_keys": [
+  "rotating_key_strings": [
     "key1",
     "key2",
     "key3"
