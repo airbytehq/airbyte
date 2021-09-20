@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth.google;
+package io.airbyte.oauth.flows.google;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -31,19 +31,25 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
+import java.util.function.Supplier;
 
-public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
+public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
 
   @VisibleForTesting
-  static final String SCOPE = "https://www.googleapis.com/auth/adwords";
+  static final String SCOPE_URL = "https://www.googleapis.com/auth/adwords";
 
-  public GoogleAdsOauthFlow(ConfigRepository configRepository) {
-    super(configRepository, SCOPE);
+  public GoogleAdsOAuthFlow(ConfigRepository configRepository) {
+    super(configRepository);
   }
 
   @VisibleForTesting
-  GoogleAdsOauthFlow(ConfigRepository configRepository, HttpClient client) {
-    super(configRepository, SCOPE, client);
+  GoogleAdsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
+  }
+
+  @Override
+  protected String getScope() {
+    return SCOPE_URL;
   }
 
   @Override
@@ -61,9 +67,9 @@ public class GoogleAdsOauthFlow extends GoogleOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String code, String redirectUrl) throws IOException {
+  protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
     // the config object containing refresh token is nested inside the "credentials" object
-    return Map.of("credentials", super.completeOAuthFlow(clientId, clientSecret, code, redirectUrl));
+    return Map.of("credentials", super.extractRefreshToken(data));
   }
 
 }
