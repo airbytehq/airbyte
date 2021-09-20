@@ -2,11 +2,24 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
+import * as yup from "yup";
 
 import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+
+const requestConnectorValidationSchema = yup.object({
+  users: yup.array().of(
+    yup.object().shape({
+      role: yup.string().required("form.empty.error"),
+      email: yup
+        .string()
+        .required("form.empty.error")
+        .email("form.email.error"),
+    })
+  ),
+});
 
 const Content = styled.div`
   width: 614px;
@@ -50,6 +63,9 @@ export const InviteUsersModal: React.FC<{
       onClose={props.onClose}
     >
       <Formik
+        validateOnBlur={true}
+        validateOnChange={true}
+        validationSchema={requestConnectorValidationSchema}
         initialValues={{
           users: [
             {
@@ -116,6 +132,7 @@ export const InviteUsersModal: React.FC<{
                       ))}
                       <Button
                         type="button"
+                        disabled={!isValid || !dirty}
                         onClick={() =>
                           arrayHelpers.push({
                             email: "",
