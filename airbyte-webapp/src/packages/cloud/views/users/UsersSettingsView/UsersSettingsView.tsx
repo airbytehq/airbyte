@@ -11,8 +11,8 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
 import { User } from "../../../lib/domain/users";
-import useUser from "./hooks/useUser";
 import { useAuthService } from "../../../services/auth/AuthService";
+import { useUserHook } from "../../../services/users/UseUserHook";
 
 const Header = styled.div`
   display: flex;
@@ -31,7 +31,9 @@ export const UsersSettingsView: React.FC = () => {
     { suspense: true }
   );
 
-  const { isDeleting, onDelete } = useUser();
+  // TODO: show error with request fails
+  const { isLoading, mutate } = useUserHook(console.log, console.log);
+
   const { user } = useAuthService();
 
   const columns = React.useMemo(
@@ -63,8 +65,8 @@ export const UsersSettingsView: React.FC = () => {
             <Button
               disabled={user?.userId === row.original.userId}
               secondary
-              onClick={() => onDelete(row.original.userId)}
-              isLoading={isDeleting}
+              onClick={() => mutate(row.original.userId)}
+              isLoading={isLoading}
             >
               <FormattedMessage id="userSettings.user.remove" />
             </Button>,
@@ -72,7 +74,7 @@ export const UsersSettingsView: React.FC = () => {
           ].filter(Boolean),
       },
     ],
-    [isDeleting, onDelete]
+    [isLoading, mutate]
   );
 
   return (
