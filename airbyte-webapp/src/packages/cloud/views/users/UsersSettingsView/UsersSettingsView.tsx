@@ -24,8 +24,9 @@ export const UsersSettingsView: React.FC = () => {
   const [modalIsOpen, toggleModal] = useToggle(false);
   const userService = useGetUserService();
   const { workspaceId } = useCurrentWorkspace();
+
   const { data, refetch } = useQuery(
-    ["users"],
+    ["users", workspaceId],
     () => userService.listByWorkspaceId(workspaceId),
     { suspense: true }
   );
