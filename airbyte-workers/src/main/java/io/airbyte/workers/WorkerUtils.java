@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 public class WorkerUtils {
 
   public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = initWorkerPodTolerations();
+  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = initWorkerPodNodeSelectors();
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
@@ -231,6 +233,11 @@ public class WorkerUtils {
   private static List<WorkerPodToleration> initWorkerPodTolerations() {
     final EnvConfigs configs = new EnvConfigs();
     return configs.getWorkerPodTolerations();
+  }
+
+  private static Map<String, String> initWorkerPodNodeSelectors() {
+    final EnvConfigs configs = new EnvConfigs();
+    return configs.getWorkerNodeSelectors();
   }
 
   private static ResourceRequirements initResourceRequirements() {

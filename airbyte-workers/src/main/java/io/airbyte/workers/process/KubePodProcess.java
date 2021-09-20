@@ -272,6 +272,7 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         ResourceRequirements resourceRequirements,
                         List<WorkerPodToleration> tolerations,
+                        Map<String, String> nodeSelectors,
                         Map<String, String> labels,
                         final String... args)
       throws IOException, InterruptedException {
@@ -378,6 +379,7 @@ public class KubePodProcess extends Process {
         .endMetadata()
         .withNewSpec()
         .withTolerations(buildPodTolerations(tolerations))
+        .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)

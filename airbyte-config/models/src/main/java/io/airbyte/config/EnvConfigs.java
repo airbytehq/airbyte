@@ -69,6 +69,7 @@ public class EnvConfigs implements Configs {
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
+  public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -327,6 +328,25 @@ public class EnvConfigs implements Configs {
         .map(this::workerPodToleration)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns a map of node selectors from its own environment variable. The value of the env is a
+   * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
+   * <p>
+   * For example:- The following represents two node selectors
+   * <p>
+   * airbyte=server,type=preemptive
+   *
+   * @return map containing kv pairs of node selectors
+   */
+  @Override
+  public Map<String, String> getWorkerNodeSelectors() {
+    return Splitter.on(",")
+        .splitToStream(getEnvOrDefault(WORKER_POD_NODE_SELECTORS, ""))
+        .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
+        .map(s -> s.split("="))
+        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
   }
 
   @Override
