@@ -90,6 +90,7 @@ import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceRead;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
@@ -193,7 +194,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         destinationHandler,
         jobHistoryHandler,
         schedulerHandler,
-        operationsHandler);
+        operationsHandler,
+        workspacesHandler);
     webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository);
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
@@ -588,6 +590,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+  }
+
+  @Override
+  public WebBackendWorkspaceRead webBackendGetWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendGetWorkspace(workspaceIdRequestBody));
   }
 
   @Override

@@ -122,7 +122,7 @@ class WebBackendConnectionsHandlerTest {
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
-        operationsHandler);
+        operationsHandler, mock(WorkspacesHandler.class));
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());

@@ -57,8 +57,11 @@ import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
@@ -81,19 +84,22 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
+  private final WorkspacesHandler workspacesHandler;
 
   public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
                                       final SourceHandler sourceHandler,
                                       final DestinationHandler destinationHandler,
                                       final JobHistoryHandler jobHistoryHandler,
                                       final SchedulerHandler schedulerHandler,
-                                      final OperationsHandler operationsHandler) {
+                                      final OperationsHandler operationsHandler,
+                                      final WorkspacesHandler workspacesHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceHandler = sourceHandler;
     this.destinationHandler = destinationHandler;
     this.jobHistoryHandler = jobHistoryHandler;
     this.schedulerHandler = schedulerHandler;
     this.operationsHandler = operationsHandler;
+    this.workspacesHandler = workspacesHandler;
   }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -157,11 +163,15 @@ public class WebBackendConnectionsHandler {
         .resourceRequirements(connectionRead.getResourceRequirements());
   }
 
-  private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
+  private JobReadList getSyncJobs(UUID connectionId) throws IOException {
     final JobListRequestBody jobListRequestBody = new JobListRequestBody()
-        .configId(connectionRead.getConnectionId().toString())
+        .configId(connectionId.toString())
         .configTypes(Collections.singletonList(JobConfigType.SYNC));
     return jobHistoryHandler.listJobsFor(jobListRequestBody);
+  }
+
+  private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
+    return getSyncJobs(connectionRead.getConnectionId());
   }
 
   private void setLatestSyncJobProperties(WebBackendConnectionRead WebBackendConnectionRead, JobReadList syncJobReadList) {
@@ -362,6 +372,47 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
 
     return connectionUpdate;
+  }
+
+  public WebBackendWorkspaceRead webBackendGetWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final var workspace = workspacesHandler.getWorkspace(workspaceIdRequestBody);
+    final var hasCompletedSync = hasCompletedSync(workspaceIdRequestBody.getWorkspaceId());
+    return buildWebBackendWorkspaceRead(workspace, hasCompletedSync);
+  }
+
+  private boolean hasCompletedSync(UUID workspaceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return webBackendListConnectionsForWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId))
+        .getConnections()
+        .stream()
+        .map(WebBackendConnectionRead::getConnectionId)
+        .anyMatch(connectionId -> Exceptions.toRuntime(() -> {
+          final var syncJobs = getSyncJobs(connectionId).getJobs();
+          for (JobWithAttemptsRead syncJob : syncJobs) {
+            if (syncJob.getJob().getStatus().equals(JobStatus.SUCCEEDED)) {
+              return true;
+            }
+          }
+
+          // didn't find any successfully completed jobs for this connection
+          return false;
+        }));
+  }
+
+  private static WebBackendWorkspaceRead buildWebBackendWorkspaceRead(final WorkspaceRead workspace, final boolean hasCompletedSync) {
+    return new WebBackendWorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email(workspace.getEmail())
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .anonymousDataCollection(workspace.getAnonymousDataCollection())
+        .news(workspace.getNews())
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(workspace.getNotifications())
+        .hasCompletedSync(hasCompletedSync);
   }
 
 }

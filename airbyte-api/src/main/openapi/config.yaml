@@ -1410,6 +1410,29 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/workspaces/get:
+    post:
+      tags:
+        - workspace
+      summary: Find workspace by ID
+      operationId: webBackendGetWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendWorkspaceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/sources/create:
     post:
       tags:
@@ -1794,6 +1817,43 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+    WebBackendWorkspaceRead:
+      type: object
+      required:
+        - workspaceId
+        - customerId
+        - name
+        - slug
+        - initialSetupComplete
+        - hasCompletedSync
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        customerId:
+          $ref: "#/components/schemas/CustomerId"
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        slug:
+          type: string
+        initialSetupComplete:
+          type: boolean
+        displaySetupWizard:
+          type: boolean
+        anonymousDataCollection:
+          type: boolean
+        news:
+          type: boolean
+        securityUpdates:
+          type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        hasCompletedSync:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
