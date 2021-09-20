@@ -31,6 +31,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
 
@@ -42,12 +43,12 @@ public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
   }
 
   @VisibleForTesting
-  GoogleAdsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
-    super(configRepository, httpClient);
+  GoogleAdsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String getScopeUrl() {
+  protected String getScope() {
     return SCOPE_URL;
   }
 

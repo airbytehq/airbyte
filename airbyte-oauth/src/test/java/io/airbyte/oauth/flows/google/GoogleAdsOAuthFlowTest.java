@@ -36,7 +36,6 @@ import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -62,10 +61,14 @@ public class GoogleAdsOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleAdsOAuthFlow = new GoogleAdsOAuthFlow(configRepository, httpClient);
+    googleAdsOAuthFlow = new GoogleAdsOAuthFlow(configRepository, httpClient, GoogleAdsOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
+  }
+
+  private static String getConstantState() {
+    return "state";
   }
 
   @Test

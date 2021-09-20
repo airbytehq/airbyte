@@ -41,22 +41,25 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
   private final HttpClient httpClient;
   private final ConfigRepository configRepository;
+  private final Supplier<String> stateSupplier;
 
   public BaseOAuthFlow(ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build());
+    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
   }
 
-  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
+    this.stateSupplier = stateSupplier;
   }
 
   @Override
@@ -72,32 +75,22 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
-  private String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) {
-    boolean firstEntry = true;
-    final StringBuilder result = new StringBuilder(getBaseConsentUrl()).append("?");
-    for (Entry<String, String> entry : getConsentQueryParameters(definitionId, clientId, redirectUrl).entrySet()) {
-      if (!firstEntry) {
-        result.append("&");
-      } else {
-        firstEntry = false;
-      }
-      result.append(entry.getKey()).append("=").append(UrlEncode(entry.getValue()));
-    }
-    return result.toString();
+  /**
+   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
+   * especially in the query parameters to be provided. This function should generate such consent URL
+   * accordingly.
+   */
+  protected abstract String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException;
+
+  private static String generateRandomState() {
+    return RandomStringUtils.randomAlphanumeric(7);
   }
 
-  protected abstract String getBaseConsentUrl();
-
-  protected abstract Map<String, String> getConsentQueryParameters(UUID definitionId, String clientId, String redirectUrl);
-
-  protected String getState(UUID definitionId) {
-    // TODO state should be randomly generated, and the 2nd step of oauth should verify its value
-    // matches the initially generated state value:
-    // return Jsons.serialize(Map.of(
-    // "definitionId", definitionId.toString(),
-    // "state", UUID.randomUUID()
-    // ));
-    return definitionId.toString();
+  /**
+   * Generate a string to use as state in the OAuth process.
+   */
+  protected String getState() {
+    return stateSupplier.get();
   }
 
   @Override
@@ -131,20 +124,36 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         .uri(URI.create(getAccessTokenUrl()))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .build();
+    // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());;
       return extractRefreshToken(Jsons.deserialize(response.body()));
     } catch (InterruptedException e) {
-      throw new IOException("Failed to complete Google OAuth flow", e);
+      throw new IOException("Failed to complete OAuth flow", e);
     }
   }
 
+  /**
+   * Once the user is redirected after getting their consent, the API should redirect them to a
+   * specific redirection URL along with query parameters. This function should parse and extract the
+   * code from these query parameters in order to continue the OAuth Flow.
+   */
   protected abstract String extractCodeParameter(Map<String, Object> queryParams) throws IOException;
 
+  /**
+   * Returns the URL where to retrieve the access token from.
+   */
   protected abstract String getAccessTokenUrl();
 
+  /**
+   * Query parameters to provide the access token url with.
+   */
   protected abstract Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl);
 
+  /**
+   * Once the auth code is exchange for a refresh token, the oauth flow implementation can extract and
+   * returns the values of fields to be used in the connector's configurations.
+   */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
   private JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
@@ -175,7 +184,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private static String UrlEncode(String s) {
+  private static String urlEncode(String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
     } catch (Exception e) {
@@ -217,7 +226,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       if (result.length() > 0) {
         result.append("&");
       }
-      result.append(entry.getKey()).append("=").append(UrlEncode(entry.getValue()));
+      result.append(entry.getKey()).append("=").append(urlEncode(entry.getValue()));
     }
     return result.toString();
   }

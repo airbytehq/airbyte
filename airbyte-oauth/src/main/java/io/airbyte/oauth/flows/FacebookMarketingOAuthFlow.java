@@ -30,9 +30,12 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Following docs from
@@ -40,7 +43,6 @@ import java.util.UUID;
  */
 public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
-  private static final String CONSENT_URL = "https://www.facebook.com/v11.0/dialog/oauth";
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v11.0/oauth/access_token";
 
   public FacebookMarketingOAuthFlow(ConfigRepository configRepository) {
@@ -48,26 +50,28 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @VisibleForTesting
-  FacebookMarketingOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
-    super(configRepository, httpClient);
+  FacebookMarketingOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String getBaseConsentUrl() {
-    return CONSENT_URL;
-  }
-
-  @Override
-  protected Map<String, String> getConsentQueryParameters(UUID definitionId, String clientId, String redirectUrl) {
-    return ImmutableMap.<String, String>builder()
+  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+    final URIBuilder builder = new URIBuilder()
+        .setScheme("https")
+        .setHost("www.facebook.com")
+        .setPath("v11.0/dialog/oauth")
         // required
-        .put("client_id", clientId)
-        .put("redirect_uri", redirectUrl)
-        .put("state", getState(definitionId))
+        .addParameter("client_id", clientId)
+        .addParameter("redirect_uri", redirectUrl)
+        .addParameter("state", getState())
         // optional
-        .put("response_type", "code")
-        .put("scope", "ads_management,ads_read,read_insights")
-        .build();
+        .addParameter("response_type", "code")
+        .addParameter("scope", "ads_management,ads_read,read_insights");
+    try {
+      return builder.build().toString();
+    } catch (URISyntaxException e) {
+      throw new IOException("Failed to format Consent URL for OAuth flow", e);
+    }
   }
 
   @Override
@@ -97,6 +101,8 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+    // Facebook does not have refresh token but calls it "long lived access token" instead:
+    // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
     if (data.has("access_token")) {
       return Map.of("access_token", data.get("access_token").asText());
     } else {

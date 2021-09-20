@@ -70,10 +70,14 @@ public class GoogleAnalyticsOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleAnalyticsOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository, httpClient);
+    googleAnalyticsOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository, httpClient, GoogleAnalyticsOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
+  }
+
+  private static String getConstantState() {
+    return "state";
   }
 
   @Test
@@ -113,7 +117,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         getClientId(),
         EXPECTED_REDIRECT_URL,
         EXPECTED_SCOPE,
-        definitionId);
+        getConstantState());
     LOGGER.info(expectedSourceUrl);
     assertEquals(expectedSourceUrl, actualSourceUrl);
   }
@@ -136,7 +140,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         getClientId(),
         EXPECTED_REDIRECT_URL,
         EXPECTED_SCOPE,
-        definitionId);
+        getConstantState());
     LOGGER.info(expectedDestinationUrl);
     assertEquals(expectedDestinationUrl, actualDestinationUrl);
   }

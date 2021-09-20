@@ -27,6 +27,7 @@ package io.airbyte.oauth.flows.google;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.net.http.HttpClient;
+import java.util.function.Supplier;
 
 public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
 
@@ -37,12 +38,12 @@ public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
   }
 
   @VisibleForTesting
-  GoogleAnalyticsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
-    super(configRepository, httpClient);
+  GoogleAnalyticsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String getScopeUrl() {
+  protected String getScope() {
     return SCOPE_URL;
   }
 

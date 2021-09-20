@@ -60,10 +60,14 @@ public class FacebookMarketingOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    facebookMarketingOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient);
+    facebookMarketingOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookMarketingOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
+  }
+
+  private static String getConstantState() {
+    return "state";
   }
 
   @Test
