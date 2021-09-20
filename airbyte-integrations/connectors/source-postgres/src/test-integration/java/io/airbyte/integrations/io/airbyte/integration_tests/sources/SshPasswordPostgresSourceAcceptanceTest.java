@@ -28,8 +28,9 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 
 public class SshPasswordPostgresSourceAcceptanceTest extends AbstractSshPostgresSourceAcceptanceTest {
 
-    @Override
-    public SshTunnel.TunnelMethod getTunnelMethod() {
-        return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
-    }
+  @Override
+  public SshTunnel.TunnelMethod getTunnelMethod() {
+    return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
+  }
+
 }
