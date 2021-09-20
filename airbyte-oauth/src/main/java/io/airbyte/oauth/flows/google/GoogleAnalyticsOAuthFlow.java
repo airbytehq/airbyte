@@ -70,4 +70,5 @@ public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
     // the config object containing refresh token is nested inside the "auth_mechanism" object
     return Map.of("auth_mechanism", super.extractRefreshToken(data));
   }
+
 }
