@@ -6,7 +6,7 @@
 The high-level overview contains all the information you need to use Namespaces when pulling from APIs. Information past that can be read for advanced or educational purposes.
 {% endhint %}
 
-When looking through our connector docs, you'll notice that some sources and destinations support "Namespaces." They simply allow you to organize and cleanly separate your data into groups in the destination if the destination supports it. If your desired destination doesn't support it, you can ignore this feature.
+When looking through our connector docs, you'll notice that some sources and destinations support "Namespaces." These allow you to organize and separate your data into groups in the destination if the destination supports it. For example, in a database, a namespace could be a schema in the database. If your desired destination doesn't support it, you can ignore this feature.
 
 Note that this is the location that both your normalized and raw data will get written to. Your raw data will show up with the prefix `_airbyte_raw_` in the namespace you define. If you don't enable basic normalization, you will only receive the raw tables. 
 
