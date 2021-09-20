@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "rotating_keys": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "key1": {
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "key2": {
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
+    }
+  },
+  "required": ["username", "rotating_keys"]
+}

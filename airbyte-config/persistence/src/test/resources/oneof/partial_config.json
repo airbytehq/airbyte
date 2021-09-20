@@ -11,6 +11,6 @@
     }
   },
   "password3": {
-    "non-secret":  "non-secret value"
+    "non-secret": "non-secret value"
   }
 }

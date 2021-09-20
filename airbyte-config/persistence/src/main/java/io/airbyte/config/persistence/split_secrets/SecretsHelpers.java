@@ -28,18 +28,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import com.google.api.client.util.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import org.apache.commons.lang3.NotImplementedException;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.NotImplementedException;
 
 public class SecretsHelpers {
   // todo: add airbyte_ prefix so our secrets are identifiable in the store
@@ -115,10 +113,10 @@ public class SecretsHelpers {
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && copy.has(key)) {
         final var itemType = fieldSchema.get("items").get("type");
         System.out.println("itemType = " + itemType);
-        if(itemType == null) {
+        if (itemType == null) {
           throw new NotImplementedException();
-        } else if(itemType.asText().equals("string") && fieldSchema.get("items").has("airbyte_secret")) {
-          final var newOld =  old.has(key) ? old.get(key) : Jsons.emptyObject();
+        } else if (itemType.asText().equals("string") && fieldSchema.get("items").has("airbyte_secret")) {
+          final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
             String coordinateBase = null;
             var version = 1L;
@@ -142,9 +140,9 @@ public class SecretsHelpers {
             ((ArrayNode) copy.get(key)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
           }
         } else if (itemType.asText().equals("object")) {
-          final var newOld =  old.has(key) ? old.get(key) : Jsons.emptyObject();
+          final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
-            final var newOldElement =  newOld.has(i) ? newOld.get(i) : Jsons.emptyObject();
+            final var newOldElement = newOld.has(i) ? newOld.get(i) : Jsons.emptyObject();
             final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, copy.get(key).get(i), fieldSchema.get("items"));
             secretMap.putAll(splitSecret.getCoordinateToPayload());
             ((ArrayNode) copy.get(key)).set(i, splitSecret.getPartialConfig());
@@ -176,7 +174,7 @@ public class SecretsHelpers {
     // todo: add test to make sure we aren't modifying input jsonnodes ever for any of the tests
     final var config = isFirst ? partialConfig.deepCopy() : partialConfig;
 
-    if(config.has("_secret")) {
+    if (config.has("_secret")) {
       final var coordinate = SecretCoordinate.fromFullCoordinate(config.get("_secret").asText());
       return new TextNode(secretPersistence.read(coordinate).get());
     }
