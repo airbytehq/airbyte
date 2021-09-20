@@ -592,17 +592,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationRead webBackendRecreateDestination(final DestinationRecreate destinationRecreate) {
-    return execute(
-        () -> webBackendDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
-  }
-
-  @Override
-  public SourceRead webBackendRecreateSource(final SourceRecreate sourceRecreate) {
-    return execute(() -> webBackendSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate));
-  }
-
-  @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
   }
