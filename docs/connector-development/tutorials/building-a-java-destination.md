@@ -51,6 +51,13 @@ You can build the destination by running:
 ./gradlew :airbyte-integrations:connectors:destination-<name>:build
 ```
 
+On Mac M1(Apple Silicon) machines(until openjdk images natively support ARM64 images) set the platform variable as shown below and build
+```bash
+export DOCKER_BUILD_PLATFORM=linux/amd64
+# Must be run from the Airbyte project root
+./gradlew :airbyte-integrations:connectors:destination-<name>:build
+```
+
 this compiles the java code for your destination and builds a Docker image with the connector. At this point, we haven't implemented anything of value yet, but once we do, you'll use this command to compile your code and Docker image. 
 
 {% hint style="info" %}

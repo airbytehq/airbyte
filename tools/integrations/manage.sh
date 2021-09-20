@@ -7,10 +7,11 @@ set -x
 
 USAGE="
 Usage: $(basename "$0") <cmd>
+For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
 Available commands:
   scaffold
   build  <integration_root_path> [<run_tests>]
-  publish  <integration_root_path> [<run_tests>]
+  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
 "
 
 _check_tag_exists() {
@@ -47,6 +48,25 @@ cmd_publish() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
+  local publish_spec_to_cache
+  local spec_cache_writer_sa_key_file
+
+  while [ $# -ne 0 ]; do
+    case "$1" in
+    --publish_spec_to_cache)
+      publish_spec_to_cache=true
+      shift 1
+      ;;
+    --publish_spec_to_cache_with_key_file)
+      publish_spec_to_cache=true
+      spec_cache_writer_sa_key_file="$2"
+      shift 2
+      ;;
+    *)
+      error "Unknown option: $1"
+      ;;
+    esac
+  done
 
   cmd_build "$path" "$run_tests"
 
@@ -69,6 +89,33 @@ cmd_publish() {
   echo "Publishing new version ($versioned_image)"
   docker push "$versioned_image"
   docker push "$latest_image"
+
+  if [[ "true" == "${publish_spec_to_cache}" ]]; then
+    echo "Publishing and writing to spec cache."
+
+    # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+    local tmp_spec_file; tmp_spec_file=$(mktemp)
+    docker run --rm "$versioned_image" spec | \
+      # 1. filter out any lines that are not valid json.
+      jq -R "fromjson? | ." | \
+      # 2. grab any json that has a spec in it.
+      # 3. if there are more than one, take the first one.
+      # 4. if there are none, throw an error.
+      jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+      > "$tmp_spec_file"
+
+    # use service account key file is provided.
+    if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
+      echo "Using provided service account key"
+      gcloud auth activate-service-account --key-file "$spec_cache_writer_sa_key_file"
+    else
+      echo "Using environment gcloud"
+    fi
+
+    gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
+  else
+    echo "Publishing without writing to spec cache."
+  fi
 }
 
 main() {
