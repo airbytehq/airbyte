@@ -2,7 +2,6 @@ FROM openjdk:14.0.2-slim
 
 ENV APPLICATION airbyte-secrets-migration
 WORKDIR /airbyte
-COPY migrate.sh .
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
