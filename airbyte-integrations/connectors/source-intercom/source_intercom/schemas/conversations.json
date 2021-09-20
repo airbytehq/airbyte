@@ -416,8 +416,7 @@
       "type": ["null", "string"]
     },
     "updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "user": {
       "type": ["null", "object"],

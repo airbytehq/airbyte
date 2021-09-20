@@ -72,8 +72,7 @@
       "type": ["null", "integer"]
     },
     "updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "signed_up_at": {
       "type": ["null", "integer"]

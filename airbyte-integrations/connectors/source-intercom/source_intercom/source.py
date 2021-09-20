@@ -126,13 +126,6 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         record = super().parse_response(response, stream_state, **kwargs)
 
         for record in record:
-            updated_at = record.get(self.cursor_field)
-
-            if updated_at:
-                record[self.cursor_field] = datetime.fromtimestamp(
-                    record[self.cursor_field]
-                ).isoformat()  # convert timestamp to datetime string
-
             yield from self.filter_by_state(stream_state=stream_state, record=record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
@@ -334,6 +327,8 @@ class SourceIntercom(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
+
+        config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
 
         auth = TokenAuthenticator(token=config["access_token"])
         return [
