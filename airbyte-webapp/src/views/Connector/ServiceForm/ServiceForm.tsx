@@ -16,11 +16,12 @@ import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
-import { isSourceDefinition } from "core/domain/connector/source";
 import {
+  Connector,
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
+import { AuthButton } from "./components/AuthButton";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
@@ -44,10 +45,17 @@ const FormikPatch: React.FC = () => {
   return null;
 };
 
+// function useBuildJsonSchema(
+//   connector?: ConnectorDefinitionSpecification
+// ): JSONSchema7 | undefined {
+//   if (connector?.authSpecification) {
+//   }
+//
+//   return connector?.connectionSpecification;
+// }
+
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
-  const specifications = props.selectedConnector?.connectionSpecification;
-
   const {
     formType,
     formValues,
@@ -56,6 +64,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     selectedConnector,
     onRetest,
   } = props;
+
+  const specifications = selectedConnector?.connectionSpecification;
+
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
@@ -168,13 +179,13 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
                 setSubmitting(false);
               }}
               selectedService={props.availableServices.find(
-                (s) =>
-                  (isSourceDefinition(s)
-                    ? s.sourceDefinitionId
-                    : s.destinationDefinitionId) === values.serviceType
+                (s) => Connector.id(s) === values.serviceType
               )}
               formFields={formFields}
             />
+            {selectedConnector?.authSpecification && (
+              <AuthButton connector={selectedConnector} />
+            )}
             {isOpenRequestModal && (
               <RequestConnectorModal
                 connectorType={formType}
@@ -187,5 +198,4 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     </>
   );
 };
-
 export default ServiceForm;

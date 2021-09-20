@@ -1,17 +1,27 @@
 import { ConnectionSpecification } from "core/domain/connection";
 import { DestinationSyncMode } from "core/domain/catalog";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
-export interface ConnectorDefinitionSpecification {
+export type ConnectorDefinition = SourceDefinition | DestinationDefinition;
+
+interface ConnectorDefinitionSpecificationBase {
   connectionSpecification: ConnectionSpecification;
   documentationUrl: string;
-  auth?: {
+  authSpecification?: {
     type: "oauth2.0";
-    oauth_flow_init_parameters: [];
+    oauth2Specification: {
+      oauthFlowInitParameters: string[][];
+    };
   };
 }
 
+export type ConnectorDefinitionSpecification =
+  | DestinationDefinitionSpecification
+  | SourceDefinitionSpecification;
+
 export interface DestinationDefinitionSpecification
-  extends ConnectorDefinitionSpecification {
+  extends ConnectorDefinitionSpecificationBase {
   destinationDefinitionId: string;
   supportedDestinationSyncModes: DestinationSyncMode[];
   supportsDbt: boolean;
@@ -19,6 +29,6 @@ export interface DestinationDefinitionSpecification
 }
 
 export interface SourceDefinitionSpecification
-  extends ConnectorDefinitionSpecification {
+  extends ConnectorDefinitionSpecificationBase {
   sourceDefinitionId: string;
 }

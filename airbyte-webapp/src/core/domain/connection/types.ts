@@ -4,8 +4,7 @@ import { Destination } from "core/resources/Destination";
 import { Operation } from "./operation";
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ConnectionConfiguration = any;
+type ConnectionConfiguration = unknown;
 
 type ConnectionSpecification = AirbyteJSONSchema;
 

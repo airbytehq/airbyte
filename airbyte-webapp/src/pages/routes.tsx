@@ -23,6 +23,9 @@ import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
+import useRouter from "../hooks/useRouter";
+import { useAsync } from "react-use";
+import { useConnectorAuth } from "../hooks/services/useConnectorAuth";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -43,6 +46,19 @@ export enum Routes {
   Root = "/",
 }
 
+const FC: React.FC = () => {
+  const { query } = useRouter();
+  const { completeOauthRequest } = useConnectorAuth();
+
+  console.log(query);
+
+  useAsync(async () => {
+    await completeOauthRequest({} as any, query);
+  }, []);
+
+  return null;
+};
+
 const MainViewRoutes = () => {
   const { workspace } = useWorkspace();
 
@@ -50,6 +66,9 @@ const MainViewRoutes = () => {
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
+          <Route path="/auth_flow">
+            <FC />
+          </Route>
           <Route path={Routes.Destination}>
             <DestinationPage />
           </Route>

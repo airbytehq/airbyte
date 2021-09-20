@@ -15,7 +15,7 @@ import ConnectionResource, {
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import { Source } from "core/resources/Source";
+import SourceResource, { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspace";
@@ -216,7 +216,13 @@ const useConnection = (): {
   }: {
     connectionId: string;
   }) => {
-    await deleteConnectionResource({ connectionId });
+    await deleteConnectionResource({ connectionId }, undefined, [
+      [
+        ConnectionResource.listShape(),
+        { workspaceId: workspace.workspaceId },
+        (connectionIds: { connections: string[] }) => ({ ...connectionIds }),
+      ],
+    ]);
 
     push(Routes.Connections);
   };

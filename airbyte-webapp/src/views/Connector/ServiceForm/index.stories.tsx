@@ -17,6 +17,7 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => (
 export const Common = Template.bind({});
 Common.args = {
   selectedConnector: {
+    sourceDefinitionId: "",
     documentationUrl: "",
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -97,6 +98,7 @@ Common.args = {
 export const Oneof = Template.bind({});
 Oneof.args = {
   selectedConnector: {
+    sourceDefinitionId: "",
     documentationUrl: "",
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
