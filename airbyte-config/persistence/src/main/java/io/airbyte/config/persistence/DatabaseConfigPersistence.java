@@ -36,6 +36,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigSchemaMigrationSupport;
+import io.airbyte.config.Configs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.Database;
@@ -74,17 +75,31 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Load or update the configs from the seed.
+   * If this is a migration deployment from an old version that relies on file system config
+   * persistence, copy the existing configs from local files.
    */
+  public void migrateFileConfigs(Configs serverConfigs) throws IOException {
+    database.transaction(ctx -> {
+      final boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
+      if (isInitialized) {
+        return null;
+      }
+
+      final boolean hasExistingFileConfigs = FileSystemConfigPersistence.hasExistingConfigs(serverConfigs.getConfigRoot());
+      if (hasExistingFileConfigs) {
+        LOGGER.info("Load existing local config directory into configs database");
+        ConfigPersistence fileSystemPersistence = new FileSystemConfigPersistence(serverConfigs.getConfigRoot());
+        copyConfigsFromSeed(ctx, fileSystemPersistence);
+      }
+
+      return null;
+    });
+  }
+
   @Override
   public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
-      boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where());
-      if (isInitialized) {
-        updateConfigsFromSeed(ctx, seedConfigPersistence);
-      } else {
-        copyConfigsFromSeed(ctx, seedConfigPersistence);
-      }
+      updateConfigsFromSeed(ctx, seedConfigPersistence);
       return null;
     });
   }
@@ -239,7 +254,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   void copyConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
-    LOGGER.info("Loading data to config database...");
+    LOGGER.info("Loading seed data to config database...");
 
     Map<String, Stream<JsonNode>> seedConfigs;
     try {
@@ -293,7 +308,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
-    LOGGER.info("Config database has been initialized; updating connector definitions from the seed if necessary...");
+    LOGGER.info("Updating connector definitions from the seed if necessary...");
 
     try {
       Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
@@ -356,7 +371,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       String latestImageTag = configJson.get("dockerImageTag").asText();
-      if (!latestImageTag.equals(connectorInfo.dockerImageTag)) {
+      if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
       } else {
@@ -364,6 +379,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
     }
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  static boolean hasNewVersion(String currentVersion, String latestVersion) {
+    try {
+      return new AirbyteVersion(latestVersion).patchVersionCompareTo(new AirbyteVersion(currentVersion)) > 0;
+    } catch (Exception e) {
+      LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
+      return false;
+    }
   }
 
   /**
