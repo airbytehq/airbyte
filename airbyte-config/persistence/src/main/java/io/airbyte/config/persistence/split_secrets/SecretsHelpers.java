@@ -40,9 +40,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class SecretsHelpers {
-  // todo: add airbyte_ prefix so our secrets are identifiable in the store
-  // todo: test an array of secrets - what if you have an array of oneOf? - harddest case is an array
-  // of oneofs?
 
   public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
     return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification());
@@ -51,12 +48,10 @@ public class SecretsHelpers {
   private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldConfig, JsonNode fullConfig, JsonNode spec) {
 
     final var old = oldConfig.deepCopy();
-    // todo: check if these are necessary
     final var obj = fullConfig.deepCopy();
     final var schema = spec.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    System.out.println("schema = " + schema);
     Preconditions.checkArgument(JsonSecretsProcessor.canBeProcessed(schema), "Schema is not valid JSONSchema!");
 
     // get the properties field
@@ -106,13 +101,11 @@ public class SecretsHelpers {
         ((ObjectNode) copy).set(key, combinationCopy);
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && copy.has(key)) {
         final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
-        System.out.println("newOld 2 = " + newOld);
         final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema);
         ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
         secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && copy.has(key)) {
         final var itemType = fieldSchema.get("items").get("type");
-        System.out.println("itemType = " + itemType);
         if (itemType == null) {
           throw new NotImplementedException();
         } else if (itemType.asText().equals("string") && fieldSchema.get("items").has("airbyte_secret")) {
@@ -149,7 +142,6 @@ public class SecretsHelpers {
           }
         }
       }
-      // todo: also support just arrays here
     }
 
     return new SplitSecretConfig(copy, secretMap);
@@ -163,15 +155,11 @@ public class SecretsHelpers {
     return split(uuidSupplier, workspaceId, oldPartialConfig, newFullConfig, spec.getConnectionSpecification());
   }
 
-  // todo: determine if versions should always upgrade or if it should check before incrementing to
-  // see if it's the same value?
-
   public static JsonNode combine(JsonNode partialConfig, SecretPersistence secretPersistence) {
     return combine(true, partialConfig, secretPersistence);
   }
 
   private static JsonNode combine(boolean isFirst, JsonNode partialConfig, SecretPersistence secretPersistence) {
-    // todo: add test to make sure we aren't modifying input jsonnodes ever for any of the tests
     final var config = isFirst ? partialConfig.deepCopy() : partialConfig;
 
     if (config.has("_secret")) {
@@ -179,47 +167,30 @@ public class SecretsHelpers {
       return new TextNode(secretPersistence.read(coordinate).get());
     }
 
-    System.out.println("========");
-
     config.fields().forEachRemaining(field -> {
-      System.out.println("field.getKey() = " + field.getKey());
-
       final var node = field.getValue();
       final var childFields = MoreStreams.toStream(node.fields()).collect(Collectors.toList());
       for (Map.Entry<String, JsonNode> childField : childFields) {
         final var childNode = childField.getValue();
-        System.out.println("childField.getKey() = " + childField.getKey());
 
         if (childField.getKey().equals("_secret")) {
-          System.out.println("replacing parent");
           final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.asText());
           ((ObjectNode) config).replace(field.getKey(), new TextNode(secretPersistence.read(coordinate).get())); // todo: handle missing case
           break;
         } else if (childNode.has("_secret")) {
-          System.out.println("replacing...");
           final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.get("_secret").asText());
           ((ObjectNode) node).replace(childField.getKey(), new TextNode(secretPersistence.read(coordinate).get())); // todo: handle missing case
-        } else {
-          System.out.println("not replacing");
         }
       }
 
       if (node instanceof ArrayNode) {
-        System.out.println("array = " + node);
         for (int i = 0; i < node.size(); i++) {
-          System.out.println("i = " + i);
-          System.out.println("node.get(i) = " + node.get(i));
           ((ArrayNode) node).set(i, combine(false, node.get(i), secretPersistence));
         }
       } else if (node instanceof ObjectNode) {
         combine(false, node, secretPersistence);
-      } else {
-        System.out.println("in else: " + node);
       }
     });
     return config;
   }
-
-  // todo: figure out oauth here
-  // todo: test edge cases for json path definitino -> maybe can keep as a tree type or something
 }

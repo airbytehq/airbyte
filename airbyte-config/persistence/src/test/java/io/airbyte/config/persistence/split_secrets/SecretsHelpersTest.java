@@ -99,14 +99,12 @@ public class SecretsHelpersTest {
   @MethodSource("provideTestCases")
   void testSplitUpdate(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
-    System.out.println("testCase.getPartialConfig() = " + testCase.getPartialConfig());
     SplitSecretConfig updatedSplit = SecretsHelpers.splitUpdate(
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getPartialConfig(),
         testCase.getFullConfig(),
         testCase.getSpec());
-    System.out.println("updatedSplit = " + updatedSplit);
 
     assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
     assertEquals(testCase.getSecondSecretMap(), updatedSplit.getCoordinateToPayload());
