@@ -182,18 +182,14 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-<<<<<<< HEAD
-
     final ConfigRepository configRepository = configs.getSecretStoreForConfigs() != null && configs.getSecretStoreForConfigs().equalsIgnoreCase("gcp")
         ? new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation(),
             new GoogleSecretsManagerConfigPersistence())
         : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
 
-    configRepository.loadData(ConfigSeedProvider.get(configs), configRepository.listDefinitionsInUseByConnectors());
-=======
-    configPersistence.migrateFileConfigs(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
->>>>>>> master
+    // TODO: These no longer appear in master; not yet sure if they're still used.
+    //configRepository.loadData(ConfigSeedProvider.get(configs), configRepository.listDefinitionsInUseByConnectors());
+    //configPersistence.migrateFileConfigs(configs);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -253,7 +249,7 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Starting server...");
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
-      configPersistence.loadData(YamlSeedConfigPersistence.get());
+      configPersistence.loadData(YamlSeedConfigPersistence.get(), configRepository.listDefinitionsInUseByConnectors());
 
       return apiFactory.create(
           schedulerJobClient,
