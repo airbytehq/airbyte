@@ -169,6 +169,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: INTERNAL_API_HOST
+            - name: WORKER_POD_TOLERATIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_POD_TOLERATIONS
+            - name: WORKER_POD_NODE_SELECTORS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_POD_NODE_SELECTORS
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

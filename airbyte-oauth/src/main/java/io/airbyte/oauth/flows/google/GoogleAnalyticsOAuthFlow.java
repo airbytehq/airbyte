@@ -22,14 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth.google;
+package io.airbyte.oauth.flows.google;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigRepository;
+import java.net.http.HttpClient;
+import java.util.function.Supplier;
 
-public class GoogleAnalyticsOauthFlow extends GoogleOAuthFlow {
+public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
 
-  public GoogleAnalyticsOauthFlow(ConfigRepository configRepository) {
-    super(configRepository, "https://www.googleapis.com/auth/analytics.readonly");
+  public static final String SCOPE_URL = "https://www.googleapis.com/auth/analytics.readonly";
+
+  public GoogleAnalyticsOAuthFlow(ConfigRepository configRepository) {
+    super(configRepository);
+  }
+
+  @VisibleForTesting
+  GoogleAnalyticsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
+  }
+
+  @Override
+  protected String getScope() {
+    return SCOPE_URL;
   }
 
 }
