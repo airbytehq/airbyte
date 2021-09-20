@@ -273,7 +273,7 @@ class BulkSalesforceStream(SalesforceStream):
             if job_status in ["JobComplete", "Aborted", "Failed"]:
                 self.delete_job(url=job_full_url)
                 if job_status in ["Aborted", "Failed"]:
-                    pagination_complete = True
+                    raise Exception(f"Job for {self.name} stream using BULK API was failed")
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
