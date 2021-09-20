@@ -17,6 +17,7 @@ public interface SecretsTestCase {
 
     Map<SecretCoordinate, String> getFirstSecretMap();
 
+    // todo: consider offering a default implementation of this too
     Map<SecretCoordinate, String> getSecondSecretMap();
 
     Consumer<SecretPersistence> getPersistenceUpdater();

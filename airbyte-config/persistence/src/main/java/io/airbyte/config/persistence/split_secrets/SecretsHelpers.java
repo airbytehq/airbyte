@@ -33,6 +33,8 @@ import com.google.api.client.util.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import org.apache.commons.lang3.NotImplementedException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -117,6 +119,8 @@ public class SecretsHelpers {
         final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema);
         ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
         secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
+      } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && copy.has(key)) {
+        final var arrayElements = MoreStreams.toStream(copy.get("key").fields()).collect(Collectors.toList()); // todo: replace one by one using a synthetic replacement (does it need primitives or what)
       }
       // todo: also support just arrays here
     }
@@ -147,9 +151,13 @@ public class SecretsHelpers {
   }
 
   private static JsonNode combine(boolean isFirst, JsonNode partialConfig, SecretPersistence secretPersistence) {
-    // todo: add wrapper that hides isFirst
     // todo: add test to make sure we aren't modifying input jsonnodes ever for any of the tests
     final var config = isFirst ? partialConfig.deepCopy() : partialConfig;
+
+    if(config.has("_secret")) {
+      final var coordinate = SecretCoordinate.fromFullCoordinate(config.get("_secret").asText());
+      return new TextNode(secretPersistence.read(coordinate).get());
+    }
 
     System.out.println("========");
 
@@ -176,7 +184,14 @@ public class SecretsHelpers {
         }
       }
 
-      if (!(node instanceof ValueNode)) {
+      if (node instanceof ArrayNode) {
+        System.out.println("array = " + node);
+        for (int i = 0; i < node.size(); i++) {
+          System.out.println("i = " + i);
+          System.out.println("node.get(i) = " + node.get(i));
+          ((ArrayNode) node).set(i, combine(false, node.get(i), secretPersistence));
+        }
+      } else if (node instanceof ObjectNode) {
         combine(false, node, secretPersistence);
       } else {
         System.out.println("in else: " + node);

@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
@@ -58,10 +59,11 @@ public class SecretsHelpersTest {
 
   private static Stream<Arguments> provideTestCases() {
     return Stream.of(
-            new OptionalPasswordTestCase(),
-            new SimpleTestCase(),
-            new NestedObjectTestCase(),
-            new OneOfTestCase()
+//            new OptionalPasswordTestCase(),
+//            new SimpleTestCase(),
+//            new NestedObjectTestCase(),
+//            new OneOfTestCase(),
+            new ArrayTestCase()
     ).map(Arguments::of);
   }
 
