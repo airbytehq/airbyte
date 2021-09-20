@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth;
+package io.airbyte.oauth.flows.google;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -37,8 +37,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.google.GoogleAnalyticsOauthFlow;
-import io.airbyte.oauth.google.GoogleOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,14 +53,14 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GoogleOAuthFlowIntegrationTest {
+public class GoogleAnalyticsOAuthFlowIntegrationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GoogleOAuthFlowIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GoogleAnalyticsOAuthFlowIntegrationTest.class);
   private static final String REDIRECT_URL = "http://localhost/code";
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/google_analytics.json");
 
   private ConfigRepository configRepository;
-  private GoogleOAuthFlow googleOAuthFlow;
+  private GoogleAnalyticsOAuthFlow googleAnalyticsOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
 
@@ -73,7 +71,7 @@ public class GoogleOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    googleOAuthFlow = new GoogleAnalyticsOauthFlow(configRepository);
+    googleAnalyticsOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository);
 
     server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor
@@ -102,7 +100,7 @@ public class GoogleOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = googleOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -111,11 +109,13 @@ public class GoogleOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = googleOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
+    final Map<String, Object> params = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("refresh_token"));
     assertTrue(params.get("refresh_token").toString().length() > 0);
+    assertTrue(params.containsKey("access_token"));
+    assertTrue(params.get("access_token").toString().length() > 0);
   }
 
   static class ServerHandler implements HttpHandler {

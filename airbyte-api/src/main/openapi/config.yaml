@@ -3096,7 +3096,7 @@ components:
     SetInstancewideSourceOauthParamsRequestBody:
       type: object
       required:
-        - sourceConnectorDefinitionId
+        - sourceDefinitionId
         - params
       properties:
         sourceDefinitionId:
