@@ -91,7 +91,7 @@ class Client(BaseClient):
             if not accessible_endpoints:
                 alive = False
                 error_msg = (
-                    "Your API Key does not have permission for any existing endpoints. Please grant read permissions for required endpoints"
+                    "Your API Key does not have permission for any existing endpoints. Please grant read permissions for required streams/endpoints"
                 )
 
         except HTTPError as error:
