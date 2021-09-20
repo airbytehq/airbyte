@@ -32,8 +32,6 @@ public class SecretCoordinate {
   private final String coordinateBase;
   private final long version;
 
-  // todo: Should the version be exposed here? WHat should this look like for OAuth secrets?
-  // todo: Should everything use the smae persistence interface with the config writing?
   public SecretCoordinate(final String coordinateBase, final long version) {
     this.coordinateBase = coordinateBase;
     this.version = version;

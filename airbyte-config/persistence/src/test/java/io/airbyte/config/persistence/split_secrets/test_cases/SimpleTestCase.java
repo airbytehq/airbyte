@@ -41,19 +41,19 @@ public class SimpleTestCase implements SecretsTestCase {
   @Override
   public Map<SecretCoordinate, String> getFirstSecretMap() {
     return Map.of(
-        new SecretCoordinate("workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1), "hunter1");
+        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1), "hunter1");
   }
 
   @Override
   public Map<SecretCoordinate, String> getSecondSecretMap() {
     return Map.of(
-        new SecretCoordinate("workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter1");
+        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter1");
   }
 
   @Override
   public Consumer<SecretPersistence> getPersistenceUpdater() {
     return secretPersistence -> {
-      secretPersistence.write(new SecretCoordinate("workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1),
+      secretPersistence.write(new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1),
           "hunter1");
     };
   }

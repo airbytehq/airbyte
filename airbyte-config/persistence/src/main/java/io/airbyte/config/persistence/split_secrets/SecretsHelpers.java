@@ -79,7 +79,7 @@ public class SecretsHelpers {
         }
 
         if (coordinateBase == null) {
-          coordinateBase = "workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+          coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
         }
 
         final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
@@ -124,7 +124,7 @@ public class SecretsHelpers {
             }
 
             if (coordinateBase == null) {
-              coordinateBase = "workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+              coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
             }
 
             final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
