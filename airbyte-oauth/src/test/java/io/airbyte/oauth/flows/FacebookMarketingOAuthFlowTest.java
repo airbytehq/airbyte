@@ -22,10 +22,9 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth.google;
+package io.airbyte.oauth.flows;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -46,14 +45,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GoogleAdsOauthFlowTest {
+public class FacebookMarketingOAuthFlowTest {
 
-  private static final String SCOPE = "https%3A//www.googleapis.com/auth/analytics.readonly";
   private static final String REDIRECT_URL = "https://airbyte.io";
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
-  private GoogleAdsOauthFlow googleAdsOauthFlow;
+  private FacebookMarketingOAuthFlow facebookMarketingOAuthFlow;
 
   private UUID workspaceId;
   private UUID definitionId;
@@ -62,31 +60,36 @@ public class GoogleAdsOauthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleAdsOauthFlow = new GoogleAdsOauthFlow(configRepository, httpClient);
+    facebookMarketingOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookMarketingOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
   }
 
+  private static String getConstantState() {
+    return "state";
+  }
+
   @Test
-  public void testCompleteSourceOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+  public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
-            .build())))));
+            .build()))));
 
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleAdsOauthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        facebookMarketingOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -95,39 +98,20 @@ public class GoogleAdsOauthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
-            .build())))));
+            .build()))));
 
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleAdsOauthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        facebookMarketingOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
-  }
-
-  @Test
-  public void testGetClientIdUnsafe() {
-    String clientId = "123";
-    Map<String, String> clientIdMap = Map.of("client_id", clientId);
-    Map<String, Map<String, String>> nestedConfig = Map.of("credentials", clientIdMap);
-
-    assertThrows(IllegalArgumentException.class, () -> googleAdsOauthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientId, googleAdsOauthFlow.getClientIdUnsafe(Jsons.jsonNode(nestedConfig)));
-  }
-
-  @Test
-  public void testGetClientSecretUnsafe() {
-    String clientSecret = "secret";
-    Map<String, String> clientIdMap = Map.of("client_secret", clientSecret);
-    Map<String, Map<String, String>> nestedConfig = Map.of("credentials", clientIdMap);
-
-    assertThrows(IllegalArgumentException.class, () -> googleAdsOauthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientSecret, googleAdsOauthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
 }
