@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRocket, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-regular-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -181,6 +182,15 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.update" />
             </Text>
           </MenuLinkItem>
+        </li>
+        <li>
+          <MenuItem to={Routes.Credits} activeClassName="active">
+            <SettingsIcon icon={faStar} />
+            {/* TODO: fix text */}
+            <Text>
+              <FormattedMessage id="credits.credits" />
+            </Text>
+          </MenuItem>
         </li>
         <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">

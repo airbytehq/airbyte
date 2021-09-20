@@ -27,12 +27,14 @@ const BarChart: React.FC<BarChartProps> = ({ data }) => {
           tickLine={false}
           stroke={chartTicksColor}
           tick={{ fontSize: "11px" }}
+          tickSize={10}
         />
         <YAxis
           axisLine={false}
           tickLine={false}
           stroke={chartTicksColor}
           tick={{ fontSize: "11px" }}
+          tickSize={10}
         />
         <Bar dataKey="uv" fill={barChartColors[0]} radius={[4, 4, 0, 0]} />
       </BasicBarChart>
