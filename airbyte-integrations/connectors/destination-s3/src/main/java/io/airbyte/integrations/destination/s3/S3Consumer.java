@@ -24,13 +24,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -71,31 +65,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() throws Exception {
-
-    var endpoint = s3DestinationConfig.getEndpoint();
-
-    AWSCredentials awsCreds = new BasicAWSCredentials(s3DestinationConfig.getAccessKeyId(), s3DestinationConfig.getSecretAccessKey());
-    AmazonS3 s3Client = null;
-
-    if (endpoint.isEmpty()) {
-      s3Client = AmazonS3ClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(s3DestinationConfig.getBucketRegion())
-          .build();
-
-    } else {
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-      s3Client = AmazonS3ClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, s3DestinationConfig.getBucketRegion()))
-          .withPathStyleAccessEnabled(true)
-          .withClientConfiguration(clientConfiguration)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
-    }
-
+    AmazonS3 s3Client = s3DestinationConfig.getS3Client();
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {

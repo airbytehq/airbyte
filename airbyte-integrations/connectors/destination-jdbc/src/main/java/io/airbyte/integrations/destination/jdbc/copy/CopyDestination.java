@@ -40,6 +40,18 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyDestination.class);
 
   /**
+   * The default database schema field in the destination config is "schema". To change it, pass the
+   * field name to the constructor.
+   */
+  private String schemaFieldName = "schema";
+
+  public CopyDestination() {}
+
+  public CopyDestination(String schemaFieldName) {
+    this.schemaFieldName = schemaFieldName;
+  }
+
+  /**
    * A self contained method for writing a file to the persistence for testing. This method should try
    * to clean up after itself by deleting the file it creates.
    */
@@ -64,7 +76,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
 
     try {
       var nameTransformer = getNameTransformer();
-      var outputSchema = nameTransformer.convertStreamName(config.get("schema").asText());
+      var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
       JdbcDatabase database = getDatabase(config);
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
 

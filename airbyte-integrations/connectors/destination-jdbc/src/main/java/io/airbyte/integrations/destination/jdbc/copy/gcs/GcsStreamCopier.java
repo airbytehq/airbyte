@@ -30,11 +30,13 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -45,6 +47,7 @@ import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -114,9 +117,11 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(UUID id, String jsonDataString, Timestamp emittedAt, String gcsFileName) throws Exception {
+  public void write(UUID id, AirbyteRecordMessage recordMessage, String gcsFileName) throws Exception {
     if (csvPrinters.containsKey(gcsFileName)) {
-      csvPrinters.get(gcsFileName).printRecord(id, jsonDataString, emittedAt);
+      csvPrinters.get(gcsFileName).printRecord(id,
+              Jsons.serialize(recordMessage.getData()),
+              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 

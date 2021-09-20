@@ -1184,6 +1184,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideSourceOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/source_oauths/get_consent_url:
     post:
       tags:
@@ -1211,7 +1234,7 @@ paths:
     post:
       tags:
         - oauth
-      summary: Given a source def ID and optional workspaceID generate an access/refresh token etc.
+      summary: Given a source def ID generate an access/refresh token etc.
       operationId: completeSourceOAuth
       requestBody:
         content:
@@ -1257,7 +1280,7 @@ paths:
     post:
       tags:
         - oauth
-      summary:
+      summary: Given a destination def ID generate an access/refresh token etc.
       operationId: completeDestinationOAuth
       requestBody:
         content:
@@ -1276,6 +1299,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/oauth_params/create:
+    post:
+      tags:
+        - oauth
+      summary: >
+        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
+        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
+        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
+        about these variables.
+      operationId: setInstancewideDestinationOauthParams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1620,52 +1666,6 @@ paths:
                 $ref: "#/components/schemas/ImportRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-  /v1/source_oauths/oauth_params/create:
-    post:
-      tags:
-        - oauth
-      summary: >
-        Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected
-        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
-        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
-        about these variables.
-      operationId: setInstancewideSourceOauthParams
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetInstancewideSourceOauthParamsRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-  /v1/destination_oauths/oauth_params/create:
-    post:
-      tags:
-        - oauth
-      summary: >
-        Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected
-        into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with
-        consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know
-        about these variables.
-      operationId: setInstancewideDestinationOauthParams
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetInstancewideDestinationOauthParamsRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -1906,6 +1906,34 @@ components:
       description: The specification for what values are required to configure the sourceDefinition.
       type: object
       example: { user: { type: string } }
+    SourceAuthSpecification:
+      $ref: "#/components/schemas/AuthSpecification"
+    AuthSpecification:
+      type: object
+      properties:
+        auth_type:
+          type: string
+          enum: ["oauth2.0"] # Future auth types should be added here
+        oauth2Specification:
+          "$ref": "#/components/schemas/OAuth2Specification"
+    OAuth2Specification:
+      description: An object containing any metadata needed to describe this connector's Oauth flow
+      type: object
+      properties:
+        oauthFlowInitParameters:
+          description:
+            "Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow.
+            Each inner array represents the path in the ConnectorSpecification of the referenced field.
+            For example.
+            Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
+            If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']]
+            If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]"
+          type: array
+          items:
+            description: A list of strings which describes each parameter's path inside the ConnectionSpecification
+            type: array
+            items:
+              type: string
     SourceDefinitionSpecificationRead:
       type: object
       required:
@@ -1918,6 +1946,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        authSpecification:
+          $ref: "#/components/schemas/SourceAuthSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
@@ -2018,6 +2048,8 @@ components:
     DestinationDefinitionId:
       type: string
       format: uuid
+    DestinationAuthSpecification:
+      $ref: "#/components/schemas/AuthSpecification"
     DestinationDefinitionIdRequestBody:
       type: object
       required:
@@ -2101,6 +2133,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        authSpecification:
+          $ref: "#/components/schemas/DestinationAuthSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
         supportedDestinationSyncModes:
@@ -2991,20 +3025,30 @@ components:
       type: object
       required:
         - sourceDefinitionId
+        - workspaceId
+        - redirectUrl
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the user consent
+          type: string
     DestinationOauthConsentRequest:
       type: object
       required:
         - destinationDefinitionId
+        - workspaceId
+        - redirectUrl
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the user consent
+          type: string
     OAuthConsentRead:
       type: object
       required:
@@ -3016,11 +3060,15 @@ components:
       type: object
       required:
         - sourceDefinitionId
+        - workspaceId
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given.
+          type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
@@ -3029,11 +3077,15 @@ components:
       type: object
       required:
         - destinationDefinitionId
+        - workspaceId
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given.
+          type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
@@ -3044,7 +3096,7 @@ components:
     SetInstancewideSourceOauthParamsRequestBody:
       type: object
       required:
-        - sourceConnectorDefinitionId
+        - sourceDefinitionId
         - params
       properties:
         sourceDefinitionId:

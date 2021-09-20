@@ -34,16 +34,19 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -58,7 +61,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopier.class);
 
-  private static final int DEFAULT_UPLOAD_THREADS = 1; // The S3 cli uses 10 threads by default.
+  private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
   // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
@@ -135,9 +138,11 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(UUID id, String jsonDataString, Timestamp emittedAt, String s3FileName) throws Exception {
+  public void write(UUID id, AirbyteRecordMessage recordMessage, String s3FileName) throws Exception {
     if (csvPrinters.containsKey(s3FileName)) {
-      csvPrinters.get(s3FileName).printRecord(id, jsonDataString, emittedAt);
+      csvPrinters.get(s3FileName).printRecord(id,
+              Jsons.serialize(recordMessage.getData()),
+              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 
@@ -183,7 +188,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
+  public String generateMergeStatement(String destTableName) {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {

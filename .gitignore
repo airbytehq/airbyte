@@ -10,6 +10,9 @@ data
 .project
 .settings
 
+# Logs
+acceptance_tests_logs/
+
 # Secrets
 secrets
 !airbyte-integrations/connector-templates/**/secrets
@@ -25,6 +28,21 @@ __pycache__
 .mypy_cache
 .ipynb_checkpoints
 .pytest_
+
+# Python unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
 
 # dbt
 profiles.yml
