@@ -144,7 +144,8 @@ class MigrationIntegrationTest {
 
   @Test
   void testInvalidInputRecord() throws IOException {
-    // attempt to input records that miss sourceDefinitionId in standard source definition, which is required
+    // attempt to input records that miss sourceDefinitionId in standard source definition, which is
+    // required
     final Map<ResourceId, List<JsonNode>> invalidInputRecords = removeSourceDefinitionId(V0_14_0_TEST_RECORDS);
     writeInputArchive(inputRoot, invalidInputRecords, TEST_MIGRATIONS.get(0).getVersion());
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
