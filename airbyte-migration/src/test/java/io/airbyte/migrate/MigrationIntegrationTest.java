@@ -144,8 +144,9 @@ class MigrationIntegrationTest {
 
   @Test
   void testInvalidInputRecord() throws IOException {
-    // attempt to input records that have foobar added. the input schema does NOT include foobar.
-    final Map<ResourceId, List<JsonNode>> invalidInputRecords = addFooBarToAllRecordsExceptMetadata(V0_14_0_TEST_RECORDS);
+    // attempt to input records that miss sourceDefinitionId in standard source definition, which is
+    // required
+    final Map<ResourceId, List<JsonNode>> invalidInputRecords = removeSourceDefinitionId(V0_14_0_TEST_RECORDS);
     writeInputArchive(inputRoot, invalidInputRecords, TEST_MIGRATIONS.get(0).getVersion());
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
 
@@ -315,6 +316,21 @@ class MigrationIntegrationTest {
               final JsonNode expectedRecord = Jsons.clone(r);
               if (!AIRBYTE_METADATA_RESOURCE_ID.equals(e.getKey())) {
                 ((ObjectNode) expectedRecord).put("foo", "bar");
+              }
+              return expectedRecord;
+            })
+            .collect(Collectors.toList())));
+  }
+
+  private static Map<ResourceId, List<JsonNode>> removeSourceDefinitionId(Map<ResourceId, List<JsonNode>> records) {
+    return records.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue()
+            .stream()
+            .map(r -> {
+              final JsonNode expectedRecord = Jsons.clone(r);
+              if (expectedRecord.has("sourceDefinitionId")) {
+                ((ObjectNode) expectedRecord).remove("sourceDefinitionId");
               }
               return expectedRecord;
             })

@@ -10,7 +10,7 @@ required:
   - dockerRepository
   - dockerImageTag
   - documentationUrl
-additionalProperties: false
+additionalProperties: true
 properties:
   sourceDefinitionId:
     type: string
@@ -25,3 +25,10 @@ properties:
     type: string
   icon:
     type: string
+  sourceType:
+    type: string
+    enum:
+      - api
+      - file
+      - database
+      - custom

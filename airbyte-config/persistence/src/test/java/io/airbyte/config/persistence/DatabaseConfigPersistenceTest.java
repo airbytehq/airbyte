@@ -39,8 +39,10 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -48,8 +50,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest} and
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest} for testing of those methods.
+ * See {@link DatabaseConfigPersistenceLoadDataTest},
+ * {@link DatabaseConfigPersistenceMigrateFileConfigsTest}, and
+ * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
@@ -224,6 +227,27 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   public void testHasNewVersion() {
     assertTrue(DatabaseConfigPersistence.hasNewVersion("0.1.99", "0.2.0"));
     assertFalse(DatabaseConfigPersistence.hasNewVersion("invalid_version", "0.2.0"));
+  }
+
+  @Test
+  public void testGetNewFields() {
+    JsonNode o1 = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2 }");
+    JsonNode o2 = Jsons.deserialize("{ \"field1\": 1, \"field3\": 3 }");
+    assertEquals(Collections.emptySet(), DatabaseConfigPersistence.getNewFields(o1, o1));
+    assertEquals(Collections.singleton("field3"), DatabaseConfigPersistence.getNewFields(o1, o2));
+    assertEquals(Collections.singleton("field2"), DatabaseConfigPersistence.getNewFields(o2, o1));
+  }
+
+  @Test
+  public void testGetDefinitionWithNewFields() {
+    JsonNode current = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2 }");
+    JsonNode latest = Jsons.deserialize("{ \"field1\": 1, \"field3\": 3, \"field4\": 4 }");
+    Set<String> newFields = Set.of("field3");
+
+    assertEquals(current, DatabaseConfigPersistence.getDefinitionWithNewFields(current, latest, Collections.emptySet()));
+
+    JsonNode currentWithNewFields = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2, \"field3\": 3 }");
+    assertEquals(currentWithNewFields, DatabaseConfigPersistence.getDefinitionWithNewFields(current, latest, newFields));
   }
 
 }

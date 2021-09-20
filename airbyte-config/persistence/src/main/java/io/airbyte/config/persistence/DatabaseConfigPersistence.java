@@ -30,8 +30,11 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -277,19 +280,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   static class ConnectorInfo {
 
+    final String definitionId;
+    final JsonNode definition;
     final String dockerRepository;
-    final String connectorDefinitionId;
     final String dockerImageTag;
 
-    private ConnectorInfo(String dockerRepository, String connectorDefinitionId, String dockerImageTag) {
-      this.dockerRepository = dockerRepository;
-      this.connectorDefinitionId = connectorDefinitionId;
-      this.dockerImageTag = dockerImageTag;
+    ConnectorInfo(String definitionId, JsonNode definition) {
+      this.definitionId = definitionId;
+      this.definition = definition;
+      this.dockerRepository = definition.get("dockerRepository").asText();
+      this.dockerImageTag = definition.get("dockerImageTag").asText();
     }
 
     @Override
     public String toString() {
-      return String.format("%s: %s (%s)", dockerRepository, dockerImageTag, connectorDefinitionId);
+      return String.format("%s: %s (%s)", dockerRepository, dockerImageTag, definitionId);
     }
 
   }
@@ -346,38 +351,61 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *        will not be updated. This is necessary because the new connector version may not be
    *        backward compatible.
    */
-  private <T> ConnectorCounter updateConnectorDefinitions(DSLContext ctx,
-                                                          OffsetDateTime timestamp,
-                                                          AirbyteConfig configType,
-                                                          List<T> latestDefinitions,
-                                                          Set<String> connectorRepositoriesInUse,
-                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
+  @VisibleForTesting
+  <T> ConnectorCounter updateConnectorDefinitions(DSLContext ctx,
+                                                  OffsetDateTime timestamp,
+                                                  AirbyteConfig configType,
+                                                  List<T> latestDefinitions,
+                                                  Set<String> connectorRepositoriesInUse,
+                                                  Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
       throws IOException {
     int newCount = 0;
     int updatedCount = 0;
-    for (T latestDefinition : latestDefinitions) {
-      JsonNode configJson = Jsons.jsonNode(latestDefinition);
-      String repository = configJson.get("dockerRepository").asText();
-      if (connectorRepositoriesInUse.contains(repository)) {
-        LOGGER.info("Connector {} is in use; skip updating", repository);
-        continue;
-      }
 
+    for (T definition : latestDefinitions) {
+      JsonNode latestDefinition = Jsons.jsonNode(definition);
+      String repository = latestDefinition.get("dockerRepository").asText();
+
+      // Add new connector
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
-        LOGGER.info("Adding new connector {}: {}", repository, configJson);
-        newCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
+        LOGGER.info("Adding new connector {}: {}", repository, latestDefinition);
+        newCount += insertConfigRecord(ctx, timestamp, configType.name(), latestDefinition, configType.getIdFieldName());
         continue;
       }
 
       ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
-      String latestImageTag = configJson.get("dockerImageTag").asText();
+      JsonNode currentDefinition = connectorInfo.definition;
+      Set<String> newFields = getNewFields(currentDefinition, latestDefinition);
+
+      // Process connector in use
+      if (connectorRepositoriesInUse.contains(repository)) {
+        if (newFields.size() == 0) {
+          LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
+        } else {
+          // Add new fields to the connector definition
+          JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
+          LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
+          updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), definitionToUpdate, connectorInfo.definitionId);
+        }
+        continue;
+      }
+
+      // Process unused connector
+      String latestImageTag = latestDefinition.get("dockerImageTag").asText();
       if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
+        // Update connector to the latest version
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
-        updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
+        updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), latestDefinition, connectorInfo.definitionId);
+      } else if (newFields.size() > 0) {
+        // Add new fields to the connector definition
+        JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
+        LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
+        updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), definitionToUpdate, connectorInfo.definitionId);
       } else {
         LOGGER.info("Connector {} does not need update: {}", repository, connectorInfo.dockerImageTag);
       }
     }
+
     return new ConnectorCounter(newCount, updatedCount);
   }
 
@@ -391,6 +419,24 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
+   * @return new fields from the latest definition
+   */
+  static Set<String> getNewFields(JsonNode currentDefinition, JsonNode latestDefinition) {
+    Set<String> currentFields = MoreIterators.toSet(currentDefinition.fieldNames());
+    Set<String> latestFields = MoreIterators.toSet(latestDefinition.fieldNames());
+    return Sets.difference(latestFields, currentFields);
+  }
+
+  /**
+   * @return a clone of the current definition with the new fields from the latest definition.
+   */
+  static JsonNode getDefinitionWithNewFields(JsonNode currentDefinition, JsonNode latestDefinition, Set<String> newFields) {
+    ObjectNode currentClone = (ObjectNode) Jsons.clone(currentDefinition);
+    newFields.forEach(field -> currentClone.set(field, latestDefinition.get(field)));
+    return currentClone;
+  }
+
+  /**
    * @return A map about current connectors (both source and destination). It maps from connector
    *         repository to its definition id and docker image tag. We identify a connector by its
    *         repository name instead of definition id because connectors can be added manually by
@@ -398,21 +444,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   @VisibleForTesting
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(DSLContext ctx) {
+    Field<JSONB> configField = field("config_blob", SQLDataType.JSONB).as("definition");
     Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
-    Field<String> versionField = field("config_blob ->> 'dockerImageTag'", SQLDataType.VARCHAR).as("version");
-    return ctx.select(AIRBYTE_CONFIGS.CONFIG_ID, repoField, versionField)
+    return ctx.select(AIRBYTE_CONFIGS.CONFIG_ID, repoField, configField)
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.in(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()))
         .fetch().stream()
         .collect(Collectors.toMap(
             row -> row.getValue(repoField),
-            row -> new ConnectorInfo(row.getValue(repoField), row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField)),
+            row -> new ConnectorInfo(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), Jsons.deserialize(row.getValue(configField).data())),
             // when there are duplicated connector definitions, return the latest one
             (c1, c2) -> {
               AirbyteVersion v1 = new AirbyteVersion(c1.dockerImageTag);
               AirbyteVersion v2 = new AirbyteVersion(c2.dockerImageTag);
               LOGGER.warn("Duplicated connector version found for {}: {} ({}) vs {} ({})",
-                  c1.dockerRepository, c1.dockerImageTag, c1.connectorDefinitionId, c2.dockerImageTag, c2.connectorDefinitionId);
+                  c1.dockerRepository, c1.dockerImageTag, c1.definitionId, c2.dockerImageTag, c2.definitionId);
               int comparison = v1.patchVersionCompareTo(v2);
               if (comparison >= 0) {
                 return c1;
