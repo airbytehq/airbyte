@@ -73,11 +73,6 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    # Fields in below variable will be used for data clearing. Put there keys which represent:
-    #   - objects `{}`, like `user`, `actor` etc.
-    #   - lists `[]`, like `labels`, `assignees` etc.
-    fields_to_minimize = ()
-
     def __init__(self, repositories: List[str], **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
@@ -185,34 +180,6 @@ class GithubStream(HttpStream, ABC):
             yield self.transform(record=record, repository=stream_slice["repository"])
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, organization: str = None) -> MutableMapping[str, Any]:
-        """
-        Use this method to:
-            - remove excessive fields from record;
-            - minify subelements in the record. For example, if you have `reviews` record which looks like this:
-            {
-              "id": 671782869,
-              "node_id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjcxNzgyODY5",
-              "user": {
-                "login": "keu",
-                "id": 1619536,
-                ... <other fields>
-              },
-              "body": "lgtm, just  small comment",
-              ... <other fields>
-            }
-
-            `user` subelement contains almost all possible fields fo user and it's not optimal to store such data in
-            `reviews` record. We may leave only `user.id` field and save in to `user_id` field in the record. So if you
-            need to do something similar with your record you may use this method.
-        """
-        for field in self.fields_to_minimize:
-            field_value = record.pop(field, None)
-            if field_value is None:
-                record[field] = field_value
-            elif isinstance(field_value, dict):
-                record[f"{field}_id"] = field_value.get("id") if field_value else None
-            elif isinstance(field_value, list):
-                record[field] = [value.get("id") for value in field_value]
         if repository:
             record["repository"] = repository
         if organization:
@@ -473,7 +440,6 @@ class Releases(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = ("author",)
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
@@ -492,11 +458,6 @@ class Events(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "actor",
-        "repo",
-        "org",
-    )
 
 
 class PullRequests(SemiIncrementalGithubStream):
@@ -505,14 +466,6 @@ class PullRequests(SemiIncrementalGithubStream):
     """
 
     page_size = 50
-    fields_to_minimize = (
-        "milestone",
-        "assignee",
-        "labels",
-        "assignees",
-        "requested_reviewers",
-        "requested_teams",
-    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -568,7 +521,6 @@ class IssueMilestones(SemiIncrementalGithubStream):
     """
 
     is_sorted_descending = True
-    fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -610,7 +562,6 @@ class Projects(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
 
-    fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
     }
@@ -630,10 +581,6 @@ class IssueEvents(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "actor",
-        "issue",
-    )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/events"
@@ -660,10 +607,6 @@ class Commits(IncrementalGithubStream):
 
     primary_key = "sha"
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "author",
-        "committer",
-    )
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
@@ -684,12 +627,6 @@ class Issues(IncrementalGithubStream):
 
     page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
 
-    fields_to_minimize = (
-        "assignee",
-        "milestone",
-        "labels",
-        "assignees",
-    )
     stream_base_params = {
         "state": "all",
         "sort": "updated",
