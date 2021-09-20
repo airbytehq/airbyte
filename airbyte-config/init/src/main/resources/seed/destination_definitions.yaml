@@ -32,7 +32,7 @@
 - destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   name: Google Cloud Storage (GCS)
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
 - destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   name: Google PubSub
@@ -47,7 +47,7 @@
 - destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   name: S3
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
 - destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   name: Redshift
@@ -58,7 +58,7 @@
 - destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   name: MeiliSearch
   dockerRepository: airbyte/destination-meilisearch
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch
 - destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   name: MySQL
@@ -78,7 +78,7 @@
 - destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   name: Kafka
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
 - destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   name: DynamoDB

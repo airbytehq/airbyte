@@ -36,3 +36,9 @@ CDK:
 normalization:
   - airbyte-integrations/bases/base-normalization/*
   - airbyte-integrations/bases/base-normalization/**/*
+
+kubernetes:
+  - kube/*
+  - kube/**/*
+  - charts/*
+  - charts/**/*

@@ -17,6 +17,6 @@ select
     _airbyte_dedup_cdc_excluded_hashid
 from `dataline-integration-testing`.test_normalization.`dedup_cdc_excluded_scd`
 -- dedup_cdc_excluded from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_cdc_excluded
-where _airbyte_active_row = True
+where _airbyte_active_row = 1
   );
     

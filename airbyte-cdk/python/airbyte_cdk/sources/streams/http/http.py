@@ -29,6 +29,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -46,9 +47,15 @@ class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size = None  # Use this variable to define page size for API http requests with pagination support
 
-    def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
-        self._authenticator = authenticator
+    # TODO: remove legacy HttpAuthenticator authenticator references
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
+
+        self._authenticator = NoAuth()
+        if isinstance(authenticator, AuthBase):
+            self._session.auth = authenticator
+        elif authenticator:
+            self._authenticator = authenticator
 
     @property
     @abstractmethod
