@@ -24,10 +24,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static java.util.stream.Collectors.toList;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -39,29 +35,25 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
+
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static java.util.stream.Collectors.toList;
 
 public class MssqlSource extends AbstractJdbcSource implements Source {
 
@@ -71,6 +63,8 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   private final JdbcSourceOperations sourceOperations;
 
@@ -326,7 +320,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new MssqlSource();
+    final Source source = new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);
