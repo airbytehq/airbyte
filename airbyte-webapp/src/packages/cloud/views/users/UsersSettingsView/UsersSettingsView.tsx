@@ -10,9 +10,9 @@ import Table from "components/Table";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
-import { User } from "../../../lib/domain/users";
-import { useAuthService } from "../../../services/auth/AuthService";
-import { useUserHook } from "../../../services/users/UseUserHook";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+import { User } from "packages/cloud/lib/domain/users";
 
 const Header = styled.div`
   display: flex;
