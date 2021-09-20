@@ -13,7 +13,7 @@ Several output streams are available from this source:
 * [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists)
 * [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts)
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
-* [Deals](https://developers.hubspot.com/docs/api/crm/deals)
+* [Deals](https://developers.hubspot.com/docs/api/crm/deals) (including Contact associations)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
@@ -73,6 +73,7 @@ This connector supports only authentication with API Key. To obtain API key for 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.14   | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693) | Include deal_to_contact association when pulling deal stream and include contact ID in contact stream |
 | 0.1.13   | 2021-09-08 | [5834](https://github.com/airbytehq/airbyte/pull/5834) | Fixed array fields without items property in schema |
 | 0.1.12   | 2021-09-02 | [5798](https://github.com/airbytehq/airbyte/pull/5798) | Treat empty string values as None for field with format to fix normalization errors |
 | 0.1.11   | 2021-08-26 | [5685](https://github.com/airbytehq/airbyte/pull/5685) | Remove all date-time format from schemas |
