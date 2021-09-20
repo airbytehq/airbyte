@@ -31,7 +31,8 @@ public class SecretsMigration {
   private static final Logger LOGGER = LoggerFactory.getLogger(SecretsMigration.class);
 
   public void run(String[] args) {
-    // TODO
+    LOGGER.info("Starting migration run.");
+    System.out.println("Hello world.");
   }
 
   public static void main(String[] args) throws Exception {

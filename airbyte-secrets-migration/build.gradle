@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.secretsmigration.MigrationsSource'
+    mainClass = 'io.airbyte.secretsmigration.SecretsMigration'
 }
 
 dependencies {
