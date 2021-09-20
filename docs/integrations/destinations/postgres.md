@@ -75,8 +75,14 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 
 Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
+## Integration tests to Postgres via an SSH Tunnel with bastion in docker container
+
+The test database and bastion run in containers on the same network. Connection configuration for integration tests is now taken directly from container settings and does not require a real database connection.
+Establishing an `SSH Tunnel` implies 2 authentication options - using a `Password Authentication` or using a `SSH Key Authentication`
+
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
 | 0.3.10 | 2021-08-11 | [#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000(NULL) value processing |
 | 0.3.11 | 2021-09-07 | [#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
+| 0.3.12 | 2021-09-20 | [6312](https://github.com/airbytehq/airbyte/pull/6312) | Add SSH Tunnel support using docker test containers|

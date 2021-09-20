@@ -263,6 +263,12 @@ Using this feature requires additional configuration, when creating the source. 
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Postgres password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
+
+## Integration tests to Postgres via an SSH Tunnel with bastion in docker container
+
+The test database and bastion run in containers on the same network. Connection configuration for integration tests is now taken directly from container settings and does not require a real database connection.
+Establishing an `SSH Tunnel` implies 2 authentication options - using a `Password Authentication` or using a `SSH Key Authentication`
+
 ### Generating an RSA Private Key
 _Coming soon_
 
@@ -270,7 +276,8 @@ _Coming soon_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.3.11   | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
+| 0.3.12  | 2021-09-20 | [6312](https://github.com/airbytehq/airbyte/pull/6312) | Add SSH Tunnel support using docker test containers|
+| 0.3.11  | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
 | 0.3.9   | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |
 | 0.3.8   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.3.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
