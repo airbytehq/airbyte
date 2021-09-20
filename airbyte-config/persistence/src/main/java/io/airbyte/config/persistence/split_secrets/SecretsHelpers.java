@@ -42,10 +42,10 @@ import org.apache.commons.lang3.NotImplementedException;
 public class SecretsHelpers {
 
   public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
-    return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification());
+    return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification(), new NoOpSecretPersistence()::read);
   }
 
-  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldConfig, JsonNode fullConfig, JsonNode spec) {
+  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldConfig, JsonNode fullConfig, JsonNode spec, ReadOnlySecretPersistence roPersistence) {
 
     final var old = oldConfig.deepCopy();
     final var obj = fullConfig.deepCopy();
@@ -94,14 +94,14 @@ public class SecretsHelpers {
         var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
         for (int i = 0; i < arrayNode.size(); i++) {
           final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
-          final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i));
+          final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i), roPersistence);
           combinationCopy = combinationSplitConfig.getPartialConfig();
           secretMap.putAll(combinationSplitConfig.getCoordinateToPayload());
         }
         ((ObjectNode) copy).set(key, combinationCopy);
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && copy.has(key)) {
         final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
-        final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema);
+        final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema, roPersistence);
         ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
         secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && copy.has(key)) {
@@ -136,7 +136,7 @@ public class SecretsHelpers {
           final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
             final var newOldElement = newOld.has(i) ? newOld.get(i) : Jsons.emptyObject();
-            final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, copy.get(key).get(i), fieldSchema.get("items"));
+            final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, copy.get(key).get(i), fieldSchema.get("items"), roPersistence);
             secretMap.putAll(splitSecret.getCoordinateToPayload());
             ((ArrayNode) copy.get(key)).set(i, splitSecret.getPartialConfig());
           }
@@ -151,8 +151,9 @@ public class SecretsHelpers {
                                               UUID workspaceId,
                                               JsonNode oldPartialConfig,
                                               JsonNode newFullConfig,
-                                              ConnectorSpecification spec) {
-    return split(uuidSupplier, workspaceId, oldPartialConfig, newFullConfig, spec.getConnectionSpecification());
+                                              ConnectorSpecification spec,
+                                              ReadOnlySecretPersistence roPersistence) {
+    return split(uuidSupplier, workspaceId, oldPartialConfig, newFullConfig, spec.getConnectionSpecification(), roPersistence);
   }
 
   public static JsonNode combine(JsonNode partialConfig, SecretPersistence secretPersistence) {

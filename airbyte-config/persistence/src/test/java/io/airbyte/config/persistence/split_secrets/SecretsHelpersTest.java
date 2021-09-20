@@ -101,12 +101,14 @@ public class SecretsHelpersTest {
   @MethodSource("provideTestCases")
   void testSplitUpdate(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
+    final var secretPersistence = new MemorySecretPersistence();
     final var updatedSplit = SecretsHelpers.splitUpdate(
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getPartialConfig(),
         testCase.getFullConfig(),
-        testCase.getSpec());
+        testCase.getSpec(),
+        secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
     assertEquals(testCase.getSecondSecretMap(), updatedSplit.getCoordinateToPayload());
@@ -131,6 +133,7 @@ public class SecretsHelpersTest {
   @Test
   void testUpdatingSecretsOneAtATime() {
     final var uuidIterator = UUIDS.iterator();
+    final var secretPersistence = new MemorySecretPersistence();
     final var testCase = new NestedObjectTestCase();
 
     final var splitConfig = SecretsHelpers.split(
@@ -147,7 +150,8 @@ public class SecretsHelpersTest {
             WORKSPACE_ID,
             testCase.getPartialConfig(),
             testCase.getFullConfigUpdate1(),
-            testCase.getSpec());
+            testCase.getSpec(),
+            secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
@@ -157,7 +161,8 @@ public class SecretsHelpersTest {
             WORKSPACE_ID,
             updatedSplit1.getPartialConfig(),
             testCase.getFullConfigUpdate2(),
-            testCase.getSpec());
+            testCase.getSpec(),
+            secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
