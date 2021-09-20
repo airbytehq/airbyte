@@ -142,11 +142,11 @@ class GithubStream(HttpStream, ABC):
                 )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
-                # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
+                # url: https://api.github.com/orgs/<org_name>/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
             elif e.response.status_code == requests.codes.NOT_FOUND and "/repos?" in error_msg:
                 # `Repositories` stream is not available for repositories not in an organization.
-                # Handle "404 Client Error: Not Found for url: https://api.github.com/orgs/cjwooo/repos?per_page=100" error.
+                # Handle "404 Client Error: Not Found for url: https://api.github.com/orgs/<org_name>/repos?per_page=100" error.
                 error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
@@ -659,7 +659,9 @@ class Comments(IncrementalGithubStream):
 
 class Commits(IncrementalGithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+    API docs: https://docs.github.com/en/rest/reference/repos#list-commits
+
+    Pull commits from each branch of each repository, tracking state for each branch
     """
 
     primary_key = "sha"
@@ -673,10 +675,6 @@ class Commits(IncrementalGithubStream):
         super().__init__(**kwargs)
         self.branches_to_pull = branches_to_pull
         self.default_branches = default_branches
-
-    """
-    Pull commits from each branch of each repository, tracking state for each branch
-    """
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)

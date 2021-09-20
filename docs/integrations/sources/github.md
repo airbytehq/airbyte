@@ -23,7 +23,7 @@ This connector outputs the following full refresh streams:
 This connector outputs the following incremental streams:
 
 * [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
-* [Commits](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
+* [Commits](https://docs.github.com/en/rest/reference/repos#list-commits)
 * [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment)
 * [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
 * [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)

@@ -89,7 +89,7 @@ class SourceGithub(AbstractSource):
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
-    def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[dict, Dict[str, List[str]]]:
+    def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
         selected_branches = set(filter(None, selected_branches.split(" ")))
 
         # Get the default branch for each repository
@@ -156,7 +156,7 @@ class SourceGithub(AbstractSource):
             Comments(**incremental_args),
             CommitCommentReactions(**incremental_args),
             CommitComments(**incremental_args),
-            Commits(**{**incremental_args, "branches_to_pull": branches_to_pull, "default_branches": default_branches}),
+            Commits(**incremental_args, branches_to_pull=branches_to_pull, default_branches=default_branches),
             Events(**incremental_args),
             IssueCommentReactions(**incremental_args),
             IssueEvents(**incremental_args),
