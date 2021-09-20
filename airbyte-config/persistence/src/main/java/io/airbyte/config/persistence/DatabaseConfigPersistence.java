@@ -96,7 +96,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
-
   @Override
   public void loadData(ConfigPersistence seedConfigPersistence, Set<String> connectorRepositoriesInUse) throws IOException {
     database.transaction(ctx -> {
@@ -111,12 +110,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /*
-  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
-    database.transaction(ctx -> {
-      updateConfigsFromSeed(ctx, seedConfigPersistence);
-      return null;
-    });
-  }
+   * public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
+   * database.transaction(ctx -> { updateConfigsFromSeed(ctx, seedConfigPersistence); return null; });
+   * }
    */
 
   public ValidatingConfigPersistence withValidation() {

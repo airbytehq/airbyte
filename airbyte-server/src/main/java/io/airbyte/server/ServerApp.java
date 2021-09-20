@@ -187,9 +187,7 @@ public class ServerApp implements ServerRunnable {
             new GoogleSecretsManagerConfigPersistence())
         : new ConfigRepository(new DatabaseConfigPersistence(configDatabase).withValidation());
 
-    // TODO: These no longer appear in master; not yet sure if they're still used.
-    //configRepository.loadData(ConfigSeedProvider.get(configs), configRepository.listDefinitionsInUseByConnectors());
-    //configPersistence.migrateFileConfigs(configs);
+    configPersistence.migrateFileConfigs(configs);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(

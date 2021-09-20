@@ -49,9 +49,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The {@link ConfigPersistence#loadData} method is tested in
- * {@link DatabaseConfigPersistenceLoadDataTest}.
- * See {@link DatabaseConfigPersistenceLoadDataTest} and
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest} for testing of those methods.
+ * {@link DatabaseConfigPersistenceLoadDataTest}. See {@link DatabaseConfigPersistenceLoadDataTest}
+ * and {@link DatabaseConfigPersistenceMigrateFileConfigsTest} for testing of those methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
