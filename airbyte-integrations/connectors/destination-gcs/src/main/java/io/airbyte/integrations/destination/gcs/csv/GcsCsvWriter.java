@@ -55,6 +55,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
+  private final String gcsCsvFileLocation; // this used in destination-bigquery (GCS upload type)
 
   public GcsCsvWriter(GcsDestinationConfig config,
                       AmazonS3 s3Client,
@@ -68,11 +69,13 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
 
     String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
     String objectKey = String.join("/", outputPrefix, outputFilename);
+    gcsCsvFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
+        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
@@ -97,6 +100,10 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
     csvPrinter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  public String getGcsCsvFileLocation() {
+    return gcsCsvFileLocation;
   }
 
 }

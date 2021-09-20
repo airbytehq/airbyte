@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.amazonaws.services.s3.AmazonS3;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -32,8 +33,12 @@ import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnowflakeS3StreamCopier extends S3StreamCopier {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StreamCopier.class);
 
   public SnowflakeS3StreamCopier(String stagingFolder,
                                  DestinationSyncMode destSyncMode,
@@ -44,7 +49,8 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
                                  S3Config s3Config,
                                  ExtendedNameTransformer nameTransformer,
                                  SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations);
+    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", 3) + "_" + streamName, client, db, s3Config,
+        nameTransformer, sqlOperations);
   }
 
   @Override

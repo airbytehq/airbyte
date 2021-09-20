@@ -26,6 +26,7 @@ package io.airbyte.config;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface Configs {
@@ -58,6 +59,12 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  String getSecretStoreGcpProjectId();
+
+  String getSecretStoreGcpCredentials();
+
+  String getSecretStoreForConfigs();
+
   boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
@@ -78,9 +85,15 @@ public interface Configs {
 
   WorkerEnvironment getWorkerEnvironment();
 
+  String getSpecCacheBucket();
+
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
+
+  Map<String, String> getWorkerNodeSelectors();
+
+  MaxWorkersConfig getMaxWorkers();
 
   String getTemporalHost();
 

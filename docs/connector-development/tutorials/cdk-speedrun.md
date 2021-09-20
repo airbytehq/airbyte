@@ -34,65 +34,69 @@ pip install -r requirements.txt
 cd source_python_http_example
 ```
 
-We're working with the Exchange Rates API, so we need to define our input schema to reflect that. Open the `spec.json` file here and replace it with:
+We're working with the PokeAPI, so we need to define our input schema to reflect that. Open the `spec.json` file here and replace it with:
 
-```javascript
+```json
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pokeapi",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Python Http Example Spec",
+    "title": "Pokeapi Spec",
     "type": "object",
-    "required": ["start_date", "currency_base"],
+    "required": ["pokemon_name"],
     "additionalProperties": false,
     "properties": {
-      "start_date": {
+      "pokemon_name": {
         "type": "string",
-        "description": "Start getting data from that date.",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["%Y-%m-%d"]
-      },
-      "base": {
-        "type": "string",
-        "examples": ["USD", "EUR"],
-        "description": "ISO reference currency. See <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>."
+        "description": "Pokemon requested from the API.",
+        "pattern": "^[a-z0-9_\\-]+$",
+        "examples": ["ditto, luxray, snorlax"]
       }
     }
   }
 }
 ```
+As you can see, we have one input to our input schema, which is `pokemon_name`, which is required. Normally, input schemas will contain information such as API keys and client secrets that need to get passed down to all endpoints or streams.
 
-Ok, let's write a function that checks the inputs we just defined. Nuke the `source.py` file. Now add this code to it. For a crucial time skip, we're going to define all the imports we need in the future here.
+Ok, let's write a function that checks the inputs we just defined. Nuke the `source.py` file. Now add this code to it. For a crucial time skip, we're going to define all the imports we need in the future here. Also note
+that your `AbstractSource` class name must be a camel-cased version of the name you gave in the generation phase. In our case, this is `SourcePythonHttpExample`.
 
 ```python
-from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
+
+from . import pokemon_list
 
 class SourcePythonHttpExample(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        accepted_currencies = {
-            "USD",
-            "JPY",
-            "BGN",
-            "CZK",
-            "DKK",
-        }  # there are more currencies but let's assume these are the only allowed ones
-        input_currency = config["base"]
-        if input_currency not in accepted_currencies:
-            return False, f"Input currency {input_currency} is invalid. Please input one of the following currencies: {accepted_currencies}"
+        input_pokemon = config["pokemon_name"]
+        if input_pokemon not in pokemon_list.POKEMON_LIST:
+            return False, f"Input Pokemon {input_pokemon} is invalid. Please check your spelling and input a valid Pokemon."
         else:
             return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # Parse the date from a string into a datetime object
-        start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
-        return [ExchangeRates(authenticator=auth, base=config["base"], start_date=start_date)]
+        return [Pokemon(pokemon_name=config["pokemon_name"])]
+```
+
+Create a new file called `pokemon_list.py` at the same level. This will handle input validation for us so that we don't input invalid Pokemon. Let's start with a very limited list - any Pokemon not included in this list will get rejected.
+
+```python
+"""
+pokemon_list.py includes a list of all known pokemon for config validation in source.py.
+"""
+
+POKEMON_LIST = [
+    "bulbasaur",
+    "charizard",
+    "wartortle",
+    "pikachu",
+    "crobat",
+]
 ```
 
 Test it.
@@ -100,8 +104,8 @@ Test it.
 ```bash
 cd ..
 mkdir sample_files
-echo '{"start_date": "2021-04-01", "base": "USD"}'  > sample_files/config.json
-echo '{"start_date": "2021-04-01", "base": "BTC"}'  > sample_files/invalid_config.json
+echo '{"pokemon_name": "pikachu"}'  > sample_files/config.json
+echo '{"pokemon_name": "chikapu"}'  > sample_files/invalid_config.json
 python main.py check --config sample_files/config.json
 python main.py check --config sample_files/invalid_config.json
 ```
@@ -113,21 +117,23 @@ Expected output:
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
 > python main.py check --config sample_files/invalid_config.json
-{"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "Input currency BTC is invalid. Please input one of the following currencies: {'DKK', 'USD', 'CZK', 'BGN', 'JPY'}"}}
+{"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "'Input Pokemon chikapu is invalid. Please check your spelling our input a valid Pokemon.'"}}
 ```
 
 ### Define your Stream
 
-In your `source.py` file, add this `ExchangeRates` class. This stream represents an endpoint you want to hit.
+In your `source.py` file, add this `Pokemon` class. This stream represents an endpoint you want to hit, which in our case, is the single [Pokemon endpoint](https://pokeapi.co/docs/v2#pokemon).
 
 ```python
-from airbyte_cdk.sources.streams.http import HttpStream
-
-class ExchangeRates(HttpStream):
+class Pokemon(HttpStream):
     url_base = "https://api.ratesapi.io/"
 
     # Set this as a noop.
     primary_key = None
+
+    def __init__(self, pokemon_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.pokemon_name = pokemon_name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
@@ -144,7 +150,11 @@ class ExchangeRates(HttpStream):
         return None  # TODO
 ```
 
-Now download [this file](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json). Name it `exchange_rates.json` and place it in `/source_python_http_example/schemas`. It defines your output schema.
+Now download [this file](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/pokemon.json). Name it `pokemon.json` and place it in `/source_python_http_example/schemas`. 
+
+This file defines your output schema for every endpoint that you want to implement. Normally, this will likely be the most time-consuming section of the connector development process, as it requires defining the output of the endpoint
+exactly. This is really important, as Airbyte needs to have clear expectations for what the stream will output. Note that the name of this stream will be consistent in the naming of the JSON schema and the `HttpStream` class, as
+`pokemon.json` and `Pokemon` respectively in this case. Learn more about schema creation [here](https://docs.airbyte.io/connector-development/cdk-python/full-refresh-stream#defining-the-streams-schema).
 
 Test your discover function. You should receive a fairly large JSON object in return.
 
@@ -152,29 +162,28 @@ Test your discover function. You should receive a fairly large JSON object in re
 python main.py discover --config sample_files/config.json
 ```
 
+Note that our discover function is using the `pokemon_name` config variable passed in from the `Pokemon` stream when we set it in the `__init__` function.
+
 ### Reading Data from the Source
 
-Update your `ExchangeRates` class to implement the required functions as follows:
+Update your `Pokemon` class to implement the required functions as follows:
 
 ```python
-class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+class Pokemon(HttpStream):
+    url_base = "https://pokeapi.co/api/v2/"
 
+    # Set this as a noop.
     primary_key = None
 
-    def __init__(self, base: str, **kwargs):
-        super().__init__()
-        self.base = base
+    def __init__(self, pokemon_name: str, **kwargs):
+        super().__init__(**kwargs)
+        # Here's where we set the variable from our input to pass it down to the source.
+        self.pokemon_name = pokemon_name
 
-
-    def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        # The "/latest" path gives us the latest currency exchange rates
-        return "latest"
+    def path(self, **kwargs) -> str:
+        pokemon_name = self.pokemon_name
+        # This defines the path to the endpoint that we want to hit.
+        return f"pokemon/{pokemon_name}"
 
     def request_params(
             self,
@@ -182,8 +191,8 @@ class ExchangeRates(HttpStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The api requires that we include the base currency as a query param so we do that in this method
-        return {'base': self.base}
+        # The api requires that we include the Pokemon name as a query param so we do that in this method.
+        return {"pokemon_name": self.pokemon_name}
 
     def parse_response(
             self,
@@ -192,25 +201,18 @@ class ExchangeRates(HttpStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # The response is a simple JSON whose schema matches our stream's schema exactly, 
-        # so we just return a list containing the response
+        # The response is a simple JSON whose schema matches our stream's schema exactly,
+        # so we just return a list containing the response.
         return [response.json()]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # The API does not offer pagination, 
-        # so we return None to indicate there are no more pages in the response
+        # While the PokeAPI does offer pagination, we will only ever retrieve one Pokemon with this implementation,
+        # so we just return None to indicate that there will never be any more pages in the response.
         return None
 ```
 
-Update your `streams` method in your `SourcePythonHttpExample` class to use the currency base passed in from the stream above.
-
-```python
-def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = NoAuth()
-        return [ExchangeRates(authenticator=auth, base=config['base'])]
-```
-
-We now need a catalog that defines all of our streams. We only have one, `ExchangeRates`. Download that file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json). Place it in `/sample_files` named as `configured_catalog.json`.
+We now need a catalog that defines all of our streams. We only have one stream: `Pokemon`. Download that file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog_pokeapi.json). Place it in `/sample_files` named as `configured_catalog.json`. More clearly,
+this is where we tell Airbyte all the streams/endpoints we support for the connector and in which sync modes Airbyte can run the connector on. Learn more about the AirbyteCatalog [here](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) and learn more about sync modes [here](https://docs.airbyte.io/understanding-airbyte/connections#sync-modes).
 
 Let's read some data.
 

@@ -41,6 +41,12 @@ import java.util.stream.Stream;
  */
 public abstract class JdbcDatabase extends SqlDatabase {
 
+  protected final JdbcSourceOperations sourceOperations;
+
+  public JdbcDatabase(JdbcSourceOperations sourceOperations) {
+    this.sourceOperations = sourceOperations;
+  }
+
   /**
    * Execute a database query.
    *
@@ -145,7 +151,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
         ++i;
       }
       return statement;
-    }, JdbcUtils::rowToJson);
+    }, sourceOperations::rowToJson);
   }
 
   public abstract DatabaseMetaData getMetaData() throws SQLException;

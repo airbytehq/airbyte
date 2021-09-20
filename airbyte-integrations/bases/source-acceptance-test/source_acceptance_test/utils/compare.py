@@ -23,6 +23,7 @@
 #
 
 
+import functools
 import json
 from typing import List, Mapping, Optional
 
@@ -70,6 +71,7 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
     return ["equals failed"] + [color_off + line for line in icdiff_lines]
 
 
+@functools.total_ordering
 class DictWithHash(dict):
 
     _hash: str = None
@@ -81,6 +83,9 @@ class DictWithHash(dict):
 
     def __lt__(self, other):
         return hash(self) < hash(other)
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
 
 def serialize(value) -> str:

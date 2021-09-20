@@ -15,6 +15,8 @@ images:
     newTag: dev
   - name: airbyte/webapp
     newTag: dev
+  - name: airbyte/worker
+    newTag: dev
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
@@ -22,5 +24,10 @@ configMapGenerator:
   - name: airbyte-env
     env: .env
 
+secretGenerator:
+  - name: airbyte-secrets
+    env: .secrets
+
 patchesStrategicMerge:
   - pod-antiaffinity.yaml
+  - parallelize-worker.yaml
