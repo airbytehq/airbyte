@@ -29,12 +29,12 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const FetchingSourceConnectorError: React.FC = () => {
+const FetchingConnectorError: React.FC = () => {
   return (
     <ErrorBlock>
       <Error />
       <div>
-        <FormattedMessage id="form.failedFetchingSource" />
+        <FormattedMessage id="form.failedFetchingConnector" />
         <ErrorText>
           <FormattedMessage id="form.tryAgain" />
         </ErrorText>
@@ -43,4 +43,4 @@ const FetchingSourceConnectorError: React.FC = () => {
   );
 };
 
-export default FetchingSourceConnectorError;
+export default FetchingConnectorError;

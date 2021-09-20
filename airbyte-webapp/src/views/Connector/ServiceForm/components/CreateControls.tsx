@@ -6,7 +6,7 @@ import { Button } from "components";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 import TestingConnectionError from "./TestingConnectionError";
-import FetchingSourceConnectorError from "./FetchingSourceConnectorError";
+import FetchingConnectorError from "./FetchingConnectorError";
 
 type IProps = {
   formType: "source" | "destination" | "connection";
@@ -47,7 +47,7 @@ const CreateControls: React.FC<IProps> = ({
       {errorMessage && !fetchingConnectorError && (
         <TestingConnectionError errorMessage={errorMessage} />
       )}
-      {fetchingConnectorError && <FetchingSourceConnectorError />}
+      {fetchingConnectorError && <FetchingConnectorError />}
       {!errorMessage && !fetchingConnectorError && <div />}
       <div>
         {additionBottomControls || null}
