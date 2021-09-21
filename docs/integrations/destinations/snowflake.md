@@ -20,6 +20,7 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
 
 ## Getting started
@@ -186,10 +187,43 @@ The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an ema
 
 Finally, you need to add read/write permissions to your bucket with that email.
 
+### Azure Blob Storage
+
+First you will need to create an Azure Store Account and create a Container.
+
+Then you will need to run the script below in your Snowflake account:
+
+* You must run the script as the account admin for Snowflake. 
+* You should replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration.
+* Replace `YOURACCOUNTNAME` with your storage account name.
+* Replace `YOURCONTAINERNAME` with the container created for this destination's staging blob inside the storage account.
+* `azure_airbyte_integration` is just an example, any name can be used.
+* `azure_airbyte_stage` is just an example, any name can be used and then referenced in the Destination config.
+
+The script:
+
+```text
+create storage INTEGRATION azure_airbyte_integration
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = AZURE
+  ENABLED = TRUE
+  STORAGE_ALLOWED_LOCATIONS = ('azure://YOURACCOUNTNAME/YOURCONTAINERNAME');
+
+create stage azure_airbyte_stage
+  url = 'azure://youraccountname/yourcontainername/'
+  storage_integration = azure_airbyte_integration;
+
+GRANT USAGE ON integration azure_airbyte_integration TO ROLE AIRBYTE_ROLE;
+GRANT USAGE ON stage azure_airbyte_stage TO ROLE AIRBYTE_ROLE;
+
+DESC STORAGE INTEGRATION azure_airbyte_integration;
+```
+
+The guide to complete the setup / linkage between your Snowflake account and your Azure account can be found [here (Option 1)](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html) 
+
 
 | Version | Date      | Pull Request | Subject |
 | :------ | :-------- | :-----       | :------ |
-| 0.3.15  | 2021-09-17 | [#6231](https://github.com/airbytehq/airbyte/pull/6231) | Add Azure Blog option for source stream stage / copy 
 | 0.3.14  | 2021-09-08 | [#5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table  |
 | 0.3.13  | 2021-09-01 | [#5784](https://github.com/airbytehq/airbyte/pull/5784) | Updated query timeout from 30 minutes to 3 hours |
 | 0.3.12  | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
