@@ -109,7 +109,7 @@
                 "type": ["null", "string"]
               },
               "prospect_owner": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
                   "name": {
                     "type": "string"
@@ -137,7 +137,15 @@
             "type": "integer"
           },
           "current_stage": {
-            "type": ["null", "string"]
+            "type": ["null", "object"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              }
+            }
           },
           "credited_to": {
             "type": "object",
