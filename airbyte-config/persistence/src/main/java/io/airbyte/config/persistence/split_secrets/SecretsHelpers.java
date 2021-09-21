@@ -46,9 +46,7 @@ public class SecretsHelpers {
     return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification(), new NoOpSecretPersistence()::read);
   }
 
-  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldConfig, JsonNode fullConfig, JsonNode spec, ReadOnlySecretPersistence roPersistence) {
-
-    final var old = oldConfig.deepCopy();
+  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode old, JsonNode fullConfig, JsonNode spec, ReadOnlySecretPersistence roPersistence) {
     final var obj = fullConfig.deepCopy();
     final var schema = spec.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();

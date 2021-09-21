@@ -73,14 +73,19 @@ public class SecretsHelpersTest {
   @MethodSource("provideTestCases")
   void testSplit(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
+    final var inputConfig = testCase.getFullConfig();
+    final var inputConfigCopy = inputConfig.deepCopy();
     final var splitConfig = SecretsHelpers.split(
         uuidIterator::next,
         WORKSPACE_ID,
-        testCase.getFullConfig(),
+        inputConfig,
         testCase.getSpec());
 
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
+
+    // check that we didn't mutate the input configs
+    assertEquals(inputConfigCopy, inputConfig);
 
     // check that keys for Google Secrets Manger fit the requirements:
     // A secret ID is a string with a maximum length of 255 characters and can contain
@@ -102,6 +107,10 @@ public class SecretsHelpersTest {
   @MethodSource("provideTestCases")
   void testSplitUpdate(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
+    final var inputPartialConfig = testCase.getPartialConfig();
+    final var inputUpdateConfig = testCase.getUpdateConfig();
+    final var inputPartialConfigCopy = inputPartialConfig.deepCopy();
+    final var inputUpdateConfigCopy = inputUpdateConfig.deepCopy();
     final var secretPersistence = new MemorySecretPersistence();
 
     for (Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
@@ -111,13 +120,17 @@ public class SecretsHelpersTest {
     final var updatedSplit = SecretsHelpers.splitUpdate(
         uuidIterator::next,
         WORKSPACE_ID,
-        testCase.getPartialConfig(),
-        testCase.getUpdateConfig(),
+        inputPartialConfig,
+        inputUpdateConfig,
         testCase.getSpec(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
     assertEquals(testCase.getSecondSecretMap(), updatedSplit.getCoordinateToPayload());
+
+    // check that we didn't mutate the input configs
+    assertEquals(inputPartialConfigCopy, inputPartialConfig);
+    assertEquals(inputUpdateConfigCopy, inputUpdateConfig);
   }
 
   @ParameterizedTest
@@ -126,9 +139,14 @@ public class SecretsHelpersTest {
     final var secretPersistence = new MemorySecretPersistence();
     testCase.getPersistenceUpdater().accept(secretPersistence);
 
+    final var inputPartialConfig = testCase.getPartialConfig();
+    final var inputPartialConfigCopy = inputPartialConfig.deepCopy();
     final var actualCombinedConfig = SecretsHelpers.combine(testCase.getPartialConfig(), secretPersistence);
 
     assertEquals(testCase.getFullConfig(), actualCombinedConfig);
+
+    // check that we didn't mutate the input configs
+    assertEquals(inputPartialConfigCopy, inputPartialConfig);
   }
 
   @Test
