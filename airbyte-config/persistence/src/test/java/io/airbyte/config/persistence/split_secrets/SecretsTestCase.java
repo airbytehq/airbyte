@@ -56,6 +56,10 @@ public interface SecretsTestCase {
     return Exceptions.toRuntime(() -> getNodeResource(getName(), "partial_config.json"));
   }
 
+  default JsonNode getUpdateConfig() {
+    return Exceptions.toRuntime(() -> getNodeResource(getName(), "update_config.json"));
+  }
+
   default JsonNode getUpdatedPartialConfig() {
     return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config.json"));
   }

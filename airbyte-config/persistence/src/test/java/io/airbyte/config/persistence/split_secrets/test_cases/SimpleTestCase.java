@@ -47,7 +47,7 @@ public class SimpleTestCase implements SecretsTestCase {
   @Override
   public Map<SecretCoordinate, String> getSecondSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter1");
+        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter2");
   }
 
   @Override

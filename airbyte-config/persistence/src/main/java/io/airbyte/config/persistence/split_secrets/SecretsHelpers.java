@@ -75,10 +75,13 @@ public class SecretsHelpers {
             var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get("_secret").asText());
             coordinateBase = oldCoordinate.getCoordinateBase();
             final var oldSecretValue = roPersistence.apply(oldCoordinate);
-            System.out.println("oldSecretValue = " + oldSecretValue);
-            if(oldSecretValue.isPresent() && !oldSecretValue.get().equals(newSecret)) {
-              version = oldCoordinate.getVersion() + 1;
-              // todo: actually prevent from writing twice if this isn't the case
+            System.out.println("111 oldSecretValue = " + oldSecretValue);
+            if(oldSecretValue.isPresent()) {
+              if(oldSecretValue.get().equals(newSecret)) {
+                version = oldCoordinate.getVersion();
+              } else {
+                version = oldCoordinate.getVersion() + 1;
+              }
             }
           }
         }
@@ -90,6 +93,8 @@ public class SecretsHelpers {
         final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
 
         secretMap.put(secretCoordinate, newSecret);
+        System.out.println("secretCoordinate = " + secretCoordinate);
+        System.out.println("newSecret = " + newSecret);
         ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
       }
 
@@ -126,10 +131,12 @@ public class SecretsHelpers {
                 var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get("_secret").asText());
                 coordinateBase = oldCoordinate.getCoordinateBase();
                 final var oldSecretValue = roPersistence.apply(oldCoordinate);
-                System.out.println("oldSecretValue = " + oldSecretValue);
-                if(oldSecretValue.isPresent() && !oldSecretValue.get().equals(newSecret)) {
-                  version = oldCoordinate.getVersion() + 1;
-                  // todo: actually prevent from writing twice if this isn't the case
+                if(oldSecretValue.isPresent()) {
+                  if(oldSecretValue.get().equals(newSecret)) {
+                    version = oldCoordinate.getVersion();
+                  } else {
+                    version = oldCoordinate.getVersion() + 1;
+                  }
                 }
               }
             }

@@ -32,6 +32,7 @@ import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -102,11 +103,16 @@ public class SecretsHelpersTest {
   void testSplitUpdate(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
     final var secretPersistence = new MemorySecretPersistence();
+
+    for (Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
+      secretPersistence.write(entry.getKey(), entry.getValue());
+    }
+
     final var updatedSplit = SecretsHelpers.splitUpdate(
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getPartialConfig(),
-        testCase.getFullConfig(),
+        testCase.getUpdateConfig(),
         testCase.getSpec(),
         secretPersistence::read);
 
@@ -145,6 +151,11 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
 
+    for (Map.Entry<SecretCoordinate, String> entry : splitConfig.getCoordinateToPayload().entrySet()) {
+      System.out.println("entry1 = " + entry);
+      secretPersistence.write(entry.getKey(), entry.getValue());
+    }
+
     final var updatedSplit1 = SecretsHelpers.splitUpdate(
             uuidIterator::next,
             WORKSPACE_ID,
@@ -156,6 +167,15 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
 
+    for (Map.Entry<SecretCoordinate, String> entry : updatedSplit1.getCoordinateToPayload().entrySet()) {
+      System.out.println("entry2 = " + entry);
+      secretPersistence.write(entry.getKey(), entry.getValue());
+    }
+
+    System.out.println("updatedSplit1.getPartialConfig() = " + updatedSplit1.getPartialConfig());
+    System.out.println("testCase.getFullConfigUpdate2()f = " + testCase.getFullConfigUpdate2());
+    System.out.println("secret = " + secretPersistence.read(new SecretCoordinate("airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_2c2ef2b3-259a-4e73-96d1-f56dacee2e5e", 1)));
+
     final var updatedSplit2 = SecretsHelpers.splitUpdate(
             uuidIterator::next,
             WORKSPACE_ID,
@@ -164,10 +184,13 @@ public class SecretsHelpersTest {
             testCase.getSpec(),
             secretPersistence::read);
 
+    for (Map.Entry<SecretCoordinate, String> entry : updatedSplit2.getCoordinateToPayload().entrySet()) {
+      System.out.println("entry3 = " + entry);
+      secretPersistence.write(entry.getKey(), entry.getValue());
+    }
+
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
-
-    // todo: actually add secrets in between steps!
   }
 
 }
