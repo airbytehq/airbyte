@@ -49,7 +49,7 @@ public class JsonSecretsProcessor {
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
    * input schema are masked.
    * <p>
-   * f This method masks secrets both at the top level of the configuration object and in nested
+   * This method masks secrets both at the top level of the configuration object and in nested
    * properties in a oneOf.
    *
    * @param schema Schema containing secret annotations
