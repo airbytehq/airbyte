@@ -147,3 +147,4 @@ class TestOauth2Authenticator:
         for header in self.refresh_access_token_headers:
             assert header in mock_refresh_token_call.last_request.headers
             assert self.refresh_access_token_headers[header] == mock_refresh_token_call.last_request.headers[header]
+        assert mock_refresh_token_call.called
