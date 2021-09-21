@@ -25,6 +25,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -38,7 +39,7 @@ class LeverHiringStream(HttpStream, ABC):
     page_size = 50
 
     stream_params = {}
-    version = "v1"
+    API_VERSION = "v1"
 
     def __init__(self, base_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -46,7 +47,7 @@ class LeverHiringStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"{self.base_url}/{self.version}/"
+        return f"{self.base_url}/{self.API_VERSION}/"
 
     def path(self, **kwargs) -> str:
         return self.name
@@ -81,9 +82,9 @@ class IncrementalLeverHiringStream(LeverHiringStream, ABC):
     state_checkpoint_interval = 100
     cursor_field = "updatedAt"
 
-    def __init__(self, start_dt: int, **kwargs):
+    def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_ts = start_dt
+        self._start_ts = int(pendulum.parse(start_date).timestamp()) * 1000
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         state_ts = int(current_stream_state.get(self.cursor_field, 0))
@@ -117,16 +118,16 @@ class Users(LeverHiringStream):
 
 
 class OpportynityChildStream(LeverHiringStream, ABC):
-    def __init__(self, start_dt: int, **kwargs):
+    def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_dt = start_dt
+        self._start_date = start_date
 
     def path(self, stream_slice: Mapping[str, any] = None, **kwargs) -> str:
         return f"opportunities/{stream_slice['opportunity_id']}/{self.name}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(**kwargs):
-            opportunities_stream = Opportunities(authenticator=self.authenticator, base_url=self.base_url, start_dt=self._start_dt)
+            opportunities_stream = Opportunities(authenticator=self.authenticator, base_url=self.base_url, start_date=self._start_date)
             for opportunity in opportunities_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {"opportunity_id": opportunity["id"]}
 

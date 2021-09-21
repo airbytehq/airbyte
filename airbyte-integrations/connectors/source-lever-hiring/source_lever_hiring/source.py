@@ -25,8 +25,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
-import pendulum
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -82,7 +81,7 @@ class SourceLeverHiring(AbstractSource):
             refresh_token=config["refresh_token"],
         )
         full_refresh_params = {"authenticator": authenticator, "base_url": self.URL_MAP_ACCORDING_ENVIRONMENT[config["environment"]]["api"]}
-        stream_params_with_start_date = {**full_refresh_params, "start_dt": int(pendulum.parse(config["start_date"]).timestamp()) * 1000}
+        stream_params_with_start_date = {**full_refresh_params, "start_date": config["start_date"]}
         return [
             Applications(**stream_params_with_start_date),
             Interviews(**stream_params_with_start_date),
@@ -94,14 +93,12 @@ class SourceLeverHiring(AbstractSource):
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
-        """
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.io/integrations/sources/lever-hiring",
             changelogUrl="https://docs.airbyte.io/integrations/sources/lever-hiring#changelog",
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
+            authSpecification=AuthSpecification(
+                auth_type="oauth2.0",
+                oauth2Specification=OAuth2Specification(oauthFlowInitParameters=[["client_id"], ["client_secret"], ["refresh_token"]]),
+            ),
         )

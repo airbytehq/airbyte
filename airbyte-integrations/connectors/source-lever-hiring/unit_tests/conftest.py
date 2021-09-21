@@ -43,7 +43,7 @@ def test_full_refresh_config():
 
 @fixture
 def test_incremental_config():
-    return {"base_url": "test_base_url", "start_dt": 12345}
+    return {"base_url": "test_base_url", "start_date": "2020-01-01T00:00:00Z"}
 
 
 @fixture
