@@ -350,17 +350,17 @@ class ConnectionsHandlerTest {
   @Test
   void testListConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardSyncs())
-      .thenReturn(Lists.newArrayList(standardSync));
+        .thenReturn(Lists.newArrayList(standardSync));
     when(configRepository.getSourceConnection(source.getSourceId()))
-      .thenReturn(source);
+        .thenReturn(source);
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
-      .thenReturn(standardSync);
+        .thenReturn(standardSync);
 
     final ConnectionReadList actualConnectionReadList = connectionsHandler.listConnections();
 
     assertEquals(
-      ConnectionHelpers.generateExpectedConnectionRead(standardSync),
-      actualConnectionReadList.getConnections().get(0));
+        ConnectionHelpers.generateExpectedConnectionRead(standardSync),
+        actualConnectionReadList.getConnections().get(0));
   }
 
   @Test

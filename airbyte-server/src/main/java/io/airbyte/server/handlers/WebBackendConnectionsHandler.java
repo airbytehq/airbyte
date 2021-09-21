@@ -67,8 +67,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
-import org.apache.logging.log4j.util.Strings;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +75,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.util.Strings;
 
 public class WebBackendConnectionsHandler {
 
@@ -180,7 +179,7 @@ public class WebBackendConnectionsHandler {
   }
 
   public WebBackendConnectionReadList webBackendSearchConnections(WebBackendConnectionSearch webBackendConnectionSearch)
-    throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws ConfigNotFoundException, IOException, JsonValidationException {
 
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
@@ -193,28 +192,33 @@ public class WebBackendConnectionsHandler {
   }
 
   private boolean matchSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead)
-    throws JsonValidationException, ConfigNotFoundException, IOException {
+      throws JsonValidationException, ConfigNotFoundException, IOException {
 
     final ConnectionRead connectionReadFromSearch = fromConnectionSearch(connectionSearch, connectionRead);
     final SourceRead sourceRead = sourceHandler.getSource(new SourceIdRequestBody().sourceId(connectionRead.getSourceId()));
     final SourceRead sourceReadFromSearch = fromSourceSearch(connectionSearch.getSource(), sourceRead);
-    final DestinationRead destinationRead = destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId()));
+    final DestinationRead destinationRead =
+        destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId()));
     final DestinationRead destinationReadFromSearch = fromDestinationSearch(connectionSearch.getDestination(), destinationRead);
 
     return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
-      (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead)) &&
-      (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
+        (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead)) &&
+        (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
   private ConnectionRead fromConnectionSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead) {
-    if (connectionSearch == null) return connectionRead;
+    if (connectionSearch == null)
+      return connectionRead;
 
     final ConnectionRead fromSearch = new ConnectionRead();
     fromSearch.connectionId(connectionSearch.getConnectionId() == null ? connectionRead.getConnectionId() : connectionSearch.getConnectionId());
     fromSearch.destinationId(connectionSearch.getDestinationId() == null ? connectionRead.getDestinationId() : connectionSearch.getDestinationId());
     fromSearch.name(Strings.isBlank(connectionSearch.getName()) ? connectionRead.getName() : connectionSearch.getName());
-    fromSearch.namespaceFormat(Strings.isBlank(connectionSearch.getNamespaceFormat()) || connectionSearch.getNamespaceFormat().equals("null")   ? connectionRead.getNamespaceFormat() : connectionSearch.getNamespaceFormat());
-    fromSearch.namespaceDefinition(connectionSearch.getNamespaceDefinition() == null ? connectionRead.getNamespaceDefinition() : connectionSearch.getNamespaceDefinition());
+    fromSearch.namespaceFormat(Strings.isBlank(connectionSearch.getNamespaceFormat()) || connectionSearch.getNamespaceFormat().equals("null")
+        ? connectionRead.getNamespaceFormat()
+        : connectionSearch.getNamespaceFormat());
+    fromSearch.namespaceDefinition(
+        connectionSearch.getNamespaceDefinition() == null ? connectionRead.getNamespaceDefinition() : connectionSearch.getNamespaceDefinition());
     fromSearch.prefix(Strings.isBlank(connectionSearch.getPrefix()) ? connectionRead.getPrefix() : connectionSearch.getPrefix());
     fromSearch.schedule(connectionSearch.getSchedule() == null ? connectionRead.getSchedule() : connectionSearch.getSchedule());
     fromSearch.sourceId(connectionSearch.getSourceId() == null ? connectionRead.getSourceId() : connectionSearch.getSourceId());
@@ -229,11 +233,13 @@ public class WebBackendConnectionsHandler {
   }
 
   private SourceRead fromSourceSearch(SourceSearch sourceSearch, SourceRead sourceRead) {
-    if (sourceSearch == null) return sourceRead;
+    if (sourceSearch == null)
+      return sourceRead;
 
     final SourceRead fromSearch = new SourceRead();
     fromSearch.name(Strings.isBlank(sourceSearch.getName()) ? sourceRead.getName() : sourceSearch.getName());
-    fromSearch.sourceDefinitionId(sourceSearch.getSourceDefinitionId() == null ? sourceRead.getSourceDefinitionId() : sourceSearch.getSourceDefinitionId());
+    fromSearch
+        .sourceDefinitionId(sourceSearch.getSourceDefinitionId() == null ? sourceRead.getSourceDefinitionId() : sourceSearch.getSourceDefinitionId());
     fromSearch.sourceId(sourceSearch.getSourceId() == null ? sourceRead.getSourceId() : sourceSearch.getSourceId());
     fromSearch.sourceName(Strings.isBlank(sourceSearch.getSourceName()) ? sourceRead.getSourceName() : sourceSearch.getSourceName());
     fromSearch.workspaceId(sourceSearch.getWorkspaceId() == null ? sourceRead.getWorkspaceId() : sourceSearch.getWorkspaceId());
@@ -242,11 +248,11 @@ public class WebBackendConnectionsHandler {
     } else {
       JsonNode connectionConfiguration = sourceSearch.getConnectionConfiguration();
       sourceRead.getConnectionConfiguration().fieldNames()
-        .forEachRemaining(field -> {
-          if(!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-            ((ObjectNode) connectionConfiguration).set(field, sourceRead.getConnectionConfiguration().get(field));
-          }
-        });
+          .forEachRemaining(field -> {
+            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
+              ((ObjectNode) connectionConfiguration).set(field, sourceRead.getConnectionConfiguration().get(field));
+            }
+          });
       fromSearch.connectionConfiguration(connectionConfiguration);
     }
 
@@ -254,24 +260,28 @@ public class WebBackendConnectionsHandler {
   }
 
   private DestinationRead fromDestinationSearch(DestinationSearch destinationSearch, DestinationRead destinationRead) {
-    if (destinationSearch == null) return destinationRead;
+    if (destinationSearch == null)
+      return destinationRead;
 
     final DestinationRead fromSearch = new DestinationRead();
     fromSearch.name(Strings.isBlank(destinationSearch.getName()) ? destinationRead.getName() : destinationSearch.getName());
-    fromSearch.destinationDefinitionId(destinationSearch.getDestinationDefinitionId() == null ? destinationRead.getDestinationDefinitionId() : destinationSearch.getDestinationDefinitionId());
-    fromSearch.destinationId(destinationSearch.getDestinationId() == null ? destinationRead.getDestinationId() : destinationSearch.getDestinationId());
-    fromSearch.destinationName(Strings.isBlank(destinationSearch.getDestinationName()) ? destinationRead.getDestinationName() : destinationSearch.getDestinationName());
+    fromSearch.destinationDefinitionId(destinationSearch.getDestinationDefinitionId() == null ? destinationRead.getDestinationDefinitionId()
+        : destinationSearch.getDestinationDefinitionId());
+    fromSearch
+        .destinationId(destinationSearch.getDestinationId() == null ? destinationRead.getDestinationId() : destinationSearch.getDestinationId());
+    fromSearch.destinationName(
+        Strings.isBlank(destinationSearch.getDestinationName()) ? destinationRead.getDestinationName() : destinationSearch.getDestinationName());
     fromSearch.workspaceId(destinationSearch.getWorkspaceId() == null ? destinationRead.getWorkspaceId() : destinationSearch.getWorkspaceId());
     if (destinationSearch.getConnectionConfiguration() == null) {
       fromSearch.connectionConfiguration(destinationRead.getConnectionConfiguration());
     } else {
       JsonNode connectionConfiguration = destinationSearch.getConnectionConfiguration();
       destinationRead.getConnectionConfiguration().fieldNames()
-        .forEachRemaining(field -> {
-          if(!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-            ((ObjectNode) connectionConfiguration).set(field, destinationRead.getConnectionConfiguration().get(field));
-          }
-        });
+          .forEachRemaining(field -> {
+            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
+              ((ObjectNode) connectionConfiguration).set(field, destinationRead.getConnectionConfiguration().get(field));
+            }
+          });
       fromSearch.connectionConfiguration(connectionConfiguration);
     }
 

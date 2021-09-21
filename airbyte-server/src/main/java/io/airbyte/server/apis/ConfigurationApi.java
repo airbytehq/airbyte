@@ -171,12 +171,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
     schedulerHandler = new SchedulerHandler(
-      configRepository,
-      schedulerJobClient,
-      synchronousSchedulerClient,
-      jobPersistence,
-      jobNotifier,
-      temporalService);
+        configRepository,
+        schedulerJobClient,
+        synchronousSchedulerClient,
+        jobPersistence,
+        jobNotifier,
+        temporalService);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
@@ -189,17 +189,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     oAuthHandler = new OAuthHandler(configRepository);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
-      connectionsHandler,
-      sourceHandler,
-      destinationHandler,
-      jobHistoryHandler,
-      schedulerHandler,
-      operationsHandler);
+        connectionsHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler);
     webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository);
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler =
-      new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager, specFetcher);
+        new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager, specFetcher);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
@@ -648,10 +648,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
       return call.call();
     } catch (ConfigNotFoundException e) {
       throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
-        e.getConfigId(), e);
+          e.getConfigId(), e);
     } catch (JsonValidationException e) {
       throw new BadObjectSchemaKnownException(
-        String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
+          String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
