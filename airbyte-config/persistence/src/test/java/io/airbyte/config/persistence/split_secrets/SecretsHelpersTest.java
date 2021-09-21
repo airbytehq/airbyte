@@ -133,7 +133,12 @@ public class SecretsHelpersTest {
 
   @Test
   void testMissingSecretShouldThrowException() {
-    // todo: test case where it can't find secret -> should throw exception
+    final var testCase = new SimpleTestCase();
+    final var secretPersistence = new MemorySecretPersistence();
+
+    // intentionally do not seed the persistence with testCase.getPersistenceUpdater().accept(secretPersistence);
+
+    assertThrows(RuntimeException.class, () -> SecretsHelpers.combine(testCase.getPartialConfig(), secretPersistence));
   }
 
   @Test

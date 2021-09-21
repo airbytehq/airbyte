@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.api.client.util.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.HashMap;
 import java.util.Map;
@@ -194,11 +195,23 @@ public class SecretsHelpers {
 
         if (childField.getKey().equals("_secret")) {
           final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.asText());
-          ((ObjectNode) config).replace(field.getKey(), new TextNode(secretPersistence.read(coordinate).get())); // todo: handle missing case
+          final var secretValue = secretPersistence.read(coordinate);
+
+          if(secretValue.isEmpty()) {
+            throw new RuntimeException("That secret was not found in the store!");
+          }
+
+          ((ObjectNode) config).replace(field.getKey(), new TextNode(secretValue.get()));
           break;
         } else if (childNode.has("_secret")) {
           final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.get("_secret").asText());
-          ((ObjectNode) node).replace(childField.getKey(), new TextNode(secretPersistence.read(coordinate).get())); // todo: handle missing case
+          final var secretValue = secretPersistence.read(coordinate);
+
+          if(secretValue.isEmpty()) {
+            throw new RuntimeException("That secret was not found in the store!");
+          }
+
+          ((ObjectNode) node).replace(childField.getKey(), new TextNode(secretValue.get()));
         }
       }
 
