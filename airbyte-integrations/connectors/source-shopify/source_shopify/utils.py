@@ -122,7 +122,7 @@ class EagerlyCachedStreamState:
     cached_state: Dict = {}
 
     @staticmethod
-    def stream_state_to_tmp(*args, state_object: Dict = cached_state) -> Dict:
+    def stream_state_to_tmp(*args, state_object: Dict = cached_state, **kwargs) -> Dict:
         """
         Method to save the current stream state for future re-use within slicing.
         The method requires having the temporary `state_object` as placeholder.
@@ -136,15 +136,12 @@ class EagerlyCachedStreamState:
         # Map the input *args, the sequece should be always keeped up to the input function
         # change the mapping if needed
         stream: object = args[0]  # the self instance of the stream
-        current_stream_state: Dict = args[1]
-        latest_record: Dict = args[2]
+        current_stream_state: Dict = kwargs["stream_state"] or {}
         # get the current tmp_state_value
         tmp_stream_state_value = state_object.get(stream.name, {}).get(stream.cursor_field, "")
-        # Compare the `current_stream_state` with `latest_record` to have the initial state value
+        # Save the curent stream value for current sync, if present.
         if current_stream_state:
-            state_object[stream.name] = {
-                stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), latest_record.get(stream.cursor_field, ""))
-            }
+            state_object[stream.name] = {stream.cursor_field: current_stream_state.get(stream.cursor_field, "")}
             # Check if we have the saved state and keep the minimun value
             if tmp_stream_state_value:
                 state_object[stream.name] = {
@@ -154,8 +151,8 @@ class EagerlyCachedStreamState:
 
     def cache_stream_state(func):
         @wraps(func)
-        def decorator(*args):
-            EagerlyCachedStreamState.stream_state_to_tmp(*args)
-            return func(*args)
+        def decorator(*args, **kwargs):
+            EagerlyCachedStreamState.stream_state_to_tmp(*args, **kwargs)
+            return func(*args, **kwargs)
 
         return decorator
