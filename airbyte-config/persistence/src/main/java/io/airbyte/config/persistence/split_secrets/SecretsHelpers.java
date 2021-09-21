@@ -49,16 +49,14 @@ public class SecretsHelpers {
     return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification(), new NoOpSecretPersistence()::read);
   }
 
-  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode old, JsonNode fullConfig, JsonNode spec, ReadOnlySecretPersistence roPersistence) {
-    final var obj = fullConfig.deepCopy();
-    final var schema = spec.deepCopy();
+  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldPartialConfig, JsonNode fullConfig, JsonNode spec, ReadOnlySecretPersistence roPersistence) {
+    Preconditions.checkArgument(JsonSecretsProcessor.canBeProcessed(spec), "Schema is not valid JSONSchema!");
+
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    Preconditions.checkArgument(JsonSecretsProcessor.canBeProcessed(schema), "Schema is not valid JSONSchema!");
-
     // get the properties field
-    ObjectNode properties = (ObjectNode) schema.get(JsonSecretsProcessor.PROPERTIES_FIELD);
-    JsonNode copy = obj.deepCopy();
+    ObjectNode properties = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
+    JsonNode copy = fullConfig.deepCopy();
     // for the property keys
     for (String key : Jsons.keys(properties)) {
       JsonNode fieldSchema = properties.get(key);
@@ -68,7 +66,7 @@ public class SecretsHelpers {
         Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
         final var newSecret = copy.get(key).asText();
 
-        final var oldSecretFullCoordinate = getOldSecretFullCoordinate(old, key);
+        final var oldSecretFullCoordinate = getOldSecretFullCoordinate(oldPartialConfig, key);
         final var secretCoordinate = getCoordinate(
                 newSecret,
                 roPersistence,
@@ -85,14 +83,14 @@ public class SecretsHelpers {
         var combinationCopy = copy.get(key);
         var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
         for (int i = 0; i < arrayNode.size(); i++) {
-          final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
+          final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
           final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i), roPersistence);
           combinationCopy = combinationSplitConfig.getPartialConfig();
           secretMap.putAll(combinationSplitConfig.getCoordinateToPayload());
         }
         ((ObjectNode) copy).set(key, combinationCopy);
       } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && copy.has(key)) {
-        final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
+        final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
         final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema, roPersistence);
         ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
         secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
@@ -101,7 +99,7 @@ public class SecretsHelpers {
         if (itemType == null) {
           throw new NotImplementedException();
         } else if (itemType.asText().equals("string") && fieldSchema.get("items").has(SPEC_SECRET_FIELD)) {
-          final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
+          final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
             String newSecret = copy.get(key).get(i).asText();
 
@@ -117,7 +115,7 @@ public class SecretsHelpers {
             ((ArrayNode) copy.get(key)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
           }
         } else if (itemType.asText().equals("object")) {
-          final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
+          final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
             final var newOldElement = newOld.has(i) ? newOld.get(i) : Jsons.emptyObject();
             final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, copy.get(key).get(i), fieldSchema.get("items"), roPersistence);
@@ -149,7 +147,7 @@ public class SecretsHelpers {
 
     if (config.has(CONFIG_SECRET_FIELD)) {
       final var coordinate = SecretCoordinate.fromFullCoordinate(config.get(CONFIG_SECRET_FIELD).asText());
-      return new TextNode(secretPersistence.read(coordinate).get());
+      return getOrThrowSecretValue(secretPersistence, coordinate);
     }
 
     config.fields().forEachRemaining(field -> {
@@ -160,23 +158,11 @@ public class SecretsHelpers {
 
         if (childField.getKey().equals(CONFIG_SECRET_FIELD)) {
           final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.asText());
-          final var secretValue = secretPersistence.read(coordinate);
-
-          if(secretValue.isEmpty()) {
-            throw new RuntimeException("That secret was not found in the store!");
-          }
-
-          ((ObjectNode) config).replace(field.getKey(), new TextNode(secretValue.get()));
+          ((ObjectNode) config).replace(field.getKey(), getOrThrowSecretValue(secretPersistence, coordinate));
           break;
         } else if (childNode.has(CONFIG_SECRET_FIELD)) {
           final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.get(CONFIG_SECRET_FIELD).asText());
-          final var secretValue = secretPersistence.read(coordinate);
-
-          if(secretValue.isEmpty()) {
-            throw new RuntimeException("That secret was not found in the store!");
-          }
-
-          ((ObjectNode) node).replace(childField.getKey(), new TextNode(secretValue.get()));
+          ((ObjectNode) node).replace(childField.getKey(), getOrThrowSecretValue(secretPersistence, coordinate));
         }
       }
 
@@ -189,6 +175,16 @@ public class SecretsHelpers {
       }
     });
     return config;
+  }
+
+  private static TextNode getOrThrowSecretValue(SecretPersistence secretPersistence, SecretCoordinate coordinate) {
+    final var secretValue = secretPersistence.read(coordinate);
+
+    if(secretValue.isEmpty()) {
+      throw new RuntimeException("That secret was not found in the store!");
+    }
+
+    return new TextNode(secretValue.get());
   }
 
   private static String getOldSecretFullCoordinate(
