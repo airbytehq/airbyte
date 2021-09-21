@@ -7,7 +7,7 @@ This connector supports read access to the Apache Druid database (https://druid.
 ## Requirements
 
 This connector has been tested on a druid installation without user credentials but should work with credentials as well. The model file needed bt the adapter is defined at https://calcite.apache.org/docs/druid_adapter.html. This minimal model file works well. Just copy it into the appropriate field in the source page on airbyte. Change the url's based on your install.
-
+```
 {
   "version": "1.0",
   "defaultSchema": "ecom",
@@ -23,7 +23,7 @@ This connector has been tested on a druid installation without user credentials 
     }
   ]
 }
-
+```
 ## Data type
 
 Druid stores the \_\_time column in its own specific format. That is converted to BIGINT while pulling data from Druid.
