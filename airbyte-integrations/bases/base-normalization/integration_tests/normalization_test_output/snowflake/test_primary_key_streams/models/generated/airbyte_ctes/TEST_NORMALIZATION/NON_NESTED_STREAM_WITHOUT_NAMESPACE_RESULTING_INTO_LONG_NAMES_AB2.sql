@@ -3,7 +3,7 @@
 select
     cast(ID as {{ dbt_utils.type_string() }}) as ID,
     cast(DATE as {{ dbt_utils.type_string() }}) as DATE,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('NON_NESTED_STREAM_WITHOUT_NAMESPACE_RESULTING_INTO_LONG_NAMES_AB1') }}
 -- NON_NESTED_STREAM_WITHOUT_NAMESPACE_RESULTING_INTO_LONG_NAMES
 

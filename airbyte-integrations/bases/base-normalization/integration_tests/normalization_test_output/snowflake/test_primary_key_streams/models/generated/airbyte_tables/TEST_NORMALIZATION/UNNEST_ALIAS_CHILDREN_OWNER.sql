@@ -3,7 +3,7 @@
 select
     _AIRBYTE_CHILDREN_HASHID,
     OWNER_ID,
-    _airbyte_emitted_at,
+    _AIRBYTE_EMITTED_AT,
     _AIRBYTE_OWNER_HASHID
 from {{ ref('UNNEST_ALIAS_CHILDREN_OWNER_AB3') }}
 -- OWNER at unnest_alias/children/owner from {{ ref('UNNEST_ALIAS_CHILDREN') }}

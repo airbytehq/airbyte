@@ -128,6 +128,8 @@ jobs:
           PAYPAL_TRANSACTION_CREDS: ${{ secrets.SOURCE_PAYPAL_TRANSACTION_CREDS }}
           POSTGRES_SSH_KEY_TEST_CREDS: ${{ secrets.POSTGRES_SSH_KEY_TEST_CREDS }}
           POSTGRES_SSH_PWD_TEST_CREDS: ${{ secrets.POSTGRES_SSH_PWD_TEST_CREDS }}
+          MYSQL_SSH_KEY_TEST_CREDS: ${{ secrets.MYSQL_SSH_KEY_TEST_CREDS }}
+          MYSQL_SSH_PWD_TEST_CREDS: ${{ secrets.MYSQL_SSH_PWD_TEST_CREDS }}
           POSTHOG_TEST_CREDS: ${{ secrets.POSTHOG_TEST_CREDS }}
           PIPEDRIVE_INTEGRATION_TESTS_CREDS: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS }}
           RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
@@ -170,8 +172,10 @@ jobs:
           DESTINATION_DYNAMODB_TEST_CREDS: ${{ secrets.DESTINATION_DYNAMODB_TEST_CREDS }}
           APIFY_INTEGRATION_TEST_CREDS: ${{ secrets.APIFY_INTEGRATION_TEST_CREDS }}
           SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
+          SOURCE_CLOSE_COM_CREDS: ${{ secrets.SOURCE_CLOSE_COM_CREDS }}
           SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
           SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
+          DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
@@ -193,6 +197,16 @@ jobs:
             **/normalization_test_output/**/build/compiled/airbyte_utils/**
             **/normalization_test_output/**/build/run/airbyte_utils/**
             **/normalization_test_output/**/models/generated/**
+
+      - name: Test coverage reports artifacts
+        if: github.event.inputs.comment-id && success()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-reports
+          path: |
+            **/${{ github.event.inputs.connector }}/htmlcov/**
+          retention-days: 3
+
       - name: Report Status
         if: github.ref == 'refs/heads/master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
@@ -207,6 +221,7 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            ${{env.PYTHON_UNITTEST_COVERAGE_REPORT}}
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1

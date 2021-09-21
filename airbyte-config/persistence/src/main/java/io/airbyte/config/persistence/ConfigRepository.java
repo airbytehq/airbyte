@@ -37,11 +37,14 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -168,7 +171,12 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
 
-  public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
+  public void writeSourceConnection(final SourceConnection source, final ConnectorSpecification connectorSpecification)
+      throws JsonValidationException, IOException {
+    // actual validation is only for sanity checking
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+    validator.ensure(connectorSpecification.getConnectionSpecification(), source.getConfiguration());
+
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
 
@@ -181,7 +189,12 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
-  public void writeDestinationConnection(final DestinationConnection destinationConnection) throws JsonValidationException, IOException {
+  public void writeDestinationConnection(final DestinationConnection destinationConnection, final ConnectorSpecification connectorSpecification)
+      throws JsonValidationException, IOException {
+    // actual validation is only for sanity checking
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+    validator.ensure(connectorSpecification.getConnectionSpecification(), destinationConnection.getConfiguration());
+
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 
@@ -218,6 +231,17 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameterId.toString(), SourceOAuthParameter.class);
   }
 
+  public Optional<SourceOAuthParameter> getSourceOAuthParamByDefinitionIdOptional(final UUID workspaceId, final UUID sourceDefinitionId)
+      throws JsonValidationException, IOException {
+    for (final SourceOAuthParameter oAuthParameter : listSourceOAuthParam()) {
+      if (sourceDefinitionId.equals(oAuthParameter.getSourceDefinitionId()) &&
+          Objects.equals(workspaceId, oAuthParameter.getWorkspaceId())) {
+        return Optional.of(oAuthParameter);
+      }
+    }
+    return Optional.empty();
+  }
+
   public void writeSourceOAuthParam(final SourceOAuthParameter SourceOAuthParameter) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.getOauthParameterId().toString(), SourceOAuthParameter);
   }
@@ -229,6 +253,18 @@ public class ConfigRepository {
   public DestinationOAuthParameter getDestinationOAuthParams(final UUID destinationOAuthParameterId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameterId.toString(), DestinationOAuthParameter.class);
+  }
+
+  public Optional<DestinationOAuthParameter> getDestinationOAuthParamByDefinitionIdOptional(final UUID workspaceId,
+                                                                                            final UUID destinationDefinitionId)
+      throws JsonValidationException, IOException {
+    for (final DestinationOAuthParameter oAuthParameter : listDestinationOAuthParam()) {
+      if (destinationDefinitionId.equals(oAuthParameter.getDestinationDefinitionId()) &&
+          Objects.equals(workspaceId, oAuthParameter.getWorkspaceId())) {
+        return Optional.of(oAuthParameter);
+      }
+    }
+    return Optional.empty();
   }
 
   public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {

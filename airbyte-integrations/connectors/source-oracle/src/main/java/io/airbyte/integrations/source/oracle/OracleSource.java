@@ -94,10 +94,13 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     return internals;
   }
 
+  /**
+   * Since the Oracle connector allows a user to specify schemas, and picks a default schemas
+   * otherwise, system tables are never included, and do not need to be excluded by default.
+   */
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    // need to add SYSTEM too but for that need create another user when creating the container.
-    return Set.of("APEX_040000", "CTXSYS", "SYSTEM", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
+    return Set.of();
   }
 
   public static void main(String[] args) throws Exception {

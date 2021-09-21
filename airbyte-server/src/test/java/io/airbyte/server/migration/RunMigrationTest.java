@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
@@ -51,6 +52,7 @@ import io.airbyte.migrate.Migrations;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.RunMigration;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -308,7 +310,10 @@ public class RunMigrationTest {
         jobPersistence,
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
         TARGET_VERSION,
-        YamlSeedConfigPersistence.get())) {
+        YamlSeedConfigPersistence.get(),
+        mock(SpecFetcher.class) // this test was disabled/broken when this fetcher mock was added. apologies if you have to fix this
+                                // in the future.
+    )) {
       runMigration.run();
     }
   }
