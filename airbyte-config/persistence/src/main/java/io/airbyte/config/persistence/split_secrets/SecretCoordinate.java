@@ -52,7 +52,6 @@ public class SecretCoordinate {
     return version;
   }
 
-  // todo: test
   @Override
   public String toString() {
     return coordinateBase + "_v" + version;
