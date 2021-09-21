@@ -394,7 +394,7 @@
 - sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   name: Amplitude
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/amplitude
   sourceType: api
 - sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2

@@ -147,7 +147,7 @@
       "type": ["null", "string"]
     },
     "sample_rate": {
-      "type": ["null"]
+      "type": ["null", "string", "number"]
     },
     "idfa": {
       "type": ["null", "string"]
