@@ -17,6 +17,7 @@ import {
   usePickFirstWorkspace,
 } from "hooks/services/useWorkspace";
 import { Feature, FeatureService } from "hooks/services/Feature";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { ServicesProvider } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
 import { envConfigProvider, windowConfigProvider } from "./config";
@@ -97,7 +98,9 @@ const App: React.FC = () => {
                   <NotificationService>
                     <AppServices>
                       <AnalyticsInitializer>
-                        <Routing />
+                        <OnboardingServiceProvider>
+                          <Routing />
+                        </OnboardingServiceProvider>
                       </AnalyticsInitializer>
                     </AppServices>
                   </NotificationService>

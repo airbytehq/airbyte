@@ -6,7 +6,7 @@ select
     {{ json_extract_scalar('_airbyte_data', ['_ab_cdc_lsn'], ['_ab_cdc_lsn']) }} as _AB_CDC_LSN,
     {{ json_extract_scalar('_airbyte_data', ['_ab_cdc_updated_at'], ['_ab_cdc_updated_at']) }} as _AB_CDC_UPDATED_AT,
     {{ json_extract_scalar('_airbyte_data', ['_ab_cdc_deleted_at'], ['_ab_cdc_deleted_at']) }} as _AB_CDC_DELETED_AT,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_CDC_EXCLUDED') }} as table_alias
 -- DEDUP_CDC_EXCLUDED
 

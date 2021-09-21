@@ -56,17 +56,22 @@ class GithubStream(HttpStream, ABC):
     cache = request_cache()
     url_base = "https://api.github.com/"
 
+    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
+    # Here's an example of dangerous behavior:
+    # cache = Cassette.use('whatever')
+    # with cache:
+    #     with cache:
+    #         pass
+    #
+    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
+    top_level_stream = True
+
     primary_key = "id"
 
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
     stream_base_params = {}
-
-    # Fields in below variable will be used for data clearing. Put there keys which represent:
-    #   - objects `{}`, like `user`, `actor` etc.
-    #   - lists `[]`, like `labels`, `assignees` etc.
-    fields_to_minimize = ()
 
     def __init__(self, repositories: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -110,7 +115,11 @@ class GithubStream(HttpStream, ABC):
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            if self.top_level_stream:
+                with self.cache:
+                    yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            else:
+                yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             error_msg = str(e)
 
@@ -129,7 +138,23 @@ class GithubStream(HttpStream, ABC):
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
-                error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+                error_msg = f"Syncing `Team` stream isn't available for organization `{stream_slice['organization']}`."
+            elif e.response.status_code == requests.codes.GONE and "/projects?" in error_msg:
+                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.NOT_FOUND and "/orgs/" in error_msg:
+                # Some streams are not available for repositories owned by a user instead of an organization.
+                # Handle "404 Client Error: Not Found" errors
+                if isinstance(self, Repositories):
+                    error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Users):
+                    error_msg = f"Syncing `Users` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Organizations):
+                    error_msg = f"Syncing `Organizations` stream isn't available for organization `{stream_slice['organization']}`."
+                else:
+                    self.logger.error(f"Undefined error while reading records: {error_msg}")
+                    raise e
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
@@ -171,34 +196,6 @@ class GithubStream(HttpStream, ABC):
             yield self.transform(record=record, repository=stream_slice["repository"])
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, organization: str = None) -> MutableMapping[str, Any]:
-        """
-        Use this method to:
-            - remove excessive fields from record;
-            - minify subelements in the record. For example, if you have `reviews` record which looks like this:
-            {
-              "id": 671782869,
-              "node_id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjcxNzgyODY5",
-              "user": {
-                "login": "keu",
-                "id": 1619536,
-                ... <other fields>
-              },
-              "body": "lgtm, just  small comment",
-              ... <other fields>
-            }
-
-            `user` subelement contains almost all possible fields fo user and it's not optimal to store such data in
-            `reviews` record. We may leave only `user.id` field and save in to `user_id` field in the record. So if you
-            need to do something similar with your record you may use this method.
-        """
-        for field in self.fields_to_minimize:
-            field_value = record.pop(field, None)
-            if field_value is None:
-                record[field] = field_value
-            elif isinstance(field_value, dict):
-                record[f"{field}_id"] = field_value.get("id") if field_value else None
-            elif isinstance(field_value, list):
-                record[field] = [value.get("id") for value in field_value]
         if repository:
             record["repository"] = repository
         if organization:
@@ -310,6 +307,8 @@ class PullRequestStats(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
 
+    top_level_stream = False
+
     @property
     def record_keys(self) -> List[str]:
         return list(self.get_json_schema()["properties"].keys())
@@ -337,6 +336,8 @@ class Reviews(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
+
+    top_level_stream = False
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -455,7 +456,6 @@ class Releases(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = ("author",)
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
@@ -474,11 +474,6 @@ class Events(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "actor",
-        "repo",
-        "org",
-    )
 
 
 class PullRequests(SemiIncrementalGithubStream):
@@ -487,14 +482,6 @@ class PullRequests(SemiIncrementalGithubStream):
     """
 
     page_size = 50
-    fields_to_minimize = (
-        "milestone",
-        "assignee",
-        "labels",
-        "assignees",
-        "requested_reviewers",
-        "requested_teams",
-    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -505,8 +492,7 @@ class PullRequests(SemiIncrementalGithubStream):
         Decide if this a first read or not by the presence of the state object
         """
         self._first_read = not bool(stream_state)
-        with self.cache:
-            yield from super().read_records(stream_state=stream_state, **kwargs)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls"
@@ -551,7 +537,6 @@ class IssueMilestones(SemiIncrementalGithubStream):
     """
 
     is_sorted_descending = True
-    fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -593,7 +578,6 @@ class Projects(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
 
-    fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
     }
@@ -613,10 +597,6 @@ class IssueEvents(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "actor",
-        "issue",
-    )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/events"
@@ -643,10 +623,6 @@ class Commits(IncrementalGithubStream):
 
     primary_key = "sha"
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "author",
-        "committer",
-    )
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
@@ -667,12 +643,6 @@ class Issues(IncrementalGithubStream):
 
     page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
 
-    fields_to_minimize = (
-        "assignee",
-        "milestone",
-        "labels",
-        "assignees",
-    )
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -697,6 +667,7 @@ class ReviewComments(IncrementalGithubStream):
 class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
+    top_level_stream = False
 
     def __init__(self, **kwargs):
         self._stream_kwargs = deepcopy(kwargs)
