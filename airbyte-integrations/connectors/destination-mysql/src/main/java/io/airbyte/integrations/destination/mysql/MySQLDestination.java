@@ -94,16 +94,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public JsonNode toJdbcConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
-
-    LOGGER.error("-> {}", jdbcUrl);
+  public JsonNode toJdbcConfig(JsonNode config) {
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -112,7 +109,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static void main(final String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
     final Destination destination = new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     new IntegrationRunner(destination).run(args);
