@@ -100,17 +100,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         config.get("port").asText(),
         config.get("database").asText()));
 
-    final List<String> additionalParameters = new ArrayList<>();
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=require");
-    }
-
-    if (!additionalParameters.isEmpty()) {
-      jdbcUrl.append("?");
-      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-    }
-
     LOGGER.error("-> {}", jdbcUrl);
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
