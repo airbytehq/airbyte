@@ -208,6 +208,7 @@
   * [Technical Stack](understanding-airbyte/tech-stack.md)
   * [Change Data Capture \(CDC\)](understanding-airbyte/cdc.md)
   * [Namespaces](understanding-airbyte/namespaces.md)
+  * [Glossary of Terms](understanding-airbyte/glossary.md)
 * [API documentation](api-documentation.md)
 * [Project Overview](project-overview/README.md)
   * [Roadmap](project-overview/roadmap.md)
