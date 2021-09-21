@@ -1,3 +1,67 @@
+## Local development
+
+#### Building via Gradle
+From the Airbyte repository root, run:
+```
+./gradlew :airbyte-integrations:connectors:destination-dynamodb:build
+```
+
+#### Create credentials
+**If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
+Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
+
+**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
+
+### Locally running the connector docker image
+
+#### Build
+Build the connector image via Gradle:
+```
+./gradlew :airbyte-integrations:connectors:destination-dynamodb:airbyteDocker
+```
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+the Dockerfile.
+
+#### Run
+Then run any of the connector commands as follows:
+```
+docker run --rm airbyte/destination-dynamodb:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-dynamodb:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-dynamodb:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-dynamodb:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+```
+
+## Testing
+We use `JUnit` for Java tests.
+
+### Unit and Integration Tests
+Place unit tests under `src/test/io/airbyte/integrations/destinations/dynamodb`.
+
+#### Acceptance Tests
+Airbyte has a standard test suite that all destination connectors must pass. Implement the `TODO`s in
+`src/test-integration/java/io/airbyte/integrations/destinations/dynamodbDestinationAcceptanceTest.java`.
+
+### Using gradle to run tests
+All commands should be run from airbyte project root.
+To run unit tests:
+```
+./gradlew :airbyte-integrations:connectors:destination-dynamodb:unitTest
+```
+To run acceptance and custom integration tests:
+```
+./gradlew :airbyte-integrations:connectors:destination-dynamodb:integrationTest
+```
+
+## Dependency Management
+
+### Publishing a new version of the connector
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing unit and integration tests.
+1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
+1. Create a Pull Request.
+1. Pat yourself on the back for being an awesome contributor.
+1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
 ## Uploading options
 There are 2 available options to upload data to bigquery `Standard` and `GCS Staging`.
 - `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
@@ -18,23 +82,9 @@ In order to test the BigQuery destination, you need a service account key file.
 
 ## Community Contributor
 
-As a community contributor, you will need access to a GCP project and BigQuery to run tests.
-
-1. Go to the `Service Accounts` page on the GCP console
-1. Click on `+ Create Service Account" button
-1. Fill out a descriptive name/id/description
-1. Click the edit icon next to the service account you created on the `IAM` page
-1. Add the `BigQuery Data Editor`, `BigQuery User` and `GCS User` roles. For more details check https://cloud.google.com/storage/docs/access-control/iam-roles
-1. Go back to the `Service Accounts` page and use the actions modal to `Create Key`
-1. Download this key as a JSON file
-1. Create an GCS bucket for testing.
-1. Generate a [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for the bucket with reading and writing permissions. Please note that currently only the HMAC key credential is supported. More credential types will be added in the future.
-1. Paste the bucket and key information into the config files under [`./sample_secret`](./sample_secret).
-1. Rename the directory from `sample_secret` to `secrets`.
-1. Feel free to modify the config files with different settings in the acceptance test file as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
-1. Move and rename this file to `secrets/credentials.json`
+Follow the setup guide in the [docs](https://docs.airbyte.io/integrations/destinations/bigquery) to obtain credentials.
 
 ## Airbyte Employee
 
-1. Access the `BigQuery Integration Test User` secret on Rippling under the `Engineering` folder
+1. Access the `BigQuery Integration Test User` secret on Lastpass under the `Engineering` folder
 1. Create a file with the contents at `secrets/credentials.json`
