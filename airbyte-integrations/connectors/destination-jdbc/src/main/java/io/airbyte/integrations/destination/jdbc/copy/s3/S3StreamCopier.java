@@ -32,9 +32,9 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -107,9 +107,13 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.s3Config = s3Config;
   }
 
+  private String prepareS3StagingFile() {
+    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + s3FileName);
+  }
+
   @Override
   public String prepareStagingFile() {
-    var name = String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + s3FileName);
+    var name = prepareS3StagingFile();
     s3StagingFiles.add(name);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
@@ -141,8 +145,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   public void write(UUID id, AirbyteRecordMessage recordMessage, String s3FileName) throws Exception {
     if (csvPrinters.containsKey(s3FileName)) {
       csvPrinters.get(s3FileName).printRecord(id,
-              Jsons.serialize(recordMessage.getData()),
-              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+          Jsons.serialize(recordMessage.getData()),
+          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 

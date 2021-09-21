@@ -96,9 +96,13 @@ public abstract class GcsStreamCopier implements StreamCopier {
     this.gcsConfig = gcsConfig;
   }
 
+  private String prepareGcsStagingFile() {
+    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + streamName);
+  }
+
   @Override
   public String prepareStagingFile() {
-    var name = String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + streamName);
+    var name = prepareGcsStagingFile();
     gcsStagingFiles.add(name);
     var blobId = BlobId.of(gcsConfig.getBucketName(), name);
     var blobInfo = BlobInfo.newBuilder(blobId).build();
@@ -120,8 +124,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
   public void write(UUID id, AirbyteRecordMessage recordMessage, String gcsFileName) throws Exception {
     if (csvPrinters.containsKey(gcsFileName)) {
       csvPrinters.get(gcsFileName).printRecord(id,
-              Jsons.serialize(recordMessage.getData()),
-              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+          Jsons.serialize(recordMessage.getData()),
+          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 
