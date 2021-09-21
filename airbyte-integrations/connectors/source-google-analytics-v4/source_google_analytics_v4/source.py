@@ -416,8 +416,13 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
     use_jwt_auth: bool = False
 
     def __init__(self, config):
-        auth = config["auth_mechanism"]
         client_secret, client_id, refresh_token = None, None, None
+        if "credentials_json" in config:
+            # Backward compatability with previous config format. Use
+            # credentials_json from config root.
+            auth = config
+        else:
+            auth = config["credentials"]
         if "credentials_json" in auth:
             # Service account JWT authorization
             self.use_jwt_auth = True
