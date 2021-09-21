@@ -31,6 +31,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
 
@@ -42,32 +43,32 @@ public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
   }
 
   @VisibleForTesting
-  GoogleSearchConsoleOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
-    super(configRepository, httpClient);
+  GoogleSearchConsoleOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String getScopeUrl() {
+  protected String getScope() {
     return SCOPE_URL;
   }
 
   @Override
   protected String getClientIdUnsafe(JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
+    // the config object containing client ID and secret is nested inside the "authorization" object
     Preconditions.checkArgument(config.hasNonNull("authorization"));
     return super.getClientIdUnsafe(config.get("authorization"));
   }
 
   @Override
   protected String getClientSecretUnsafe(JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
+    // the config object containing client ID and secret is nested inside the "authorization" object
     Preconditions.checkArgument(config.hasNonNull("authorization"));
     return super.getClientSecretUnsafe(config.get("authorization"));
   }
 
   @Override
   protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
-    // the config object containing refresh token is nested inside the "credentials" object
+    // the config object containing refresh token is nested inside the "authorization" object
     return Map.of("authorization", super.extractRefreshToken(data));
   }
 

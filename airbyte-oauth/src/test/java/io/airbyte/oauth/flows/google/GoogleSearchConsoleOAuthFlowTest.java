@@ -61,10 +61,14 @@ public class GoogleSearchConsoleOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleSearchConsoleOAuthFlow = new GoogleSearchConsoleOAuthFlow(configRepository, httpClient);
+    googleSearchConsoleOAuthFlow = new GoogleSearchConsoleOAuthFlow(configRepository, httpClient, GoogleSearchConsoleOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
+  }
+
+  private static String getConstantState() {
+    return "state";
   }
 
   @Test
