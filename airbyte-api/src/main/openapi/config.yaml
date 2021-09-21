@@ -1700,6 +1700,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        displaySetupWizard:
+          type: boolean
     Notification:
       type: object
       required:
