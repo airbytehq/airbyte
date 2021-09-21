@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type":  ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]
@@ -24,15 +24,15 @@
       "type": ["null", "string"]
     },
     "disabled": {
-      "type":  ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "site_admin": {
-      "type":  ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "emails": {
-      "type":  ["null", "array"],
+      "type": ["null", "array"],
       "items": {
-        "type":  ["null", "string"]
+        "type": ["null", "string"]
       }
     },
     "employee_id": {
