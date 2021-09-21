@@ -55,7 +55,7 @@ class Transformer:
         :param config Transform config that would be applied to object
         """
         if TransformConfig.NoTransform in config and config != TransformConfig.NoTransform:
-            raise Exception("NoTransform option cannot be combined with another flags.")
+            raise Exception("NoTransform option cannot be combined with other flags.")
         self._config = config
         all_validators = {
             key: self.__normalize_and_validate(key, orig_validator)
@@ -77,7 +77,7 @@ class Transformer:
         self._custom_normalizer = normalization_callback
         return normalization_callback
 
-    def __normalize(self, original_item: Any, subschema: Dict[str, Any]):
+    def __normalize(self, original_item: Any, subschema: Dict[str, Any]) -> Any:
         """
         Applies different transform function to object's field according to config.
         :param original_item original value of field.
@@ -99,7 +99,7 @@ class Transformer:
         :param subschema part of the jsonschema containing field type/format data.
         :return transformed field value.
         """
-        target_type = subschema["type"]
+        target_type = subschema.get("type")
         if original_item is None and "null" in target_type:
             return None
         if isinstance(target_type, list):
@@ -135,13 +135,13 @@ class Transformer:
                 return subschema
 
             if schema_key == "type" and instance is not None:
-                if "object" in val:
-                    for k, subschema in schema["properties"].items():
+                if "object" in val and isinstance(instance, dict):
+                    for k, subschema in schema.get("properties", {}).items():
                         if k in instance:
                             subschema = resolve(subschema)
                             instance[k] = self.__normalize(instance[k], subschema)
-                elif "array" in val:
-                    subschema = schema.get("items")
+                elif "array" in val and isinstance(instance, list):
+                    subschema = schema.get("items", {})
                     subschema = resolve(subschema)
                     for index, item in enumerate(instance):
                         instance[index] = self.__normalize(item, subschema)

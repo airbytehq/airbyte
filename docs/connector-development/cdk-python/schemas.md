@@ -56,7 +56,7 @@ Also it works on complex types:
 ```
 And objects inside array of referenced by $ref attribute.
 
- In case if value cannot be casted (e.g. string "asdf" cannot be casted to integer) field would contain original value and no error reported.
+ In case if value cannot be casted (e.g. string "asdf" cannot be casted to integer) field would contain original value and no error reported. Schema normalization support any jsonschema types, nested objects/arrays and reference types. Types described as array of more than one type (except "null"), types under oneOf/anyOf keyword wont be transformed.
 
 *Note:* This transformation is done by source, not stream itself. I.e. if you have overriden "read_records" method in your stream it wont affect object transformation. All transformation are done in-place by modifing output object before passing it to "get_updated_state" method, so "get_updated_state" would receive transformed object.
 

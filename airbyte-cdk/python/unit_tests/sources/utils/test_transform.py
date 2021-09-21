@@ -140,6 +140,42 @@ VERY_NESTED_SCHEMA = {
             {"very_nested_value": {"very_nested_value": None}},
             {"very_nested_value": {"very_nested_value": None}},
         ),
+        # Object without properties
+        (
+            {"type": "object"},
+            {"value": 12},
+            {"value": 12},
+        ),
+        (
+            # Array without items
+            {"type": "object", "properties": {"value": {"type": "array"}}},
+            {"value": [12]},
+            {"value": [12]},
+        ),
+        (
+            # Array without items and value is not an array
+            {"type": "object", "properties": {"value": {"type": "array"}}},
+            {"value": "12"},
+            {"value": "12"},
+        ),
+        (
+            # Schema root object is not an object, no convertion should happen
+            {"type": "integer"},
+            {"value": "12"},
+            {"value": "12"},
+        ),
+        (
+            # More than one type except null, no conversion should happen
+            {"type": "object", "properties": {"value": {"type": ["string", "boolean", "null"]}}},
+            {"value": 12},
+            {"value": 12},
+        ),
+        (
+            # Oneof not suported, no conversion for one_of_value should happen
+            {"type": "object", "properties": {"one_of_value": {"oneOf": ["string", "boolean", "null"]}, "value_2": {"type": "string"}}},
+            {"one_of_value": 12, "value_2": 12},
+            {"one_of_value": 12, "value_2": "12"},
+        ),
     ],
 )
 def test_transform(schema, actual, expected):
@@ -149,7 +185,7 @@ def test_transform(schema, actual, expected):
 
 
 def test_transform_wrong_config():
-    with pytest.raises(Exception, match="NoTransform option cannot be combined with another flags."):
+    with pytest.raises(Exception, match="NoTransform option cannot be combined with other flags."):
         Transformer(TransformConfig.NoTransform | TransformConfig.DefaultSchemaNormalization)
 
     with pytest.raises(Exception, match="Please set TransformConfig.CustomSchemaNormalization config before registering custom normalizer"):
