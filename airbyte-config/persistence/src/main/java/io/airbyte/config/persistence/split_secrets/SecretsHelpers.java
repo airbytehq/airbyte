@@ -29,8 +29,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.api.client.util.Preconditions;
+import com.google.common.collect.Iterators;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,142 +44,128 @@ import org.apache.commons.lang3.NotImplementedException;
 import javax.annotation.Nullable;
 
 public class SecretsHelpers {
-  public static final String CONFIG_SECRET_FIELD = "_secret";
+  public static final String COORDINATE_FIELD = "_secret";
   public static final String SPEC_SECRET_FIELD = JsonSecretsProcessor.AIRBYTE_SECRET_FIELD;
 
-  public static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode fullConfig, ConnectorSpecification spec) {
+  public static SplitSecretConfig split(
+          final Supplier<UUID> uuidSupplier,
+          final UUID workspaceId,
+          final JsonNode fullConfig,
+          final ConnectorSpecification spec) {
     return split(uuidSupplier, workspaceId, Jsons.emptyObject(), fullConfig, spec.getConnectionSpecification(), new NoOpSecretPersistence()::read);
   }
 
-  private static SplitSecretConfig split(Supplier<UUID> uuidSupplier, UUID workspaceId, JsonNode oldPartialConfig, JsonNode fullConfig, JsonNode spec, ReadOnlySecretPersistence roPersistence) {
+  public static SplitSecretConfig splitUpdate(final Supplier<UUID> uuidSupplier,
+                                              final UUID workspaceId,
+                                              final JsonNode oldPartialConfig,
+                                              final JsonNode newFullConfig,
+                                              final ConnectorSpecification spec,
+                                              final ReadOnlySecretPersistence secretReader) {
+    return split(uuidSupplier, workspaceId, oldPartialConfig, newFullConfig, spec.getConnectionSpecification(), secretReader);
+  }
+
+
+  public static JsonNode combine(final JsonNode partialConfig, final SecretPersistence secretPersistence) {
+    final var config = partialConfig.deepCopy();
+
+    // if the entire config is a secret coordinate object
+    if (config.has(COORDINATE_FIELD)) {
+      final var coordinateNode = config.get(COORDINATE_FIELD);
+      final var coordinate = getCoordinateFromTextNode(coordinateNode);
+      return getOrThrowSecretValueNode(secretPersistence, coordinate);
+    }
+
+    // otherwise iterate through all object fields
+    config.fields().forEachRemaining(field -> {
+      final var fieldName = field.getKey();
+      final var fieldNode = field.getValue();
+
+      if (fieldNode instanceof ArrayNode) {
+        for (int i = 0; i < fieldNode.size(); i++) {
+          ((ArrayNode) fieldNode).set(i, combine(fieldNode.get(i), secretPersistence));
+        }
+      } else if (fieldNode instanceof ObjectNode) {
+        ((ObjectNode) config).replace(fieldName, combine(fieldNode, secretPersistence));
+      }
+    });
+
+    return config;
+  }
+
+  private static SplitSecretConfig split(
+          final Supplier<UUID> uuidSupplier,
+          final UUID workspaceId,
+          final JsonNode oldPartialConfig,
+          final JsonNode originalFullConfig,
+          final JsonNode spec,
+          final ReadOnlySecretPersistence secretReader) {
     Preconditions.checkArgument(JsonSecretsProcessor.canBeProcessed(spec), "Schema is not valid JSONSchema!");
 
+    final var fullConfig = originalFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
+    final var specProperties = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
 
-    // get the properties field
-    ObjectNode properties = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
-    JsonNode copy = fullConfig.deepCopy();
-    // for the property keys
-    for (String key : Jsons.keys(properties)) {
-      JsonNode fieldSchema = properties.get(key);
+    for (String specProperty : Jsons.keys(specProperties)) {
+      final var fieldSchema = specProperties.get(specProperty);
+      final var fieldSchemaCombinationType = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
+
       // if the json schema field is an obj and has the airbyte secret field
-      if (JsonSecretsProcessor.isSecret(fieldSchema) && copy.has(key)) {
+      if (JsonSecretsProcessor.isSecret(fieldSchema) && fullConfig.has(specProperty)) {
         // remove the key put the new key in the coordinate section
-        Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
-        final var newSecret = copy.get(key).asText();
+        Preconditions.checkArgument(fullConfig.get(specProperty).isTextual(), "Secrets must be strings!");
+        final var newSecret = fullConfig.get(specProperty).asText();
 
-        final var oldSecretFullCoordinate = getOldSecretFullCoordinate(oldPartialConfig, key);
-        final var secretCoordinate = getCoordinate(
-                newSecret,
-                roPersistence,
-                workspaceId,
-                uuidSupplier,
-                oldSecretFullCoordinate);
+        final var oldSecretFullCoordinate = getCoordinateFromObjectNode(oldPartialConfig, specProperty);
+        final var secretCoordinate = getCoordinate(newSecret, secretReader, workspaceId, uuidSupplier, oldSecretFullCoordinate);
 
         secretMap.put(secretCoordinate, newSecret);
-        ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of(CONFIG_SECRET_FIELD, secretCoordinate.toString())));
-      }
-
-      var combinationKey = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
-      if (combinationKey.isPresent() && copy.has(key)) {
-        var combinationCopy = copy.get(key);
-        var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
+        ((ObjectNode) fullConfig).replace(specProperty, Jsons.jsonNode(Map.of(COORDINATE_FIELD, secretCoordinate.toString())));
+      } else if (fieldSchemaCombinationType.isPresent() && fullConfig.has(specProperty)) {
+        var combinationCopy = fullConfig.get(specProperty);
+        var arrayNode = (ArrayNode) fieldSchema.get(fieldSchemaCombinationType.get());
         for (int i = 0; i < arrayNode.size(); i++) {
-          final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
-          final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i), roPersistence);
+          final var newOld = oldPartialConfig.has(specProperty) ? oldPartialConfig.get(specProperty) : Jsons.emptyObject();
+          final var combinationSplitConfig = split(uuidSupplier, workspaceId, newOld, combinationCopy, arrayNode.get(i), secretReader);
           combinationCopy = combinationSplitConfig.getPartialConfig();
           secretMap.putAll(combinationSplitConfig.getCoordinateToPayload());
         }
-        ((ObjectNode) copy).set(key, combinationCopy);
-      } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && copy.has(key)) {
-        final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
-        final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, copy.get(key), fieldSchema, roPersistence);
-        ((ObjectNode) copy).replace(key, nestedSplitConfig.getPartialConfig());
+        ((ObjectNode) fullConfig).set(specProperty, combinationCopy);
+      } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties") && fullConfig.has(specProperty)) {
+        final var newOld = oldPartialConfig.has(specProperty) ? oldPartialConfig.get(specProperty) : Jsons.emptyObject();
+        final var nestedSplitConfig = split(uuidSupplier, workspaceId, newOld, fullConfig.get(specProperty), fieldSchema, secretReader);
+        ((ObjectNode) fullConfig).replace(specProperty, nestedSplitConfig.getPartialConfig());
         secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
-      } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && copy.has(key)) {
+      } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items") && fullConfig.has(specProperty)) {
         final var itemType = fieldSchema.get("items").get("type");
         if (itemType == null) {
           throw new NotImplementedException();
         } else if (itemType.asText().equals("string") && fieldSchema.get("items").has(SPEC_SECRET_FIELD)) {
-          final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
-          for (int i = 0; i < copy.get(key).size(); i++) {
-            String newSecret = copy.get(key).get(i).asText();
+          final var newOld = oldPartialConfig.has(specProperty) ? oldPartialConfig.get(specProperty) : Jsons.emptyObject();
+          for (int i = 0; i < fullConfig.get(specProperty).size(); i++) {
+            String newSecret = fullConfig.get(specProperty).get(i).asText();
 
-            final var oldSecretFullCoordinate = getOldSecretFullCoordinate(newOld, i);
-            final var secretCoordinate = getCoordinate(
-                    newSecret,
-                    roPersistence,
-                    workspaceId,
-                    uuidSupplier,
-                    oldSecretFullCoordinate);
+            final var oldSecretFullCoordinate = getCoordinateFromObjectNode(newOld, i);
+            final var secretCoordinate = getCoordinate(newSecret, secretReader, workspaceId, uuidSupplier, oldSecretFullCoordinate);
 
             secretMap.put(secretCoordinate, newSecret);
-            ((ArrayNode) copy.get(key)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
+            ((ArrayNode) fullConfig.get(specProperty)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
           }
         } else if (itemType.asText().equals("object")) {
-          final var newOld = oldPartialConfig.has(key) ? oldPartialConfig.get(key) : Jsons.emptyObject();
-          for (int i = 0; i < copy.get(key).size(); i++) {
+          final var newOld = oldPartialConfig.has(specProperty) ? oldPartialConfig.get(specProperty) : Jsons.emptyObject();
+          for (int i = 0; i < fullConfig.get(specProperty).size(); i++) {
             final var newOldElement = newOld.has(i) ? newOld.get(i) : Jsons.emptyObject();
-            final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, copy.get(key).get(i), fieldSchema.get("items"), roPersistence);
+            final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, fullConfig.get(specProperty).get(i), fieldSchema.get("items"), secretReader);
             secretMap.putAll(splitSecret.getCoordinateToPayload());
-            ((ArrayNode) copy.get(key)).set(i, splitSecret.getPartialConfig());
+            ((ArrayNode) fullConfig.get(specProperty)).set(i, splitSecret.getPartialConfig());
           }
         }
       }
     }
 
-    return new SplitSecretConfig(copy, secretMap);
+    return new SplitSecretConfig(fullConfig, secretMap);
   }
 
-  public static SplitSecretConfig splitUpdate(Supplier<UUID> uuidSupplier,
-                                              UUID workspaceId,
-                                              JsonNode oldPartialConfig,
-                                              JsonNode newFullConfig,
-                                              ConnectorSpecification spec,
-                                              ReadOnlySecretPersistence roPersistence) {
-    return split(uuidSupplier, workspaceId, oldPartialConfig, newFullConfig, spec.getConnectionSpecification(), roPersistence);
-  }
-
-  public static JsonNode combine(JsonNode partialConfig, SecretPersistence secretPersistence) {
-    return combine(true, partialConfig, secretPersistence);
-  }
-
-  private static JsonNode combine(boolean isFirst, JsonNode partialConfig, SecretPersistence secretPersistence) {
-    final var config = isFirst ? partialConfig.deepCopy() : partialConfig;
-
-    if (config.has(CONFIG_SECRET_FIELD)) {
-      final var coordinate = SecretCoordinate.fromFullCoordinate(config.get(CONFIG_SECRET_FIELD).asText());
-      return getOrThrowSecretValue(secretPersistence, coordinate);
-    }
-
-    config.fields().forEachRemaining(field -> {
-      final var node = field.getValue();
-      final var childFields = MoreStreams.toStream(node.fields()).collect(Collectors.toList());
-      for (Map.Entry<String, JsonNode> childField : childFields) {
-        final var childNode = childField.getValue();
-
-        if (childField.getKey().equals(CONFIG_SECRET_FIELD)) {
-          final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.asText());
-          ((ObjectNode) config).replace(field.getKey(), getOrThrowSecretValue(secretPersistence, coordinate));
-          break;
-        } else if (childNode.has(CONFIG_SECRET_FIELD)) {
-          final var coordinate = SecretCoordinate.fromFullCoordinate(childNode.get(CONFIG_SECRET_FIELD).asText());
-          ((ObjectNode) node).replace(childField.getKey(), getOrThrowSecretValue(secretPersistence, coordinate));
-        }
-      }
-
-      if (node instanceof ArrayNode) {
-        for (int i = 0; i < node.size(); i++) {
-          ((ArrayNode) node).set(i, combine(false, node.get(i), secretPersistence));
-        }
-      } else if (node instanceof ObjectNode) {
-        combine(false, node, secretPersistence);
-      }
-    });
-    return config;
-  }
-
-  private static TextNode getOrThrowSecretValue(SecretPersistence secretPersistence, SecretCoordinate coordinate) {
+  private static TextNode getOrThrowSecretValueNode(final SecretPersistence secretPersistence, final SecretCoordinate coordinate) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if(secretValue.isEmpty()) {
@@ -187,21 +175,25 @@ public class SecretsHelpers {
     return new TextNode(secretValue.get());
   }
 
-  private static String getOldSecretFullCoordinate(
-          final JsonNode oldNode,
+  private static SecretCoordinate getCoordinateFromTextNode(JsonNode node) {
+    return SecretCoordinate.fromFullCoordinate(node.asText());
+  }
+
+  private static String getCoordinateFromObjectNode(
+          final JsonNode node,
           final String key) {
-    if (oldNode.has(key) && oldNode.get(key).has(CONFIG_SECRET_FIELD)) {
-      return oldNode.get(key).get(CONFIG_SECRET_FIELD).asText();
+    if (node.has(key) && node.get(key).has(COORDINATE_FIELD)) {
+      return node.get(key).get(COORDINATE_FIELD).asText();
     } else {
       return null;
     }
   }
 
-  private static String getOldSecretFullCoordinate(
-          final JsonNode oldNode,
+  private static String getCoordinateFromObjectNode(
+          final JsonNode node,
           final int key) {
-    if (oldNode.has(key) && oldNode.get(key).has(CONFIG_SECRET_FIELD)) {
-      return oldNode.get(key).get(CONFIG_SECRET_FIELD).asText();
+    if (node.has(key) && node.get(key).has(COORDINATE_FIELD)) {
+      return node.get(key).get(COORDINATE_FIELD).asText();
     } else {
       return null;
     }
@@ -209,7 +201,7 @@ public class SecretsHelpers {
 
   private static SecretCoordinate getCoordinate(
           final String newSecret,
-          final ReadOnlySecretPersistence roPersistence,
+          final ReadOnlySecretPersistence secretReader,
           final UUID workspaceId,
           final Supplier<UUID> uuidSupplier,
           final @Nullable String oldSecretFullCoordinate) {
@@ -219,7 +211,7 @@ public class SecretsHelpers {
     if (oldSecretFullCoordinate != null) {
         var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecretFullCoordinate);
         coordinateBase = oldCoordinate.getCoordinateBase();
-        final var oldSecretValue = roPersistence.apply(oldCoordinate);
+        final var oldSecretValue = secretReader.apply(oldCoordinate);
         if(oldSecretValue.isPresent()) {
           if(oldSecretValue.get().equals(newSecret)) {
             version = oldCoordinate.getVersion();
