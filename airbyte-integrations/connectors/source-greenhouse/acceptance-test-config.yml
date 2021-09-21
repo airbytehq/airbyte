@@ -1,0 +1,26 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-greenhouse:dev
+tests:
+  spec:
+    - spec_path: "source_greenhouse/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "secrets/config_users_only.json"
+      status: "succeed"
+    - config_path: "integration_tests/config_invalid.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+    - config_path: "secrets/config_users_only.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config_users_only.json"
+      configured_catalog_path: "integration_tests/configured_catalog_users_only.json"

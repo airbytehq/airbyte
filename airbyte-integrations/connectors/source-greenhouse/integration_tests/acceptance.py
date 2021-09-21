@@ -24,25 +24,11 @@
 
 
 import pytest
-from grnhse.exceptions import EndpointNotFound, HTTPError
-from source_greenhouse.client import Client
+
+pytest_plugins = ("source_acceptance_test.plugin",)
 
 
-def test__heal_check_with_wrong_api_key():
-    client = Client(api_key="wrong_key")
-    alive, error = client.health_check()
-
-    assert not alive
-    assert error == '401 {"message":"Invalid Basic Auth credentials"}'
-
-
-def test__custom_fields_with_wrong_api_key():
-    client = Client(api_key="wrong_key")
-    with pytest.raises(HTTPError, match='401 {"message":"Invalid Basic Auth credentials"}'):
-        list(client.list("custom_fields"))
-
-
-def test_client_wrong_endpoint():
-    client = Client(api_key="wrong_key")
-    with pytest.raises(EndpointNotFound, match="unknown_endpoint"):
-        next(client.list("unknown_endpoint"))
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require."""
+    yield

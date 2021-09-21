@@ -24,9 +24,10 @@
 
 
 from functools import partial
-from typing import Mapping, Tuple
+from typing import Generator, List, Mapping, Tuple
 
-from base_python import BaseClient
+from airbyte_protocol import AirbyteStream
+from base_python import AirbyteLogger, BaseClient
 from grnhse import Harvest
 from grnhse.exceptions import HTTPError
 
@@ -67,16 +68,40 @@ class Client(BaseClient):
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {entity: partial(self.list, name=entity) for entity in self.ENTITIES}
 
+    def get_accessible_endpoints(self) -> List[str]:
+        """Try to read each supported endpoint and return accessible stream names"""
+        logger = AirbyteLogger()
+        accessible_endpoints = []
+        for entity in self.ENTITIES:
+            try:
+                getattr(self._client, entity).get()
+                accessible_endpoints.append(entity)
+            except HTTPError as error:
+                logger.warn(f"Endpoint '{entity}' error: {str(error)}")
+                if "This API Key does not have permission for this endpoint" not in str(error):
+                    raise error
+        logger.info(f"API key has access to {len(accessible_endpoints)} endpoints: {accessible_endpoints}")
+        return accessible_endpoints
+
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_msg = None
-
         try:
-            # because there is no good candidate to try our connection
-            # we use users endpoint as potentially smallest dataset
-            self._client.users.get()
+            accessible_endpoints = self.get_accessible_endpoints()
+            if not accessible_endpoints:
+                alive = False
+                error_msg = "Your API Key does not have permission for any existing endpoints. Please grant read permissions for required streams/endpoints"
+
         except HTTPError as error:
             alive = False
             error_msg = str(error)
 
         return alive, error_msg
+
+    @property
+    def streams(self) -> Generator[AirbyteStream, None, None]:
+        """Process accessible streams only"""
+        accessible_endpoints = self.get_accessible_endpoints()
+        for stream in super().streams:
+            if stream.name in accessible_endpoints:
+                yield stream

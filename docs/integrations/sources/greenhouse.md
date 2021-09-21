@@ -46,3 +46,8 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 Please follow the [Greenhouse documentation for generating an API key](https://developers.greenhouse.io/harvest.html#authentication).
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.4   | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238) | added identification of accessible streams for API keys with limited permissions |
