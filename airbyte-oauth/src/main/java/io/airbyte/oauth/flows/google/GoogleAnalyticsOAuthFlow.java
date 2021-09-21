@@ -54,21 +54,21 @@ public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
   @Override
   protected String getClientIdUnsafe(JsonNode config) {
     // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("auth_mechanism"));
-    return super.getClientIdUnsafe(config.get("auth_mechanism"));
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientIdUnsafe(config.get("credentials"));
   }
 
   @Override
   protected String getClientSecretUnsafe(JsonNode config) {
     // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("auth_mechanism"));
-    return super.getClientSecretUnsafe(config.get("auth_mechanism"));
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
   @Override
   protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
-    // the config object containing refresh token is nested inside the "auth_mechanism" object
-    return Map.of("auth_mechanism", super.extractRefreshToken(data));
+    // the config object containing refresh token is nested inside the "credentials" object
+    return Map.of("credentials", super.extractRefreshToken(data));
   }
 
 }

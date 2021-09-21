@@ -96,9 +96,9 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("auth_mechanism", ImmutableMap.builder()
-            .put("client_id", credentialsJson.get("auth_mechanism").get("client_id").asText())
-            .put("client_secret", credentialsJson.get("auth_mechanism").get("client_secret").asText())
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+            .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
+            .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build())))));
     final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
@@ -112,8 +112,8 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
     final Map<String, Object> params = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("auth_mechanism"));
-    final Map<String, Object> credentials = (Map<String, Object>) params.get("auth_mechanism");
+    assertTrue(params.containsKey("credentials"));
+    final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");
     assertTrue(credentials.containsKey("refresh_token"));
     assertTrue(credentials.get("refresh_token").toString().length() > 0);
     assertTrue(credentials.containsKey("access_token"));

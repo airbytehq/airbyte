@@ -108,7 +108,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("auth_mechanism", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .build())))));
     final String actualSourceUrl = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
@@ -128,7 +128,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("auth_mechanism", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .build())))));
     // It would be better to make this comparison agnostic of the order of query params but the URI
@@ -151,7 +151,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("auth_mechanism", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build())))));
@@ -165,7 +165,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("auth_mechanism", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build())))));
@@ -175,7 +175,7 @@ public class GoogleAnalyticsOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("auth_mechanism", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -184,7 +184,7 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("auth_mechanism", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build())))));
@@ -195,7 +195,7 @@ public class GoogleAnalyticsOAuthFlowTest {
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleAnalyticsOAuthFlow
         .completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("auth_mechanism", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
   private String getClientId() throws IOException {
@@ -204,7 +204,7 @@ public class GoogleAnalyticsOAuthFlowTest {
     } else {
       final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
       final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
-      return credentialsJson.get("auth_mechanism").get("client_id").asText();
+      return credentialsJson.get("credentials").get("client_id").asText();
     }
   }
 
