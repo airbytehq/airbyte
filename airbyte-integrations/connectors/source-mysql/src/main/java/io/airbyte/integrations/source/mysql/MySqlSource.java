@@ -37,6 +37,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -245,7 +246,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new MySqlSource();
+    final Source source = new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);

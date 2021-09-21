@@ -25,13 +25,10 @@
 package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -42,58 +39,28 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.jooq.SQLDialect;
-import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
-  private static final String STREAM_NAME2 = "public.starships";
+  private static final String STREAM_NAME2 = "starships";
 
-  private MySQLContainer<?> container;
   private JsonNode config;
 
+  public abstract Path getConfigFilePath();
+
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
-    container.start();
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
-        .build());
-
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
-
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
-
-    database.close();
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    container.close();
+  protected void tearDown(final TestDestinationEnv testEnv) {
+
   }
 
   @Override
