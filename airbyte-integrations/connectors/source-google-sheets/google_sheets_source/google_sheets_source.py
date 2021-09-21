@@ -50,7 +50,7 @@ class GoogleSheetsSource(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         try:
-            client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+            client = GoogleSheetsClient(config["authorization"])
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Please use valid credentials json file. Error: {e}")
 
@@ -105,7 +105,7 @@ class GoogleSheetsSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        client = GoogleSheetsClient(json.loads(config["authorization"]))
         spreadsheet_id = config["spreadsheet_id"]
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
@@ -133,7 +133,7 @@ class GoogleSheetsSource(Source):
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        client = GoogleSheetsClient(config["authorization"])
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]
