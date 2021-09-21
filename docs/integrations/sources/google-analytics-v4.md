@@ -38,9 +38,10 @@ The Google Analytics connector should not run into Google Analytics API limitati
 
 ## Getting started
 
-### Create a Service Account
-
-We recommend creating a service account specifically for Airbyte so you can set granular permissions.
+There are 2 options of setting up authorization for this source:
+ - Create service account specifically for Airbyte and authorize with JWT. Select "JWT authorization" from the "Authentication mechanism" dropdown list.
+ - Use your Google account and authorize over Google's OAuth on connection setup. Select "Default OAuth2.0 authorization" from dropdown list.
+#### Create a Service Account
 
 First, need to select or create a project in the Google Developers Console:
 
@@ -49,7 +50,7 @@ First, need to select or create a project in the Google Developers Console:
 3. Click `Create service account`.
 4. Create a JSON key file for the service user. The contents of this file will be provided as the `credentials_json` in the UI when authorizing GA after you grant permissions \(see below\).
 
-### Add service account to the Google Analytics account
+#### Add service account to the Google Analytics account
 
 Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Read & Analyze permissions](https://support.google.com/analytics/answer/2884495).
 
@@ -128,5 +129,6 @@ Incremental sync supports only if you add `ga:date` dimension to your custom rep
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.2   | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306) | Support of airbyte OAuth initialization flow |
 | 0.1.1   | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655) | Corrected validation of empty custom report|
 | 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290) | Initial Release|

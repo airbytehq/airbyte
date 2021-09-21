@@ -4,14 +4,48 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics V4 Spec",
     "type": "object",
-    "required": ["credentials_json", "view_id", "start_date"],
-    "additionalProperties": false,
+    "required": ["credentials", "view_id", "start_date"],
+    "additionalProperties": true,
     "properties": {
-      "credentials_json": {
-        "type": "string",
-        "title": "Credentials JSON",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> if you need help generating this key.",
-        "airbyte_secret": true
+      "credentials": {
+        "title": "Authentication mechanism",
+        "type": "object",
+        "description": "Choose either OAuth2.0 flow or provide your own JWT credentials for service account",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0 authorization",
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "Default OAuth2.0 authorization"
+              },
+              "client_id": { "type": "string" },
+              "client_secret": { "type": "string", "airbyte_secret": true },
+              "refresh_token": { "type": "string", "airbyte_secret": true }
+            },
+            "required": ["client_id", "client_secret", "refresh_token"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "title": "Service Account Key",
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "Service account credentials"
+              },
+              "credentials_json": {
+                "type": "string",
+                "title": "Credentials JSON",
+                "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> if you need help generating this key.",
+                "airbyte_secret": true
+              }
+            },
+            "required": ["credentials_json"],
+            "additionalProperties": true
+          }
+        ]
       },
       "view_id": {
         "type": "string",
@@ -36,6 +70,16 @@
         "type": "string",
         "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4\">docs</a> to get more information about this field."
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "oauthFlowInitParameters": [
+        ["auth_mechanism", "client_id"],
+        ["auth_mechanism", "client_secret"],
+        ["auth_mechanism", "refresh_token"]
+      ]
     }
   }
 }
