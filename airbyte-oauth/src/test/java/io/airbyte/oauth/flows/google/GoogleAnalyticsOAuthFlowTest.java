@@ -108,9 +108,9 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
-            .build()))));
+            .build())))));
     final String actualSourceUrl = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     final String expectedSourceUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
@@ -128,9 +128,9 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
-            .build()))));
+            .build())))));
     // It would be better to make this comparison agnostic of the order of query params but the URI
     // class' equals() method
     // considers URLs with different qparam orders different URIs..
@@ -151,10 +151,10 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
-            .build()))));
+            .build())))));
     final Map<String, Object> queryParams = Map.of();
     assertThrows(IOException.class, () -> googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL));
   }
@@ -165,17 +165,17 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
-            .build()))));
-    final String expectedQueryParams = Jsons.serialize(Map.of("refresh_token", "refresh_token_response"));
+            .build())))));
+    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
-    when(response.body()).thenReturn(expectedQueryParams);
+    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -184,18 +184,18 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
-            .build()))));
-    final String expectedQueryParams = Jsons.serialize(Map.of("refresh_token", "refresh_token_response"));
+            .build())))));
+    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
-    when(response.body()).thenReturn(expectedQueryParams);
+    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleAnalyticsOAuthFlow
         .completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(expectedQueryParams, Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
   private String getClientId() throws IOException {
@@ -204,7 +204,7 @@ public class GoogleAnalyticsOAuthFlowTest {
     } else {
       final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
       final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
-      return credentialsJson.get("client_id").asText();
+      return credentialsJson.get("credentials").get("client_id").asText();
     }
   }
 
