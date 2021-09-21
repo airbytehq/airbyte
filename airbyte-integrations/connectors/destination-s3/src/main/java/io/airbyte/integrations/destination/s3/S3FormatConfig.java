@@ -30,6 +30,8 @@ public interface S3FormatConfig {
 
   S3Format getFormat();
 
+  Long getPartSize();
+
   static String withDefault(JsonNode config, String property, String defaultValue) {
     JsonNode value = config.get(property);
     if (value == null || value.isNull()) {

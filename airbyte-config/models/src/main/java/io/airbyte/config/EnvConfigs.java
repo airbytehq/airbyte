@@ -69,6 +69,7 @@ public class EnvConfigs implements Configs {
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
+  public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -92,6 +93,9 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
+  private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
+  private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String SECRET_STORE_FOR_CONFIGS = "SECRET_STORE_CONFIGS_ENABLE";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -194,6 +198,21 @@ public class EnvConfigs implements Configs {
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+  }
+
+  @Override
+  public String getSecretStoreGcpCredentials() {
+    return getEnv(SECRET_STORE_GCP_CREDENTIALS);
+  }
+
+  @Override
+  public String getSecretStoreGcpProjectId() {
+    return getEnv(SECRET_STORE_GCP_PROJECT_ID);
+  }
+
+  @Override
+  public String getSecretStoreForConfigs() {
+    return getEnv(SECRET_STORE_FOR_CONFIGS);
   }
 
   @Override
@@ -311,6 +330,25 @@ public class EnvConfigs implements Configs {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Returns a map of node selectors from its own environment variable. The value of the env is a
+   * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
+   * <p>
+   * For example:- The following represents two node selectors
+   * <p>
+   * airbyte=server,type=preemptive
+   *
+   * @return map containing kv pairs of node selectors
+   */
+  @Override
+  public Map<String, String> getWorkerNodeSelectors() {
+    return Splitter.on(",")
+        .splitToStream(getEnvOrDefault(WORKER_POD_NODE_SELECTORS, ""))
+        .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
+        .map(s -> s.split("="))
+        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+  }
+
   @Override
   public MaxWorkersConfig getMaxWorkers() {
     return new MaxWorkersConfig(
@@ -424,7 +462,7 @@ public class EnvConfigs implements Configs {
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info("{} not found or empty, defaulting to {}", key, isSecret ? "*****" : defaultValue);
+      LOGGER.info("Using default value for environment variable {}: '{}'", key, isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }
