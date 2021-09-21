@@ -35,6 +35,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 
 import java.nio.file.Path;
@@ -51,6 +52,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private String schemaName;
 
   public abstract Path getConfigFilePath();
 
@@ -61,15 +63,9 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() {
-    return getConfigFromSecretsFile();
-  }
-
-  @Override
-  protected String getDefaultSchema(JsonNode config) {
-    if (config.get("database") == null) {
-      return null;
-    }
-    return config.get("database").asText();
+    var config = getConfigFromSecretsFile();
+    ((ObjectNode) config).put("database", schemaName);
+    return config;
   }
 
   private JsonNode getConfigFromSecretsFile() {
@@ -89,7 +85,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                                            final String namespace,
                                            final JsonNode streamSchema)
           throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
             .stream()
             .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
             .collect(Collectors.toList());
@@ -116,7 +112,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                                                      final String namespace)
           throws Exception {
     var tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(tableName);
+    String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
@@ -141,7 +138,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                     config.get("port").asText()));
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws Exception {
+    var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
             getConfig(),
             MySQLDestination.HOST_KEY,
@@ -149,7 +147,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
             (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
                     .query(
                             ctx -> ctx
-                                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", mangledConfig.get("database").asText(), tableName.toLowerCase(), JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName.toLowerCase(), JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                                     .stream()
                                     .map(r -> r.formatJSON(JSON_FORMAT))
                                     .map(Jsons::deserialize)
@@ -158,14 +156,14 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
+    schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     var config = getConfig();
     SshTunnel.sshWrap(
             config,
             MySQLDestination.HOST_KEY,
             MySQLDestination.PORT_KEY,
             mangledConfig -> {
-              ((ObjectNode) mangledConfig).put("database", config.get("database").asText());
-              getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", config.get("database").asText())));
+              getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
             });
   }
 
@@ -176,8 +174,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
             MySQLDestination.HOST_KEY,
             MySQLDestination.PORT_KEY,
             mangledConfig -> {
-              getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(
-                      String.format("DROP DATABASE %s", mangledConfig.get("database").asText())));
+              getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
             });
   }
 
