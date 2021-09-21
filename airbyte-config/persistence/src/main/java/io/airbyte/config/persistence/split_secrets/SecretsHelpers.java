@@ -64,7 +64,7 @@ public class SecretsHelpers {
       if (JsonSecretsProcessor.isSecret(fieldSchema) && copy.has(key)) {
         // remove the key put the new key in the coordinate section
         Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
-        final var secret = copy.get(key).asText();
+        final var newSecret = copy.get(key).asText();
 
         String coordinateBase = null;
         var version = 1L;
@@ -74,7 +74,12 @@ public class SecretsHelpers {
           if (oldSecret.has("_secret")) {
             var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get("_secret").asText());
             coordinateBase = oldCoordinate.getCoordinateBase();
-            version = oldCoordinate.getVersion() + 1;
+            final var oldSecretValue = roPersistence.apply(oldCoordinate);
+            System.out.println("oldSecretValue = " + oldSecretValue);
+            if(oldSecretValue.isPresent() && !oldSecretValue.get().equals(newSecret)) {
+              version = oldCoordinate.getVersion() + 1;
+              // todo: actually prevent from writing twice if this isn't the case
+            }
           }
         }
 
@@ -84,7 +89,7 @@ public class SecretsHelpers {
 
         final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
 
-        secretMap.put(secretCoordinate, secret);
+        secretMap.put(secretCoordinate, newSecret);
         ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
       }
 
@@ -112,6 +117,7 @@ public class SecretsHelpers {
           final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
             String coordinateBase = null;
+            String newSecret = copy.get(key).get(i).asText();
             var version = 1L;
             if (newOld.has(i)) {
               final var oldSecret = newOld.get(i);
@@ -119,7 +125,12 @@ public class SecretsHelpers {
               if (oldSecret.has("_secret")) {
                 var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get("_secret").asText());
                 coordinateBase = oldCoordinate.getCoordinateBase();
-                version = oldCoordinate.getVersion() + 1;
+                final var oldSecretValue = roPersistence.apply(oldCoordinate);
+                System.out.println("oldSecretValue = " + oldSecretValue);
+                if(oldSecretValue.isPresent() && !oldSecretValue.get().equals(newSecret)) {
+                  version = oldCoordinate.getVersion() + 1;
+                  // todo: actually prevent from writing twice if this isn't the case
+                }
               }
             }
 
@@ -129,7 +140,7 @@ public class SecretsHelpers {
 
             final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
 
-            secretMap.put(secretCoordinate, copy.get(key).get(i).asText());
+            secretMap.put(secretCoordinate, newSecret);
             ((ArrayNode) copy.get(key)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
           }
         } else if (itemType.asText().equals("object")) {

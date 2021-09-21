@@ -167,6 +167,7 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
 
+    // todo: actually add secrets in between steps!
   }
 
 }
