@@ -41,3 +41,10 @@ The Amplitude connector should gracefully handle Amplitude API limitations under
 
 Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.2  | 2021-09-?? | [????](https://github.com/airbytehq/airbyte/pull/????) | Fix build (the issue is caused by the addition of a schema check by field `format`)  |
+| 0.1.1  | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for kubernetes support |
+| 0.1.0  | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude  |
