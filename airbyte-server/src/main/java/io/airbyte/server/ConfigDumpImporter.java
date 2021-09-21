@@ -52,7 +52,10 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.handlers.DestinationHandler;
+import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -86,34 +89,48 @@ public class ConfigDumpImporter {
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
   private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
-  private static final String TMP_AIRBYTE_STAGED_RESOURCES = "/tmp/airbyte_staged_resources";
+  private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
+  private final SpecFetcher specFetcher;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
-  private final Path stagedResourceRoot;
 
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence jobPersistence, WorkspaceHelper workspaceHelper) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator());
+  public ConfigDumpImporter(ConfigRepository configRepository,
+                            JobPersistence jobPersistence,
+                            WorkspaceHelper workspaceHelper,
+                            SpecFetcher specFetcher) {
+    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), specFetcher);
   }
 
   @VisibleForTesting
   public ConfigDumpImporter(ConfigRepository configRepository,
                             JobPersistence jobPersistence,
                             WorkspaceHelper workspaceHelper,
-                            JsonSchemaValidator jsonSchemaValidator) {
+                            JsonSchemaValidator jsonSchemaValidator,
+                            SpecFetcher specFetcher) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
+    this.specFetcher = specFetcher;
+  }
+
+  /**
+   * Re-initialize the staged resource folder that contains uploaded artifacts when importing
+   * workspaces. This is because they need to be done in two steps (two API endpoints), upload
+   * resource first then import. When server starts, we flush the content of this folder, deleting
+   * previously staged resources that were not imported yet.
+   */
+  public static void initStagedResourceFolder() {
     try {
-      this.stagedResourceRoot = Path.of(TMP_AIRBYTE_STAGED_RESOURCES);
-      if (stagedResourceRoot.toFile().exists()) {
-        FileUtils.forceDelete(stagedResourceRoot.toFile());
+      File stagedResourceRoot = TMP_AIRBYTE_STAGED_RESOURCES.toFile();
+      if (stagedResourceRoot.exists()) {
+        FileUtils.forceDelete(stagedResourceRoot);
       }
-      FileUtils.forceMkdir(stagedResourceRoot.toFile());
-      FileUtils.forceDeleteOnExit(stagedResourceRoot.toFile());
+      FileUtils.forceMkdir(stagedResourceRoot);
+      FileUtils.forceDeleteOnExit(stagedResourceRoot);
     } catch (IOException e) {
       throw new RuntimeException("Failed to create staging resource folder", e);
     }
@@ -316,7 +333,7 @@ public class ConfigDumpImporter {
   public UploadRead uploadArchiveResource(File archive) {
     try {
       final UUID resourceId = UUID.randomUUID();
-      FileUtils.moveFile(archive, stagedResourceRoot.resolve(resourceId.toString()).toFile());
+      FileUtils.moveFile(archive, TMP_AIRBYTE_STAGED_RESOURCES.resolve(resourceId.toString()).toFile());
       return new UploadRead()
           .status(UploadRead.StatusEnum.SUCCEEDED)
           .resourceId(resourceId);
@@ -327,7 +344,7 @@ public class ConfigDumpImporter {
   }
 
   public File getArchiveResource(UUID resourceId) {
-    final File archive = stagedResourceRoot.resolve(resourceId.toString()).toFile();
+    final File archive = TMP_AIRBYTE_STAGED_RESOURCES.resolve(resourceId.toString()).toFile();
     if (!archive.exists()) {
       throw new IdNotFoundKnownException("Archive Resource not found", resourceId.toString());
     }
@@ -407,13 +424,15 @@ public class ConfigDumpImporter {
             (sourceConnection) -> {
               // make sure connector definition exists
               try {
-                if (configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()) == null) {
+                final StandardSourceDefinition sourceDefinition =
+                    configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+                if (sourceDefinition == null) {
                   return;
                 }
+                configRepository.writeSourceConnection(sourceConnection, SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition));
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeSourceConnection(sourceConnection);
             }));
         case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
         case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
@@ -429,13 +448,15 @@ public class ConfigDumpImporter {
             (destinationConnection) -> {
               // make sure connector definition exists
               try {
-                if (configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()) == null) {
+                StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(
+                    destinationConnection.getDestinationDefinitionId());
+                if (destinationDefinition == null) {
                   return;
                 }
+                configRepository.writeDestinationConnection(destinationConnection, DestinationHandler.getSpec(specFetcher, destinationDefinition));
               } catch (ConfigNotFoundException e) {
                 return;
               }
-              configRepository.writeDestinationConnection(destinationConnection);
             }));
         case STANDARD_SYNC -> standardSyncs = configs;
         case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(

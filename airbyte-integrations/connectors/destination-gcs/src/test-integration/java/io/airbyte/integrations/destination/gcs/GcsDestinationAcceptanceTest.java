@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -107,6 +109,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
+        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(

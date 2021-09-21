@@ -39,7 +39,9 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class KeenDestinationTest extends DestinationAcceptanceTest {
@@ -47,6 +49,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   private static final String SECRET_FILE_PATH = "secrets/config.json";
 
   private final KeenHttpClient keenHttpClient = new KeenHttpClient();
+  private final Set<String> collectionsToDelete = new HashSet<>();
 
   private String projectId;
   private String apiKey;
@@ -77,6 +80,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
     String accentStrippedStreamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
+    collectionsToDelete.add(accentStrippedStreamName);
 
     ArrayNode array = keenHttpClient.extract(accentStrippedStreamName, projectId, apiKey);
     return Lists.newArrayList(array.elements()).stream()
@@ -100,15 +104,10 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    // Changes for this particular operation - get all collections - can take a couple more time to
-    // propagate
-    // than standard queries for the newly created collection
-    Thread.sleep(5000);
-    List<String> keenCollections = keenHttpClient.getAllCollectionsForProject(projectId, apiKey);
-
-    for (String keenCollection : keenCollections) {
+    for (String keenCollection : collectionsToDelete) {
       keenHttpClient.eraseStream(keenCollection, projectId, apiKey);
     }
+    collectionsToDelete.clear();
   }
 
   @Override

@@ -48,20 +48,10 @@
       "format": "date-time"
     },
     "daily_budget": {
-      "type": ["null", "number"],
-      "maximum": 100000000000000000000000000000000,
-      "minimum": -100000000000000000000000000000000,
-      "multipleOf": 0.000001,
-      "exclusiveMaximum": true,
-      "exclusiveMinimum": true
+      "type": ["null", "number"]
     },
     "budget_remaining": {
-      "type": ["null", "number"],
-      "maximum": 100000000000000000000000000000000,
-      "minimum": -100000000000000000000000000000000,
-      "multipleOf": 0.000001,
-      "exclusiveMaximum": true,
-      "exclusiveMinimum": true
+      "type": ["null", "number"]
     },
     "effective_status": {
       "type": ["null", "string"]
@@ -78,12 +68,7 @@
       "format": "date-time"
     },
     "lifetime_budget": {
-      "type": ["null", "number"],
-      "maximum": 100000000000000000000000000000000,
-      "minimum": -100000000000000000000000000000000,
-      "multipleOf": 0.000001,
-      "exclusiveMaximum": true,
-      "exclusiveMinimum": true
+      "type": ["null", "number"]
     },
     "targeting": { "$ref": "targeting.json" },
     "bid_info": {

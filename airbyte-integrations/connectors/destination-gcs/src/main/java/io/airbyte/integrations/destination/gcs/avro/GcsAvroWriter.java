@@ -73,7 +73,8 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
         objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
+        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
