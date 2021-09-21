@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": ["object", "null"],
   "additionalProperties": false,
   "properties": {
     "company": {
@@ -48,7 +48,7 @@
       "type": ["string", "null"]
     },
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "mktoName": {
       "type": ["string", "null"]
@@ -215,11 +215,11 @@
       "type": ["string", "null"]
     },
     "createdAt": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "cookies": {

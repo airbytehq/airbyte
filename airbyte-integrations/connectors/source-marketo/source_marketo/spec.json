@@ -4,10 +4,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Marketo Spec",
     "type": "object",
-    "required": ["base_url", "client_id", "client_secret", "start_date"],
+    "required": ["domain_url", "client_id", "client_secret", "start_date"],
     "additionalProperties": false,
     "properties": {
-      "base_url": {
+      "domain_url": {
         "type": "string",
         "description": "Your Marketo Base URL. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
         "examples": ["https://000-AAA-000.mktorest.com"],

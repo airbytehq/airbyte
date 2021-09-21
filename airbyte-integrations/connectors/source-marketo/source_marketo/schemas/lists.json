@@ -1,19 +1,19 @@
 {
-  "type": "object",
+  "type": ["object", "null"],
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "createdAt": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "description": {
@@ -26,7 +26,7 @@
       "type": ["string", "null"]
     },
     "workspaceId": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

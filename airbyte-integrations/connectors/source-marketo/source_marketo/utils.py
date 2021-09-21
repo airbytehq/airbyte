@@ -46,6 +46,17 @@ def to_datetime_str(date: datetime) -> str:
 
 
 def clean_string(string: str) -> str:
+    """
+    input -> output
+    "updatedAt" -> "updated_at"
+    "UpdatedAt" -> "updated_at"
+    "base URL" -> "base_url"
+    "UPdatedAt" -> "u_pdated_at"
+    "updated_at" -> "updated_at"
+    " updated_at " -> "updated_at"
+    "updatedat" -> "updatedat"
+    """
+
     abbreviations = ("URL", "GUID", "IP")
     if any(map(lambda w: w in string, abbreviations)):
         return string.lower().replace(" ", "_")
@@ -67,7 +78,6 @@ def format_value(value, schema):
         # Custom Marketo percent type fields can have decimals, so we drop them
         decimal_index = value.find(".")
         if decimal_index > 0:
-            # singer.log_warning("Dropping decimal from integer type. Original Value: %s", value)
             value = value[:decimal_index]
         return int(value)
     elif "string" in field_type:

@@ -1,38 +1,38 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "createdAt": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "active": {
-      "type": ["boolean", "null"]
+      "type": ["null", "boolean"]
     },
     "description": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "programId": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "programName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "workspaceName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     }
   }
 }

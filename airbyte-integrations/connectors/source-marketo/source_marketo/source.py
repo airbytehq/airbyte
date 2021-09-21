@@ -50,7 +50,7 @@ class MarketoStream(HttpStream, ABC):
         self.config = config
         self.start_date = config["start_date"]
         self.window_in_days = config["window_in_days"]
-        self._url_base = config["base_url"]
+        self._url_base = config["domain_url"]
         self.stream_name = stream_name
         self.param = param
         self.export_id = export_id
@@ -68,12 +68,7 @@ class MarketoStream(HttpStream, ABC):
         if next_page:
             return {"nextPageToken": next_page}
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"batchSize": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
@@ -107,7 +102,9 @@ class IncrementalMarketoStream(MarketoStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
-            self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, self.start_date))
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, self.start_date), current_stream_state.get(self.cursor_field, self.start_date)
+            )
         }
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -136,7 +133,9 @@ class IncrementalMarketoStream(MarketoStream):
         date_slices = []
 
         while start_date <= end_date:
+            # the amount of days for each data-chunk begining from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
+
             date_slice = {"startAt": to_datetime_str(start_date), "endAt": to_datetime_str(end_date_slice)}
 
             date_slices.append(date_slice)
@@ -150,7 +149,8 @@ class MarketoExportBase(IncrementalMarketoStream):
     Base class for all the streams which support bulk extract.
     """
 
-    job_timeout = 60 * 180
+    # Polling Job Status - https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
+    # The status is only updated once every 60 seconds
     poll_interval = 60
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -164,6 +164,19 @@ class MarketoExportBase(IncrementalMarketoStream):
     def stream_filter(self):
         return {}
 
+    def create_export(self, param):
+        return next(MarketoExportCreate(self.config, stream_name=self.stream_name, param=param).read_records(sync_mode=None), {})
+
+    def start_export(self, stream_slice):
+        return next(
+            MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
+        )
+
+    def get_export_status(self, stream_slice):
+        return next(
+            MarketoExportStatus(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
+        )
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
@@ -175,25 +188,20 @@ class MarketoExportBase(IncrementalMarketoStream):
             param["fields"].extend(self.stream_fields)
             param["filter"].update(self.stream_filter)
 
-            export = next(MarketoExportCreate(self.config, stream_name=self.stream_name, param=param).read_records(sync_mode=None), {})
+            export = self.create_export(param)
 
             date_slice["id"] = export["exportId"]
         return date_slices
 
     def sleep_till_export_completed(self, stream_slice: Mapping[str, Any]) -> bool:
-        timeout_time = pendulum.now().add(seconds=self.job_timeout)
-        while pendulum.now() < timeout_time:
-            status = next(
-                MarketoExportStatus(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
-            )
+        while True:
+            status = self.get_export_status(stream_slice)
             self.logger.info(f"Export {self.name} from {stream_slice['startAt']} to {stream_slice['endAt']} status is {status}")
 
             if status == "Created":
                 # If the status is created, the export has been made but
                 # not started, so enqueue the export.
-                next(
-                    MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
-                )
+                self.start_export(stream_slice)
 
             elif status in ["Cancelled", "Failed"]:
                 # Cancelled and failed exports fail the current sync.
@@ -204,9 +212,16 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             sleep(self.poll_interval)
 
-        raise Exception(f"Export timed out after {self.job_timeout / 60} minutes")
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        response.text example:
+
+        firstName,lastName,email,cookies
+        Russell,Wilson,null,_mch-localhost-1536605780000-12105
+
+        :return an iterable containing each record in the response
+        """
+
         list_response = response.text.rstrip("\n").split("\n")
 
         headers = list_response[0].split(",")
@@ -310,7 +325,7 @@ class Leads(MarketoExportBase):
     cursor_field = "updatedAt"
 
     def __init__(self, config: Mapping[str, Any]):
-        super().__init__(config, "leads")
+        super().__init__(config, self.name)
 
     @property
     def stream_fields(self):
@@ -400,7 +415,10 @@ class Programs(IncrementalMarketoStream):
 
     cursor_field = "updatedAt"
     page_size = 200
-    offset = 0
+
+    def __init__(self, config: Mapping[str, Any]):
+        super().__init__(config)
+        self.offset = 0
 
     def path(self, **kwargs) -> str:
         return f"/rest/asset/v1/{self.name}.json"
@@ -424,7 +442,7 @@ class Programs(IncrementalMarketoStream):
         query from the bookmark value until current.
         """
 
-        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params = super().request_params(next_page_token, stream_state=stream_state, stream_slice=stream_slice)
         params.update(
             {
                 "maxReturn": self.page_size,
@@ -437,7 +455,7 @@ class Programs(IncrementalMarketoStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, stream_state, **kwargs):
-            record["updatedAt"] = record["updatedAt"][:-5]
+            record["updatedAt"] = record["updatedAt"][:-5]  # delete +00:00 part from the end of updatedAt
             yield record
 
 
@@ -447,8 +465,6 @@ class Campaigns(IncrementalMarketoStream):
     API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
     """
 
-    pass
-
 
 class Lists(IncrementalMarketoStream):
     """
@@ -456,13 +472,11 @@ class Lists(IncrementalMarketoStream):
     API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
-    pass
-
 
 class MarketoAuthenticator(Oauth2Authenticator):
     def __init__(self, config):
         super().__init__(
-            token_refresh_endpoint=f"{config['base_url']}/identity/oauth/token",
+            token_refresh_endpoint=f"{config['domain_url']}/identity/oauth/token",
             client_id=config["client_id"],
             client_secret=config["client_secret"],
             refresh_token=None,
@@ -485,7 +499,6 @@ class MarketoAuthenticator(Oauth2Authenticator):
             response = requests.request(method="GET", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
             response.raise_for_status()
             response_json = response.json()
-            # print(response_json["access_token"])
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
@@ -502,7 +515,7 @@ class SourceMarketo(AbstractSource):
         """
 
         try:
-            url = f"{config['base_url']}/rest/v1/leads/describe"
+            url = f"{config['domain_url']}/rest/v1/leads/describe"
 
             authenticator = MarketoAuthenticator(config)
 
@@ -518,6 +531,7 @@ class SourceMarketo(AbstractSource):
 
         streams = [ActivityTypes(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]
 
+        # create dynamically activities by activity type id
         for activity in ActivityTypes(config).read_records(sync_mode=None):
             stream_name = f"activities_{clean_string(activity['name'])}"
 

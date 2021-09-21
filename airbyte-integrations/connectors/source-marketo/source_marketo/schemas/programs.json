@@ -1,20 +1,20 @@
 {
-  "type": "object",
+  "type": ["object", "null"],
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "createdAt": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "description": {
       "type": ["null", "string"]
@@ -35,7 +35,7 @@
       "type": ["null", "string"]
     },
     "folder": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "type": {
           "type": ["null", "string"]

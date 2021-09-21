@@ -1,37 +1,37 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "primaryAttribute": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "dataType": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "attributes": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "dataType": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
