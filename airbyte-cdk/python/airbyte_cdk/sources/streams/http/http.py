@@ -402,7 +402,7 @@ class HttpSubStream(HttpStream, ABC):
         # iterate over all parent stream_slices
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=sync_mode,
+                sync_mode=SyncMode.full_refresh,
                 cursor_field=cursor_field,
                 stream_slice=stream_slice,
                 stream_state=stream_state
