@@ -39,6 +39,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 
+import javax.annotation.Nullable;
+
 public class SecretsHelpers {
   public static final String CONFIG_SECRET_FIELD = "_secret";
   public static final String SPEC_SECRET_FIELD = JsonSecretsProcessor.AIRBYTE_SECRET_FIELD;
@@ -66,30 +68,13 @@ public class SecretsHelpers {
         Preconditions.checkArgument(copy.get(key).isTextual(), "Secrets must be strings!");
         final var newSecret = copy.get(key).asText();
 
-        String coordinateBase = null;
-        var version = 1L;
-        if (old.has(key)) {
-          final var oldSecret = old.get(key);
-
-          if (oldSecret.has(CONFIG_SECRET_FIELD)) {
-            var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get(CONFIG_SECRET_FIELD).asText());
-            coordinateBase = oldCoordinate.getCoordinateBase();
-            final var oldSecretValue = roPersistence.apply(oldCoordinate);
-            if(oldSecretValue.isPresent()) {
-              if(oldSecretValue.get().equals(newSecret)) {
-                version = oldCoordinate.getVersion();
-              } else {
-                version = oldCoordinate.getVersion() + 1;
-              }
-            }
-          }
-        }
-
-        if (coordinateBase == null) {
-          coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
-        }
-
-        final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
+        final var oldSecretFullCoordinate = getOldSecretFullCoordinate(old, key);
+        final var secretCoordinate = getCoordinate(
+                newSecret,
+                roPersistence,
+                workspaceId,
+                uuidSupplier,
+                oldSecretFullCoordinate);
 
         secretMap.put(secretCoordinate, newSecret);
         ((ObjectNode) copy).replace(key, Jsons.jsonNode(Map.of(CONFIG_SECRET_FIELD, secretCoordinate.toString())));
@@ -118,31 +103,15 @@ public class SecretsHelpers {
         } else if (itemType.asText().equals("string") && fieldSchema.get("items").has(SPEC_SECRET_FIELD)) {
           final var newOld = old.has(key) ? old.get(key) : Jsons.emptyObject();
           for (int i = 0; i < copy.get(key).size(); i++) {
-            String coordinateBase = null;
             String newSecret = copy.get(key).get(i).asText();
-            var version = 1L;
-            if (newOld.has(i)) {
-              final var oldSecret = newOld.get(i);
 
-              if (oldSecret.has(CONFIG_SECRET_FIELD)) {
-                var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecret.get(CONFIG_SECRET_FIELD).asText());
-                coordinateBase = oldCoordinate.getCoordinateBase();
-                final var oldSecretValue = roPersistence.apply(oldCoordinate);
-                if(oldSecretValue.isPresent()) {
-                  if(oldSecretValue.get().equals(newSecret)) {
-                    version = oldCoordinate.getVersion();
-                  } else {
-                    version = oldCoordinate.getVersion() + 1;
-                  }
-                }
-              }
-            }
-
-            if (coordinateBase == null) {
-              coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
-            }
-
-            final var secretCoordinate = new SecretCoordinate(coordinateBase, version);
+            final var oldSecretFullCoordinate = getOldSecretFullCoordinate(newOld, i);
+            final var secretCoordinate = getCoordinate(
+                    newSecret,
+                    roPersistence,
+                    workspaceId,
+                    uuidSupplier,
+                    oldSecretFullCoordinate);
 
             secretMap.put(secretCoordinate, newSecret);
             ((ArrayNode) copy.get(key)).set(i, Jsons.jsonNode(Map.of("_secret", secretCoordinate.toString())));
@@ -220,5 +189,58 @@ public class SecretsHelpers {
       }
     });
     return config;
+  }
+
+  private static String getOldSecretFullCoordinate(
+          final JsonNode oldNode,
+          final String key) {
+    if (oldNode.has(key) && oldNode.get(key).has(CONFIG_SECRET_FIELD)) {
+      return oldNode.get(key).get(CONFIG_SECRET_FIELD).asText();
+    } else {
+      return null;
+    }
+  }
+
+  private static String getOldSecretFullCoordinate(
+          final JsonNode oldNode,
+          final int key) {
+    if (oldNode.has(key) && oldNode.get(key).has(CONFIG_SECRET_FIELD)) {
+      return oldNode.get(key).get(CONFIG_SECRET_FIELD).asText();
+    } else {
+      return null;
+    }
+  }
+
+  private static SecretCoordinate getCoordinate(
+          final String newSecret,
+          final ReadOnlySecretPersistence roPersistence,
+          final UUID workspaceId,
+          final Supplier<UUID> uuidSupplier,
+          final @Nullable String oldSecretFullCoordinate) {
+    String coordinateBase = null;
+    Long version = null;
+
+    if (oldSecretFullCoordinate != null) {
+        var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecretFullCoordinate);
+        coordinateBase = oldCoordinate.getCoordinateBase();
+        final var oldSecretValue = roPersistence.apply(oldCoordinate);
+        if(oldSecretValue.isPresent()) {
+          if(oldSecretValue.get().equals(newSecret)) {
+            version = oldCoordinate.getVersion();
+          } else {
+            version = oldCoordinate.getVersion() + 1;
+          }
+        }
+    }
+
+    if (coordinateBase == null) {
+      coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+    }
+
+    if(version == null) {
+      version = 1L;
+    }
+
+    return new SecretCoordinate(coordinateBase, version);
   }
 }
