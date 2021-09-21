@@ -10,6 +10,8 @@ application {
 
 dependencies {
     implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     integrationTestJavaImplementation project(':airbyte-secrets-migration')
 }
