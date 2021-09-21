@@ -83,35 +83,25 @@
 
 {# timestamp with time zone  -------------------------------------------------     #}
 
-{%- macro type_timestamp_with_timezone(timestamp_column) -%}
-  {{ adapter.dispatch('type_timestamp_with_timezone')(timestamp_column) }}
+{%- macro type_timestamp_with_timezone() -%}
+  {{ adapter.dispatch('type_timestamp_with_timezone')() }}
 {%- endmacro -%}
 
-{% macro default__type_timestamp_with_timezone(timestamp_column) %}
+{% macro default__type_timestamp_with_timezone() %}
     timestamp with time zone
 {% endmacro %}
 
-{% macro bigquery__type_timestamp_with_timezone(timestamp_column) %}
+{% macro bigquery__type_timestamp_with_timezone() %}
     timestamp
 {% endmacro %}
 
 {# MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char #}
-{%- macro mysql__type_timestamp_with_timezone(timestamp_column) -%}
+{%- macro mysql__type_timestamp_with_timezone() -%}
     char
 {%- endmacro -%}
 
-{% macro oracle__type_timestamp_with_timezone(timestamp_column) %}
+{% macro oracle__type_timestamp_with_timezone() %}
     varchar2(4000)
-{% endmacro %}
-
-{% macro snowflake__type_timestamp_with_timezone(timestamp_column) %}
-    case
-        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SSTZH')
-        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{4}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
-        when {{timestamp_column}} regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{2}' then to_timestamp_tz({{timestamp_column}}, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-        else to_timestamp_tz({{timestamp_column}})
-    end as {{timestamp_column}}
 {% endmacro %}
 
 
