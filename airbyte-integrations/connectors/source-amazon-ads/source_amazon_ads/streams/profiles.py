@@ -40,7 +40,7 @@ class Profiles(AmazonAdsStream):
     model = Profile
 
     def path(self, **kvargs) -> str:
-        return "v2/profiles"
+        return "v2/profiles?profileTypeFilter=seller,vendor"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
