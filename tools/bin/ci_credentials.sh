@@ -107,6 +107,8 @@ write_standard_creds source-postgres "$POSTGRES_SSH_KEY_TEST_CREDS" "ssh-key-con
 write_standard_creds source-postgres "$POSTGRES_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
 write_standard_creds source-mysql "$MYSQL_SSH_KEY_TEST_CREDS" "ssh-key-config.json"
 write_standard_creds source-mysql "$MYSQL_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
+write_standard_creds source-oracle "$ORACLE_SSH_KEY_TEST_CREDS" "ssh-key-config.json"
+write_standard_creds source-oracle "$ORACLE_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
 write_standard_creds source-posthog "$POSTHOG_TEST_CREDS"
 write_standard_creds source-pipedrive "$PIPEDRIVE_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-quickbooks-singer "$QUICKBOOKS_TEST_CREDS"
