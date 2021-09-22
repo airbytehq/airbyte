@@ -50,12 +50,14 @@ class BaseSchemaModel(BaseModel, metaclass=AllOptional):
 
         @classmethod
         def schema_extra(cls, schema: MutableMapping[str, Any], model: Type["BaseModel"]) -> None:
+            # Remove auto generated "title" and "description" fields, because they do not carry absolutely any payload.
             schema.pop("title", None)
             schema.pop("description", None)
+            # Remove required section so any missing attribute from API wont break object validation.
+            schema.pop("required", None)
             for name, prop in schema.get("properties", {}).items():
                 prop.pop("title", None)
                 prop.pop("description", None)
-                schema.pop("required", None)
                 allow_none = model.__fields__[name].allow_none
                 if allow_none:
                     if "type" in prop:
