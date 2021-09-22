@@ -96,10 +96,10 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", credentialsJson.get("client_id").asText())
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+            .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
+            .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
+            .build())))));
     final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
@@ -112,10 +112,12 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
     final Map<String, Object> params = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("refresh_token"));
-    assertTrue(params.get("refresh_token").toString().length() > 0);
-    assertTrue(params.containsKey("access_token"));
-    assertTrue(params.get("access_token").toString().length() > 0);
+    assertTrue(params.containsKey("credentials"));
+    final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");
+    assertTrue(credentials.containsKey("refresh_token"));
+    assertTrue(credentials.get("refresh_token").toString().length() > 0);
+    assertTrue(credentials.containsKey("access_token"));
+    assertTrue(credentials.get("access_token").toString().length() > 0);
   }
 
   static class ServerHandler implements HttpHandler {

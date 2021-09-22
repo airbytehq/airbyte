@@ -40,7 +40,7 @@ from .rate_limiting import default_backoff_handler
 
 class SalesforceStream(HttpStream, ABC):
 
-    limit = 2000
+    page_size = 2000
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
         super().__init__(**kwargs)
@@ -66,8 +66,8 @@ class SalesforceStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
-        if len(response_data["records"]) == self.limit and self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return f"WHERE {self.primary_key} > '{response_data['records'][-1][self.primary_key]}' "
+        if len(response_data["records"]) == self.page_size and self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+            return f"WHERE {self.primary_key} >= '{response_data['records'][-1][self.primary_key]}' "
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -91,7 +91,7 @@ class SalesforceStream(HttpStream, ABC):
             query += next_page_token
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.limit}"
+            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
 
         return {"q": query}
 
@@ -116,7 +116,7 @@ class SalesforceStream(HttpStream, ABC):
 
 class BulkSalesforceStream(SalesforceStream):
 
-    limit = 10000
+    page_size = 30000
     JOB_WAIT_TIMEOUT_MINS = 10
     CHECK_INTERVAL_SECONDS = 2
 
@@ -186,7 +186,7 @@ class BulkSalesforceStream(SalesforceStream):
 
     def next_page_token(self, last_record: dict) -> str:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return f"WHERE {self.primary_key} > '{last_record[self.primary_key]}' "
+            return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
     def transform(self, record: dict, schema: dict = None):
         """
@@ -259,7 +259,7 @@ class BulkSalesforceStream(SalesforceStream):
                 for count, record in self.download_data(url=job_full_url):
                     yield self.transform(record)
 
-                if count == self.limit:
+                if count == self.page_size:
                     next_page_token = self.next_page_token(record)
                     if not next_page_token:
                         pagination_complete = True
@@ -272,11 +272,12 @@ class BulkSalesforceStream(SalesforceStream):
 
             if job_status in ["JobComplete", "Aborted", "Failed"]:
                 self.delete_job(url=job_full_url)
-                pagination_complete = True
+                if job_status in ["Aborted", "Failed"]:
+                    raise Exception(f"Job for {self.name} stream using BULK API was failed")
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
-    state_checkpoint_interval = 100
+    state_checkpoint_interval = 500
 
     def __init__(self, replication_key: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -285,7 +286,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
-        if len(response_data["records"]) == self.limit and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+        if len(response_data["records"]) == self.page_size and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return response_data["records"][-1][self.cursor_field]
 
     def request_params(
@@ -304,9 +305,9 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         stream_date = stream_state.get(self.cursor_field)
         start_date = next_page_token or stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} WHERE {self.cursor_field} > {start_date} "
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.limit}"
+            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
         return {"q": query}
 
     @property
