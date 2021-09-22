@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -115,16 +116,17 @@ public class SecretsHelpers {
 
       return new SplitSecretConfig(newPartialConfig, coordinateToPayload);
     } else if (isObjectSchema(spec)) {
-      final var specProperties = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
+      final var specPropertiesObject = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
+      final var specProperties = Jsons.keys(specPropertiesObject).stream()
+              .filter(fullConfig::has)
+              .collect(Collectors.toList());
 
       // if the input config is specified as an object, we go through and handle each type of property
-      for (final String specProperty : Jsons.keys(specProperties)) {
-        final var fieldSchema = specProperties.get(specProperty);
+      for (final String specProperty : specProperties) {
+        final var fieldSchema = specPropertiesObject.get(specProperty);
         final var fieldSchemaCombinationType = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
         final var isCombinationNodeSchema = fieldSchemaCombinationType.isPresent();
 
-      
-        if (fullConfig.has(specProperty)) {
           final var nextOldPartialConfig = getFieldOrEmptyNode(oldPartialConfig, specProperty);
           if (JsonSecretsProcessor.isSecret(fieldSchema)) {
             final var splitConfig = splitter.split(nextOldPartialConfig, fullConfig.get(specProperty), fieldSchema);
@@ -152,7 +154,6 @@ public class SecretsHelpers {
               ((ArrayNode) fullConfig.get(specProperty)).set(i, splitConfig.getPartialConfig());
             }
           }
-        }
       }
     } else {
       throw new NotImplementedException("unexpected node type at this level!");
