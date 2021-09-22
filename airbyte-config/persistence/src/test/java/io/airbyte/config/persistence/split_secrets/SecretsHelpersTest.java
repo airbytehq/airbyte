@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -65,8 +64,8 @@ public class SecretsHelpersTest {
         new NestedObjectTestCase(),
         new OneOfTestCase(),
         new ArrayTestCase()
-        // new ArrayOneOfTestCase() todo: support this test case
-        // todo: support allOf / other combination node types
+    // new ArrayOneOfTestCase() todo: support this test case
+    // todo: support allOf / other combination node types
     ).map(Arguments::of);
   }
 
@@ -155,7 +154,8 @@ public class SecretsHelpersTest {
     final var testCase = new SimpleTestCase();
     final var secretPersistence = new MemorySecretPersistence();
 
-    // intentionally do not seed the persistence with testCase.getPersistenceUpdater().accept(secretPersistence);
+    // intentionally do not seed the persistence with
+    // testCase.getPersistenceUpdater().accept(secretPersistence);
 
     assertThrows(RuntimeException.class, () -> SecretsHelpers.combine(testCase.getPartialConfig(), secretPersistence));
   }
@@ -167,10 +167,10 @@ public class SecretsHelpersTest {
     final var testCase = new NestedObjectTestCase();
 
     final var splitConfig = SecretsHelpers.split(
-            uuidIterator::next,
-            WORKSPACE_ID,
-            testCase.getFullConfig(),
-            testCase.getSpec());
+        uuidIterator::next,
+        WORKSPACE_ID,
+        testCase.getFullConfig(),
+        testCase.getSpec());
 
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
@@ -181,12 +181,12 @@ public class SecretsHelpersTest {
     }
 
     final var updatedSplit1 = SecretsHelpers.splitUpdate(
-            uuidIterator::next,
-            WORKSPACE_ID,
-            testCase.getPartialConfig(),
-            testCase.getFullConfigUpdate1(),
-            testCase.getSpec(),
-            secretPersistence::read);
+        uuidIterator::next,
+        WORKSPACE_ID,
+        testCase.getPartialConfig(),
+        testCase.getFullConfigUpdate1(),
+        testCase.getSpec(),
+        secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
@@ -198,15 +198,16 @@ public class SecretsHelpersTest {
 
     System.out.println("updatedSplit1.getPartialConfig() = " + updatedSplit1.getPartialConfig());
     System.out.println("testCase.getFullConfigUpdate2()f = " + testCase.getFullConfigUpdate2());
-    System.out.println("secret = " + secretPersistence.read(new SecretCoordinate("airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_2c2ef2b3-259a-4e73-96d1-f56dacee2e5e", 1)));
+    System.out.println("secret = " + secretPersistence
+        .read(new SecretCoordinate("airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_2c2ef2b3-259a-4e73-96d1-f56dacee2e5e", 1)));
 
     final var updatedSplit2 = SecretsHelpers.splitUpdate(
-            uuidIterator::next,
-            WORKSPACE_ID,
-            updatedSplit1.getPartialConfig(),
-            testCase.getFullConfigUpdate2(),
-            testCase.getSpec(),
-            secretPersistence::read);
+        uuidIterator::next,
+        WORKSPACE_ID,
+        updatedSplit1.getPartialConfig(),
+        testCase.getFullConfigUpdate2(),
+        testCase.getSpec(),
+        secretPersistence::read);
 
     for (Map.Entry<SecretCoordinate, String> entry : updatedSplit2.getCoordinateToPayload().entrySet()) {
       System.out.println("entry3 = " + entry);

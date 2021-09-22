@@ -27,7 +27,6 @@ package io.airbyte.config.persistence.split_secrets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class MemorySecretPersistence implements SecretPersistence {
 
