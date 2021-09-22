@@ -64,7 +64,7 @@ class HttpStream(Stream, ABC):
         if self.use_cache:
             self.cache_file = self.request_cache()
             # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
-            self.cass = None
+            self.cassete = None
 
     @property
     def cache_filename(self):
@@ -363,7 +363,7 @@ class HttpStream(Stream, ABC):
             if self.use_cache:
                 # use context manager to handle and store cassette metadata
                 with self.cache_file as cass:
-                    self.cass = cass
+                    self.cassete = cass
                     # vcr tries to find records based on the request, if such records exist, return from cache file
                     # else make a request and save record in cache file
                     response = self._send_request(request, request_kwargs)

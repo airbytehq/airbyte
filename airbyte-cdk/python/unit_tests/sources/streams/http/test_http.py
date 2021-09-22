@@ -378,7 +378,7 @@ class CacheHttpStream(StubBasicReadHttpStream):
 
 
 class CacheHttpSubStream(HttpSubStream):
-    url_base = ""
+    url_base = "https://example.com"
     primary_key = ""
 
     def __init__(self, parent):
@@ -448,4 +448,4 @@ def test_using_cache(mocker):
     for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         pass
 
-    assert parent_stream.cass.play_count != 0
+    assert parent_stream.cassete.play_count != 0
