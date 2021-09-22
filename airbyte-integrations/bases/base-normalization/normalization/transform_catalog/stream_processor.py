@@ -25,6 +25,7 @@
 
 import os
 import re
+from functools import reduce
 from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -604,7 +605,12 @@ from {{ from_table }}
                 # using an airbyte generated column
                 cursor = self.cursor_field[0]
         else:
-            raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
+            # Dealing with nested fields
+            cursor = reduce(
+                lambda expression, next_item: f"{expression}->'{next_item}'",
+                self.cursor_field[1:],
+                self.cursor_field[0],
+            )
 
         return cursor
 

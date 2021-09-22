@@ -32,6 +32,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
+    version="0.1.45",
     install_requires=[
         "airbyte-protocol",
         "pyyaml",

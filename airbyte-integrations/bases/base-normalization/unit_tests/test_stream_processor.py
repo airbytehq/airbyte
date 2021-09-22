@@ -52,7 +52,8 @@ def before_tests(request):
         (None, False, "_airbyte_emitted_at"),
         (["updated_at"], False, "updated_at"),
         (["_airbyte_emitted_at"], False, "_airbyte_emitted_at"),
-        (["parent", "nested_field"], True, "nested_field"),
+        (["parent", "nested_field"], True, "parent->'nested_field'"),
+        (["grand_parent", "parent", "nested_field"], True, "grand_parent->'parent'->'nested_field'"),
     ],
 )
 def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expected_cursor_field: str):

@@ -193,7 +193,7 @@ class Issues(IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
     """
 
-    cursor_field = "updated"
+    cursor_field = ["fields", "updated"]
     parse_response_root = "issues"
 
     def path(self, **kwargs) -> str:
@@ -203,20 +203,23 @@ class Issues(IncrementalJiraStream):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
-        if stream_state.get(self.cursor_field):
-            issues_state = pendulum.parse(stream_state.get(self.cursor_field))
+        normalized_cursor_name = ".".join(self.cursor_field)
+        if stream_state.get(normalized_cursor_name):
+            issues_state = pendulum.parse(stream_state.get(normalized_cursor_name))
             issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
             params["jql"] = f"updated > '{issues_state_row}'"
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
+        normalized_cursor_name = ".".join(self.cursor_field)
+        print(latest_record.get("fields", {}))
+        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field[1]))
         if current_stream_state:
-            current_stream_state = current_stream_state.get(self.cursor_field)
+            current_stream_state = current_stream_state.get(normalized_cursor_name)
             if current_stream_state:
-                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
+                return {normalized_cursor_name: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
         else:
-            return {self.cursor_field: str(latest_record_date)}
+            return {normalized_cursor_name: str(latest_record_date)}
 
 
 class IssueComments(JiraStream):
