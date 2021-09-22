@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
+import json
 from datetime import datetime
 from typing import Any, List, Mapping, Tuple, Type, Optional
 from airbyte_cdk.entrypoint import logger
@@ -34,7 +34,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams import Stream
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Json
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
     AdCreatives,
@@ -89,7 +89,7 @@ class ConnectorConfig(BaseModel):
         minimum=1,
         maximum=30,
     )
-    custom_insights_fields: Optional[str] = Field(description="A list of fields separate by commas describing the custom fields you want to sync from Facebook-AdsInsights")
+    custom_insights: Optional[Json] = Field(description="A json objet with custom insights")
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -132,6 +132,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdSets(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             AdCreatives(api=api),
+
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
@@ -140,9 +141,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsPlatformAndDevice(**insights_args),
         ]
 
-        streams = self._add_custom_adsinsights_streams(config=config, args=insights_args, streams=streams)
-
-        return streams
+        return self._add_custom_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """
@@ -157,20 +156,23 @@ class SourceFacebookMarketing(AbstractSource):
             connectionSpecification=ConnectorConfig.schema(),
         )
 
-    def _add_custom_adsinsights_streams(self, config, args, streams) -> List[Type[Stream]]:
+    def _add_custom_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
         """ Update method, returns streams plus custom streams
         After we checked if 'custom_insights_fields' exists we add the custom streams with the
-        fields that we setted in the config
+        fields that we setted in the confi
         """
-        adsinsights_selected_fields = config.custom_insights_fields
-        if adsinsights_selected_fields:
-            args['list_selected_fields'] = [field.strip() for field in adsinsights_selected_fields.split(',') if field and field.strip() !='']
-            streams += [
-                        CustomAdsInsights(**args),
-                        CustomAdsInsightsAgeAndGender(**args),
-                        CustomAdsInsightsCountry(**args),
-                        CustomAdsInsightsRegion(**args),
-                        CustomAdsInsightsDma(**args),
-                        CustomAdsInsightsPlatformAndDevice(**args)]
+        insights_custom_streams = list()
+        for insight_entry in insights.get('insights'):
+            args['name'] = insight_entry.get('name')
+            args['fields'] = insight_entry.get('fields')
+            args['breakdowns'] = insight_entry.get('breakdowns')
+            args['action_breakdowns'] = insight_entry.get('action_breakdowns')
+            insight_stream = AdsInsights(**args)
+            insights_custom_streams.append(insight_stream)
 
-        return streams
+        new_streams = list()
+        for stream in streams:
+            if stream.name not in [e.name for e in insights_custom_streams]:
+                new_streams.append(stream)
+
+        return new_streams + insights_custom_streams

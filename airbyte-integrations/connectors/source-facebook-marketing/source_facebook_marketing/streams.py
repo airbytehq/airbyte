@@ -31,6 +31,8 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import backoff
 import pendulum
+import airbyte_cdk.sources.utils.casing as casing
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -305,10 +307,31 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     breakdowns = []
 
-    def __init__(self, buffer_days, days_per_job, **kwargs):
+    def __init__(
+        self,
+        buffer_days,
+        days_per_job,
+        name: str = None,
+        fields: List[str] = None,
+        breakdowns: List[str] = None,
+        action_breakdowns: List[str] = None,
+        **kwargs):
+
         super().__init__(**kwargs)
         self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
+        self._fields = fields
+        self.action_breakdowns = action_breakdowns or self.action_breakdowns
+        self.breakdowns = breakdowns or self.breakdowns
+        self._new_class_name = name
+
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        name = self._new_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
 
     def read_records(
         self,
@@ -403,12 +426,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return: A dict of the JSON schema representing this stream.
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        if self._fields:
+            schema["properties"] = {k:v for k,v in schema["properties"].items() if k in self._fields}
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
+        if self._fields:
+            return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
 
@@ -477,49 +504,5 @@ class AdsInsightsDma(AdsInsights):
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
-    breakdowns = ["publisher_platform", "platform_position", "impression_device"]
-    action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
-
-
-class CustomAdsInsights(AdsInsights):
-
-    def __init__(self, list_selected_fields, **kwargs):
-        super().__init__(**kwargs)
-        self._list_selected_fields = list_selected_fields
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """Add fields from breakdowns to the stream schema
-        :return: A dict of the JSON schema representing this stream.
-        """
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
-        schema["properties"] = {k:v for k,v in schema["properties"].items() if k in self._list_selected_fields}
-        schema["properties"].update(self._schema_for_breakdowns())
-        return schema
-
-    @cached_property
-    def fields(self) -> List[str]:
-        """List of fields that we want to query"""
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
-        schema["properties"] = {k:v for k,v in schema["properties"].items() if k in self._list_selected_fields}
-        return list(schema.get("properties", {}).keys())
-
-
-class CustomAdsInsightsAgeAndGender(CustomAdsInsights):
-    breakdowns = ["age", "gender"]
-
-
-class CustomAdsInsightsCountry(CustomAdsInsights):
-    breakdowns = ["country"]
-
-
-class CustomAdsInsightsRegion(CustomAdsInsights):
-    breakdowns = ["region"]
-
-
-class CustomAdsInsightsDma(CustomAdsInsights):
-    breakdowns = ["dma"]
-
-
-class CustomAdsInsightsPlatformAndDevice(CustomAdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
     action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
