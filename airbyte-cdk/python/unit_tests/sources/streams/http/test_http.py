@@ -31,7 +31,7 @@ from unittest.mock import ANY
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -371,3 +371,81 @@ class TestRequestBody:
                 assert response["body"] == self.data_body
             else:
                 assert response["body"] is None
+
+
+class CacheHttpStream(StubBasicReadHttpStream):
+    use_cache = True
+
+
+class CacheHttpSubStream(HttpSubStream):
+    url_base = "https://example.com"
+    primary_key = ""
+
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+
+    def parse_response(self, **kwargs) -> Iterable[Mapping]:
+        return []
+
+    def next_page_token(self, **kwargs) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def path(self, **kwargs) -> str:
+        return ""
+
+
+def test_caching_filename():
+    stream = CacheHttpStream()
+    assert stream.cache_filename == f"{stream.name}.yml"
+
+
+def test_caching_cassettes_are_different():
+    stream_1 = CacheHttpStream()
+    stream_2 = CacheHttpStream()
+
+    assert stream_1.cache_file != stream_2.cache_file
+
+
+def test_parent_attribute_exist():
+    parent_stream = CacheHttpStream()
+    child_stream = CacheHttpSubStream(parent=parent_stream)
+
+    assert child_stream.parent == parent_stream
+
+
+def test_cache_response(mocker):
+    stream = CacheHttpStream()
+    mocker.patch.object(stream, "url_base", "https://google.com/")
+    list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    with open(stream.cache_filename, 'r') as f:
+        assert f.read()
+
+
+class CacheHttpStreamWithSlices(CacheHttpStream):
+    paths = ['', 'search']
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f'{stream_slice.get("path")}'
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for path in self.paths:
+            yield {"path": path}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response
+
+
+def test_using_cache(mocker):
+    parent_stream = CacheHttpStreamWithSlices()
+    mocker.patch.object(parent_stream, "url_base", "https://google.com/")
+
+    for _slice in parent_stream.stream_slices():
+        list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
+
+    child_stream = CacheHttpSubStream(parent=parent_stream)
+
+    for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        pass
+
+    assert parent_stream.cassete.play_count != 0
