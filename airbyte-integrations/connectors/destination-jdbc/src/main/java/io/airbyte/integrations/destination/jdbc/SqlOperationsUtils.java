@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -34,6 +35,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SqlOperationsUtils {
@@ -54,7 +56,16 @@ public class SqlOperationsUtils {
                                                    JdbcDatabase jdbcDatabase,
                                                    List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
+    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true, Function.identity());
+  }
+
+  public static void insertRawRecordsInSingleQuery(String insertQueryComponent,
+      String recordQueryComponent,
+      JdbcDatabase jdbcDatabase,
+      List<AirbyteRecordMessage> records,
+      Function<JsonNode, JsonNode> dataFormatter)
+      throws SQLException {
+    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true, dataFormatter);
   }
 
   /**
@@ -75,7 +86,7 @@ public class SqlOperationsUtils {
                                                         JdbcDatabase jdbcDatabase,
                                                         List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
+    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false, Function.identity());
   }
 
   @VisibleForTesting
@@ -84,7 +95,8 @@ public class SqlOperationsUtils {
                                             JdbcDatabase jdbcDatabase,
                                             List<AirbyteRecordMessage> records,
                                             Supplier<UUID> uuidSupplier,
-                                            boolean sem)
+                                            boolean sem,
+                                            Function<JsonNode, JsonNode> dataFormatter)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -109,7 +121,7 @@ public class SqlOperationsUtils {
         for (final AirbyteRecordMessage message : records) {
           // 1-indexed
           statement.setString(i, uuidSupplier.get().toString());
-          statement.setString(i + 1, Jsons.serialize(message.getData()));
+          statement.setString(i + 1, Jsons.serialize(dataFormatter.apply(message.getData())));
           statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
           i += 3;
         }

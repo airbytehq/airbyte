@@ -28,11 +28,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
 public class SqlServerOperations implements SqlOperations {
 
@@ -95,11 +98,15 @@ public class SqlServerOperations implements SqlOperations {
     final List<List<AirbyteRecordMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
     batches.forEach(record -> {
       try {
-        SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, record);
+        SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records, SqlServerOperations::formatData);
       } catch (SQLException e) {
         e.printStackTrace();
       }
     });
+  }
+
+  private static JsonNode formatData(JsonNode data) {
+    return StandardNameTransformer.formatJsonPath(data);
   }
 
   @Override
