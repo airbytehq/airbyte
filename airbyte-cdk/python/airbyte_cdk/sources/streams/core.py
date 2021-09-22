@@ -48,7 +48,7 @@ class Stream(ABC):
     # Use self.logger in subclasses to log any messages
     logger = AirbyteLogger()  # TODO use native "logging" loggers with custom handlers
 
-    # Transformer object ot perform output data transformation
+    # Transformer object to perform output data transformation
     transformer: Transformer = Transformer(TransformConfig.NoTransform)
 
     @property
