@@ -20,10 +20,19 @@ This Source is capable of syncing the following core Streams:
 * [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
 * [Metafields](https://help.shopify.com/en/api/reference/metafield)
 * [Orders](https://help.shopify.com/en/api/reference/orders)
+* [Orders Refunds](https://shopify.dev/api/admin/rest/reference/orders/refund)
+* [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
 * [Products](https://help.shopify.com/en/api/reference/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
+
+#### NOTE: 
+For better experience with `Incremental Refresh` the follwing is recomended:
+* `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
+* `Discount Codes` should be synced along with `Price Rules` stream.
+
+If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
 
 ### Data type mapping
 
@@ -67,6 +76,7 @@ With given error message the sync operation is still goes on, but will require m
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.18  | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
 | 0.1.17  | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
 | 0.1.16  | 2021-09-09 | [5965](https://github.com/airbytehq/airbyte/pull/5945) | Fixed the connector's performance for `Incremental refresh` |
 | 0.1.15  | 2021-09-02 | [5853](https://github.com/airbytehq/airbyte/pull/5853) | Fixed `amount` type in `order_refund` schema |

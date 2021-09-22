@@ -174,6 +174,9 @@ public class ServerApp implements ServerRunnable {
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
 
+    LOGGER.info("Creating Staged Resource folder...");
+    ConfigDumpImporter.initStagedResourceFolder();
+
     LOGGER.info("Creating config repository...");
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),

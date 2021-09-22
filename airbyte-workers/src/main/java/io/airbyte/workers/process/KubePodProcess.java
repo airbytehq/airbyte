@@ -275,6 +275,7 @@ public class KubePodProcess extends Process {
                         ResourceRequirements resourceRequirements,
                         String imagePullSecret,
                         List<WorkerPodToleration> tolerations,
+                        Map<String, String> nodeSelectors,
                         Map<String, String> labels,
                         final String... args)
       throws IOException, InterruptedException {
@@ -382,6 +383,7 @@ public class KubePodProcess extends Process {
         .withNewSpec()
         .withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
+        .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)

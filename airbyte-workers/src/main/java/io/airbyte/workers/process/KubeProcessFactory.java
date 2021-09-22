@@ -142,6 +142,10 @@ public class KubeProcessFactory implements ProcessFactory {
           WorkerUtils.DEFAULT_JOBS_IMAGE_PULL_SECRET,
           WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
           allLabels,
+          WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
+          Map.of(JOB_LABEL_KEY, jobId,
+              ATTEMPT_LABEL_KEY, String.valueOf(attempt),
+              WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE),
           args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage(), e);
