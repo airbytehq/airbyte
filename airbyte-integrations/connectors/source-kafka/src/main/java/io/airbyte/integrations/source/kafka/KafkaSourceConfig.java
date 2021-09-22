@@ -27,7 +27,6 @@ package io.airbyte.integrations.source.kafka;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,22 +68,22 @@ public class KafkaSourceConfig {
     final Map<String, Object> props = new HashMap<>();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText());
     props.put(ConsumerConfig.GROUP_ID_CONFIG,
-            config.has("group_id") ? config.get("group_id").asText() : null);
+        config.has("group_id") ? config.get("group_id").asText() : null);
     props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,
-            config.has("max_poll_records") ? config.get("max_poll_records").intValue() : null);
+        config.has("max_poll_records") ? config.get("max_poll_records").intValue() : null);
     props.putAll(propertiesByProtocol(config));
     props.put(ConsumerConfig.CLIENT_ID_CONFIG,
         config.has("client_id") ? config.get("client_id").asText() : null);
     props.put(ConsumerConfig.CLIENT_DNS_LOOKUP_CONFIG, config.get("client_dns_lookup").asText());
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, config.get("enable_auto_commit").booleanValue());
     props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
-            config.has("auto_commit_interval_ms") ? config.get("auto_commit_interval_ms").intValue() : null);
+        config.has("auto_commit_interval_ms") ? config.get("auto_commit_interval_ms").intValue() : null);
     props.put(ConsumerConfig.RETRY_BACKOFF_MS_CONFIG,
-            config.has("retry_backoff_ms") ? config.get("retry_backoff_ms").intValue() : null);
+        config.has("retry_backoff_ms") ? config.get("retry_backoff_ms").intValue() : null);
     props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG,
-            config.has("request_timeout_ms") ? config.get("request_timeout_ms").intValue() : null);
+        config.has("request_timeout_ms") ? config.get("request_timeout_ms").intValue() : null);
     props.put(ConsumerConfig.RECEIVE_BUFFER_CONFIG,
-            config.has("receive_buffer_bytes") ? config.get("receive_buffer_bytes").intValue() : null);
+        config.has("receive_buffer_bytes") ? config.get("receive_buffer_bytes").intValue() : null);
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
 
@@ -127,8 +126,8 @@ public class KafkaSourceConfig {
         String topicPattern = subscription.get("topic_pattern").asText();
         consumer.subscribe(Pattern.compile(topicPattern));
         topicsToSubscribe = consumer.listTopics().keySet().stream()
-                .filter(topic -> topic.matches(topicPattern))
-                .collect(Collectors.toSet());
+            .filter(topic -> topic.matches(topicPattern))
+            .collect(Collectors.toSet());
       }
       case "assign" -> {
         topicsToSubscribe = new HashSet<>();
