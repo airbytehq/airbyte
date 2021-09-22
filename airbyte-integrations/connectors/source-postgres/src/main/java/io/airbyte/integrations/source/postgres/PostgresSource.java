@@ -52,7 +52,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   private final JdbcSourceOperations sourceOperations;
 
-  public PostgresSource() {
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
+  }
+
+  PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
     this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
   }
@@ -67,7 +71,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -247,7 +252,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
+    final Source source = PostgresSource.sshWrappedSource();
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);

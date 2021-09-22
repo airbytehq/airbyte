@@ -61,7 +61,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
         .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
-//    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    // container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
@@ -72,7 +72,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-//        .put("ssl", false)
+        // .put("ssl", false)
         .put("replication_method", replicationMethod)
         .build());
 
@@ -109,7 +109,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("strict_spec.json"), ConnectorSpecification.class));
+    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
   }
 
   @Override

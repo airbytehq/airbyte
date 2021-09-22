@@ -22,38 +22,46 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.base.spec_modification;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.IntegrationRunner;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class PostgresSourceStrict extends SpecModifyingSource implements Source {
+public abstract class SpecModifyingSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrict.class);
+  private final Source source;
 
-  PostgresSourceStrict() {
-    super(PostgresSource.sshWrappedSource());
+  public SpecModifyingSource(final Source source) {
+    this.source = source;
+  }
+
+  public abstract ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) throws Exception;
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    return modifySpec(source.spec());
   }
 
   @Override
-  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
-    final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
-    System.out.println("spec = " + spec);
-    return spec;
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    return source.check(config);
   }
 
-  public static void main(final String[] args) throws Exception {
-    final Source source = new PostgresSourceStrict();
-    LOGGER.info("starting source: {}", PostgresSourceStrict.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", PostgresSourceStrict.class);
+  @Override
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+    return source.discover(config);
+  }
+
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+      throws Exception {
+    return source.read(config, catalog, state);
   }
 
 }

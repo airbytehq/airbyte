@@ -8,32 +8,19 @@ application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceStrict'
 }
 
-// options
-// 1. reuse same java application, just have postgres source switch on spec based on a flag passed to the java application. this is passed via a separate docker container
-// 2. build the java application separately with a different spec.
-// 3. move all of this into a separate submodule.
-
-// if we do 1. then just need:
-// 1. separate docker file with different flag
-// 2. alter postgres source to switch on spec
-// do we need to run integration tests on new image?
 dependencies {
-    // need any of these?
     implementation project(':airbyte-db:lib')
+
+    // need any of these?
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium')
+    implementation project(':airbyte-integrations:connectors:source-postgres')
     implementation project(':airbyte-protocol:models')
+    // todo (cgardens): why are these needed?
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
-    //
-    implementation project(':airbyte-integrations:connectors:source-postgres')
 
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.postgresql:postgresql:42.2.18'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.testcontainers:postgresql:1.15.1'
@@ -43,33 +30,3 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-task mutateSpec(type: Exec) {
-    def originalSpec = new File(rootProject.findProject(":airbyte-integrations:connectors:source-postgres").projectDir, "/src/main/resources/spec.json")
-//    def strictSpec = new File(project.buildDir, "resources/strict_spec.json")
-    def strictSpec = new File(project.projectDir, "src/main/resources/strict_spec.json")
-    commandLine "jq"
-    args 'del(.connectionSpecification.properties.ssl)', originalSpec
-    inputs.file originalSpec
-    outputs.file strictSpec
-    doFirst {
-        // uncomment if you want to see STDOUT in CLI.
-        // standardOutput = new org.apache.tools.ant.util.TeeOutputStream(new FileOutputStream(strictSpec), System.out);
-        standardOutput = new FileOutputStream(strictSpec);
-    }
-}
-processResources.dependsOn(mutateSpec)
-
-//task strictAirbyteDocker(type: Task) {
-//    dependsOn project.mutateSpec
-//    airbyteDocker {
-//        dockerfileName="strict.Dockerfile"
-//    }
-//}
-//
-//task airbyteDockerStrict(type: Task) {
-//    dependsOn project.strictAirbyteDocker
-//    dependsOn project.mutateSpec
-//}
-
-//assemble.dependsOn(project.airbyteDockerStrict)
