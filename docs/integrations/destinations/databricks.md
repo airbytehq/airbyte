@@ -14,7 +14,7 @@ Due to legal reasons, this is currently a private connector that is only availab
 | :--- | :---: | :--- |
 | Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
 | Incremental - Append Sync | ✅ | |
-| Incremental - Dedupe Sync | ❌ | |
+| Incremental - Deduped History | ❌ | |
 | Namespaces | ✅ | |
 
 ## Data Source

@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.1.21
+## 0.1.23
 Added the ability to use caching for efficient synchronization of nested streams.
+
+## 0.1.22
+Allow passing custom headers to request in `OAuth2Authenticator.refresh_access_token()`: https://github.com/airbytehq/airbyte/pull/6219
+
+## 0.1.21
+Resolve nested schema references and move external references to single schema definitions.
 
 ## 0.1.20
 - Allow using `requests.auth.AuthBase` as authenticators instead of custom CDK authenticators.
