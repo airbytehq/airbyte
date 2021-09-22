@@ -60,3 +60,6 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
+
+# Strict Specs
+airbyte-integrations/**/strict_spec.json
