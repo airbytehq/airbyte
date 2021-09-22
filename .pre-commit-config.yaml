@@ -43,7 +43,6 @@ repos:
         language: system
         entry: python tools/bin/spec_linter.py
         files: ^.*/spec.json$
-        require_serial: true
         exclude: |
             (?x)^.*(
                 /connectors/destination-e2e-test|
