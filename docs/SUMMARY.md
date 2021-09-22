@@ -71,6 +71,7 @@
     * [Intercom](integrations/sources/intercom.md)
     * [Iterable](integrations/sources/iterable.md)
     * [Jira](integrations/sources/jira.md)
+    * [Kafka](integrations/sources/kafka.md)
     * [Klaviyo](integrations/sources/klaviyo.md)
     * [Kustomer](integrations/sources/kustomer.md)
     * [Lever Hiring](integrations/sources/lever-hiring.md)
