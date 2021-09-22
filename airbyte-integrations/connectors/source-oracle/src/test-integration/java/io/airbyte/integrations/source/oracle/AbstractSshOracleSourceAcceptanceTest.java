@@ -45,8 +45,6 @@ import java.util.List;
 
 public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  // private static final String STREAM_NAME = "test.id_and_name";
-  // private static final String STREAM_NAME2 = "test.starships";
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
