@@ -42,3 +42,10 @@ This is just the beginning of using Airbyte. We support a large collection of so
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
+
+
+{% hint style="warning" %}
+At the moment, Airbyte runs a full-refresh to recreate the final tables. This can cause more costs in some destinations like Snowflake, Redshidt, and Bigquery.
+To understand better what sync mode and frequency you should select, read [this doc](../understanding-airbyte/connections/README.md).
+There is a FAQ topic on our Discourse that more extensively explains the cost issue [here](https://discuss.airbyte.io/t/why-are-my-final-tables-are-being-recreated-everytime/76).
+{% endhint %}

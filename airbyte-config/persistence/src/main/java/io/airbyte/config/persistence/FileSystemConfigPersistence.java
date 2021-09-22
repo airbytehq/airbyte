@@ -31,6 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -196,6 +197,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
     FileUtils.deleteDirectory(storageRoot.resolve(oldConfigsDir).toFile());
     LOGGER.info("Deleted {}", oldConfigsDir);
+  }
+
+  @Override
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    throw new UnsupportedEncodingException("This method is not supported in this implementation");
   }
 
   private <T> T getConfigInternal(AirbyteConfig configType, String configId, Class<T> clazz)
