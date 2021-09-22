@@ -24,7 +24,10 @@
       "type": ["null", "string"]
     },
     "owners": {
-      "type": ["null", "object"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "published": {
       "type": ["null", "boolean"]
