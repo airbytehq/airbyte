@@ -8,7 +8,7 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import SideMenu from "components/SideMenu";
 import LoadingPage from "components/LoadingPage";
 import { CategoryItem } from "components/SideMenu/SideMenu";
-import { Routes } from "pages/routes";
+import { Routes } from "packages/cloud/routes";
 import useRouter from "hooks/useRouter";
 import CreditsTitle from "./components/CreditsTitle";
 import RemainingCredits from "./components/RemainingCredits";

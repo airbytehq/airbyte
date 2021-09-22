@@ -37,7 +37,7 @@ import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView"
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import OnboardingPage from "pages/OnboardingPage";
-import CreditsPage from "pages/CreditsPage";
+import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";

@@ -7,7 +7,7 @@ import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { Routes } from "pages/routes";
+import { Routes } from "packages/cloud/routes";
 import { useConfig } from "config";
 
 import useConnector from "hooks/services/useConnector";
