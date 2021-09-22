@@ -47,3 +47,13 @@
 {% macro redshift__cast_to_boolean(field) -%}
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)
 {%- endmacro %}
+
+
+{# empty_string_to_null -------------------------------------------------     #}
+{% macro empty_string_to_null(field) -%}
+    {{ return(adapter.dispatch('empty_string_to_null')(field)) }}
+{%- endmacro %}
+
+{%- macro default__empty_string_to_null(field) -%}
+    nullif({{ field }}, '')
+{%- endmacro %}

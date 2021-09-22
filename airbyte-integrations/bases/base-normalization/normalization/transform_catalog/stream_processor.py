@@ -435,9 +435,13 @@ from {{ from_table }}
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_timestamp_with_time_zone(definition):
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             sql_type = jinja_call("type_timestamp_with_timezone()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             sql_type = jinja_call("type_date()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:
