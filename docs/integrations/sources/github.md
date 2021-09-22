@@ -11,8 +11,12 @@ This connector outputs the following full refresh streams:
 * [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
 * [Branches](https://docs.github.com/en/rest/reference/repos#list-branches)
 * [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
+* [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment)
+* [Issue comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment)
 * [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
+* [Issue reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue)
 * [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
+* [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 * [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 * [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
 * [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
@@ -23,25 +27,21 @@ This connector outputs the following full refresh streams:
 This connector outputs the following incremental streams:
 
 * [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
-* [Commits](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
-* [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment)
+* [Commits](https://docs.github.com/en/rest/reference/repos#list-commits)
 * [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
 * [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)
 * [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
-* [Issue comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment)
 * [Issue events](https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository)
 * [Issue milestones](https://docs.github.com/en/rest/reference/issues#list-milestones)
-* [Issue reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue)
 * [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
 * [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
-* [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 * [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
 
 ### Notes
 
-1. Only 3 streams from above 11 incremental streams (`comments`, `commits` and `issues`) are pure incremental
+1. Only 3 streams from above 12 incremental streams (`comments`, `commits` and `issues`) are pure incremental
 meaning that they:
     - read only new records;
     - output only new records.
@@ -97,7 +97,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.2.0  | 2021-09-19 | [5898](https://github.com/airbytehq/airbyte/pull/5898) and [6227](https://github.com/airbytehq/airbyte/pull/6227) | Don't minimize any output fields & add better error handling  |
+| 0.2.1   | 2021-09-22 | [6223](https://github.com/airbytehq/airbyte/pull/6223) | Add option to pull commits from user-specified branches |
+| 0.2.0   | 2021-09-19 | [5898](https://github.com/airbytehq/airbyte/pull/5898) and [6227](https://github.com/airbytehq/airbyte/pull/6227) | Don't minimize any output fields & add better error handling  |
 | 0.1.11  | 2021-09-15 | [5949](https://github.com/airbytehq/airbyte/pull/5949) | Add caching for all streams |
 | 0.1.10  | 2021-09-09 | [5860](https://github.com/airbytehq/airbyte/pull/5860) | Add reaction streams |
 | 0.1.9   | 2021-09-02 | [5788](https://github.com/airbytehq/airbyte/pull/5788) | Handling empty repository, check method using RepositoryStats stream |
