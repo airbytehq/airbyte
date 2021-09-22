@@ -103,10 +103,10 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
 
-    @stream_state_cache.cache_stream_state
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
+    @stream_state_cache.cache_stream_state
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -136,18 +136,6 @@ class Customers(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
-class OrderSubstream(IncrementalShopifyStream):
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        # get the last saved orders stream state
-        orders_stream = Orders(self.config)
-        orders_stream_state = stream_state_cache.cached_state.get(orders_stream.name)
-        for data in orders_stream.read_records(stream_state=orders_stream_state, **kwargs):
-            slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
-
-
 class Orders(IncrementalShopifyStream):
     data_field = "orders"
 
@@ -161,6 +149,55 @@ class Orders(IncrementalShopifyStream):
         if not next_page_token:
             params["status"] = "any"
         return params
+
+
+class ChildSubstream(IncrementalShopifyStream):
+
+    """
+    ChildSubstream - provides slicing functionality for streams using parts of data from parent stream.
+    For example:
+       - `Refunds Orders` is the entity of `Orders`,
+       - `OrdersRisks` is the entity of `Orders`,
+       - `DiscountCodes` is the entity of `PriceRules`, etc.
+
+    ::  @ parent_stream_class - defines the parent stream object to read from
+    ::  @ slice_key - defines the name of the property in stream slices dict.
+    ::  @ record_field_name - the name of the field inside of parent stream record. Default is `id`.
+    """
+
+    parent_stream_class: object = None
+    slice_key: str = None
+    record_field_name: str = "id"
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Reading the parent stream for slices with structure:
+        EXAMPLE: for given record_field_name as `id` of Orders,
+
+        Output: [ {slice_key: 123}, {slice_key: 456}, ..., {slice_key: 999} ]
+        """
+        parent_stream = self.parent_stream_class(self.config)
+        parent_stream_state = stream_state_cache.cached_state.get(parent_stream.name)
+        for record in parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+            yield {self.slice_key: record[self.record_field_name]}
+
+    def read_records(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Mapping[str, Any]]:
+        """ Reading child streams records for each `id` """
+
+        self.logger.info(f"Reading {self.name} for {self.slice_key}: {stream_slice.get(self.slice_key)}")
+        records = super().read_records(stream_slice=stream_slice, **kwargs)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
 
 
 class DraftOrders(IncrementalShopifyStream):
@@ -240,22 +277,26 @@ class Collects(IncrementalShopifyStream):
         return params
 
 
-class OrderRefunds(OrderSubstream):
+class OrdersRefunds(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
     data_field = "refunds"
-    order_field = "created_at"
     cursor_field = "created_at"
-    filter_field = "created_at_min"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class OrderRisks(OrderSubstream):
+class OrdersRisks(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
     data_field = "risks"
-    order_field = "id"
     cursor_field = "id"
-    filter_field = "since_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
@@ -264,21 +305,14 @@ class OrderRisks(OrderSubstream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        # If there is a next page token then we should only send pagination-related parameters.
-        if not next_page_token and not stream_state:
-            params[self.filter_field] = 0
-        return params
 
+class Transactions(ChildSubstream):
 
-class Transactions(OrderSubstream):
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
     data_field = "transactions"
-    order_field = "created_at"
     cursor_field = "created_at"
-    filter_field = "created_at_min"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
@@ -299,22 +333,16 @@ class PriceRules(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
-class DiscountCodes(IncrementalShopifyStream):
+class DiscountCodes(ChildSubstream):
+
+    parent_stream_class: object = PriceRules
+    slice_key = "price_rule_id"
+
     data_field = "discount_codes"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         price_rule_id = stream_slice["price_rule_id"]
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
-
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        # get the last saved price_rules stream state
-        price_rules_stream = PriceRules(self.config)
-        price_rules_stream_state = stream_state_cache.cached_state.get(price_rules_stream.name)
-        for data in price_rules_stream.read_records(stream_state=price_rules_stream_state, **kwargs):
-            slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
@@ -327,7 +355,6 @@ class ShopifyAuthenticator(TokenAuthenticator):
         return {"X-Shopify-Access-Token": f"{self._token}"}
 
 
-# Basic Connections Check
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
@@ -352,7 +379,7 @@ class SourceShopify(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-
+        # config["ex_state"] = super().exposed_state
         config["authenticator"] = ShopifyAuthenticator(token=config["api_password"])
 
         return [
@@ -364,8 +391,8 @@ class SourceShopify(AbstractSource):
             Metafields(config),
             CustomCollections(config),
             Collects(config),
-            OrderRefunds(config),
-            OrderRisks(config),
+            OrdersRefunds(config),
+            OrdersRisks(config),
             Transactions(config),
             Pages(config),
             PriceRules(config),
