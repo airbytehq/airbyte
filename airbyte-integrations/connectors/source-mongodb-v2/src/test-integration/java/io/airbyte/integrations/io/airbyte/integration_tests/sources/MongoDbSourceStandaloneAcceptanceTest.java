@@ -47,13 +47,13 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", mongoDBContainer.getHost())
         .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
-        .put("tls", false)
         .build());
 
     String connectionString = String.format("mongodb://%s:%s/",

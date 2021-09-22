@@ -61,9 +61,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
-  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s";
-  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority";
-  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false";
+  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
+  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
+  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   private static final String USER = "user";
   private static final String PASSWORD = "password";
   private static final String INSTANCE_TYPE = "instance_type";
@@ -95,7 +95,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
       // Standalone MongoDb Instance
       connectionStrBuilder.append(String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-          config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText()));
+          config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), instanceConfig.get(TLS).asBoolean()));
     } else if (instanceConfig.has(CLUSTER_URL)) {
       // MongoDB Atlas
       connectionStrBuilder.append(
@@ -110,9 +110,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
       }
     }
-    if (config.get(TLS).asBoolean()) {
-      connectionStrBuilder.append("&ssl=true");
-    }
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("connectionString", connectionStrBuilder.toString())
         .put("database", config.get(DATABASE).asText())

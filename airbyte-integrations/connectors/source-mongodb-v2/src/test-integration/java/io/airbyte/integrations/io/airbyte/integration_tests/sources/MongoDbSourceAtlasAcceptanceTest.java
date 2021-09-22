@@ -60,10 +60,9 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
         .put("instance_type", instanceConfig)
         .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
-        .put("tls", true)
         .build());
 
-    String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&ssl=true",
+    String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
         config.get("password").asText(),
         config.get("instance_type").get("cluster_url").asText(),
