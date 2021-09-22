@@ -43,7 +43,11 @@ const DestinationForm: React.FC<IProps> = ({
   const {
     destinationDefinitionSpecification,
     isLoading,
+    sourceDefinitionError,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+
+  console.log(sourceDefinitionError);
+
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
     const connector = destinationDefinitions.find(
@@ -78,6 +82,7 @@ const DestinationForm: React.FC<IProps> = ({
     <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>
       <ServiceForm
         onServiceSelect={onDropDownSelect}
+        fetchingConnectorError={sourceDefinitionError}
         onSubmit={onSubmitForm}
         formType="destination"
         availableServices={destinationDefinitions}

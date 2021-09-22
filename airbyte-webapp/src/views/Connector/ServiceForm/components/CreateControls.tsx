@@ -6,6 +6,7 @@ import { Button } from "components";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 import TestingConnectionError from "./TestingConnectionError";
+import FetchingConnectorError from "./FetchingConnectorError";
 
 type IProps = {
   formType: "source" | "destination" | "connection";
@@ -13,6 +14,7 @@ type IProps = {
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
   errorMessage?: React.ReactNode;
+  fetchingConnectorError?: Error;
   additionBottomControls?: React.ReactNode;
 };
 
@@ -28,6 +30,7 @@ const CreateControls: React.FC<IProps> = ({
   formType,
   hasSuccess,
   errorMessage,
+  fetchingConnectorError,
   isLoadSchema,
   additionBottomControls,
 }) => {
@@ -41,11 +44,11 @@ const CreateControls: React.FC<IProps> = ({
 
   return (
     <ButtonContainer>
-      {errorMessage ? (
+      {errorMessage && !fetchingConnectorError && (
         <TestingConnectionError errorMessage={errorMessage} />
-      ) : (
-        <div />
       )}
+      {fetchingConnectorError && <FetchingConnectorError />}
+      {!errorMessage && !fetchingConnectorError && <div />}
       <div>
         {additionBottomControls || null}
         <Button type="submit" disabled={isLoadSchema}>

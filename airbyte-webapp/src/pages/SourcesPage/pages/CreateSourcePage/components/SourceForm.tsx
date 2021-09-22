@@ -40,10 +40,13 @@ const SourceForm: React.FC<IProps> = ({
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     location.state?.sourceDefinitionId || ""
   );
+
   const {
     sourceDefinitionSpecification,
+    sourceDefinitionError,
     isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
     const connector = sourceDefinitions.find(
@@ -83,6 +86,7 @@ const SourceForm: React.FC<IProps> = ({
         specifications={sourceDefinitionSpecification?.connectionSpecification}
         documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         hasSuccess={hasSuccess}
+        fetchingConnectorError={sourceDefinitionError}
         errorMessage={errorMessage}
         isLoading={isLoading}
         formValues={

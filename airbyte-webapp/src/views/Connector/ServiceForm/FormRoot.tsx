@@ -34,6 +34,7 @@ const FormRoot: React.FC<{
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
+  fetchingConnectorError?: Error;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
 }> = ({
@@ -42,6 +43,7 @@ const FormRoot: React.FC<{
   successMessage,
   selectedService,
   errorMessage,
+  fetchingConnectorError,
   hasSuccess,
   additionBottomControls,
 }) => {
@@ -90,6 +92,7 @@ const FormRoot: React.FC<{
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
           isLoadSchema={isLoadingSchema}
+          fetchingConnectorError={fetchingConnectorError}
           formType={formType}
           additionBottomControls={additionBottomControls}
           hasSuccess={hasSuccess}
