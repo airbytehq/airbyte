@@ -130,8 +130,9 @@ class TestOauth2Authenticator:
         assert body == expected
 
     def test_refresh_access_token(self, requests_mock):
-        mock_refresh_token_call = requests_mock.post(TestOauth2Authenticator.refresh_endpoint,
-                                                     json={"access_token": "token", "expires_in": 10})
+        mock_refresh_token_call = requests_mock.post(
+            TestOauth2Authenticator.refresh_endpoint, json={"access_token": "token", "expires_in": 10}
+        )
 
         oauth = Oauth2Authenticator(
             TestOauth2Authenticator.refresh_endpoint,
