@@ -8,11 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Kafka Source Spec",
     "type": "object",
-    "required": [
-      "bootstrap_servers",
-      "subscription",
-      "protocol"
-    ],
+    "required": ["bootstrap_servers", "subscription", "protocol"],
     "additionalProperties": false,
     "properties": {
       "bootstrap_servers": {
@@ -46,7 +42,7 @@
           },
           {
             "title": "Subscribe to all topics matching specified pattern",
-            "required": ["subscription_type","topic_pattern"],
+            "required": ["subscription_type", "topic_pattern"],
             "properties": {
               "subscription_type": {
                 "description": "Topic pattern from which the records will be read.",
