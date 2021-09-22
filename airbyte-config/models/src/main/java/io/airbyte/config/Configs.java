@@ -100,7 +100,7 @@ public interface Configs {
 
   String getSubmitterNumThreads();
 
-  String getImagePullSecret();
+  String getJobsImagePullSecret();
 
   // Resources
   String getCpuRequest();
