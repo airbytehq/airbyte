@@ -91,6 +91,7 @@ public class WorkspacesHandler {
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
     final Boolean news = workspaceCreate.getNews();
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
+    final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(uuidSupplier.get())
@@ -101,7 +102,7 @@ public class WorkspacesHandler {
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
-        .withDisplaySetupWizard(false)
+        .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()));
 

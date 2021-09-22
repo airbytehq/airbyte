@@ -22,14 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.oauth.google;
+package io.airbyte.integrations.source.mssql;
 
-import io.airbyte.config.persistence.ConfigRepository;
+import java.nio.file.Path;
 
-public class GoogleAnalyticsOauthFlow extends GoogleOAuthFlow {
+public class SshPasswordMssqlSourceAcceptanceTest extends AbstractSshMssqlSourceAcceptanceTest {
 
-  public GoogleAnalyticsOauthFlow(ConfigRepository configRepository) {
-    super(configRepository, "https://www.googleapis.com/auth/analytics.readonly");
+  @Override
+  public Path getConfigFilePath() {
+    return Path.of("secrets/ssh-pwd-config.json");
   }
 
 }

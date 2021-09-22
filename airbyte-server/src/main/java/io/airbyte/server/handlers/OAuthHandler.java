@@ -95,21 +95,23 @@ public class OAuthHandler {
         oauthDestinationRequestBody.getRedirectUrl());
   }
 
-  public void setDestinationInstancewideOauthParams(SetInstancewideDestinationOauthParamsRequestBody requestBody)
-      throws JsonValidationException, IOException {
-    DestinationOAuthParameter param = new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
-        .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
-    configRepository.writeDestinationOAuthParam(param);
-  }
-
   public void setSourceInstancewideOauthParams(SetInstancewideSourceOauthParamsRequestBody requestBody) throws JsonValidationException, IOException {
-    SourceOAuthParameter param = new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
+    final SourceOAuthParameter param = configRepository
+        .getSourceOAuthParamByDefinitionIdOptional(null, requestBody.getSourceDefinitionId())
+        .orElseGet(() -> new SourceOAuthParameter().withOauthParameterId(UUID.randomUUID()))
         .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
         .withSourceDefinitionId(requestBody.getSourceDefinitionId());
     configRepository.writeSourceOAuthParam(param);
+  }
+
+  public void setDestinationInstancewideOauthParams(SetInstancewideDestinationOauthParamsRequestBody requestBody)
+      throws JsonValidationException, IOException {
+    final DestinationOAuthParameter param = configRepository
+        .getDestinationOAuthParamByDefinitionIdOptional(null, requestBody.getDestinationDefinitionId())
+        .orElseGet(() -> new DestinationOAuthParameter().withOauthParameterId(UUID.randomUUID()))
+        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
+        .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
+    configRepository.writeDestinationOAuthParam(param);
   }
 
   private OAuthFlowImplementation getSourceOAuthFlowImplementation(UUID sourceDefinitionId)
