@@ -112,6 +112,27 @@ class People(IncrementalSalesloftStream):
     def path(self, **kwargs) -> str:
         return "people.json"
 
+
+class Cadences(IncrementalSalesloftStream):
+
+    cursor_field = "updated_at"
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "cadences.json"
+
+
+class CadenceMemberships(IncrementalSalesloftStream):
+
+    cursor_field = "updated_at"
+
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "cadence_memberships.json"
+
+
 # Source
 class SourceSalesloft(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -126,6 +147,8 @@ class SourceSalesloft(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config['api_key'])  # Oauth2Authenticator is also available if you need oauth support
         return [
+            Cadences(authenticator=auth, **config),
+            CadenceMemberships(authenticator=auth, **config),
             People(authenticator=auth, **config),
             Users(authenticator=auth, **config)
         ]
