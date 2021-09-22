@@ -35,10 +35,13 @@ DEFAULT_ITEMS_PER_PAGE = 100
 
 
 def paginator(request, **params):
-    """Split requests in multiple batches and return records as generator"""
+    """
+    Split requests in multiple batches and return records as generator.
+    Use recursion in case of nested streams.
+    """
     rows = request.get(**params)
-    if "nested_names" in params:
-        nested_names = params.pop("nested_names", None)
+    nested_names = params.pop("nested_names", None)
+    if nested_names:
         if len(nested_names) > 1:
             params["nested_names"] = params["nested_names"][1:]
         for row in rows:
@@ -79,30 +82,30 @@ class HarvestClient(Harvest):
 class Client(BaseClient):
     ENTITIES = [
         "applications",
+        "applications.demographics_answers",
+        "applications.interviews",
         "candidates",
         "close_reasons",
-        "degrees",
-        "departments",
-        "job_posts",
-        "jobs",
-        "offers",
-        "scorecards",
-        "users",
         "custom_fields",
-        "demographics_question_sets",
-        "demographics_questions",
+        "degrees",
         "demographics_answer_options",
         "demographics_answers",
-        "applications.demographics_answers",
-        "demographics_question_sets.questions",
         "demographics_answers.answer_options",
+        "demographics_question_sets",
+        "demographics_question_sets.questions",
+        "demographics_questions",
+        "departments",
         "interviews",
-        "applications.interviews",
-        "sources",
-        "rejection_reasons",
-        "jobs.openings",
+        "job_posts",
         "job_stages",
+        "jobs",
+        "jobs.openings",
         "jobs.stages",
+        "offers",
+        "rejection_reasons",
+        "scorecards",
+        "sources",
+        "users",
     ]
 
     def __init__(self, api_key):
@@ -121,10 +124,14 @@ class Client(BaseClient):
         return {entity: partial(self.list, name=entity) for entity in self.ENTITIES}
 
     def get_accessible_endpoints(self) -> List[str]:
-        """Try to read each supported endpoint and return accessible stream names"""
+        """
+        Try to read each supported endpoint and return accessible stream names.
+        Reach parent stream endpoint in case if it's nested stream endpoint.
+        """
         logger = AirbyteLogger()
         accessible_endpoints = []
         for entity in self.ENTITIES:
+            entity = entity.split(".")[0]
             try:
                 getattr(self._client, entity).get()
                 accessible_endpoints.append(entity)
