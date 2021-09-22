@@ -17,6 +17,16 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams:
+        [
+          "demographics_question_sets",
+          "demographics_questions",
+          "demographics_answer_options",
+          "demographics_answers",
+          "applications.demographics_answers",
+          "demographics_question_sets.questions",
+          "demographics_answers.answer_options",
+        ]
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
   full_refresh:

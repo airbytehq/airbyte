@@ -24,7 +24,7 @@
 
 
 from functools import partial
-from typing import Generator, List, Mapping, Tuple
+from typing import Callable, Generator, List, Mapping, Optional, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import AirbyteLogger, BaseClient
@@ -37,10 +37,43 @@ DEFAULT_ITEMS_PER_PAGE = 100
 def paginator(request, **params):
     """Split requests in multiple batches and return records as generator"""
     rows = request.get(**params)
-    yield from rows
+    if "nested_names" in params:
+        nested_names = params.pop("nested_names", None)
+        if len(nested_names) > 1:
+            params["nested_names"] = params["nested_names"][1:]
+        for row in rows:
+            yield from paginator(getattr(request(**params, object_id=row["id"]), nested_names[0]))
+    else:
+        yield from rows
     while request.records_remaining:
         rows = request.get_next()
         yield from rows
+
+
+class HarvestClient(Harvest):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._uris["direct"] = {
+            **self._uris["direct"],
+            "demographics_question_sets": {"list": "demographics/question_sets", "retrieve": "demographics/question_sets/{id}"},
+            "demographics_questions": {"list": "demographics/questions"},
+            "demographics_answer_options": {"list": "demographics/answer_options", "retrieve": "demographics/answer_options/{id}"},
+            "demographics_answers": {"list": "demographics/answers", "retrieve": "demographics/answers/{id}"},
+        }
+        self._uris["related"]["applications"] = {
+            **self._uris["related"]["applications"],
+            "demographics_answers": {"list": "applications/{rel_id}/demographics/answers"},
+        }
+        self._uris["related"] = {
+            **self._uris["related"],
+            "demographics_question_sets": {
+                "questions": {
+                    "list": "demographics/question_sets/{rel_id}/questions",
+                    "retrieve": "demographics/question_sets/{rel_id}/questions/{{id}}",
+                }
+            },
+            "demographics_answers": {"answer_options": {"list": "demographics/questions/{rel_id}/answer_options"}},
+        }
 
 
 class Client(BaseClient):
@@ -56,16 +89,35 @@ class Client(BaseClient):
         "scorecards",
         "users",
         "custom_fields",
+        "demographics_question_sets",
+        "demographics_questions",
+        "demographics_answer_options",
+        "demographics_answers",
+        "applications.demographics_answers",
+        "demographics_question_sets.questions",
+        "demographics_answers.answer_options",
+        "interviews",
+        "applications.interviews",
+        "sources",
+        "rejection_reasons",
+        "jobs.openings",
+        "job_stages",
+        "jobs.stages",
     ]
 
     def __init__(self, api_key):
-        self._client = Harvest(api_key=api_key)
+        self._client = HarvestClient(api_key=api_key)
         super().__init__()
 
     def list(self, name, **kwargs):
-        yield from paginator(getattr(self._client, name), **kwargs)
+        name_parts = name.split(".")
+        nested_names = name_parts[1:]
+        kwargs["per_page"] = DEFAULT_ITEMS_PER_PAGE
+        if nested_names:
+            kwargs["nested_names"] = nested_names
+        yield from paginator(getattr(self._client, name_parts[0]), **kwargs)
 
-    def _enumerate_methods(self) -> Mapping[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, Callable]:
         return {entity: partial(self.list, name=entity) for entity in self.ENTITIES}
 
     def get_accessible_endpoints(self) -> List[str]:
@@ -83,7 +135,7 @@ class Client(BaseClient):
         logger.info(f"API key has access to {len(accessible_endpoints)} endpoints: {accessible_endpoints}")
         return accessible_endpoints
 
-    def health_check(self) -> Tuple[bool, str]:
+    def health_check(self) -> Tuple[bool, Optional[str]]:
         alive = True
         error_msg = None
         try:
