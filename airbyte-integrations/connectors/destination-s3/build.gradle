@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.s3.S3Destination'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {

@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestination'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {

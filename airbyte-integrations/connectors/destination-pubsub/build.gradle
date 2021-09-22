@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.pubsub.PubsubDestination'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
