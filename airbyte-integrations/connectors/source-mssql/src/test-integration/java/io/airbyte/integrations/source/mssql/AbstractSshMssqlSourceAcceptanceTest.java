@@ -86,9 +86,9 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    Field.of("id", JsonSchemaPrimitive.NUMBER),
-                    Field.of("name", JsonSchemaPrimitive.STRING))
+                STREAM_NAME,
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -96,9 +96,9 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2,
-                    Field.of("id", JsonSchemaPrimitive.NUMBER),
-                    Field.of("name", JsonSchemaPrimitive.STRING))
+                STREAM_NAME2,
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
