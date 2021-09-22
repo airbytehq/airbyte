@@ -29,18 +29,18 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({
-  errorMessage,
-}) => {
+const FetchingConnectorError: React.FC = () => {
   return (
     <ErrorBlock>
       <Error />
       <div>
-        <FormattedMessage id="form.failedTests" />
-        <ErrorText>{errorMessage}</ErrorText>
+        <FormattedMessage id="form.failedFetchingConnector" />
+        <ErrorText>
+          <FormattedMessage id="form.tryAgain" />
+        </ErrorText>
       </div>
     </ErrorBlock>
   );
 };
 
-export default TestingConnectionError;
+export default FetchingConnectorError;
