@@ -252,6 +252,7 @@ class DestinationS3Parquet(Destination):
             df = df.replace({'nan': None})
             df = df.where(pd.notnull(df), None)
             df = df.dropna(axis=1, how='all')
+            df = df.astype(str)
 
             filename_sufix_map = {'snappy': 'snappy', 'gzip': 'gz', 'brotli': 'br'}
             if compression is None or compression.lower() == "none":
