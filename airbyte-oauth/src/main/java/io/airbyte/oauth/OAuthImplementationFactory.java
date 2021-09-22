@@ -29,6 +29,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
+import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import java.util.Map;
 
 public class OAuthImplementationFactory {
@@ -37,9 +38,10 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(ConfigRepository configRepository) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
-        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
-        .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
+        .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
+        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
+        .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .build();
   }
 
