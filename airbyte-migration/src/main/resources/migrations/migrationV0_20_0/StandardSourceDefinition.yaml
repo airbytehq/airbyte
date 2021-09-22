@@ -10,7 +10,7 @@ required:
   - dockerRepository
   - dockerImageTag
   - documentationUrl
-additionalProperties: false
+additionalProperties: true
 properties:
   sourceDefinitionId:
     type: string
