@@ -32,6 +32,7 @@ type ServiceFormProps = {
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
+  fetchingConnectorError?: Error;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   onServiceSelect?: (id: string) => void;
@@ -53,6 +54,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     isLoading,
     onRetest,
   } = props;
+
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
