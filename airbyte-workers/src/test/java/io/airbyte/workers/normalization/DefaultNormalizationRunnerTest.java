@@ -38,6 +38,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
+import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -72,7 +73,7 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, false, files, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.NORMALIZATION_JOB),
         "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,

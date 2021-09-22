@@ -33,6 +33,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +44,13 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
+
+  public static final String JOB_TYPE = "job_type";
+  public static final String SYNC_JOB = "sync";
+  public static final String SPEC_JOB = "spec";
+  public static final String CHECK_JOB = "check";
+  public static final String DISCOVER_JOB = "discover";
+  public static final String NORMALIZATION_JOB = "normalize";
 
   private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
   private static final String JOB_LABEL_KEY = "job_id";
@@ -97,11 +105,11 @@ public class KubeProcessFactory implements ProcessFactory {
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
+                        final Map<String, String> customLabels,
                         final String... args)
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
-
       final String podName = createPodName(imageName, jobId, attempt);
 
       final int stdoutLocalPort = KubePortManagerSingleton.take();
@@ -109,6 +117,13 @@ public class KubeProcessFactory implements ProcessFactory {
 
       final int stderrLocalPort = KubePortManagerSingleton.take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
+
+      var allLabels = new HashMap<>(customLabels);
+      var generalKubeLabels = Map.of(
+          JOB_LABEL_KEY, jobId,
+          ATTEMPT_LABEL_KEY, String.valueOf(attempt),
+          WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+      allLabels.putAll(generalKubeLabels);
 
       return new KubePodProcess(
           processRunnerHost,
@@ -124,10 +139,9 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
+          WorkerUtils.DEFAULT_IMAGE_PULL_SECRET,
           WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
-          Map.of(JOB_LABEL_KEY, jobId,
-              ATTEMPT_LABEL_KEY, String.valueOf(attempt),
-              WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE),
+          allLabels,
           args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage(), e);

@@ -31,6 +31,7 @@ import io.airbyte.config.WorkerPodToleration;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.LocalObjectReference;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -199,6 +200,7 @@ public class KubePodProcess extends Process {
         .withCommand("sh", "-c", mainCommand)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts);
+
     final ResourceRequirementsBuilder resourceRequirementsBuilder = getResourceRequirementsBuilder(resourceRequirements);
     if (resourceRequirementsBuilder != null) {
       containerBuilder.withResources(resourceRequirementsBuilder.build());
@@ -271,6 +273,7 @@ public class KubePodProcess extends Process {
                         final Map<String, String> files,
                         final String entrypointOverride,
                         ResourceRequirements resourceRequirements,
+                        String imagePullSecret,
                         List<WorkerPodToleration> tolerations,
                         Map<String, String> labels,
                         final String... args)
@@ -378,6 +381,7 @@ public class KubePodProcess extends Process {
         .endMetadata()
         .withNewSpec()
         .withTolerations(buildPodTolerations(tolerations))
+        .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)

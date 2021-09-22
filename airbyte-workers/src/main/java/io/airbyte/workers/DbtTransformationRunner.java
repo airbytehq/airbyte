@@ -92,7 +92,8 @@ public class DbtTransformationRunner implements AutoCloseable {
       }
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       process =
-          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements, dbtArguments);
+          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements, Map.of(),
+              dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

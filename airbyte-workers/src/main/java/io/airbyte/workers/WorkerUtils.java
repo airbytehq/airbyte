@@ -49,6 +49,7 @@ public class WorkerUtils {
 
   public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = initWorkerPodTolerations();
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
+  public static final String DEFAULT_IMAGE_PULL_SECRET = new EnvConfigs().getImagePullSecret();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 

@@ -65,7 +65,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
         "spec");
   }
 
@@ -74,7 +74,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.check(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
         "check",
         "--config", "config");
   }
@@ -84,7 +84,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.discover(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
         "discover",
         "--config", "config");
   }
@@ -94,7 +94,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.read(JOB_ROOT, "config", "{}", "catalog", "{}", "state", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB),
         Lists.newArrayList(
             "read",
             "--config", "config",
@@ -107,7 +107,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.write(JOB_ROOT, "config", "{}", "catalog", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB),
         "write",
         "--config", "config",
         "--catalog", "catalog");

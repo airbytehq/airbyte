@@ -100,6 +100,8 @@ public interface Configs {
 
   String getSubmitterNumThreads();
 
+  String getImagePullSecret();
+
   // Resources
   String getCpuRequest();
 
