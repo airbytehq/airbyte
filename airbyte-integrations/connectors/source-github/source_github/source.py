@@ -24,7 +24,7 @@
 
 
 import re
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -88,6 +88,43 @@ class SourceGithub(AbstractSource):
         tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
+    @staticmethod
+    def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+        selected_branches = set(filter(None, selected_branches.split(" ")))
+
+        # Get the default branch for each repository
+        default_branches = {}
+        repository_stats_stream = RepositoryStats(**full_refresh_args)
+        for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            default_branches.update(
+                {
+                    repo_stats["full_name"]: repo_stats["default_branch"]
+                    for repo_stats in repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+                }
+            )
+
+        all_branches = []
+        branches_stream = Branches(**full_refresh_args)
+        for stream_slice in branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for branch in branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                all_branches.append(f"{branch['repository']}/{branch['name']}")
+
+        # Create mapping of repository to list of branches to pull commits for
+        # If no branches are specified for a repo, use its default branch
+        branches_to_pull: Dict[str, List[str]] = {}
+        for repo in full_refresh_args["repositories"]:
+            repo_branches = []
+            for branch in selected_branches:
+                branch_parts = branch.split("/", 2)
+                if "/".join(branch_parts[:2]) == repo and branch in all_branches:
+                    repo_branches.append(branch_parts[-1])
+            if not repo_branches:
+                repo_branches = [default_branches[repo]]
+
+            branches_to_pull[repo] = repo_branches
+
+        return default_branches, branches_to_pull
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self._get_authenticator(config["access_token"])
@@ -110,6 +147,7 @@ class SourceGithub(AbstractSource):
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
         organization_args = {"authenticator": authenticator, "organizations": organizations}
+        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), full_refresh_args)
 
         return [
             Assignees(**full_refresh_args),
@@ -118,7 +156,7 @@ class SourceGithub(AbstractSource):
             Comments(**incremental_args),
             CommitCommentReactions(**incremental_args),
             CommitComments(**incremental_args),
-            Commits(**incremental_args),
+            Commits(**incremental_args, branches_to_pull=branches_to_pull, default_branches=default_branches),
             Events(**incremental_args),
             IssueCommentReactions(**incremental_args),
             IssueEvents(**incremental_args),
