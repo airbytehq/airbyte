@@ -686,8 +686,10 @@ class Commits(IncrementalGithubStream):
                     del repository_commits_state[self.cursor_field]
             elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
                 state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
+
         if current_repository not in current_stream_state:
             current_stream_state[current_repository] = {}
+
         current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
         return current_stream_state
 
