@@ -101,15 +101,23 @@ public class SecretsHelpers {
           final ReadOnlySecretPersistence secretReader) {
     Preconditions.checkArgument(spec.has("type"), "Spec is not valid JSONSchema!");
 
-    System.out.println("spec = " + spec);
-
     final var fullConfig = originalFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    // todo: should handle each case here http://json-schema.org/understanding-json-schema/reference/type.html
-    // todo: maybe use a switch
-    if(spec.get("type").asText().equals("string")) {
-      // todo: handle this case
+    if(spec.get("type").asText().equals("string") && spec.has(SPEC_SECRET_FIELD) && spec.get(SPEC_SECRET_FIELD).asBoolean()) {
+      final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
+      final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
+
+      final var newPartialConfig = Jsons.jsonNode(Map.of(
+              COORDINATE_FIELD, secretCoordinate.toString()
+      ));
+
+      final var coordinateToPayload = Map.of(
+              secretCoordinate,
+              fullConfig.asText()
+      );
+
+      return new SplitSecretConfig(newPartialConfig, coordinateToPayload);
     } else if(spec.get("type").asText().equals("object")) {
 
     final var specProperties = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
@@ -117,6 +125,7 @@ public class SecretsHelpers {
     for (final String specProperty : Jsons.keys(specProperties)) {
       final var fieldSchema = specProperties.get(specProperty);
       final var fieldSchemaCombinationType = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
+      final var isCombinationNodeSchema = fieldSchemaCombinationType.isPresent();
 
       // if the json schema field is an obj and has the airbyte secret field
       if (fullConfig.has(specProperty)) {
@@ -129,7 +138,7 @@ public class SecretsHelpers {
 
           secretMap.put(secretCoordinate, newSecret);
           ((ObjectNode) fullConfig).replace(specProperty, Jsons.jsonNode(Map.of(COORDINATE_FIELD, secretCoordinate.toString())));
-        } else if (fieldSchemaCombinationType.isPresent()) {
+        } else if (isCombinationNodeSchema) {
           var combinationCopy = fullConfig.get(specProperty);
           final var arrayNode = (ArrayNode) fieldSchema.get(fieldSchemaCombinationType.get());
           for (int i = 0; i < arrayNode.size(); i++) {
@@ -138,14 +147,15 @@ public class SecretsHelpers {
             secretMap.putAll(combinationSplitConfig.getCoordinateToPayload());
           }
           ((ObjectNode) fullConfig).set(specProperty, combinationCopy);
-        } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("object") && fieldSchema.has("properties")) {
+        } else if (isObjectSchema(fieldSchema)) {
           final var nestedSplitConfig = split(uuidSupplier, workspaceId, nextOldPartialConfig, fullConfig.get(specProperty), fieldSchema, secretReader);
           ((ObjectNode) fullConfig).replace(specProperty, nestedSplitConfig.getPartialConfig());
           secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
-        } else if (fieldSchema.has("type") && fieldSchema.get("type").asText().equals("array") && fieldSchema.has("items")) {
+        } else if (isArraySchema(fieldSchema)) {
           for (int i = 0; i < fullConfig.get(specProperty).size(); i++) {
-            final var newOldElement = nextOldPartialConfig.has(i) ? nextOldPartialConfig.get(i) : Jsons.emptyObject();
-            final var splitSecret = split(uuidSupplier, workspaceId, newOldElement, fullConfig.get(specProperty).get(i), fieldSchema.get("items"), secretReader);
+            final var partialConfigElement = getFieldOrEmptyNode(nextOldPartialConfig, i);
+            final var fullConfigElement = fullConfig.get(specProperty).get(i);
+            final var splitSecret = split(uuidSupplier, workspaceId, partialConfigElement, fullConfigElement, fieldSchema.get("items"), secretReader);
             secretMap.putAll(splitSecret.getCoordinateToPayload());
             ((ArrayNode) fullConfig.get(specProperty)).set(i, splitSecret.getPartialConfig());
           }
@@ -159,7 +169,19 @@ public class SecretsHelpers {
     return new SplitSecretConfig(fullConfig, secretMap);
   }
 
+  private static boolean isObjectSchema(JsonNode schema) {
+    return schema.has("type") && schema.get("type").asText().equals("object") && schema.has("properties");
+  }
+
+  private static boolean isArraySchema(JsonNode schema) {
+    return schema.has("type") && schema.get("type").asText().equals("array") && schema.has("items");
+  }
+
   private static JsonNode getFieldOrEmptyNode(final JsonNode node, final String field) {
+    return node.has(field) ? node.get(field) : Jsons.emptyObject();
+  }
+
+  private static JsonNode getFieldOrEmptyNode(final JsonNode node, final int field) {
     return node.has(field) ? node.get(field) : Jsons.emptyObject();
   }
 

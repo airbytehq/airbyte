@@ -65,7 +65,8 @@ public class SecretsHelpersTest {
         new NestedObjectTestCase(),
         new OneOfTestCase(),
         new ArrayTestCase()
-    // new ArrayOneOfTestCase() todo: support this test case
+        // new ArrayOneOfTestCase() todo: support this test case
+        // todo: support allOf / other combination node types
     ).map(Arguments::of);
   }
 
