@@ -24,19 +24,30 @@
 
 from unittest.mock import MagicMock
 
+import responses
 from source_lever_hiring.source import SourceLeverHiring
 
 
-def test_check_connection(mocker):
-    source = SourceLeverHiring()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+def setup_responses():
+    responses.add(
+        responses.POST,
+        "https://sandbox-lever.auth0.com/oauth/token",
+        json={"access_token": "fake_access_token", "expires_in": 3600},
+    )
 
 
-def test_streams(mocker):
+@responses.activate
+def test_check_connection(test_config):
+    setup_responses()
     source = SourceLeverHiring()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, test_config) == (True, None)
+
+
+@responses.activate
+def test_streams(test_config):
+    setup_responses()
+    source = SourceLeverHiring()
+    streams = source.streams(test_config)
+    expected_streams_number = 7
     assert len(streams) == expected_streams_number

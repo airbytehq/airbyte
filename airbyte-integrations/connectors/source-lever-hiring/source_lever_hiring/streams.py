@@ -22,74 +22,151 @@
 # SOFTWARE.
 #
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+
+from .schemas import Application, BaseSchemaModel, Interview, Note, Offer, Opportunity, Referral, User
 
 
 class LeverHiringStream(HttpStream, ABC):
 
-    url_base = ""
+    primary_key = "id"
+    page_size = 50
+
+    stream_params = {}
+    API_VERSION = "v1"
+
+    def __init__(self, base_url: str, **kwargs):
+        super().__init__(**kwargs)
+        self.base_url = base_url
+
+    @property
+    def url_base(self) -> str:
+        return f"{self.base_url}/{self.API_VERSION}/"
+
+    def path(self, **kwargs) -> str:
+        return self.name
+
+    @property
+    @abstractmethod
+    def schema(self) -> BaseSchemaModel:
+        """Pydantic model that represents stream schema"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+        response_data = response.json()
+        if response_data.get("hasNext"):
+            return {"offset": response_data["next"]}
 
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {"limit": self.page_size}
+        params.update(self.stream_params)
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
+        yield from response.json()["data"]
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Use Pydantic schema"""
+        return self.schema.schema()
 
 
 class IncrementalLeverHiringStream(LeverHiringStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
+    state_checkpoint_interval = 100
+    cursor_field = "updatedAt"
 
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return ""
+    def __init__(self, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self._start_ts = int(pendulum.parse(start_date).timestamp()) * 1000
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+        state_ts = int(current_stream_state.get(self.cursor_field, 0))
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), state_ts)}
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        state_ts = int(stream_state.get(self.cursor_field, 0))
+        params["updated_at_start"] = max(state_ts, self._start_ts)
+
+        return params
+
+
+class Opportunities(IncrementalLeverHiringStream):
+    """
+    Opportunities stream: https://hire.lever.co/developer/documentation#list-all-opportunities
+    """
+
+    schema = Opportunity
+    base_params = {"include": "followers", "confidentiality": "all"}
+
+
+class Users(LeverHiringStream):
+    """
+    Users stream: https://hire.lever.co/developer/documentation#list-all-users
+    """
+
+    schema = User
+    base_params = {"includeDeactivated": True}
+
+
+class OpportynityChildStream(LeverHiringStream, ABC):
+    def __init__(self, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+
+    def path(self, stream_slice: Mapping[str, any] = None, **kwargs) -> str:
+        return f"opportunities/{stream_slice['opportunity_id']}/{self.name}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            opportunities_stream = Opportunities(authenticator=self.authenticator, base_url=self.base_url, start_date=self._start_date)
+            for opportunity in opportunities_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {"opportunity_id": opportunity["id"]}
+
+
+class Applications(OpportynityChildStream):
+    """
+    Applications stream: https://hire.lever.co/developer/documentation#list-all-applications
+    """
+
+    schema = Application
+
+
+class Interviews(OpportynityChildStream):
+    """
+    Interviews stream: https://hire.lever.co/developer/documentation#list-all-interviews
+    """
+
+    schema = Interview
+
+
+class Notes(OpportynityChildStream):
+    """
+    Notes stream: https://hire.lever.co/developer/documentation#list-all-notes
+    """
+
+    schema = Note
+
+
+class Offers(OpportynityChildStream):
+    """
+    Offers stream: https://hire.lever.co/developer/documentation#list-all-offers
+    """
+
+    schema = Offer
+
+
+class Referrals(OpportynityChildStream):
+    """
+    Referrals stream: https://hire.lever.co/developer/documentation#list-all-referrals
+    """
+
+    schema = Referral
