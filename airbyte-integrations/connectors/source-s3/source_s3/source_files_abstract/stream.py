@@ -142,16 +142,13 @@ class FileStream(Stream, ABC):
         :return: reference to relevant class
         """
 
-    @staticmethod
     @abstractmethod
-    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
+    def filepath_iterator() -> Iterator[str]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
             e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
 
-        :param logger: instance of AirbyteLogger to use as this is a staticmethod
-        :param provider: provider specific mapping as described in spec.json
         :yield: url filepath to use in StorageFile()
         """
 
@@ -185,7 +182,7 @@ class FileStream(Stream, ABC):
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
 
-                filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
+                filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator())
 
                 futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
 
