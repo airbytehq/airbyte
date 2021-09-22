@@ -74,7 +74,7 @@ class AbstractSource(Source, ABC):
         """
 
     # Stream name to instance map for applying output object transformation
-    _stream_instances: Dict[str, AirbyteStream] = {}
+    _stream_to_instance_map: Dict[str, AirbyteStream] = {}
 
     @property
     def name(self) -> str:
@@ -107,7 +107,7 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        self._stream_instances = stream_instances
+        self._stream_to_instance_map = stream_instances
         for configured_stream in catalog.streams:
             stream_instance = stream_instances.get(configured_stream.stream.name)
             if not stream_instance:
@@ -243,12 +243,16 @@ class AbstractSource(Source, ABC):
         :param stream_name name of stream from catalog.
         :return tuple with stream transformer object and discover json schema.
         """
-        stream_instance = self._stream_instances.get(stream_name)
+        stream_instance = self._stream_to_instance_map.get(stream_name)
         return stream_instance.transformer, stream_instance.get_json_schema()
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
         now_millis = int(datetime.now().timestamp()) * 1000
         transformer, schema = self._get_stream_transformer_and_schema(stream_name)
+        # Transform object fields according to config. Most likely you will
+        # need it to normalize values against json schema. By default no action
+        # taken unless configured. See
+        # docs/connector-development/cdk-python/schemas.md for details.
         transformer.transform(data, schema)
         message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)

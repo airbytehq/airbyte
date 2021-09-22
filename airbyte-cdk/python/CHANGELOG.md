@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.22
-Add ability of object normalization according to it's jsonschema.
+Added Transform class to use for mutating record value types so they adhere to jsonschema definition.
 
 ## 0.1.21
 Resolve nested schema references and move external references to single schema definitions.

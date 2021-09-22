@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+import json
+
 import pytest
 from airbyte_cdk.sources.utils.transform import TransformConfig, Transformer
 
@@ -104,6 +106,11 @@ VERY_NESTED_SCHEMA = {
             {"value": 1, "nested": {"a": [1, 2, 3]}},
             {"value": True, "nested": {"a": "[1, 2, 3]"}},
         ),
+        (
+            COMPLEX_SCHEMA,
+            {"value": "false", "nested": {"a": [1, 2, 3]}},
+            {"value": False, "nested": {"a": "[1, 2, 3]"}},
+        ),
         (COMPLEX_SCHEMA, {}, {}),
         (COMPLEX_SCHEMA, {"int_prop": "12"}, {"int_prop": 12}),
         # Skip invalid formattted field and process other fields.
@@ -133,7 +140,7 @@ VERY_NESTED_SCHEMA = {
         (
             VERY_NESTED_SCHEMA,
             {"very_nested_value": {"very_nested_value": {"very_nested_value": {"very_nested_value": {"very_nested_value": "2"}}}}},
-            {"very_nested_value": {"very_nested_value": {"very_nested_value": {"very_nested_value": {"very_nested_value": 2}}}}},
+            {"very_nested_value": {"very_nested_value": {"very_nested_value": {"very_nested_value": {"very_nested_value": 2.0}}}}},
         ),
         (
             VERY_NESTED_SCHEMA,
@@ -181,7 +188,7 @@ VERY_NESTED_SCHEMA = {
 def test_transform(schema, actual, expected):
     t = Transformer(TransformConfig.DefaultSchemaNormalization)
     t.transform(actual, schema)
-    assert actual == expected
+    assert json.dumps(actual) == json.dumps(expected)
 
 
 def test_transform_wrong_config():

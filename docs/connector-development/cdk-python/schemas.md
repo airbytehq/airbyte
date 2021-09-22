@@ -27,11 +27,11 @@ def get_json_schema(self):
 
 ## Schema normalization
 
-Complying output data  to declared json schema is important because those data later could be used by destination that rely on received data types (e.g. when data is stored in SQL database and you can't put INTEGER type into CHAR column and so on). In case of minor jsonschema mistake or API change could break synchronization process even if data fetching completed successfully.
+It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema (e.g. when data is stored in a SQL database, you can't put INTEGER type into CHAR column). In the case of changes to API output (which is almost guaranteed to happen over time) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
 
-To handle this cases CDK provides ability to perform automatic object tranformation before output it to destination controller. All streams inherited from airbyte_cdk.sources.streams.core.Stream class have transform confgiuration that able to perform operation on individual object's field value. By default it do no changes and can be reconfigured in user's streams.
+To remain robust in operation, the CDK provides a transformation ability to perform automatic object mutation to align with desired schema before outputting to the destination. All streams inherited from airbyte_cdk.sources.streams.core.Stream class have this transform configuration available. It is _disabled_ by default and can be configured per stream within a source connector.
 ### Default schema normalization
-Lets say you want have output records from controller to be casted to the type described on json schema. This is how you can configure it:
+Lets say you want have output records from controller to be cast to the type described on json schema. This is how you can configure it:
 
 ```python
 from airbyte_cdk.sources.utils.transform import TransformConfig, Transformer
@@ -61,7 +61,7 @@ And objects inside array of referenced by $ref attribute.
 *Note:* This transformation is done by source, not stream itself. I.e. if you have overriden "read_records" method in your stream it wont affect object transformation. All transformation are done in-place by modifing output object before passing it to "get_updated_state" method, so "get_updated_state" would receive transformed object.
 
 ### Custom schema normalization
-Default schema normalization perform simple type casting regardless its format. Sometimes you want to perform more sofisticated transform like making "date-time" field compliant to rcf3339 standard. In this case you can use custom schema normalization:
+Default schema normalization perform simple type casting regardless its format. Sometimes you want to perform more sophisticated transform like making "date-time" field compliant to rcf3339 standard. In this case you can use custom schema normalization:
 ```python
 class MyStream(Stream):
     ...

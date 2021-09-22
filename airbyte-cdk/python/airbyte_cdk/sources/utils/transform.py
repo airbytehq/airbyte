@@ -21,10 +21,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+from distutils.util import strtobool
 from enum import Flag, auto
 from typing import Any, Callable, Dict
 
+from airbyte_cdk.logger import AirbyteLogger
 from jsonschema import Draft7Validator, validators
+
+logger = AirbyteLogger()
 
 
 class TransformConfig(Flag):
@@ -103,6 +107,11 @@ class Transformer:
         if original_item is None and "null" in target_type:
             return None
         if isinstance(target_type, list):
+            # jsonschema type could either be a single string or array of type
+            # strings. In case if there is some disambigous and more than one
+            # type (except null) do not do any conversion and return original
+            # value. If type array has one type and null i.e. {"type":
+            # ["integer", "null"]}, convert value to specified type.
             target_type = [t for t in target_type if t != "null"]
             if len(target_type) != 1:
                 return original_item
@@ -115,6 +124,8 @@ class Transformer:
             elif target_type == "integer":
                 return int(original_item)
             elif target_type == "boolean":
+                if isinstance(original_item, str):
+                    return strtobool(original_item) == 1
                 return bool(original_item)
         except ValueError:
             return original_item
@@ -127,7 +138,19 @@ class Transformer:
         :original_validator: native jsonschema validator callback.
         """
 
-        def normalizator(validator_instance, val, instance, schema):
+        def normalizator(validator_instance: Callable, val: Any, instance: Any, schema: Dict[str, Any]):
+            """
+            Jsonschema validator callable it uses for validating instance. We
+            override default Draft7Validator to perform value transformation
+            before validation take place. We do not take any action except
+            logging warn if object does not conform to json schema, just using
+            jsonschema algorithm to traverse through object fields.
+            Look
+            https://python-jsonschema.readthedocs.io/en/stable/creating/?highlight=validators.create#jsonschema.validators.create
+            validators parameter for detailed description.
+            :
+            """
+
             def resolve(subschema):
                 if "$ref" in subschema:
                     _, resolved = validator_instance.resolver.resolve(subschema["$ref"])
@@ -164,4 +187,4 @@ class Transformer:
             just calling normalizer.validate() would throw an exception on
             first validation occurences and stop processing rest of schema.
             """
-            # TODO: log warning
+            logger.warn(e.message)
