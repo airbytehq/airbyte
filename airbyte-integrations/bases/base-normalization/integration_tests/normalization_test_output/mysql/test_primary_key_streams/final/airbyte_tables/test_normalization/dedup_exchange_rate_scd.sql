@@ -35,10 +35,10 @@ select
     signed
 ) as id,
     cast(currency as char) as currency,
-    cast(`date` as 
+    cast(nullif(`date`, '') as
     date
 ) as `date`,
-    cast(timestamp_col as char) as timestamp_col,
+    cast(nullif(timestamp_col, '') as char) as timestamp_col,
     cast(`HKD@spéçiäl & characters` as 
     float
 ) as `HKD@spéçiäl & characters`,

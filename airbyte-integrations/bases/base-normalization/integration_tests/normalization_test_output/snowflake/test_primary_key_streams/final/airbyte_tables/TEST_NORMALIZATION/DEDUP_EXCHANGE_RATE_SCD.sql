@@ -27,10 +27,10 @@ select
     cast(CURRENCY as 
     varchar
 ) as CURRENCY,
-    cast(DATE as 
+    cast(nullif(DATE, '') as
     date
 ) as DATE,
-    cast(TIMESTAMP_COL as 
+    cast(nullif(TIMESTAMP_COL, '') as
     timestamp with time zone
 ) as TIMESTAMP_COL,
     cast("HKD@spéçiäl & characters" as 
