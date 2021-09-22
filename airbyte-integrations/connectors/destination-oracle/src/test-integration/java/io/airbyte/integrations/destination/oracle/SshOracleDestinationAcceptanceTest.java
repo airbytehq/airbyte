@@ -11,12 +11,11 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -24,7 +23,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
     private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
 
-    private final String schemaName = "TEST_ORCL_USER";
+    private final String schemaName = "TEST_" + RandomStringUtils.randomAlphabetic(6).toUpperCase();
 
     public abstract Path getConfigFilePath();
 
@@ -36,7 +35,6 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     @Override
     protected JsonNode getConfig() {
         final JsonNode config = getConfigFromSecretsFile();
-        // do everything in a randomly generated schema so that we can wipe it out at the end.
         ((ObjectNode) config).put("schema", schemaName);
         return config;
     }
@@ -57,7 +55,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         List<JsonNode> jsonNodes = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
         return jsonNodes
                 .stream()
-                .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase(Locale.ROOT)).asText()))
+                .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
                 .collect(Collectors.toList());
     }
 
@@ -70,15 +68,11 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
                 (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
                         .query(
                                 ctx -> ctx
-                                        .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, wrapInQuotes(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)))
-                                        .stream()
-                                        .map(r -> r.formatJSON(JSON_FORMAT))
-                                        .map(Jsons::deserialize)
-                                        .collect(Collectors.toList())));
-    }
-
-    private static String wrapInQuotes(final String s){
-        return '"' + s.toUpperCase(Locale.ROOT) + '"';
+                                        .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT)))
+                        .stream()
+                        .map(r -> r.formatJSON(JSON_FORMAT))
+                        .map(Jsons::deserialize)
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -126,31 +120,5 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     @Override
     protected boolean implementsNamespaces() {
         return true;
-    }
-
-    @Override
-    protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
-            throws Exception {
-        final String tableName = namingResolver.getIdentifier(streamName);
-        // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-        // use quoted names
-        // if (!tableName.startsWith("\"")) {
-        // // Currently, Normalization always quote tables identifiers
-        // //tableName = "\"" + tableName + "\"";
-        // }
-        return retrieveRecordsFromTable(tableName, namespace);
-    }
-
-    @Override
-    protected List<String> resolveIdentifier(final String identifier) {
-        final List<String> result = new ArrayList<>();
-        final String resolved = namingResolver.getIdentifier(identifier);
-        result.add(identifier);
-        result.add(resolved);
-        if (!resolved.startsWith("\"")) {
-            result.add(resolved.toLowerCase());
-            result.add(resolved.toUpperCase());
-        }
-        return result;
     }
 }
