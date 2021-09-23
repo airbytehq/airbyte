@@ -4,19 +4,21 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+} from "core/domain/connector";
+import { WithFeature } from "hooks/services/Feature";
+
 import { FormBlock } from "core/form/types";
 import { ServiceFormValues } from "./types";
 import { useServiceForm } from "./serviceFormContext";
+
 import { FormSection } from "./components/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
 import CreateControls from "./components/CreateControls";
 import { AuthButton } from "./components/AuthButton";
-import {
-  ConnectorDefinition,
-  ConnectorDefinitionSpecification,
-} from "core/domain/connector";
-import { WithFeature } from "../../../hooks/services/Feature";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
