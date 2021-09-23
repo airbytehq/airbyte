@@ -30,14 +30,11 @@ import org.junit.jupiter.api.Test;
 
 public class MigrationCurrentSchemaTest {
 
-  /**
-   * The file-based migration is deprecated. We need to ensure that v0.29.0 is the last one. All new
-   * migrations should be written in Flyway.
-   */
   @Test
   public void testLastMigration() {
     final Migration lastMigration = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1);
-    assertEquals(Migrations.MIGRATION_V_0_29_0.getVersion(), lastMigration.getVersion());
+    assertEquals(Migrations.MIGRATION_V_0_29_0.getVersion(), lastMigration.getVersion(),
+        "The file-based migration is deprecated. Please do not write a new migration this way. Use Flyway instead.");
   }
 
 }

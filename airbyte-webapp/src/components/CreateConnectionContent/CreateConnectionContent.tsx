@@ -40,6 +40,7 @@ type IProps = {
   source: Source;
   destination: Destination;
   afterSubmitConnection?: () => void;
+  noTitles?: boolean;
 };
 
 const CreateConnectionContent: React.FC<IProps> = ({
@@ -47,6 +48,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   destination,
   afterSubmitConnection,
   additionBottomControls,
+  noTitles,
 }) => {
   const { createConnection } = useConnection();
   const analyticsService = useAnalytics();
@@ -80,7 +82,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   if (isLoading) {
     return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+      <ContentCard
+        title={
+          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+        }
+      >
         <LoadingSchema />
       </ContentCard>
     );
@@ -88,7 +94,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   if (schemaErrorStatus) {
     return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+      <ContentCard
+        title={
+          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+        }
+      >
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
@@ -130,7 +140,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
   };
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+    <ContentCard
+      title={
+        noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+      }
+    >
       <Suspense fallback={<LoadingSchema />}>
         <ConnectionForm
           connection={connection}

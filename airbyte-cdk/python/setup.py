@@ -35,7 +35,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.18",
+    version="0.1.23",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -67,10 +67,13 @@ setup(
     install_requires=[
         "backoff",
         "jsonschema~=3.2.0",
+        "jsonref~=0.2",
         "pendulum",
         "pydantic~=1.6",
         "PyYAML~=5.4",
         "requests",
+        "vcrpy",
+        "Deprecated~=1.2",
     ],
     python_requires=">=3.7.0",
     extras_require={"dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock"]},
