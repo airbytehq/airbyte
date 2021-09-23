@@ -39,9 +39,9 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.JsonSecretsProcessor;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -57,8 +57,8 @@ public class SourceHandler {
   private final JsonSchemaValidator validator;
   private final SpecFetcher specFetcher;
   private final ConnectionsHandler connectionsHandler;
-  private final JsonSecretsProcessor secretsProcessor;
   private final ConfigurationUpdate configurationUpdate;
+  private final JsonSecretsProcessor secretsProcessor;
 
   SourceHandler(final ConfigRepository configRepository,
                 final JsonSchemaValidator integrationSchemaValidation,
@@ -72,8 +72,8 @@ public class SourceHandler {
     this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
-    this.secretsProcessor = secretsProcessor;
     this.configurationUpdate = configurationUpdate;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceHandler(final ConfigRepository configRepository,
@@ -218,8 +218,8 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor
-        .maskSecrets(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
+    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
+        sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
