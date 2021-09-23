@@ -112,7 +112,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                                                      final String namespace)
           throws Exception {
     var tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
+    String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
