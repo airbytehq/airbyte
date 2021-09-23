@@ -36,6 +36,7 @@ type ServiceFormProps = {
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
+  fetchingConnectorError?: Error;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
 };

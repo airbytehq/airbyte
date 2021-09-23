@@ -26,7 +26,7 @@ export const useDestinationDefinitionSpecificationLoad = (
 ): {
   isLoading: boolean;
   destinationDefinitionSpecification?: DestinationDefinitionSpecification;
-  error?: Error;
+  sourceDefinitionError?: Error;
 } => {
   const {
     loading: isLoading,
@@ -41,7 +41,11 @@ export const useDestinationDefinitionSpecificationLoad = (
       : null
   );
 
-  return { destinationDefinitionSpecification, error, isLoading };
+  return {
+    destinationDefinitionSpecification,
+    sourceDefinitionError: error,
+    isLoading,
+  };
 };
 
 export const useDestinationDefinitionSpecificationLoadAsync = (

@@ -55,6 +55,7 @@
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
   "form.failedTests": "The connection tests failed.",
+  "form.failedFetchingConnector": "Fetching connector failed.",
   "form.filter_dbs": "Filter DBs",
   "form.serviceAccount": "Service Account",
   "form.validate_records": "Validate Records",
