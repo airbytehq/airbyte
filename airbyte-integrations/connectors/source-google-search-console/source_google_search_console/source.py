@@ -46,9 +46,13 @@ class SourceGoogleSearchConsole(AbstractSource):
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             sites = Sites(**stream_kwargs)
-            stream_slice = next(sites.stream_slices(SyncMode.full_refresh))
-            sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-            next(sites_gen)
+            stream_slice = sites.stream_slices(SyncMode.full_refresh)
+
+            # stream_slice returns all site_urls and we need to make sure that
+            # the connection is successful for all of them
+            for _slice in stream_slice:
+                sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
+                next(sites_gen)
             return True, None
 
         except Exception as error:
