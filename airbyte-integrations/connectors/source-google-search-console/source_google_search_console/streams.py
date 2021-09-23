@@ -22,7 +22,6 @@
 # SOFTWARE.
 #
 
-import json
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
@@ -32,13 +31,9 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
-from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3"
-GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 ROW_LIMIT = 25000
-CLIENT_AUTH = "Client"
 
 
 class GoogleSearchConsole(HttpStream, ABC):
@@ -48,26 +43,15 @@ class GoogleSearchConsole(HttpStream, ABC):
 
     def __init__(
         self,
-        auth_type: str,
+        authenticator: Union[HttpAuthenticator, requests.auth.AuthBase],
         site_urls: list,
         start_date: str,
         end_date: str,
-        client_id: str = None,
-        client_secret: str = None,
-        refresh_token: str = None,
-        service_account_info: str = None,
     ):
-        super().__init__()
-        self._auth_type = auth_type
+        super().__init__(authenticator=authenticator)
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date
-
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._refresh_token = refresh_token
-
-        self._service_account_info = service_account_info
 
     @staticmethod
     def sanitize_urls_list(site_urls: list) -> List[str]:
@@ -90,20 +74,6 @@ class GoogleSearchConsole(HttpStream, ABC):
             records = response.json().get(self.data_field) or []
             for record in records:
                 yield record
-
-    @property
-    def authenticator(self) -> Union[HttpAuthenticator, None]:
-        if self._auth_type == CLIENT_AUTH:
-            return Oauth2Authenticator(
-                token_refresh_endpoint=GOOGLE_TOKEN_URI,
-                client_secret=self._client_secret,
-                client_id=self._client_id,
-                refresh_token=self._refresh_token,
-            )
-
-        else:
-            info = json.loads(self._service_account_info)
-            return ServiceAccountAuthenticator(service_account_info=info)
 
 
 class Sites(GoogleSearchConsole):
