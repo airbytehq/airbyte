@@ -23,7 +23,6 @@
 #
 
 from pytest import fixture
-from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode
 from source_{{snakeCase name}}.source import Incremental{{properCase name}}Stream
@@ -46,7 +45,6 @@ def test_cursor_field(patch_incremental_base_class):
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = Incremental{{properCase name}}Stream()
-    expected_cursor_field = []
     # TODO: replace this with your input parameters
     inputs = {"current_stream_state": None, "latest_record": None}
     # TODO: replace this with your expected updated stream state
@@ -56,7 +54,6 @@ def test_get_updated_state(patch_incremental_base_class):
 
 def test_stream_slices(patch_incremental_base_class):
     stream = Incremental{{properCase name}}Stream()
-    expected_cursor_field = []
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list

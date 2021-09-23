@@ -22,14 +22,16 @@
 # SOFTWARE.
 #
 
-from source_scaffold_source_http.source import SourceScaffoldSourceHttp
 from unittest.mock import MagicMock
+
+from source_scaffold_source_http.source import SourceScaffoldSourceHttp
 
 
 def test_check_connection(mocker):
     source = SourceScaffoldSourceHttp()
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
+
 
 def test_streams(mocker):
     source = SourceScaffoldSourceHttp()

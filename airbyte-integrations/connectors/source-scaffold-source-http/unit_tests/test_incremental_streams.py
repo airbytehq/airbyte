@@ -22,10 +22,8 @@
 # SOFTWARE.
 #
 
-from pytest import fixture
-from unittest.mock import MagicMock
-
 from airbyte_cdk.models import SyncMode
+from pytest import fixture
 from source_scaffold_source_http.source import IncrementalScaffoldSourceHttpStream
 
 
@@ -46,7 +44,6 @@ def test_cursor_field(patch_incremental_base_class):
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalScaffoldSourceHttpStream()
-    expected_cursor_field = []
     # TODO: replace this with your input parameters
     inputs = {"current_stream_state": None, "latest_record": None}
     # TODO: replace this with your expected updated stream state
@@ -56,7 +53,6 @@ def test_get_updated_state(patch_incremental_base_class):
 
 def test_stream_slices(patch_incremental_base_class):
     stream = IncrementalScaffoldSourceHttpStream()
-    expected_cursor_field = []
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
@@ -69,9 +65,11 @@ def test_supports_incremental(patch_incremental_base_class, mocker):
     stream = IncrementalScaffoldSourceHttpStream()
     assert stream.supports_incremental
 
+
 def test_source_defined_cursor(patch_incremental_base_class):
     stream = IncrementalScaffoldSourceHttpStream()
     assert stream.source_defined_cursor
+
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalScaffoldSourceHttpStream()
