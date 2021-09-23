@@ -1,7 +1,6 @@
 # This function opens an ssh tunnel if required using values provided in config.
-# Requires two arguments,
-  # path to config file ($1)
-  # path to file containing local port to use ($2)
+# Requires one argument,
+  # path to ssh config file ($1)
 function openssh() {
   # check if jq is missing, and if so try to install it..
   # this is janky but for custom dbt transform we can't be sure jq is installed as using user docker image
@@ -14,12 +13,12 @@ function openssh() {
   fi
   # tunnel_db_host and tunnel_db_port currently rely on the destination's spec using "host" and "port" as keys for these values
   # if adding ssh support for a new destination where this is not the case, extra logic will be needed to capture these dynamically
-  tunnel_db_host=$(cat $1 | jq -r '.host')
-  tunnel_db_port=$(cat $1 | jq -r '.port')
-  tunnel_method=$(cat $1 | jq -r '.tunnel_method.tunnel_method' | tr '[:lower:]' '[:upper:]')
-  tunnel_username=$(cat $1 | jq -r '.tunnel_method.tunnel_user')
-  tunnel_host=$(cat $1 | jq -r '.tunnel_method.tunnel_host')
-  tunnel_local_port=$(cat $2 | jq -r '.port')
+  tunnel_db_host=$(cat $1 | jq -r '.db_host')
+  tunnel_db_port=$(cat $1 | jq -r '.db_port')
+  tunnel_method=$(cat $1 | jq -r '.tunnel_map.tunnel_method' | tr '[:lower:]' '[:upper:]')
+  tunnel_username=$(cat $1 | jq -r '.tunnel_map.tunnel_user')
+  tunnel_host=$(cat $1 | jq -r '.tunnel_map.tunnel_host')
+  tunnel_local_port=$(cat $1 | jq -r '.local_port')
   # set a path for a control socket, allowing us to close this specific ssh connection when desired
   tmpcontrolsocket="/tmp/sshsocket${tunnel_db_remote_port}-${RANDOM}"
   if [[ ${tunnel_method} = "SSH_KEY_AUTH" ]] ; then
@@ -27,7 +26,7 @@ function openssh() {
     # create a temporary file to hold ssh key and trap to delete on EXIT
     trap 'rm -f "$tmpkeyfile"' EXIT
     tmpkeyfile=$(mktemp /tmp/xyzfile.XXXXXXXXXXX) || exit 1
-    echo "$(cat $1 | jq -r '.tunnel_method.ssh_key')" > $tmpkeyfile
+    echo "$(cat $1 | jq -r '.tunnel_map.ssh_key')" > $tmpkeyfile
     # -f=background  -N=no remote command  -M=master mode  StrictHostKeyChecking=no auto-adds host
     echo "Running: ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -i {key file} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
     ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
@@ -44,7 +43,7 @@ function openssh() {
       { dnf install epel-release -y && dnf install sshpass -y; } || exit 1
     fi
     # put ssh password in env var for use in sshpass. Better than directly passing with -p
-    export SSHPASS=$(cat $1 | jq -r '.tunnel_method.tunnel_user_password')
+    export SSHPASS=$(cat $1 | jq -r '.tunnel_map.tunnel_user_password')
     echo "Running: sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
     sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
     sshopen="yes" &&

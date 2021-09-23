@@ -23,8 +23,10 @@
 #
 
 
+import json
 import os
 import socket
+import tempfile
 import time
 
 import pytest
@@ -339,3 +341,42 @@ class TestTransformConfig:
         assert {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"} == t.parse(
             ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]
         )
+
+    def test_write_ssh_config(self):
+        original_config_input = {
+            "type": "postgres",
+            "dbname": "my_db",
+            "host": "airbyte.io",
+            "pass": "password123",
+            "port": 5432,
+            "schema": "public",
+            "threads": 32,
+            "user": "a user",
+            "tunnel_method": {
+                "tunnel_host": "1.2.3.4",
+                "tunnel_method": "SSH_PASSWORD_AUTH",
+                "tunnel_port": 22,
+                "tunnel_user": "user",
+                "tunnel_user_password": "pass",
+            },
+        }
+        transformed_config_input = self.get_base_config()
+        transformed_config_input["normalize"]["outputs"]["prod"] = {
+            "port": 7890,
+        }
+        expected = {
+            "db_host": "airbyte.io",
+            "db_port": 5432,
+            "tunnel_map": {
+                "tunnel_host": "1.2.3.4",
+                "tunnel_method": "SSH_PASSWORD_AUTH",
+                "tunnel_port": 22,
+                "tunnel_user": "user",
+                "tunnel_user_password": "pass",
+            },
+            "local_port": 7890,
+        }
+        tmp_path = tempfile.TemporaryDirectory().name
+        TransformConfig.write_ssh_config(tmp_path, original_config_input, transformed_config_input)
+        with open(os.path.join(tmp_path, "ssh.json"), "r") as f:
+            assert json.load(f) == expected
