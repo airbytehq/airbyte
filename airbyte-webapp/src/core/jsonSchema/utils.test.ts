@@ -99,3 +99,53 @@ test("should exclude nested paths", () => {
     type: "object",
   });
 });
+
+test("should paths in oneOf", () => {
+  const schema: AirbyteJSONSchema = {
+    type: "object",
+    properties: {
+      ssl: {
+        type: "object",
+        oneOf: [
+          {
+            properties: {
+              ssl_string: {
+                type: "string",
+              },
+            },
+          },
+          {
+            properties: {
+              ssl_path: {
+                type: "string",
+              },
+            },
+          },
+        ],
+      },
+    },
+  };
+
+  const filtered = removeNestedPaths(schema, [["ssl", "ssl_string"]]);
+
+  expect(filtered).toEqual({
+    properties: {
+      ssl: {
+        oneOf: [
+          {
+            properties: {},
+          },
+          {
+            properties: {
+              ssl_path: {
+                type: "string",
+              },
+            },
+          },
+        ],
+        type: "object",
+      },
+    },
+    type: "object",
+  });
+});

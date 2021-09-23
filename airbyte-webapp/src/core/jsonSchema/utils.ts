@@ -12,9 +12,14 @@ function removeNestedPaths(
     return schema;
   }
 
-  const { properties, ...restschema } = schema;
+  const { properties, oneOf, ...restschema } = schema;
 
   const resultSchema: JSONSchema7 = restschema;
+
+  if (oneOf) {
+    resultSchema.oneOf = oneOf?.map((o) => removeNestedPaths(o, pathList));
+  }
+
   if (properties) {
     const filteredProperties: Record<string, JSONSchema7Definition> = {};
 
