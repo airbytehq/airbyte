@@ -94,7 +94,11 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
-          specifications={schema}
+          selectedConnector={{
+            connectionSpecification: schema,
+            sourceDefinitionId: "1",
+            documentationUrl: "",
+          }}
           availableServices={[]}
         />
       );
@@ -195,7 +199,11 @@ describe("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          specifications={schema}
+          specifications={{
+            connectionSpecification: schema,
+            sourceDefinitionId: "1",
+            documentationUrl: "",
+          }}
           availableServices={[]}
         />
       );
