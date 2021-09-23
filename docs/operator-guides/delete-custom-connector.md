@@ -38,3 +38,9 @@ delete from airbyte_configs where config_blob @> '{"sourceDefinitionId": "25c522
 ```
 
 There is a [Github issue](https://github.com/airbytehq/airbyte/issues/3954) to implement this feature directly in the UI.
+
+If you need to use more fields to select a specific connector see the example:
+```
+select * from airbyte_configs where config_blob @> '{"name": "BigQuery", "dockerImageTag": "0.1.2"}';
+```
+This will use the Connector Name and the Version.
