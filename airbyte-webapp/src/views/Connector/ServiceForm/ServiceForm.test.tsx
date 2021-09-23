@@ -190,7 +190,7 @@ describe("Service Form", () => {
     });
   });
 
-  describe("filling service form", () => {
+  describe.skip("filling service form", () => {
     let result: ServiceFormValues;
     let container: HTMLElement;
     beforeEach(() => {
@@ -316,7 +316,7 @@ describe("Service Form", () => {
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
-    test.skip("change oneOf field value", async () => {
+    test("change oneOf field value", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );
@@ -339,7 +339,7 @@ describe("Service Form", () => {
       expect(uri).toBeInTheDocument();
     });
 
-    test.skip("should fill right values oneOf field", async () => {
+    test("should fill right values oneOf field", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );
