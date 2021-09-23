@@ -55,6 +55,16 @@ public class SecretCoordinate {
     this.version = version;
   }
 
+  /**
+   * Used to turn a full string coordinate into a coordinate object using a full coordinate generated
+   * by {@link SecretsHelpers#getCoordinate}.
+   *
+   * This will likely need refactoring if we end up using a secret store that doesn't allow the same
+   * format of full coordinate.
+   *
+   * @param fullCoordinate coordinate with version
+   * @return secret coordinate object
+   */
   public static SecretCoordinate fromFullCoordinate(String fullCoordinate) {
     final var splits = fullCoordinate.split("_v");
     Preconditions.checkArgument(splits.length == 2);

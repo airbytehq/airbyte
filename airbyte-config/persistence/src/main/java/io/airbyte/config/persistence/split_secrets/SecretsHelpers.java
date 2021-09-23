@@ -383,12 +383,12 @@ public class SecretsHelpers {
    *        previous config
    * @return a coordinate (versioned reference to where the secret is stored in the persistence)
    */
-  private static SecretCoordinate getCoordinate(
-                                                final String newSecret,
-                                                final ReadOnlySecretPersistence secretReader,
-                                                final UUID workspaceId,
-                                                final Supplier<UUID> uuidSupplier,
-                                                final @Nullable String oldSecretFullCoordinate) {
+  protected static SecretCoordinate getCoordinate(
+                                                  final String newSecret,
+                                                  final ReadOnlySecretPersistence secretReader,
+                                                  final UUID workspaceId,
+                                                  final Supplier<UUID> uuidSupplier,
+                                                  final @Nullable String oldSecretFullCoordinate) {
     String coordinateBase = null;
     Long version = null;
 
