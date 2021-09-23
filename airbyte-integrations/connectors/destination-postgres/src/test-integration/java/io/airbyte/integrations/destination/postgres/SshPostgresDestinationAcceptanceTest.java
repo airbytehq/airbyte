@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.integrations.base.ssh.SshBastion.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -33,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastion;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -59,6 +57,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static PostgreSQLContainer<?> db;
+  private final SshBastionContainer bastion = new SshBastionContainer();
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -69,7 +68,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return SshBastion.getTunnelConfig(getTunnelMethod(), getBasicDbConfigBuider(db).put("schema", schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName));
   }
 
   @Override
@@ -170,14 +169,14 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
         });
   }
 
-  private static void startTestContainers() {
-    initAndStartBastion();
+  private void startTestContainers() {
+    bastion.initAndStartBastion();
     initAndStartJdbcContainer();
   }
 
-  private static void initAndStartJdbcContainer() {
+  private void initAndStartJdbcContainer() {
     db = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withNetwork(getNetWork());
+        .withNetwork(bastion.getNetWork());
     db.start();
   }
 
@@ -192,7 +191,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });
 
-    stopAndCloseContainers(db);
+    bastion.stopAndCloseContainers(db);
   }
 
 }
