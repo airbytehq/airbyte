@@ -40,6 +40,15 @@
       "response_delimiter": {
         "description": "the response delimiter when the response format is csv",
         "type": "string"
+      },
+      "json_source": {
+        "description": "the source of the data inside of the object when response format is json",
+        "type": "string",
+        "enum": ["root", "field"]
+      },
+      "json_field": {
+        "description": "the field where the data has to be collected when response format is json and source is field",
+        "type": "string"
       }
     }
   }

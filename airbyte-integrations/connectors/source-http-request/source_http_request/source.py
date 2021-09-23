@@ -46,7 +46,7 @@ class HttpRequest(HttpStream):
     cursor_field = ""
     primary_key = ""
 
-    def __init__(self, url: str, http_method: str, headers: Optional[str], body: Optional[str], response_format: Optional[str], response_delimiter: Optional[str]):
+    def __init__(self, url: str, http_method: str, headers: Optional[str], body: Optional[str], response_format: Optional[str], response_delimiter: Optional[str], json_source: Optional[str], json_field: Optional[str]):
         super().__init__()
         self.url_base = url
         self._http_method = http_method
@@ -54,6 +54,8 @@ class HttpRequest(HttpStream):
         self._body = body
         self._response_format = response_format
         self._response_delimiter = response_delimiter
+        self._json_source = json_source
+        self._json_field = json_field
 
     @property
     def http_method(self) -> str:
@@ -110,8 +112,11 @@ class HttpRequest(HttpStream):
                 df = pd.read_csv(StringIO(data.decode('utf-8')), nrows=3, sep=self._response_delimiter)
                 headers = df.columns.tolist()
             elif self._response_format == "json":
-                data = json.loads(resp.content)
-                df = pd.DataFrame.from_dict(data)
+                root = json.loads(resp.content)
+                if self._json_source == "root":
+                    df = pd.DataFrame.from_dict(root)
+                else:
+                    df = pd.DataFrame.from_dict(root[self._json_field])
                 headers = df.columns.tolist()
 
         properties = {}
@@ -142,8 +147,12 @@ class HttpRequest(HttpStream):
             data = csv.DictReader(decoded.splitlines(), delimiter=self._response_delimiter)
             yield from data
         elif self._response_format == "json":
-            data = json.loads(response.content)
-            yield from data
+            print("BEFORE")
+            root = json.loads(response.content)
+            if self._json_source == "root":
+                yield from root
+            else:
+                yield from root[self._json_field]
         else:
             raise Exception("Invalid response format")
 
@@ -260,9 +269,12 @@ class SourceHttpRequest(AbstractSource):
             "body": json.loads(config.get("body", "{}")),
             "response_format": config.get("response_format", "json"),
             "response_delimiter": config.get("response_delimiter", ","),
+            "json_source": config.get("json_source", "root"),
+            "json_field": config.get("json_field", ""),
         }
+
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         parsed_config = self._parse_config(config)
         return [HttpRequest(parsed_config["url"], parsed_config["http_method"], parsed_config.get("headers"), parsed_config.get("body"), parsed_config.get("response_format"),
-                            parsed_config.get("response_delimiter"))]
+                            parsed_config.get("response_delimiter"), parsed_config.get("json_source"), parsed_config.get("json_field"),)]
