@@ -25,6 +25,7 @@
 package io.airbyte.config.helpers;
 
 import io.airbyte.config.Configs;
+import java.util.Optional;
 
 /**
  * Implements {@link LogConfigs} by delegating to a {@link Configs} implementation. Because the
@@ -39,39 +40,43 @@ public class LogConfigDelegator implements LogConfigs {
     delegate = configs;
   }
 
+  private String orEmptyString(String s) {
+    return Optional.ofNullable(s).orElse("");
+  }
+
   @Override
   public String getS3LogBucket() {
-    return delegate.getS3LogBucket();
+    return orEmptyString(delegate.getS3LogBucket());
   }
 
   @Override
   public String getS3LogBucketRegion() {
-    return delegate.getS3LogBucketRegion();
+    return orEmptyString(delegate.getS3LogBucketRegion());
   }
 
   @Override
   public String getAwsAccessKey() {
-    return delegate.getAwsAccessKey();
+    return orEmptyString(delegate.getAwsAccessKey());
   }
 
   @Override
   public String getAwsSecretAccessKey() {
-    return delegate.getAwsSecretAccessKey();
+    return orEmptyString(delegate.getAwsSecretAccessKey());
   }
 
   @Override
   public String getS3MinioEndpoint() {
-    return delegate.getS3MinioEndpoint();
+    return orEmptyString(delegate.getS3MinioEndpoint());
   }
 
   @Override
   public String getGcpStorageBucket() {
-    return delegate.getGcpStorageBucket();
+    return orEmptyString(delegate.getGcpStorageBucket());
   }
 
   @Override
   public String getGoogleApplicationCredentials() {
-    return delegate.getGoogleApplicationCredentials();
+    return orEmptyString(delegate.getGoogleApplicationCredentials());
   }
 
 }

@@ -164,7 +164,8 @@ public class LogClientSingleton {
   }
 
   private static boolean shouldUseLocalLogs(Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER);
+    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)
+        && CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
   }
 
   private static void createCloudClientIfNull(LogConfigs configs) {
