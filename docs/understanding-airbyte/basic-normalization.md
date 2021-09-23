@@ -251,7 +251,7 @@ Most modern data warehouses have name lengths limits on the longer side, so this
 However, in the rare cases where these limits are reached:
 
 1. Truncate only the `Json path` to fit into destination's character limits
-2. Truncate the `Json path` to at least the 10 first characters, then truncate the nested column name starting in the middle to preserve prefix/suffix substrings intact \(whenever a truncate in the middle is made, two '\_\_' characters are also inserted to denote where it happened\) to fit into destination's character limits 
+2. Truncate the `Json path` to at least the 10 first characters, then truncate the nested column name starting in the middle to preserve prefix/suffix substrings intact \(whenever a truncate in the middle is made, two '\_\_' characters are also inserted to denote where it happened\) to fit into destination's character limits
 
 As an example from the hubspot source, we could have the following tables with nested columns:
 
@@ -294,6 +294,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- | :--- |
+| 0.29.17-alpha | 0.1.45 | 2021-09-18 | [#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format  |
 | 0.29.8-alpha | 0.1.40 | 2021-08-18 | [#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials_json for BigQuery  |
 | 0.29.5-alpha | 0.1.39 | 2021-08-11 | [#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
 | 0.28.2-alpha | 0.1.38 | 2021-07-28 | [#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |

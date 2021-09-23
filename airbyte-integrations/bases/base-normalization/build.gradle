@@ -48,6 +48,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")
+customIntegrationTests.dependsOn("customIntegrationTestPython")
 
 // TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
 task('mypyCheck', type: PythonTask) {
