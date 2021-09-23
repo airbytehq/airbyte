@@ -358,7 +358,7 @@ class TestTransformConfig:
                 "tunnel_port": 22,
                 "tunnel_user": "user",
                 "tunnel_user_password": "pass",
-            }
+            },
         }
         transformed_config_input = self.get_base_config()
         transformed_config_input["normalize"]["outputs"]["prod"] = {
