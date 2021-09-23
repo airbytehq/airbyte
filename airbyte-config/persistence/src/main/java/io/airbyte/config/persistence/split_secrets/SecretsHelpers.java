@@ -87,10 +87,10 @@ public class SecretsHelpers {
   /**
    * Used to separate secrets out of a connector configuration and output a partial config that
    * includes pointers to secrets instead of actual secret values and a map that can be used to update
-   * a {@link SecretPersistence} at coordinates with values from the full config. If the previous
-   * config for this connector's configuration, this method attempts to use the same base coordinate
-   * to refer to the same secret and increment the version of the coordinate used to reference a
-   * secret.
+   * a {@link SecretPersistence} at coordinates with values from the full config. If a previous config
+   * for this connector's configuration is provided, this method attempts to use the same base
+   * coordinates to refer to the same secret and increment the version of the coordinate used to
+   * reference a secret.
    *
    * @param workspaceId workspace used for this connector config
    * @param oldPartialConfig previous partial config for this specific connector configuration
