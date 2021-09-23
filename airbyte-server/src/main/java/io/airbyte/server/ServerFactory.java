@@ -26,7 +26,9 @@ package io.airbyte.server;
 
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
+import io.airbyte.config.init.SeedType;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
@@ -51,14 +53,16 @@ public interface ServerFactory {
   class Api implements ServerFactory {
 
     @Override
-    public ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                                 SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-                                 WorkflowServiceStubs temporalService,
-                                 ConfigRepository configRepository,
-                                 JobPersistence jobPersistence,
-                                 Database configsDatabase,
-                                 Database jobsDatabase,
-                                 Configs configs) {
+    public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
+                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                                 final WorkflowServiceStubs temporalService,
+                                 final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 final Database configsDatabase,
+                                 final Database jobsDatabase,
+                                 final Configs configs) {
+      YamlSeedConfigPersistence.initialize(SeedType.class);
+
       // set static values for factory
       ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
       ConfigurationApiFactory.setSynchronousSchedulerClient(cachingSchedulerClient);
