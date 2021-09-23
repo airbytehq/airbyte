@@ -93,7 +93,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             "end_date": config.get("end_date"),
         }
 
-        auth_type = stream_kwargs["auth_type"]
+        auth_type = authorization.get("auth_type")
         if auth_type == "Client":
             stream_kwargs["authenticator"] = Oauth2Authenticator(
                 token_refresh_endpoint="https://oauth2.googleapis.com/token",
