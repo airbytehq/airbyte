@@ -21,6 +21,7 @@ First you need to connect in the Airbyte Database
 ```shell
 docker exec -ti airbyte-db psql -U docker -d airbyte
 ```
+If you're using a external database see [Configuring Airbyte Database](configuring-airbyte-db.md)
 
 {% hint style="info" %}
 If your connector is a destination change `source` to `destination` in the commands below.
