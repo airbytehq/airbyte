@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test;
 class SecretCoordinateTest {
 
   @Test
-  void testToString() {
+  void testGetFullCoordinate() {
     final var coordinate = new SecretCoordinate("some_base", 1);
-    assertEquals("some_base_v1", coordinate.toString());
+    assertEquals("some_base_v1", coordinate.getFullCoordinate());
   }
 
 }
