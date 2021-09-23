@@ -1410,6 +1410,29 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/search:
+    post:
+      tags:
+        - web_backend
+      summary: Search connections
+      operationId: webBackendConnectionSearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionSearch"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/sources/create:
     post:
       tags:
@@ -2046,6 +2069,21 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+    SourceSearch:
+      type: object
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
+        sourceName:
+          type: string
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
@@ -2232,6 +2270,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationRead"
+    DestinationSearch:
+      type: object
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
+        destinationName:
+          type: string
     # CONNECTION
     ConnectionId:
       type: string
@@ -2444,6 +2497,35 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+    WebBackendConnectionSearch:
+      type: object
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceSearch"
+        destination:
+          $ref: "#/components/schemas/DestinationSearch"
     ConnectionReadList:
       type: object
       required:
