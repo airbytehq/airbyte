@@ -418,12 +418,12 @@ def test_cache_response(mocker):
     mocker.patch.object(stream, "url_base", "https://google.com/")
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    with open(stream.cache_filename, 'r') as f:
+    with open(stream.cache_filename, "r") as f:
         assert f.read()
 
 
 class CacheHttpStreamWithSlices(CacheHttpStream):
-    paths = ['', 'search']
+    paths = ["", "search"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f'{stream_slice.get("path")}'
