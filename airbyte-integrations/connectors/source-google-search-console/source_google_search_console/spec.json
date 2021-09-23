@@ -28,6 +28,7 @@
         "type": "object",
         "oneOf": [
           {
+            "title": "Client Auth",
             "type": "object",
             "required": [
               "auth_type",
@@ -38,7 +39,10 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Client"
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
               },
               "client_id": {
                 "type": "string",
@@ -59,11 +63,15 @@
           },
           {
             "type": "object",
+            "title": "Service Auth",
             "required": ["auth_type", "service_account_info"],
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Service"
+                "const": "Service",
+                "enum": ["Service"],
+                "default": "Service",
+                "order": 0
               },
               "service_account_info": {
                 "type": "string",
