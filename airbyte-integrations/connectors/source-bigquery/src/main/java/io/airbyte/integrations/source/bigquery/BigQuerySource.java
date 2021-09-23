@@ -122,12 +122,11 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database, String schema) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    String datasetId = getConfigDatasetId(database);
     List<Table> tables =
         (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-        .nameSpace(datasetId)
+        .nameSpace(table.getTableId().getDataset())
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
@@ -177,11 +176,12 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   private boolean isDatasetConfigured(SqlDatabase database) {
-    return database.getSourceConfig().hasNonNull(CONFIG_DATASET_ID);
+    JsonNode config = database.getSourceConfig();
+    return config.hasNonNull(CONFIG_DATASET_ID) ? !config.get(CONFIG_DATASET_ID).asText().isEmpty() : false;
   }
 
   private String getConfigDatasetId(SqlDatabase database) {
-    return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : null);
+    return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : "");
   }
 
   public static void main(String[] args) throws Exception {
