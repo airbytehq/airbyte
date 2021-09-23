@@ -26,6 +26,7 @@ package io.airbyte.config.persistence.split_secrets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
@@ -63,8 +64,8 @@ public class SecretsHelpersTest {
         new SimpleTestCase(),
         new NestedObjectTestCase(),
         new OneOfTestCase(),
-        new ArrayTestCase()
-    // new ArrayOneOfTestCase() todo: support this test case
+        new ArrayTestCase(),
+        new ArrayOneOfTestCase() // todo: support this test case
     // todo: support allOf / other combination node types
     ).map(Arguments::of);
   }

@@ -26,12 +26,11 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.api.client.util.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -93,8 +92,6 @@ public class SecretsHelpers {
                                          final JsonNode oldPartialConfig,
                                          final JsonNode originalFullConfig,
                                          final JsonNode spec) {
-    Preconditions.checkArgument(spec.has("type"), "Spec is not valid JSONSchema!");
-
     final var fullConfig = originalFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
@@ -105,59 +102,58 @@ public class SecretsHelpers {
 
     final var specTypeToHandle = getSpecTypeToHandle(spec);
 
-    if (specTypeToHandle != null) {
-      switch (specTypeToHandle) {
-        case STRING -> {
-          if (JsonSecretsProcessor.isSecret(spec)) {
-            final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
-            final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
+    switch (specTypeToHandle) {
+      case STRING -> {
+        if (JsonSecretsProcessor.isSecret(spec)) {
+          final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
+          final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
 
-            final var newPartialConfig = Jsons.jsonNode(Map.of(
-                COORDINATE_FIELD, secretCoordinate.toString()));
+          final var newPartialConfig = Jsons.jsonNode(Map.of(
+              COORDINATE_FIELD, secretCoordinate.toString()));
 
-            final var coordinateToPayload = Map.of(
-                secretCoordinate,
-                fullConfig.asText());
+          final var coordinateToPayload = Map.of(
+              secretCoordinate,
+              fullConfig.asText());
 
-            return new SplitSecretConfig(newPartialConfig, coordinateToPayload);
-          }
+          return new SplitSecretConfig(newPartialConfig, coordinateToPayload);
         }
-        case OBJECT -> {
-          final var specPropertiesObject = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
-          final var specProperties = Jsons.keys(specPropertiesObject).stream()
-              .filter(fullConfig::has)
-              .collect(Collectors.toList());
+      }
+      case OBJECT -> {
+        final var specPropertiesObject = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
+        final var specProperties = Jsons.keys(specPropertiesObject).stream()
+            .filter(fullConfig::has)
+            .collect(Collectors.toList());
 
-          // if the input config is specified as an object, we go through and handle each type of property
-          for (final String specProperty : specProperties) {
-            final var fieldSchema = specPropertiesObject.get(specProperty);
-            final var fieldSchemaCombinationType = JsonSecretsProcessor.findJsonCombinationNode(fieldSchema);
-            final var nextOldPartialConfig = getFieldOrEmptyNode(oldPartialConfig, specProperty);
+        // if the input config is specified as an object, we go through and handle each type of property
+        for (final String specProperty : specProperties) {
+          final var nextOldPartialConfig = getFieldOrEmptyNode(oldPartialConfig, specProperty);
 
-            if (fieldSchemaCombinationType.isPresent()) {
-              var combinationCopy = fullConfig.get(specProperty);
-              final var arrayNode = (ArrayNode) fieldSchema.get(fieldSchemaCombinationType.get());
-              for (int i = 0; i < arrayNode.size(); i++) {
-                final var splitConfig = splitter.split(nextOldPartialConfig, combinationCopy, arrayNode.get(i));
-                combinationCopy = splitConfig.getPartialConfig();
-                secretMap.putAll(splitConfig.getCoordinateToPayload());
-              }
-              ((ObjectNode) fullConfig).set(specProperty, combinationCopy);
-            } else {
-              final var nestedSplitConfig =
-                  splitter.split(nextOldPartialConfig, fullConfig.get(specProperty), spec.get("properties").get(specProperty));
-              ((ObjectNode) fullConfig).replace(specProperty, nestedSplitConfig.getPartialConfig());
-              secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
+          final var nestedSplitConfig =
+              splitter.split(nextOldPartialConfig, fullConfig.get(specProperty), spec.get("properties").get(specProperty));
+          ((ObjectNode) fullConfig).replace(specProperty, nestedSplitConfig.getPartialConfig());
+          secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
+        }
+      }
+      case ARRAY -> {
+        for (int i = 0; i < fullConfig.size(); i++) {
+          final var partialConfigElement = getFieldOrEmptyNode(oldPartialConfig, i);
+          final var fullConfigElement = fullConfig.get(i);
+          final var splitConfig = splitter.split(partialConfigElement, fullConfigElement, spec.get("items"));
+          secretMap.putAll(splitConfig.getCoordinateToPayload());
+          ((ArrayNode) fullConfig).set(i, splitConfig.getPartialConfig());
+        }
+      }
+      case ONE_OF -> {
+       final var possibleSchemas = (ArrayNode) spec.get("oneOf");
+
+        for (int i = 0; i < possibleSchemas.size(); i++) {
+          final var possibleSchema = possibleSchemas.get(i);
+          final var set = new JsonSchemaValidator().validate(possibleSchema, fullConfig);
+          if (set.isEmpty()) {
+            final var splitted = splitter.split(oldPartialConfig, fullConfig, possibleSchema);
+            if (!splitted.getPartialConfig().equals(fullConfig)) {
+              return splitted;
             }
-          }
-        }
-        case ARRAY -> {
-          for (int i = 0; i < fullConfig.size(); i++) {
-            final var partialConfigElement = getFieldOrEmptyNode(oldPartialConfig, i);
-            final var fullConfigElement = fullConfig.get(i);
-            final var splitConfig = splitter.split(partialConfigElement, fullConfigElement, spec.get("items"));
-            secretMap.putAll(splitConfig.getCoordinateToPayload());
-            ((ArrayNode) fullConfig).set(i, splitConfig.getPartialConfig());
           }
         }
       }
@@ -166,16 +162,25 @@ public class SecretsHelpers {
     return new SplitSecretConfig(fullConfig, secretMap);
   }
 
-  private static JsonNodeType getSpecTypeToHandle(JsonNode spec) {
+  private enum JsonSchemaSpecType {
+    OBJECT,
+    ARRAY,
+    STRING,
+    ONE_OF,
+    UNRECOGNIZED_TYPE
+  }
+
+  private static JsonSchemaSpecType getSpecTypeToHandle(JsonNode spec) {
     if (isObjectSchema(spec)) {
-      return JsonNodeType.OBJECT;
+      return JsonSchemaSpecType.OBJECT;
     } else if (isArraySchema(spec)) {
-      return JsonNodeType.ARRAY;
+      return JsonSchemaSpecType.ARRAY;
     } else if (isStringSchema(spec)) {
-      return JsonNodeType.STRING;
+      return JsonSchemaSpecType.STRING;
+    } else if (spec.has("oneOf") && spec.get("oneOf").isArray()) {
+      return JsonSchemaSpecType.ONE_OF;
     } else {
-      // only handle the cases we care about handling
-      return null;
+      return JsonSchemaSpecType.UNRECOGNIZED_TYPE;
     }
   }
 
@@ -184,10 +189,6 @@ public class SecretsHelpers {
 
     SplitSecretConfig split(JsonNode oldPartialConfig, JsonNode fullConfig, JsonNode spec);
 
-  }
-
-  private static boolean isSecretSpecNode(JsonNode spec) {
-    return spec.get("type").asText().equals("string") && spec.has(SPEC_SECRET_FIELD) && spec.get(SPEC_SECRET_FIELD).asBoolean();
   }
 
   private static boolean isStringSchema(JsonNode schema) {
@@ -222,26 +223,6 @@ public class SecretsHelpers {
 
   private static SecretCoordinate getCoordinateFromTextNode(JsonNode node) {
     return SecretCoordinate.fromFullCoordinate(node.asText());
-  }
-
-  private static String getCoordinateFromObjectNode(
-                                                    final JsonNode node,
-                                                    final String key) {
-    if (node.has(key) && node.get(key).has(COORDINATE_FIELD)) {
-      return node.get(key).get(COORDINATE_FIELD).asText();
-    } else {
-      return null;
-    }
-  }
-
-  private static String getCoordinateFromObjectNode(
-                                                    final JsonNode node,
-                                                    final int key) {
-    if (node.has(key) && node.get(key).has(COORDINATE_FIELD)) {
-      return node.get(key).get(COORDINATE_FIELD).asText();
-    } else {
-      return null;
-    }
   }
 
   private static SecretCoordinate getCoordinate(
