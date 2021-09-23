@@ -43,14 +43,12 @@ class GoogleSearchConsole(HttpStream, ABC):
 
     def __init__(
         self,
-        auth_type: str,
+        authenticator: Union[HttpAuthenticator, requests.auth.AuthBase],
         site_urls: list,
         start_date: str,
         end_date: str,
-        authenticator: Union[HttpAuthenticator, requests.auth.AuthBase],
     ):
         super().__init__(authenticator=authenticator)
-        self._auth_type = auth_type
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date

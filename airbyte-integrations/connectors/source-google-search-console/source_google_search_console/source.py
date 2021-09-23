@@ -88,7 +88,6 @@ class SourceGoogleSearchConsole(AbstractSource):
         authorization = config.get("authorization", {})
 
         stream_kwargs = {
-            "auth_type": authorization.get("auth_type"),
             "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
             "end_date": config.get("end_date"),
