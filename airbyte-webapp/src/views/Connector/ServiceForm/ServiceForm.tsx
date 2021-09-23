@@ -5,6 +5,7 @@ import { useToggle } from "react-use";
 
 import {
   useBuildForm,
+  useBuildInitialSchema,
   useBuildUiWidgets,
   useConstructValidationSchema,
   usePatchFormik,
@@ -44,15 +45,6 @@ const FormikPatch: React.FC = () => {
   return null;
 };
 
-// function useBuildJsonSchema(
-//   connector?: ConnectorDefinitionSpecification
-// ): JSONSchema7 | undefined {
-//   if (connector?.authSpecification) {
-//   }
-//
-//   return connector?.connectionSpecification;
-// }
-
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const {
@@ -64,7 +56,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     onRetest,
   } = props;
 
-  const specifications = selectedConnector?.connectionSpecification;
+  const specifications = useBuildInitialSchema(selectedConnector);
 
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({

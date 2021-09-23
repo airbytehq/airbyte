@@ -32,3 +32,15 @@ export interface SourceDefinitionSpecification
   extends ConnectorDefinitionSpecificationBase {
   sourceDefinitionId: string;
 }
+
+export interface SourceGetConsentPayload {
+  redirectUrl: string;
+  sourceDefinitionId: string;
+  workspaceId: string;
+}
+
+export interface DestinationGetConsentPayload {
+  redirectUrl: string;
+  destinationDefinitionId: string;
+  workspaceId: string;
+}

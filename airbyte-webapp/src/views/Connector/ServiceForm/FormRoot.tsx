@@ -16,6 +16,7 @@ import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
+import { WithFeature } from "../../../hooks/services/Feature";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -66,9 +67,14 @@ const FormRoot: React.FC<{
   return (
     <FormContainer>
       <FormSection blocks={formFields} />
-      {selectedConnector?.authSpecification && (
-        <AuthButton connector={selectedConnector} />
-      )}
+      <WithFeature featureId="ALLOW_OAUTH_CONNECTOR">
+        {selectedConnector?.authSpecification && selectedService && (
+          <AuthButton
+            connectorSpecification={selectedConnector}
+            connector={selectedService}
+          />
+        )}
+      </WithFeature>
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />

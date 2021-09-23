@@ -10,6 +10,30 @@ import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { buildPathInitialState } from "core/form/uiWidget";
 import { ServiceFormValues } from "./types";
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { useFeatureService } from "hooks/services/Feature";
+import { removeNestedPaths } from "core/jsonSchema";
+
+function useBuildInitialSchema(
+  connectorSpecification?: ConnectorDefinitionSpecification
+): JSONSchema7 | undefined {
+  const { hasFeature } = useFeatureService();
+
+  return useMemo(() => {
+    if (
+      hasFeature("ALLOW_OAUTH_CONNECTOR") &&
+      connectorSpecification?.authSpecification
+    ) {
+      return removeNestedPaths(
+        connectorSpecification.connectionSpecification,
+        connectorSpecification.authSpecification.oauth2Specification
+          .oauthFlowInitParameters
+      );
+    }
+
+    return connectorSpecification?.connectionSpecification;
+  }, [hasFeature, connectorSpecification]);
+}
 
 function useBuildForm(
   jsonSchema: JSONSchema7,
@@ -123,6 +147,7 @@ const usePatchFormik = (): void => {
 
 export {
   useBuildForm,
+  useBuildInitialSchema,
   useBuildUiWidgets,
   useConstructValidationSchema,
   usePatchFormik,

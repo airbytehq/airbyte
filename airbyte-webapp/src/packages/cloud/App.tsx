@@ -14,7 +14,7 @@ import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { FeatureService } from "hooks/services/Feature";
+import { Feature, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
 
@@ -41,6 +41,12 @@ const StoreProvider: React.FC = ({ children }) => (
   </CacheProvider>
 );
 
+const Features: Feature[] = [
+  {
+    id: "ALLOW_OAUTH_CONNECTOR",
+  },
+];
+
 const App: React.FC = () => (
   <React.StrictMode>
     <StyleProvider>
@@ -49,7 +55,7 @@ const App: React.FC = () => (
           <Suspense fallback={<LoadingPage />}>
             <ApiErrorBoundary>
               <NotificationServiceProvider>
-                <FeatureService>
+                <FeatureService features={Features}>
                   <AppServicesProvider>
                     <AuthenticationProvider>
                       <AnalyticsInitializer>
