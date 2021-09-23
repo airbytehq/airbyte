@@ -26,9 +26,11 @@ package io.airbyte.config.persistence.split_secrets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.NestedOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
@@ -37,6 +39,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -65,8 +70,8 @@ public class SecretsHelpersTest {
         new NestedObjectTestCase(),
         new OneOfTestCase(),
         new ArrayTestCase(),
-        new ArrayOneOfTestCase() // todo: support this test case
-    // todo: support allOf / other combination node types
+        new ArrayOneOfTestCase(),
+        new NestedOneOfTestCase()
     ).map(Arguments::of);
   }
 
@@ -177,7 +182,6 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
 
     for (Map.Entry<SecretCoordinate, String> entry : splitConfig.getCoordinateToPayload().entrySet()) {
-      System.out.println("entry1 = " + entry);
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
@@ -193,14 +197,8 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
 
     for (Map.Entry<SecretCoordinate, String> entry : updatedSplit1.getCoordinateToPayload().entrySet()) {
-      System.out.println("entry2 = " + entry);
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
-
-    System.out.println("updatedSplit1.getPartialConfig() = " + updatedSplit1.getPartialConfig());
-    System.out.println("testCase.getFullConfigUpdate2()f = " + testCase.getFullConfigUpdate2());
-    System.out.println("secret = " + secretPersistence
-        .read(new SecretCoordinate("airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_2c2ef2b3-259a-4e73-96d1-f56dacee2e5e", 1)));
 
     final var updatedSplit2 = SecretsHelpers.splitUpdate(
         uuidIterator::next,
@@ -211,7 +209,6 @@ public class SecretsHelpersTest {
         secretPersistence::read);
 
     for (Map.Entry<SecretCoordinate, String> entry : updatedSplit2.getCoordinateToPayload().entrySet()) {
-      System.out.println("entry3 = " + entry);
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 

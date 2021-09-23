@@ -41,7 +41,6 @@ import javax.annotation.Nullable;
 public class SecretsHelpers {
 
   public static final String COORDINATE_FIELD = "_secret";
-  public static final String SPEC_SECRET_FIELD = JsonSecretsProcessor.AIRBYTE_SECRET_FIELD;
 
   public static SplitSecretConfig split(final Supplier<UUID> uuidSupplier,
                                         final UUID workspaceId,
@@ -150,9 +149,9 @@ public class SecretsHelpers {
           final var possibleSchema = possibleSchemas.get(i);
           final var set = new JsonSchemaValidator().validate(possibleSchema, fullConfig);
           if (set.isEmpty()) {
-            final var splitted = splitter.split(oldPartialConfig, fullConfig, possibleSchema);
-            if (!splitted.getPartialConfig().equals(fullConfig)) {
-              return splitted;
+            final var splitConfig = splitter.split(oldPartialConfig, fullConfig, possibleSchema);
+            if (!splitConfig.getPartialConfig().equals(fullConfig)) {
+              return splitConfig;
             }
           }
         }
