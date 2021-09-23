@@ -169,7 +169,7 @@ class DbtIntegrationTest(object):
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
-            credentials = profiles_config
+            credentials = profiles_config["basic_bigquery_config"]
             profiles_config = {
                 "credentials_json": json.dumps(credentials),
                 "dataset_id": self.target_schema,
