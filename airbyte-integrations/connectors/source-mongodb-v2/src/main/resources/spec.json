@@ -11,7 +11,7 @@
       "instance_type": {
         "type": "object",
         "title": "MongoDb instance type",
-        "description": "MongoDb instance to connect to.",
+        "description": "MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.",
         "order": 0,
         "oneOf": [
           {
@@ -38,7 +38,7 @@
               "tls": {
                 "title": "TLS connection",
                 "type": "boolean",
-                "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible.",
+                "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\">documentation</a>.",
                 "default": false,
                 "order": 2
               }
