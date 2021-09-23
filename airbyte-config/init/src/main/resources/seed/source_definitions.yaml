@@ -33,7 +33,7 @@
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   sourceType: api
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4

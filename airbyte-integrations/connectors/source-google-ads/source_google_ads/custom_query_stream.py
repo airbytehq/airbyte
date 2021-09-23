@@ -101,6 +101,9 @@ class CustomQuery(IncrementalGoogleAdsStream):
             else:
                 output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
                 field_value = {"type": output_type}
+                if google_data_type == "DATE":
+                    field_value["format"] = "date"
+
             local_json_schema["properties"][field] = field_value
 
         return local_json_schema
