@@ -36,13 +36,6 @@
   dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   sourceType: api
-- sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
-  name: Google Adwords (Deprecated)
-  dockerRepository: airbyte/source-google-adwords-singer
-  dockerImageTag: 0.2.6
-  documentationUrl: https://docs.airbyte.io/integrations/sources/google-adwords
-  icon: google-adwords.svg
-  sourceType: api
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
@@ -143,13 +136,6 @@
   dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/mailchimp
   icon: mailchimp.svg
-  sourceType: api
-- sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
-  name: Google Analytics
-  dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.2.6
-  documentationUrl: https://docs.airbyte.io/integrations/sources/googleanalytics
-  icon: google-analytics.svg
   sourceType: api
 - sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   name: Google Analytics v4
