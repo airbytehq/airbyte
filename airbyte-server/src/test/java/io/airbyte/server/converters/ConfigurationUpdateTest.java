@@ -101,7 +101,7 @@ class ConfigurationUpdateTest {
     specFetcher = mock(SpecFetcher.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
-    configurationUpdate = new ConfigurationUpdate(configRepository, specFetcher);
+    configurationUpdate = new ConfigurationUpdate(configRepository, specFetcher, secretsProcessor);
   }
 
   @Test
