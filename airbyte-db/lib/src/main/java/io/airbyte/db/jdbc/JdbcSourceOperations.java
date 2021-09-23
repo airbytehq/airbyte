@@ -197,9 +197,9 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
   }
 
   public void setStatementField(PreparedStatement preparedStatement,
-      int parameterIndex,
-      JDBCType cursorFieldType,
-      String value)
+                                int parameterIndex,
+                                JDBCType cursorFieldType,
+                                String value)
       throws SQLException {
     switch (cursorFieldType) {
       // parse time, and timestamp the same way. this seems to not cause an problems and allows us
