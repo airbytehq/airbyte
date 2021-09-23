@@ -439,8 +439,9 @@ from {{ from_table }}
                 # snowflake uses case when statement to parse timestamp field
                 # in this case [cast] operator is not needed as data already converted to timestamp type
                 return self.generate_snowflake_timestamp_statement(column_name)
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             sql_type = jinja_call("type_timestamp_with_timezone()")
-
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             sql_type = jinja_call("type_date()")
@@ -472,6 +473,7 @@ from {{ from_table }}
     {% for format_item in formats %}
         when {{column_name}} regexp '{{format_item['regex']}}' then to_timestamp_tz({{column_name}}, '{{format_item['format']}}')
     {% endfor %}
+        when {{column_name}} = '' then NULL
     else to_timestamp_tz({{column_name}})
     end as {{column_name}}
     """
