@@ -44,15 +44,16 @@ class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
-        self.db_names = ["postgres", "mysql", "mssql"]
+        # self.db_names = ["postgres", "mysql", "mssql"]
+        self.db_names = ["mssql"]
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
     def setup_db(self):
-        self.setup_postgres_db()
-        self.setup_mysql_db()
+        #self.setup_postgres_db()
+        #self.setup_mysql_db()
         self.setup_mssql_db()
 
     def setup_postgres_db(self):

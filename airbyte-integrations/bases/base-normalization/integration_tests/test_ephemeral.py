@@ -62,6 +62,7 @@ def setup_test_path(request):
 
 @pytest.mark.parametrize("column_count", [1500])
 @pytest.mark.parametrize("integration_type", list(DestinationType))
+# @pytest.mark.parametrize("integration_type", [DestinationType.MSSQL])
 def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
     if integration_type == DestinationType.MYSQL:
         # In MySQL, the max number of columns is limited by row size (8KB),
@@ -69,6 +70,8 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
         return
     if integration_type == DestinationType.ORACLE:
         column_count = 998
+    if integration_type == DestinationType.MSSQL:
+        column_count = 1023
     run_test(integration_type, column_count)
 
 
@@ -89,6 +92,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
         ("MySQL", 250, "Row size too large"),
         ("Oracle", 1001, "ORA-01792: maximum number of columns in a table or view is 1000"),
+        ("MSSQL", 1025, "exceeds the maximum of 1024 columns.")
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
