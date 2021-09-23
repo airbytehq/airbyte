@@ -3,7 +3,7 @@
 select
     _AIRBYTE_CHILDREN_HASHID,
     {{ json_extract_scalar('OWNER', ['owner_id'], ['owner_id']) }} as OWNER_ID,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('UNNEST_ALIAS_CHILDREN') }} as table_alias
 where OWNER is not null
 -- OWNER at unnest_alias/children/owner
