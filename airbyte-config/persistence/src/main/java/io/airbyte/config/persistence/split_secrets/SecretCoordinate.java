@@ -27,6 +27,24 @@ package io.airbyte.config.persistence.split_secrets;
 import com.google.api.client.util.Preconditions;
 import java.util.Objects;
 
+/**
+ * A secret coordinate represents a specific secret at a specific version stored within a
+ * {@link SecretPersistence}.
+ *
+ * We use "coordinate base" to refer to a string reference to a secret without versioning
+ * information. We use "full coordinate" to refer to a string reference that includes both the
+ * coordinate base and version-specific information. You should be able to go from a "full
+ * coordinate" to a coordinate object and back without loss of information.
+ *
+ * Example coordinate base:
+ * airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_9eba44d8-51e7-48f1-bde2-619af0e42c22
+ *
+ * Example full coordinate:
+ * airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_9eba44d8-51e7-48f1-bde2-619af0e42c22_v1
+ *
+ * This coordinate system was designed to work well with Google Secrets Manager but should work with
+ * other secret storage backends as well.
+ */
 public class SecretCoordinate {
 
   private final String coordinateBase;
@@ -52,8 +70,7 @@ public class SecretCoordinate {
     return version;
   }
 
-  @Override
-  public String toString() {
+  public String getFullCoordinate() {
     return coordinateBase + "_v" + version;
   }
 
@@ -67,9 +84,13 @@ public class SecretCoordinate {
     return toString().equals(that.toString());
   }
 
+  /**
+   * The hash code is computed using the {@link SecretCoordinate#getFullCoordinate} because the full
+   * secret coordinate should be a valid unique representation of the secret coordinate.
+   */
   @Override
   public int hashCode() {
-    return Objects.hash(toString());
+    return Objects.hash(getFullCoordinate());
   }
 
 }

@@ -30,7 +30,6 @@ import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpersTest;
 import io.airbyte.config.persistence.split_secrets.SecretsTestCase;
-
 import java.util.Map;
 import java.util.function.Consumer;
 

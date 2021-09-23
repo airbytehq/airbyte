@@ -26,7 +26,6 @@ package io.airbyte.config.persistence.split_secrets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
@@ -34,14 +33,13 @@ import io.airbyte.config.persistence.split_secrets.test_cases.NestedOneOfTestCas
 import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.validation.json.JsonValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -63,6 +61,10 @@ public class SecretsHelpersTest {
       UUID.fromString("067a62fc-d007-44dd-a8f6-0fd10823713d"),
       UUID.fromString("c4967ac9-0856-4733-a21e-1d51ca8f254d"));
 
+  /**
+   * This is a bit of a non-standard way of specifying test case paramaterization for Junit, but it's
+   * intended to let you treat most of the JSON involved in the tests as static files.
+   */
   private static Stream<Arguments> provideTestCases() {
     return Stream.of(
         new OptionalPasswordTestCase(),
@@ -71,8 +73,7 @@ public class SecretsHelpersTest {
         new OneOfTestCase(),
         new ArrayTestCase(),
         new ArrayOneOfTestCase(),
-        new NestedOneOfTestCase()
-    ).map(Arguments::of);
+        new NestedOneOfTestCase()).map(Arguments::of);
   }
 
   @ParameterizedTest
@@ -90,7 +91,7 @@ public class SecretsHelpersTest {
     final var uuidIterator = UUIDS.iterator();
     final var inputConfig = testCase.getFullConfig();
     final var inputConfigCopy = inputConfig.deepCopy();
-    final var splitConfig = SecretsHelpers.split(
+    final var splitConfig = SecretsHelpers.splitConfig(
         uuidIterator::next,
         WORKSPACE_ID,
         inputConfig,
@@ -113,7 +114,7 @@ public class SecretsHelpersTest {
 
     // check every key for the pattern and max length
     splitConfig.getCoordinateToPayload().keySet().forEach(key -> {
-      assertTrue(gsmKeyCharacterPattern.matcher(key.toString()).matches(), "Invalid character in key: " + key);
+      assertTrue(gsmKeyCharacterPattern.matcher(key.getFullCoordinate()).matches(), "Invalid character in key: " + key);
       assertTrue(key.toString().length() <= 255, "Key is too long: " + key.toString().length());
     });
   }
@@ -132,7 +133,7 @@ public class SecretsHelpersTest {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
-    final var updatedSplit = SecretsHelpers.splitUpdate(
+    final var updatedSplit = SecretsHelpers.splitAndUpdateConfig(
         uuidIterator::next,
         WORKSPACE_ID,
         inputPartialConfig,
@@ -156,7 +157,7 @@ public class SecretsHelpersTest {
 
     final var inputPartialConfig = testCase.getPartialConfig();
     final var inputPartialConfigCopy = inputPartialConfig.deepCopy();
-    final var actualCombinedConfig = SecretsHelpers.combine(testCase.getPartialConfig(), secretPersistence);
+    final var actualCombinedConfig = SecretsHelpers.combineConfig(testCase.getPartialConfig(), secretPersistence);
 
     assertEquals(testCase.getFullConfig(), actualCombinedConfig);
 
@@ -172,7 +173,7 @@ public class SecretsHelpersTest {
     // intentionally do not seed the persistence with
     // testCase.getPersistenceUpdater().accept(secretPersistence);
 
-    assertThrows(RuntimeException.class, () -> SecretsHelpers.combine(testCase.getPartialConfig(), secretPersistence));
+    assertThrows(RuntimeException.class, () -> SecretsHelpers.combineConfig(testCase.getPartialConfig(), secretPersistence));
   }
 
   @Test
@@ -181,7 +182,7 @@ public class SecretsHelpersTest {
     final var secretPersistence = new MemorySecretPersistence();
     final var testCase = new NestedObjectTestCase();
 
-    final var splitConfig = SecretsHelpers.split(
+    final var splitConfig = SecretsHelpers.splitConfig(
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getFullConfig(),
@@ -194,7 +195,7 @@ public class SecretsHelpersTest {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
-    final var updatedSplit1 = SecretsHelpers.splitUpdate(
+    final var updatedSplit1 = SecretsHelpers.splitAndUpdateConfig(
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getPartialConfig(),
@@ -209,17 +210,13 @@ public class SecretsHelpersTest {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
-    final var updatedSplit2 = SecretsHelpers.splitUpdate(
+    final var updatedSplit2 = SecretsHelpers.splitAndUpdateConfig(
         uuidIterator::next,
         WORKSPACE_ID,
         updatedSplit1.getPartialConfig(),
         testCase.getFullConfigUpdate2(),
         testCase.getSpec(),
         secretPersistence::read);
-
-    for (Map.Entry<SecretCoordinate, String> entry : updatedSplit2.getCoordinateToPayload().entrySet()) {
-      secretPersistence.write(entry.getKey(), entry.getValue());
-    }
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());

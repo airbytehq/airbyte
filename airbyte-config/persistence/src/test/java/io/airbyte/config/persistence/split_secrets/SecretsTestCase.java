@@ -33,13 +33,16 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Provides an easy way of accessing a set of resource files in a specific directory when testing
+ * secrets-related helpers.
+ */
 public interface SecretsTestCase {
 
   String getName();
 
   Map<SecretCoordinate, String> getFirstSecretMap();
 
-  // todo: consider offering a default implementation of this too
   Map<SecretCoordinate, String> getSecondSecretMap();
 
   Consumer<SecretPersistence> getPersistenceUpdater();

@@ -25,8 +25,14 @@
 package io.airbyte.config.persistence.split_secrets;
 
 import java.util.Optional;
-import java.util.function.Function;
 
-public interface ReadOnlySecretPersistence extends Function<SecretCoordinate, Optional<String>> {
+/**
+ * Provides a read-only interface to a backing secrets store similar to {@link SecretPersistence}.
+ * In practice, the functionality should be provided by a {@link SecretPersistence#read function.
+ */
+@FunctionalInterface
+public interface ReadOnlySecretPersistence {
+
+  Optional<String> read(SecretCoordinate coordinate);
 
 }
