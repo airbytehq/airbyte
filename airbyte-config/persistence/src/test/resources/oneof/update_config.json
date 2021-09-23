@@ -4,9 +4,9 @@
     "key1": "hunter3"
   },
   "password2": {
-    "key2": "hunter4"
+    "key1": "hunter4"
   },
   "password3": {
-    "non-secret": "non-secret value"
+    "non-secret": 42
   }
 }

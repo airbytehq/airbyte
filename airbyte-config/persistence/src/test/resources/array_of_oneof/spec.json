@@ -1,5 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
     "username": {
@@ -11,6 +10,7 @@
         "oneOf": [
           {
             "type": "object",
+            "required": ["key1"],
             "properties": {
               "key1": {
                 "type": "string",
@@ -20,10 +20,14 @@
           },
           {
             "type": "object",
+            "required": ["key2", "key3"],
             "properties": {
               "key2": {
                 "type": "string",
                 "airbyte_secret": true
+              },
+              "key3": {
+                "type": "string"
               }
             }
           },

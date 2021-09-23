@@ -77,6 +77,15 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource("provideTestCases")
+  public void validateTestCases(SecretsTestCase testCase) throws JsonValidationException {
+    final var validator = new JsonSchemaValidator();
+    final var spec = testCase.getSpec().getConnectionSpecification();
+    validator.ensure(spec, testCase.getFullConfig());
+    validator.ensure(spec, testCase.getUpdateConfig());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideTestCases")
   void testSplit(SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
     final var inputConfig = testCase.getFullConfig();

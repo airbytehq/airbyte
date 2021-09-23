@@ -1,5 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
     "username": {
@@ -16,6 +15,7 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": ["a"],
         "properties": {
           "a": {
             "type": "string",
@@ -25,5 +25,5 @@
       }
     }
   },
-  "required": ["username", "rotating_keys"]
+  "required": ["username", "rotating_key_strings", "rotating_key_objects"]
 }

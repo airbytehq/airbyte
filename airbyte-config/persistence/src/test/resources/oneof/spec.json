@@ -1,5 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
     "username": {
@@ -9,30 +8,22 @@
       "oneOf": [
         {
           "type": "object",
+          "required": ["non-secret"],
+          "properties": {
+            "non-secret": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["key1"],
           "properties": {
             "key1": {
               "type": "string",
               "airbyte_secret": true
             }
           }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "key2": {
-              "type": "string",
-              "airbyte_secret": true
-            }
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "non-secret": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
         }
       ]
     },
@@ -40,6 +31,7 @@
       "oneOf": [
         {
           "type": "object",
+          "required": ["key1"],
           "properties": {
             "key1": {
               "type": "string",
@@ -49,21 +41,12 @@
         },
         {
           "type": "object",
-          "properties": {
-            "key2": {
-              "type": "string",
-              "airbyte_secret": true
-            }
-          }
-        },
-        {
-          "type": "object",
+          "required": ["non-secret"],
           "properties": {
             "non-secret": {
-              "type": "string"
+              "type": "number"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },
@@ -71,6 +54,7 @@
       "oneOf": [
         {
           "type": "object",
+          "required": ["key1"],
           "properties": {
             "key1": {
               "type": "string",
@@ -80,21 +64,12 @@
         },
         {
           "type": "object",
-          "properties": {
-            "key2": {
-              "type": "string",
-              "airbyte_secret": true
-            }
-          }
-        },
-        {
-          "type": "object",
+          "required": ["non-secret"],
           "properties": {
             "non-secret": {
-              "type": "string"
+              "type": "number"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     }

@@ -5,7 +5,8 @@
       "key1": "hunter1"
     },
     {
-      "key2": "hunter2"
+      "key2": "hunter2",
+      "key3": "non-secret"
     },
     "str"
   ]
