@@ -56,7 +56,8 @@ public class JsonSecretsProcessor {
    * @param obj Object containing potentially secret fields
    */
   // todo: fix bug where this doesn't handle non-oneof nesting or just arrays
-  public static JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
+  // see: https://github.com/airbytehq/airbyte/issues/6393
+  public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
     // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
       return obj;
@@ -112,7 +113,7 @@ public class JsonSecretsProcessor {
    * @param schema
    * @return
    */
-  public static JsonNode copySecrets(JsonNode src, JsonNode dst, JsonNode schema) {
+  public JsonNode copySecrets(JsonNode src, JsonNode dst, JsonNode schema) {
     if (!canBeProcessed(schema)) {
       return dst;
     }

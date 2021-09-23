@@ -43,10 +43,16 @@ public class ConfigurationUpdate {
 
   private final ConfigRepository configRepository;
   private final SpecFetcher specFetcher;
+  private final JsonSecretsProcessor secretsProcessor;
 
   public ConfigurationUpdate(ConfigRepository configRepository, SpecFetcher specFetcher) {
+    this(configRepository, specFetcher, new JsonSecretsProcessor());
+  }
+
+  public ConfigurationUpdate(ConfigRepository configRepository, SpecFetcher specFetcher, JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
     this.specFetcher = specFetcher;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceConnection source(UUID sourceId, String sourceName, JsonNode newConfiguration)
@@ -59,7 +65,7 @@ public class ConfigurationUpdate {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current source to the incoming updated source
-    final JsonNode updatedConfiguration = JsonSecretsProcessor.copySecrets(
+    final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedSource.getConfiguration(),
         newConfiguration,
         spec.getConnectionSpecification());
@@ -78,7 +84,7 @@ public class ConfigurationUpdate {
     final String imageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current destination to the incoming updated destination
-    final JsonNode updatedConfiguration = JsonSecretsProcessor.copySecrets(
+    final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedDestination.getConfiguration(),
         newConfiguration,
         spec.getConnectionSpecification());

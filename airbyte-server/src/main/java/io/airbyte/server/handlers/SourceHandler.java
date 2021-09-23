@@ -58,12 +58,14 @@ public class SourceHandler {
   private final SpecFetcher specFetcher;
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
+  private final JsonSecretsProcessor secretsProcessor;
 
   SourceHandler(final ConfigRepository configRepository,
                 final JsonSchemaValidator integrationSchemaValidation,
                 final SpecFetcher specFetcher,
                 final ConnectionsHandler connectionsHandler,
                 final Supplier<UUID> uuidGenerator,
+                final JsonSecretsProcessor secretsProcessor,
                 final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
@@ -71,6 +73,7 @@ public class SourceHandler {
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceHandler(final ConfigRepository configRepository,
@@ -83,6 +86,7 @@ public class SourceHandler {
         specFetcher,
         connectionsHandler,
         UUID::randomUUID,
+        new JsonSecretsProcessor(),
         new ConfigurationUpdate(configRepository, specFetcher));
   }
 
@@ -214,7 +218,7 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = JsonSecretsProcessor.maskSecrets(
+    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
         sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);

@@ -63,6 +63,7 @@ public class DestinationHandler {
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
   private final ConfigurationUpdate configurationUpdate;
+  private final JsonSecretsProcessor secretsProcessor;
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
@@ -70,6 +71,7 @@ public class DestinationHandler {
                      final SpecFetcher specFetcher,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
+                     final JsonSecretsProcessor secretsProcessor,
                      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
@@ -77,6 +79,7 @@ public class DestinationHandler {
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
@@ -89,6 +92,7 @@ public class DestinationHandler {
         specFetcher,
         connectionsHandler,
         UUID::randomUUID,
+        new JsonSecretsProcessor(),
         new ConfigurationUpdate(configRepository, specFetcher));
   }
 
@@ -239,7 +243,7 @@ public class DestinationHandler {
 
     // remove secrets from config before returning the read
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
-    dci.setConfiguration(JsonSecretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+    dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
