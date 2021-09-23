@@ -3,22 +3,45 @@ import { ComponentMeta, ComponentStory } from "@storybook/react";
 import ServiceForm from "./ServiceForm";
 import { ContentCard } from "components";
 
+const TempConnector = {
+  name: "Service",
+  documentationUrl: "http://service.com",
+  sourceDefinitionId: "serviceId",
+  dockerRepository: "",
+  dockerImageTag: "",
+  latestDockerImageTag: "",
+  icon: "",
+};
+
 export default {
   title: "Views/ServiceForm",
   component: ServiceForm,
+  parameters: { actions: { argTypesRegex: "^on.*" } },
+  args: {
+    formType: "source",
+    availableServices: [TempConnector],
+  },
 } as ComponentMeta<typeof ServiceForm>;
 
-const Template: ComponentStory<typeof ServiceForm> = (args) => (
-  <ContentCard title="Test">
-    <ServiceForm {...args} />
-  </ContentCard>
-);
+const Template: ComponentStory<typeof ServiceForm> = (args) => {
+  // Hack to allow devs to not specify sourceDefinitionId
+  if (
+    args.selectedConnector &&
+    !(args.selectedConnector as any).sourceDefinitionId
+  ) {
+    (args.selectedConnector as any).sourceDefinitionId = "";
+  }
+  return (
+    <ContentCard title="Test">
+      <ServiceForm {...args} />
+    </ContentCard>
+  );
+};
 
 export const Common = Template.bind({});
 Common.args = {
+  // @ts-ignore
   selectedConnector: {
-    sourceDefinitionId: "",
-    documentationUrl: "",
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
@@ -91,8 +114,6 @@ Common.args = {
     }
   }`),
   },
-  formType: "source",
-  availableServices: [],
 };
 
 export const Oneof = Template.bind({});
@@ -165,6 +186,4 @@ Oneof.args = {
     }
   }`),
   },
-  formType: "source",
-  availableServices: [],
 };
