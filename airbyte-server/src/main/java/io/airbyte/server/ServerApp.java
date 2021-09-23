@@ -34,7 +34,6 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
@@ -175,6 +174,9 @@ public class ServerApp implements ServerRunnable {
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
 
+    LOGGER.info("Creating Staged Resource folder...");
+    ConfigDumpImporter.initStagedResourceFolder();
+
     LOGGER.info("Creating config repository...");
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
@@ -182,7 +184,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-    configPersistence.loadData(ConfigSeedProvider.get(configs));
+    configPersistence.migrateFileConfigs(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
@@ -239,10 +241,11 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
-    runFlywayMigration(configs, configDatabase, jobDatabase);
-
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
+
+      runFlywayMigration(configs, configDatabase, jobDatabase);
+      configPersistence.loadData(YamlSeedConfigPersistence.get());
 
       return apiFactory.create(
           schedulerJobClient,
