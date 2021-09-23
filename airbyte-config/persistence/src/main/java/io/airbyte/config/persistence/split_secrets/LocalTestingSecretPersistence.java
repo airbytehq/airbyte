@@ -26,6 +26,9 @@ package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -33,8 +36,6 @@ import java.util.Optional;
  */
 public class LocalTestingSecretPersistence implements SecretPersistence {
 
-  // todo: maybe just create and write to a db table in here instead of using config persistences?
-  // then it'd be good for testing?
   private final Database configDatabase;
 
   public LocalTestingSecretPersistence(Database configDatabase) {
@@ -52,11 +53,11 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
   @Override
   public Optional<String> read(SecretCoordinate coordinate) {
     final Optional<String> output = Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
-      final var result = ctx.resultQuery("SELECT payload FROM secrets WHERE coordinate = ?;", coordinate.getFullCoordinate()).fetch();
+      final var result = ctx.fetch("SELECT payload FROM secrets WHERE coordinate = ?;", coordinate.getFullCoordinate());
       if (result.size() == 0) {
         return Optional.empty();
       } else {
-        return Optional.of(result.get(0).get("payload", String.class));
+        return Optional.of(result.get(0).getValue(0, String.class));
       }
     }));
 
@@ -69,11 +70,35 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
   public void write(SecretCoordinate coordinate, String payload) {
     System.out.println("SECRET WRITE(" + coordinate.getFullCoordinate() + ", " + payload + ")");
     Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
-      ctx.query("INSERT INTO secrets(coordinate,payload) VALUES(?, ?) ON CONFLICT (coordinate) DO UPDATE SET payload = ? WHERE coordinate = ?;",
-          coordinate.getFullCoordinate(), payload, payload, coordinate.getFullCoordinate());
-
+      int result = ctx.query("INSERT INTO secrets(coordinate,payload) VALUES(?, ?) ON CONFLICT (coordinate) DO UPDATE SET payload = ?;",
+              coordinate.getFullCoordinate(), payload, payload, coordinate.getFullCoordinate()).execute();
+      System.out.println("SECRET WRITE EXECUTE RESULT: " + result);
       return null;
     }));
+  }
+
+  public static void main(String[] args) throws IOException {
+    final Database configDatabase = new ConfigsDatabaseInstance(
+            "docker",
+            "docker",
+            "jdbc:postgresql://localhost:5432/airbyte")
+            .getAndInitialize();
+    final var persistence = new LocalTestingSecretPersistence(configDatabase);
+
+    final var coordinate1 = new SecretCoordinate("base1", 1);
+    final var coordinate2 = new SecretCoordinate("base2", 1);
+
+    persistence.write(coordinate1, "hunter1");
+    System.out.println("persistence.read(coordinate1) = " + persistence.read(coordinate1));
+    System.out.println("persistence.read(coordinate2) = " + persistence.read(coordinate2));
+
+    persistence.write(coordinate2, "hunter2");
+    System.out.println("persistence.read(coordinate1) = " + persistence.read(coordinate1));
+    System.out.println("persistence.read(coordinate2) = " + persistence.read(coordinate2));
+
+    persistence.write(coordinate1, "hunter3");
+    System.out.println("persistence.read(coordinate1) = " + persistence.read(coordinate1));
+    System.out.println("persistence.read(coordinate2) = " + persistence.read(coordinate2));
   }
 
 }
