@@ -66,9 +66,11 @@ def test_supports_incremental(patch_incremental_base_class, mocker):
     stream = Incremental{{properCase name}}Stream()
     assert stream.supports_incremental
 
+
 def test_source_defined_cursor(patch_incremental_base_class):
     stream = Incremental{{properCase name}}Stream()
     assert stream.source_defined_cursor
+
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = Incremental{{properCase name}}Stream()

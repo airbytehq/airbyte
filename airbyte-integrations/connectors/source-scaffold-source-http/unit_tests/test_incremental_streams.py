@@ -22,8 +22,9 @@
 # SOFTWARE.
 #
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
+
+from airbyte_cdk.models import SyncMode
 from source_scaffold_source_http.source import IncrementalScaffoldSourceHttpStream
 
 
