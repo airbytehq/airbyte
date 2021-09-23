@@ -37,7 +37,7 @@ class TiktokException(Exception):
     """default exception of custom Tiktok logic"""
 
 
-class ParserMixin:
+class TiktokStream(HttpStream, ABC):
     # endpoints can have different list names
     response_list_field = "list"
 
@@ -72,11 +72,11 @@ class ParserMixin:
     @property
     def url_base(self) -> str:
         """
-        Docs: https://ads.tiktok.com/marketing_api/docs?id=1701890920013825
+        Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
         """
         if self.is_sandbox:
             return "https://sandbox-ads.tiktok.com/open_api/v1.2/"
-        return "https://ads.tiktok.com/open_api/v1.2/"
+        return "https://business-api.tiktok.com/open_api/v1.2/"
 
     def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
         # this data without listing
@@ -85,7 +85,7 @@ class ParserMixin:
     def should_retry(self, response: requests.Response) -> bool:
         """
         Once the rate limit is met, the server returns "code": 40100
-        Docs: https://ads.tiktok.com/marketing_api/docs?id=1701890997610497
+        Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
         """
         data = response.json()
         if data["code"] == 40100:
@@ -104,7 +104,7 @@ class ParserMixin:
         return 0.6
 
 
-class ListAdvertiserIdsStream(ParserMixin, HttpStream):
+class ListAdvertiserIdsStream(TiktokStream):
     """Loading of all possible advertisers"""
 
     primary_key = "advertiser_id"
@@ -151,7 +151,7 @@ class ListAdvertiserIdsStream(ParserMixin, HttpStream):
         return self._advertiser_ids
 
 
-class TiktokStream(ParserMixin, HttpStream, ABC):
+class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
 
@@ -162,7 +162,7 @@ class TiktokStream(ParserMixin, HttpStream, ABC):
         super().__init__(**kwargs)
         # convert a start date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._start_time = pendulum.parse(start_time or "1970-01-01").strftime("%Y-%m-%d 00:00:00")
+        self._start_time = pendulum.parse(start_time or "2021-01-01").strftime("%Y-%m-%d 00:00:00")
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
         )
@@ -194,13 +194,13 @@ class TiktokStream(ParserMixin, HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if self.fields:
-            params["fields"]: self.convert_array_param(self.fields)
+            params["fields"] = self.convert_array_param(self.fields)
         if stream_slice:
             params.update(stream_slice)
         return params
 
 
-class IncrementalTiktokStream(TiktokStream, ABC):
+class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     cursor_field = "modify_time"
 
     page_size = 1000
@@ -251,7 +251,7 @@ class IncrementalTiktokStream(TiktokStream, ABC):
         return {self.cursor_field: max(max_updated_at, (current_stream_state or {}).get(self.cursor_field, ""))}
 
 
-class Advertisers(TiktokStream):
+class Advertisers(FullRefreshTiktokStream):
     """
     Docs: https: // ads.tiktok.com/marketing_api/docs?id = 1708503202263042
     """

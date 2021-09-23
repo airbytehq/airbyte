@@ -55,7 +55,7 @@ class ProductionEnvSpec(BaseModel):
     secret: str = Field(description="The private key of the developer's application.", airbyte_secret=True)
 
 
-class SourceTikTokMarketingSpec(BaseModel):
+class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
@@ -63,7 +63,7 @@ class SourceTikTokMarketingSpec(BaseModel):
 
     access_token: str = Field(description="Long-term Authorized Access Token.", airbyte_secret=True)
 
-    start_date: str = Field(description="Start Date in format: YYYY-MM-DD.", default="1970-01-01", pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+    start_date: str = Field(description="Start Date in format: YYYY-MM-DD.", default="2021-01-01", pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
     @staticmethod
     def change_format_to_oneOf(schema: dict, field_name: str) -> dict:

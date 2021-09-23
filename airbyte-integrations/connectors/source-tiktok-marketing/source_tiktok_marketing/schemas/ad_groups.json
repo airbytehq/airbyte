@@ -24,7 +24,7 @@
       }
     },
     "enable_inventory_filter": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "is_comment_disable": {
       "type": "integer"

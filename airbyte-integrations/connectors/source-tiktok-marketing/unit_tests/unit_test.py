@@ -34,9 +34,9 @@ from source_tiktok_marketing.streams import Advertisers
 CONFIG_FILE = "secrets/config.json"
 
 
-class TestZendeskSupport(TestCase):
-    """This test class provides a set of tests for different Zendesk streams.
-    The Zendesk API has difference pagination and sorting mechanisms for streams.
+class TestTiktokMarketingSupport(TestCase):
+    """This test class provides a set of tests for different TiktokMarketing streams.
+    The TiktokMarketing API has difference pagination and sorting mechanisms for streams.
     Let's try to check them
     """
 
@@ -48,7 +48,7 @@ class TestZendeskSupport(TestCase):
 
     @timeout_decorator.timeout(8)
     def test_backoff(self):
-        """Zendesk sends the header 'Retry-After' about needed delay.
+        """TiktokMarketing sends the header 'Retry-After' about needed delay.
         All streams have to handle it"""
         stream = Advertisers(**self.prepare_stream_args())
         with requests_mock.Mocker() as m:

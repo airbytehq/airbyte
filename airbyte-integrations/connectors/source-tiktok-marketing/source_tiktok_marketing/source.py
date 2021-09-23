@@ -41,7 +41,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .spec import SourceTikTokMarketingSpec
+from .spec import SourceTiktokMarketingSpec
 from .streams import AdGroups, Ads, Advertisers, Campaigns
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -49,7 +49,7 @@ DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketi
 
 class TiktokTokenAuthenticator(TokenAuthenticator):
     """
-    Docs: https://ads.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
+    Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
     """
 
     def __init__(self, token: str, **kwargs):
@@ -68,7 +68,7 @@ class SourceTiktokMarketing(AbstractSource):
             changelogUrl=DOCUMENTATION_URL,
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=SourceTikTokMarketingSpec.schema(),
+            connectionSpecification=SourceTiktokMarketingSpec.schema(),
         )
 
     @staticmethod
@@ -76,7 +76,7 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
         return {
             "authenticator": TiktokTokenAuthenticator(config["access_token"]),
-            "start_time": config.get("start_time") or "1970-01-01",
+            "start_time": config.get("start_time") or "2021-01-01",
             "advertiser_id": config["environment"].get("advertiser_id"),
             "app_id": config["environment"].get("app_id"),
             "secret": config["environment"].get("secret"),

@@ -12,10 +12,10 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connec
 
 Several output streams are available from this source:
 
-* [Advertisers](https://ads.tiktok.com/marketing_api/docs?id=1708503202263042) \(Full Refresh\)
-    * [Campaigns](https://ads.tiktok.com/marketing_api/docs?id=1708582970809346) \(Incremental\)
-    * [Ad Groups](https://ads.tiktok.com/marketing_api/docs?id=1708503489590273)\(Incremental\)
-    * [Ads](https://ads.tiktok.com/marketing_api/docs?id=1708572923161602)\(Incremental\)
+* [Advertisers](https://business-api.tiktok.com/marketing_api/docs?id=1708503202263042) \(Full Refresh\)
+* [Campaigns](https://business-api.tiktok.com/marketing_api/docs?id=1708582970809346) \(Incremental\)
+* [Ad Groups](https://business-api.tiktok.com/marketing_api/docs?id=1708503489590273)\(Incremental\)
+* [Ads](https://business-api.tiktok.com/marketing_api/docs?id=1708572923161602)\(Incremental\)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
