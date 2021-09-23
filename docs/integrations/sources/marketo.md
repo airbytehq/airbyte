@@ -4,7 +4,7 @@
 
 The Marketo source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This connector is based on the [Singer Marketo Tap](https://github.com/singer-io/tap-marketo).
+This connector is based on the [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ### Output schema
 
@@ -31,10 +31,10 @@ This connector can be used to sync the following tables from Marketo:
 
 Feature
 
-| Supported?\(Yes/No\) | Notes |  |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
+| Supported?\(Yes/No\) | Notes |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
 
 ### Performance considerations
 
@@ -53,7 +53,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 * An Airbyte Marketo API-only user
 * A Marketo API Custom Service
 * Marketo Client ID & Client Secret
-* Marketo REST API Base URLs 
+* Marketo Base URL 
 
 ### Setup guide
 
@@ -81,7 +81,7 @@ Make sure to follow the "**Credentials for API Access"** section in the Marketo 
 
 #### Step 5: Obtain your Endpoint and Identity URLs provided by Marketo
 
-Follow the [Marketo documentation for obtaining your base URL](https://developers.marketo.com/rest-api/base-url/). Specifically, copy your **Endpoint** and **Identity URLs** and keep them handy for use in the Airbyte UI.
+Follow the [Marketo documentation for obtaining your base URL](https://developers.marketo.com/rest-api/base-url/). Specifically, copy your **Endpoint** without "/rest" and keep them handy for use in the Airbyte UI.
 
 We're almost there! Armed with your Endpoint & Identity URLs and your Client ID and Secret, head over to the Airbyte UI to setup Marketo as a source.
 
@@ -91,4 +91,4 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.2.3` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| `0.1.0` | 2021-09-06 | [5863](https://github.com/airbytehq/airbyte/pull/5863) | Release Marketo CDK Connector|
