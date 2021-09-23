@@ -181,7 +181,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   @Override
   protected JsonSchemaPrimitive getType(JDBCType columnType) {
-    return SourceJdbcUtils.getType(columnType);
+    return sourceOperations.getType(columnType);
   }
 
   @Override
@@ -196,7 +196,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = SourceJdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = sourceOperations.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
@@ -209,10 +209,10 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> SourceJdbcUtils
+            tableInfo -> sourceOperations
                 .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = SourceJdbcUtils
+              final String streamName = sourceOperations
                   .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
@@ -246,13 +246,13 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  SourceJdbcUtils.enquoteIdentifierList(connection, columnNames),
-                  SourceJdbcUtils
+                  sourceOperations.enquoteIdentifierList(connection, columnNames),
+                  sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  SourceJdbcUtils.enquoteIdentifier(connection, cursorField));
+                  sourceOperations.enquoteIdentifier(connection, cursorField));
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              SourceJdbcUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },

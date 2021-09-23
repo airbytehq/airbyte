@@ -32,6 +32,7 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -40,8 +41,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -193,12 +196,10 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
     node.put(columnName, resultSet.getString(index));
   }
 
-  // todo (cgardens) - move generic date helpers to commons.
-
   public void setStatementField(PreparedStatement preparedStatement,
-                                int parameterIndex,
-                                JDBCType cursorFieldType,
-                                String value)
+      int parameterIndex,
+      JDBCType cursorFieldType,
+      String value)
       throws SQLException {
     switch (cursorFieldType) {
       // parse time, and timestamp the same way. this seems to not cause an problems and allows us
@@ -207,8 +208,8 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
       // value in the following format
       case TIME, TIMESTAMP -> {
         try {
-          preparedStatement.setTimestamp(parameterIndex, Timestamp.from(
-              DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
+          preparedStatement.setTimestamp(parameterIndex, Timestamp
+              .from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }
@@ -240,6 +241,30 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
       // unrecognized types
       default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
     }
+  }
+
+  public String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
+    final StringJoiner joiner = new StringJoiner(",");
+    for (String col : identifiers) {
+      String s = enquoteIdentifier(connection, col);
+      joiner.add(s);
+    }
+    return joiner.toString();
+  }
+
+  public String enquoteIdentifier(Connection connection, String identifier) throws SQLException {
+    final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
+
+    return identifierQuoteString + identifier + identifierQuoteString;
+  }
+
+  public String getFullyQualifiedTableName(String schemaName, String tableName) {
+    return JdbcUtils.getFullyQualifiedTableName(schemaName, tableName);
+  }
+
+  public String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
+    final String quotedTableName = enquoteIdentifier(connection, tableName);
+    return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
   @Override
