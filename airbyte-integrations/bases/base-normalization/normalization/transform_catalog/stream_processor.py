@@ -435,9 +435,12 @@ from {{ from_table }}
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_timestamp_with_time_zone(definition):
-            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
+            if self.destination_type == DestinationType.SNOWFLAKE:
+                # snowflake uses case when statement to parse timestamp field
+                # in this case [cast] operator is not needed as data already converted to timestamp type
+                return self.generate_snowflake_timestamp_statement(column_name)
             sql_type = jinja_call("type_timestamp_with_timezone()")
-            return f"cast({replace_operation} as {sql_type}) as {column_name}"
+
         elif is_date(definition):
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             sql_type = jinja_call("type_date()")
@@ -449,6 +452,31 @@ from {{ from_table }}
             return column_name
 
         return f"cast({column_name} as {sql_type}) as {column_name}"
+
+    def generate_snowflake_timestamp_statement(self, column_name: str) -> str:
+        """
+        Generates snowflake DB specific timestamp case when statement
+        """
+        formats = [
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}", "format": "YYYY-MM-DDTHH24:MI:SSTZHTZM"},
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SSTZH"},
+            {
+                "regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{4}",
+                "format": "YYYY-MM-DDTHH24:MI:SS.FFTZHTZM",
+            },
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SS.FFTZH"},
+        ]
+        template = Template(
+            """
+    case
+    {% for format_item in formats %}
+        when {{column_name}} regexp '{{format_item['regex']}}' then to_timestamp_tz({{column_name}}, '{{format_item['format']}}')
+    {% endfor %}
+    else to_timestamp_tz({{column_name}})
+    end as {{column_name}}
+    """
+        )
+        return template.render(formats=formats, column_name=column_name)
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
