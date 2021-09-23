@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -54,7 +55,10 @@ public class LogClientSingleton {
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
+  public static String CLOUD_WORKSPACE_MDC_KEY = "cloud_workspace_app_root";
+
   public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
+  public static String CLOUD_JOB_LOG_PATH_MDC_KEY = "cloud_job_log_path";
 
   // S3/Minio
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
@@ -87,7 +91,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
@@ -103,7 +106,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
@@ -118,7 +120,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
@@ -132,17 +133,38 @@ public class LogClientSingleton {
       throw new NotImplementedException("Local log deletes not supported.");
     }
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
   public static void setJobMdc(Path path) {
-    MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    var configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs)) {
+      LOGGER.debug("Setting docker job mdc");
+      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    } else {
+      LOGGER.debug("Setting kube job mdc");
+      var logConfigs = new LogConfigDelegator(configs);
+      createCloudClientIfNull(logConfigs);
+      MDC.put(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    }
+  }
+
+  public static void setWorkspaceMdc(Path path) {
+    var configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs)) {
+      LOGGER.debug("Setting docker workspace mdc");
+      MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
+    } else {
+      LOGGER.debug("Setting kube workspace mdc");
+      var logConfigs = new LogConfigDelegator(configs);
+      createCloudClientIfNull(logConfigs);
+      MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.toString());
+    }
   }
 
   private static boolean shouldUseLocalLogs(Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
+    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER);
   }
 
   private static void createCloudClientIfNull(LogConfigs configs) {

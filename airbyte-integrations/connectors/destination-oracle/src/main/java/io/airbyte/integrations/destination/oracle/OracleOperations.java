@@ -176,7 +176,7 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(String data) {
+  public boolean isValidData(JsonNode data) {
     return true;
   }
 

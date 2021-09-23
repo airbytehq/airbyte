@@ -3,6 +3,7 @@ import styled from "styled-components";
 type IProps = {
   center?: boolean;
   bold?: boolean;
+  parentColor?: boolean;
 };
 
 export const H1 = styled.h1<IProps>`
@@ -12,7 +13,8 @@ export const H1 = styled.h1<IProps>`
   font-weight: ${(props) => (props.bold ? 600 : 500)};
   display: block;
   text-align: ${(props) => (props.center ? "center" : "left")};
-  color: ${({ theme }) => theme.textColor};
+  color: ${({ theme, parentColor }) =>
+    parentColor ? "inherid" : theme.textColor};
   margin: 0;
 `;
 
@@ -34,4 +36,5 @@ export const H4 = styled(H1).attrs({ as: "h4" })`
 export const H5 = styled(H1).attrs({ as: "h5" })`
   font-size: ${({ theme }) => theme.h5?.fontSize || "15px"};
   line-height: ${({ theme }) => theme.h5?.lineHeight || "18px"};
+  font-weight: normal;
 `;

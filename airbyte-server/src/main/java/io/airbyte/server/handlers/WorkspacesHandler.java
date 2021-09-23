@@ -91,6 +91,7 @@ public class WorkspacesHandler {
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
     final Boolean news = workspaceCreate.getNews();
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
+    final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(uuidSupplier.get())
@@ -101,7 +102,7 @@ public class WorkspacesHandler {
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
-        .withDisplaySetupWizard(false)
+        .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()));
 
@@ -188,9 +189,10 @@ public class WorkspacesHandler {
   public NotificationRead tryNotification(final Notification notification) {
     try {
       final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
-      final String message = String.format("Hello World! This is a test from Airbyte to try %s notification settings",
-          notification.getNotificationType());
-      if (notificationClient.notify(message)) {
+      final String messageFormat = "Hello World! This is a test from Airbyte to try %s notification settings for sync %s";
+      final boolean failureNotified = notificationClient.notifyFailure(String.format(messageFormat, notification.getNotificationType(), "failures"));
+      final boolean successNotified = notificationClient.notifySuccess(String.format(messageFormat, notification.getNotificationType(), "successes"));
+      if (failureNotified || successNotified) {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (final IllegalArgumentException e) {

@@ -37,6 +37,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -88,6 +89,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("sid", ORACLE_DB.getSid())
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
+        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
         .build());
 
     // Because Oracle doesn't let me create database easily I need to clean up

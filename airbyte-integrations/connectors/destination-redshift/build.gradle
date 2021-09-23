@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.redshift.RedshiftDestination'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 repositories {
@@ -15,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')

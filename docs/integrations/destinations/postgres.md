@@ -22,6 +22,7 @@ Each stream will be output into its own table in Postgres. Each table will conta
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
 
 ## Getting started
@@ -74,3 +75,8 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 
 Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
+## Changelog
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.3.10 | 2021-08-11 | [#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000(NULL) value processing |
+| 0.3.11 | 2021-09-07 | [#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |

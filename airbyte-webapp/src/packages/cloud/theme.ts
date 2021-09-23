@@ -3,10 +3,6 @@ import { theme as rootTheme } from "theme";
 export const theme = {
   ...rootTheme,
 
-  primaryColor: "#615EFF",
-  textColor: "#1A194D",
-  backgroundColor: "#FEF9F4",
-
   h1: {
     fontSize: "24px",
     lineHeight: "29px",

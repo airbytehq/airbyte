@@ -14,14 +14,12 @@ import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 
-import useConnection, {
-  ValuesProps,
-} from "components/hooks/services/useConnectionHook";
-import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
+import useConnection, { ValuesProps } from "hooks/services/useConnectionHook";
+import { useDiscoverSchema } from "hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -42,6 +40,7 @@ type IProps = {
   source: Source;
   destination: Destination;
   afterSubmitConnection?: () => void;
+  noTitles?: boolean;
 };
 
 const CreateConnectionContent: React.FC<IProps> = ({
@@ -49,6 +48,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   destination,
   afterSubmitConnection,
   additionBottomControls,
+  noTitles,
 }) => {
   const { createConnection } = useConnection();
   const analyticsService = useAnalytics();
@@ -82,7 +82,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   if (isLoading) {
     return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+      <ContentCard
+        title={
+          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+        }
+      >
         <LoadingSchema />
       </ContentCard>
     );
@@ -90,7 +94,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   if (schemaErrorStatus) {
     return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+      <ContentCard
+        title={
+          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+        }
+      >
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
@@ -132,7 +140,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
   };
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+    <ContentCard
+      title={
+        noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+      }
+    >
       <Suspense fallback={<LoadingSchema />}>
         <ConnectionForm
           connection={connection}

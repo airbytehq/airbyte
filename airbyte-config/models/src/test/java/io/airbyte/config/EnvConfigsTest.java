@@ -27,6 +27,8 @@ package io.airbyte.config;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -177,6 +179,48 @@ class EnvConfigsTest {
 
     when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("LOGGING");
     Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+  }
+
+  @Test
+  void testWorkerPodTolerations() {
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn(null);
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn(";;;");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn("key=k,value=v;");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of(new WorkerPodToleration("airbyte-server", "NoSchedule", null, "Exists")));
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of(new WorkerPodToleration("airbyte-server", "NoSchedule", "true", "Equals")));
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS))
+        .thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of(
+        new WorkerPodToleration("airbyte-server", "NoSchedule", null, "Exists"),
+        new WorkerPodToleration("airbyte-server", "NoSchedule", "true", "Equals")));
+  }
+
+  @Test
+  void testWorkerPodNodeSelectors() {
+    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn(null);
+    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn(",,,");
+    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn("key=k,,;$%&^#");
+    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of("key", "k"));
+
+    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn("one=two");
+    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of("one", "two"));
+
+    when(function.apply(EnvConfigs.WORKER_POD_NODE_SELECTORS)).thenReturn("airbyte=server,something=nothing");
+    Assertions.assertEquals(config.getWorkerNodeSelectors(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
 }

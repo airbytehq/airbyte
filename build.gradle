@@ -70,7 +70,8 @@ def createSpotlessTarget = { pattern ->
         'dbt_schema_tests',
         'normalization_test_output',
         'tools',
-        'secrets'
+        'secrets',
+        'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -114,9 +115,10 @@ allprojects {
     afterEvaluate { project ->
         def composeDeps = [
                 ":airbyte-config:init",
-                ":airbyte-db",
+                ":airbyte-db:lib",
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
+                ":airbyte-workers",
                 ":airbyte-server",
                 ":airbyte-webapp",
         ].toSet().asImmutable()
@@ -300,7 +302,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-config:init',
 //        ':airbyte-config:models',
 //        ':airbyte-config:persistence',
-//        ':airbyte-db',
+//        ':airbyte-db:lib',
 //        ':airbyte-json-validation',
 //        ':airbyte-migration',
 //        ':airbyte-notification',

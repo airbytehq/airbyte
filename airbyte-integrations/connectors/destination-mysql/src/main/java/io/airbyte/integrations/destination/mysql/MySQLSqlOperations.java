@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
+import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MySQLSqlOperations extends DefaultSqlOperations {
+public class MySQLSqlOperations extends JdbcSqlOperations {
 
   private boolean isLocalFileEnabled = false;
 
@@ -48,10 +48,10 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database,
-                            List<AirbyteRecordMessage> records,
-                            String schemaName,
-                            String tmpTableName)
+  public void insertRecordsInternal(JdbcDatabase database,
+                                    List<AirbyteRecordMessage> records,
+                                    String schemaName,
+                                    String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;

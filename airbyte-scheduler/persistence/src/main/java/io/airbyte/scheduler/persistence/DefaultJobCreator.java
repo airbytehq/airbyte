@@ -25,11 +25,8 @@
 package io.airbyte.scheduler.persistence;
 
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.JobDiscoverCatalogConfig;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
@@ -48,57 +45,6 @@ public class DefaultJobCreator implements JobCreator {
 
   public DefaultJobCreator(JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
-  }
-
-  @Override
-  public long createSourceCheckConnectionJob(SourceConnection source, String dockerImageName) throws IOException {
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(source.getConfiguration())
-        .withDockerImage(dockerImageName);
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.CHECK_CONNECTION_SOURCE)
-        .withCheckConnection(jobCheckConnectionConfig);
-
-    final String sourceId = source.getSourceId() != null ? source.getSourceId().toString() : "";
-    return jobPersistence.enqueueJob(sourceId, jobConfig).orElseThrow();
-  }
-
-  @Override
-  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName) throws IOException {
-    final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(destination.getConfiguration())
-        .withDockerImage(dockerImageName);
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.CHECK_CONNECTION_DESTINATION)
-        .withCheckConnection(jobCheckConnectionConfig);
-
-    final String destinationId = destination.getDestinationId() != null ? destination.getDestinationId().toString() : "";
-    return jobPersistence.enqueueJob(destinationId, jobConfig).orElseThrow();
-  }
-
-  @Override
-  public long createDiscoverSchemaJob(SourceConnection source, String dockerImageName) throws IOException {
-    final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-        .withConnectionConfiguration(source.getConfiguration())
-        .withDockerImage(dockerImageName);
-
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.DISCOVER_SCHEMA)
-        .withDiscoverCatalog(jobDiscoverCatalogConfig);
-
-    final String sourceId = source.getSourceId() != null ? source.getSourceId().toString() : "";
-    return jobPersistence.enqueueJob(sourceId, jobConfig).orElseThrow();
-  }
-
-  @Override
-  public long createGetSpecJob(String integrationImage) throws IOException {
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.GET_SPEC)
-        .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
-
-    return jobPersistence.enqueueJob(integrationImage, jobConfig).orElseThrow();
   }
 
   @Override
@@ -149,7 +95,6 @@ public class DefaultJobCreator implements JobCreator {
       configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
       configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
     });
-
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withNamespaceFormat(standardSync.getNamespaceFormat())

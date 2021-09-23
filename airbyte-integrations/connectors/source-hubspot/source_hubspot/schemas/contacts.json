@@ -2,6 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
   "properties": {
+    "id": {
+      "type": "string"
+    },
     "vid": {
       "type": ["null", "integer"]
     },
@@ -39,8 +42,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -54,12 +56,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -76,8 +76,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -91,12 +90,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -110,12 +107,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -129,12 +124,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -148,12 +141,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -170,8 +161,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -188,8 +178,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -203,12 +192,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -222,12 +209,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -244,8 +229,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -259,12 +243,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -278,12 +260,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -297,12 +277,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -316,12 +294,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -335,12 +311,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -357,8 +331,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -372,12 +345,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -391,12 +362,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -410,12 +379,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -432,8 +399,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -450,8 +416,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -468,8 +433,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -486,8 +450,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -504,8 +467,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -522,8 +484,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -537,12 +498,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -559,8 +518,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -574,12 +532,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -593,12 +549,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -615,8 +569,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -633,8 +586,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -648,12 +600,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -670,8 +620,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -688,8 +637,7 @@
                   "type": ["null", "boolean"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -703,12 +651,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -722,12 +668,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -741,12 +685,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -760,12 +702,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -779,12 +719,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -798,12 +736,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -820,8 +756,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -838,8 +773,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -856,8 +790,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -874,8 +807,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -892,8 +824,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -910,8 +841,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -928,8 +858,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -946,8 +875,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -964,8 +892,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -979,12 +906,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1001,8 +926,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1019,8 +943,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1037,8 +960,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1055,8 +977,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1070,12 +991,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1092,8 +1011,7 @@
                   "type": ["null", "boolean"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1110,8 +1028,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1128,8 +1045,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1146,8 +1062,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1161,12 +1076,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1180,12 +1093,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1202,8 +1113,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1217,12 +1127,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1239,8 +1147,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1257,8 +1164,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1275,8 +1181,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1293,8 +1198,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1311,8 +1215,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1329,8 +1232,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1347,8 +1249,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1365,8 +1266,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1383,8 +1283,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1401,8 +1300,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1419,8 +1317,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1437,8 +1334,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1455,8 +1351,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1473,8 +1368,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1491,8 +1385,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1509,8 +1402,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1524,12 +1416,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1546,8 +1436,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1564,8 +1453,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1582,8 +1470,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1597,12 +1484,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1616,12 +1501,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1638,8 +1521,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1653,12 +1535,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1672,12 +1552,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1691,12 +1569,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1713,8 +1589,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1728,11 +1603,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "number", "string"]
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1749,8 +1623,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1767,8 +1640,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1785,8 +1657,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1803,8 +1674,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1821,8 +1691,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1839,8 +1708,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1857,8 +1725,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1875,8 +1742,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1890,11 +1756,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "number", "string"]
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1911,8 +1776,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1929,8 +1793,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1947,8 +1810,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1965,8 +1827,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1983,8 +1844,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2001,8 +1861,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2019,8 +1878,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2037,8 +1895,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2052,12 +1909,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2071,12 +1926,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2090,12 +1943,10 @@
               "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2112,8 +1963,7 @@
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2130,8 +1980,7 @@
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2157,12 +2006,10 @@
         "type": ["null", "object"],
         "properties": {
           "deleted-changed-timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "saved-at-timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "vid": {
             "type": ["null", "integer"]
@@ -2173,8 +2020,7 @@
               "type": ["null", "object"],
               "properties": {
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "type": {
                   "type": ["null", "string"]
@@ -2203,8 +2049,7 @@
             "type": ["null", "integer"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "vid": {
             "type": ["null", "integer"]
@@ -2221,8 +2066,7 @@
             "type": ["null", "string"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "form-id": {
             "type": ["null", "string"]
@@ -2251,8 +2095,7 @@
             "type": ["null", "integer"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "user-id": {
             "type": ["null", "integer"]
@@ -2316,12 +2159,10 @@
       }
     },
     "createdAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     }
   }
 }

@@ -35,9 +35,11 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -70,9 +72,14 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
+
+  private final JdbcSourceOperations sourceOperations;
 
   public MssqlSource() {
     super(DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration());
+    this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
   }
 
   @Override
@@ -152,7 +159,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
           config.get("database").asText(), sql));
       return ps;
-    }, JdbcUtils::rowToJson).collect(toList());
+    }, sourceOperations::rowToJson).collect(toList());
     if (queryResponse.size() < 1) {
       throw new RuntimeException(String.format(
           "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
@@ -172,7 +179,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       LOGGER.info(String.format("Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
           config.get("username").asText(), sql));
       return ps;
-    }, JdbcUtils::rowToJson).collect(toList());
+    }, sourceOperations::rowToJson).collect(toList());
     // Ensure at least one available CDC table
     if (queryResponse.size() < 1) {
       throw new RuntimeException("No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
@@ -187,7 +194,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
         PreparedStatement ps = connection.prepareStatement(sql);
         LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
         return ps;
-      }, JdbcUtils::rowToJson).collect(toList());
+      }, sourceOperations::rowToJson).collect(toList());
       if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
         throw new RuntimeException(String.format(
             "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
@@ -211,7 +218,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       LOGGER.info(String.format("Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
           config.get("database").asText(), sql));
       return ps;
-    }, JdbcUtils::rowToJson).collect(toList());
+    }, sourceOperations::rowToJson).collect(toList());
     if (queryResponse.size() < 1) {
       throw new RuntimeException(String.format(
           "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
@@ -322,7 +329,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new MssqlSource();
+    final Source source = new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);

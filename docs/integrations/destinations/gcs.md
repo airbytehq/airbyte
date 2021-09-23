@@ -12,6 +12,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | :--- | :---: | :--- |
 | Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
 | Incremental - Append Sync | ✅ | |
+| Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | ❌ | Setting a specific bucket path is equivalent to having separate namespaces. |
 
 ## Configuration
@@ -24,6 +25,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | HMAC Key Access ID | string | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
 | HMAC Key Secret | string | The corresponding secret for the access ID. It is a 40-character base-64 encoded string. |
 | Format | object | Format specific configuration. See below for details. |
+| Part Size | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize * 10,000 blocks. |
 
 Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future.
 
@@ -372,4 +374,6 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.2 | 2021-09-12 | [#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS |
+| 0.1.1 | 2021-08-26 | [#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery (GCS Staging upload type) |
 | 0.1.0 | 2021-07-16 | [#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release. |

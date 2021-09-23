@@ -20,6 +20,13 @@ Optionally, we can provide additional inputs to customize requests:
 * request parameters and headers
 * how to recognize rate limit errors, and how long to wait \(by default it retries 429 and 5XX errors using exponential backoff\)
 * HTTP method and request body if applicable
+* configure exponential backoff policy
+
+Backoff policy options:
+
+- `retry_factor` Specifies factor for exponential backoff policy (by default is 5)
+- `max_retries` Specifies maximum amount of retries for backoff policy (by default is 5)
+- `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception (by default is True)
 
 There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class.
 

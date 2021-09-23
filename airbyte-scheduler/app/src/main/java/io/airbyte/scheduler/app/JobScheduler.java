@@ -33,13 +33,13 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -71,7 +71,10 @@ public class JobScheduler implements Runnable {
         jobPersistence,
         configRepository,
         new ScheduleJobPredicate(Instant::now),
-        new DefaultSyncJobFactory(new DefaultJobCreator(jobPersistence), configRepository));
+        new DefaultSyncJobFactory(
+            new DefaultJobCreator(jobPersistence),
+            configRepository,
+            new OAuthConfigSupplier(configRepository, false)));
   }
 
   @Override
@@ -88,7 +91,7 @@ public class JobScheduler implements Runnable {
   }
 
   private void scheduleSyncJobs() throws IOException {
-    final AtomicInteger jobsScheduled = new AtomicInteger();
+    int jobsScheduled = 0;
     final List<StandardSync> activeConnections = getAllActiveConnections();
 
     for (StandardSync connection : activeConnections) {
@@ -96,11 +99,12 @@ public class JobScheduler implements Runnable {
 
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
+        jobsScheduled++;
       }
     }
-    int jobsScheduledCount = jobsScheduled.get();
-    if (jobsScheduledCount > 0) {
-      LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
+
+    if (jobsScheduled > 0) {
+      LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}", activeConnections.size(), jobsScheduled);
     }
   }
 

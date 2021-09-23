@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
-import useRouter from "../../hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import { Routes } from "../../../pages/routes";
 
 type IProps = {

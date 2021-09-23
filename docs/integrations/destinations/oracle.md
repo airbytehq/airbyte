@@ -10,9 +10,9 @@ The Airbyte Oracle destination allows you to sync data to Oracle.
 
 Each stream will be output into its own table in Oracle. Each table will contain 3 columns:
 
-* `airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
-* `airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
-* `airbyte_data`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
+* `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
+* `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
+* `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
 
 #### Features
 
@@ -20,7 +20,10 @@ Each stream will be output into its own table in Oracle. Each table will contain
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
+| Basic Normalization | Yes | Only for raw tables, doesn't support for nested json yet |
+
 
 ## Getting started
 
@@ -28,7 +31,8 @@ Each stream will be output into its own table in Oracle. Each table will contain
 
 To use the Oracle destination, you'll need:
 
-* An Oracle server version 11 or above
+* An Oracle server version 18 or above
+* It's possible to use Oracle 12+ but you need to configure the table name length to 120 chars.
 
 ### Setup guide
 
@@ -62,6 +66,7 @@ You should now have all the requirements needed to configure Oracle as a destina
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.7 | 2021-08-30 | [#5746](https://github.com/airbytehq/airbyte/pull/5746) | Use default column name for raw tables |
 | 0.1.6 | 2021-08-23 | [#5542](https://github.com/airbytehq/airbyte/pull/5542) | Remove support for Oracle 11g to allow normalization |
 | 0.1.5 | 2021-08-10 | [#5307](https://github.com/airbytehq/airbyte/pull/5307) | 🐛 Destination Oracle: Fix destination check for users without dba role |
 | 0.1.4 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |

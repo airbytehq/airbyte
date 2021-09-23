@@ -1,0 +1,21 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/facebook-pages",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Facebook Pages Spec",
+    "type": "object",
+    "required": ["access_token", "page_id"],
+    "additionalProperties": false,
+    "properties": {
+      "access_token": {
+        "type": "string",
+        "description": "Facebook Page Access Token",
+        "airbyte_secret": true
+      },
+      "page_id": {
+        "type": "string",
+        "description": "Page ID"
+      }
+    }
+  }
+}

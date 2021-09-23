@@ -27,6 +27,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.WorkerPodToleration;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -34,6 +35,8 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
+import io.fabric8.kubernetes.api.model.Toleration;
+import io.fabric8.kubernetes.api.model.TolerationBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -120,7 +123,6 @@ public class KubePodProcess extends Process {
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
-  private static final Map<String, String> AIRBYTE_POD_LABELS = Map.of("airbyte", "worker-pod");
 
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
@@ -158,7 +160,7 @@ public class KubePodProcess extends Process {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.00001; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -243,6 +245,19 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
+  private Toleration[] buildPodTolerations(List<WorkerPodToleration> tolerations) {
+    if (tolerations == null || tolerations.isEmpty()) {
+      return null;
+    }
+    return tolerations.stream().map(workerPodToleration -> new TolerationBuilder()
+        .withKey(workerPodToleration.getKey())
+        .withEffect(workerPodToleration.getEffect())
+        .withOperator(workerPodToleration.getOperator())
+        .withValue(workerPodToleration.getValue())
+        .build())
+        .toArray(Toleration[]::new);
+  }
+
   public KubePodProcess(String processRunnerHost,
                         ApiClient officialClient,
                         KubernetesClient fabricClient,
@@ -256,6 +271,9 @@ public class KubePodProcess extends Process {
                         final Map<String, String> files,
                         final String entrypointOverride,
                         ResourceRequirements resourceRequirements,
+                        List<WorkerPodToleration> tolerations,
+                        Map<String, String> nodeSelectors,
+                        Map<String, String> labels,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -285,6 +303,7 @@ public class KubePodProcess extends Process {
     Volume configVolume = new VolumeBuilder()
         .withName("airbyte-config")
         .withNewEmptyDir()
+        .withMedium("Memory")
         .endEmptyDir()
         .build();
 
@@ -356,9 +375,11 @@ public class KubePodProcess extends Process {
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(podName)
-        .withLabels(AIRBYTE_POD_LABELS)
+        .withLabels(labels)
         .endMetadata()
         .withNewSpec()
+        .withTolerations(buildPodTolerations(tolerations))
+        .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)

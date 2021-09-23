@@ -6,17 +6,28 @@ It can take a while for Airbyte to load data into your destination. Some sources
 data we can sync in a given time. Large amounts of data in your source can also make the initial sync take longer. You can check your
 sync status in your connection detail page that you can access through the destination detail page or the source one.
 
+## **Why my final tables are being recreated everytime?**
+
+Airbyte ingests data into raw tables and applies the process of normalization if you selected it in the connection page.
+The normalization runs a full refresh each sync and for some destinations like Snowflake, Redshift, Bigquery this may incur more
+resource consumption and more costs. You need to pay attention to the frequency that you're retrieving your data to avoid issues.
+For example, if you create a connection to sync every 5 minutes with incremental sync on, it will only retrieve new records into the raw tables but will apply normalization
+to *all* the data in every sync! If you have tons of data, this may not be the right sync frequency for you.
+
+There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4286) to implement normalization using incremental, which will reduce
+costs and resources in your destination.
+
 ## **What happens if a sync fails?**
 
-You won't loose data when a sync fails, however, no data will be added or updated in your destination.
+You won't lose data when a sync fails, however, no data will be added or updated in your destination.
 
 Airbyte will automatically attempt to replicate data 3 times. You can see and export the logs for those attempts in the connection 
 detail page. You can access this page through the Source or Destination detail page.
 
-You can configure a Slack webhook to warn you when a sync failed.
+You can configure a Slack webhook to warn you when a sync fails.
 
-In the future you will be able to configuration other notification method (email, Sentry) and an option to create a
-GitHub issue with the logs. We’re still working on it, and the purpose would be to help the community and the Airbyte team fix the
+In the future you will be able to configure other notification method (email, Sentry) and an option to create a
+GitHub issue with the logs. We’re still working on it, and the purpose would be to help the community and the Airbyte team to fix the
 issue as soon as possible, especially if it is a connector issue.
 
 Until Airbyte has this system in place, here is what you can do:
@@ -35,7 +46,7 @@ We truly appreciate any contribution you make to help the community. Airbyte wil
 
 ## **Can Airbyte support 2-way sync i.e. changes from A go to B and changes from B go to A?**
 
-Airbyte actually do not support this right now. There are some details around how we handle schema and tables names that isn't going to 
+Airbyte actually does not support this right now. There are some details around how we handle schema and tables names that isn't going to 
 work for you in the current iteration.
 If you attempt to do a circular dependency between source and destination, you'll end up with the following
 A.public.table_foo writes to B.public.public_table_foo to A.public.public_public_table_foo. You won't be writing into your original table,
@@ -82,6 +93,14 @@ Yes, for more than 6000 thousand tables could be a problem to load the informati
 
 There are two Github issues about this limitation: [Issue #3942](https://github.com/airbytehq/airbyte/issues/3942) 
 and [Issue #3943](https://github.com/airbytehq/airbyte/issues/3943).
+
+## Help, Airbyte is hanging/taking a long time to discover my source's schema!
+
+This usually happens for database sources that contain a lot of tables. This should resolve itself in half an hour or so.
+
+If the source contains more than 6k tables, see the [above question](#there-is-a-limit-of-how-many-tables-one-connection-can-handle).
+
+There is a known issue with [Oracle databases](https://github.com/airbytehq/airbyte/issues/4944).
 
 ## **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
 

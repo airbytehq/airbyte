@@ -2,6 +2,6 @@
   "destinationDefinitionId": "3986776d-2319-4de9-8af8-db14c0996e72",
   "name": "Oracle (Alpha)",
   "dockerRepository": "airbyte/destination-oracle",
-  "dockerImageTag": "0.1.6",
+  "dockerImageTag": "0.1.7",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/oracle"
 }
