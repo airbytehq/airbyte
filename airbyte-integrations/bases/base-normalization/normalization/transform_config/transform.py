@@ -288,10 +288,10 @@ class TransformConfig:
         We do this because we need these details to open the ssh tunnel for dbt.
         """
         ssh_dict = {
-            "db_host": original_config.get("host"),
-            "db_port": original_config.get("port"),
-            "tunnel_map": original_config.get("tunnel_method"),
-            "local_port": transformed_config.get("port"),
+            "db_host": original_config["host"],
+            "db_port": original_config["port"],
+            "tunnel_map": original_config["tunnel_method"],
+            "local_port": transformed_config["normalize"]["outputs"]["prod"]["port"],
         }
         if not os.path.exists(output_path):
             os.makedirs(output_path)
