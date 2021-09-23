@@ -81,7 +81,6 @@ write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_TRACK
 write_standard_creds source-google-directory "$GOOGLE_DIRECTORY_TEST_CREDS"
 write_standard_creds source-google-search-console "$GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS"
 write_standard_creds source-google-search-console "$GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC" "service_account_config.json"
-write_standard_creds source-google-search-console-singer "$GOOGLE_SEARCH_CONSOLE_TEST_CREDS"
 write_standard_creds source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS"
 write_standard_creds source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
