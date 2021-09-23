@@ -33,15 +33,8 @@
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
-  sourceType: api
-- sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
-  name: Google Adwords (Deprecated)
-  dockerRepository: airbyte/source-google-adwords-singer
-  dockerImageTag: 0.2.6
-  documentationUrl: https://docs.airbyte.io/integrations/sources/google-adwords
-  icon: google-adwords.svg
   sourceType: api
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
@@ -104,8 +97,8 @@
   sourceType: api
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   name: Marketo
-  dockerRepository: airbyte/source-marketo-singer
-  dockerImageTag: 0.2.3
+  dockerRepository: airbyte/source-marketo
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/marketo
   icon: marketo.svg
   sourceType: api
@@ -144,13 +137,6 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
-- sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
-  name: Google Analytics
-  dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.2.6
-  documentationUrl: https://docs.airbyte.io/integrations/sources/googleanalytics
-  icon: google-analytics.svg
-  sourceType: api
 - sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   name: Google Analytics v4
   dockerRepository: airbyte/source-google-analytics-v4
@@ -175,7 +161,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -485,7 +471,7 @@
 - sourceDefinitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
   name: BigQuery
   dockerRepository: airbyte/source-bigquery
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigquery
   sourceType: database
 - sourceDefinitionId: 90916976-a132-4ce9-8bce-82a03dd58788
