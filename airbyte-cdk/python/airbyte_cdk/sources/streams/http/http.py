@@ -30,7 +30,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 import vcr
 import vcr.cassette as Cassette
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 from requests.auth import AuthBase
@@ -71,7 +70,7 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Return the name of cache file
         """
-        return f'{self.name}.yml'
+        return f"{self.name}.yml"
 
     @property
     def use_cache(self):
@@ -382,7 +381,6 @@ class HttpStream(Stream, ABC):
 
 
 class HttpSubStream(HttpStream, ABC):
-
     def __init__(self, parent: HttpStream, **kwargs):
         """
         :param parent: should be the instance of HttpStream class
@@ -394,18 +392,13 @@ class HttpSubStream(HttpStream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=cursor_field,
-                stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         # iterate over all parent stream_slices
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=cursor_field,
-                stream_slice=stream_slice,
-                stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             # iterate over all parent records with current stream_slice
