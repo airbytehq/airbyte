@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,7 +104,7 @@ class WorkspaceHelperTest {
   public void setup() throws IOException {
     tmpDir = Files.createTempDirectory("workspace_helper_test_" + RandomStringUtils.randomAlphabetic(5));
 
-    configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
+    configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir), Optional.empty());
     jobPersistence = mock(JobPersistence.class);
 
     workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);

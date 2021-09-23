@@ -23,6 +23,8 @@ services:
     logging: *default-logging
     container_name: airbyte-db
     restart: unless-stopped
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
