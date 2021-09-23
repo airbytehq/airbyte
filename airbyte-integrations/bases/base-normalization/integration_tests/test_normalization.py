@@ -78,7 +78,7 @@ def setup_test_path(request):
 # @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
 # Run tests on all destinations:
 # @pytest.mark.parametrize("destination_type", list(DestinationType))
-@pytest.mark.parametrize("destination_type", [DestinationType.MSSQL])
+@pytest.mark.parametrize("destination_type", [DestinationType.MSSQL, DestinationType.POSTGRES, DestinationType.MYSQL, ])
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     """
     @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
@@ -96,13 +96,14 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
+    dbt_test_setup(destination_type, test_resource_name, test_root_dir)
     dbt_test_utils.dbt_run(test_root_dir)
 
-    if integration_type != DestinationType.ORACLE.value:
+    """ if integration_type != DestinationType.ORACLE.value:
         # Oracle doesnt support nested with clauses
-        # Run checks on Tests results
-        dbt_test(destination_type, test_resource_name, test_root_dir)
-        check_outputs(destination_type, test_resource_name, test_root_dir)
+        # Run checks on Tests results """
+    dbt_test(test_root_dir)
+    check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
@@ -191,14 +192,9 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     )
 
 
-def dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
+def dbt_test_setup(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
     """
-    dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
-    - Schema tests are added in .yml files from the schema_tests directory
-        - see additional macros for testing here: https://github.com/fishtown-analytics/dbt-utils#schema-tests
-    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful
-
-    We use this mechanism to verify the output of our integration tests.
+    Prepare the data (copy) for the models for dbt test.
     """
     replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     copy_test_files(
@@ -213,6 +209,23 @@ def dbt_test(destination_type: DestinationType, test_resource_name: str, test_ro
         destination_type,
         replace_identifiers,
     )
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_tmp_data_test"),
+        os.path.join(test_root_dir, "models/dbt_tmp_data_test"),
+        destination_type,
+        replace_identifiers,
+    )
+    
+
+def dbt_test(test_root_dir: str):
+    """
+    dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
+    - Schema tests are added in .yml files from the schema_tests directory
+        - see additional macros for testing here: https://github.com/fishtown-analytics/dbt-utils#schema-tests
+    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful
+
+    We use this mechanism to verify the output of our integration tests.
+    """
     assert dbt_test_utils.run_check_dbt_command("test", test_root_dir)
 
 

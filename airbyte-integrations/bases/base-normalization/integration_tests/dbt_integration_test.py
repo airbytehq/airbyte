@@ -44,17 +44,15 @@ class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
-        # self.db_names = ["postgres", "mysql", "mssql"]
-        self.db_names = ["mssql"]
+        self.db_names = ["postgres", "mysql", "mssql"]
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
     def setup_db(self):
-        # TODO: Uncomment this after the tests!
-        # self.setup_postgres_db()
-        # self.setup_mysql_db()
+        self.setup_postgres_db()
+        self.setup_mysql_db()
         self.setup_mssql_db()
 
     def setup_postgres_db(self):
@@ -132,12 +130,11 @@ class DbtIntegrationTest(object):
 
     def setup_mssql_db(self):
         print("Starting localhost MS SQL Server container for tests")
-        self.container_prefix = f"test_{self.random_string(3)}"
         port = self.find_free_port()
         config = {
             "host": "localhost",
             "username": "SA",
-            "password": "integration-tests",
+            "password": "MyStr0ngP@ssw0rd",
             "port": port,
             "database": self.target_schema,
             "schema": self.target_schema,
@@ -206,13 +203,13 @@ class DbtIntegrationTest(object):
         s.close()
         return addr[1]
 
-    """ def tear_down_db(self):
+    def tear_down_db(self):
         for db_name in self.db_names:
             print(f"Stopping localhost {db_name} container for tests")
             try:
                 subprocess.call(["docker", "kill", f"{self.container_prefix}_{db_name}"])
             except Exception as e:
-                print(f"WARN: Exception while shutting down {db_name}: {e}") """
+                print(f"WARN: Exception while shutting down {db_name}: {e}")
 
     @staticmethod
     def change_current_test_dir(request):

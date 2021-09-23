@@ -59,7 +59,11 @@
 
 {% macro sqlserver__format_json_path(json_path_list) -%}
     {# -- '$."x"."y"."z"' #}
-    {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
+    {%- set str_list = [] -%}
+    {%- for json_path in json_path_list -%}
+        {%- if str_list.append(json_path.replace("'", "''").replace('"', '\\"')) -%} {%- endif -%}
+    {%- endfor -%}
+    {{ "'$.\"" ~ str_list|join(".") ~ "\"'" }}
 {%- endmacro %}
 
 {# json_extract -------------------------------------------------     #}
@@ -117,7 +121,7 @@
 {%- endmacro %}
 
 {% macro sqlserver__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    json_query({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    json_query({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}
@@ -155,7 +159,7 @@
 {%- endmacro %}
 
 {% macro sqlserver__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    json_value({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -193,5 +197,5 @@
 {%- endmacro %}
 
 {% macro sqlserver__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
-    json_query({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    json_query({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
