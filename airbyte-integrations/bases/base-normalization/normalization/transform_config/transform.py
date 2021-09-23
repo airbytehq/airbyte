@@ -55,7 +55,7 @@ class TransformConfig:
         transformed_config = self.transform(integration_type, original_config)
         self.write_yaml_config(inputs["output_path"], transformed_config, "profiles.yml")
         if self.is_ssh_tunnelling(original_config):
-            self.write_ssh_port(inputs["output_path"], self.pick_a_port())
+            self.write_ssh_config(inputs["output_path"], original_config, transformed_config)
 
     @staticmethod
     def parse(args):
@@ -282,17 +282,21 @@ class TransformConfig:
             fh.write(yaml.dump(config))
 
     @staticmethod
-    def write_ssh_port(output_path: str, port: int):
+    def write_ssh_config(output_path: str, original_config: Dict[str, Any], transformed_config: Dict[str, Any]):
         """
-        This function writes a small json file with content like {"port":xyz}
-        This is being used only when ssh tunneling.
-        We do this because we need to decide on and save this port number into our dbt config
-        and then use that same port in sshtunneling.sh when opening the tunnel.
+        This function writes a json file with config specific to ssh.
+        We do this because we need these details to open the ssh tunnel for dbt.
         """
+        ssh_dict = {
+            "db_host": original_config["host"],
+            "db_port": original_config["port"],
+            "tunnel_map": original_config["tunnel_method"],
+            "local_port": transformed_config["normalize"]["outputs"]["prod"]["port"],
+        }
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        with open(os.path.join(output_path, "localsshport.json"), "w") as fh:
-            json.dump({"port": port}, fh)
+        with open(os.path.join(output_path, "ssh.json"), "w") as fh:
+            json.dump(ssh_dict, fh)
 
 
 def main(args=None):
