@@ -63,7 +63,6 @@ class SalesloftStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json().get('data')
         if not data:
-            yield {}
             return
         for element in data:
             yield element

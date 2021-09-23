@@ -38,43 +38,39 @@ def patch_incremental_base_class(mocker):
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalSalesloftStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
+    stream = IncrementalSalesloftStream(authenticator=MagicMock())
+    expected_cursor_field = 'updated_at'
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalSalesloftStream()
+    stream = IncrementalSalesloftStream(authenticator=MagicMock(), start_date='2021-09-21T00:00:00.504817-04:00')
     expected_cursor_field = []
     # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
+    inputs = {"current_stream_state": {}, "latest_record": {}}
     # TODO: replace this with your expected updated stream state
-    expected_state = {}
+    expected_state = {'updated_at': '2021-09-21T00:00:00.504817-04:00'}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalSalesloftStream()
+    stream = IncrementalSalesloftStream(authenticator=MagicMock())
     expected_cursor_field = []
-    # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalSalesloftStream, "cursor_field", "dummy_field")
-    stream = IncrementalSalesloftStream()
+    stream = IncrementalSalesloftStream(authenticator=MagicMock())
     assert stream.supports_incremental
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalSalesloftStream()
+    stream = IncrementalSalesloftStream(authenticator=MagicMock())
     assert stream.source_defined_cursor
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalSalesloftStream()
-    # TODO: replace this with your expected checkpoint interval
+    stream = IncrementalSalesloftStream(authenticator=MagicMock())
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

@@ -26,15 +26,9 @@ from source_salesloft.source import SourceSalesloft
 from unittest.mock import MagicMock
 
 
-def test_check_connection(mocker):
-    source = SourceSalesloft()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
-
 def test_streams(mocker):
     source = SourceSalesloft()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    expected_streams_number = 4
     assert len(streams) == expected_streams_number
