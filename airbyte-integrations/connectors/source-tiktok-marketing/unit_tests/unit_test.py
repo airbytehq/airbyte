@@ -46,7 +46,7 @@ class TestTiktokMarketingSupport(TestCase):
         with open(CONFIG_FILE, "r") as f:
             return SourceTiktokMarketing._prepare_stream_args(json.loads(f.read()))
 
-    @timeout_decorator.timeout(8)
+    @timeout_decorator.timeout(20)
     def test_backoff(self):
         """TiktokMarketing sends the header 'Retry-After' about needed delay.
         All streams have to handle it"""
