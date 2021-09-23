@@ -335,6 +335,7 @@ font-style: italic;
   </ul>
   <h4><a href="#WebBackend">WebBackend</a></h4>
   <ul>
+  <li><a href="#webBackendConnectionSearch"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
   <li><a href="#webBackendCreateDestination"><code><span class="http-method">post</span> /v1/web_backend/destinations/create</code></a></li>
   <li><a href="#webBackendCreateSource"><code><span class="http-method">post</span> /v1/web_backend/sources/create</code></a></li>
@@ -4685,6 +4686,272 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="WebBackend">WebBackend</a></h1>
+  <div class="method"><a name="webBackendConnectionSearch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/search</code></pre></div>
+    <div class="method-summary">Search connections (<span class="nickname">webBackendConnectionSearch</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WebBackendConnectionSearch <a href="#WebBackendConnectionSearch">WebBackendConnectionSearch</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connections" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "latestSyncJobCreatedAt" : 0,
+    "prefix" : "prefix",
+    "destination" : {
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "destinationName" : "destinationName",
+      "name" : "name",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "isSyncing" : true,
+    "source" : {
+      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "name" : "name",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "sourceName" : "sourceName",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ]
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "latestSyncJobCreatedAt" : 0,
+    "prefix" : "prefix",
+    "destination" : {
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "destinationName" : "destinationName",
+      "name" : "name",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "isSyncing" : true,
+    "source" : {
+      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "name" : "name",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "sourceName" : "sourceName",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ]
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="webBackendCreateConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6047,6 +6314,7 @@ font-style: italic;
     <li><a href="#DestinationOauthConsentRequest"><code>DestinationOauthConsentRequest</code> - </a></li>
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
+    <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
@@ -6101,6 +6369,7 @@ font-style: italic;
     <li><a href="#SourceOauthConsentRequest"><code>SourceOauthConsentRequest</code> - </a></li>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
+    <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
@@ -6109,6 +6378,7 @@ font-style: italic;
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
+    <li><a href="#WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
@@ -6482,6 +6752,18 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinations </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">array[DestinationRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationSearch"><code>DestinationSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">destinationName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6937,6 +7219,18 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceSearch"><code>SourceSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceUpdate"><code>SourceUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -7029,6 +7323,23 @@ font-style: italic;
     <div class="field-items">
       <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">source (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSearch">SourceSearch</a></span>  </div>
+<div class="param">destination (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSearch">DestinationSearch</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
