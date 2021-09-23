@@ -255,6 +255,19 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
+  public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
+        continue;
+      }
+      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+    }
+
+    return new ConnectionReadList().connections(connectionReads);
+  }
+
   public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionIdRequestBody.getConnectionId());

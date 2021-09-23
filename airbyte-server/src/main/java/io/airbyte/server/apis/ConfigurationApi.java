@@ -89,6 +89,7 @@ import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -583,6 +584,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public WebBackendConnectionReadList webBackendConnectionSearch(final WebBackendConnectionSearch webBackendConnectionSearch) {
+    return execute(() -> webBackendConnectionsHandler.webBackendSearchConnections(webBackendConnectionSearch));
   }
 
   @Override
