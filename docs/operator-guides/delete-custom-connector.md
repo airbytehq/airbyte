@@ -41,6 +41,9 @@ There is a [Github issue](https://github.com/airbytehq/airbyte/issues/3954) to i
 
 If you need to use more fields to select a specific connector see the example:
 ```
-select * from airbyte_configs where config_blob @> '{"name": "BigQuery", "dockerImageTag": "0.1.2"}';
+select config_blob -> 'sourceDefinitionId' from airbyte_configs where config_blob @> '{"name": "BigQuery", "dockerImageTag": "0.1.2"}';
 ```
-This will use the Connector Name and the Version.
+This will use the Connector Name and the Version, to check all fields you can use try to run:
+```
+select config_blob from airbyte_configs where config_blob @> '{"name": "My Custom Connector"}';
+```
