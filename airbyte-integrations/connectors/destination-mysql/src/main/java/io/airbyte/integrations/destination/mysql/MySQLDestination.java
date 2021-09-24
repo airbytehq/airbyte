@@ -36,11 +36,9 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 
@@ -98,9 +96,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
-                config.get("host").asText(),
-                config.get("port").asText(),
-                config.get("database").asText()));
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()));
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());

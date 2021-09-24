@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -35,15 +37,12 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.JSONFormat;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.JSONFormat;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -86,11 +85,11 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
-          throws Exception {
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-            .stream()
-            .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
-            .collect(Collectors.toList());
+        .stream()
+        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -112,7 +111,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
                                                      final String streamName,
                                                      final String namespace)
-          throws Exception {
+      throws Exception {
     var tableName = namingResolver.getIdentifier(streamName);
     String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
     return retrieveRecordsFromTable(tableName, schema);
@@ -133,27 +132,28 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createMySqlDatabase(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:mysql://%s:%s",
-                    config.get("host").asText(),
-                    config.get("port").asText()));
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:mysql://%s:%s",
+            config.get("host").asText(),
+            config.get("port").asText()));
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws Exception {
     var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
-            getConfig(),
-            MySQLDestination.HOST_KEY,
-            MySQLDestination.PORT_KEY,
-            (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-                    .query(
-                            ctx -> ctx
-                                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName.toLowerCase(), JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                                    .stream()
-                                    .map(r -> r.formatJSON(JSON_FORMAT))
-                                    .map(Jsons::deserialize)
-                                    .collect(Collectors.toList())));
+        getConfig(),
+        MySQLDestination.HOST_KEY,
+        MySQLDestination.PORT_KEY,
+        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
+            .query(
+                ctx -> ctx
+                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName.toLowerCase(),
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(Jsons::deserialize)
+                    .collect(Collectors.toList())));
   }
 
   @Override
@@ -161,23 +161,23 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     var config = getConfig();
     SshTunnel.sshWrap(
-            config,
-            MySQLDestination.HOST_KEY,
-            MySQLDestination.PORT_KEY,
-            mangledConfig -> {
-              getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
-            });
+        config,
+        MySQLDestination.HOST_KEY,
+        MySQLDestination.PORT_KEY,
+        mangledConfig -> {
+          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
+        });
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
-            getConfig(),
-            MySQLDestination.HOST_KEY,
-            MySQLDestination.PORT_KEY,
-            mangledConfig -> {
-              getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
-            });
+        getConfig(),
+        MySQLDestination.HOST_KEY,
+        MySQLDestination.PORT_KEY,
+        mangledConfig -> {
+          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
+        });
   }
 
   protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
