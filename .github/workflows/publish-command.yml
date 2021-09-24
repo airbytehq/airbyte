@@ -132,6 +132,8 @@ jobs:
           POSTGRES_SSH_PWD_TEST_CREDS: ${{ secrets.POSTGRES_SSH_PWD_TEST_CREDS }}
           MYSQL_SSH_KEY_TEST_CREDS: ${{ secrets.MYSQL_SSH_KEY_TEST_CREDS }}
           MYSQL_SSH_PWD_TEST_CREDS: ${{ secrets.MYSQL_SSH_PWD_TEST_CREDS }}
+          ORACLE_SSH_KEY_TEST_CREDS: ${{ secrets.ORACLE_SSH_KEY_TEST_CREDS }}
+          ORACLE_SSH_PWD_TEST_CREDS: ${{ secrets.ORACLE_SSH_PWD_TEST_CREDS }}
           POSTHOG_TEST_CREDS: ${{ secrets.POSTHOG_TEST_CREDS }}
           PIPEDRIVE_INTEGRATION_TESTS_CREDS: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS }}
           RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
@@ -183,6 +185,7 @@ jobs:
           DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
           MSSQL_SSH_KEY_TEST_CREDS: ${{ secrets.MSSQL_SSH_KEY_TEST_CREDS }}
           MSSQL_SSH_PWD_TEST_CREDS: ${{ secrets.MSSQL_SSH_PWD_TEST_CREDS }}
+          MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
       - run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache

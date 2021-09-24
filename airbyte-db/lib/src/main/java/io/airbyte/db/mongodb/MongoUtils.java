@@ -26,6 +26,7 @@ package io.airbyte.db.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.client.util.DateTime;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
@@ -36,13 +37,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.bson.BsonBinary;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
 import org.bson.BsonReader;
+import org.bson.BsonString;
+import org.bson.BsonTimestamp;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.Decimal128;
+import org.bson.types.ObjectId;
+import org.bson.types.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +77,26 @@ public class MongoUtils {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     readBson(document, objectNode, columnNames);
     return objectNode;
+  }
+
+  public static Object getBsonValue(BsonType type, String value) {
+    try {
+      return switch (type) {
+        case INT32 -> new BsonInt32(Integer.parseInt(value));
+        case INT64 -> new BsonInt64(Long.parseLong(value));
+        case DOUBLE -> new BsonDouble(Double.parseDouble(value));
+        case DECIMAL128 -> Decimal128.parse(value);
+        case TIMESTAMP -> new BsonTimestamp(Long.parseLong(value));
+        case DATE_TIME -> new BsonDateTime(new DateTime(value).getValue());
+        case OBJECT_ID -> new ObjectId(value);
+        case SYMBOL -> new Symbol(value);
+        case STRING -> new BsonString(value);
+        default -> value;
+      };
+    } catch (Exception e) {
+      LOGGER.error("Failed to get BsonValue for field type " + type, e.getMessage());
+      return value;
+    }
   }
 
   private static void readBson(final Document document, final ObjectNode o, final List<String> columnNames) {

@@ -27,24 +27,25 @@ package io.airbyte.integrations.destination.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 // todo (cgardens) - likely some of this could be further de-duplicated with
 // PostgresDestinationAcceptanceTest.
+
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
@@ -54,10 +55,11 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+  private static PostgreSQLContainer<?> db;
+  private final SshBastionContainer bastion = new SshBastionContainer();
 
-  private String schemaName;
-
-  public abstract Path getConfigFilePath();
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
   protected String getImageName() {
@@ -65,19 +67,12 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected JsonNode getConfig() {
-    final JsonNode config = getConfigFromSecretsFile();
-    // do everything in a randomly generated schema so that we can wipe it out at the end.
-    ((ObjectNode) config).put("schema", schemaName);
-    return config;
-  }
-
-  private JsonNode getConfigFromSecretsFile() {
-    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
+  protected JsonNode getConfig() throws Exception {
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName));
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
+  protected JsonNode getFailCheckConfig() throws Exception {
     final JsonNode clone = Jsons.clone(getConfig());
     ((ObjectNode) clone).put("password", "wrong password");
     return clone;
@@ -162,8 +157,9 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
+
+    startTestContainers();
     // do everything in a randomly generated schema so that we can wipe it out at the end.
-    schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
     SshTunnel.sshWrap(
         getConfig(),
         PostgresDestination.HOST_KEY,
@@ -171,6 +167,17 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
+  }
+
+  private void startTestContainers() {
+    bastion.initAndStartBastion();
+    initAndStartJdbcContainer();
+  }
+
+  private void initAndStartJdbcContainer() {
+    db = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withNetwork(bastion.getNetWork());
+    db.start();
   }
 
   @Override
@@ -183,6 +190,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });
+
+    bastion.stopAndCloseContainers(db);
   }
 
 }
