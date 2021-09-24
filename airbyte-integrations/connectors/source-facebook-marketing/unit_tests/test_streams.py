@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from source_facebook_marketing.streams import remove_params_from_url
