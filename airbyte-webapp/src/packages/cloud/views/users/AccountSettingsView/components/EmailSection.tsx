@@ -26,6 +26,12 @@ const ChangeEmailFooter = styled.div`
   height: 50px;
 `;
 
+const TextInputsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+`;
+
 export const EmailSection: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const user = useCurrentUser();
@@ -44,9 +50,9 @@ export const EmailSection: React.FC = () => {
   const { isLoading: isChangingEmail, mutate: changeEmail } = useMutation<
     void,
     Error,
-    string
-  >(async (email) => {
-    await authService.changeEmail(email);
+    { email: string; passwd: string }
+  >(async ({ email, passwd }) => {
+    await authService.changeEmail(email, passwd);
     return userService.changeEmail(email);
   });
 
@@ -62,34 +68,58 @@ export const EmailSection: React.FC = () => {
         <Formik
           initialValues={{
             email: user.email,
+            passwd: "",
           }}
-          onSubmit={(v) => {
-            changeEmail(v.email);
+          onSubmit={({ email, passwd }) => {
+            changeEmail({ email, passwd });
           }}
         >
-          {() => (
+          {({ values }) => (
             <Form>
               <FieldItem>
-                <Field name="email">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <LabeledInput
-                      {...field}
-                      label={
-                        <FormattedMessage id="settings.accountSettings.email" />
-                      }
-                      placeholder={formatMessage({
-                        id: "login.yourEmail.placeholder",
-                      })}
-                      type="text"
-                      error={!!meta.error && meta.touched}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
-                    />
+                <TextInputsSection>
+                  <Field name="email">
+                    {({ field, meta }: FieldProps<string>) => (
+                      <LabeledInput
+                        {...field}
+                        label={
+                          <FormattedMessage id="settings.accountSettings.email" />
+                        }
+                        placeholder={formatMessage({
+                          id: "login.yourEmail.placeholder",
+                        })}
+                        type="text"
+                        error={!!meta.error && meta.touched}
+                        message={
+                          meta.touched &&
+                          meta.error &&
+                          formatMessage({ id: meta.error })
+                        }
+                      />
+                    )}
+                  </Field>
+
+                  {user.email !== values.email && (
+                    <Field name="passwd">
+                      {({ field, meta }: FieldProps<string>) => (
+                        <LabeledInput
+                          {...field}
+                          label={
+                            <FormattedMessage id="settings.accountSettings.enterPassword" />
+                          }
+                          placeholder="*********"
+                          type="password"
+                          error={!!meta.error && meta.touched}
+                          message={
+                            meta.touched &&
+                            meta.error &&
+                            formatMessage({ id: meta.error })
+                          }
+                        />
+                      )}
+                    </Field>
                   )}
-                </Field>
+                </TextInputsSection>
               </FieldItem>
               <NotificationsForm
                 isLoading={loading}
@@ -102,8 +132,12 @@ export const EmailSection: React.FC = () => {
                 }}
               />
               <ChangeEmailFooter>
-                <Button isLoading={isChangingEmail} type="submit">
-                  save
+                <Button
+                  isLoading={isChangingEmail}
+                  type="submit"
+                  disabled={user.email === values.email}
+                >
+                  <FormattedMessage id="settings.accountSettings.updateEmail" />
                 </Button>
               </ChangeEmailFooter>
             </Form>
