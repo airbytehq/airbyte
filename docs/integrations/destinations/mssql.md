@@ -28,7 +28,7 @@ Each stream will be output into its own table in SQL Server. Each table will con
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
+| Incremental - Deduped History | Yes | |
 | Namespaces | Yes |  |
 
 ## Getting started
@@ -38,6 +38,10 @@ Each stream will be output into its own table in SQL Server. Each table will con
 To use the SQL Server destination, you'll need:
 
 MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
+
+To sync **with** normalization you'll need to use MS SQL Server of the following versions:
+`SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`.
+The work of normalization on `SQL Server 2012` and bellow are not guaranteed.
 
 ### Setup guide
 
@@ -80,6 +84,7 @@ You should now have all the requirements needed to configure SQL Server as a des
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.9   | 2021-09-24 | [#6079](https://github.com/airbytehq/airbyte/pull/6079) | Add `normalization` capability, add `append+deduplication` sync mode  |
 | 0.1.8   | 2021-08-07 | [#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records  |
 | 0.1.7   | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.1.6   | 2021-06-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
