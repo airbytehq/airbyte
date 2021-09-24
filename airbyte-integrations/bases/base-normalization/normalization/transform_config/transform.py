@@ -283,6 +283,7 @@ class TransformConfig:
             "database": config["database"],
             "user": config["username"],
             "password": config["password"],
+            "threads": 32,
             # "authentication": "sql",
             # "trusted_connection": True,
         }
