@@ -49,6 +49,7 @@
   "settings.accountSettings.password": "Password",
   "settings.accountSettings.currentPassword": "Current password",
   "settings.accountSettings.repeatPassword": "Repeat password",
+  "settings.accountSettings.updatePassword": "Update password",
   "settings.userSettings": "User settings",
   "settings.workspaceSettings": "Workspace settings",
   "settings.generalSettings": "General Settings",

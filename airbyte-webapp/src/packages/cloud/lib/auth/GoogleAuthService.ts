@@ -10,6 +10,7 @@ import {
   applyActionCode,
   sendEmailVerification,
   updateEmail,
+  updatePassword,
   reauthenticateWithCredential,
 } from "firebase/auth";
 
@@ -27,6 +28,8 @@ interface AuthService {
   resetPassword(email: string): Promise<void>;
 
   changeEmail(email: string, passwd: string): Promise<void>;
+
+  changePassword(passwd: string, newPassword: string): Promise<void>;
 
   finishResetPassword(code: string, newPassword: string): Promise<void>;
 
@@ -87,6 +90,15 @@ export class GoogleAuthService implements AuthService {
     await reauthenticateWithCredential(user, credential);
 
     return updateEmail(user, email);
+  }
+
+  async changePassword(passwd: string, newPassword: string): Promise<void> {
+    const user = await this.getCurrentUser()!;
+
+    const credential = EmailAuthProvider.credential(user.email!, passwd);
+    await reauthenticateWithCredential(user, credential);
+
+    return updatePassword(user, newPassword);
   }
 
   async resetPassword(email: string): Promise<void> {

@@ -51,10 +51,15 @@ export const EmailSection: React.FC = () => {
     void,
     Error,
     { email: string; passwd: string }
-  >(async ({ email, passwd }) => {
-    await authService.changeEmail(email, passwd);
-    return userService.changeEmail(email);
-  });
+  >(
+    async ({ email, passwd }) => {
+      await authService.changeEmail(email, passwd);
+      await userService.changeEmail(email);
+    },
+    {
+      onSuccess: () => window.location.reload(),
+    }
+  );
 
   const onChange = async (data: {
     news: boolean;
@@ -62,6 +67,7 @@ export const EmailSection: React.FC = () => {
   }) => {
     await updateData({ ...workspace, ...data });
   };
+
   return (
     <SettingsCard>
       <Content>
