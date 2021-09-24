@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
@@ -176,6 +178,15 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
             mangledConfig -> {
               getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
             });
+  }
+
+  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+    if (expectedValue.isBoolean()) {
+      // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
+      assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
 }
