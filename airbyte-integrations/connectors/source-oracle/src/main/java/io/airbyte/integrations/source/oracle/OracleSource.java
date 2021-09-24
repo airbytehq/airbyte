@@ -31,6 +31,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -104,7 +105,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new OracleSource();
+    final Source source = new SshWrappedSource(new OracleSource(), List.of("host"), List.of("port"));
     LOGGER.info("starting source: {}", OracleSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", OracleSource.class);
