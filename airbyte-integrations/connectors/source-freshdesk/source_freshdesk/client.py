@@ -48,8 +48,10 @@ from .api import (
 
 
 class Client(BaseClient):
-    def __init__(self, domain, api_key, requests_per_minute: int = None):
-        self._api = API(domain=domain, api_key=api_key, requests_per_minute=requests_per_minute)
+    def __init__(self, domain, api_key, requests_per_minute: int = None, tickets_updated_since: str = None):
+        self._api = API(
+            domain=domain, api_key=api_key, requests_per_minute=requests_per_minute, tickets_updated_since=tickets_updated_since
+        )
         self._apis = {
             "agents": AgentsAPI(self._api),
             "companies": CompaniesAPI(self._api),
