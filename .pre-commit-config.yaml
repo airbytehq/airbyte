@@ -41,7 +41,7 @@ repos:
       - id: spec-linter
         name: validate connectors spec files
         language: system
-        entry: python tools/bin/spec_linter.py
+        entry: python tools/git_hooks/spec_linter.py
         files: ^.*/spec.json$
         exclude: |
           (?x)^.*(

@@ -54,18 +54,17 @@ def read_spec_file(spec_path: str) -> bool:
     with open(spec_path) as json_file:
         try:
             root_schema = json.load(json_file)["connectionSpecification"]["properties"]
-        except KeyError:
+        except (KeyError, TypeError):
             errors.append("Couldn't find properties in connector spec.json")
         except json.JSONDecodeError:
             errors.append("Couldn't parse json file")
         else:
             errors.extend(validate_schema(spec_path, root_schema))
 
-    if errors:
-        for msg in errors:
-            logging.error(f"\033[1m{spec_path}\033[0m:{msg}")
-        return False
-    return True
+    for msg in errors:
+        logging.error(f"\033[1m{spec_path}\033[0m:{msg}")
+
+    return False if errors else True
 
 
 def validate_schema(
@@ -96,9 +95,7 @@ def fetch_oneof_schemas(schema: Mapping[str, Any]) -> List[Mapping[str, Any]]:
     """
     Finds subschemas in oneOf field
     """
-    if schema.get("oneOf"):
-        return [spec for spec in schema["oneOf"] if spec.get("properties")]
-    return []
+    return [spec for spec in schema.get("oneOf", []) if spec.get("properties")]
 
 
 def validate_field(
@@ -112,7 +109,7 @@ def validate_field(
     errors: List[str] = []
     full_field_name = get_full_field_name(field_name, parent_fields)
 
-    if not FIELDS_TO_CHECK.issubset(field_name):
+    if not FIELDS_TO_CHECK.issubset(schema.keys()):
         errors.append("Check failed for field")
 
     if schema.get("oneOf") and (schema["type"] != "object" or not isinstance(schema["oneOf"], list)):
