@@ -174,12 +174,14 @@ class DbtIntegrationTest(object):
             f"CREATE DATABASE [{config['database']}]",
         ]
 
-        # start the container
+        # cmds & parameters
         cmd_start_container = " ".join(command_start_container)
         wait_sec = 30
+        # run the docker container
         print("Executing: ", cmd_start_container)
-        subprocess.Popen(cmd_start_container, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        print(f"Wait for SQL Server start...{wait_sec} sec")
+        subprocess.check_call(cmd_start_container, shell=True)
+        # wait for service is available
+        print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
         time.sleep(wait_sec)
         # create test db
         print("Executing: ", " ".join(command_create_db))

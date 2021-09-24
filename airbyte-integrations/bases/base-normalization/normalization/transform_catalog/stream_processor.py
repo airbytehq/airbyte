@@ -439,9 +439,18 @@ from {{ from_table }}
                 # snowflake uses case when statement to parse timestamp field
                 # in this case [cast] operator is not needed as data already converted to timestamp type
                 return self.generate_snowflake_timestamp_statement(column_name)
+            if self.destination_type == DestinationType.MSSQL:
+                # in case of datetime, we don't need to use [cast] function, use try_parse instead.
+                sql_type = jinja_call("type_timestamp_with_timezone()")
+                return f"try_parse({column_name} as {sql_type}) as {column_name}"
+            # in all other cases
             sql_type = jinja_call("type_timestamp_with_timezone()")
-
         elif is_date(definition):
+            if self.destination_type == DestinationType.MSSQL:
+                # in case of date, we don't need to use [cast] function, use try_parse instead.
+                sql_type = jinja_call("type_date()")
+                return f"try_parse({column_name} as {sql_type}) as {column_name}"
+            # in all other cases
             sql_type = jinja_call("type_date()")
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
