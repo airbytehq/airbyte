@@ -29,7 +29,7 @@
 {%- endmacro -%}
 
 {%- macro sqlserver__type_json() -%}
-    varchar(max)
+    VARCHAR(max)
 {%- endmacro -%}
 
 
@@ -77,25 +77,25 @@
 {% endmacro %}
 
 
-{# numeric ------------------------------------------------- #}
+{#-- numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
     float
 {% endmacro %}
 
 
-{# timestamp ------------------------------------------------- #}
+{#-- timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
 {% endmacro %}
 
-{% macro sqlserver__type_timestamp() %}
-    {# in TSQL timestamp is really datetime #}
-    {# https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes #}
-    datetime
-{% endmacro %}
+{%- macro sqlserver__type_timestamp() -%}
+    {#-- in TSQL timestamp is really datetime --#}
+    {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
+    datetime2
+{%- endmacro -%}
 
 
-{# timestamp with time zone  -------------------------------------------------     #}
+{#-- timestamp with time zone  -------------------------------------------------     #}
 
 {%- macro type_timestamp_with_timezone() -%}
   {{ adapter.dispatch('type_timestamp_with_timezone')() }}
@@ -109,7 +109,7 @@
     timestamp
 {% endmacro %}
 
-{# MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char #}
+{#-- MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char --#}
 {%- macro mysql__type_timestamp_with_timezone() -%}
     char
 {%- endmacro -%}
@@ -118,11 +118,11 @@
     varchar2(4000)
 {% endmacro %}
 
-{% macro sqlserver__type_timestamp_with_timezone() %}
-    {# in TSQL timestamp is really datetime #}
-    {# https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes #}
-    datetime
-{% endmacro %}
+{%- macro sqlserver__type_timestamp_with_timezone() -%}
+    {#-- in TSQL timestamp is really datetime or datetime2 --#}
+    {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
+    datetime2
+{%- endmacro -%}
 
 
 {# date  -------------------------------------------------     #}
@@ -138,3 +138,7 @@
 {% macro oracle__type_date() %}
     varchar2(4000)
 {% endmacro %}
+
+{%- macro sqlserver__type_date() -%}
+    date
+{%- endmacro -%}
