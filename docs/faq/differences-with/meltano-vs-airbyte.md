@@ -2,8 +2,6 @@
 
 We wrote an article, “[The State of Open-Source Data Integration and ETL](https://airbyte.io/articles/data-engineering-thoughts/the-state-of-open-source-data-integration-and-etl/),” in which we list and compare all ETL-related open-source projects, including Meltano and Airbyte. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences:
 
-![](https://airbyte.io/wp-content/uploads/2020/10/Landscape-of-open-source-data-integration-platforms-4.png)
-
 ## **Meltano:**
 
 * **Meltano is built on top of the Singer protocol, whereas Airbyte is built on top of the Airbyte protocol**. Having initially created Airbyte on top of Singer, we wrote about why we didn't move forward with it [here](https://airbyte.io/blog/why-you-should-not-build-your-data-pipeline-on-top-of-singer) and [here](https://airbyte.io/blog/airbyte-vs-singer-why-airbyte-is-not-built-on-top-of-singer). Summarized, the reasons were: Singer connectors didn't always adhere to the Singer protocol, had poor standardization and visibility in terms of quality, and community governance and support was abandoned by Stitch. By contrast, we aim to make Airbyte a product that ["just works"](https://airbyte.io/blog/our-truth-for-2021-airbyte-just-works) and always plan to maximize engagement within the Airbyte community. 
