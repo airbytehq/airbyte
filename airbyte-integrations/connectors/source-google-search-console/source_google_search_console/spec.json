@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-search-console",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
@@ -9,6 +9,9 @@
     "properties": {
       "site_urls": {
         "type": "array",
+        "items": {
+          "type": "string"
+        },
         "description": "Website URLs property; do not include the domain-level property in the list",
         "examples": ["https://example1.com", "https://example2.com"]
       },
@@ -26,9 +29,10 @@
       },
       "authorization": {
         "type": "object",
+        "title": "Authentication Type",
         "oneOf": [
           {
-            "title": "Client Auth",
+            "title": "Authenticate via Google (Oauth)",
             "type": "object",
             "required": [
               "auth_type",
@@ -45,26 +49,29 @@
                 "order": 0
               },
               "client_id": {
+                "title": "Client ID",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "The Client ID of your developer application",
                 "airbyte_secret": true
               },
               "client_secret": {
+                "title": "Client Secret",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "The client secret of your developer application",
                 "airbyte_secret": true
               },
               "refresh_token": {
+                "title": "Refresh Token",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "A refresh token generated using the above client ID and secret",
                 "airbyte_secret": true
               }
             }
           },
           {
             "type": "object",
-            "title": "Service Auth",
-            "required": ["auth_type", "service_account_info"],
+            "title": "Service Account Key Authentication",
+            "required": ["auth_type", "service_account_info", "email"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -74,11 +81,17 @@
                 "order": 0
               },
               "service_account_info": {
+                "title": "Service Account JSON Key",
                 "type": "string",
-                "description": "Input this field if you want authorize through service account",
+                "description": "The JSON key of the service account to use for authorization",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 ]
+              },
+              "email": {
+                "title": "Admin Email",
+                "type": "string",
+                "description": "The email of the user which has permissions to access the Google Workspace Admin APIs."
               }
             }
           }
