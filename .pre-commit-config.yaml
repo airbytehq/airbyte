@@ -38,13 +38,13 @@ repos:
 
   - repo: local
     hooks:
-    -   id: spec-linter
+      - id: spec-linter
         name: validate connectors spec files
         language: system
         entry: python tools/bin/spec_linter.py
         files: ^.*/spec.json$
         exclude: |
-            (?x)^.*(
-                /connectors/destination-e2e-test|
-                /connectors/source-e2e-test
-            ).*$
+          (?x)^.*(
+              /connectors/destination-e2e-test|
+              /connectors/source-e2e-test
+          ).*$

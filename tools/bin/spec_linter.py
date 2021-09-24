@@ -1,3 +1,26 @@
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 """
 This script is responsible for connectors spec.json file validation.
 
@@ -15,58 +38,90 @@ How spec file validation works:
 4. if field has oneOf attribute - fetch all subobjects and for each of them goto step (2)
 """
 
+import json
 import logging
 import sys
-import json
-from collections import defaultdict
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
-# errors counter
-ERRORS = defaultdict(int)
 # required fields for each property field in spec
 FIELDS_TO_CHECK = {"title", "description"}
 # configure logging
 logging.basicConfig(format="%(message)s")
 
 
-def read_spec_file(spec_path: str):
+def read_spec_file(spec_path: str) -> bool:
+    errors: List[str] = []
     with open(spec_path) as json_file:
         try:
             root_schema = json.load(json_file)["connectionSpecification"]["properties"]
         except KeyError:
-            logging.error(f"\033[1m{spec_path}\033[0m: Couldn't find properties in connector spec.json")
-            ERRORS[spec_path] += 1
-            return
+            errors.append("Couldn't find properties in connector spec.json")
+        except json.JSONDecodeError:
+            errors.append("Couldn't parse json file")
+        else:
+            errors.extend(validate_schema(spec_path, root_schema))
 
-    validate_schema(spec_path, root_schema)
+    if errors:
+        for msg in errors:
+            logging.error(f"\033[1m{spec_path}\033[0m:{msg}")
+        return False
+    return True
 
 
 def validate_schema(
     spec_path: str,
     schema: Mapping[str, Any],
-    parent_fields: List[str] = None,
-):
+    parent_fields: Optional[List[str]] = None,
+) -> List[str]:
+    errors: List[str] = []
     parent_fields = parent_fields if parent_fields else []
     for field_name, field_schema in schema.items():
-        if not FIELDS_TO_CHECK.issubset(field_schema):
-            full_field_name = get_full_field_name(field_name, parent_fields)
-            logging.error(f"\033[1m{spec_path}\033[0m: Check failed for field \x1b[31;1m{full_field_name}\033[0m")
-            ERRORS[spec_path] += 1
+        errors.extend(validate_field(field_name, field_schema, parent_fields))
+        if errors:
+            continue
 
         for index, oneof_schema in enumerate(fetch_oneof_schemas(field_schema)):
-            validate_schema(spec_path, oneof_schema["properties"], parent_fields + [field_name, str(index)])
+            errors.extend(
+                validate_schema(
+                    spec_path,
+                    oneof_schema["properties"],
+                    parent_fields + [field_name, str(index)],
+                )
+            )
+
+    return errors
 
 
 def fetch_oneof_schemas(schema: Mapping[str, Any]) -> List[Mapping[str, Any]]:
     """
-    Finds sub-objects in oneOf field
+    Finds subschemas in oneOf field
     """
-    if schema.get("oneOf") and schema["type"] == "object":
+    if schema.get("oneOf"):
         return [spec for spec in schema["oneOf"] if spec.get("properties")]
     return []
 
 
-def get_full_field_name(field_name: str, parent_fields: List[str] = None):
+def validate_field(
+    field_name: str,
+    schema: Mapping[str, Any],
+    parent_fields: Optional[List[str]] = None,
+) -> List[str]:
+    """
+    Validates single field objects and return errors if thay are exist
+    """
+    errors: List[str] = []
+    full_field_name = get_full_field_name(field_name, parent_fields)
+
+    if not FIELDS_TO_CHECK.issubset(field_name):
+        errors.append("Check failed for field")
+
+    if schema.get("oneOf") and (schema["type"] != "object" or not isinstance(schema["oneOf"], list)):
+        errors.append("Incorrect oneOf schema in field")
+
+    return [f"{e} \x1b[31;1m{full_field_name}\033[0m" for e in errors]
+
+
+def get_full_field_name(field_name: str, parent_fields: Optional[List[str]] = None) -> str:
     """
     Returns full path to a field.
     e.g. root.middle.child, root.oneof.1.attr
@@ -77,8 +132,5 @@ def get_full_field_name(field_name: str, parent_fields: List[str] = None):
 if __name__ == "__main__":
     spec_files = sys.argv[1:]
 
-    for file_path in spec_files:
-        read_spec_file(file_path)
-
-    if ERRORS:
+    if not all([read_spec_file(file_path) for file_path in spec_files]):
         exit(1)
