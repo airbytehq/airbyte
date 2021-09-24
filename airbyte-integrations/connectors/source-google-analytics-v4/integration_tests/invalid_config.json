@@ -1,5 +1,5 @@
 {
-  "authorization": {
+  "credentials": {
     "auth_type": "Service",
     "service_account_info": "None"
   },

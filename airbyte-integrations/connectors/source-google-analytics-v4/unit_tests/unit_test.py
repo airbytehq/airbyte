@@ -89,7 +89,7 @@ def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_me
 def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call):
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
-    test_config["authorization"] = {
+    test_config["credentials"] = {
         "auth_type": "Service",
         "service_account_info": '{"client_email": "", "private_key": "", "private_key_id": ""}',
     }
@@ -103,7 +103,7 @@ def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_t
 def test_check_connection_oauth(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call):
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
-    test_config["authorization"] = {
+    test_config["credentials"] = {
         "auth_type": "Client",
         "client_id": "client_id_val",
         "client_secret": "client_secret_val",

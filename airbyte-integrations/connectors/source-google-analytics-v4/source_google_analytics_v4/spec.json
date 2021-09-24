@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics V4 Spec",
     "type": "object",
-    "required": ["authorization", "view_id", "start_date"],
+    "required": ["credentials", "view_id", "start_date"],
     "additionalProperties": false,
     "properties": {
       "view_id": {
@@ -30,11 +30,11 @@
         "type": "string",
         "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4\">docs</a> to get more information about this field."
       },
-      "authorization": {
+      "credentials": {
         "type": "object",
         "oneOf": [
           {
-            "title": "Client Auth",
+            "title": "Authenticate via Google (Oauth)",
             "type": "object",
             "required": [
               "auth_type",
@@ -51,25 +51,28 @@
                 "order": 0
               },
               "client_id": {
+                "title": "Client ID",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "The Client ID of your developer application",
                 "airbyte_secret": true
               },
               "client_secret": {
+                "title": "Client Secret",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "The client secret of your developer application",
                 "airbyte_secret": true
               },
               "refresh_token": {
+                "title": "Refresh Token",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "A refresh token generated using the above client ID and secret",
                 "airbyte_secret": true
               }
             }
           },
           {
             "type": "object",
-            "title": "Service Auth",
+            "title": "Service Account Key Authentication",
             "required": ["auth_type", "service_account_info"],
             "properties": {
               "auth_type": {
@@ -81,7 +84,7 @@
               },
               "service_account_info": {
                 "type": "string",
-                "description": "Input this field if you want authorize through service account",
+                "description": "The JSON key of the service account to use for authorization",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 ]
@@ -90,6 +93,16 @@
           }
         ]
       }
+    }
+  },
+    "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "oauthFlowInitParameters": [
+        ["credentials", "client_id"],
+        ["credentials", "client_secret"],
+        ["credentials", "refresh_token"]
+      ]
     }
   }
 }

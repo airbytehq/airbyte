@@ -470,7 +470,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     @staticmethod
     def get_authenticator(config):
-        auth_params = config.get("authorization")
+        auth_params = config.get("credentials")
 
         if auth_params.pop("auth_type") == "Service":
             return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
