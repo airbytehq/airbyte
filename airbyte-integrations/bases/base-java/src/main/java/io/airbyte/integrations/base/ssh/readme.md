@@ -50,6 +50,13 @@ There is a tradeoff here.
 * (Good) The connector code does not need to know anything about SSH, it can just operate on the host and port it gets (and we let SSH Tunnel handle swapping the names for us) which makes writing a connector easier.
 * (Bad) The downside is that the `SshTunnel` logic is more complicated because it is absorbing all of this name swapping so that neither user nor connector developer need to worry about it. In our estimation, the good outweighs the extra complexity incurred here.
 
+
+### Acceptance Testing via ssh tunnel using SshBastion and JdbcDatabaseContainer in Docker 
+1. The `SshBastion` class provides 3 helper functions:
+   `initAndStartBastion()`to initialize and start SSH Bastion server in Docker test container and creates new `Network` for bastion and tested jdbc container
+   `getTunnelConfig()`which return JsoneNode with all necessary configuration to establish ssh tunnel. Connection configuration for integration tests is now taken directly from container settings and does not require a real database connection
+   `stopAndCloseContainers` to stop and close SshBastion and JdbcDatabaseContainer at the end of the test
+
 ## Future Work
 * Add unit / integration testing for `ssh` package.
 * Restructure spec so that instead of having `SSH Key Authentication` or `Password Authentication` options for `tunnel_method`, just have an `SSH` option and then within that `SSH` option have a `oneOf` for password or key. This is blocked because we cannot use `oneOf`s nested in `oneOf`s.
