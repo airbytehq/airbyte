@@ -10,8 +10,7 @@
       "type": ["null", "integer"]
     },
     "lastModified": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "value": {
       "type": ["null", "object"],
