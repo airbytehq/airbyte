@@ -92,7 +92,11 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     int jobsScheduled = 0;
+    var start = System.currentTimeMillis();
     final List<StandardSync> activeConnections = getAllActiveConnections();
+    var queryEnd = System.currentTimeMillis();
+    LOGGER.debug("Total active connections: {}", activeConnections.size());
+    LOGGER.debug("Time to retrieve all connections: {} ms", queryEnd - start);
 
     for (StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
@@ -100,8 +104,11 @@ public class JobScheduler implements Runnable {
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
         jobsScheduled++;
+        SchedulerApp.PENDING_JOBS.getAndIncrement();
       }
     }
+    var end = System.currentTimeMillis();
+    LOGGER.debug("Time taken to schedule jobs: {} ms", end - start);
 
     if (jobsScheduled > 0) {
       LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}", activeConnections.size(), jobsScheduled);

@@ -75,12 +75,14 @@ public class JobSubmitter implements Runnable {
   public void run() {
     try {
       LOGGER.debug("Running job-submitter...");
+      var start = System.currentTimeMillis();
 
       final Optional<Job> nextJob = persistence.getNextJob();
 
       nextJob.ifPresent(attemptJobSubmit());
 
-      LOGGER.debug("Completed Job-Submitter...");
+      var end = System.currentTimeMillis();
+      LOGGER.debug("Completed Job-Submitter. Time taken: {} ms", end - start);
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
@@ -107,9 +109,12 @@ public class JobSubmitter implements Runnable {
         runningJobs.add(job.getId());
         trackSubmission(job);
         submitJob(job);
+        var pending = SchedulerApp.PENDING_JOBS.decrementAndGet();
         LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
+        LOGGER.info("Pending jobs: {}", pending);
       } else {
         LOGGER.info("Attempting to submit already running job {}. There are probably too many queued jobs.", job.getId());
+        LOGGER.info("Pending jobs: {}", SchedulerApp.PENDING_JOBS.get());
       }
     };
   }
@@ -132,6 +137,7 @@ public class JobSubmitter implements Runnable {
           LogClientSingleton.setJobMdc(workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
+          LOGGER.debug("Job id {} succeeded", job.getId());
           if (output.getOutput().isPresent()) {
             persistence.writeOutput(job.getId(), attemptNumber, output.getOutput().get());
           }
@@ -153,6 +159,7 @@ public class JobSubmitter implements Runnable {
         })
         .setOnFinish(() -> {
           runningJobs.remove(job.getId());
+          LOGGER.debug("Job id {} cleared", job.getId());
           MDC.clear();
         })
         .build());
