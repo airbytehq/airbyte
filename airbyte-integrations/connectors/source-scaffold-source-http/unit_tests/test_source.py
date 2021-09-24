@@ -24,17 +24,17 @@
 
 from unittest.mock import MagicMock
 
-from source_{{snakeCase name}}.source import Source{{properCase name}}
+from source_scaffold_source_http.source import SourceScaffoldSourceHttp
 
 
 def test_check_connection(mocker):
-    source = Source{{properCase name}}()
+    source = SourceScaffoldSourceHttp()
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
 def test_streams(mocker):
-    source = Source{{properCase name}}()
+    source = SourceScaffoldSourceHttp()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
     # TODO: replace this with your streams number
