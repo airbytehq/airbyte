@@ -4,20 +4,16 @@
       "type": ["null", "integer"]
     },
     "createdAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "startAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "endedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]
