@@ -173,8 +173,31 @@ spec:
         {{- if .Values.worker.extraEnv }}
         {{ .Values.worker.extraEnv | toYaml | nindent 8 }}
         {{- end }}
+        {{- if .Values.worker.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: heartbeat
+          initialDelaySeconds: {{ .Values.worker.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.worker.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.worker.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.worker.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.worker.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.worker.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: heartbeat
+          initialDelaySeconds: {{ .Values.worker.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.worker.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.worker.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.worker.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.worker.readinessProbe.failureThreshold }}
+        {{- end }}
         ports:
-        - containerPort: 9000 # for heartbeat server
+        - name: heartbeat
+          containerPort: 9000 # for heartbeat server
         - containerPort: 9001 # start temporal worker port pool
         - containerPort: 9002
         - containerPort: 9003
