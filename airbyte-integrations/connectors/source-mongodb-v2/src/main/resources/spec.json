@@ -6,7 +6,7 @@
     "title": "MongoDb Source Spec",
     "type": "object",
     "required": ["database"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "instance_type": {
         "type": "object",

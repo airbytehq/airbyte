@@ -44,12 +44,14 @@ import org.bson.BsonDouble;
 import org.bson.BsonInt32;
 import org.bson.BsonInt64;
 import org.bson.BsonReader;
+import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
+import org.bson.types.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,11 +89,13 @@ public class MongoUtils {
         case TIMESTAMP -> new BsonTimestamp(Long.parseLong(value));
         case DATE_TIME -> new BsonDateTime(new DateTime(value).getValue());
         case OBJECT_ID -> new ObjectId(value);
-        default -> null;
+        case SYMBOL -> new Symbol(value);
+        case STRING -> new BsonString(value);
+        default -> value;
       };
     } catch (Exception e) {
       LOGGER.error("Failed to get BsonValue for field type " + type, e.getMessage());
-      return null;
+      return value;
     }
   }
 

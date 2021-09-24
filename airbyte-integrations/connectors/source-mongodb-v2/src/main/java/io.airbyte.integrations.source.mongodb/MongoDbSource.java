@@ -94,8 +94,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     JsonNode instanceConfig = config.get(INSTANCE_TYPE);
     if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
       // Standalone MongoDb Instance
+      var tls = config.has(TLS) ? config.get(TLS).asBoolean() : instanceConfig.get(TLS).asBoolean(); // for backward compatibility
       connectionStrBuilder.append(String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-          config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), instanceConfig.get(TLS).asBoolean()));
+          config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), tls));
     } else if (instanceConfig.has(CLUSTER_URL)) {
       // MongoDB Atlas
       connectionStrBuilder.append(

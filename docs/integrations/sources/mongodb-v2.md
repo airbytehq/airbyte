@@ -79,7 +79,7 @@ Your `READ_ONLY_USER` should now be ready for use with Airbyte.
 ### TLS/SSL on a Connection
 
 It is recommended to use encrypted connection.
-Connection with TLS/SSL security protocol for MongoDb Atlas Cluster and Replica Set instances is enabled by default. Encryption is based on the underlying TLS/SSL support in the JDK.
+Connection with TLS/SSL security protocol for MongoDb Atlas Cluster and Replica Set instances is enabled by default.
 To enable TSL/SSL connection with Standalone MongoDb instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 
 ### Сonfiguration Parameters

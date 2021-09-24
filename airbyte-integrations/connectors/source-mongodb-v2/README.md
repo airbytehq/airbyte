@@ -27,7 +27,8 @@ We use `JUnit` for Java tests.
 
 ### Test Configuration
 
-In order to test the MongoDb source, you need to have a standalone instance, a replica set or Atlas cluster.
+No specific configuration needed for testing Standalone MongoDb instance, MongoDb Test Container is used.
+In order to test the MongoDb Atlas or Replica set, you need to provide configuration parameters.
 
 ## Community Contributor
 
