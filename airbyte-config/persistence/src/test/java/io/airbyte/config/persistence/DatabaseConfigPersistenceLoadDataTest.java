@@ -61,7 +61,6 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
 
   @BeforeAll
   public static void setup() throws Exception {
-    YamlSeedConfigPersistence.initialize(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
@@ -101,12 +100,12 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
     // the seed has a newer version of s3 destination and github source
-    final StandardDestinationDefinition destinationS3V2 = YamlSeedConfigPersistence.get()
+    final StandardDestinationDefinition destinationS3V2 = YamlSeedConfigPersistence.getDefault()
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "4816b78f-1489-44c1-9060-4b19d5fa9362", StandardDestinationDefinition.class)
         .withDockerImageTag("10000.1.0");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(destinationS3V2));
-    final StandardSourceDefinition sourceGithubV2 = YamlSeedConfigPersistence.get()
+    final StandardSourceDefinition sourceGithubV2 = YamlSeedConfigPersistence.getDefault()
         .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "ef69ef6e-aa7f-4af1-a01d-ef775033524e", StandardSourceDefinition.class)
         .withDockerImageTag("10000.15.3");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
@@ -133,7 +132,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @DisplayName("When a connector is not in use, its definition should be updated")
   public void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination
-    final StandardDestinationDefinition snowflakeV2 = YamlSeedConfigPersistence.get()
+    final StandardDestinationDefinition snowflakeV2 = YamlSeedConfigPersistence.getDefault()
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "424892c4-daac-4491-b35d-c6688ba547ba", StandardDestinationDefinition.class)
         .withDockerImageTag("10000.2.0");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))

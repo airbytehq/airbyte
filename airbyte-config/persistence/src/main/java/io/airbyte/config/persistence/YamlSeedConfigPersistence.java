@@ -54,34 +54,22 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
       ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
 
-  private static final Object lock = new Object();
-  private static YamlSeedConfigPersistence INSTANCE;
-
   // A mapping from seed config type to config UUID to config.
   private final ImmutableMap<SeedType, Map<String, JsonNode>> allSeedConfigs;
+
+  public static YamlSeedConfigPersistence getDefault() throws IOException {
+    return new YamlSeedConfigPersistence(DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+  }
+
+  public static YamlSeedConfigPersistence get(final Class<?> seedDefinitionsResourceClass) throws IOException {
+    return new YamlSeedConfigPersistence(seedDefinitionsResourceClass);
+  }
 
   private YamlSeedConfigPersistence(final Class<?> seedDefinitionsResourceClass) throws IOException {
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
         .put(SeedType.STANDARD_SOURCE_DEFINITION, getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_SOURCE_DEFINITION))
         .put(SeedType.STANDARD_DESTINATION_DEFINITION, getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION))
         .build();
-  }
-
-  public static void initialize(final Class<?> seedDefinitionsResourceClass) {
-    try {
-      INSTANCE = new YamlSeedConfigPersistence(seedDefinitionsResourceClass);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static YamlSeedConfigPersistence get() {
-    synchronized (lock) {
-      if (INSTANCE == null) {
-        throw new IllegalStateException("YamlSeedConfigPersistence has not been initialized");
-      }
-      return INSTANCE;
-    }
   }
 
   @SuppressWarnings("UnstableApiUsage")

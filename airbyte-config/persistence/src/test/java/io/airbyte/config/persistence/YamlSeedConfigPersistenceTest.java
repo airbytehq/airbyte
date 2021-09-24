@@ -46,8 +46,7 @@ public class YamlSeedConfigPersistenceTest {
 
   @BeforeAll
   static void setup() {
-    YamlSeedConfigPersistence.initialize(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-    PERSISTENCE = YamlSeedConfigPersistence.get();
+    PERSISTENCE = YamlSeedConfigPersistence.getDefault();
   }
 
   @Test

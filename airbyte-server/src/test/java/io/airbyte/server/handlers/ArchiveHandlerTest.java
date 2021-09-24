@@ -106,7 +106,6 @@ public class ArchiveHandlerTest {
 
   @BeforeAll
   public static void dbSetup() {
-    YamlSeedConfigPersistence.initialize(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
@@ -124,7 +123,7 @@ public class ArchiveHandlerTest {
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jobPersistence = new DefaultJobPersistence(database);
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    seedPersistence = YamlSeedConfigPersistence.get();
+    seedPersistence = YamlSeedConfigPersistence.getDefault();
     configPersistence = new DatabaseConfigPersistence(database);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
@@ -141,6 +140,7 @@ public class ArchiveHandlerTest {
         VERSION,
         configRepository,
         jobPersistence,
+        YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
         specFetcher);

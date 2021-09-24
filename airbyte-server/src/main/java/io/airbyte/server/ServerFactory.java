@@ -26,9 +26,8 @@ package io.airbyte.server;
 
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
-import io.airbyte.config.init.SeedType;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
@@ -46,6 +45,8 @@ public interface ServerFactory {
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
                         JobPersistence jobPersistence,
+                        ConfigPersistence seed,
+
                         Database configsDatabase,
                         Database jobsDatabase,
                         Configs configs);
@@ -58,21 +59,22 @@ public interface ServerFactory {
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
                                  final JobPersistence jobPersistence,
+                                 final ConfigPersistence seed,
                                  final Database configsDatabase,
                                  final Database jobsDatabase,
                                  final Configs configs) {
-      YamlSeedConfigPersistence.initialize(SeedType.class);
-
       // set static values for factory
-      ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
-      ConfigurationApiFactory.setSynchronousSchedulerClient(cachingSchedulerClient);
-      ConfigurationApiFactory.setTemporalService(temporalService);
-      ConfigurationApiFactory.setConfigRepository(configRepository);
-      ConfigurationApiFactory.setJobPersistence(jobPersistence);
-      ConfigurationApiFactory.setConfigs(configs);
-      ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
-      ConfigurationApiFactory.setMdc(MDC.getCopyOfContextMap());
-      ConfigurationApiFactory.setDatabases(configsDatabase, jobsDatabase);
+      ConfigurationApiFactory.setValues(
+          temporalService,
+          configRepository,
+          jobPersistence,
+          seed,
+          schedulerJobClient,
+          cachingSchedulerClient,
+          configs,
+          new FileTtlManager(10, TimeUnit.MINUTES, 10),
+          MDC.getCopyOfContextMap(),
+          configsDatabase, jobsDatabase);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);
