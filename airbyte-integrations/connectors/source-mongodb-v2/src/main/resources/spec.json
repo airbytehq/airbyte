@@ -6,12 +6,12 @@
     "title": "MongoDb Source Spec",
     "type": "object",
     "required": ["database"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "instance_type": {
         "type": "object",
         "title": "MongoDb instance type",
-        "description": "MongoDb instance to connect to.",
+        "description": "MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.",
         "order": 0,
         "oneOf": [
           {
@@ -34,13 +34,20 @@
                 "default": 27017,
                 "examples": ["27017"],
                 "order": 1
+              },
+              "tls": {
+                "title": "TLS connection",
+                "type": "boolean",
+                "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\">documentation</a>.",
+                "default": false,
+                "order": 2
               }
             }
           },
           {
             "title": "Replica Set",
             "additionalProperties": false,
-            "required": ["server_addresses", "replica_set"],
+            "required": ["server_addresses"],
             "properties": {
               "server_addresses": {
                 "title": "Server addresses",
@@ -98,13 +105,6 @@
         "default": "admin",
         "examples": ["admin"],
         "order": 4
-      },
-      "tls": {
-        "title": "TLS connection",
-        "type": "boolean",
-        "description": "If this switch is enabled, TLS connections will be used to connect to MongoDB.",
-        "default": false,
-        "order": 5
       }
     }
   }

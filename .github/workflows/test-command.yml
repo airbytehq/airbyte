@@ -177,6 +177,7 @@ jobs:
           DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
           MSSQL_SSH_KEY_TEST_CREDS: ${{ secrets.MSSQL_SSH_KEY_TEST_CREDS }}
           MSSQL_SSH_PWD_TEST_CREDS: ${{ secrets.MSSQL_SSH_PWD_TEST_CREDS }}
+          MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
