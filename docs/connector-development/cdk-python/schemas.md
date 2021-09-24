@@ -25,13 +25,13 @@ def get_json_schema(self):
     return schema
 ```
 
-## Schema normalization
+## Type transformation
 
 It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema (e.g. when data is stored in a SQL database, you can't put CHAT type into INTEGER column). In the case of changes to API output (which is almost guaranteed to happen over time) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
 
 To remain robust in operation, the CDK provides a transformation ability to perform automatic object mutation to align with desired schema before outputting to the destination. All streams inherited from airbyte_cdk.sources.streams.core.Stream class have this transform configuration available. It is _disabled_ by default and can be configured per stream within a source connector.
-### Default schema normalization
-Lets say you want have output records from controller to be cast to the type described on json schema. This is how you can configure it:
+### Default type transformation
+Here's how you can configure the TypeTransformer:
 
 ```python
 from airbyte_cdk.sources.utils.transform import TransformConfig, Transformer
@@ -56,12 +56,12 @@ Also it works on complex types:
 ```
 And objects inside array of referenced by $ref attribute.
 
- In case if value cannot be casted (e.g. string "asdf" cannot be casted to integer) field would contain original value and no error reported. Schema normalization support any jsonschema types, nested objects/arrays and reference types. Types described as array of more than one type (except "null"), types under oneOf/anyOf keyword wont be transformed.
+ If the value cannot be cast (e.g. string "asdf" cannot be casted to integer), the field would retain its original value. Schema type transformation support any jsonschema types, nested objects/arrays and reference types. Types described as array of more than one type (except "null"), types under oneOf/anyOf keyword wont be transformed.
 
-*Note:* This transformation is done by source, not stream itself. I.e. if you have overriden "read_records" method in your stream it wont affect object transformation. All transformation are done in-place by modifing output object before passing it to "get_updated_state" method, so "get_updated_state" would receive transformed object.
+*Note:* This transformation is done by the source, not the stream itself. I.e. if you have overriden "read_records" method in your stream it wont affect object transformation. All transformation are done in-place by modifing output object before passing it to "get_updated_state" method, so "get_updated_state" would receive the transformed object.
 
-### Custom schema normalization
-Default schema normalization perform simple type casting regardless its format. Sometimes you want to perform more sophisticated transform like making "date-time" field compliant to rcf3339 standard. In this case you can use custom schema normalization:
+### Custom schema type transformation
+Default schema type transformation performs simple type casting. Sometimes you want to perform more sophisticated transform like making "date-time" field compliant to rcf3339 standard. In this case you can use custom schema type transformation:
 ```python
 class MyStream(Stream):
     ...
@@ -81,11 +81,11 @@ field_schema variable would be equal to
 ```json
 {"type": "string", "format": "date-time"}
 ```
-In this case default normalization would be skipped and only custom transformation apply. If you want to run both default and custom normalization you can configure transdormer object by combining config flags:
+In this case default transformation would be skipped and only custom transformation apply. If you want to run both default and custom transformation you can configure transdormer object by combining config flags:
 ```python
 transformer = Transformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 ```
-In this case custom normalization will be applied after default normalization function. Note that order of flags doesnt matter, default normalization will always be run before custom.
+In this case custom transformation will be applied after default type transformation function. Note that order of flags doesnt matter, default transformation will always be run before custom.
 
 ### Performance consideration
 

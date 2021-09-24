@@ -39,6 +39,7 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -71,6 +72,8 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   private final JdbcSourceOperations sourceOperations;
 
@@ -326,7 +329,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new MssqlSource();
+    final Source source = new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);

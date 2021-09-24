@@ -145,7 +145,7 @@ class JsonSchemaHelper:
             """
             variant_props = [set(list(v["properties"].keys())) for v in variants]
             common_props = set.intersection(*variant_props)
-            assert common_props, "There should be at least one common property for oneOf subojects"
+            assert common_props, "There should be at least one common property for oneOf subobjects"
             assert any(
                 [all(["const" in var["properties"][prop] for var in variants]) for prop in common_props]
             ), f"Any of {common_props} properties in {'.'.join(variant_path)} has no const keyword. See specification reference at https://docs.airbyte.io/connector-development/connector-specification-reference"

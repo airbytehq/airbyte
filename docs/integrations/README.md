@@ -54,11 +54,12 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Iterable](./sources/iterable.md)| Beta |
 |[Jira](./sources/jira.md)| Certified |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
-|[Klaviyo](./sources/kustomer.md)| Alpha |
+|[Kustomer](./sources/kustomer.md)| Alpha |
+|[Lever Hiring](./sources/lever-hiring.md)| Beta |
 |[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
-|[Marketo](./sources/marketo.md)| Certified |
+|[Marketo](./sources/marketo.md)| Beta |
 |[Microsoft SQL Server \(MSSQL\)](./sources/mssql.md)| Certified |
 |[Microsoft Dynamics AX](./sources/microsoft-dynamics-ax.md)| Beta |
 |[Microsoft Dynamics Customer Engagement](./sources/microsoft-dynamics-customer-engagement.md)| Beta |

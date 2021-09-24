@@ -41,15 +41,13 @@ class TransformConfig(Flag):
 
     # No action taken, default behaviour. Cannot be combined with any other options.
     NoTransform = auto()
-    # Applies default type casting.
+    # Applies default type casting with default_convert method which converts
+    # values by applying simple type casting to specified jsonschema type.
     DefaultSchemaNormalization = auto()
     # Allow registering custom type transformation callback. Can be combined
     # with DefaultSchemaNormalization. In this case default type casting would
     # be applied before custom one.
     CustomSchemaNormalization = auto()
-    # Field transformation based on field value path inside object. Not
-    # implemented yet.
-    FieldTransformation = auto()
 
 
 class TypeTransformer:

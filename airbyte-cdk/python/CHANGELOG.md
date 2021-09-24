@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.1.22
+## 0.1.24
 Added Transform class to use for mutating record value types so they adhere to jsonschema definition.
+
+## 0.1.23
+Added the ability to use caching for efficient synchronization of nested streams.
+
+## 0.1.22
+Allow passing custom headers to request in `OAuth2Authenticator.refresh_access_token()`: https://github.com/airbytehq/airbyte/pull/6219
 
 ## 0.1.21
 Resolve nested schema references and move external references to single schema definitions.
