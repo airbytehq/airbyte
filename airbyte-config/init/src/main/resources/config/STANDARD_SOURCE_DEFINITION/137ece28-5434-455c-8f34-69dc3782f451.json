@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "137ece28-5434-455c-8f34-69dc3782f451",
+  "name": "LinkedIn Ads",
+  "dockerRepository": "airbyte/source-linkedin-ads",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/linkedin-ads"
+}
