@@ -83,33 +83,6 @@ class IterableStream(HttpStream, ABC):
         for record in records:
             yield self._convert_timestamp_fields_to_datetime(record)
 
-    @staticmethod
-    def _parse_csv_string_to_dict(csv_string: str) -> Dict[str, Any]:
-        """
-        Parse a response with a csv type to dict object
-        Example:
-            csv_string = "a,b,c
-                          1,2,3"
-
-            output = {"a": 1, "b": 2, "c": 3}
-
-
-        :param csv_string: API endpoint response with csv format
-        :return: parsed API response
-
-        """
-
-        reader = csv.DictReader(StringIO(csv_string), delimiter=",")
-        result = next(reader)
-
-        for key, value in result.items():
-            try:
-                result[key] = int(value)
-            except ValueError:
-                result[key] = float(value)
-
-        return result
-
     def _convert_timestamp_fields_to_datetime(self, record: Dict[str, Any]):
         for field in self.DATE_TIME_FIELDS:
             # check for optional timestamp fields and convert to date-time
@@ -244,6 +217,33 @@ class CampaignsMetrics(IterableStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         content = response.content.decode()
         yield {"data": self._parse_csv_string_to_dict(content)}
+
+    @staticmethod
+    def _parse_csv_string_to_dict(csv_string: str) -> Dict[str, Any]:
+        """
+        Parse a response with a csv type to dict object
+        Example:
+            csv_string = "a,b,c
+                          1,2,3"
+
+            output = {"a": 1, "b": 2, "c": 3}
+
+
+        :param csv_string: API endpoint response with csv format
+        :return: parsed API response
+
+        """
+
+        reader = csv.DictReader(StringIO(csv_string), delimiter=",")
+        result = next(reader)
+
+        for key, value in result.items():
+            try:
+                result[key] = int(value)
+            except ValueError:
+                result[key] = float(value)
+
+        return result
 
 
 class Channels(IterableStream):
