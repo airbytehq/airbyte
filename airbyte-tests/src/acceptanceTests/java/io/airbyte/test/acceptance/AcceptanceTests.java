@@ -200,7 +200,7 @@ public class AcceptanceTests {
     }
 
     // by default use airbyte deployment governed by a test container.
-    if (USE_EXTERNAL_DEPLOYMENT) {
+    if (!USE_EXTERNAL_DEPLOYMENT) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
           .setEnv(ENV_FILE)
