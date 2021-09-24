@@ -25,7 +25,10 @@
 package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -85,17 +88,25 @@ public interface DiscoverCatalogWorkflow {
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     private final ProcessFactory processFactory;
+    private final SecretPersistence secretPersistence;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
       this.processFactory = processFactory;
+      this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
     }
 
     public AirbyteCatalog run(JobRunConfig jobRunConfig,
                               IntegrationLauncherConfig launcherConfig,
                               StandardDiscoverCatalogInput config) {
-      final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> config;
+
+      final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> {
+        final var partialConfig = config.getConnectionConfiguration();
+        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence);
+
+        return new StandardDiscoverCatalogInput().withConnectionConfiguration(fullConfig);
+      };
 
       final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,

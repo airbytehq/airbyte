@@ -39,6 +39,8 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DbtTransformationRunner;
@@ -146,16 +148,18 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretPersistence secretPersistence;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public ReplicationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
+      this(processFactory, secretPersistence, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    ReplicationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot, AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -164,17 +168,34 @@ public interface SyncWorkflow {
     public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
                                         IntegrationLauncherConfig sourceLauncherConfig,
                                         IntegrationLauncherConfig destinationLauncherConfig,
-                                        StandardSyncInput syncInput) {
+                                        StandardSyncInput partialSyncInput) {
 
       final Supplier<StandardSyncInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(syncInput));
-        return syncInput;
+        final var partialSourceConfig = partialSyncInput.getSourceConfiguration();
+        final var fullSourceConfig = SecretsHelpers.combineConfig(partialSourceConfig, secretPersistence);
+
+        final var partialDestinationConfig = partialSyncInput.getDestinationConfiguration();
+        final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence);
+
+        final var fullSyncInput = new StandardSyncInput()
+                .withNamespaceDefinition(partialSyncInput.getNamespaceDefinition())
+                .withNamespaceFormat(partialSyncInput.getNamespaceFormat())
+                .withPrefix(partialSyncInput.getPrefix())
+                .withSourceConfiguration(fullSourceConfig)
+                .withDestinationConfiguration(fullDestinationConfig)
+                .withOperationSequence(partialSyncInput.getOperationSequence())
+                .withCatalog(partialSyncInput.getCatalog())
+                .withState(partialSyncInput.getState())
+                .withResourceRequirements(partialSyncInput.getResourceRequirements());
+
+        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
+        return fullSyncInput;
       };
 
       final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
           workspaceRoot,
           jobRunConfig,
-          getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
+          getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, partialSyncInput),
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler());
 
@@ -257,16 +278,18 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretPersistence secretPersistence;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public NormalizationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
+      this(processFactory, secretPersistence, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    NormalizationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot, AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -274,11 +297,19 @@ public interface SyncWorkflow {
     @Override
     public Void normalize(JobRunConfig jobRunConfig,
                           IntegrationLauncherConfig destinationLauncherConfig,
-                          NormalizationInput input) {
+                          NormalizationInput partialInput) {
 
       final Supplier<NormalizationInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(input));
-        return input;
+        final var partialDestinationConfig = partialInput.getDestinationConfiguration();
+        final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence);
+
+        final var fullInput = new NormalizationInput()
+                .withCatalog(partialInput.getCatalog())
+                .withResourceRequirements(partialInput.getResourceRequirements())
+                .withDestinationConfiguration(fullDestinationConfig);
+
+        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
       };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -319,16 +350,18 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretPersistence secretPersistence;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
+      this(processFactory, secretPersistence, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    DbtTransformationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot, AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -337,11 +370,18 @@ public interface SyncWorkflow {
     public Void run(JobRunConfig jobRunConfig,
                     IntegrationLauncherConfig destinationLauncherConfig,
                     ResourceRequirements resourceRequirements,
-                    OperatorDbtInput input) {
+                    OperatorDbtInput partialInput) {
 
       final Supplier<OperatorDbtInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(input));
-        return input;
+        final var partialDestinationConfig = partialInput.getDestinationConfiguration();
+        final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence);
+
+        final var fullInput = new OperatorDbtInput()
+                .withOperatorDbt(partialInput.getOperatorDbt())
+                .withDestinationConfiguration(fullDestinationConfig);
+
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
       };
 
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(

@@ -173,8 +173,12 @@ public class ConfigRepository {
         destinationDefinition);
   }
 
-  public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final var source = persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
+  public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
+  }
+
+  public SourceConnection getSourceConnectionWithSecrets(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
+    final var source = getSourceConnection(sourceId);
 
     if (secretPersistence.isPresent()) {
       final var partialConfig = source.getConfiguration();
@@ -239,10 +243,13 @@ public class ConfigRepository {
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
   }
-
   public DestinationConnection getDestinationConnection(final UUID destinationId)
+          throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
+  }
+  public DestinationConnection getDestinationConnectionWithSecrets(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final var destination = persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
+    final var destination = getDestinationConnection(destinationId);
 
     if (secretPersistence.isPresent()) {
       final var partialConfig = destination.getConfiguration();

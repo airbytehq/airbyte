@@ -27,6 +27,8 @@ package io.airbyte.workers.temporal;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -83,10 +85,12 @@ public interface CheckConnectionWorkflow {
   class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
     private final ProcessFactory processFactory;
+    private final SecretPersistence secretPersistence;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
       this.processFactory = processFactory;
+      this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
     }
 
@@ -94,7 +98,12 @@ public interface CheckConnectionWorkflow {
                                              IntegrationLauncherConfig launcherConfig,
                                              StandardCheckConnectionInput connectionConfiguration) {
 
-      final Supplier<StandardCheckConnectionInput> inputSupplier = () -> connectionConfiguration;
+      final Supplier<StandardCheckConnectionInput> inputSupplier = () -> {
+        final var partialConfig = connectionConfiguration.getConnectionConfiguration();
+        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence);
+
+        return new StandardCheckConnectionInput().withConnectionConfiguration(fullConfig);
+      };
 
       final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
           new TemporalAttemptExecution<>(
