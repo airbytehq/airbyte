@@ -83,8 +83,6 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        # TODO: uncomment after the tsts are good!
-        # time.sleep(120)
         time.sleep(5)
 
         if not os.path.exists("../secrets"):

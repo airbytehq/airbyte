@@ -52,7 +52,7 @@
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)
 {%- endmacro %}
 
-{# -- Redshift does not support converting string directly to boolean, it must go through int first #}
+{# -- MS SQL Server does not support converting string directly to boolean, it must be casted as bit #}
 {% macro sqlserver__cast_to_boolean(field) -%}
     cast({{ field }} as bit)
 {%- endmacro %}

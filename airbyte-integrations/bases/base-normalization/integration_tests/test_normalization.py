@@ -75,16 +75,10 @@ def setup_test_path(request):
     ),
 )
 # Uncomment the following line as an example on how to run the test against local destinations only...
-# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
+# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL, ...])
 # Run tests on all destinations:
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
-    """
-    @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
-
-    Uncomment the following line as an example on how to run the test against local destinations only...
-    Run tests on all destinations:
-    """
     print("Testing normalization")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
@@ -98,11 +92,11 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     dbt_test_setup(destination_type, test_resource_name, test_root_dir)
     dbt_test_utils.dbt_run(test_root_dir)
 
-    """ if integration_type != DestinationType.ORACLE.value:
+    if integration_type != DestinationType.ORACLE.value:
         # Oracle doesnt support nested with clauses
-        # Run checks on Tests results """
-    dbt_test(test_root_dir)
-    check_outputs(destination_type, test_resource_name, test_root_dir)
+        # Run checks on Tests results
+        dbt_test(test_root_dir)
+        check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
