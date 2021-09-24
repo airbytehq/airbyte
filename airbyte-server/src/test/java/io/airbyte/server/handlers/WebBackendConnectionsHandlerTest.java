@@ -46,6 +46,7 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationSyncMode;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
@@ -62,16 +63,19 @@ import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -245,6 +249,71 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
     assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  public void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
+    workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
+
+    final ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
+    when(connectionsHandler.listConnections()).thenReturn(connectionReadList);
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
+
+    final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
+    WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+    assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
+
+    webBackendConnectionSearch.setSource(new SourceSearch().sourceId(UUID.randomUUID()));
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.setSource(new SourceSearch().sourceId(connectionRead.getSourceId()));
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+
+    final DestinationSearch destinationSearch = new DestinationSearch();
+    webBackendConnectionSearch.setDestination(destinationSearch);
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+
+    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "not-found")));
+    webBackendConnectionSearch.setDestination(destinationSearch);
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
+
+    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
+    webBackendConnectionSearch.setDestination(destinationSearch);
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.name("not-existent");
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.name(connectionRead.getName());
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT);
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.namespaceDefinition(connectionRead.getNamespaceDefinition());
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.status(ConnectionStatus.INACTIVE);
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, WebBackendConnectionReadList.getConnections().size());
+
+    webBackendConnectionSearch.status(ConnectionStatus.ACTIVE);
+    WebBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
   }
 
   @Test
