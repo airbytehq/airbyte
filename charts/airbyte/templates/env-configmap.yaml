@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: airbyte-env
 data:
-  AIRBYTE_VERSION: {{ .Chart.AppVersion }}
-  API_URL: /api/v1/
+  AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
+  API_URL: {{ .Values.webapp.api.url }}
   AWS_ACCESS_KEY_ID: {{ .Values.minio.accessKey.password }}
   AWS_SECRET_ACCESS_KEY: {{ .Values.minio.secretKey.password }}
   CONFIG_ROOT: /configs
@@ -16,15 +16,14 @@ data:
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
   DATABASE_USER: {{ include "airbyte.database.user" . }}
   DB_DOCKER_MOUNT: airbyte_db
-  FULLSTORY: enabled
+  FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCP_STORAGE_BUCKET: ""
   GOOGLE_APPLICATION_CREDENTIALS: ""
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
-  IS_DEMO: "false"
+  IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
   LOCAL_ROOT: /tmp/airbyte_local
-  LOG_LEVEL: INFO
-  OPENREPLAY: enabled
-  PAPERCUPS_STORYTIME: enabled
+  OPENREPLAY: {{ ternary "enabled" "disabled" .Values.webapp.openreplay.enabled }}
+  PAPERCUPS_STORYTIME: {{ ternary "enabled" "disabled" .Values.webapp.storytime.enabled }}
   RESOURCE_CPU_LIMIT: ""
   RESOURCE_CPU_REQUEST: ""
   RESOURCE_MEMORY_LIMIT: ""

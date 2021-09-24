@@ -1,8 +1,10 @@
 ## @section Global Parameters
 
+## @param global.imageRegistry Global Docker image registry
 ## @param global.storageClass Global StorageClass for Persistent Volume(s)
 ##
 global:
+  imageRegistry: ""
   storageClass: ""
 
 ## @section Common Parameters
@@ -25,6 +27,11 @@ serviceAccount:
   annotations: {}
   name: airbyte-admin
 
+## @param version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
+## If changing the image tags below, you should probably also update this.
+version: ""
+
+
 ## @section Webapp Parameters
 
 webapp:
@@ -37,7 +44,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.29.13-alpha
+    tag: 0.29.21-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -103,6 +110,24 @@ webapp:
     #   hosts:
     #   - chart-example.local
 
+  ## @param webapp.api.url The webapp API url.
+  api:
+    url: /api/v1/
+
+  ## @param webapp.isDemo Set to true if this is a demo
+  isDemo: false
+
+  ## @param webapp.fullstory.enabled Whether or not to enable fullstory
+  fullstory:
+    enabled: false
+
+  ## @param webapp.openreplay.enabled Whether or not to enable openreplay
+  openreplay:
+    enabled: false
+
+  ## @param webapp.storytime.enabled Whether or not to enable Papercups storytime
+  storytime:
+    enabled: false
 
 ## @section Scheduler Parameters
 
@@ -116,7 +141,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.29.13-alpha
+    tag: 0.29.21-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -151,6 +176,10 @@ scheduler:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param scheduler.log.level The log level to log at.
+  log:
+    level: "INFO"
 
 
 ## @section Pod Sweeper parameters
@@ -211,7 +240,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.29.13-alpha
+    tag: 0.29.21-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -298,6 +327,10 @@ server:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param server.log.level The log level to log at
+  log:
+    level: "INFO"
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart

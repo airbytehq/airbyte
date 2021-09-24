@@ -30,7 +30,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-server-container
-        image: "{{ .Values.server.image.repository }}:{{ default .Chart.AppVersion .Values.server.image.tag }}"
+        image: {{ include "airbyte.serverImage" . }}
         imagePullPolicy: "{{ .Values.server.image.pullPolicy }}"
         env:
         - name: AIRBYTE_VERSION
@@ -92,10 +92,7 @@ spec:
               name: airbyte-env
               key: TEMPORAL_HOST
         - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
-              key: LOG_LEVEL
+          value: "{{ .Values.scheduler.log.level }}"
         - name: RESOURCE_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
