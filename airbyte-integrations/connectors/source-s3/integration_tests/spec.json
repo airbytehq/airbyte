@@ -163,7 +163,7 @@
           },
           "use_ssl": {
             "title": "Use Ssl",
-            "description": "Is remove server using secure SSL/TLS connection",
+            "description": "Is remote server using secure SSL/TLS connection",
             "type": "boolean"
           },
           "verify_ssl_cert": {
