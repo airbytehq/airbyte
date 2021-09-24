@@ -75,6 +75,7 @@ public class DatabricksStreamCopier implements StreamCopier {
   private final S3ParquetWriter parquetWriter;
   private final String tmpTableLocation;
   private final String destTableLocation;
+  private final String stagingFolder;
 
   public DatabricksStreamCopier(String stagingFolder,
                                 String schema,
@@ -98,6 +99,7 @@ public class DatabricksStreamCopier implements StreamCopier {
 
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.destTableName = nameTransformer.getIdentifier(streamName);
+    this.stagingFolder = stagingFolder;
 
     S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
     this.parquetWriter = (S3ParquetWriter) writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
@@ -116,7 +118,12 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws Exception {
+  public String prepareStagingFile() {
+    return String.join("/", s3Config.getBucketPath(), stagingFolder);
+  }
+
+  @Override
+  public void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception {
     parquetWriter.write(id, recordMessage);
   }
 
