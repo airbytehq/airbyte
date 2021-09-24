@@ -8,6 +8,8 @@ import {
   confirmPasswordReset,
   applyActionCode,
   sendEmailVerification,
+  updateEmail,
+  getAuth,
 } from "firebase/auth";
 
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -22,6 +24,8 @@ interface AuthService {
   signUp(email: string, password: string): Promise<UserCredential>;
 
   resetPassword(email: string): Promise<void>;
+
+  changeEmail(email: string): Promise<void>;
 
   finishResetPassword(code: string, newPassword: string): Promise<void>;
 
@@ -73,6 +77,16 @@ export class GoogleAuthService implements AuthService {
         throw err;
       }
     );
+  }
+
+  async changeEmail(email: string): Promise<void> {
+    const auth = getAuth();
+
+    if (auth.currentUser) {
+      return updateEmail(auth.currentUser, email);
+    }
+
+    return Promise.reject("Current user not found");
   }
 
   async resetPassword(email: string): Promise<void> {
