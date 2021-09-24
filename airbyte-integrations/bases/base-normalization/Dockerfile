@@ -16,11 +16,11 @@ RUN apt-get update && apt-get install -y \
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
 RUN apt-get update && ACCEPT_EULA=Y apt-get install -y \
-#    libgssapi-krb5-2 \
+    libgssapi-krb5-2 \
     unixodbc-dev \
     msodbcsql17 \
     mssql-tools
-# ENV PATH=$PATH:/opt/mssql-tools/bin
+ENV PATH=$PATH:/opt/mssql-tools/bin
 
 # Install Oracle dependencies
 RUN mkdir -p /opt/oracle
@@ -37,7 +37,7 @@ COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 RUN apt-get update && apt-get install -y jq sshpass
 WORKDIR /airbyte
 COPY entrypoint.sh .
-# COPY build/sshtunneling.sh .
+COPY build/sshtunneling.sh .
 
 WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization

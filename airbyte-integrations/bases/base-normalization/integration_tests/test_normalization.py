@@ -77,8 +77,6 @@ def setup_test_path(request):
 # Uncomment the following line as an example on how to run the test against local destinations only...
 # @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
 # Run tests on all destinations:
-
-# @pytest.mark.parametrize("destination_type", [DestinationType.MSSQL])
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     """
@@ -216,7 +214,7 @@ def dbt_test_setup(destination_type: DestinationType, test_resource_name: str, t
         destination_type,
         replace_identifiers,
     )
-    
+
 
 def dbt_test(test_root_dir: str):
     """

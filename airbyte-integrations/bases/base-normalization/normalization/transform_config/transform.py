@@ -283,8 +283,8 @@ class TransformConfig:
             "database": config["database"],
             "user": config["username"],
             "password": config["password"],
-            #"authentication": "sql",
-            #"trusted_connection": True,
+            # "authentication": "sql",
+            # "trusted_connection": True,
         }
         return dbt_config
 
