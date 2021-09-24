@@ -14,6 +14,8 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
     implementation project(":airbyte-json-validation")
+    implementation "org.testcontainers:testcontainers:1.15.1"
+    implementation "org.testcontainers:jdbc:1.15.1"
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 }
