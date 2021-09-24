@@ -22,14 +22,16 @@
 # SOFTWARE.
 #
 
-from source_{{snakeCase name}}.source import Source{{properCase name}}
 from unittest.mock import MagicMock
+
+from source_{{snakeCase name}}.source import Source{{properCase name}}
 
 
 def test_check_connection(mocker):
     source = Source{{properCase name}}()
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
+
 
 def test_streams(mocker):
     source = Source{{properCase name}}()
