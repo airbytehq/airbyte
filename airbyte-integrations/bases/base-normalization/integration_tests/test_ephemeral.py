@@ -62,7 +62,6 @@ def setup_test_path(request):
 
 @pytest.mark.parametrize("column_count", [1500])
 @pytest.mark.parametrize("integration_type", list(DestinationType))
-# @pytest.mark.parametrize("integration_type", [DestinationType.MSSQL])
 def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
     if integration_type == DestinationType.MYSQL:
         # In MySQL, the max number of columns is limited by row size (8KB),
@@ -71,7 +70,9 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     if integration_type == DestinationType.ORACLE:
         column_count = 998
     if integration_type == DestinationType.MSSQL:
-        column_count = 1023
+        # In MS SQL Server, the max number of columns / table = 1024,
+        # We should leave the space for the '_airbyte_emitted_at' column. So 1022 is the max what could be inserted.
+        column_count = 1022
     run_test(integration_type, column_count)
 
 
