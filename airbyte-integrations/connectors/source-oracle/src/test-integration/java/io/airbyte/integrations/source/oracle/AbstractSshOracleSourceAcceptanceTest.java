@@ -25,11 +25,9 @@
 package io.airbyte.integrations.source.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -40,59 +38,28 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.testcontainers.containers.OracleContainer;
 
-public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
-  private OracleContainer container;
   private JsonNode config;
 
+  public abstract Path getConfigFilePath();
+
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
-    container.start();
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
-        .build());
-
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
-
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-      connection.createStatement().execute("CREATE TABLE jdbc_space.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("CREATE TABLE jdbc_space.starships(id INTEGER, name VARCHAR(200))");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (1,'enterprise-d')");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (2, 'defiant')");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
-    });
-
-    database.close();
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    container.close();
+  protected void tearDown(final TestDestinationEnv testEnv) {
+
   }
 
   @Override
