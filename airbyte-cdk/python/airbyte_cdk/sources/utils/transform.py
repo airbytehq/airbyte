@@ -33,20 +33,26 @@ logger = AirbyteLogger()
 
 class TransformConfig(Flag):
     """
-    Transformer class config. Configs can be combined using bitwise or operator e.g.
+    TypeTransformer class config. Configs can be combined using bitwise or operator e.g.
         ```
         TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         ```
     """
 
+    # No action taken, default behaviour. Cannot be combined with any other options.
     NoTransform = auto()
+    # Applies default type casting.
     DefaultSchemaNormalization = auto()
+    # Allow registering custom type transformation callback. Can be combined
+    # with DefaultSchemaNormalization. In this case default type casting would
+    # be applied before custom one.
     CustomSchemaNormalization = auto()
-    # TODO: implement field transformation with user defined object path
+    # Field transformation based on field value path inside object. Not
+    # implemented yet.
     FieldTransformation = auto()
 
 
-class Transformer:
+class TypeTransformer:
     """
     Class for transforming object before output.
     """
@@ -55,26 +61,28 @@ class Transformer:
 
     def __init__(self, config: TransformConfig):
         """
-        Initialize Transformer instance.
+        Initialize TypeTransformer instance.
         :param config Transform config that would be applied to object
         """
         if TransformConfig.NoTransform in config and config != TransformConfig.NoTransform:
             raise Exception("NoTransform option cannot be combined with other flags.")
         self._config = config
         all_validators = {
-            key: self.__normalize_and_validate(key, orig_validator)
+            key: self.__get_normalizer(key, orig_validator)
             for key, orig_validator in Draft7Validator.VALIDATORS.items()
             # Do not validate field we do not transform for maximum performance.
             if key in ["type", "array", "$ref", "properties", "items"]
         }
         self._normalizer = validators.create(meta_schema=Draft7Validator.META_SCHEMA, validators=all_validators)
 
-    def register(self, normalization_callback: Callable) -> Callable:
+    def registerCustomTransform(self, normalization_callback: Callable[[Any, Dict[str, Any]], Any]) -> Callable:
         """
         Register custom normalization callback.
         :param normalization_callback function to be used for value
-        normalization. Should return normalized value.
-        :return Same callbeck, this is usefull for using register function as decorator.
+        normalization. Takes original value and part type schema. Should return
+        normalized value. See docs/connector-development/cdk-python/schemas.md
+        for details.
+        :return Same callbeck, this is usefull for using registerCustomTransform function as decorator.
         """
         if TransformConfig.CustomSchemaNormalization not in self._config:
             raise Exception("Please set TransformConfig.CustomSchemaNormalization config before registering custom normalizer")
@@ -131,7 +139,7 @@ class Transformer:
             return original_item
         return original_item
 
-    def __normalize_and_validate(self, schema_key: str, original_validator: Callable):
+    def __get_normalizer(self, schema_key: str, original_validator: Callable):
         """
         Traverse through object fields using native jsonschema validator and apply normalization function.
         :param schema_key related json schema key that currently being validated/normalized.
@@ -173,16 +181,16 @@ class Transformer:
 
         return normalizator
 
-    def transform(self, instance: Dict[str, Any], schema: Dict[str, Any]):
+    def transform(self, record: Dict[str, Any], schema: Dict[str, Any]):
         """
         Normalize and validate according to config.
-        :param instance object instance for normalization/transformation. All modification are done by modifing existent object.
+        :param record record instance for normalization/transformation. All modification are done by modifing existent object.
         :schema object's jsonschema for normalization.
         """
         if TransformConfig.NoTransform in self._config:
             return
         normalizer = self._normalizer(schema)
-        for e in normalizer.iter_errors(instance):
+        for e in normalizer.iter_errors(record):
             """
             just calling normalizer.validate() would throw an exception on
             first validation occurences and stop processing rest of schema.

@@ -27,7 +27,7 @@ def get_json_schema(self):
 
 ## Schema normalization
 
-It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema (e.g. when data is stored in a SQL database, you can't put INTEGER type into CHAR column). In the case of changes to API output (which is almost guaranteed to happen over time) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
+It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema (e.g. when data is stored in a SQL database, you can't put CHAT type into INTEGER column). In the case of changes to API output (which is almost guaranteed to happen over time) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
 
 To remain robust in operation, the CDK provides a transformation ability to perform automatic object mutation to align with desired schema before outputting to the destination. All streams inherited from airbyte_cdk.sources.streams.core.Stream class have this transform configuration available. It is _disabled_ by default and can be configured per stream within a source connector.
 ### Default schema normalization
@@ -68,7 +68,7 @@ class MyStream(Stream):
     transformer = Transformer(TransformConfig.CustomSchemaNormalization)
     ...
 
-    @transformer.register
+    @transformer.registerCustomTransform
     def transform_function(orginal_value: Any, field_schema: Dict[str, Any]) -> Any:
         # transformed_value = ...
         return transformed_value
@@ -86,3 +86,24 @@ In this case default normalization would be skipped and only custom transformati
 transformer = Transformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 ```
 In this case custom normalization will be applied after default normalization function. Note that order of flags doesnt matter, default normalization will always be run before custom.
+
+### Performance consideration
+
+Transofrming each object on the fly would add some time for each object processing. This time is depends on object/schema complexitiy and hardware configuration. 
+
+There is some performance benchmark we've done with ads_insights facebook schema (it is complex schema with objects nested inside arrays ob object and a lot of references) and example object.
+Here is average transform time per single object, seconds:
+```
+regular transform:
+0.0008423403530008121
+
+transform without type casting (but value still being write to dict/array):
+0.000776215762666349
+
+transform without actual value setting  (but iterating through object properties):
+0.0006788729513330812
+
+just traverse/validate through json schema and object fields:
+0.0006139181846665452
+```
+On my PC (AMD Ryzen 7 5800X) it took 0.8 milliseconds per one object. As you can see most time (~ 75%) is taken by jsonschema traverse/validation routine and very little (less than 10 %) by actual converting. Processing time can be reduced by skipping jsonschema type checking but it would be no warnings about possible object jsonschema inconsistency.

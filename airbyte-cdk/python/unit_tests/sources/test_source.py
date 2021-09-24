@@ -34,7 +34,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
-from airbyte_cdk.sources.utils.transform import TransformConfig, Transformer
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class MockSource(Source):
@@ -240,8 +240,8 @@ def test_source_config_transform(abstract_source, catalog):
     logger_mock = MagicMock()
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
-    http_stream.transformer = Transformer(TransformConfig.DefaultSchemaNormalization)
-    non_http_stream.transformer = Transformer(TransformConfig.DefaultSchemaNormalization)
+    http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    non_http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
@@ -253,7 +253,7 @@ def test_source_config_transform_and_no_transform(abstract_source, catalog):
     logger_mock = MagicMock()
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
-    http_stream.transformer = Transformer(TransformConfig.DefaultSchemaNormalization)
+    http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]

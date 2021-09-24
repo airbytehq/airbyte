@@ -47,7 +47,7 @@ from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
-from airbyte_cdk.sources.utils.transform import Transformer
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 
 
 class AbstractSource(Source, ABC):
@@ -235,7 +235,7 @@ class AbstractSource(Source, ABC):
         return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
 
     @lru_cache(maxsize=None)
-    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[Transformer, dict]:
+    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, dict]:
         """
         Lookup stream's transform object and jsonschema based on stream name.
         This function would be called a lot so using caching to save on costly

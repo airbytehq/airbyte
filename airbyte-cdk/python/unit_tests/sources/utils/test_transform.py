@@ -24,7 +24,7 @@
 import json
 
 import pytest
-from airbyte_cdk.sources.utils.transform import TransformConfig, Transformer
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 SIMPLE_SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
 COMPLEX_SCHEMA = {
@@ -186,30 +186,30 @@ VERY_NESTED_SCHEMA = {
     ],
 )
 def test_transform(schema, actual, expected):
-    t = Transformer(TransformConfig.DefaultSchemaNormalization)
+    t = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     t.transform(actual, schema)
     assert json.dumps(actual) == json.dumps(expected)
 
 
 def test_transform_wrong_config():
     with pytest.raises(Exception, match="NoTransform option cannot be combined with other flags."):
-        Transformer(TransformConfig.NoTransform | TransformConfig.DefaultSchemaNormalization)
+        TypeTransformer(TransformConfig.NoTransform | TransformConfig.DefaultSchemaNormalization)
 
     with pytest.raises(Exception, match="Please set TransformConfig.CustomSchemaNormalization config before registering custom normalizer"):
 
         class NotAStream:
-            transformer = Transformer(TransformConfig.DefaultSchemaNormalization)
+            transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-            @transformer.register
+            @transformer.registerCustomTransform
             def transform_cb(instance, schema):
                 pass
 
 
 def test_custom_transform():
     class NotAStream:
-        transformer = Transformer(TransformConfig.CustomSchemaNormalization)
+        transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
 
-        @transformer.register
+        @transformer.registerCustomTransform
         def transform_cb(instance, schema):
             # Check no default conversion applied
             assert instance == 12
@@ -224,9 +224,9 @@ def test_custom_transform():
 
 def test_custom_transform_with_default_normalization():
     class NotAStream:
-        transformer = Transformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
+        transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-        @transformer.register
+        @transformer.registerCustomTransform
         def transform_cb(instance, schema):
             # Check default conversion applied
             assert instance == "12"

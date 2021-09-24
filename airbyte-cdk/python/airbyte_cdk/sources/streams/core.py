@@ -31,7 +31,7 @@ import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.utils.transform import TransformConfig, Transformer
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 def package_name_from_class(cls: object) -> str:
@@ -48,8 +48,8 @@ class Stream(ABC):
     # Use self.logger in subclasses to log any messages
     logger = AirbyteLogger()  # TODO use native "logging" loggers with custom handlers
 
-    # Transformer object to perform output data transformation
-    transformer: Transformer = Transformer(TransformConfig.NoTransform)
+    # TypeTransformer object to perform output data transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     @property
     def name(self) -> str:
