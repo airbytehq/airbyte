@@ -443,6 +443,9 @@ from {{ from_table }}
             sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
+            if self.destination_type == DestinationType.MYSQL:
+                # MySQL does not support [cast] and [nullif] functions together
+                return self.generate_mysql_date_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             sql_type = jinja_call("type_date()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
@@ -453,6 +456,17 @@ from {{ from_table }}
             return column_name
 
         return f"cast({column_name} as {sql_type}) as {column_name}"
+
+    @staticmethod
+    def generate_mysql_date_format_statement(column_name: str) -> str:
+        template = Template(
+            """
+        case when {{column_name}} = '' then NULL
+        else cast({{column_name}} as date)
+        end as {{column_name}}
+        """
+        )
+        return template.render(column_name=column_name)
 
     def generate_snowflake_timestamp_statement(self, column_name: str) -> str:
         """
