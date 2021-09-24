@@ -59,7 +59,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
-|[Marketo](./sources/marketo.md)| Certified |
+|[Marketo](./sources/marketo.md)| Beta |
 |[Microsoft SQL Server \(MSSQL\)](./sources/mssql.md)| Certified |
 |[Microsoft Dynamics AX](./sources/microsoft-dynamics-ax.md)| Beta |
 |[Microsoft Dynamics Customer Engagement](./sources/microsoft-dynamics-customer-engagement.md)| Beta |
