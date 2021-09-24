@@ -36,7 +36,7 @@ public interface StreamCopier {
   /**
    * Writes a value to a staging file for the stream.
    */
-  void write(UUID id, AirbyteRecordMessage recordMessage) throws Exception;
+  void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
 
   /**
    * Closes the writer for the stream to the staging persistence. This method should block until all
@@ -77,5 +77,12 @@ public interface StreamCopier {
    * completion or failure.
    */
   void removeFileAndDropTmpTable() throws Exception;
+
+  /**
+   * Creates the staging file and all the necessary items to write data to this file.
+   *
+   * @return the name of the staging file
+   */
+  String prepareStagingFile();
 
 }

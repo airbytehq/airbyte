@@ -22,13 +22,15 @@
 # SOFTWARE.
 #
 
-
+import json
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
     SearchAnalyticsByCountry,
@@ -82,21 +84,28 @@ class SourceGoogleSearchConsole(AbstractSource):
         return streams
 
     @staticmethod
-    def get_stream_kwargs(config: Mapping[str, Any]):
+    def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         authorization = config.get("authorization", {})
 
         stream_kwargs = {
-            "auth_type": config.get("authorization", {}).get("auth_type"),
             "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
             "end_date": config.get("end_date"),
         }
 
-        if stream_kwargs["auth_type"] == "Client":
-            stream_kwargs["client_id"] = authorization.get("client_id")
-            stream_kwargs["client_secret"] = authorization.get("client_secret")
-            stream_kwargs["refresh_token"] = authorization.get("refresh_token")
+        auth_type = authorization.get("auth_type")
+        if auth_type == "Client":
+            stream_kwargs["authenticator"] = Oauth2Authenticator(
+                token_refresh_endpoint="https://oauth2.googleapis.com/token",
+                client_secret=authorization.get("client_secret"),
+                client_id=authorization.get("client_id"),
+                refresh_token=authorization.get("refresh_token"),
+            )
+        elif auth_type == "Service":
+            stream_kwargs["authenticator"] = ServiceAccountAuthenticator(
+                service_account_info=json.loads(authorization.get("service_account_info")), email=authorization.get("email")
+            )
         else:
-            stream_kwargs["service_account_info"] = authorization.get("service_account_info")
+            raise Exception(f"Invalid auth type: {auth_type}")
 
         return stream_kwargs
