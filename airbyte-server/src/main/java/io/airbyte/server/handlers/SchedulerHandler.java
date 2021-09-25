@@ -100,7 +100,7 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
-  private final SecretPersistence ephemeralSecretPersistence;
+  private final Optional<SecretPersistence> ephemeralSecretPersistence;
 
   public SchedulerHandler(ConfigRepository configRepository,
                           SchedulerJobClient schedulerJobClient,
@@ -108,7 +108,7 @@ public class SchedulerHandler {
                           JobPersistence jobPersistence,
                           JobNotifier jobNotifier,
                           WorkflowServiceStubs temporalService,
-                          SecretPersistence ephemeralSecretPersistence) {
+                          Optional<SecretPersistence> ephemeralSecretPersistence) {
     this(
         configRepository,
         schedulerJobClient,
@@ -132,7 +132,7 @@ public class SchedulerHandler {
                    JobPersistence jobPersistence,
                    JobNotifier jobNotifier,
                    WorkflowServiceStubs temporalService,
-                   SecretPersistence ephemeralSecretPersistence) {
+                   Optional<SecretPersistence> ephemeralSecretPersistence) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -159,18 +159,22 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
-            NO_WORKSPACE,
-            sourceConfig.getConnectionConfiguration(),
-            specFetcher.execute(imageName));
-
-    splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence::write);
-
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
-    final SourceConnection source = new SourceConnection()
-        .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(splitSecretConfig.getPartialConfig());
+    SourceConnection source = new SourceConnection()
+            .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
+            .withConfiguration(sourceConfig.getConnectionConfiguration());;
+
+    if(ephemeralSecretPersistence.isPresent()) {
+      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
+              NO_WORKSPACE,
+              sourceConfig.getConnectionConfiguration(),
+              specFetcher.execute(imageName));
+
+      splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence.get()::write);
+
+      source.setConfiguration(splitSecretConfig.getPartialConfig());
+    }
 
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
@@ -203,18 +207,23 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
 
-    final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
-            NO_WORKSPACE,
-            destinationConfig.getConnectionConfiguration(),
-            specFetcher.execute(imageName));
-
-    splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence::write);
-
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
-    final DestinationConnection destination = new DestinationConnection()
-        .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(splitSecretConfig.getPartialConfig());
+    DestinationConnection destination = new DestinationConnection()
+            .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
+            .withConfiguration(destinationConfig.getConnectionConfiguration());
+
+    if(ephemeralSecretPersistence.isPresent()) {
+      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
+              NO_WORKSPACE,
+              destinationConfig.getConnectionConfiguration(),
+              specFetcher.execute(imageName));
+
+      splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence.get()::write);
+
+      destination.setConfiguration(splitSecretConfig.getPartialConfig());
+    }
+
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 

@@ -135,6 +135,7 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -168,7 +169,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
                           final Database jobsDatabase,
-                          final SecretPersistence ephemeralSecretPersistence) {
+                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));

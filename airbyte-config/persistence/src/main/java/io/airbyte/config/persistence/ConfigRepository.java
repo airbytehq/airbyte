@@ -300,8 +300,8 @@ public class ConfigRepository {
     validator.ensure(connectorSpecification.getConnectionSpecification(), destination.getConfiguration());
 
     if (secretPersistence.isPresent()) {
-      final var previousDestinationConnection = getOptionalSourceConnection(destination.getDestinationId());
-      final var splitConfig = getSplitSourceConfig(previousDestinationConnection, destination, connectorSpecification);
+      final var previousDestinationConnection = getOptionalDestinationConnection(destination.getDestinationId());
+      final var splitConfig = getSplitDestinationConfig(previousDestinationConnection, destination, connectorSpecification);
 
       splitConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
 

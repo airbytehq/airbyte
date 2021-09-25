@@ -35,6 +35,8 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.util.Map;
+import java.util.Optional;
+
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
@@ -50,7 +52,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Map<String, String> mdc;
   private static Database configsDatabase;
   private static Database jobsDatabase;
-  private static SecretPersistence ephemeralSecretPersistence;
+  private static Optional<SecretPersistence> ephemeralSecretPersistence;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
@@ -89,7 +91,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
   }
 
-  public static void setEphemeralSecretPersistence(SecretPersistence ephemeralSecretPersistence) {
+  public static void setEphemeralSecretPersistence(Optional<SecretPersistence> ephemeralSecretPersistence) {
     ConfigurationApiFactory.ephemeralSecretPersistence = ephemeralSecretPersistence;
   }
 

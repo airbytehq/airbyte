@@ -34,6 +34,8 @@ import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.MDC;
@@ -48,7 +50,7 @@ public interface ServerFactory {
                         Database configsDatabase,
                         Database jobsDatabase,
                         Configs configs,
-                        SecretPersistence ephemeralSecretPersistence);
+                        Optional<SecretPersistence> ephemeralSecretPersistence);
 
   class Api implements ServerFactory {
 
@@ -61,7 +63,7 @@ public interface ServerFactory {
                                  Database configsDatabase,
                                  Database jobsDatabase,
                                  Configs configs,
-                                 SecretPersistence ephemeralSecretPersistence) {
+                                 Optional<SecretPersistence> ephemeralSecretPersistence) {
       // set static values for factory
       ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
       ConfigurationApiFactory.setSynchronousSchedulerClient(cachingSchedulerClient);
