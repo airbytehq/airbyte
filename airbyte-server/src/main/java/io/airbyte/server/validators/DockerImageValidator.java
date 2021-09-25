@@ -26,8 +26,8 @@ package io.airbyte.server.validators;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.scheduler.client.SpecFetcher;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 
 public class DockerImageValidator {

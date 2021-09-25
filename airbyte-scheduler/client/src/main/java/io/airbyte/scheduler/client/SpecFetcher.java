@@ -22,12 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.converters;
+package io.airbyte.scheduler.client;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
 
 public class SpecFetcher {
