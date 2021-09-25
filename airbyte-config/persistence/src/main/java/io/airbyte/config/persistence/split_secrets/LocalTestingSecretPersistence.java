@@ -74,6 +74,12 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
       System.out.println("SECRET WRITE EXECUTE RESULT: " + result);
       return null;
     }));
+
+    try {
+      throw new Exception();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(String[] args) throws IOException {

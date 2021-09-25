@@ -137,13 +137,15 @@ public class DestinationHandler {
       connectionsHandler.deleteConnection(connectionRead);
     }
 
+    final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
+
     // persist
     persistDestinationConnection(
         destination.getName(),
         destination.getDestinationDefinitionId(),
         destination.getWorkspaceId(),
         destination.getDestinationId(),
-        destination.getConnectionConfiguration(),
+        fullConfig,
         true);
   }
 

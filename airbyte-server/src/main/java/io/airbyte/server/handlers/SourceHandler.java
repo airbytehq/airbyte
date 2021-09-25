@@ -190,6 +190,9 @@ public class SourceHandler {
     final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());
     validateSource(spec, source.getConnectionConfiguration());
 
+    final var fullConfig = configRepository.getDestinationConnectionWithSecrets(source.getSourceId()).getConfiguration();
+    validateSource(spec, fullConfig);
+
     // persist
     persistSourceConnection(
         source.getName(),
@@ -197,7 +200,7 @@ public class SourceHandler {
         source.getWorkspaceId(),
         source.getSourceId(),
         true,
-        source.getConnectionConfiguration(),
+        fullConfig,
         spec);
   }
 
