@@ -40,7 +40,6 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
   public LocalTestingSecretPersistence(final Database configDatabase) {
     this.configDatabase = configDatabase;
 
-    System.out.println("SECRET STORE INITIALIZE LocalTestingSecretPersistence");
     Exceptions.toRuntime(() -> {
       this.configDatabase.query(ctx -> {
         ctx.execute("CREATE TABLE IF NOT EXISTS secrets ( coordinate TEXT PRIMARY KEY, payload TEXT);");
@@ -51,7 +50,7 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
 
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
-    final Optional<String> output = Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
+    return Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
       final var result = ctx.fetch("SELECT payload FROM secrets WHERE coordinate = ?;", coordinate.getFullCoordinate());
       if (result.size() == 0) {
         return Optional.empty();
@@ -59,51 +58,15 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
         return Optional.of(result.get(0).getValue(0, String.class));
       }
     }));
-
-    System.out.println("SECRET READ(" + coordinate.getFullCoordinate() + ") = " + output);
-
-    return output;
   }
 
   @Override
   public void write(final SecretCoordinate coordinate, final String payload) {
-    System.out.println("SECRET WRITE(" + coordinate.getFullCoordinate() + ", " + payload + ")");
     Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
-      int result = ctx.query("INSERT INTO secrets(coordinate,payload) VALUES(?, ?) ON CONFLICT (coordinate) DO UPDATE SET payload = ?;",
+      ctx.query("INSERT INTO secrets(coordinate,payload) VALUES(?, ?) ON CONFLICT (coordinate) DO UPDATE SET payload = ?;",
           coordinate.getFullCoordinate(), payload, payload, coordinate.getFullCoordinate()).execute();
-      System.out.println("SECRET WRITE EXECUTE RESULT: " + result);
       return null;
     }));
-
-    try {
-      throw new Exception();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  public static void main(String[] args) throws IOException {
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        "docker",
-        "docker",
-        "jdbc:postgresql://localhost:5432/airbyte")
-            .getAndInitialize();
-    final var persistence = new LocalTestingSecretPersistence(configDatabase);
-
-    final var coordinate1 = new SecretCoordinate("base1", 1);
-    final var coordinate2 = new SecretCoordinate("base2", 1);
-
-    persistence.write(coordinate1, "hunter1");
-    System.out.println("persistence.read(coordinate1) = " + persistence.read(coordinate1));
-    System.out.println("persistence.read(coordinate2) = " + persistence.read(coordinate2));
-
-    persistence.write(coordinate2, "hunter2");
-    System.out.println("persistence.read(coordinate1) = " + persistence.read(coordinate1));
-    System.out.println("persistence.read(coordinate2) = " + persistence.read(coordinate2));
-
-    persistence.write(coordinate1, "hunter3");
-    System.out.println("persistence.read(coordinate1) = " + persistence.read(coordinate1));
-    System.out.println("persistence.read(coordinate2) = " + persistence.read(coordinate2));
   }
 
 }
