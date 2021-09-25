@@ -156,7 +156,7 @@ public class AcceptanceTests {
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
-      System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || !System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
+      System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
 
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
