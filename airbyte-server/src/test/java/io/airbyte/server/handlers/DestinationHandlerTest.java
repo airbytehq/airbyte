@@ -170,6 +170,9 @@ class DestinationHandlerTest {
     final ConnectionReadList connectionReadList = new ConnectionReadList().connections(Collections.singletonList(connectionRead));
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationConnection.getWorkspaceId());
 
+    when(configRepository.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId()))
+        .thenReturn(destinationConnection)
+        .thenReturn(expectedDestinationConnection);
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
         .thenReturn(destinationConnection)
         .thenReturn(expectedDestinationConnection);

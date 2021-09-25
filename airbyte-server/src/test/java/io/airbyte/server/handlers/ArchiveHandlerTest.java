@@ -49,7 +49,6 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -129,7 +128,7 @@ public class ArchiveHandlerTest {
     configPersistence = new DatabaseConfigPersistence(database);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
-    configRepository = new ConfigRepository(configPersistence, Optional.of(new MemorySecretPersistence()));
+    configRepository = new ConfigRepository(configPersistence, Optional.empty());
 
     jobPersistence.setVersion(VERSION);
 
