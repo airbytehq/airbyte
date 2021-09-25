@@ -11,9 +11,10 @@ import { barChartColors, theme } from "theme";
 
 type BarChartProps = {
   data: any; // TODO: fix type
+  legendLabels: string[]; // TODO: fix type
 };
 
-const BarChart: React.FC<BarChartProps> = ({ data }) => {
+const BarChart: React.FC<BarChartProps> = ({ data, legendLabels }) => {
   const chartLinesColor = theme.greyColor20;
   const chartTicksColor = theme.lightTextColor;
 
@@ -36,7 +37,9 @@ const BarChart: React.FC<BarChartProps> = ({ data }) => {
           tick={{ fontSize: "11px" }}
           tickSize={10}
         />
-        <Bar dataKey="uv" fill={barChartColors[0]} radius={[4, 4, 0, 0]} />
+        {legendLabels.map((barName, key) => (
+          <Bar dataKey={barName} fill={barChartColors[key]} />
+        ))}
       </BasicBarChart>
     </ResponsiveContainer>
   );

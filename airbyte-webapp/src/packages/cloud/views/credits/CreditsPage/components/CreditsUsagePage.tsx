@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
 import BarChart from "components/BarChart";
+// import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+// import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
 
 export const ChartWrapper = styled.div`
   width: 100%;
@@ -12,134 +14,55 @@ export const ChartWrapper = styled.div`
 `;
 
 const CreditsUsagePage: React.FC = () => {
-  // TODO: add real data. Format ?
-  const data = [
-    {
-      name: "01",
-      uv: 75,
-    },
-    {
-      name: "02",
-      uv: 58,
-    },
-    {
-      name: "03",
-      uv: 62,
-    },
-    {
-      name: "04",
-      uv: 49,
-    },
-    {
-      name: "05",
-      uv: 77,
-    },
-    {
-      name: "06",
-      uv: 42,
-    },
-    {
-      name: "07",
-      uv: 77,
-    },
-    {
-      name: "08",
-      uv: 82,
-    },
-    {
-      name: "09",
-      uv: 75,
-    },
-    {
-      name: "10",
-      uv: 85,
-    },
-    {
-      name: "11",
-      uv: 90,
-    },
-    {
-      name: "12",
-      uv: 97,
-    },
-    {
-      name: "13",
-      uv: 67,
-    },
-    {
-      name: "14",
-      uv: 63,
-    },
-    {
-      name: "15",
-      uv: 79,
-    },
-    {
-      name: "01",
-      uv: 75,
-    },
-    {
-      name: "02",
-      uv: 58,
-    },
-    {
-      name: "03",
-      uv: 62,
-    },
-    {
-      name: "04",
-      uv: 49,
-    },
-    {
-      name: "05",
-      uv: 77,
-    },
-    {
-      name: "06",
-      uv: 42,
-    },
-    {
-      name: "07",
-      uv: 77,
-    },
-    {
-      name: "08",
-      uv: 82,
-    },
-    {
-      name: "09",
-      uv: 75,
-    },
-    {
-      name: "10",
-      uv: 85,
-    },
-    {
-      name: "11",
-      uv: 90,
-    },
-    {
-      name: "12",
-      uv: 97,
-    },
-    {
-      name: "13",
-      uv: 67,
-    },
-    {
-      name: "14",
-      uv: 63,
-    },
-    {
-      name: "15",
-      uv: 79,
-    },
-  ];
+  // TODO: add real data
+  // const { workspaceId } = useCurrentWorkspace();
+  // const { data } = useGetUsage(workspaceId);
+
+  const data = {
+    workspaceId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    creditConsumptionByConnector: [
+      {
+        connectionId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        creditsConsumed: 0,
+      },
+    ],
+    creditConsumptionByDay: [
+      {
+        date: "2021-09-22",
+        creditsConsumed: 80,
+      },
+      {
+        date: "2021-09-23",
+        creditsConsumed: 30,
+      },
+      {
+        date: "2021-09-24",
+        creditsConsumed: 40,
+      },
+      {
+        date: "2021-09-25",
+        creditsConsumed: 56,
+      },
+      {
+        date: "2021-09-26",
+        creditsConsumed: 67,
+      },
+      {
+        date: "2021-09-27",
+        creditsConsumed: 42,
+      },
+    ],
+  };
+
+  const chartData = data.creditConsumptionByDay.map((item) => ({
+    name: item.date,
+    creditsConsumed: item.creditsConsumed,
+  }));
 
   return (
     <ContentCard title={<FormattedMessage id="credits.totalUsage" />} $light>
       <ChartWrapper>
-        <BarChart data={data} />
+        <BarChart data={chartData} legendLabels={["creditsConsumed"]} />
       </ChartWrapper>
     </ContentCard>
   );

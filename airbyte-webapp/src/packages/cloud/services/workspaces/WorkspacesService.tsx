@@ -103,6 +103,18 @@ export function useGetWorkspace(workspaceId: string) {
   });
 }
 
+export function useGetUsage(workspaceId: string) {
+  const service = useGetWorkspaceService();
+
+  return useQuery(
+    ["workspace", workspaceId],
+    () => service.getUsage(workspaceId),
+    {
+      suspense: true,
+    }
+  );
+}
+
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const user = useCurrentUser();
   const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
