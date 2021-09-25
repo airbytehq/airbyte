@@ -25,6 +25,7 @@
 package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
@@ -47,6 +48,7 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @WorkflowInterface
@@ -87,10 +89,10 @@ public interface DiscoverCatalogWorkflow {
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     private final ProcessFactory processFactory;
-    private final SecretPersistence secretPersistence;
+    private final Optional<SecretPersistence> secretPersistence;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
@@ -100,12 +102,16 @@ public interface DiscoverCatalogWorkflow {
                               IntegrationLauncherConfig launcherConfig,
                               StandardDiscoverCatalogInput config) {
 
-      final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> {
-        final var partialConfig = config.getConnectionConfiguration();
-        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence);
+      final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
+              .withConnectionConfiguration(config.getConnectionConfiguration());
 
-        return new StandardDiscoverCatalogInput().withConnectionConfiguration(fullConfig);
-      };
+      if(secretPersistence.isPresent()) {
+        final var partialConfig = config.getConnectionConfiguration();
+        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence.get());
+        input.setConnectionConfiguration(fullConfig);
+      }
+
+      final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> input;
 
       final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,

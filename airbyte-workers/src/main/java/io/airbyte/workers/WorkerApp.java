@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,13 +68,13 @@ public class WorkerApp {
 
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
-  private final SecretPersistence secretPersistence;
+  private final Optional<SecretPersistence> secretPersistence;
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
-                   SecretPersistence secretPersistence,
+                   Optional<SecretPersistence> secretPersistence,
                    WorkflowServiceStubs temporalService,
                    MaxWorkersConfig maxWorkers) {
     this.workspaceRoot = workspaceRoot;
@@ -163,7 +164,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
 
-    final SecretPersistence secretPersistence = new LocalTestingSecretPersistence(configDatabase); // todo: feature flag on env var
+    final Optional<SecretPersistence> secretPersistence = Optional.of(new LocalTestingSecretPersistence(configDatabase)); // todo: feature flag on env var
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 

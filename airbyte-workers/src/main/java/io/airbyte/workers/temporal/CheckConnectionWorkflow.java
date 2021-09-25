@@ -45,6 +45,7 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @WorkflowInterface
@@ -85,10 +86,10 @@ public interface CheckConnectionWorkflow {
   class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
     private final ProcessFactory processFactory;
-    private final SecretPersistence secretPersistence;
+    private final Optional<SecretPersistence> secretPersistence;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
@@ -98,12 +99,16 @@ public interface CheckConnectionWorkflow {
                                              IntegrationLauncherConfig launcherConfig,
                                              StandardCheckConnectionInput connectionConfiguration) {
 
-      final Supplier<StandardCheckConnectionInput> inputSupplier = () -> {
-        final var partialConfig = connectionConfiguration.getConnectionConfiguration();
-        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence);
+      final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+              .withConnectionConfiguration(connectionConfiguration.getConnectionConfiguration());
 
-        return new StandardCheckConnectionInput().withConnectionConfiguration(fullConfig);
-      };
+      if(secretPersistence.isPresent()) {
+        final var partialConfig = connectionConfiguration.getConnectionConfiguration();
+        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence.get());
+        input.setConnectionConfiguration(fullConfig);
+      }
+
+      final Supplier<StandardCheckConnectionInput> inputSupplier = () -> input;
 
       final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
           new TemporalAttemptExecution<>(
