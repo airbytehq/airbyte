@@ -36,7 +36,6 @@ import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.util.Map;
 import java.util.Optional;
-
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
@@ -108,8 +107,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.archiveTtlManager,
         ConfigurationApiFactory.temporalService,
         ConfigurationApiFactory.configsDatabase,
-            ConfigurationApiFactory.jobsDatabase,
-            ConfigurationApiFactory.ephemeralSecretPersistence);
+        ConfigurationApiFactory.jobsDatabase,
+        ConfigurationApiFactory.ephemeralSecretPersistence);
   }
 
   @Override

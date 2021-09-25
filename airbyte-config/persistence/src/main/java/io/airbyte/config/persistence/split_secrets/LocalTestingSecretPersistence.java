@@ -26,8 +26,6 @@ package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import java.io.IOException;
 import java.util.Optional;
 
 /**

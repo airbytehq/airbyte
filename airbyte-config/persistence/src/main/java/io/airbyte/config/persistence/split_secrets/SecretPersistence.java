@@ -27,7 +27,6 @@ package io.airbyte.config.persistence.split_secrets;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -42,13 +41,13 @@ public interface SecretPersistence {
 
   void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
 
-  static Optional<SecretPersistence> getLongLived(Configs configs) throws IOException  {
-    switch (configs.getSecretPersistenceType()){
+  static Optional<SecretPersistence> getLongLived(Configs configs) throws IOException {
+    switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new ConfigsDatabaseInstance(
-                configs.getConfigDatabaseUser(),
-                configs.getConfigDatabasePassword(),
-                configs.getConfigDatabaseUrl())
+            configs.getConfigDatabaseUser(),
+            configs.getConfigDatabasePassword(),
+            configs.getConfigDatabaseUrl())
                 .getAndInitialize();
 
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
@@ -63,12 +62,12 @@ public interface SecretPersistence {
   }
 
   static Optional<SecretPersistence> getEphemeral(Configs configs) throws IOException {
-    switch (configs.getSecretPersistenceType()){
+    switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new ConfigsDatabaseInstance(
-                configs.getConfigDatabaseUser(),
-                configs.getConfigDatabasePassword(),
-                configs.getConfigDatabaseUrl())
+            configs.getConfigDatabaseUser(),
+            configs.getConfigDatabasePassword(),
+            configs.getConfigDatabaseUrl())
                 .getAndInitialize();
 
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
@@ -81,4 +80,5 @@ public interface SecretPersistence {
       }
     }
   }
+
 }

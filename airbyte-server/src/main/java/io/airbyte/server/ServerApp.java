@@ -36,7 +36,6 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;

@@ -25,7 +25,6 @@
 package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
@@ -103,9 +102,9 @@ public interface DiscoverCatalogWorkflow {
                               StandardDiscoverCatalogInput config) {
 
       final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
-              .withConnectionConfiguration(config.getConnectionConfiguration());
+          .withConnectionConfiguration(config.getConnectionConfiguration());
 
-      if(secretPersistence.isPresent()) {
+      if (secretPersistence.isPresent()) {
         final var partialConfig = config.getConnectionConfiguration();
         final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence.get());
         input.setConnectionConfiguration(fullConfig);

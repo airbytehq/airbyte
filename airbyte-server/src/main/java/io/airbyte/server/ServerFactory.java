@@ -34,7 +34,6 @@ import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

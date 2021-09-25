@@ -175,17 +175,17 @@ public interface SyncWorkflow {
                                         StandardSyncInput syncInput) {
 
       final var fullSyncInput = new StandardSyncInput()
-              .withNamespaceDefinition(syncInput.getNamespaceDefinition())
-              .withNamespaceFormat(syncInput.getNamespaceFormat())
-              .withPrefix(syncInput.getPrefix())
-              .withSourceConfiguration(syncInput.getSourceConfiguration())
-              .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-              .withOperationSequence(syncInput.getOperationSequence())
-              .withCatalog(syncInput.getCatalog())
-              .withState(syncInput.getState())
-              .withResourceRequirements(syncInput.getResourceRequirements());
+          .withNamespaceDefinition(syncInput.getNamespaceDefinition())
+          .withNamespaceFormat(syncInput.getNamespaceFormat())
+          .withPrefix(syncInput.getPrefix())
+          .withSourceConfiguration(syncInput.getSourceConfiguration())
+          .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+          .withOperationSequence(syncInput.getOperationSequence())
+          .withCatalog(syncInput.getCatalog())
+          .withState(syncInput.getState())
+          .withResourceRequirements(syncInput.getResourceRequirements());
 
-      if(secretPersistence.isPresent()) {
+      if (secretPersistence.isPresent()) {
         final var partialSourceConfig = syncInput.getSourceConfiguration();
         final var fullSourceConfig = SecretsHelpers.combineConfig(partialSourceConfig, secretPersistence.get());
 
@@ -312,11 +312,11 @@ public interface SyncWorkflow {
                           NormalizationInput input) {
 
       final var fullInput = new NormalizationInput()
-              .withCatalog(input.getCatalog())
-              .withResourceRequirements(input.getResourceRequirements())
-              .withDestinationConfiguration(input.getDestinationConfiguration());
+          .withCatalog(input.getCatalog())
+          .withResourceRequirements(input.getResourceRequirements())
+          .withDestinationConfiguration(input.getDestinationConfiguration());
 
-      if(secretPersistence.isPresent()) {
+      if (secretPersistence.isPresent()) {
         final var partialDestinationConfig = input.getDestinationConfiguration();
         final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence.get());
 
@@ -392,10 +392,10 @@ public interface SyncWorkflow {
                     OperatorDbtInput input) {
 
       final var fullInput = new OperatorDbtInput()
-              .withOperatorDbt(input.getOperatorDbt())
-              .withDestinationConfiguration(input.getDestinationConfiguration());
+          .withOperatorDbt(input.getOperatorDbt())
+          .withDestinationConfiguration(input.getDestinationConfiguration());
 
-      if(secretPersistence.isPresent()) {
+      if (secretPersistence.isPresent()) {
         final var partialDestinationConfig = input.getDestinationConfiguration();
         final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence.get());
 

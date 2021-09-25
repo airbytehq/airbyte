@@ -45,8 +45,6 @@ import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import org.apache.commons.lang3.NotImplementedException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +55,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.NotImplementedException;
 
 public class ConfigRepository {
 
@@ -216,12 +215,12 @@ public class ConfigRepository {
       splitConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
 
       final var partialSourceConnection = new SourceConnection()
-              .withSourceId(source.getSourceId())
-              .withName(source.getName())
-              .withSourceDefinitionId(source.getSourceDefinitionId())
-              .withTombstone(source.getTombstone())
-              .withWorkspaceId(source.getWorkspaceId())
-              .withConfiguration(splitConfig.getPartialConfig());
+          .withSourceId(source.getSourceId())
+          .withName(source.getName())
+          .withSourceDefinitionId(source.getSourceDefinitionId())
+          .withTombstone(source.getTombstone())
+          .withWorkspaceId(source.getWorkspaceId())
+          .withConfiguration(splitConfig.getPartialConfig());
 
       persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), partialSourceConnection);
     } else {
@@ -256,10 +255,10 @@ public class ConfigRepository {
   public List<SourceConnection> listSourceConnectionWithSecrets() throws JsonValidationException, IOException {
     final var sources = listSourceConnection();
 
-    if(secretPersistence.isPresent()) {
+    if (secretPersistence.isPresent()) {
       return sources.stream()
-              .map(partialSource -> Exceptions.toRuntime(() -> getSourceConnectionWithSecrets(partialSource.getSourceId())))
-              .collect(Collectors.toList());
+          .map(partialSource -> Exceptions.toRuntime(() -> getSourceConnectionWithSecrets(partialSource.getSourceId())))
+          .collect(Collectors.toList());
     } else {
       return sources;
     }
@@ -306,12 +305,12 @@ public class ConfigRepository {
       splitConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
 
       final var partialDestinationConnection = new DestinationConnection()
-              .withDestinationId(destination.getDestinationId())
-              .withName(destination.getName())
-              .withDestinationDefinitionId(destination.getDestinationDefinitionId())
-              .withTombstone(destination.getTombstone())
-              .withWorkspaceId(destination.getWorkspaceId())
-              .withConfiguration(splitConfig.getPartialConfig());
+          .withDestinationId(destination.getDestinationId())
+          .withName(destination.getName())
+          .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+          .withTombstone(destination.getTombstone())
+          .withWorkspaceId(destination.getWorkspaceId())
+          .withConfiguration(splitConfig.getPartialConfig());
 
       persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, destination.getDestinationId().toString(), partialDestinationConnection);
     } else {
@@ -346,10 +345,10 @@ public class ConfigRepository {
   public List<DestinationConnection> listDestinationConnectionWithSecrets() throws JsonValidationException, IOException {
     final var destinations = listDestinationConnection();
 
-    if(secretPersistence.isPresent()) {
+    if (secretPersistence.isPresent()) {
       return destinations.stream()
-              .map(partialDestination -> Exceptions.toRuntime(() -> getDestinationConnectionWithSecrets(partialDestination.getDestinationId())))
-              .collect(Collectors.toList());
+          .map(partialDestination -> Exceptions.toRuntime(() -> getDestinationConnectionWithSecrets(partialDestination.getDestinationId())))
+          .collect(Collectors.toList());
     } else {
       return destinations;
     }
@@ -429,11 +428,13 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
-  // todo: should replaceAllConfigs just write individual configs using their proper call instead of having a
-  // replaceAllConfigs at the persistence layer? It'd be slower if there's a batching mechanism, but without it
+  // todo: should replaceAllConfigs just write individual configs using their proper call instead of
+  // having a
+  // replaceAllConfigs at the persistence layer? It'd be slower if there's a batching mechanism, but
+  // without it
   // there really isn't a great way of handling secrets injection
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    if(secretPersistence.isPresent()) {
+    if (secretPersistence.isPresent()) {
       throw new NotImplementedException();
     } else {
       persistence.replaceAllConfigs(configs, dryRun);
@@ -442,20 +443,20 @@ public class ConfigRepository {
 
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
     final var persistenceMap = persistence.dumpConfigs();
-    if(secretPersistence.isPresent()) {
+    if (secretPersistence.isPresent()) {
       final var augmentedMap = new HashMap<>(persistenceMap);
       final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
       final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
 
-      if(augmentedMap.containsKey(sourceKey)) {
+      if (augmentedMap.containsKey(sourceKey)) {
         final Stream<JsonNode> augmentedValue = augmentedMap.get(sourceKey)
-                .map(config -> SecretsHelpers.combineConfig(config, secretPersistence.get()));
+            .map(config -> SecretsHelpers.combineConfig(config, secretPersistence.get()));
         augmentedMap.put(sourceKey, augmentedValue);
       }
 
-      if(augmentedMap.containsKey(destinationKey)) {
+      if (augmentedMap.containsKey(destinationKey)) {
         final Stream<JsonNode> augmentedValue = augmentedMap.get(destinationKey)
-                .map(config -> SecretsHelpers.combineConfig(config, secretPersistence.get()));
+            .map(config -> SecretsHelpers.combineConfig(config, secretPersistence.get()));
         augmentedMap.put(destinationKey, augmentedValue);
       }
 

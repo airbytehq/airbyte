@@ -100,9 +100,9 @@ public interface CheckConnectionWorkflow {
                                              StandardCheckConnectionInput connectionConfiguration) {
 
       final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
-              .withConnectionConfiguration(connectionConfiguration.getConnectionConfiguration());
+          .withConnectionConfiguration(connectionConfiguration.getConnectionConfiguration());
 
-      if(secretPersistence.isPresent()) {
+      if (secretPersistence.isPresent()) {
         final var partialConfig = connectionConfiguration.getConnectionConfiguration();
         final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence.get());
         input.setConnectionConfiguration(fullConfig);

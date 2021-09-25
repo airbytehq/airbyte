@@ -162,14 +162,14 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     SourceConnection source = new SourceConnection()
-            .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-            .withConfiguration(sourceConfig.getConnectionConfiguration());;
+        .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
+        .withConfiguration(sourceConfig.getConnectionConfiguration());;
 
-    if(ephemeralSecretPersistence.isPresent()) {
+    if (ephemeralSecretPersistence.isPresent()) {
       final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
-              NO_WORKSPACE,
-              sourceConfig.getConnectionConfiguration(),
-              specFetcher.execute(imageName));
+          NO_WORKSPACE,
+          sourceConfig.getConnectionConfiguration(),
+          specFetcher.execute(imageName));
 
       splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence.get()::write);
 
@@ -210,14 +210,14 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     DestinationConnection destination = new DestinationConnection()
-            .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-            .withConfiguration(destinationConfig.getConnectionConfiguration());
+        .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
+        .withConfiguration(destinationConfig.getConnectionConfiguration());
 
-    if(ephemeralSecretPersistence.isPresent()) {
+    if (ephemeralSecretPersistence.isPresent()) {
       final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
-              NO_WORKSPACE,
-              destinationConfig.getConnectionConfiguration(),
-              specFetcher.execute(imageName));
+          NO_WORKSPACE,
+          destinationConfig.getConnectionConfiguration(),
+          specFetcher.execute(imageName));
 
       splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence.get()::write);
 
