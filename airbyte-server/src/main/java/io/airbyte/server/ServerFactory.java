@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -44,6 +45,8 @@ public interface ServerFactory {
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
                         JobPersistence jobPersistence,
+                        ConfigPersistence seed,
+
                         Database configsDatabase,
                         Database jobsDatabase,
                         Configs configs);
@@ -51,24 +54,27 @@ public interface ServerFactory {
   class Api implements ServerFactory {
 
     @Override
-    public ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                                 SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-                                 WorkflowServiceStubs temporalService,
-                                 ConfigRepository configRepository,
-                                 JobPersistence jobPersistence,
-                                 Database configsDatabase,
-                                 Database jobsDatabase,
-                                 Configs configs) {
+    public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
+                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                                 final WorkflowServiceStubs temporalService,
+                                 final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 final ConfigPersistence seed,
+                                 final Database configsDatabase,
+                                 final Database jobsDatabase,
+                                 final Configs configs) {
       // set static values for factory
-      ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
-      ConfigurationApiFactory.setSynchronousSchedulerClient(cachingSchedulerClient);
-      ConfigurationApiFactory.setTemporalService(temporalService);
-      ConfigurationApiFactory.setConfigRepository(configRepository);
-      ConfigurationApiFactory.setJobPersistence(jobPersistence);
-      ConfigurationApiFactory.setConfigs(configs);
-      ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
-      ConfigurationApiFactory.setMdc(MDC.getCopyOfContextMap());
-      ConfigurationApiFactory.setDatabases(configsDatabase, jobsDatabase);
+      ConfigurationApiFactory.setValues(
+          temporalService,
+          configRepository,
+          jobPersistence,
+          seed,
+          schedulerJobClient,
+          cachingSchedulerClient,
+          configs,
+          new FileTtlManager(10, TimeUnit.MINUTES, 10),
+          MDC.getCopyOfContextMap(),
+          configsDatabase, jobsDatabase);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

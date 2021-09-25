@@ -100,7 +100,7 @@ public class ArchiveHandlerTest {
       super(1L, TimeUnit.MINUTES, 1L);
     }
 
-    public void register(Path path) {}
+    public void register(final Path path) {}
 
   }
 
@@ -123,7 +123,7 @@ public class ArchiveHandlerTest {
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jobPersistence = new DefaultJobPersistence(database);
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    seedPersistence = YamlSeedConfigPersistence.get();
+    seedPersistence = YamlSeedConfigPersistence.getDefault();
     configPersistence = new DatabaseConfigPersistence(database);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
@@ -140,6 +140,7 @@ public class ArchiveHandlerTest {
         VERSION,
         configRepository,
         jobPersistence,
+        YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
         specFetcher);
@@ -166,21 +167,21 @@ public class ArchiveHandlerTest {
 
     // After importing the configs, the dump is restored.
     assertTrue(archive.exists());
-    ImportRead importResult = archiveHandler.importData(archive);
+    final ImportRead importResult = archiveHandler.importData(archive);
     assertFalse(archive.exists());
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
     assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
 
     // When a connector definition is in use, it will not be updated.
-    UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
-    String sourceS3DefinitionVersion = "0.0.0";
-    StandardSourceDefinition sourceS3Definition = seedPersistence.getConfig(
+    final UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
+    final String sourceS3DefinitionVersion = "0.0.0";
+    final StandardSourceDefinition sourceS3Definition = seedPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceS3DefinitionId.toString(),
         StandardSourceDefinition.class)
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion);
-    SourceConnection sourceConnection = new SourceConnection()
+    final SourceConnection sourceConnection = new SourceConnection()
         .withSourceDefinitionId(sourceS3DefinitionId)
         .withSourceId(UUID.randomUUID())
         .withWorkspaceId(UUID.randomUUID())
@@ -198,7 +199,7 @@ public class ArchiveHandlerTest {
     archiveHandler.importData(archive);
 
     // The version has not changed.
-    StandardSourceDefinition actualS3Definition = configPersistence.getConfig(
+    final StandardSourceDefinition actualS3Definition = configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceS3DefinitionId.toString(),
         StandardSourceDefinition.class);
@@ -219,7 +220,7 @@ public class ArchiveHandlerTest {
 
     // Export the first workspace configs
     File archive = archiveHandler.exportWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId));
-    File secondArchive = Files.createTempFile("tests", "archive").toFile();
+    final File secondArchive = Files.createTempFile("tests", "archive").toFile();
     FileUtils.copyFile(archive, secondArchive);
 
     // After deleting all the configs, the dump becomes empty.
@@ -251,9 +252,9 @@ public class ArchiveHandlerTest {
     setupWorkspaceData(secondWorkspaceId);
 
     // the archive is importing again in another workspace
-    UploadRead secondUploadRead = archiveHandler.uploadArchiveResource(secondArchive);
+    final UploadRead secondUploadRead = archiveHandler.uploadArchiveResource(secondArchive);
     assertEquals(UploadRead.StatusEnum.SUCCEEDED, secondUploadRead.getStatus());
-    ImportRead secondImportResult = archiveHandler.importIntoWorkspace(new ImportRequestBody()
+    final ImportRead secondImportResult = archiveHandler.importIntoWorkspace(new ImportRequestBody()
         .resourceId(secondUploadRead.getResourceId())
         .workspaceId(secondWorkspaceId));
     assertEquals(StatusEnum.SUCCEEDED, secondImportResult.getStatus());
@@ -272,7 +273,7 @@ public class ArchiveHandlerTest {
         .withTombstone(false)
         .withConfiguration(Jsons.emptyObject());
 
-    ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
+    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
 
     configRepository.writeSourceConnection(sourceConnection, emptyConnectorSpec);
@@ -292,14 +293,14 @@ public class ArchiveHandlerTest {
     assertSameConfigDump(secondWorkspaceDump, configRepository.dumpConfigs());
   }
 
-  private void setupWorkspaceData(UUID workspaceId) throws IOException {
+  private void setupWorkspaceData(final UUID workspaceId) throws IOException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), new StandardWorkspace()
         .withWorkspaceId(workspaceId)
         .withName("test-workspace")
         .withTombstone(false));
   }
 
-  private void setupTestData(UUID workspaceId) throws JsonValidationException, IOException {
+  private void setupTestData(final UUID workspaceId) throws JsonValidationException, IOException {
     // Fill up with some configurations
     setupWorkspaceData(workspaceId);
     final UUID sourceid = UUID.randomUUID();
@@ -320,16 +321,16 @@ public class ArchiveHandlerTest {
         .withTombstone(false));
   }
 
-  private void assertSameConfigDump(Map<String, Stream<JsonNode>> expected, Map<String, Stream<JsonNode>> actual) {
+  private void assertSameConfigDump(final Map<String, Stream<JsonNode>> expected, final Map<String, Stream<JsonNode>> actual) {
     assertEquals(expected.keySet(), actual.keySet(),
         String.format("The expected (%s) vs actual (%s) streams does not match", expected.size(), actual.size()));
-    for (String stream : expected.keySet()) {
+    for (final String stream : expected.keySet()) {
       LOGGER.info("Checking stream {}", stream);
       // assertEquals cannot correctly check the equality of two maps with stream values,
       // so streams are converted to sets before being compared.
       final Set<JsonNode> expectedRecords = expected.get(stream).collect(Collectors.toSet());
       final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
-      for (var expectedRecord : expectedRecords) {
+      for (final var expectedRecord : expectedRecords) {
         assertTrue(actualRecords.contains(expectedRecord),
             String.format("\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
                 expectedRecord,
