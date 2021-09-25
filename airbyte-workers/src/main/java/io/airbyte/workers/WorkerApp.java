@@ -158,13 +158,7 @@ public class WorkerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    final Database configDatabase = new ConfigsDatabaseInstance( // todo: feature flag on env var
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getAndInitialize();
-
-    final Optional<SecretPersistence> secretPersistence = Optional.of(new LocalTestingSecretPersistence(configDatabase)); // todo: feature flag on env var
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 

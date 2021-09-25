@@ -207,7 +207,7 @@ public class SchedulerApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
-    final Optional<SecretPersistence> secretPersistence = Optional.of(new LocalTestingSecretPersistence(configDatabase)); // todo: feature flag on env var
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),

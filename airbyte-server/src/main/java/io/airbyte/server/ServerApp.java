@@ -187,8 +187,10 @@ public class ServerApp implements ServerRunnable {
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
     configPersistence.migrateFileConfigs(configs);
-    final Optional<SecretPersistence> secretPersistence = Optional.of(new LocalTestingSecretPersistence(configDatabase)); // todo: feature flag on env var
-    final Optional<SecretPersistence> ephemeralSecretPersistence = Optional.of(new LocalTestingSecretPersistence(configDatabase)); // todo: feature flag on env var
+
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+
     final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation(), secretPersistence);
 
     LOGGER.info("Creating Scheduler persistence...");

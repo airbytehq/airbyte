@@ -24,6 +24,11 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
+import io.airbyte.config.Configs;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -37,4 +42,43 @@ public interface SecretPersistence {
 
   void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
 
+  static Optional<SecretPersistence> getLongLived(Configs configs) throws IOException  {
+    switch (configs.getSecretPersistenceType()){
+      case TESTING_CONFIG_DB_TABLE -> {
+        final Database configDatabase = new ConfigsDatabaseInstance(
+                configs.getConfigDatabaseUser(),
+                configs.getConfigDatabasePassword(),
+                configs.getConfigDatabaseUrl())
+                .getAndInitialize();
+
+        return Optional.of(new LocalTestingSecretPersistence(configDatabase));
+      }
+      case GOOGLE_SECRET_MANAGER -> {
+        return Optional.of(GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpProjectId()));
+      }
+      default -> {
+        return Optional.empty();
+      }
+    }
+  }
+
+  static Optional<SecretPersistence> getEphemeral(Configs configs) throws IOException {
+    switch (configs.getSecretPersistenceType()){
+      case TESTING_CONFIG_DB_TABLE -> {
+        final Database configDatabase = new ConfigsDatabaseInstance(
+                configs.getConfigDatabaseUser(),
+                configs.getConfigDatabasePassword(),
+                configs.getConfigDatabaseUrl())
+                .getAndInitialize();
+
+        return Optional.of(new LocalTestingSecretPersistence(configDatabase));
+      }
+      case GOOGLE_SECRET_MANAGER -> {
+        return Optional.of(GoogleSecretManagerPersistence.getEphemeral(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpProjectId()));
+      }
+      default -> {
+        return Optional.empty();
+      }
+    }
+  }
 }
