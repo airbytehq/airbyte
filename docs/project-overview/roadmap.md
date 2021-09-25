@@ -16,6 +16,7 @@ We understand that we're not "production-ready" for a lot of companies yet. In t
 
 * Airbyte Cloud release. 
 * Adapt automatically to sources' schema changes.
+* Optimize normalization, so it costs less to our users
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\).
 
 **Coming a bit later:**
