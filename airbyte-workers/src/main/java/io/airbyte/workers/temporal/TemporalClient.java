@@ -34,9 +34,6 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
-import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -49,19 +46,17 @@ import java.util.function.Supplier;
 
 public class TemporalClient {
 
-  private final SecretPersistence secretPersistence;
   private final Path workspaceRoot;
   private final WorkflowClient client;
 
-  public static TemporalClient production(String temporalHost, SecretPersistence secretPersistence, Path workspaceRoot) {
-    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), secretPersistence, workspaceRoot);
+  public static TemporalClient production(String temporalHost, Path workspaceRoot) {
+    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), workspaceRoot);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
   // one. either temporal decides and can report it or it is injected into temporal runs.
-  public TemporalClient(WorkflowClient client, SecretPersistence secretPersistence, Path workspaceRoot) {
+  public TemporalClient(WorkflowClient client, Path workspaceRoot) {
     this.client = client;
-    this.secretPersistence = secretPersistence;
     this.workspaceRoot = workspaceRoot;
   }
 
@@ -83,18 +78,7 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-
-    final SplitSecretConfig splitConfig = SecretsHelpers.splitConfig(
-        config.getWorkspaceId(),
-        config.getConnectionConfiguration(),
-        new ConnectorSpecification().withConnectionSpecification(config.getSpec()));
-
-    splitConfig.getCoordinateToPayload().forEach(secretPersistence::write);
-
-    final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
-        .withConnectionConfiguration(splitConfig.getPartialConfig())
-        .withWorkspaceId(config.getWorkspaceId())
-        .withSpec(config.getSpec());
+    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
@@ -106,18 +90,7 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-
-    final SplitSecretConfig splitConfig = SecretsHelpers.splitConfig(
-        config.getWorkspaceId(),
-        config.getConnectionConfiguration(),
-        new ConnectorSpecification().withConnectionSpecification(config.getSpec()));
-
-    splitConfig.getCoordinateToPayload().forEach(secretPersistence::write);
-
-    final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
-        .withConnectionConfiguration(splitConfig.getPartialConfig())
-        .withWorkspaceId(config.getWorkspaceId())
-        .withSpec(config.getSpec());
+    final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(jobRunConfig, launcherConfig, input));

@@ -208,7 +208,6 @@ public class SchedulerApp {
             .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final SecretPersistence secretPersistence = new LocalTestingSecretPersistence(configDatabase); // todo: feature flag on env var
-    final SecretPersistence ephemeralSecretPersistence = new LocalTestingSecretPersistence(configDatabase); // todo: feature flag on env var
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, Optional.of(secretPersistence));
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
@@ -225,7 +224,7 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, ephemeralSecretPersistence, workspaceRoot);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)

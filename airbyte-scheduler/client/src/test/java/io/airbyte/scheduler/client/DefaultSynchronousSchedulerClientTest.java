@@ -80,13 +80,11 @@ class DefaultSynchronousSchedulerClientTest {
   private static final SourceConnection SOURCE_CONNECTION = new SourceConnection()
       .withSourceId(UUID1)
       .withSourceDefinitionId(UUID2)
-      .withConfiguration(CONFIGURATION)
-      .withWorkspaceId(WORKSPACE_ID);
+      .withConfiguration(CONFIGURATION);
   private static final DestinationConnection DESTINATION_CONNECTION = new DestinationConnection()
       .withDestinationId(UUID1)
       .withDestinationDefinitionId(UUID2)
-      .withConfiguration(CONFIGURATION)
-      .withWorkspaceId(WORKSPACE_ID);
+      .withConfiguration(CONFIGURATION);
 
   private TemporalClient temporalClient;
   private JobTracker jobTracker;
@@ -102,10 +100,6 @@ class DefaultSynchronousSchedulerClientTest {
 
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
-
-    final var specFetcher = mock(SpecFetcher.class);
-    when(specFetcher.execute(DOCKER_IMAGE)).thenReturn(new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject()));
-    schedulerClient.setSpecFetcher(specFetcher);
   }
 
   private static JobMetadata createMetadata(boolean succeeded) {
@@ -187,9 +181,7 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateSourceCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE)
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
+          .withDockerImage(DOCKER_IMAGE);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
@@ -203,9 +195,7 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateDestinationCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE)
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
+          .withDockerImage(DOCKER_IMAGE);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
@@ -219,9 +209,7 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateDiscoverSchemaJob() throws IOException {
       final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE)
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
+          .withDockerImage(DOCKER_IMAGE);
 
       final AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
       when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))

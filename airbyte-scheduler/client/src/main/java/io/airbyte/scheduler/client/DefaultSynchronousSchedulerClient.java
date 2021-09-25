@@ -52,18 +52,10 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   private final JobTracker jobTracker;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  private SpecFetcher specFetcher;
-
   public DefaultSynchronousSchedulerClient(TemporalClient temporalClient, JobTracker jobTracker, OAuthConfigSupplier oAuthConfigSupplier) {
     this.temporalClient = temporalClient;
     this.jobTracker = jobTracker;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
-  }
-
-  // this isn't set in the constructor because spec fetcher depends on a temporal client...
-  // todo: remove this circular dependency
-  public void setSpecFetcher(SpecFetcher specFetcher) {
-    this.specFetcher = specFetcher;
   }
 
   @Override
@@ -73,14 +65,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         source.getSourceDefinitionId(),
         source.getWorkspaceId(),
         source.getConfiguration());
-
-    final JsonNode spec = specFetcher.execute(dockerImage).getConnectionSpecification();
-
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceConfiguration)
-        .withDockerImage(dockerImage)
-        .withWorkspaceId(source.getWorkspaceId())
-        .withSpec(spec);
+        .withDockerImage(dockerImage);
 
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
@@ -97,14 +84,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         destination.getDestinationId(),
         destination.getWorkspaceId(),
         destination.getConfiguration());
-
-    final JsonNode spec = specFetcher.execute(dockerImage).getConnectionSpecification();
-
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destinationConfiguration)
-        .withDockerImage(dockerImage)
-        .withWorkspaceId(destination.getWorkspaceId())
-        .withSpec(spec);
+        .withDockerImage(dockerImage);
 
     return execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
@@ -119,14 +101,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         source.getSourceDefinitionId(),
         source.getWorkspaceId(),
         source.getConfiguration());
-
-    final JsonNode spec = specFetcher.execute(dockerImage).getConnectionSpecification();
-
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(sourceConfiguration)
-        .withDockerImage(dockerImage)
-        .withWorkspaceId(source.getWorkspaceId())
-        .withSpec(spec);
+        .withDockerImage(dockerImage);
 
     return execute(
         ConfigType.DISCOVER_SCHEMA,

@@ -41,7 +41,6 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -60,7 +59,6 @@ import org.junit.jupiter.api.Test;
 class TemporalClientTest {
 
   private static final UUID JOB_UUID = UUID.randomUUID();
-  private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
@@ -86,7 +84,7 @@ class TemporalClientTest {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
     logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
-    temporalClient = new TemporalClient(workflowClient, new MemorySecretPersistence(), workspaceRoot);
+    temporalClient = new TemporalClient(workflowClient, workspaceRoot);
   }
 
   @Nested
@@ -146,13 +144,9 @@ class TemporalClientTest {
           .thenReturn(checkConnectionWorkflow);
       final JobCheckConnectionConfig checkConnectionConfig = new JobCheckConnectionConfig()
           .withDockerImage(IMAGE_NAME1)
-          .withConnectionConfiguration(Jsons.emptyObject())
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
+          .withConnectionConfiguration(Jsons.emptyObject());
       final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
-          .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration())
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
+          .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
       temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
       checkConnectionWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
@@ -166,14 +160,9 @@ class TemporalClientTest {
           .thenReturn(discoverCatalogWorkflow);
       final JobDiscoverCatalogConfig checkConnectionConfig = new JobDiscoverCatalogConfig()
           .withDockerImage(IMAGE_NAME1)
-          .withConnectionConfiguration(Jsons.emptyObject())
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
-
+          .withConnectionConfiguration(Jsons.emptyObject());
       final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
-          .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration())
-          .withWorkspaceId(WORKSPACE_ID)
-          .withSpec(Jsons.emptyObject());
+          .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
       temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);

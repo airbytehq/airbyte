@@ -13,12 +13,5 @@ properties:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  spec:
-    description: Integration spec. Must be a valid JSON schema.
-    type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  workspaceId:
-    type: string
-    format: uuid
   dockerImage:
     type: string

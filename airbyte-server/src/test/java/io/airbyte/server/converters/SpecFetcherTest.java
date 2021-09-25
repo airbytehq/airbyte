@@ -25,13 +25,13 @@
 package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SpecFetcher;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
@@ -62,6 +62,15 @@ class SpecFetcherTest {
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
     assertEquals(connectorSpecification, specFetcher.execute(IMAGE_NAME));
+  }
+
+  @Test
+  void testFetchEmpty() throws IOException {
+    when(schedulerJobClient.createGetSpecJob(IMAGE_NAME)).thenReturn(response);
+    when(response.isSuccess()).thenReturn(false);
+
+    final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
+    assertThrows(IllegalStateException.class, () -> specFetcher.execute(IMAGE_NAME));
   }
 
 }
