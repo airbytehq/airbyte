@@ -312,9 +312,9 @@ public class ConfigRepository {
           .withWorkspaceId(destination.getWorkspaceId())
           .withConfiguration(splitConfig.getPartialConfig());
 
-      persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, destination.getDestinationId().toString(), partialDestinationConnection);
+      persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), partialDestinationConnection);
     } else {
-      persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, destination.getDestinationId().toString(), destination);
+      persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
     }
   }
 
