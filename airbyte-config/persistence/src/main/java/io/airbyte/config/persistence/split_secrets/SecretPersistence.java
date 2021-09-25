@@ -33,8 +33,8 @@ import java.util.Optional;
  */
 public interface SecretPersistence {
 
-  Optional<String> read(SecretCoordinate coordinate);
+  Optional<String> read(final SecretCoordinate coordinate);
 
-  void write(SecretCoordinate coordinate, String payload);
+  void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
 
 }

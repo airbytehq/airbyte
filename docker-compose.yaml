@@ -185,6 +185,16 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+  airbyte-temporal-ui:
+    image: temporalio/web:latest
+    logging: *default-logging
+    container_name: airbyte-temporal-ui
+    restart: unless-stopped
+    environment:
+      - TEMPORAL_GRPC_ENDPOINT=airbyte-temporal:7233
+      - TEMPORAL_PERMIT_WRITE_API=true
+    ports:
+      - 8088:8088
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}

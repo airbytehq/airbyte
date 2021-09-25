@@ -25,7 +25,6 @@
 package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;

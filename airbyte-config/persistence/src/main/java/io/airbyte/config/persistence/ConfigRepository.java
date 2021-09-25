@@ -208,6 +208,8 @@ public class ConfigRepository {
       final var previousSourceConnection = getOptionalSourceConnection(source.getSourceId());
       final var splitConfig = getSplitSourceConfig(previousSourceConnection, source, connectorSpecification);
 
+      // todo: should figure out how to do this more transactionally with getSplitSourceConfig /
+      // getSplitDestinationConfig
       splitConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
 
       // todo: can we do this better without editing the input object? SourceConnection doesn't have a
@@ -243,10 +245,12 @@ public class ConfigRepository {
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
   }
+
   public DestinationConnection getDestinationConnection(final UUID destinationId)
-          throws JsonValidationException, IOException, ConfigNotFoundException {
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
+
   public DestinationConnection getDestinationConnectionWithSecrets(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final var destination = getDestinationConnection(destinationId);

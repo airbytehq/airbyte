@@ -157,7 +157,10 @@ public interface SyncWorkflow {
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot, AirbyteConfigValidator validator) {
+    ReplicationActivityImpl(ProcessFactory processFactory,
+                            SecretPersistence secretPersistence,
+                            Path workspaceRoot,
+                            AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
@@ -178,15 +181,15 @@ public interface SyncWorkflow {
         final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence);
 
         final var fullSyncInput = new StandardSyncInput()
-                .withNamespaceDefinition(partialSyncInput.getNamespaceDefinition())
-                .withNamespaceFormat(partialSyncInput.getNamespaceFormat())
-                .withPrefix(partialSyncInput.getPrefix())
-                .withSourceConfiguration(fullSourceConfig)
-                .withDestinationConfiguration(fullDestinationConfig)
-                .withOperationSequence(partialSyncInput.getOperationSequence())
-                .withCatalog(partialSyncInput.getCatalog())
-                .withState(partialSyncInput.getState())
-                .withResourceRequirements(partialSyncInput.getResourceRequirements());
+            .withNamespaceDefinition(partialSyncInput.getNamespaceDefinition())
+            .withNamespaceFormat(partialSyncInput.getNamespaceFormat())
+            .withPrefix(partialSyncInput.getPrefix())
+            .withSourceConfiguration(fullSourceConfig)
+            .withDestinationConfiguration(fullDestinationConfig)
+            .withOperationSequence(partialSyncInput.getOperationSequence())
+            .withCatalog(partialSyncInput.getCatalog())
+            .withState(partialSyncInput.getState())
+            .withResourceRequirements(partialSyncInput.getResourceRequirements());
 
         validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
         return fullSyncInput;
@@ -287,7 +290,10 @@ public interface SyncWorkflow {
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot, AirbyteConfigValidator validator) {
+    NormalizationActivityImpl(ProcessFactory processFactory,
+                              SecretPersistence secretPersistence,
+                              Path workspaceRoot,
+                              AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
@@ -304,9 +310,9 @@ public interface SyncWorkflow {
         final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence);
 
         final var fullInput = new NormalizationInput()
-                .withCatalog(partialInput.getCatalog())
-                .withResourceRequirements(partialInput.getResourceRequirements())
-                .withDestinationConfiguration(fullDestinationConfig);
+            .withCatalog(partialInput.getCatalog())
+            .withResourceRequirements(partialInput.getResourceRequirements())
+            .withDestinationConfiguration(fullDestinationConfig);
 
         validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
         return fullInput;
@@ -359,7 +365,10 @@ public interface SyncWorkflow {
     }
 
     @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory, SecretPersistence secretPersistence, Path workspaceRoot, AirbyteConfigValidator validator) {
+    DbtTransformationActivityImpl(ProcessFactory processFactory,
+                                  SecretPersistence secretPersistence,
+                                  Path workspaceRoot,
+                                  AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;
@@ -377,8 +386,8 @@ public interface SyncWorkflow {
         final var fullDestinationConfig = SecretsHelpers.combineConfig(partialDestinationConfig, secretPersistence);
 
         final var fullInput = new OperatorDbtInput()
-                .withOperatorDbt(partialInput.getOperatorDbt())
-                .withDestinationConfiguration(fullDestinationConfig);
+            .withOperatorDbt(partialInput.getOperatorDbt())
+            .withDestinationConfiguration(fullDestinationConfig);
 
         validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
         return fullInput;
