@@ -56,7 +56,6 @@ public abstract class BaseDatabaseConfigPersistenceTest {
 
   @BeforeAll
   public static void dbSetup() {
-    YamlSeedConfigPersistence.initialize(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
