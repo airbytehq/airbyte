@@ -260,7 +260,7 @@ public class ArchiveHandlerTest {
         .workspaceId(secondWorkspaceId));
     assertEquals(StatusEnum.SUCCEEDED, secondImportResult.getStatus());
 
-    final UUID secondSourceId = configRepository.listSourceConnection()
+    final UUID secondSourceId = configRepository.listSourceConnectionWithSecrets()
         .stream()
         .filter(sourceConnection -> secondWorkspaceId.equals(sourceConnection.getWorkspaceId()))
         .map(SourceConnection::getSourceId)

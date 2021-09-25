@@ -26,6 +26,7 @@ package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.client.util.Preconditions;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -44,13 +45,17 @@ import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import org.apache.commons.lang3.NotImplementedException;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ConfigRepository {
@@ -208,16 +213,20 @@ public class ConfigRepository {
       final var previousSourceConnection = getOptionalSourceConnection(source.getSourceId());
       final var splitConfig = getSplitSourceConfig(previousSourceConnection, source, connectorSpecification);
 
-      // todo: should figure out how to do this more transactionally with getSplitSourceConfig /
-      // getSplitDestinationConfig
       splitConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
 
-      // todo: can we do this better without editing the input object? SourceConnection doesn't have a
-      // deepCopy but we could reserialize
-      source.setConfiguration(splitConfig.getPartialConfig());
-    }
+      final var partialSourceConnection = new SourceConnection()
+              .withSourceId(source.getSourceId())
+              .withName(source.getName())
+              .withSourceDefinitionId(source.getSourceDefinitionId())
+              .withTombstone(source.getTombstone())
+              .withWorkspaceId(source.getWorkspaceId())
+              .withConfiguration(splitConfig.getPartialConfig());
 
-    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
+      persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), partialSourceConnection);
+    } else {
+      persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
+    }
   }
 
   private SplitSecretConfig getSplitSourceConfig(final Optional<SourceConnection> previousSource,
@@ -240,10 +249,20 @@ public class ConfigRepository {
     }
   }
 
-  // todo: what should list source connection return? full or partial?
-  // probably partial if it isn't used for migrations
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+  }
+
+  public List<SourceConnection> listSourceConnectionWithSecrets() throws JsonValidationException, IOException {
+    final var sources = listSourceConnection();
+
+    if(secretPersistence.isPresent()) {
+      return sources.stream()
+              .map(partialSource -> Exceptions.toRuntime(() -> getSourceConnectionWithSecrets(partialSource.getSourceId())))
+              .collect(Collectors.toList());
+    } else {
+      return sources;
+    }
   }
 
   public DestinationConnection getDestinationConnection(final UUID destinationId)
@@ -281,17 +300,23 @@ public class ConfigRepository {
     validator.ensure(connectorSpecification.getConnectionSpecification(), destination.getConfiguration());
 
     if (secretPersistence.isPresent()) {
-      final var previousDestination = getOptionalDestinationConnection(destination.getDestinationId());
-      final var splitConfig = getSplitDestinationConfig(previousDestination, destination, connectorSpecification);
+      final var previousDestinationConnection = getOptionalSourceConnection(destination.getDestinationId());
+      final var splitConfig = getSplitSourceConfig(previousDestinationConnection, destination, connectorSpecification);
 
       splitConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
 
-      // todo: can we do this better without editing the input object? DestinationCOnnection doesn't have
-      // a deepCopy but we could reserialize
-      destination.setConfiguration(splitConfig.getPartialConfig());
-    }
+      final var partialDestinationConnection = new DestinationConnection()
+              .withDestinationId(destination.getDestinationId())
+              .withName(destination.getName())
+              .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+              .withTombstone(destination.getTombstone())
+              .withWorkspaceId(destination.getWorkspaceId())
+              .withConfiguration(splitConfig.getPartialConfig());
 
-    persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
+      persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, destination.getDestinationId().toString(), partialDestinationConnection);
+    } else {
+      persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, destination.getDestinationId().toString(), destination);
+    }
   }
 
   private SplitSecretConfig getSplitDestinationConfig(final Optional<DestinationConnection> previousDestination,
@@ -314,10 +339,20 @@ public class ConfigRepository {
     }
   }
 
-  // todo: what should list source connection return? full or partial?
-  // probably partial if it isn't used for migrations
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+  }
+
+  public List<DestinationConnection> listDestinationConnectionWithSecrets() throws JsonValidationException, IOException {
+    final var destinations = listDestinationConnection();
+
+    if(secretPersistence.isPresent()) {
+      return destinations.stream()
+              .map(partialDestination -> Exceptions.toRuntime(() -> getDestinationConnectionWithSecrets(partialDestination.getDestinationId())))
+              .collect(Collectors.toList());
+    } else {
+      return destinations;
+    }
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -394,17 +429,42 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
-  // todo: support here
+  // todo: should replaceAllConfigs just write individual configs using their proper call instead of having a
+  // replaceAllConfigs at the persistence layer? It'd be slower if there's a batching mechanism, but without it
+  // there really isn't a great way of handling secrets injection
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    persistence.replaceAllConfigs(configs, dryRun);
+    if(secretPersistence.isPresent()) {
+      throw new NotImplementedException();
+    } else {
+      persistence.replaceAllConfigs(configs, dryRun);
+    }
   }
 
-  // todo: support here
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    return persistence.dumpConfigs();
+    final var persistenceMap = persistence.dumpConfigs();
+    if(secretPersistence.isPresent()) {
+      final var augmentedMap = new HashMap<>(persistenceMap);
+      final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
+      final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
+
+      if(augmentedMap.containsKey(sourceKey)) {
+        final Stream<JsonNode> augmentedValue = augmentedMap.get(sourceKey)
+                .map(config -> SecretsHelpers.combineConfig(config, secretPersistence.get()));
+        augmentedMap.put(sourceKey, augmentedValue);
+      }
+
+      if(augmentedMap.containsKey(destinationKey)) {
+        final Stream<JsonNode> augmentedValue = augmentedMap.get(destinationKey)
+                .map(config -> SecretsHelpers.combineConfig(config, secretPersistence.get()));
+        augmentedMap.put(destinationKey, augmentedValue);
+      }
+
+      return augmentedMap;
+    } else {
+      return persistenceMap;
+    }
   }
 
-  // todo: support here
   public void loadData(ConfigPersistence seedPersistence) throws IOException {
     persistence.loadData(seedPersistence);
   }
