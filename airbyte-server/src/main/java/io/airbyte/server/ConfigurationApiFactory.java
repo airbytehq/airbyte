@@ -27,6 +27,7 @@ package io.airbyte.server;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -49,6 +50,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Map<String, String> mdc;
   private static Database configsDatabase;
   private static Database jobsDatabase;
+  private static SecretPersistence ephemeralSecretPersistence;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
@@ -87,6 +89,10 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
   }
 
+  public static void setEphemeralSecretPersistence(SecretPersistence ephemeralSecretPersistence) {
+    ConfigurationApiFactory.ephemeralSecretPersistence = ephemeralSecretPersistence;
+  }
+
   @Override
   public ConfigurationApi provide() {
     MDC.setContextMap(mdc);
@@ -100,7 +106,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.archiveTtlManager,
         ConfigurationApiFactory.temporalService,
         ConfigurationApiFactory.configsDatabase,
-        ConfigurationApiFactory.jobsDatabase);
+            ConfigurationApiFactory.jobsDatabase,
+            ConfigurationApiFactory.ephemeralSecretPersistence);
   }
 
   @Override

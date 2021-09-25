@@ -100,6 +100,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -166,7 +167,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final FileTtlManager archiveTtlManager,
                           final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
-                          final Database jobsDatabase) {
+                          final Database jobsDatabase,
+                          final SecretPersistence ephemeralSecretPersistence) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
@@ -176,7 +178,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         synchronousSchedulerClient,
         jobPersistence,
         jobNotifier,
-        temporalService);
+        temporalService,
+        ephemeralSecretPersistence);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);

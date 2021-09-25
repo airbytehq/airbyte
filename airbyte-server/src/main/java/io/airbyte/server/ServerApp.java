@@ -188,6 +188,7 @@ public class ServerApp implements ServerRunnable {
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
     configPersistence.migrateFileConfigs(configs);
     final SecretPersistence secretPersistence = new LocalTestingSecretPersistence(configDatabase); // todo: feature flag on env var
+    final SecretPersistence ephemeralSecretPersistence = new LocalTestingSecretPersistence(configDatabase); // todo: feature flag on env var
     final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation(), Optional.of(secretPersistence));
 
     LOGGER.info("Creating Scheduler persistence...");
@@ -258,7 +259,8 @@ public class ServerApp implements ServerRunnable {
           jobPersistence,
           configDatabase,
           jobDatabase,
-          configs);
+          configs,
+          ephemeralSecretPersistence);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);

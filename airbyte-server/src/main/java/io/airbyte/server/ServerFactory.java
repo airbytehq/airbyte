@@ -27,6 +27,7 @@ package io.airbyte.server;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
@@ -46,7 +47,8 @@ public interface ServerFactory {
                         JobPersistence jobPersistence,
                         Database configsDatabase,
                         Database jobsDatabase,
-                        Configs configs);
+                        Configs configs,
+                        SecretPersistence ephemeralSecretPersistence);
 
   class Api implements ServerFactory {
 
@@ -58,7 +60,8 @@ public interface ServerFactory {
                                  JobPersistence jobPersistence,
                                  Database configsDatabase,
                                  Database jobsDatabase,
-                                 Configs configs) {
+                                 Configs configs,
+                                 SecretPersistence ephemeralSecretPersistence) {
       // set static values for factory
       ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
       ConfigurationApiFactory.setSynchronousSchedulerClient(cachingSchedulerClient);
@@ -69,6 +72,7 @@ public interface ServerFactory {
       ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
       ConfigurationApiFactory.setMdc(MDC.getCopyOfContextMap());
       ConfigurationApiFactory.setDatabases(configsDatabase, jobsDatabase);
+      ConfigurationApiFactory.setEphemeralSecretPersistence(ephemeralSecretPersistence);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);
