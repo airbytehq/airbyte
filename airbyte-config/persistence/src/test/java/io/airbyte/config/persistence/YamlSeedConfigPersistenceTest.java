@@ -37,11 +37,17 @@ import io.airbyte.config.StandardWorkspace;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class YamlSeedConfigPersistenceTest {
 
-  private static final YamlSeedConfigPersistence PERSISTENCE = YamlSeedConfigPersistence.get();
+  private static YamlSeedConfigPersistence PERSISTENCE;
+
+  @BeforeAll
+  static void setup() {
+    PERSISTENCE = YamlSeedConfigPersistence.getDefault();
+  }
 
   @Test
   public void testGetConfig() throws Exception {
@@ -75,7 +81,7 @@ public class YamlSeedConfigPersistenceTest {
 
   @Test
   public void testDumpConfigs() {
-    Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
+    final Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
     assertEquals(2, allSeedConfigs.size());
     assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
     assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
