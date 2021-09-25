@@ -32,13 +32,14 @@ from google.ads.googleads.v8.services.services.google_ads_service.pagers import 
 from .google_ads import GoogleAds
 
 
-def chunk_date_range(start_date: str, conversion_window: int, field: str, end_date: str = None) -> Iterable[
+def chunk_date_range(start_date: str, conversion_window: int, field: str, report_name: str, end_date: str = None) -> Iterable[
     Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
+
     intervals = []
     end_date = pendulum.parse(end_date) if end_date else pendulum.now()
     start_date = pendulum.parse(start_date)
@@ -53,7 +54,10 @@ def chunk_date_range(start_date: str, conversion_window: int, field: str, end_da
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < end_date:
         intervals.append({field: start_date.to_date_string()})
-        start_date = start_date.add(months=1)
+        if report_name == 'click_view':
+            start_date = start_date.add(days=1)
+        else:
+            start_date = start_date.add(months=1)
 
     return intervals
 
@@ -86,7 +90,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         start_date = stream_state.get(self.cursor_field) or self._start_date
 
         return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days,
-                                field=self.cursor_field)
+                                field=self.cursor_field, report_name=self.name)
 
     @staticmethod
     def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
