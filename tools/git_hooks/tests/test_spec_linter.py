@@ -24,6 +24,7 @@
 import json
 import unittest.mock as mock
 
+import pytest
 import spec_linter
 
 
@@ -47,44 +48,44 @@ def test_fetch_oneof_schemas():
     assert schemas[1] == {"properties": {2: 2}}
 
 
-def test_validate_field_no_title():
-    schema = {"type": "string", "description": "Format: YYYY-MM-DDTHH:mm:ss[Z]."}
+@pytest.mark.parametrize(
+    "schema,error_text",
+    [
+        ({"type": "string", "title": "Field"}, "Check failed for field"),
+        ({"type": "string", "description": "Format: YYYY-MM-DDTHH:mm:ss[Z]."}, "Check failed for field"),
+        (
+            {"type": "string", "title": "Field", "description": "Format: YYYY-MM-DDTHH:mm:ss[Z].", "oneOf": "invalid"},
+            "Incorrect oneOf schema in field",
+        ),
+        (
+            {
+                "type": "string",
+                "title": "Field",
+                "description": "Format: YYYY-MM-DDTHH:mm:ss[Z].",
+                "examples": ["2020-01-01T00:00:00Z"],
+                "oneOf": [1, 2, 3],
+            },
+            "Incorrect oneOf schema in field",
+        ),
+    ],
+)
+def test_validate_field(schema, error_text):
     errors = spec_linter.validate_field("field", schema, [])
     assert len(errors) == 1
-    assert "Check failed for field" in errors[0]
+    assert error_text in errors[0]
 
 
-def test_validate_field_no_description():
-    schema = {"type": "string", "title": "Field", "examples": ["2020-01-01T00:00:00Z"]}
-    errors = spec_linter.validate_field("field", schema, [])
-    assert len(errors) == 1
-    assert "Check failed for field" in errors[0]
-
-
-def test_validate_field_oneof_failed():
+def test_validate_field_invalid_schema_and_oneof():
     schema = {
         "type": "string",
-        "title": "Field",
         "description": "Format: YYYY-MM-DDTHH:mm:ss[Z].",
         "examples": ["2020-01-01T00:00:00Z"],
         "oneOf": [1, 2, 3],
     }
-    errors = spec_linter.validate_field("field", schema, [])
-    assert len(errors) == 1
-    assert "Incorrect oneOf schema in field" in errors[0]
-
-
-def test_validate_field_oneof_not_array():
-    schema = {
-        "type": "string",
-        "title": "Field",
-        "description": "Format: YYYY-MM-DDTHH:mm:ss[Z].",
-        "examples": ["2020-01-01T00:00:00Z"],
-        "oneOf": "invalid",
-    }
-    errors = spec_linter.validate_field("field", schema, [])
-    assert len(errors) == 1
-    assert "Incorrect oneOf schema in field" in errors[0]
+    errors = spec_linter.validate_field("field", schema, ["root"])
+    assert len(errors) == 2
+    assert "Check failed for field" in errors[0]
+    assert "Incorrect oneOf schema in field" in errors[1]
 
 
 def test_read_spec_file():
@@ -104,10 +105,10 @@ def test_read_spec_file():
         assert not spec_linter.read_spec_file("path_1")
 
 
-def test_validate_schema():
+def test_validate_schema_failed():
     schema = {
         "access_token": {"type": "string", "airbyte_secret": True, "description": "API Key."},
-        "store_name": {"type": "string", "description": "Store name."},
+        "store_name": {"type": "string", "title": "Store name."},
         "start_date": {
             "title": "Start Date",
             "type": "string",
@@ -120,3 +121,18 @@ def test_validate_schema():
     assert len(errors) == 2
     assert "Check failed for field" in errors[0] and "root.access_token" in errors[0]
     assert "Check failed for field" in errors[1] and "root.store_name" in errors[1]
+
+
+def test_validate_schema_success():
+    schema = {
+        "access_token": {"type": "string", "airbyte_secret": True, "description": "API Key.", "title": "Key"},
+        "store_name": {"type": "string", "description": "My description", "title": "My name"},
+        "limit": {
+            "title": "Records Limit",
+            "type": "integer",
+            "description": "Just a limit",
+        },
+    }
+
+    errors = spec_linter.validate_schema("path", schema, ["root"])
+    assert len(errors) == 0

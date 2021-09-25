@@ -41,7 +41,7 @@ How spec file validation works:
 import json
 import logging
 import sys
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Tuple
 
 # required fields for each property field in spec
 FIELDS_TO_CHECK = {"title", "description"}
@@ -50,29 +50,40 @@ logging.basicConfig(format="%(message)s")
 
 
 def read_spec_file(spec_path: str) -> bool:
-    errors: List[str] = []
+    errors: List[Tuple[str, Optional[str]]] = []
     with open(spec_path) as json_file:
         try:
             root_schema = json.load(json_file)["connectionSpecification"]["properties"]
         except (KeyError, TypeError):
-            errors.append("Couldn't find properties in connector spec.json")
+            errors.append(("Couldn't find properties in connector spec.json", None))
         except json.JSONDecodeError:
-            errors.append("Couldn't parse json file")
+            errors.append(("Couldn't parse json file", None))
         else:
             errors.extend(validate_schema(spec_path, root_schema))
 
-    for msg in errors:
-        logging.error(f"\033[1m{spec_path}\033[0m:{msg}")
+    for err_msg, err_field in errors:
+        print_error(spec_path, err_msg, err_field)
 
     return False if errors else True
+
+
+def print_error(spec_path: str, error_message: str, failed_field: Optional[str] = None) -> None:
+    """
+    Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>
+    """
+    error = f"\033[1m{spec_path}\033[0m: {error_message}"
+    if failed_field:
+        error += f" \x1b[31;1m{failed_field}\033[0m"
+
+    logging.error(error)
 
 
 def validate_schema(
     spec_path: str,
     schema: Mapping[str, Any],
     parent_fields: Optional[List[str]] = None,
-) -> List[str]:
-    errors: List[str] = []
+) -> List[Tuple[str, str]]:
+    errors: List[Tuple[str, str]] = []
     parent_fields = parent_fields if parent_fields else []
     for field_name, field_schema in schema.items():
         errors.extend(validate_field(field_name, field_schema, parent_fields))
@@ -102,20 +113,20 @@ def validate_field(
     field_name: str,
     schema: Mapping[str, Any],
     parent_fields: Optional[List[str]] = None,
-) -> List[str]:
+) -> List[Tuple[str, str]]:
     """
     Validates single field objects and return errors if thay are exist
     """
-    errors: List[str] = []
+    errors: List[Tuple[str, str]] = []
     full_field_name = get_full_field_name(field_name, parent_fields)
 
     if not FIELDS_TO_CHECK.issubset(schema.keys()):
-        errors.append("Check failed for field")
+        errors.append(("Check failed for field", full_field_name))
 
     if schema.get("oneOf") and (schema["type"] != "object" or not isinstance(schema["oneOf"], list)):
-        errors.append("Incorrect oneOf schema in field")
+        errors.append(("Incorrect oneOf schema in field", full_field_name))
 
-    return [f"{e} \x1b[31;1m{full_field_name}\033[0m" for e in errors]
+    return errors
 
 
 def get_full_field_name(field_name: str, parent_fields: Optional[List[str]] = None) -> str:
