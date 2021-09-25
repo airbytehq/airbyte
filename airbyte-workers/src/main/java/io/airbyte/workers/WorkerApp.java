@@ -110,7 +110,6 @@ public class WorkerApp {
     discoverWorker
         .registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, secretPersistence, workspaceRoot));
 
-    // todo: handle normalization secrets
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
