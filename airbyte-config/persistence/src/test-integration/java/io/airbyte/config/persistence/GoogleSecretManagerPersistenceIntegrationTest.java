@@ -45,7 +45,7 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
   @BeforeEach
   void setUp() {
     final var configs = new EnvConfigs();
-    persistence = new GoogleSecretManagerPersistence(
+    persistence = GoogleSecretManagerPersistence.getEphemeral(
         configs.getSecretStoreGcpProjectId(),
         configs.getSecretStoreGcpCredentials());
     baseCoordinate = "GoogleSecretManagerPersistenceIntegrationTest_coordinate_" + RandomUtils.nextInt() % 20000;
@@ -55,6 +55,8 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
   void tearDown() throws IOException {
     final var configs = new EnvConfigs();
     try (final var client = GoogleSecretManagerPersistence.getSecretManagerServiceClient(configs.getSecretStoreGcpCredentials())) {
+      // try to delete this so we aren't charged for the secret
+      // if this is missed due to some sort of failure the secret will be deleted after the ttl
       client.deleteSecret(SecretName.of(
           configs.getSecretStoreGcpProjectId(),
           baseCoordinate));
@@ -63,13 +65,14 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
 
   @Test
   void testReadWriteUpdate() {
+    final var coordinate1 = new SecretCoordinate(baseCoordinate, 1);
+
     // try reading non-existent value
-    final var firstRead = persistence.read(new SecretCoordinate(baseCoordinate, 1));
+    final var firstRead = persistence.read(coordinate1);
     assertTrue(firstRead.isEmpty());
 
     // write
     final var firstPayload = "abc";
-    final var coordinate1 = new SecretCoordinate(baseCoordinate, 1);
     persistence.write(coordinate1, firstPayload);
     final var secondRead = persistence.read(coordinate1);
     assertTrue(secondRead.isPresent());

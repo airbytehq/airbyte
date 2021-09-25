@@ -35,7 +35,11 @@ import com.google.cloud.secretmanager.v1.SecretName;
 import com.google.cloud.secretmanager.v1.SecretPayload;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Duration;
 import io.airbyte.commons.lang.Exceptions;
+import org.joda.time.Days;
+
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -61,12 +65,36 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
    */
   private static final String LATEST = "latest";
 
+  private static final Duration EPHEMERAL_TTL = Duration.newBuilder()
+          .setSeconds(Days.days(5).toStandardSeconds().getSeconds())
+          .build();
+
   private final String gcpProjectId;
   private final Supplier<SecretManagerServiceClient> clientSupplier;
 
-  public GoogleSecretManagerPersistence(final String gcpProjectId, final String gcpCredentialsJson) {
+  private final @Nullable Duration ttl;
+
+  /**
+   * Creates a persistence with an infinite TTL for stored secrets.
+   * Used for source/destination config secret storage.
+   */
+  public static GoogleSecretManagerPersistence getLongLived(final String gcpProjectId, final String gcpCredentialsJson) {
+    return new GoogleSecretManagerPersistence(gcpProjectId, gcpCredentialsJson, null);
+  }
+
+  /**
+   * Creates a persistence with a relatively short TTL for stored secrets.
+   * Used for temporary operations such as check/discover operations where we need to use secret storage to
+   * communicate from the server to Temporal, but where we don't want to maintain the secrets indefinitely.
+   */
+  public static GoogleSecretManagerPersistence getEphemeral(final String gcpProjectId, final String gcpCredentialsJson) {
+    return new GoogleSecretManagerPersistence(gcpProjectId, gcpCredentialsJson, EPHEMERAL_TTL);
+  }
+
+  private GoogleSecretManagerPersistence(final String gcpProjectId, final String gcpCredentialsJson, final @Nullable Duration ttl) {
     this.gcpProjectId = gcpProjectId;
     this.clientSupplier = () -> Exceptions.toRuntime(() -> getSecretManagerServiceClient(gcpCredentialsJson));
+    this.ttl = ttl;
   }
 
   @Override
@@ -88,11 +116,13 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
             .setAutomatic(Replication.Automatic.newBuilder().build())
             .build();
 
-        final var secretConfiguration = Secret.newBuilder()
-            .setReplication(replicationPolicy)
-            .build();
+        final var secretBuilder = Secret.newBuilder().setReplication(replicationPolicy);
 
-        client.createSecret(gcpProjectId, coordinate.getFullCoordinate(), secretConfiguration);
+        if(ttl != null) {
+          secretBuilder.setTtl(ttl);
+        }
+
+        client.createSecret(gcpProjectId, coordinate.getFullCoordinate(), secretBuilder.build());
       }
 
       final var name = SecretName.of(gcpProjectId, coordinate.getFullCoordinate());
