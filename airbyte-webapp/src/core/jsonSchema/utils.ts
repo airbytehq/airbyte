@@ -12,14 +12,14 @@ function removeNestedPaths(
     return schema;
   }
 
-  const { properties, oneOf, ...restschema } = schema;
+  const resultSchema: JSONSchema7 = schema;
 
-  const resultSchema: JSONSchema7 = restschema;
-
+  const oneOf = schema.oneOf;
   if (oneOf) {
-    resultSchema.oneOf = oneOf?.map((o) => removeNestedPaths(o, pathList));
+    resultSchema.oneOf = oneOf.map((o) => removeNestedPaths(o, pathList));
   }
 
+  const properties = schema.properties;
   if (properties) {
     const filteredProperties: Record<string, JSONSchema7Definition> = {};
 
@@ -31,7 +31,11 @@ function removeNestedPaths(
       }
 
       if (matchingPaths.some((p) => p.length === 1)) {
-        // this path is excluded. No need to deep dive
+        if (schema.required) {
+          resultSchema.required = schema.required?.filter(
+            (requiredFiled) => requiredFiled !== propertiesKey
+          );
+        }
       } else {
         const innerPath = matchingPaths.map(([, ...rest]) => rest);
 
@@ -40,9 +44,8 @@ function removeNestedPaths(
           innerPath
         );
       }
+      resultSchema.properties = filteredProperties;
     }
-
-    resultSchema.properties = filteredProperties;
   }
 
   return resultSchema;

@@ -134,7 +134,7 @@ export function useRunOauthFlow(
 
       return false;
     },
-    [connector]
+    [connector, values]
   );
 
   const onOathGranted = useCallback(

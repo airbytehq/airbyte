@@ -4,6 +4,7 @@ import { removeNestedPaths } from "./utils";
 test("should filter paths", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
+    required: ["host", "name"],
     properties: {
       host: { type: "string" },
       port: { type: "string" },
@@ -27,6 +28,7 @@ test("should filter paths", () => {
   const filtered = removeNestedPaths(schema, [["host"], ["ssl"]]);
 
   expect(filtered).toEqual({
+    required: ["name"],
     properties: {
       db: {
         properties: {
@@ -100,7 +102,7 @@ test("should exclude nested paths", () => {
   });
 });
 
-test("should paths in oneOf", () => {
+test("should exclude paths in oneOf", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     properties: {
