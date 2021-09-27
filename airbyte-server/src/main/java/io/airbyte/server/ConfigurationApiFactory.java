@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
@@ -42,6 +43,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static WorkflowServiceStubs temporalService;
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
+  private static ConfigPersistence seed;
   private static SchedulerJobClient schedulerJobClient;
   private static CachingSynchronousSchedulerClient synchronousSchedulerClient;
   private static Configs configs;
@@ -50,50 +52,39 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Database configsDatabase;
   private static Database jobsDatabase;
 
-  public static void setConfigRepository(final ConfigRepository configRepository) {
+  public static void setValues(
+                               final WorkflowServiceStubs temporalService,
+                               final ConfigRepository configRepository,
+                               final JobPersistence jobPersistence,
+                               final ConfigPersistence seed,
+                               final SchedulerJobClient schedulerJobClient,
+                               final CachingSynchronousSchedulerClient synchronousSchedulerClient,
+                               final Configs configs,
+                               final FileTtlManager archiveTtlManager,
+                               final Map<String, String> mdc,
+                               final Database configsDatabase,
+                               final Database jobsDatabase) {
     ConfigurationApiFactory.configRepository = configRepository;
-  }
-
-  public static void setJobPersistence(final JobPersistence jobPersistence) {
     ConfigurationApiFactory.jobPersistence = jobPersistence;
-  }
-
-  public static void setSchedulerJobClient(final SchedulerJobClient schedulerJobClient) {
+    ConfigurationApiFactory.seed = seed;
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
-  }
-
-  public static void setSynchronousSchedulerClient(final CachingSynchronousSchedulerClient synchronousSchedulerClient) {
     ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
-  }
-
-  public static void setConfigs(Configs configs) {
     ConfigurationApiFactory.configs = configs;
-  }
-
-  public static void setArchiveTtlManager(final FileTtlManager archiveTtlManager) {
     ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
-  }
-
-  public static void setMdc(Map<String, String> mdc) {
     ConfigurationApiFactory.mdc = mdc;
-  }
-
-  public static void setTemporalService(final WorkflowServiceStubs temporalService) {
     ConfigurationApiFactory.temporalService = temporalService;
-  }
-
-  public static void setDatabases(final Database configsDatabase, final Database jobsDatabase) {
     ConfigurationApiFactory.configsDatabase = configsDatabase;
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
   }
 
   @Override
   public ConfigurationApi provide() {
-    MDC.setContextMap(mdc);
+    MDC.setContextMap(ConfigurationApiFactory.mdc);
 
     return new ConfigurationApi(
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
+        ConfigurationApiFactory.seed,
         ConfigurationApiFactory.schedulerJobClient,
         ConfigurationApiFactory.synchronousSchedulerClient,
         ConfigurationApiFactory.configs,
@@ -104,7 +95,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   }
 
   @Override
-  public void dispose(ConfigurationApi service) {
+  public void dispose(final ConfigurationApi service) {
     /* noop */
   }
 

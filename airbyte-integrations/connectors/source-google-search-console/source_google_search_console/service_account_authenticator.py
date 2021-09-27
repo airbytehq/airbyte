@@ -22,21 +22,22 @@
 # SOFTWARE.
 #
 
-import pendulum
-from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
-from oauth2client.service_account import ServiceAccountCredentials
+import requests
+from google.auth.transport.requests import Request
+from google.oauth2.service_account import Credentials
+from requests.auth import AuthBase
 
 DEFAULT_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 
 
-class ServiceAccountAuthenticator(Oauth2Authenticator):
-    def __init__(self, service_account_info, scopes=None):
+class ServiceAccountAuthenticator(AuthBase):
+    def __init__(self, service_account_info: str, email: str, scopes=None):
         self.scopes = scopes or DEFAULT_SCOPES
-        self.credentials = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, self.scopes)
-        self._access_token = None
-        self._access_token_object = None
-        self._token_expiry_date = pendulum.now().subtract(days=1)
+        self.credentials: Credentials = Credentials.from_service_account_info(service_account_info, scopes=self.scopes).with_subject(email)
 
-    def refresh_access_token(self):
-        self._access_token_object = self.credentials.get_access_token()
-        return self._access_token_object.access_token, self._access_token_object.expires_in
+    def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
+        if not self.credentials.valid:
+            # We pass a dummy request because the refresh iface requires it
+            self.credentials.refresh(Request())
+        self.credentials.apply(request.headers)
+        return request

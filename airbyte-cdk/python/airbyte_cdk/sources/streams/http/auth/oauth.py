@@ -39,12 +39,21 @@ class Oauth2Authenticator(HttpAuthenticator):
     The generated access token is attached to each request via the Authorization header.
     """
 
-    def __init__(self, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str, scopes: List[str] = None):
+    def __init__(
+        self,
+        token_refresh_endpoint: str,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str,
+        scopes: List[str] = None,
+        refresh_access_token_headers: Mapping[str, Any] = None,
+    ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
         self.client_id = client_id
         self.refresh_token = refresh_token
         self.scopes = scopes
+        self.refresh_access_token_headers = refresh_access_token_headers
 
         self._token_expiry_date = pendulum.now().subtract(days=1)
         self._access_token = None
@@ -83,7 +92,12 @@ class Oauth2Authenticator(HttpAuthenticator):
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=self.get_refresh_request_body(),
+                headers=self.refresh_access_token_headers,
+            )
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
