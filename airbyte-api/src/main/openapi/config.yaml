@@ -1940,7 +1940,7 @@ components:
           type: string
           enum: ["oauth2.0"] # Future auth types should be added here
         oauth2Specification:
-          description: If the connector supports OAuth, this field should be non-null.
+          "$ref": "#/components/schemas/OAuth2Specification"
     OAuth2Specification:
       description: An object containing any metadata needed to describe this connector's Oauth flow
       type: object
