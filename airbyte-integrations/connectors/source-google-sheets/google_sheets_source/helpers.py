@@ -29,8 +29,8 @@ from typing import Dict, FrozenSet, Iterable, List
 
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
 from base_python import AirbyteLogger
-from google.oauth2 import service_account
 from google.oauth2 import credentials as client_account
+from google.oauth2 import service_account
 from googleapiclient import discovery
 
 from .models.spreadsheet import RowData, Spreadsheet
@@ -54,7 +54,7 @@ class Helpers(object):
         if credentials.get("auth_type") == "Service":
             return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
         elif credentials.pop("auth_type") == "Client":
-            return client_account.Credentials.from_authorized_user_info(info=credentials, scopes=scopes)
+            return client_account.Credentials.from_authorized_user_info(info=credentials)
 
     @staticmethod
     def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:

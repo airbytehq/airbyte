@@ -4,18 +4,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["spreadsheet_id", "credentials_json"],
+    "required": ["spreadsheet_id", "credentials"],
     "additionalProperties": false,
     "properties": {
       "spreadsheet_id": {
         "type": "string",
         "description": "The ID of the spreadsheet to be replicated."
       },
-      "authorization": {
+      "credentials": {
         "type": "object",
         "oneOf": [
           {
-            "title": "Client Auth",
+            "title": "Authenticate via Google (Oauth)",
             "type": "object",
             "required": [
               "auth_type",
@@ -29,24 +29,27 @@
                 "const": "Client"
               },
               "client_id": {
+                "title": "Client ID",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "The Client ID of your developer application",
                 "airbyte_secret": true
               },
               "client_secret": {
+                "title": "Client Secret",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "The client secret of your developer application",
                 "airbyte_secret": true
               },
               "refresh_token": {
+                "title": "Refresh Token",
                 "type": "string",
-                "description": "Input this field if you want authorize through personal account",
+                "description": "A refresh token generated using the above client ID and secret",
                 "airbyte_secret": true
               }
             }
           },
           {
-            "title": "Service Auth",
+            "title": "Service Account Key Authentication",
             "type": "object",
             "required": ["auth_type", "service_account_info"],
             "properties": {
@@ -56,7 +59,7 @@
               },
               "service_account_info": {
                 "type": "string",
-                "description": "The contents of the JSON service account key. See the <a href=\"https://docs.airbyte.io/integrations/sources/google-sheets\">docs</a> for more information on how to generate this key.",
+                 "description": "The JSON key of the service account to use for authorization",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 ]
@@ -65,6 +68,16 @@
           }
         ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "oauthFlowInitParameters": [
+        ["credentials", "client_id"],
+        ["credentials", "client_secret"],
+        ["credentials", "refresh_token"]
+      ]
     }
   }
 }
