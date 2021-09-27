@@ -244,6 +244,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         now = datetime.utcnow()
         if not start_report_date:
             start_report_date = now
+        
+        # You cannot pull data for amazon ads more than 60 days
+        if (now - start_report_date).days > 59:
+            start_report_date = now + timedelta(days=-59)
 
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
@@ -262,8 +266,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             start_date = stream_state.get(self.cursor_field)
             if start_date:
                 start_date = pendulum.from_format(start_date, ReportStream.REPORT_DATE_FORMAT, tz="UTC")
-                # We already processed records for date specified in stream state, move to the day after
-                start_date += timedelta(days=1)
+                # Amazon ads updates the data for the next 3 days
+                start_date += timedelta(days=-3)
             else:
                 start_date = self._start_date
 
