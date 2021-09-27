@@ -66,7 +66,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return toDatabaseConfigStatic(config);
   }
 
-  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor. the current structure forces us to declarehave a bunch of pure function methods as instance members when they could be static.
+  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor. the
+  // current structure forces us to declarehave a bunch of pure function methods as instance members
+  // when they could be static.
   public JsonNode toDatabaseConfigStatic(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 

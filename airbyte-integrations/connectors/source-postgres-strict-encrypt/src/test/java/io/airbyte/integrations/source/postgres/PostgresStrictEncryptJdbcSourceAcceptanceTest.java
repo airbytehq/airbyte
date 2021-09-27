@@ -90,7 +90,7 @@ class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptance
 
   @Override
   public Source getSource() {
-     return new PostgresSourceStrictEncrypt();
+    return new PostgresSourceStrictEncrypt();
   }
 
   @Override
