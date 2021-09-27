@@ -125,6 +125,8 @@ class API:
 
     def __init__(self, credentials: Mapping[str, Any]):
         self._credentials = {**credentials}
+        if "token_expires" in credentials:
+            self._credentials["token_expires"] = pendulum.parse(self._credentials["token_expires"]).naive()
         self._session = requests.Session()
         self._session.headers = {
             "Content-Type": "application/json",
@@ -525,7 +527,9 @@ class CRMObjectStream(Stream):
         """Entity URL"""
         return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(self, entity: str = None, associations: List[str] = None, include_archived_only: bool = False, **kwargs):
+    def __init__(
+        self, entity: Optional[str] = None, associations: Optional[List[str]] = None, include_archived_only: bool = False, **kwargs
+    ):
         super().__init__(**kwargs)
         self.entity = entity or self.entity
         self.associations = associations or self.associations
