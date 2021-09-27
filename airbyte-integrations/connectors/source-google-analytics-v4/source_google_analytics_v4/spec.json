@@ -4,8 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics V4 Spec",
     "type": "object",
-    "required": ["credentials", "view_id", "start_date"],
-    "additionalProperties": false,
+    "required": ["view_id", "start_date"],
+    "additionalProperties": true,
     "properties": {
       "view_id": {
         "type": "string",
@@ -73,7 +73,7 @@
           {
             "type": "object",
             "title": "Service Account Key Authentication",
-            "required": ["auth_type", "service_account_info"],
+            "required": ["auth_type", "credentials_json"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -82,7 +82,7 @@
                 "default": "Service",
                 "order": 0
               },
-              "service_account_info": {
+              "credentials_json": {
                 "type": "string",
                 "description": "The JSON key of the service account to use for authorization",
                 "examples": [

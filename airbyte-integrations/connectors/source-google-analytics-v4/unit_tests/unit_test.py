@@ -91,7 +91,7 @@ def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_t
     del test_config["custom_reports"]
     test_config["credentials"] = {
         "auth_type": "Service",
-        "service_account_info": '{"client_email": "", "private_key": "", "private_key_id": ""}',
+        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
     }
     source = SourceGoogleAnalyticsV4()
     assert source.check_connection(MagicMock(), test_config) == (True, None)

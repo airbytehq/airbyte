@@ -410,7 +410,7 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
     """
 
     def __init__(self, config):
-        self.credentials_json = json.loads(config["service_account_info"])
+        self.credentials_json = json.loads(config["credentials_json"])
         self.client_email = self.credentials_json["client_email"]
         self.scope = "https://www.googleapis.com/auth/analytics.readonly"
 
@@ -470,8 +470,10 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     @staticmethod
     def get_authenticator(config):
-        auth_params = config.get("credentials")
+        if config.get("credentials_json"):
+            return GoogleAnalyticsServiceOauth2Authenticator(config)
 
+        auth_params = config.get("credentials")
         if auth_params.pop("auth_type") == "Service":
             return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
         else:
