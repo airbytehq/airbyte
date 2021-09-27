@@ -13,7 +13,7 @@ PipelineWise is an open-source project by Transferwise that was built with the p
 
 ## **Airbyte:**
 
-In contrast, Airbyte is a company fully committed to the open-source MIT project and has a [business model in mind](https://handbook.airbyte.io/) around this project.
+In contrast, Airbyte is a company fully committed to the open-source project and has a [business model in mind](https://handbook.airbyte.io/) around this project.
 
 * Our ambition is to support **300+ connectors by the end of 2021.** We already supported about 50 connectors at the end of 2020, just 5 months after its inception.
 * Airbyte’s connectors are **usable out of the box through a UI and API,** with monitoring, scheduling and orchestration. Airbyte was built on the premise that a user, whatever their background, should be able to move data in 2 minutes. Data engineers might want to use raw data and their own transformation processes, or to use Airbyte’s API to include data integration in their workflows. On the other hand, analysts and data scientists might want to use normalized consolidated data in their database or data warehouses. Airbyte supports all these use cases.  

@@ -12,7 +12,7 @@ We wrote an article, “[The State of Open-Source Data Integration and ETL](http
 
 ## **Airbyte:**
 
-In contrast, Airbyte is a company fully committed to the open-source MIT project and has a [business model](https://handbook.airbyte.io/strategy/business-model) in mind around this project. Our [team](https://airbyte.io/about-us) are data integration experts that have built more than 1,000 integrations collectively at large scale. The team now counts 20 engineers working full-time on Airbyte.
+In contrast, Airbyte is a company fully committed to the open-source project and has a [business model](https://handbook.airbyte.io/strategy/business-model) in mind around this project. Our [team](https://airbyte.io/about-us) are data integration experts that have built more than 1,000 integrations collectively at large scale. The team now counts 20 engineers working full-time on Airbyte.
 
 * **Airbyte supports more than 100 connectors after only 1 year since its inception**, 20% of which were built by the community. Our ambition is to support **200+ connectors by the end of 2021.** 
 * Airbyte’s connectors are **usable out of the box through a UI and API,** with monitoring, scheduling and orchestration. Airbyte was built on the premise that a user, whatever their background, should be able to move data in 2 minutes. Data engineers might want to use raw data and their own transformation processes, or to use Airbyte’s API to include data integration in their workflows. On the other hand, analysts and data scientists might want to use normalized consolidated data in their database or data warehouses. Airbyte supports all these use cases.  

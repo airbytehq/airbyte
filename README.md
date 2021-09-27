@@ -73,5 +73,5 @@ Check out our [roadmap](docs/project-overview/roadmap.md) to get informed on wha
 
 ## License
 
-Airbyte is licensed under the MIT license. See the [LICENSE](docs/project-overview/license.md) file for licensing information.
+See the [LICENSE](docs/project-overview/licenses/README.md) file for licensing information.
 

@@ -23,7 +23,7 @@ redirects:
   changelog: ./project-overview/changelog.md
   changelog/platform: ./project-overview/changelog/platform.md
   changelog/connectors: ./project-overview/changelog/connectors.md
-  license: ./project-overview/license.md
+  license: ./project-overview/licenses/README.md
   tutorials/postgres-replication: ./examples/postgres-replication.md
   tutorials/build-a-slack-activity-dashboard: ./examples/build-a-slack-activity-dashboard.md
   tutorials/zoom-activity-dashboard: ./examples/zoom-activity-dashboard.md
