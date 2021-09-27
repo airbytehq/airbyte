@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.converters;
+package io.airbyte.config.persistence.split_secrets;
 
 import static org.junit.jupiter.api.Assertions.*;
 

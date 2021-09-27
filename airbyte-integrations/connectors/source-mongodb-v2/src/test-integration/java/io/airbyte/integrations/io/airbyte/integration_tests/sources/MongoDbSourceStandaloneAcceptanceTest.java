@@ -26,43 +26,18 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.mongodb.MongoDatabase;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import org.bson.Document;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
+public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
 
   private MongoDBContainer mongoDBContainer;
-  private JsonNode config;
-  private MongoDatabase database;
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-mongodb-v2:dev";
-  }
-
-  @Override
-  protected JsonNode getConfig() throws Exception {
-    return config;
-  }
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
@@ -72,22 +47,22 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", mongoDBContainer.getHost())
         .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
-        .put("database", "test")
+        .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
-        .put("tls", false)
         .build());
 
     String connectionString = String.format("mongodb://%s:%s/",
         mongoDBContainer.getHost(),
         mongoDBContainer.getFirstMappedPort());
 
-    database = new MongoDatabase(connectionString, "test");
+    database = new MongoDatabase(connectionString, DATABASE_NAME);
 
-    MongoCollection<Document> collection = database.createCollection("acceptance_test");
+    MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
     var doc1 = new Document("id", "0001").append("name", "Test");
     var doc2 = new Document("id", "0002").append("name", "Mongo");
     var doc3 = new Document("id", "0003").append("name", "Source");
@@ -99,38 +74,6 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
     database.close();
     mongoDBContainer.close();
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-  }
-
-  @Override
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("_id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withCursorField(List.of("_id"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                "test.acceptance_test",
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
-                .withDefaultCursorField(List.of("_id")))));
-  }
-
-  @Override
-  protected JsonNode getState() throws Exception {
-    return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
   }
 
 }
