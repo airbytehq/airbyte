@@ -68,7 +68,7 @@
     },
     "last_activity_date": {
       "type": ["null", "string"],
-      "format": "time"
+      "format": "date"
     },
     "lost_reason": {
       "type": ["null", "string"]
