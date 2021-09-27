@@ -33,11 +33,11 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSourceStrict extends SpecModifyingSource implements Source {
+public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrict.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrictEncrypt.class);
 
-  PostgresSourceStrict() {
+  PostgresSourceStrictEncrypt() {
     super(PostgresSource.sshWrappedSource());
   }
 
@@ -49,10 +49,10 @@ public class PostgresSourceStrict extends SpecModifyingSource implements Source 
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new PostgresSourceStrict();
-    LOGGER.info("starting source: {}", PostgresSourceStrict.class);
+    final Source source = new PostgresSourceStrictEncrypt();
+    LOGGER.info("starting source: {}", PostgresSourceStrictEncrypt.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", PostgresSourceStrict.class);
+    LOGGER.info("completed source: {}", PostgresSourceStrictEncrypt.class);
   }
 
 }

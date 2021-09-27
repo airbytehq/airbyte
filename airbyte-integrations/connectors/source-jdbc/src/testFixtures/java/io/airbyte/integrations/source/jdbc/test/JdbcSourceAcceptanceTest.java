@@ -99,7 +99,6 @@ public abstract class JdbcSourceAcceptanceTest {
   public JsonNode config;
   public JdbcDatabase database;
   public Source source;
-  public Function<JsonNode, JsonNode> toDatabaseConfig;
   public static String streamName;
 
   /**
@@ -132,11 +131,14 @@ public abstract class JdbcSourceAcceptanceTest {
    *
    * @return source
    */
-  public abstract AbstractJdbcSource getSource();
+  public abstract AbstractJdbcSource getJdbcSource();
 
-  public ImmutablePair<Source, Function<JsonNode, JsonNode>> toDatabaseConfigOverride() {
-    final AbstractJdbcSource source = getSource();
-    return ImmutablePair.of(source, source::toDatabaseConfig);
+  public Source getSource() {
+    return getJdbcSource();
+  }
+
+  public Function<JsonNode, JsonNode> getToDatabaseConfigFunction() {
+    return getJdbcSource()::toDatabaseConfig;
   }
 
   protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
@@ -162,12 +164,9 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   public void setup() throws Exception {
-    final ImmutablePair<Source, Function<JsonNode, JsonNode>> sourceFunctionImmutablePair = toDatabaseConfigOverride();
-    source = sourceFunctionImmutablePair.getLeft();
+    source = getSource();
     config = getConfig();
-    toDatabaseConfig = sourceFunctionImmutablePair.getRight();
-    // final JsonNode jdbcConfig = source.toDatabaseConfig(config);
-    final JsonNode jdbcConfig = toDatabaseConfig.apply(config);
+    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(config);
 
     streamName = TABLE_NAME;
 

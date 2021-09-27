@@ -49,7 +49,7 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class PostgresSourceStrictAcceptanceTest extends SourceAcceptanceTest {
+public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
@@ -102,7 +102,7 @@ public class PostgresSourceStrictAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-postgres-strict:dev";
+    return "airbyte/source-postgres-strict-encrypt:dev";
   }
 
   @Override

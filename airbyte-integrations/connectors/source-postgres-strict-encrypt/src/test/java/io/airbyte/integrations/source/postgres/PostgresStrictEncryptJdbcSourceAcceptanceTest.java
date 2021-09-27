@@ -34,12 +34,11 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.JdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.function.Function;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresStrictJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -85,14 +84,18 @@ class PostgresStrictJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
-    // return new PostgresSourceStrict();
+  public JdbcSource getJdbcSource() {
     return null;
   }
 
   @Override
-  public ImmutablePair<Source, Function<JsonNode, JsonNode>> toDatabaseConfigOverride() {
-    return ImmutablePair.of(new PostgresSourceStrict(), new PostgresSource()::toDatabaseConfig);
+  public Source getSource() {
+     return new PostgresSourceStrictEncrypt();
+  }
+
+  @Override
+  public Function<JsonNode, JsonNode> getToDatabaseConfigFunction() {
+    return new PostgresSource()::toDatabaseConfig;
   }
 
   @Override
