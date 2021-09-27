@@ -27,6 +27,7 @@ import urllib.parse as urlparse
 from abc import ABC
 from collections import deque
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
 import backoff
@@ -313,6 +314,19 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
 
+    @staticmethod
+    def estimate_cost_per_estimated_ad_recallers(record: Mapping[str, Any]):
+        """
+        Sometime cost_per_estimated_ad_recallers isn't returned and it causes test failing
+        In this case cost_per_estimated_ad_recallers can be estimated
+        """
+        spend = Decimal(record.get("spend", "0"))
+        estimated_ad_recallers = Decimal(record.get("estimated_ad_recallers", "0"))
+        cost_per_estimated_ad_recallers = Decimal("0")
+        if estimated_ad_recallers:
+            cost_per_estimated_ad_recallers = spend / estimated_ad_recallers
+        record["cost_per_estimated_ad_recallers"] = str(cost_per_estimated_ad_recallers)
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -325,7 +339,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
         for obj in result.get_result():
-            yield obj.export_all_data()
+            record = obj.export_all_data()
+            if "cost_per_estimated_ad_recallers" not in record:
+                self.estimate_cost_per_estimated_ad_recallers(record)
+            yield record
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
