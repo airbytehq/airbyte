@@ -42,13 +42,6 @@ class IterableStream(HttpStream, ABC):
     # Hardcode the value because it is not returned from the API
     BACKOFF_TIME_CONSTANT = 10.0
     # define date-time fields with potential wrong format
-    DATE_TIME_FIELDS = {
-        "createdAt",
-        "updatedAt",
-        "startAt",
-        "endedAt",
-        "profileUpdatedAt",
-    }
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
@@ -81,29 +74,7 @@ class IterableStream(HttpStream, ABC):
         records = response_json.get(self.data_field, [])
 
         for record in records:
-            yield self._convert_timestamp_fields_to_datetime(record)
-
-    def _convert_timestamp_fields_to_datetime(self, record: Dict[str, Any]):
-        for field in self.DATE_TIME_FIELDS:
-            # check for optional timestamp fields and convert to date-time
-            if record.get(field):
-                record[field] = self._field_to_datetime(record[field])
-
-        return record
-
-    @staticmethod
-    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
-        if isinstance(value, int):
-            # divide by 1000.0, because timestamp present in milliseconds
-            value = pendulum.from_timestamp(value / 1000.0)
-
-        elif isinstance(value, str):
-            value = pendulum.parse(value)
-
-        else:
-            raise ValueError(f"Unsupported type of datetime field {type(value)}")
-
-        return value
+            yield record
 
 
 class IterableExportStream(IterableStream, ABC):
@@ -119,6 +90,16 @@ class IterableExportStream(IterableStream, ABC):
     def path(self, **kwargs) -> str:
         return "/export/data.json"
 
+    @staticmethod
+    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
+        if isinstance(value, int):
+            value = pendulum.from_timestamp(value / 1000.0)
+        elif isinstance(value, str):
+            value = pendulum.parse(value)
+        else:
+            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+        return value
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -126,7 +107,11 @@ class IterableExportStream(IterableStream, ABC):
         """
         latest_benchmark = latest_record[self.cursor_field]
         if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, pendulum.parse(current_stream_state[self.cursor_field])).to_datetime_string()}
+            return {
+                self.cursor_field: max(
+                    latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])
+                ).to_datetime_string()
+            }
         return {self.cursor_field: latest_benchmark.to_datetime_string()}
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
@@ -144,7 +129,9 @@ class IterableExportStream(IterableStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for obj in response.iter_lines():
-            yield self._convert_timestamp_fields_to_datetime(json.loads(obj))
+            record = json.loads(obj)
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            yield record
 
 
 class Lists(IterableStream):
@@ -358,7 +345,7 @@ class Templates(IterableExportStream):
         records = response_json.get(self.data_field, [])
 
         for record in records:
-            yield self._convert_timestamp_fields_to_datetime(record)
+            yield record
 
 
 class Users(IterableExportStream):

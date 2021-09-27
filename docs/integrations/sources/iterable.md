@@ -54,9 +54,9 @@ The Iterable connector should not run into Iterable API limitations under normal
 
 Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
 
-
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.7` | 2021-09-08 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Add new streams: events, campaign metrics |
+| `0.1.8` | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Add new streams: campaign_metrics, events |
+| `0.1.7` | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242) | Updated schema for: campaigns, lists, templates, metadata |
