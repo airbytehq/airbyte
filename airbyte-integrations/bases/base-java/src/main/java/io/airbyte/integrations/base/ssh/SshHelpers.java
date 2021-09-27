@@ -11,6 +11,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 
 public class SshHelpers {
+  public static String SSH_CONFIG_KEY = "tunnel_method";
+  public static String NO_TUNNEL_KEY = "NO_TUNNEL";
 
   public static ConnectorSpecification getSpecAndInjectSsh() throws IOException {
     final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
@@ -20,7 +22,7 @@ public class SshHelpers {
   public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification) throws IOException {
     final ConnectorSpecification originalSpec = Jsons.clone(connectorSpecification);
     final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    propNode.set(SSH_CONFIG_KEY, Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
     return originalSpec;
   }
 
