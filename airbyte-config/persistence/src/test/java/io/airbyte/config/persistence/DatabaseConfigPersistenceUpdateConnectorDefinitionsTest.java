@@ -83,8 +83,8 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @Test
   @DisplayName("When an old connector is in use, if it has all fields, do not update it")
   public void testOldConnectorInUseWithAllFields() throws Exception {
-    StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");
-    StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -96,9 +96,9 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @Test
   @DisplayName("When a old connector is in use, add missing fields, do not update its version")
   public void testOldConnectorInUseWithMissingFields() throws Exception {
-    StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0").withDocumentationUrl(null).withSourceType(null);
-    StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
-    StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.0.0");
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0").withDocumentationUrl(null).withSourceType(null);
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
+    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.0.0");
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -110,8 +110,8 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @Test
   @DisplayName("When an unused connector has a new version, update it")
   public void testUnusedConnectorWithOldVersion() throws Exception {
-    StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");
-    StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -123,9 +123,9 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @Test
   @DisplayName("When an unused connector has missing fields, add the missing fields, do not update its version")
   public void testUnusedConnectorWithMissingFields() throws Exception {
-    StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
-    StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
-    StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
+    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -145,23 +145,23 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
    * @param currentSources all sources currently exist in the database
    * @param currentSourcesInUse a subset of currentSources; sources currently used in data syncing
    */
-  private void assertUpdateConnectorDefinition(List<StandardSourceDefinition> currentSources,
-                                               List<StandardSourceDefinition> currentSourcesInUse,
-                                               List<StandardSourceDefinition> latestSources,
-                                               List<StandardSourceDefinition> expectedUpdatedSources)
+  private void assertUpdateConnectorDefinition(final List<StandardSourceDefinition> currentSources,
+                                               final List<StandardSourceDefinition> currentSourcesInUse,
+                                               final List<StandardSourceDefinition> latestSources,
+                                               final List<StandardSourceDefinition> expectedUpdatedSources)
       throws Exception {
-    for (StandardSourceDefinition source : currentSources) {
+    for (final StandardSourceDefinition source : currentSources) {
       writeSource(configPersistence, source);
     }
 
-    for (StandardSourceDefinition source : currentSourcesInUse) {
+    for (final StandardSourceDefinition source : currentSourcesInUse) {
       assertTrue(currentSources.contains(source), "currentSourcesInUse must exist in currentSources");
     }
 
-    Set<String> sourceRepositoriesInUse = currentSourcesInUse.stream()
+    final Set<String> sourceRepositoriesInUse = currentSourcesInUse.stream()
         .map(StandardSourceDefinition::getDockerRepository)
         .collect(Collectors.toSet());
-    Map<String, ConnectorInfo> currentSourceRepositoryToInfo = currentSources.stream()
+    final Map<String, ConnectorInfo> currentSourceRepositoryToInfo = currentSources.stream()
         .collect(Collectors.toMap(
             StandardSourceDefinition::getDockerRepository,
             s -> new ConnectorInfo(s.getSourceDefinitionId().toString(), Jsons.jsonNode(s))));
@@ -175,14 +175,14 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
             latestSources,
             sourceRepositoriesInUse,
             currentSourceRepositoryToInfo);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new SQLException(e);
       }
       return null;
     });
 
     assertRecordCount(expectedUpdatedSources.size());
-    for (StandardSourceDefinition source : expectedUpdatedSources) {
+    for (final StandardSourceDefinition source : expectedUpdatedSources) {
       assertHasSource(source);
     }
   }
