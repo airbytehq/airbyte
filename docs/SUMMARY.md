@@ -220,6 +220,8 @@
     * [Connectors](project-overview/changelog/connectors.md)
   * [Slack Code of Conduct](project-overview/slack-code-of-conduct.md)
   * [Licenses](project-overview/licenses/README.md)
+    * [ELv2](project-overview/licenses/elv2-license.md)
+    * [MIT](project-overview/licenses/mit-license.md)
 * [Troubleshooting](troubleshooting/README.md)
   * [On Deploying](troubleshooting/on-deploying.md)
   * [On Setting up a New Connection](troubleshooting/new-connection.md)

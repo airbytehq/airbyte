@@ -1,6 +1,6 @@
 # Introduction
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/github/license/airbytehq/airbyte)](./LICENSE)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](./LICENSE) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](./LICENSE)
 
 ![](docs/.gitbook/assets/airbyte_new_logo.svg)
 
