@@ -128,14 +128,28 @@ public abstract class JdbcSourceAcceptanceTest {
   /**
    * An instance of the source that should be tests.
    *
-   * @return source
+   * @return abstract jdbc source
    */
   public abstract AbstractJdbcSource getJdbcSource();
 
+  /**
+   * In some cases the Source that is being tested may be an AbstractJdbcSource, but because it is
+   * decorated, Java cannot recognize it as such. In these cases, as a workaround a user can choose to
+   * override getJdbcSource and have it return null. Then they can override this method with the
+   * decorated source AND override getToDatabaseConfigFunction with the appropriate
+   * toDatabaseConfigFunction that is hidden behind the decorator.
+   *
+   * @return source
+   */
   public Source getSource() {
     return getJdbcSource();
   }
 
+  /**
+   * See getSource() for when to override this method.
+   *
+   * @return a function that maps a source's config to a jdbc config.
+   */
   public Function<JsonNode, JsonNode> getToDatabaseConfigFunction() {
     return getJdbcSource()::toDatabaseConfig;
   }
