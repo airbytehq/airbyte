@@ -103,13 +103,13 @@
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [
-        ["credentials", "client_id"],
-        ["credentials", "client_secret"],
-        ["credentials", "developer_token"]
+        ["client_id"],
+        ["client_secret"],
+        ["developer_token"]
       ],
       "oauthFlowOutputParameters": [
-        ["credentials", "access_token"],
-        ["credentials", "refresh_token"]
+        ["access_token"],
+        ["refresh_token"]
       ]
     }
   }
