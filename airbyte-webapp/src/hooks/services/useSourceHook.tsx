@@ -28,12 +28,12 @@ export const useSourceDefinitionSpecificationLoad = (
   sourceDefinitionId: string
 ): {
   isLoading: boolean;
-  error?: Error;
+  sourceDefinitionError?: Error;
   sourceDefinitionSpecification?: SourceDefinitionSpecification;
 } => {
   const {
     loading: isLoading,
-    error,
+    error: sourceDefinitionError,
     data: sourceDefinitionSpecification,
   } = useStatefulResource(
     SourceDefinitionSpecificationResource.detailShape(),
@@ -44,7 +44,7 @@ export const useSourceDefinitionSpecificationLoad = (
       : null
   );
 
-  return { sourceDefinitionSpecification, error, isLoading };
+  return { sourceDefinitionSpecification, sourceDefinitionError, isLoading };
 };
 
 type SourceService = {

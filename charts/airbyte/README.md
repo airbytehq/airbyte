@@ -4,9 +4,10 @@
 
 ### Global Parameters
 
-| Name                  | Description                                  | Value |
-| --------------------- | -------------------------------------------- | ----- |
-| `global.storageClass` | Global StorageClass for Persistent Volume(s) | `""`  |
+| Name                   | Description                                  | Value |
+| ---------------------- | -------------------------------------------- | ----- |
+| `global.imageRegistry` | Global Docker image registry                 | `""`  |
+| `global.storageClass`  | Global StorageClass for Persistent Volume(s) | `""`  |
 
 
 ### Common Parameters
@@ -18,6 +19,7 @@
 | `serviceAccount.annotations` | Annotations for service account. Evaluated as a template. Only used if `create` is `true`.                          | `{}`            |
 | `serviceAccount.create`      | Specifies whether a ServiceAccount should be created                                                                | `true`          |
 | `serviceAccount.name`        | Name of the service account to use. If not set and create is true, a name is generated using the fullname template. | `airbyte-admin` |
+| `version`                    | Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.                                        | `""`            |
 
 
 ### Webapp Parameters
@@ -27,7 +29,7 @@
 | `webapp.replicaCount`        | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`    | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`    | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`  |
+| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.29.21-alpha`  |
 | `webapp.podAnnotations`      | Add extra annotations to the scheduler pod                       | `{}`             |
 | `webapp.service.type`        | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
@@ -41,6 +43,11 @@
 | `webapp.ingress.annotations` | Ingress annotations done as key:value pairs                      | `{}`             |
 | `webapp.ingress.hosts`       | The list of hostnames to be covered with this ingress record.    | `[]`             |
 | `webapp.ingress.tls`         | Custom ingress TLS configuration                                 | `[]`             |
+| `webapp.api.url`             | The webapp API url.                                              | `/api/v1/`       |
+| `webapp.isDemo`              | Set to true if this is a demo                                    | `false`          |
+| `webapp.fullstory.enabled`   | Whether or not to enable fullstory                               | `false`          |
+| `webapp.openreplay.enabled`  | Whether or not to enable openreplay                              | `false`          |
+| `webapp.storytime.enabled`   | Whether or not to enable Papercups storytime                     | `false`          |
 
 
 ### Scheduler Parameters
@@ -50,12 +57,13 @@
 | `scheduler.replicaCount`       | Number of scheduler replicas                                        | `1`                 |
 | `scheduler.image.repository`   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
 | `scheduler.image.pullPolicy`   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`     |
+| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.29.21-alpha`     |
 | `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
 | `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
 | `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
 | `scheduler.nodeSelector`       | Node labels for pod assignment                                      | `{}`                |
 | `scheduler.tolerations`        | Tolerations for scheduler pod assignment.                           | `[]`                |
+| `scheduler.log.level`          | The log level to log at.                                            | `INFO`              |
 
 
 ### Pod Sweeper parameters
@@ -79,7 +87,7 @@
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
-| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`  |
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.29.21-alpha`  |
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
 | `server.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
@@ -102,6 +110,7 @@
 | `server.persistence.storageClass`           | The storage class to use for the airbyte server pvc              | `""`             |
 | `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
 | `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
+| `server.log.level`                          | The log level to log at                                          | `INFO`           |
 
 
 ### Temporal parameters

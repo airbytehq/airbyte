@@ -41,7 +41,9 @@ public class OauthModelConverter {
     if (incomingAuthSpec.getAuthType() == io.airbyte.protocol.models.AuthSpecification.AuthType.OAUTH_2_0) {
       authSpecification.authType(AuthSpecification.AuthTypeEnum.OAUTH2_0)
           .oauth2Specification(new OAuth2Specification()
-              .oauthFlowInitParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowInitParameters()));
+              .rootObject(incomingAuthSpec.getOauth2Specification().getRootObject())
+              .oauthFlowInitParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowInitParameters())
+              .oauthFlowOutputParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowOutputParameters()));
     }
 
     return Optional.ofNullable(authSpecification);
