@@ -29,7 +29,7 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const TestingConnectionSuccess: React.FC<{ errorMessage: React.ReactNode }> = ({
+const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({
   errorMessage,
 }) => {
   return (
@@ -43,4 +43,4 @@ const TestingConnectionSuccess: React.FC<{ errorMessage: React.ReactNode }> = ({
   );
 };
 
-export default TestingConnectionSuccess;
+export default TestingConnectionError;

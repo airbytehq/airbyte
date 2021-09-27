@@ -33,6 +33,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
@@ -169,7 +170,7 @@ public class ServerApp implements ServerRunnable {
     TrackingClientSingleton.get().identify(workspaceId);
   }
 
-  public static ServerRunnable getServer(final ServerFactory apiFactory) throws Exception {
+  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
@@ -233,7 +234,7 @@ public class ServerApp implements ServerRunnable {
       final boolean versionSupportsAutoMigrate =
           new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
+        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
         // After migration, upgrade the DB version
         airbyteDatabaseVersion = jobPersistence.getVersion();
       } else {
@@ -245,7 +246,7 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Starting server...");
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
-      configPersistence.loadData(YamlSeedConfigPersistence.get());
+      configPersistence.loadData(seed);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -253,6 +254,7 @@ public class ServerApp implements ServerRunnable {
           temporalService,
           configRepository,
           jobPersistence,
+          seed,
           configDatabase,
           jobDatabase,
           configs);
@@ -263,7 +265,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api()).start();
+    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
   }
 
   /**
@@ -272,6 +274,7 @@ public class ServerApp implements ServerRunnable {
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,
+                                            final ConfigPersistence seed,
                                             final SpecFetcher specFetcher,
                                             final String airbyteVersion,
                                             final String airbyteDatabaseVersion) {
@@ -280,7 +283,7 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configRepository,
         airbyteVersion,
-        YamlSeedConfigPersistence.get(),
+        seed,
         specFetcher)) {
       runMigration.run();
     } catch (final Exception e) {
