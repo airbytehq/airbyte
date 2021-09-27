@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceStrict'
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceStrictEncrypt'
 }
 
 dependencies {
