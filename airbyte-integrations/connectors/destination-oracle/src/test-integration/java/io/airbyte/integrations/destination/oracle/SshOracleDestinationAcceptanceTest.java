@@ -32,14 +32,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
+import org.testcontainers.containers.OracleContainer;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -49,7 +53,11 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
   private final String schemaName = "TEST_" + RandomStringUtils.randomAlphabetic(6).toUpperCase();
 
-  public abstract Path getConfigFilePath();
+  private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
+  private static OracleContainer db;
+//  new OracleContainer("epiclabs/docker-oracle-xe-11g");
+//  public abstract Path getConfigFilePath();
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
   protected String getImageName() {
@@ -57,15 +65,17 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected JsonNode getConfig() {
-    final JsonNode config = getConfigFromSecretsFile();
-    ((ObjectNode) config).put("schema", schemaName);
-    return config;
+  protected JsonNode getConfig() throws IOException, InterruptedException {
+    return sshBastionContainer.getTunnelConfig(getTunnelMethod(), sshBastionContainer.getBasicDbConfigBuider(db).put("schema", schemaName));
+
+//    final JsonNode config = getConfigFromSecretsFile();
+//    ((ObjectNode) config).put("schema", schemaName);
+//    return config;
   }
 
-  private JsonNode getConfigFromSecretsFile() {
-    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
-  }
+//  private JsonNode getConfigFromSecretsFile() {
+//    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
+//  }
 
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
@@ -113,6 +123,16 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         });
   }
 
+  private void startTestContainers() {
+    sshBastionContainer.initAndStartBastion();
+    initAndStartJdbcContainer();
+  }
+
+  private void initAndStartJdbcContainer() {
+    db = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+            .withNetwork(sshBastionContainer.getNetWork());
+    db.start();
+  }
   private Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
@@ -134,6 +154,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP USER %s CASCADE", schemaName)));
         });
+
+    sshBastionContainer.stopAndCloseContainers(db);
   }
 
   @Override
