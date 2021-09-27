@@ -26,7 +26,8 @@
 import copy
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+from functools import lru_cache
+from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -35,6 +36,7 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
+    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
@@ -45,6 +47,7 @@ from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 
 
 class AbstractSource(Source, ABC):
@@ -69,6 +72,9 @@ class AbstractSource(Source, ABC):
         :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
+
+    # Stream name to instance map for applying output object transformation
+    _stream_to_instance_map: Dict[str, AirbyteStream] = {}
 
     @property
     def name(self) -> str:
@@ -101,6 +107,7 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+        self._stream_to_instance_map = stream_instances
         for configured_stream in catalog.streams:
             stream_instance = stream_instances.get(configured_stream.stream.name)
             if not stream_instance:
@@ -227,7 +234,25 @@ class AbstractSource(Source, ABC):
         connector_state[stream_name] = stream_state
         return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
 
+    @lru_cache(maxsize=None)
+    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, dict]:
+        """
+        Lookup stream's transform object and jsonschema based on stream name.
+        This function would be called a lot so using caching to save on costly
+        get_json_schema operation.
+        :param stream_name name of stream from catalog.
+        :return tuple with stream transformer object and discover json schema.
+        """
+        stream_instance = self._stream_to_instance_map.get(stream_name)
+        return stream_instance.transformer, stream_instance.get_json_schema()
+
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
         now_millis = int(datetime.now().timestamp()) * 1000
+        transformer, schema = self._get_stream_transformer_and_schema(stream_name)
+        # Transform object fields according to config. Most likely you will
+        # need it to normalize values against json schema. By default no action
+        # taken unless configured. See
+        # docs/connector-development/cdk-python/schemas.md for details.
+        transformer.transform(data, schema)
         message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)
