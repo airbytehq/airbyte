@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.19
+Check record structure before validating it against json schema.
+
 ## 0.1.18
 Fix checking date-time format againt nullable field.
 

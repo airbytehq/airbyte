@@ -28,6 +28,7 @@ from typing import Any, List, Mapping, Optional, Set
 
 import dpath.util
 import pendulum
+from jsonref import JsonRef
 
 
 class CatalogField:
@@ -149,3 +150,56 @@ class JsonSchemaHelper:
             assert any(
                 [all(["const" in var["properties"][prop] for var in variants]) for prop in common_props]
             ), f"Any of {common_props} properties in {'.'.join(variant_path)} has no const keyword. See specification reference at https://docs.airbyte.io/connector-development/connector-specification-reference"
+
+
+def get_object_structure(obj: dict) -> List[str]:
+    """
+    Traverse through object structure and compose a list of property keys including nested one.
+    This list reflects object's structure with list of all obj property key
+    pathes. In case if object is nested inside array we assume that it has same
+    structure as first element.
+    :param obj: data object to get its structure
+    :returns list of object property keys pathes
+    """
+    pathes = []
+
+    def _traverse_obj_and_get_path(obj, path=""):
+        if isinstance(obj, dict):
+            return {k: _traverse_obj_and_get_path(v, path + "/" + k) for k, v in obj.items()}
+        elif isinstance(obj, list) and len(obj) > 0:
+            return [_traverse_obj_and_get_path(obj[0], path + "/[]")]
+        else:
+            pathes.append(path)
+
+    _traverse_obj_and_get_path(obj)
+
+    return pathes
+
+
+def get_expected_schema_structure(schema: dict) -> List[str]:
+    """
+    Travers through json schema and compose list of property keys that object expected to have.
+    :param schema: jsonschema to get expected pathes
+    :returns list of object property keys pathes
+    """
+    pathes = []
+    schema = JsonRef.replace_refs(schema)
+
+    def _scan_schema(subschema, path=""):
+        if "oneOf" in subschema or "anyOf" in subschema:
+            return [_scan_schema({"type": "object", **s}, path) for s in subschema.get("oneOf") or subschema.get("anyOf")]
+        type = subschema.get("type", "null")
+        if "object" in type:
+            props = subschema.get("properties")
+            if not props:
+                # Handle objects with arbitrary properties:
+                # {"type": "object", "additionalProperties": {"type": "string"}}
+                return pathes.append(path)
+            return {k: _scan_schema(v, path + "/" + k) for k, v in props.items()}
+        elif "array" in type:
+            items = subschema.get("items", {})
+            return [_scan_schema(items, path + "/[]")]
+        pathes.append(path)
+
+    _scan_schema(schema)
+    return pathes

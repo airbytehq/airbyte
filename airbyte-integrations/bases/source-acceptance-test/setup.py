@@ -39,6 +39,7 @@ MAIN_REQUIREMENTS = [
     "pprintpp~=0.4",
     "dpath~=2.0.1",
     "jsonschema~=3.2.0",
+    "jsonref==0.2",
 ]
 
 setuptools.setup(
