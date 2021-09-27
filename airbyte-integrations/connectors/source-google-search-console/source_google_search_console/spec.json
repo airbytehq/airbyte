@@ -98,5 +98,16 @@
         ]
       }
     }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [
+        ["authorization", "client_id"],
+        ["authorization", "client_secret"]
+      ],
+      "oauthFlowOutputParameters": [["authorization", "refresh_token"]]
+    }
   }
 }
