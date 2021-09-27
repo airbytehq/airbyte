@@ -14,6 +14,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -25,7 +26,7 @@ public class YamlSeedConfigPersistenceTest {
   private static YamlSeedConfigPersistence PERSISTENCE;
 
   @BeforeAll
-  static void setup() {
+  static void setup() throws IOException {
     PERSISTENCE = YamlSeedConfigPersistence.getDefault();
   }
 
