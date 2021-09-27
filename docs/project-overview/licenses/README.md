@@ -3,6 +3,7 @@
 Airbyte monorepo uses multiple licenses.
 
 The license for a particular work is defined with following prioritized rules:
+
 1. License directly present in the file
 2. LICENSE file in the same directory as the work
 3. First LICENSE found when exploring parent directories up to the project top level directory
