@@ -7,6 +7,7 @@ import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -57,6 +58,10 @@ class IncrementalStripeStream(StripeStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
+    def __init__(self, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = pendulum.parse(start_date).int_timestamp
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -76,8 +81,14 @@ class IncrementalStripeStream(StripeStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
+
+        start_point = self.start_date
         if stream_state and self.cursor_field in stream_state:
-            params["created[gte]"] = stream_state.get(self.cursor_field)
+            start_point = max(start_point, stream_state[self.cursor_field])
+
+        if start_point:
+            params["created[gte]"] = start_point
+
         return params
 
 
