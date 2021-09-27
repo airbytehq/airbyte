@@ -2299,9 +2299,7 @@ font-style: italic;
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "authSpecification" : {
     "auth_type" : "oauth2.0",
-    "oauth2Specification" : {
-      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
-    }
+    "oauth2Specification" : ""
   },
   "jobInfo" : {
     "createdAt" : 0,
@@ -4650,9 +4648,7 @@ font-style: italic;
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "authSpecification" : {
     "auth_type" : "oauth2.0",
-    "oauth2Specification" : {
-      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
-    }
+    "oauth2Specification" : ""
   },
   "jobInfo" : {
     "createdAt" : 0,
@@ -6462,7 +6458,7 @@ font-style: italic;
       <div class="param">auth_type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">oauth2.0</div>
-<div class="param">oauth2Specification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuth2Specification">OAuth2Specification</a></span>  </div>
+<div class="param">oauth2Specification (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> If the connector supports OAuth, this field should be non-null. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6967,7 +6963,11 @@ font-style: italic;
     <h3><a name="OAuth2Specification"><code>OAuth2Specification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>An object containing any metadata needed to describe this connector's Oauth flow</div>
     <div class="field-items">
-      <div class="param">oauthFlowInitParameters (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the ConnectorSpecification of the referenced field. For example. Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']] </div>
+      <div class="param">rootObject </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.
+Examples:
+if oauth parameters were contained inside the top level, rootObject=[] If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials'] If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0] </div>
+<div class="param">oauthFlowInitParameters </div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the rootObject of the referenced field. For example. Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the rootObject, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']] </div>
+<div class="param">oauthFlowOutputParameters </div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters. This is typically a refresh/access token. Each inner array represents the path in the rootObject of the referenced field. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
