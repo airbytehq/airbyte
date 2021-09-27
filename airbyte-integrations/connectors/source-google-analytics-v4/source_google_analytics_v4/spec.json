@@ -75,11 +75,12 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
+      "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [
         ["credentials", "client_id"],
-        ["credentials", "client_secret"],
-        ["credentials", "refresh_token"]
-      ]
+        ["credentials", "client_secret"]
+      ],
+      "oauthFlowOutputParameters": [["credentials", "refresh_token"]]
     }
   }
 }
