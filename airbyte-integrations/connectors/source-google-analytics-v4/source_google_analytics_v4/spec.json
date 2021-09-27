@@ -78,12 +78,12 @@
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [
-        ["credentials", "client_id"],
-        ["credentials", "client_secret"]
+        ["client_id"],
+        ["client_secret"]
       ],
       "oauthFlowOutputParameters": [
-        ["credentials", "access_token"],
-        ["credentials", "refresh_token"]
+        ["access_token"],
+        ["refresh_token"]
       ]
     }
   }
