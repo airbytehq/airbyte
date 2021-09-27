@@ -95,7 +95,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource getJdbcSource() {
     return new CockroachDbSource();
   }
 
@@ -360,7 +360,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testReadMultipleTablesIncrementally() throws Exception {
     final String tableName2 = TABLE_NAME + 2;
-    String streamName2 = streamName + 2;
+    final String streamName2 = streamName + 2;
     database.execute(ctx -> {
       ctx.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)",
@@ -493,7 +493,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))));
 
     // sort streams by name so that we are comparing lists with the same order.
-    Comparator<AirbyteStream> schemaTableCompare = Comparator
+    final Comparator<AirbyteStream> schemaTableCompare = Comparator
         .comparing(stream -> stream.getNamespace() + "." + stream.getName());
     expected.getStreams().sort(schemaTableCompare);
     actual.getStreams().sort(schemaTableCompare);

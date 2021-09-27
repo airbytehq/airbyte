@@ -22,6 +22,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -50,6 +51,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -95,7 +97,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   public JsonNode config;
   public JdbcDatabase database;
-  public AbstractJdbcSource source;
+  public Source source;
   public static String streamName;
 
   /**
@@ -126,21 +128,43 @@ public abstract class JdbcSourceAcceptanceTest {
   /**
    * An instance of the source that should be tests.
    *
+   * @return abstract jdbc source
+   */
+  public abstract AbstractJdbcSource getJdbcSource();
+
+  /**
+   * In some cases the Source that is being tested may be an AbstractJdbcSource, but because it is
+   * decorated, Java cannot recognize it as such. In these cases, as a workaround a user can choose to
+   * override getJdbcSource and have it return null. Then they can override this method with the
+   * decorated source AND override getToDatabaseConfigFunction with the appropriate
+   * toDatabaseConfigFunction that is hidden behind the decorator.
+   *
    * @return source
    */
-  public abstract AbstractJdbcSource getSource();
+  public Source getSource() {
+    return getJdbcSource();
+  }
 
-  protected String createTableQuery(String tableName, String columnClause, String primaryKeyClause) {
+  /**
+   * See getSource() for when to override this method.
+   *
+   * @return a function that maps a source's config to a jdbc config.
+   */
+  public Function<JsonNode, JsonNode> getToDatabaseConfigFunction() {
+    return getJdbcSource()::toDatabaseConfig;
+  }
+
+  protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
     return String.format("CREATE TABLE %s(%s %s %s)",
         tableName, columnClause, primaryKeyClause.equals("") ? "" : ",", primaryKeyClause);
   }
 
-  protected String primaryKeyClause(List<String> columns) {
+  protected String primaryKeyClause(final List<String> columns) {
     if (columns.isEmpty()) {
       return "";
     }
 
-    StringBuilder clause = new StringBuilder();
+    final StringBuilder clause = new StringBuilder();
     clause.append("PRIMARY KEY (");
     for (int i = 0; i < columns.size(); i++) {
       clause.append(columns.get(i));
@@ -155,7 +179,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
-    final JsonNode jdbcConfig = source.toDatabaseConfig(config);
+    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(config);
 
     streamName = TABLE_NAME;
 
@@ -253,7 +277,7 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testDiscover() throws Exception {
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
-    AirbyteCatalog expected = getCatalog(getDefaultNamespace());
+    final AirbyteCatalog expected = getCatalog(getDefaultNamespace());
     assertEquals(expected.getStreams().size(), actual.getStreams().size());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
@@ -265,7 +289,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-  protected AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
+  protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
       filteredCatalog.setStreams(filteredCatalog.getStreams()
@@ -312,7 +336,7 @@ public abstract class JdbcSourceAcceptanceTest {
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
     // sort streams by name so that we are comparing lists with the same order.
-    Comparator<AirbyteStream> schemaTableCompare = Comparator.comparing(stream -> stream.getNamespace() + "." + stream.getName());
+    final Comparator<AirbyteStream> schemaTableCompare = Comparator.comparing(stream -> stream.getNamespace() + "." + stream.getName());
     expected.getStreams().sort(schemaTableCompare);
     actual.getStreams().sort(schemaTableCompare);
     assertEquals(expected, filterOutOtherSchemas(actual));
@@ -325,7 +349,7 @@ public abstract class JdbcSourceAcceptanceTest {
             source.read(config, getConfiguredCatalogWithOneStream(getDefaultNamespace()), null));
 
     setEmittedAtToNull(actualMessages);
-    List<AirbyteMessage> expectedMessages = getTestMessages();
+    final List<AirbyteMessage> expectedMessages = getTestMessages();
     assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
     assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
@@ -596,7 +620,7 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testReadMultipleTablesIncrementally() throws Exception {
     final String tableName2 = TABLE_NAME + 2;
-    String streamName2 = streamName + 2;
+    final String streamName2 = streamName + 2;
     database.execute(ctx -> {
       ctx.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)", ""));
@@ -692,21 +716,21 @@ public abstract class JdbcSourceAcceptanceTest {
 
   // when initial and final cursor fields are the same.
   private void incrementalCursorCheck(
-                                      String cursorField,
-                                      String initialCursorValue,
-                                      String endCursorValue,
-                                      List<AirbyteMessage> expectedRecordMessages)
+                                      final String cursorField,
+                                      final String initialCursorValue,
+                                      final String endCursorValue,
+                                      final List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(cursorField, cursorField, initialCursorValue, endCursorValue,
         expectedRecordMessages);
   }
 
   private void incrementalCursorCheck(
-                                      String initialCursorField,
-                                      String cursorField,
-                                      String initialCursorValue,
-                                      String endCursorValue,
-                                      List<AirbyteMessage> expectedRecordMessages)
+                                      final String initialCursorField,
+                                      final String cursorField,
+                                      final String initialCursorValue,
+                                      final String endCursorValue,
+                                      final List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(initialCursorField, cursorField, initialCursorValue, endCursorValue,
         expectedRecordMessages,
@@ -714,12 +738,12 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   private void incrementalCursorCheck(
-                                      String initialCursorField,
-                                      String cursorField,
-                                      String initialCursorValue,
-                                      String endCursorValue,
-                                      List<AirbyteMessage> expectedRecordMessages,
-                                      ConfiguredAirbyteStream airbyteStream)
+                                      final String initialCursorField,
+                                      final String cursorField,
+                                      final String initialCursorValue,
+                                      final String endCursorValue,
+                                      final List<AirbyteMessage> expectedRecordMessages,
+                                      final ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(Lists.newArrayList(cursorField));
@@ -856,13 +880,13 @@ public abstract class JdbcSourceAcceptanceTest {
         Field.of(COL_LAST_NAME_WITH_SPACE, JsonSchemaPrimitive.STRING));
   }
 
-  public String getFullyQualifiedTableName(String tableName) {
+  public String getFullyQualifiedTableName(final String tableName) {
     return SourceJdbcUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
   }
 
   public void createSchemas() throws SQLException {
     if (supportsSchemas()) {
-      for (String schemaName : TEST_SCHEMAS) {
+      for (final String schemaName : TEST_SCHEMAS) {
         final String createSchemaQuery = String.format("CREATE SCHEMA %s;", schemaName);
         database.execute(connection -> connection.createStatement().execute(createSchemaQuery));
       }
@@ -871,7 +895,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   public void dropSchemas() throws SQLException {
     if (supportsSchemas()) {
-      for (String schemaName : TEST_SCHEMAS) {
+      for (final String schemaName : TEST_SCHEMAS) {
         final String dropSchemaQuery = String
             .format(DROP_SCHEMA_QUERY, schemaName);
         database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
@@ -879,7 +903,7 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-  private JsonNode convertIdBasedOnDatabase(int idValue) {
+  private JsonNode convertIdBasedOnDatabase(final int idValue) {
     if (getDriverClass().toLowerCase().contains("oracle")) {
       return Jsons.jsonNode(BigDecimal.valueOf(idValue));
     } else if (getDriverClass().toLowerCase().contains("snowflake")) {
@@ -902,8 +926,8 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-  protected static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
-    for (AirbyteMessage actualMessage : messages) {
+  protected static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
+    for (final AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);
       }

@@ -38,7 +38,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Override
-  public String createTableQuery(String tableName, String columnClause, String primaryKeyClause) {
+  public String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
     return String.format("CREATE TABLE %s(%s) %s",
@@ -56,12 +56,12 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Override
-  public String primaryKeyClause(List<String> columns) {
+  public String primaryKeyClause(final List<String> columns) {
     if (columns.isEmpty()) {
       return "";
     }
 
-    StringBuilder clause = new StringBuilder();
+    final StringBuilder clause = new StringBuilder();
     clause.append("(");
     for (int i = 0; i < columns.size(); i++) {
       clause.append(columns.get(i));
@@ -91,7 +91,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource getJdbcSource() {
     return new ClickHouseSource();
   }
 

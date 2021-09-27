@@ -97,15 +97,16 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   void cleanUpTables() throws SQLException {
-    Connection conn = DriverManager.getConnection(
+    final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-    for (String schemaName : TEST_SCHEMAS) {
-      ResultSet resultSet = conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+    for (final String schemaName : TEST_SCHEMAS) {
+      final ResultSet resultSet =
+          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
-        String tableName = resultSet.getString("TABLE_NAME");
-        String tableNameProcessed = tableName.contains(" ") ? SourceJdbcUtils
+        final String tableName = resultSet.getString("TABLE_NAME");
+        final String tableNameProcessed = tableName.contains(" ") ? SourceJdbcUtils
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
@@ -121,7 +122,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource getJdbcSource() {
     return new OracleSource();
   }
 
@@ -145,7 +146,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // In Oracle, `CREATE USER` creates a schema.
     // See https://www.oratable.com/oracle-user-schema-difference/
     if (supportsSchemas()) {
-      for (String schemaName : TEST_SCHEMAS) {
+      for (final String schemaName : TEST_SCHEMAS) {
         executeOracleStatement(
             String.format(
                 "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
@@ -154,21 +155,21 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
   }
 
-  public void executeOracleStatement(String query) throws SQLException {
-    Connection conn = DriverManager.getConnection(
+  public void executeOracleStatement(final String query) throws SQLException {
+    final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-    try (Statement stmt = conn.createStatement()) {
+    try (final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       logSQLException(e);
     }
     conn.close();
   }
 
-  public static void logSQLException(SQLException ex) {
-    for (Throwable e : ex) {
+  public static void logSQLException(final SQLException ex) {
+    for (final Throwable e : ex) {
       if (e instanceof SQLException) {
         if (ignoreSQLException(((SQLException) e).getSQLState()) == false) {
           e.printStackTrace(System.err);
@@ -185,7 +186,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
   }
 
-  public static boolean ignoreSQLException(String sqlState) {
+  public static boolean ignoreSQLException(final String sqlState) {
     // This only ignore cases where other databases won't raise errors
     // Drop table, schema etc or try to recreate a table;
     if (sqlState == null) {
