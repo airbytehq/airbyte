@@ -36,7 +36,8 @@ public interface JobPersistence {
   /**
    * Enqueue a new job. Its initial status will be pending.
    *
-   * @param scope key that will be used to determine if two jobs should not be run at the same time.
+   * @param scope key that will be used to determine if two jobs should not be run at the same time;
+   *        it is the primary id of the standard sync (StandardSync#connectionId)
    * @param jobConfig configuration for the job
    * @return job id
    * @throws IOException exception due to interaction with persistence

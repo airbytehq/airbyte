@@ -125,6 +125,9 @@ public class DefaultJobPersistence implements JobPersistence {
     this(database, Instant::now, 30, 500, 10);
   }
 
+  /**
+   * @param scope This is the primary id of a standard sync (StandardSync#connectionId).
+   */
   @Override
   public Optional<Long> enqueueJob(final String scope, final JobConfig jobConfig) throws IOException {
     LOGGER.info("enqueuing pending job for scope: {}", scope);
