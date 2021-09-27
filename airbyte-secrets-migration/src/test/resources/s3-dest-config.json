@@ -12,4 +12,3 @@
   "s3_bucket_name": "airbyte_sync",
   "s3_endpoint": ""
 }
-

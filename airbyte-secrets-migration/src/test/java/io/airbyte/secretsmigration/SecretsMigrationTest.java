@@ -44,7 +44,6 @@ import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.validation.json.JsonValidationException;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,11 +109,13 @@ class SecretsMigrationTest {
   }
 
   public static void failOnDifferingConfigurations(Map<String, Stream<JsonNode>> leftConfigs, Map<String, Stream<JsonNode>> rightConfigs) {
-    // Check that both sets have exactly the same keys.  If they don't, we already know we're failing the diff.
-    if (! leftConfigs.keySet().containsAll(rightConfigs.keySet()) && rightConfigs.keySet().containsAll(leftConfigs.keySet())) {
+    // Check that both sets have exactly the same keys. If they don't, we already know we're failing the
+    // diff.
+    if (!leftConfigs.keySet().containsAll(rightConfigs.keySet()) && rightConfigs.keySet().containsAll(leftConfigs.keySet())) {
       fail("Configurations have different keys; cannot all match.");
     }
-    // Now we know that the keys exactly match, so we can compare the values with a single pass, presuming consistent ordering.
+    // Now we know that the keys exactly match, so we can compare the values with a single pass,
+    // presuming consistent ordering.
     for (String configSchemaName : leftConfigs.keySet()) {
       List<JsonNode> leftNodes = leftConfigs.get(configSchemaName).collect(Collectors.toList());
       List<JsonNode> rightNodes = rightConfigs.get(configSchemaName).collect(Collectors.toList());
@@ -127,10 +128,9 @@ class SecretsMigrationTest {
     }
   }
 
-
   /**
-   * Ensure that we can read configs from the readFrom persistence, and save them out to the writeTo persistence, via the ConfigRepository methods.
-   * This is the basic core workflow.
+   * Ensure that we can read configs from the readFrom persistence, and save them out to the writeTo
+   * persistence, via the ConfigRepository methods. This is the basic core workflow.
    */
   @Test
   public void exportImportTest() throws JsonValidationException, IOException {
@@ -139,11 +139,14 @@ class SecretsMigrationTest {
     readFromConfigPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
     readFromConfigPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, SOURCE_CONNECTION1.getSourceId().toString(), SOURCE_CONNECTION1);
 
-    // Set up more test data: configs of postgresql with ssl configurations and file source, and s3 destination;
-    // make sure they have actual config in them, and that it comes through unharmed.  This comes from actual
+    // Set up more test data: configs of postgresql with ssl configurations and file source, and s3
+    // destination;
+    // make sure they have actual config in them, and that it comes through unharmed. This comes from
+    // actual
     // json downloaded from our integration connectors.
     //
-    // This ensures that for a variety of config shapes, we can either smoothly convert or we throw an error when we can't.
+    // This ensures that for a variety of config shapes, we can either smoothly convert or we throw an
+    // error when we can't.
     final StandardSourceDefinition FILE_SOURCE_DEF = Jsons.deserialize(MoreResources.readResource("file-source-config.json"),
         StandardSourceDefinition.class).withSourceDefinitionId(UUID.randomUUID());
     final StandardSourceDefinition POSTGRES_NOSSL_SOURCE_DEF = Jsons.deserialize(MoreResources.readResource("postgres-source-config-nossl.json"),
@@ -159,7 +162,8 @@ class SecretsMigrationTest {
     readFromConfigPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, UUID.randomUUID().toString(), S3_DEST_DEF);
 
     // Ensure that the dry run isn't modifying anything.
-    assertTrue(writeToConfigPersistence.dumpConfigs().isEmpty(), "Write config should be empty before we use it (sanity check), but found keys: "+ writeToConfigPersistence.dumpConfigs().keySet().toString());
+    assertTrue(writeToConfigPersistence.dumpConfigs().isEmpty(), "Write config should be empty before we use it (sanity check), but found keys: "
+        + writeToConfigPersistence.dumpConfigs().keySet().toString());
 
     final SecretsMigration dryRunMigration = new SecretsMigration(configs, readFromConfigPersistence, writeToConfigPersistence, true);
     dryRunMigration.run();

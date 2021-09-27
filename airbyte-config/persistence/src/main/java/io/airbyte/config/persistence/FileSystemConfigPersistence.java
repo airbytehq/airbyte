@@ -130,7 +130,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private List<String> listDirectories() throws IOException {
-    if (! configRoot.toFile().exists()) {
+    if (!configRoot.toFile().exists()) {
       return new ArrayList<String>();
     }
     try (Stream<Path> files = Files.list(configRoot)) {

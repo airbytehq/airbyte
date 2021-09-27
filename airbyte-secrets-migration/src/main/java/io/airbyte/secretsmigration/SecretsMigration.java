@@ -25,9 +25,6 @@
 package io.airbyte.secretsmigration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -37,7 +34,6 @@ import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -73,7 +69,6 @@ public class SecretsMigration {
     configurations = readFromConfigRepository.dumpConfigs();
     writeToConfigRepository.replaceAllConfigsDeserializing(configurations, dryRun);
 
-    LOGGER.info("... TODO: Writing over the old configurations to use new secrets coordinates...");
     LOGGER.info("Migration run complete.");
   }
 
@@ -83,7 +78,7 @@ public class SecretsMigration {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-        .getInitialized()).withValidation();
+            .getInitialized()).withValidation();
     final ConfigPersistence writeToPersistence = new FileSystemConfigPersistence(TEST_ROOT);
     final SecretsMigration migration = new SecretsMigration(configs, readFromPersistence, writeToPersistence, false);
     LOGGER.info("starting: {}", SecretsMigration.class);
