@@ -33,6 +33,9 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 
+/**
+ * In some cases we want to prune or mutate the spec for an existing source. The common case is that we want to remove features that are not appropriate for some reason. e.g. In cloud, we do not want to allow users to send data unencrypted.
+ */
 public abstract class SpecModifyingSource implements Source {
 
   private final Source source;

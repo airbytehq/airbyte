@@ -45,7 +45,6 @@ public class PostgresSourceStrict extends SpecModifyingSource implements Source 
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
-    System.out.println("spec = " + spec);
     return spec;
   }
 

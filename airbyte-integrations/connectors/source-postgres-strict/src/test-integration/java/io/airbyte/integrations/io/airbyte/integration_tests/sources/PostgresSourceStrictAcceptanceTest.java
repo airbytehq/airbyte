@@ -49,7 +49,7 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
+public class PostgresSourceStrictAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
@@ -61,7 +61,6 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
         .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
-    // container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
@@ -72,7 +71,6 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        // .put("ssl", false)
         .put("replication_method", replicationMethod)
         .build());
 

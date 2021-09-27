@@ -3,4 +3,4 @@
 connector_image: airbyte/source-postgres-strict:dev
 tests:
   spec:
-    - spec_path: "src/main/resources/spec.json"
+    - spec_path: "src/test/resources/expected_spec.json"
