@@ -26,19 +26,15 @@ import asyncio
 
 import pendulum
 from pendulum import duration
-from typing import Any, Iterable, Mapping, Optional, MutableMapping, List
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from cached_property import cached_property
 
 import backoff
 
 from abc import ABC, abstractmethod
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.common import retry_pattern, deep_merge
-from source_facebook_marketing.streams import FBMarketingIncrementalStream
+from source_facebook_marketing.common import retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 

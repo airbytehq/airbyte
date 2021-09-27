@@ -152,11 +152,15 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
         self.logger.info(f"ReportRunId {job_status['report_run_id']} is {job_status['async_percent_completion']}% complete")
 
         if job_status["async_status"] == "Job Completed":
-            return job
-        elif job_status["async_status"] == "Job Failed":
+            return True
+
+        if job_status["async_status"] == "Job Failed":
             raise JobFailed(f"AdReportRun {job_status} failed.")
-        elif job_status["async_status"] == "Job Skipped":
+
+        if job_status["async_status"] == "Job Skipped":
             raise JobFailed(f"AdReportRun {job_status} skipped.")
+
+        return False
 
     @backoff_policy
     async def fetch_job_result(self, job):
