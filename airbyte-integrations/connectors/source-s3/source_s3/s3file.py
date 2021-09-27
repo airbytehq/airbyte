@@ -27,13 +27,13 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import BinaryIO, Iterator, TextIO, Union
 
-import boto3
 import smart_open
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.client import Config as ClientConfig
 from botocore.config import Config
 from botocore.exceptions import NoCredentialsError
+from source_s3.s3_utils import make_s3_client, make_s3_resource
 
 from .source_files_abstract.storagefile import StorageFile
 
@@ -54,12 +54,10 @@ class S3File(StorageFile):
                 aws_access_key_id=self._provider.get("aws_access_key_id"),
                 aws_secret_access_key=self._provider.get("aws_secret_access_key"),
             )
+            self._boto_s3_resource = make_s3_resource(self._provider, session=self._boto_session)
         else:
             self._boto_session = boto3session.Session()
-        if self.use_aws_account:
-            self._boto_s3_resource = self._boto_session.resource("s3")
-        else:
-            self._boto_s3_resource = self._boto_session.resource("s3", config=Config(signature_version=UNSIGNED))
+            self._boto_s3_resource = make_s3_resource(self._provider, config=Config(signature_version=UNSIGNED), session=self._boto_session)
 
     @property
     def last_modified(self) -> datetime:
@@ -79,9 +77,9 @@ class S3File(StorageFile):
             if self.use_aws_account(self._provider):
                 raise nce
             else:
-                return boto3.client("s3", config=ClientConfig(signature_version=UNSIGNED)).head_object(Bucket=bucket, Key=self.url)[
-                    "LastModified"
-                ]
+                return make_s3_client(self._provider, config=ClientConfig(signature_version=UNSIGNED)).head_object(
+                    Bucket=bucket, Key=self.url
+                )["LastModified"]
 
     @staticmethod
     def use_aws_account(provider: dict) -> bool:
@@ -101,12 +99,11 @@ class S3File(StorageFile):
         bucket = self._provider.get("bucket")
 
         if self.use_aws_account(self._provider):
-            aws_access_key_id = self._provider.get("aws_access_key_id", "")
-            aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
-            result = smart_open.open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}/{self.url}", mode=mode)
+            params = {"client": make_s3_client(self._provider, session=self._boto_session)}
+            result = smart_open.open(f"s3://{bucket}/{self.url}", transport_params=params, mode=mode)
         else:
             config = ClientConfig(signature_version=UNSIGNED)
-            params = {"client": boto3.client("s3", config=config)}
+            params = {"client": make_s3_client(self._provider, config=config)}
             result = smart_open.open(f"s3://{bucket}/{self.url}", transport_params=params, mode=mode)
 
         # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this

@@ -56,7 +56,11 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
         )
 
-    provider: S3Provider = Field(...)
+        endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.")
+        use_ssl: bool = Field(default=None, description="Is remote server using secure SSL/TLS connection")
+        verify_ssl_cert: bool = Field(default=None, description="Allow self signed certificates")
+
+    provider: S3Provider
 
 
 class SourceS3(SourceFilesAbstract):

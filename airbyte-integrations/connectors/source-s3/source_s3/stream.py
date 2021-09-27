@@ -23,12 +23,12 @@
 #
 
 
-from typing import Any, Iterator, Mapping
+from typing import Iterator
 
-from airbyte_cdk.logger import AirbyteLogger
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
+from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
 from .source_files_abstract.stream import IncrementalFileStream
@@ -39,23 +39,24 @@ class IncrementalFileStreamS3(IncrementalFileStream):
     def storagefile_class(self) -> type:
         return S3File
 
-    @staticmethod
-    def _list_bucket(provider: Mapping[str, Any], accept_key=lambda k: True) -> Iterator[str]:
+    def _list_bucket(self, accept_key=lambda k: True) -> Iterator[str]:
         """
         Wrapper for boto3's list_objects_v2 so we can handle pagination, filter by lambda func and operate with or without credentials
 
-        :param provider: provider specific mapping as described in spec.json
         :param accept_key: lambda function to allow filtering return keys, e.g. lambda k: not k.endswith('/'), defaults to lambda k: True
         :yield: key (name) of each object
         """
+        provider = self._provider
+
+        client_config = None
         if S3File.use_aws_account(provider):
             session = boto3session.Session(
                 aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
             )
-            client = session.client("s3")
         else:
             session = boto3session.Session()
-            client = session.client("s3", config=Config(signature_version=UNSIGNED))
+            client_config = Config(signature_version=UNSIGNED)
+        client = make_s3_client(self._provider, config=client_config, session=session)
 
         ctoken = None
         while True:
@@ -79,23 +80,18 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             if not ctoken:
                 break
 
-    @staticmethod
-    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
+    def filepath_iterator(self) -> Iterator[str]:
         """
         See _list_bucket() for logic of interacting with S3
 
-        :param logger: instance of AirbyteLogger to use as this is a staticmethod
-        :param provider: S3 provider mapping as described in spec.json
         :yield: url filepath to use in S3File()
         """
-        prefix = provider.get("path_prefix")
+        prefix = self._provider.get("path_prefix")
         if prefix is None:
             prefix = ""
 
-        msg = f"Iterating S3 bucket '{provider['bucket']}'"
-        logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
+        msg = f"Iterating S3 bucket '{self._provider['bucket']}'"
+        self.logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
-        for blob in IncrementalFileStreamS3._list_bucket(
-            provider=provider, accept_key=lambda k: not k.endswith("/")  # filter out 'folders', we just want actual blobs
-        ):
+        for blob in self._list_bucket(accept_key=lambda k: not k.endswith("/")):  # filter out 'folders', we just want actual blobs
             yield blob

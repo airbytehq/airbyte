@@ -25,7 +25,6 @@
 
 import json
 import re
-from copy import deepcopy
 from typing import Union
 
 from jsonschema import RefResolver
@@ -85,11 +84,12 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
-        schema["properties"]["format"]["type"] = "object"
-        if "oneOf" in schema["properties"]["format"]:
-            return schema
-        schema["properties"]["format"]["oneOf"] = deepcopy(schema["properties"]["format"]["anyOf"])
-        del schema["properties"]["format"]["anyOf"]
+        props_to_change = ["format"]
+        for prop in props_to_change:
+            schema["properties"][prop]["type"] = "object"
+            if "oneOf" in schema["properties"][prop]:
+                continue
+            schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
         return schema
 
     @staticmethod

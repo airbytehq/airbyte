@@ -100,6 +100,9 @@ def pytest_collection_modifyitems(config, items):
         i += len(inner_items)
 
     for items in packed_items:
+        if not hasattr(items[0].cls, "config_key"):
+            # Skip user defined test classes from integration_tests/ directory.
+            continue
         test_configs = getattr(config.tests, items[0].cls.config_key())
         for test_config, item in zip(test_configs, items):
             default_timeout = item.get_closest_marker("default_timeout")

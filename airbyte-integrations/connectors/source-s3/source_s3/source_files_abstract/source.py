@@ -81,7 +81,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
 
         found_a_file = False
         try:
-            for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
+            for filepath in self.stream_class(**config).filepath_iterator():
                 found_a_file = True
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
