@@ -12,17 +12,15 @@ Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
-**Landing in August or so:**
+**Landing in October or so:**
 
-* Release of Airbyte Cloud's private beta. 
-* Support of most popular databases as both sources and destinations.
-* Support of data lakes, including Delta Lake soon.
+* Airbyte Cloud release. 
 * Adapt automatically to sources' schema changes.
+* Optimize normalization, so it costs less to our users
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\).
 
 **Coming a bit later:**
-
-* Airbyte Cloud release. 
+ 
 * Support for creating destination connectors with the CDK.
 * Our declarative interface \(CLI\).
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\).
