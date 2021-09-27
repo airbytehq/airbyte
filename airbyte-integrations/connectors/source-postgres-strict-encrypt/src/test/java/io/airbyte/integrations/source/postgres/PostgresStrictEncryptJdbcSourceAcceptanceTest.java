@@ -12,10 +12,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.source.jdbc.JdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.util.function.Function;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -61,8 +64,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
-    return new PostgresSource();
+  public JdbcSource getJdbcSource() {
+    return null;
+  }
+
+  @Override
+  public Source getSource() {
+    return new PostgresSourceStrictEncrypt();
+  }
+
+  @Override
+  public Function<JsonNode, JsonNode> getToDatabaseConfigFunction() {
+    return new PostgresSource()::toDatabaseConfig;
   }
 
   @Override
@@ -83,7 +96,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    final ConnectorSpecification expected =
+        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
 
     assertEquals(expected, actual);
   }
