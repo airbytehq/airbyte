@@ -26,17 +26,11 @@ package io.airbyte.integrations.destination.oracle;
 
 import io.airbyte.integrations.base.ssh.SshTunnel;
 
-import java.nio.file.Path;
-
 public class SshKeyOracleDestinationAcceptanceTest extends SshOracleDestinationAcceptanceTest {
-
-//  @Override
-//  public Path getConfigFilePath() {
-//    return Path.of("secrets/ssh-key-config.json");
-//  }
 
   @Override
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
+
 }
