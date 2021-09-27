@@ -34,6 +34,12 @@
             "description": "Google client secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "Access token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "airbyte_secret": true
+          },
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
@@ -95,10 +101,15 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
+      "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [
-        ["credentials", "developer_token"],
-        ["credentials", "client_id"],
-        ["credentials", "client_secret"]
+        ["client_id"],
+        ["client_secret"],
+        ["developer_token"]
+      ],
+      "oauthFlowOutputParameters": [
+        ["access_token"],
+        ["refresh_token"]
       ]
     }
   }
