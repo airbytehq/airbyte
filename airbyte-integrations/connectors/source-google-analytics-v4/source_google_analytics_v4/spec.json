@@ -22,7 +22,8 @@
               },
               "client_id": { "type": "string" },
               "client_secret": { "type": "string", "airbyte_secret": true },
-              "refresh_token": { "type": "string", "airbyte_secret": true }
+              "refresh_token": { "type": "string", "airbyte_secret": true },
+              "access_token": { "type": "string", "airbyte_secret": true }
             },
             "required": ["client_id", "client_secret", "refresh_token"],
             "additionalProperties": false
@@ -80,7 +81,10 @@
         ["credentials", "client_id"],
         ["credentials", "client_secret"]
       ],
-      "oauthFlowOutputParameters": [["credentials", "refresh_token"]]
+      "oauthFlowOutputParameters": [
+        ["credentials", "access_token"],
+        ["credentials", "refresh_token"]
+      ]
     }
   }
 }
