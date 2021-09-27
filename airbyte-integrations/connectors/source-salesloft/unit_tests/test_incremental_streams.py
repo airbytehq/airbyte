@@ -22,10 +22,10 @@
 # SOFTWARE.
 #
 
-from pytest import fixture
 from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode
+from pytest import fixture
 from source_salesloft.source import IncrementalSalesloftStream
 
 

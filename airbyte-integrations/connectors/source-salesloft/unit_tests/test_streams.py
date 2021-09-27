@@ -24,8 +24,8 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
-import pytest
 
+import pytest
 from source_salesloft.source import SalesloftStream
 
 

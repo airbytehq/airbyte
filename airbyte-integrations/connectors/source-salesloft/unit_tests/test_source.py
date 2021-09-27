@@ -22,8 +22,9 @@
 # SOFTWARE.
 #
 
-from source_salesloft.source import SourceSalesloft
 from unittest.mock import MagicMock
+
+from source_salesloft.source import SourceSalesloft
 
 
 def test_streams(mocker):
