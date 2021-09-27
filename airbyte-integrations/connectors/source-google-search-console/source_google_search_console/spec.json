@@ -110,12 +110,12 @@
     "oauth2Specification": {
       "rootObject": ["authorization", 0],
       "oauthFlowInitParameters": [
-        ["authorization", "client_id"],
-        ["authorization", "client_secret"]
+        ["client_id"],
+        ["client_secret"]
       ],
       "oauthFlowOutputParameters": [
-        ["authorization", "access_token"],
-        ["authorization", "refresh_token"]
+        ["access_token"],
+        ["refresh_token"]
       ]
     }
   }
