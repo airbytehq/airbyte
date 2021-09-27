@@ -74,4 +74,5 @@ Start date used for generating reports starting from the specified start date. S
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.1` | 2021-09-22 | [#6367](https://github.com/airbytehq/airbyte/pull/6367) | `Add seller and vendor filters to profiles stream` |
 | `0.1.0` | 2021-08-13 | [#5023](https://github.com/airbytehq/airbyte/pull/5023) | `Initial version` |

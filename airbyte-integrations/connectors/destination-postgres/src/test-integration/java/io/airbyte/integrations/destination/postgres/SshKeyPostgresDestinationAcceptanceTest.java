@@ -24,13 +24,13 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import java.nio.file.Path;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 
 public class SshKeyPostgresDestinationAcceptanceTest extends SshPostgresDestinationAcceptanceTest {
 
   @Override
-  public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-key-config.json");
+  public SshTunnel.TunnelMethod getTunnelMethod() {
+    return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
 
 }
