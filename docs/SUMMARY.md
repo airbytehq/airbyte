@@ -219,7 +219,7 @@
     * [Platform](project-overview/changelog/platform.md)
     * [Connectors](project-overview/changelog/connectors.md)
   * [Slack Code of Conduct](project-overview/slack-code-of-conduct.md)
-  * [License](project-overview/license.md)
+  * [Licenses](project-overview/licenses/README.md)
 * [Troubleshooting](troubleshooting/README.md)
   * [On Deploying](troubleshooting/on-deploying.md)
   * [On Setting up a New Connection](troubleshooting/new-connection.md)
