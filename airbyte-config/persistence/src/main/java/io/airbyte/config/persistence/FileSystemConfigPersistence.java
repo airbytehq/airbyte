@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -129,6 +130,9 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private List<String> listDirectories() throws IOException {
+    if (! configRoot.toFile().exists()) {
+      return new ArrayList<String>();
+    }
     try (Stream<Path> files = Files.list(configRoot)) {
       return files.map(c -> c.getFileName().toString()).collect(Collectors.toList());
     }
@@ -188,9 +192,10 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
       FileUtils.deleteDirectory(rootOverride.toFile());
       return;
     }
-
-    FileUtils.moveDirectory(configRoot.toFile(), storageRoot.resolve(oldConfigsDir).toFile());
-    LOGGER.info("Renamed config to {} successfully", oldConfigsDir);
+    if (configRoot.toFile().exists()) {
+      FileUtils.moveDirectory(configRoot.toFile(), storageRoot.resolve(oldConfigsDir).toFile());
+      LOGGER.info("Renamed config to {} successfully", oldConfigsDir);
+    }
 
     FileUtils.moveDirectory(rootOverride.toFile(), configRoot.toFile());
     LOGGER.info("Renamed " + importDirectory + " to config successfully");
