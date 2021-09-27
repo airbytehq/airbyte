@@ -19,8 +19,15 @@
           {
             "type": "object",
             "title": "api key",
-            "required": ["api_key"],
+            "required": ["api_key", "credentials_title"],
             "properties": {
+              "credentials_title": {
+                "type": "string",
+                "const": "API Key Credentials",
+                "enum": ["API Key Credentials"],
+                "default": "API Key Credentials",
+                "order": 0
+              },
               "api_key": {
                 "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
                 "type": "string",
@@ -29,15 +36,24 @@
             }
           },
           {
+            "type": "object",
             "title": "oauth",
             "required": [
               "redirect_uri",
               "client_id",
               "client_secret",
               "refresh_token",
-              "access_token"
+              "access_token",
+              "credentials_title"
             ],
             "properties": {
+              "credentials_title": {
+                "type": "string",
+                "const": "OAuth Credentials",
+                "enum": ["OAuth Credentials"],
+                "default": "OAuth Credentials",
+                "order": 0
+              },
               "redirect_uri": {
                 "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
                 "type": "string",
