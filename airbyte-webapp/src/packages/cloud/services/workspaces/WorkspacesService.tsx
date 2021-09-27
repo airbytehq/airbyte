@@ -13,6 +13,7 @@ type Context = {
   currentWorkspaceId?: string | null;
   selectWorkspace: (workspaceId: string | null) => void;
   createWorkspace: (name: string) => Promise<CloudWorkspace>;
+  renameWorkspace: (name: string) => Promise<CloudWorkspace>;
   removeWorkspace: {
     mutateAsync: (workspaceId: string) => Promise<void>;
     isLoading: boolean;
@@ -95,6 +96,15 @@ export function useRemoveWorkspace() {
   );
 }
 
+export function useRenameWorkspace() {
+  const service = useGetWorkspaceService();
+
+  return useMutation(
+    async ({ workspaceId, name }: { workspaceId: string; name: string }) =>
+      service.rename(workspaceId, name)
+  );
+}
+
 export function useGetWorkspace(workspaceId: string) {
   const service = useGetWorkspaceService();
 
@@ -110,6 +120,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   >(`${user.userId}/workspaceId`, null);
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
+  const renameWorkspace = useRenameWorkspace();
 
   const queryClient = useQueryClient();
   const resetCache = useResetter();
@@ -123,13 +134,20 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
           userId: user.userId,
         }),
       removeWorkspace,
+      renameWorkspace,
       selectWorkspace: async (workspaceId) => {
         setCurrentWorkspaceId(workspaceId);
         await queryClient.resetQueries();
         resetCache();
       },
     }),
-    [currentWorkspaceId, user, createWorkspace, removeWorkspace]
+    [
+      currentWorkspaceId,
+      user,
+      createWorkspace,
+      removeWorkspace,
+      renameWorkspace,
+    ]
   );
 
   return (

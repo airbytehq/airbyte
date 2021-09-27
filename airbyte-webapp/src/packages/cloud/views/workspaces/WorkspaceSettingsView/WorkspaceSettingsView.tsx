@@ -52,7 +52,7 @@ export const WorkspaceSettingsView: React.FC = () => {
             formikHelpers.setFieldError("name", "Not implemented")
           }
         >
-          {({ dirty, isSubmitting, resetForm }) => (
+          {({ dirty, isSubmitting, resetForm, isValid }) => (
             <Form>
               <Content>
                 <Field name="name">
@@ -85,7 +85,7 @@ export const WorkspaceSettingsView: React.FC = () => {
                   </Button>
                   <LoadingButton
                     type="submit"
-                    disabled={!dirty}
+                    disabled={!isValid}
                     isLoading={isSubmitting}
                   >
                     save changes

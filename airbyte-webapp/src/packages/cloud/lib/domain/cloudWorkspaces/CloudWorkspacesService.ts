@@ -29,6 +29,13 @@ class CloudWorkspacesService extends AirbyteRequestService {
     });
   }
 
+  public async rename(workspaceId: string, name: string): Promise<void> {
+    return this.fetch<void>(`${this.url}/rename`, {
+      workspaceId,
+      name,
+    });
+  }
+
   public async listByUser(userId: string): Promise<CloudWorkspace[]> {
     const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
       `web_backend/permissions/list_workspaces_by_user`,
