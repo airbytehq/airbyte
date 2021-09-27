@@ -157,7 +157,7 @@
           },
           "endpoint": {
             "title": "Endpoint",
-            "description": "Endpoint to S3 compatable service, leave empty for default Amazon servers",
+            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
             "default": "",
             "type": "string"
           },

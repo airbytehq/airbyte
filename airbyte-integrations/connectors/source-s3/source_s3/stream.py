@@ -28,9 +28,9 @@ from typing import Iterator
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
+from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
-from .source_files_abstract import make_s3_client
 from .source_files_abstract.stream import IncrementalFileStream
 
 

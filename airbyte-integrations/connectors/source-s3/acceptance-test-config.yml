@@ -6,7 +6,7 @@ tests:
     - spec_path: "integration_tests/spec.json"
   connection:
     # for CSV format
-    - config_path: "integration_tests/config_minio.json"
+    - config_path: "secrets/config.json"
       status: "succeed"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"

@@ -41,7 +41,6 @@ def connector_setup():
 
 @pytest.fixture(scope="session", autouse=True)
 def minio_setup():
-    """ This fixture is a placeholder for external resources that acceptance test might require."""
     client = docker.from_env()
     tmp_dir = tempfile.mkdtemp()
     with ZipFile("./integration_tests/minio_data.zip") as archive:
