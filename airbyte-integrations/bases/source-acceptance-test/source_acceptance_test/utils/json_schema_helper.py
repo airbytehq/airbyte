@@ -164,12 +164,12 @@ def get_object_structure(obj: dict) -> List[str]:
     pathes = []
 
     def _traverse_obj_and_get_path(obj, path=""):
+        if path:
+            pathes.append(path)
         if isinstance(obj, dict):
             return {k: _traverse_obj_and_get_path(v, path + "/" + k) for k, v in obj.items()}
         elif isinstance(obj, list) and len(obj) > 0:
             return [_traverse_obj_and_get_path(obj[0], path + "/[]")]
-        else:
-            pathes.append(path)
 
     _traverse_obj_and_get_path(obj)
 

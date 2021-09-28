@@ -60,6 +60,12 @@ def test_discovery(schema, cursors, should_fail):
         ({"type": "object", "properties": {"created": {"type": "string"}}}, {"aa": 23}, True),
         ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, False),
         ({"type": "object", "properties": {"created": {"type": "string"}}}, {"root": {"created": "23"}}, True),
+        # Recharge shop stream case
+        (
+            {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
+            {"shop": {"a": "23"}, "store": {"b": "23"}},
+            False,
+        ),
     ],
 )
 def test_read(schema, record, should_fail):
