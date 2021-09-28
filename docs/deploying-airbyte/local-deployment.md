@@ -6,7 +6,7 @@ These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
 
 ## Setup & launch Airbyte
 
-* Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Note: There is a known issue with docker-compose 1.27.3. If you are using that version, please upgrade to 1.27.4.
+* Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
 * After Docker is installed, you can immediately get started locally by running:
 
 ```bash
