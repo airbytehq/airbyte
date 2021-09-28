@@ -28,7 +28,7 @@ import requests
 
 from abc import ABC
 from datetime import date, datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Callable
 from operator import add
 from pendulum.tz.timezone import Timezone
 from pendulum.parsing.exceptions import ParserError
@@ -91,10 +91,6 @@ class AppsflyerStream(HttpStream, ABC):
         self.start_date = start_date
         self.end_date = end_date
         self.timezone = pendulum.timezone(timezone)
-
-    @property
-    def max_retries(self) -> int:
-        return 1
 
     @property
     def url_base(self) -> str:
@@ -179,6 +175,7 @@ class AppsflyerStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalAppsflyerStream(AppsflyerStream, ABC):
+    intervals = 60
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         try:
@@ -192,10 +189,32 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         except ParserError as e:
             raise ParserError(f"Field {self.cursor_field} is not DateTime.") from e
 
-    def get_start_date(self, cursor_value: Any, start_date: datetime) -> datetime:
-        cursor_value = parse_date(cursor_value or start_date, self.timezone)
-        start_date = max(cursor_value, start_date)
-        return start_date
+    def stream_slices(
+        self,
+        sync_mode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_state = stream_state or {}
+        start_date = self.get_date(stream_state.get(self.cursor_field), self.start_date, max)
+        return self.chunk_date_range(start_date)
+
+    def get_date(self, cursor_value: Any, default_date: datetime, comparator: Callable[[datetime, datetime], datetime]) -> datetime:
+        cursor_value = parse_date(cursor_value or default_date, self.timezone)
+        date = comparator(cursor_value, default_date)
+        return date
+
+    def chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+        dates = []
+        delta = timedelta(days=self.intervals)
+        while start_date < self.end_date:
+            end_date = self.get_date(start_date + delta, self.end_date, min)
+            dates.append({
+                self.cursor_field: start_date,
+                self.cursor_field + '_end': end_date
+            })
+            start_date += delta
+        return dates
 
 class RawDataMixin:
 
@@ -330,9 +349,10 @@ class RawDataMixin:
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        cursor_value = stream_state.get(self.cursor_field)
-        params["from"] = self.get_start_date(cursor_value, self.start_date).to_datetime_string()
-        params["to"] = self.end_date.to_datetime_string()
+        cursor_start_value = stream_slice.get(self.cursor_field)
+        cursor_end_value = stream_slice.get(self.cursor_field + '_end')
+        params["from"] = self.get_date(cursor_start_value, self.start_date, max).to_datetime_string()
+        params["to"] = self.get_date(cursor_end_value, self.end_date, min).to_datetime_string()
         
         return params
 
@@ -346,9 +366,10 @@ class AggregateDataMixin:
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        cursor_value = stream_state.get(self.cursor_field)
-        params["from"] = self.get_start_date(cursor_value, self.start_date).to_date_string()
-        params["to"] = self.end_date.to_date_string()
+        cursor_start_value = stream_slice.get(self.cursor_field)
+        cursor_end_value = stream_slice.get(self.cursor_field + '_end')
+        params["from"] = self.get_date(cursor_start_value, self.start_date, max).to_date_string()
+        params["to"] = self.get_date(cursor_end_value, self.end_date, min).to_date_string()
 
         return params
 
@@ -366,6 +387,7 @@ class RetargetingMixin:
         return params
 
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
+    intervals = 31
     cursor_field = "event_time"
 
     def path(

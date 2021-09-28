@@ -133,9 +133,9 @@ def test_request_params_in_app_events(mocker):
     mocker.patch.object(InAppEvents, "cursor_field", "date")
     stream = InAppEvents()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "additional_fields": "app_type,custom_data,network_account_id,install_app_store,contributor1_match_type,contributor2_match_type,contributor3_match_type,campaign_type,conversion_type,match_type,gp_referrer,gp_click_time,gp_install_begin,gp_broadcast_referrer,keyword_match_type,keyword_id,att,amazon_aid,device_category,device_model,device_download_time,deeplink_url,oaid,is_lat,store_reinstall,placement,mediation_network,segment,ad_unit,monetization_network,impressions,blocked_reason,blocked_reason_value,blocked_reason_rule,blocked_sub_reason,rejected_reason,rejected_reason_value",
@@ -159,9 +159,9 @@ def test_request_params_installs(mocker):
     mocker.patch.object(Installs, "cursor_field", "date")
     stream = Installs()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "additional_fields": "app_type,custom_data,network_account_id,install_app_store,contributor1_match_type,contributor2_match_type,contributor3_match_type,campaign_type,conversion_type,match_type,gp_referrer,gp_click_time,gp_install_begin,gp_broadcast_referrer,keyword_match_type,keyword_id,att,amazon_aid,device_category,device_model,device_download_time,deeplink_url,oaid,is_lat,store_reinstall,placement,mediation_network,segment,ad_unit,monetization_network,impressions,blocked_reason,blocked_reason_value,blocked_reason_rule,blocked_sub_reason,rejected_reason,rejected_reason_value",
@@ -185,9 +185,9 @@ def test_request_params_retargeting_in_app_events(mocker):
     mocker.patch.object(RetargetingInAppEvents, "cursor_field", "date")
     stream = RetargetingInAppEvents()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "additional_fields": "app_type,custom_data,network_account_id,install_app_store,contributor1_match_type,contributor2_match_type,contributor3_match_type,campaign_type,conversion_type,match_type,gp_referrer,gp_click_time,gp_install_begin,gp_broadcast_referrer,keyword_match_type,keyword_id,att,amazon_aid,device_category,device_model,device_download_time,deeplink_url,oaid,is_lat,store_reinstall,placement,mediation_network,segment,ad_unit,monetization_network,impressions,blocked_reason,blocked_reason_value,blocked_reason_rule,blocked_sub_reason,rejected_reason,rejected_reason_value",
@@ -212,9 +212,9 @@ def test_request_params_retargeting_conversions(mocker):
     mocker.patch.object(RetargetingConversions, "cursor_field", "date")
     stream = RetargetingConversions()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "additional_fields": "app_type,custom_data,network_account_id,install_app_store,contributor1_match_type,contributor2_match_type,contributor3_match_type,campaign_type,conversion_type,match_type,gp_referrer,gp_click_time,gp_install_begin,gp_broadcast_referrer,keyword_match_type,keyword_id,att,amazon_aid,device_category,device_model,device_download_time,deeplink_url,oaid,is_lat,store_reinstall,placement,mediation_network,segment,ad_unit,monetization_network,impressions,blocked_reason,blocked_reason_value,blocked_reason_rule,blocked_sub_reason,rejected_reason,rejected_reason_value",
@@ -239,9 +239,9 @@ def test_request_params_uninstall_events(mocker):
     mocker.patch.object(UninstallEvents, "cursor_field", "date")
     stream = UninstallEvents()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "additional_fields": "custom_data,network_account_id,install_app_store,contributor1_match_type,contributor2_match_type,contributor3_match_type,match_type,gp_referrer,gp_click_time,gp_install_begin,gp_broadcast_referrer,keyword_match_type,keyword_id,amazon_aid,device_category,device_model,device_download_time,deeplink_url,oaid,is_lat,store_reinstall,placement,mediation_network,segment,ad_unit,monetization_network,impressions,blocked_reason,blocked_reason_value,blocked_reason_rule,blocked_sub_reason,rejected_reason,rejected_reason_value",
@@ -265,9 +265,9 @@ def test_request_params_partners_report(mocker):
     mocker.patch.object(PartnersReport, "cursor_field", "date")
     stream = PartnersReport()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "api_token": "secret",
@@ -290,9 +290,9 @@ def test_request_params_daily_report(mocker):
     mocker.patch.object(DailyReport, "cursor_field", "date")
     stream = DailyReport()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "api_token": "secret",
@@ -315,9 +315,9 @@ def test_request_params_geo_report(mocker):
     mocker.patch.object(GeoReport, "cursor_field", "date")
     stream = GeoReport()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "api_token": "secret",
@@ -340,9 +340,9 @@ def test_request_params_retargeting_partners_report(mocker):
     mocker.patch.object(RetargetingPartnersReport, "cursor_field", "date")
     stream = RetargetingPartnersReport()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "api_token": "secret",
@@ -366,9 +366,9 @@ def test_request_params_retargeting_daily_report(mocker):
     mocker.patch.object(RetargetingDailyReport, "cursor_field", "date")
     stream = RetargetingDailyReport()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "api_token": "secret",
@@ -392,9 +392,9 @@ def test_request_params_retargeting_geo_report(mocker):
     mocker.patch.object(RetargetingGeoReport, "cursor_field", "date")
     stream = RetargetingGeoReport()
     inputs = {
-        "stream_slice": None,
+        "stream_slice": dict(date=pendulum.yesterday(timezone)),
         "next_page_token": None,
-        "stream_state": dict(date=pendulum.yesterday(timezone))
+        "stream_state": None
     }
     expected_params = {
         "api_token": "secret",
@@ -458,15 +458,25 @@ def test_get_updated_state_all_unparseable(patch_incremental_base_class, mocker)
 
 
 def test_stream_slices(patch_incremental_base_class, mocker):
+    timezone = "UTC"
     def __init__(self):
         self.api_token= "secret"
         self.timezone= pendulum.timezone("UTC")
+        self.start_date= pendulum.yesterday("UTC")
+        self.end_date= pendulum.today("UTC")
 
     mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
+    mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "date")
     stream = IncrementalAppsflyerStream()
-    expected_cursor_field = []
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    expected_stream_slice = [None]
+    inputs = {
+        "sync_mode": SyncMode.incremental,
+        "cursor_field": [],
+        "stream_state": dict(date=pendulum.yesterday(timezone))
+    }
+    expected_stream_slice = [{
+        "date":pendulum.yesterday("UTC"),
+        "date_end":pendulum.today("UTC")
+    }]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 
