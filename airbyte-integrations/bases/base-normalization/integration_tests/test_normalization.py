@@ -66,7 +66,7 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
     dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
-    
+
     # Use destination connector to create _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
 
