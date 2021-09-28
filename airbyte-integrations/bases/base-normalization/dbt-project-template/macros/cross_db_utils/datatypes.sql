@@ -77,13 +77,13 @@
 {% endmacro %}
 
 
-{#-- numeric ------------------------------------------------- --#}
+{# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
     float
 {% endmacro %}
 
 
-{#-- timestamp ------------------------------------------------- --#}
+{# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
 {% endmacro %}
@@ -95,7 +95,7 @@
 {%- endmacro -%}
 
 
-{#-- timestamp with time zone  -------------------------------------------------     #}
+{# timestamp with time zone  -------------------------------------------------     #}
 
 {%- macro type_timestamp_with_timezone() -%}
   {{ adapter.dispatch('type_timestamp_with_timezone')() }}

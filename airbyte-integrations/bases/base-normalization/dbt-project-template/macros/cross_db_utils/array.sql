@@ -46,7 +46,7 @@
 {%- endmacro %}
 
 {% macro sqlserver__cross_join_unnest(stream_name, array_col) -%}
-{# -- https://docs.microsoft.com/en-us/sql/relational-databases/json/convert-json-data-to-rows-and-columns-with-openjson-sql-server?view=sql-server-ver15#option-1---openjson-with-the-default-output -- #}
+{# https://docs.microsoft.com/en-us/sql/relational-databases/json/convert-json-data-to-rows-and-columns-with-openjson-sql-server?view=sql-server-ver15#option-1---openjson-with-the-default-output #}
     CROSS APPLY (
 	    SELECT [value] = CASE 
 			WHEN [type] = 4 THEN (SELECT [value] FROM OPENJSON([value])) 
@@ -87,7 +87,7 @@
 {%- endmacro %}
 
 {% macro sqlserver__unnested_column_value(column_col) -%}
-    {# -- unnested array/sub_array will be located in `value` column afterwards, we need to address to it --#}
+    {# unnested array/sub_array will be located in `value` column afterwards, we need to address to it #}
     {{ column_col }}.value
 {%- endmacro %}
 

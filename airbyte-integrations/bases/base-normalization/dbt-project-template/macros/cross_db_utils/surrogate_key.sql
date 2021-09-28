@@ -12,7 +12,7 @@
     )
 {%- endmacro %}
 
-{#-- MSSQL surrogate_key  --#}
+{# MSSQL surrogate_key #}
 {%- macro sqlserver__surrogate_key(field_list) -%}
     {% set fields = [] %}
     {%- for field in field_list -%}
