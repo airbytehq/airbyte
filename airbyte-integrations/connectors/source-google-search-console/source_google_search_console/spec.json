@@ -60,6 +60,12 @@
                 "description": "The client secret of your developer application",
                 "airbyte_secret": true
               },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "An access token generated using the above client ID and secret",
+                "airbyte_secret": true
+              },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
@@ -97,6 +103,20 @@
           }
         ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [
+        ["client_id"],
+        ["client_secret"]
+      ],
+      "oauthFlowOutputParameters": [
+        ["access_token"],
+        ["refresh_token"]
+      ]
     }
   }
 }
