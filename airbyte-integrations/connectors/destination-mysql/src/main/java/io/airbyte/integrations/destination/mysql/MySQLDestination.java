@@ -38,6 +38,9 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
@@ -89,10 +92,23 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
+    final List<String> additionalParameters = new ArrayList<>();
+
+    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+      additionalParameters.add("useSSL=true");
+      additionalParameters.add("requireSSL=true");
+      additionalParameters.add("verifyServerCertificate=false");
+    }
+
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
+
+    if (!additionalParameters.isEmpty()) {
+      jdbcUrl.append("?");
+      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+    }
 
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())

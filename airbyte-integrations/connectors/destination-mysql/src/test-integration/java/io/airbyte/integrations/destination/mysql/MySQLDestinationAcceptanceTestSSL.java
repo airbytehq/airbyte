@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -41,18 +39,21 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
@@ -87,7 +88,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("password", db.getPassword())
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
+        .put("ssl", true)
         .build());
   }
 
@@ -125,14 +126,14 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     return Databases.createDatabase(
-        db.getUsername(),
-        db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
+            db.getUsername(),
+            db.getPassword(),
+            String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+                    db.getHost(),
+                    db.getFirstMappedPort(),
+                    db.getDatabaseName()),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
