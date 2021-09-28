@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.oracle;
 
-import java.nio.file.Path;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 
 public class SshPasswordOracleSourceAcceptanceTest extends AbstractSshOracleSourceAcceptanceTest {
 
   @Override
-  public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-pwd-config.json");
+  public SshTunnel.TunnelMethod getTunnelMethod() {
+    return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
 
 }
