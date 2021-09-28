@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -65,24 +45,25 @@ class SourceStripe(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         args = {"authenticator": authenticator, "account_id": config["account_id"]}
+        incremental_args = {**args, "start_date": config["start_date"]}
         return [
-            BalanceTransactions(**args),
+            BalanceTransactions(**incremental_args),
             BankAccounts(**args),
-            Charges(**args),
-            Coupons(**args),
+            Charges(**incremental_args),
+            Coupons(**incremental_args),
             CustomerBalanceTransactions(**args),
-            Customers(**args),
-            Disputes(**args),
-            Events(**args),
-            InvoiceItems(**args),
+            Customers(**incremental_args),
+            Disputes(**incremental_args),
+            Events(**incremental_args),
+            InvoiceItems(**incremental_args),
             InvoiceLineItems(**args),
-            Invoices(**args),
-            PaymentIntents(**args),
-            Payouts(**args),
-            Plans(**args),
-            Products(**args),
-            Refunds(**args),
+            Invoices(**incremental_args),
+            PaymentIntents(**incremental_args),
+            Payouts(**incremental_args),
+            Plans(**incremental_args),
+            Products(**incremental_args),
+            Refunds(**incremental_args),
             SubscriptionItems(**args),
-            Subscriptions(**args),
-            Transfers(**args),
+            Subscriptions(**incremental_args),
+            Transfers(**incremental_args),
         ]

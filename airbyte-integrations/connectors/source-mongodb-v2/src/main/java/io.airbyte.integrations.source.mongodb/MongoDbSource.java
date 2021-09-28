@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -61,9 +41,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
-  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/?";
-  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&";
-  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/?replicaSet=%s&";
+  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
+  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
+  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   private static final String USER = "user";
   private static final String PASSWORD = "password";
   private static final String INSTANCE_TYPE = "instance_type";
@@ -90,26 +70,30 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         ? String.format("%s:%s@", config.get(USER).asText(), config.get(PASSWORD).asText())
         : StringUtils.EMPTY;
 
+    StringBuilder connectionStrBuilder = new StringBuilder();
     JsonNode instanceConfig = config.get(INSTANCE_TYPE);
-    String instanceConnectUrl;
     if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
-      instanceConnectUrl = String.format(MONGODB_SERVER_URL,
-          credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText());
+      // Standalone MongoDb Instance
+      var tls = config.has(TLS) ? config.get(TLS).asBoolean() : instanceConfig.get(TLS).asBoolean(); // for backward compatibility
+      connectionStrBuilder.append(String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
+          config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), tls));
     } else if (instanceConfig.has(CLUSTER_URL)) {
-      instanceConnectUrl = String.format(MONGODB_CLUSTER_URL,
-          credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText());
+      // MongoDB Atlas
+      connectionStrBuilder.append(
+          String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
+              config.get(AUTH_SOURCE).asText()));
     } else {
-      instanceConnectUrl = String.format(MONGODB_REPLICA_URL,
-          credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(REPLICA_SET).asText());
-    }
-
-    String options = "authSource=".concat(config.get(AUTH_SOURCE).asText());
-    if (config.get(TLS).asBoolean()) {
-      options.concat("&tls=true");
+      // Replica Set & Shard
+      connectionStrBuilder.append(
+          String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
+              config.get(AUTH_SOURCE).asText()));
+      if (instanceConfig.has(REPLICA_SET)) {
+        connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
+      }
     }
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("connectionString", instanceConnectUrl + options)
+        .put("connectionString", connectionStrBuilder.toString())
         .put("database", config.get(DATABASE).asText())
         .build());
   }
@@ -207,7 +191,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                String cursorField,
                                                                BsonType cursorFieldType,
                                                                String cursor) {
-    Bson greaterComparison = gt(cursorField, cursor);
+    Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursor));
     return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
