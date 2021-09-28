@@ -80,16 +80,8 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     "integration_type, column_count, expected_exception_message",
     [
         ("Postgres", 1665, "target lists can have at most 1664 entries"),
-        (
-            "BigQuery",
-            2500,
-            "The view is too large.",
-        ),
-        (
-            "Snowflake",
-            2000,
-            "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
-        ),
+        ("BigQuery", 2500, "The view is too large."),
+        ("Snowflake", 2000, "Operation failed because soft limit on objects of type 'Column' per table was exceeded."),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
         ("MySQL", 250, "Row size too large"),
         ("Oracle", 1001, "ORA-01792: maximum number of columns in a table or view is 1000"),

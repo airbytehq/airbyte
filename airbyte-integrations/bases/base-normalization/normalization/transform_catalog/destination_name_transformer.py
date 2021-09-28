@@ -225,10 +225,10 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.MYSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
-        elif self.destination_type.value == DestinationType.ORACLE.value:
+        elif self.destination_type.value == DestinationType.MSSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
-        elif self.destination_type.value == DestinationType.MSSQL.value:
+        elif self.destination_type.value == DestinationType.ORACLE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
             else:

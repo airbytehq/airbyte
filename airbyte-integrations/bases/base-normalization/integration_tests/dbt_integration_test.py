@@ -119,7 +119,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        time.sleep(5)
+        time.sleep(15)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
