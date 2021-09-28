@@ -1,0 +1,23 @@
+# Adds ports to the db and access to the temporal UI for debugging purposes.
+# Expected to be used like this:
+# VERSION=dev docker-compose -f docker-compose.yaml -f docker-compose.debug.yaml up
+version: "3.7"
+x-logging: &default-logging
+  options:
+    max-size: "100m"
+    max-file: "5"
+  driver: json-file
+services:
+  db:
+    ports:
+      - 8011:5432
+  airbyte-temporal-ui:
+    image: temporalio/web:latest
+    logging: *default-logging
+    container_name: airbyte-temporal-ui
+    restart: unless-stopped
+    environment:
+      - TEMPORAL_GRPC_ENDPOINT=airbyte-temporal:7233
+      - TEMPORAL_PERMIT_WRITE_API=true
+    ports:
+      - 8012:8088
