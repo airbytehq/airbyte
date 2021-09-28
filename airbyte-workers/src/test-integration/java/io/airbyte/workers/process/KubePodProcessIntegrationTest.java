@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang.RandomStringUtils;
@@ -174,7 +175,7 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
   }
 
   private static Set<Integer> getOpenPorts(int count) {

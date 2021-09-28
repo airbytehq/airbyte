@@ -69,6 +69,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
+                        final Map<String, String> labels,
                         final String... args)
       throws WorkerException {
     try {

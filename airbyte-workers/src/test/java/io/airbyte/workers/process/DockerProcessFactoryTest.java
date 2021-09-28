@@ -17,6 +17,7 @@ import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -73,7 +74,7 @@ class DockerProcessFactoryTest {
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),

@@ -16,6 +16,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.Map;
@@ -102,7 +103,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                              final String... args)
       throws Exception {
     try {
-      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements, args);
+      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements,
+          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
