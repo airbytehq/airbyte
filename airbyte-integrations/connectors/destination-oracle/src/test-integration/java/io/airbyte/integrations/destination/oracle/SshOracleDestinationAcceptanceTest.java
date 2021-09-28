@@ -42,14 +42,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.OracleContainer;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SshOracleDestinationAcceptanceTest.class);
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
