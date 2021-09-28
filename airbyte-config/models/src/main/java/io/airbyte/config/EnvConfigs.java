@@ -67,6 +67,7 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -380,6 +381,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getMemoryLimit() {
     return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+  }
+
+  /**
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
+   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
+   * no-op value.
+   */
+  @Override
+  public String getJobsImagePullSecret() {
+    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
   }
 
   @Override

@@ -58,6 +58,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
         "spec");
   }
 
@@ -72,6 +73,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
         "check",
         "--config", configFilename);
   }
@@ -87,6 +89,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
         "discover",
         "--config", configFilename);
   }
@@ -126,6 +129,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
         arguments);
   }
 
@@ -149,6 +153,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);
