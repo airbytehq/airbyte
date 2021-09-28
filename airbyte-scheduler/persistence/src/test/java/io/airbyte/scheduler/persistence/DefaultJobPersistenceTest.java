@@ -117,9 +117,20 @@ class DefaultJobPersistenceTest {
         status,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
-        null);
+        NOW.getEpochSecond());
   }
 
+  private static Attempt createUnfinishedAttempt(long id, long jobId, AttemptStatus status, Path logPath) {
+    return new Attempt(
+        id,
+        jobId,
+        logPath,
+        null,
+        status,
+        NOW.getEpochSecond(),
+        NOW.getEpochSecond(),
+        null);
+  }
   private static Job createJob(long id, JobConfig jobConfig, JobStatus status, List<Attempt> attempts, long time) {
     return createJob(id, jobConfig, status, attempts, time, SCOPE);
   }
@@ -293,6 +304,74 @@ class DefaultJobPersistenceTest {
     assertEquals(expected, actual);
   }
 
+
+  @Test
+  @DisplayName("Should return correct set of jobs when querying on end timestamp")
+  void testListJobsWithTimestamp() throws IOException, InterruptedException {
+    jobPersistence = new DefaultJobPersistence(database);
+    final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+    final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
+    final Path syncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int syncJobAttemptNumber1 = jobPersistence.createAttempt(syncJobId, syncJobSecondAttemptLogPath);
+    Thread.sleep(1000);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber1);
+
+    final long specJobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int specJobAttemptNumber0 = jobPersistence.createAttempt(specJobId, LOG_PATH);
+    jobPersistence.failAttempt(specJobId, specJobAttemptNumber0);
+    final Path specJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int specJobAttemptNumber1 = jobPersistence.createAttempt(specJobId, specJobSecondAttemptLogPath);
+    Thread.sleep(1000);
+    jobPersistence.succeedAttempt(specJobId, specJobAttemptNumber1);
+
+    List<Job> jobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.EPOCH);
+    assertEquals(jobs.size(), 1);
+    assertEquals(jobs.get(0).getId(), syncJobId);
+    assertEquals(jobs.get(0).getAttempts().size(), 2);
+    assertEquals(jobs.get(0).getAttempts().get(0).getId(), 0);
+    assertEquals(jobs.get(0).getAttempts().get(1).getId(), 1);
+
+    final Path syncJobThirdAttemptLogPath = LOG_PATH.resolve("3");
+    final int syncJobAttemptNumber2 = jobPersistence.createAttempt(syncJobId, syncJobThirdAttemptLogPath);
+    Thread.sleep(1000);
+    jobPersistence.succeedAttempt(syncJobId, syncJobAttemptNumber2);
+
+    final long newSyncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+    final int newSyncJobAttemptNumber0 = jobPersistence.createAttempt(newSyncJobId, LOG_PATH);
+    Thread.sleep(1000);
+    jobPersistence.failAttempt(newSyncJobId, newSyncJobAttemptNumber0);
+    final Path newSyncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int newSyncJobAttemptNumber1 = jobPersistence.createAttempt(newSyncJobId, newSyncJobSecondAttemptLogPath);
+    Thread.sleep(1000);
+    jobPersistence.succeedAttempt(newSyncJobId, newSyncJobAttemptNumber1);
+
+    Long maxEndedAtTimestamp = jobs.get(0).getAttempts().stream().map(c -> c.getEndedAtInSecond().orElseThrow()).max(Long::compareTo).orElseThrow();
+
+    List<Job> secondQueryJobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.ofEpochSecond(maxEndedAtTimestamp));
+    assertEquals(secondQueryJobs.size(), 2);
+    assertEquals(secondQueryJobs.get(0).getId(), syncJobId);
+    assertEquals(secondQueryJobs.get(0).getAttempts().size(), 1);
+    assertEquals(secondQueryJobs.get(0).getAttempts().get(0).getId(), 2);
+
+    assertEquals(secondQueryJobs.get(1).getId(), newSyncJobId);
+    assertEquals(secondQueryJobs.get(1).getAttempts().size(), 2);
+    assertEquals(secondQueryJobs.get(1).getAttempts().get(0).getId(), 0);
+    assertEquals(secondQueryJobs.get(1).getAttempts().get(1).getId(), 1);
+
+    Long maxEndedAtTimestampAfterSecondQuery = -1L;
+    for (Job c : secondQueryJobs) {
+      List<Attempt> attempts = c.getAttempts();
+      Long maxEndedAtTimestampForJob = attempts.stream().map(attempt -> attempt.getEndedAtInSecond().orElseThrow())
+          .max(Long::compareTo).orElseThrow();
+      if (maxEndedAtTimestampForJob > maxEndedAtTimestampAfterSecondQuery) {
+        maxEndedAtTimestampAfterSecondQuery = maxEndedAtTimestampForJob;
+      }
+    }
+
+    assertEquals(0, jobPersistence.listJobs(ConfigType.SYNC, Instant.ofEpochSecond(maxEndedAtTimestampAfterSecondQuery)).size());
+  }
+
   @Test
   @DisplayName("Should have valid yaml schemas in exported database")
   void testYamlSchemas() throws IOException {
@@ -452,7 +531,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.RUNNING,
-          Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
+          Lists.newArrayList(createUnfinishedAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }
@@ -487,7 +566,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.RUNNING,
-          Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
+          Lists.newArrayList(createUnfinishedAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }

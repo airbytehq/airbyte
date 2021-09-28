@@ -243,14 +243,16 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void failAttempt(long jobId, int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    final LocalDateTime endedAtTruncatedToSeconds = LocalDateTime.ofEpochSecond(now.toEpochSecond(ZoneOffset.UTC), 0, ZoneOffset.UTC);
     database.transaction(ctx -> {
       // do not overwrite terminal states.
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
 
       ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.FAILED),
           now,
+          endedAtTruncatedToSeconds,
           jobId,
           attemptNumber);
       return null;
@@ -260,14 +262,16 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void succeedAttempt(long jobId, int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    final LocalDateTime endedAtTruncatedToSeconds = LocalDateTime.ofEpochSecond(now.toEpochSecond(ZoneOffset.UTC), 0, ZoneOffset.UTC);
     database.transaction(ctx -> {
       // override any other terminal statuses if we are now succeeded.
       updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
 
       ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.SUCCEEDED),
           now,
+          endedAtTruncatedToSeconds,
           jobId,
           attemptNumber);
       return null;
@@ -406,6 +410,15 @@ public class DefaultJobPersistence implements JobPersistence {
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+  }
+
+  @Override
+  public List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
+    return database.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(Sets.newHashSet(configType)) + " AND " +
+            " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC", timeConvertedIntoLocalDateTime)));
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {
