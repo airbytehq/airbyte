@@ -102,6 +102,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                              final String... args)
       throws Exception {
     try {
+      LOGGER.info("Running with normalization version: {}", NORMALIZATION_IMAGE_NAME);
       process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements, args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
