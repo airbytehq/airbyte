@@ -1,31 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
 import static java.util.stream.Collectors.toMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -39,6 +21,7 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
@@ -51,10 +34,12 @@ import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -70,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.util.Strings;
 
 public class WebBackendConnectionsHandler {
 
@@ -170,6 +156,116 @@ public class WebBackendConnectionsHandler {
           WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
           WebBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
         });
+  }
+
+  public WebBackendConnectionReadList webBackendSearchConnections(WebBackendConnectionSearch webBackendConnectionSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
+    for (ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
+      if (matchSearch(webBackendConnectionSearch, connectionRead)) {
+        reads.add(buildWebBackendConnectionRead(connectionRead));
+      }
+    }
+
+    return new WebBackendConnectionReadList().connections(reads);
+  }
+
+  private boolean matchSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+
+    final ConnectionRead connectionReadFromSearch = fromConnectionSearch(connectionSearch, connectionRead);
+    final SourceRead sourceRead = sourceHandler.getSource(new SourceIdRequestBody().sourceId(connectionRead.getSourceId()));
+    final SourceRead sourceReadFromSearch = fromSourceSearch(connectionSearch.getSource(), sourceRead);
+    final DestinationRead destinationRead =
+        destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId()));
+    final DestinationRead destinationReadFromSearch = fromDestinationSearch(connectionSearch.getDestination(), destinationRead);
+
+    return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
+        (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead)) &&
+        (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
+  }
+
+  private ConnectionRead fromConnectionSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead) {
+    if (connectionSearch == null)
+      return connectionRead;
+
+    final ConnectionRead fromSearch = new ConnectionRead();
+    fromSearch.connectionId(connectionSearch.getConnectionId() == null ? connectionRead.getConnectionId() : connectionSearch.getConnectionId());
+    fromSearch.destinationId(connectionSearch.getDestinationId() == null ? connectionRead.getDestinationId() : connectionSearch.getDestinationId());
+    fromSearch.name(Strings.isBlank(connectionSearch.getName()) ? connectionRead.getName() : connectionSearch.getName());
+    fromSearch.namespaceFormat(Strings.isBlank(connectionSearch.getNamespaceFormat()) || connectionSearch.getNamespaceFormat().equals("null")
+        ? connectionRead.getNamespaceFormat()
+        : connectionSearch.getNamespaceFormat());
+    fromSearch.namespaceDefinition(
+        connectionSearch.getNamespaceDefinition() == null ? connectionRead.getNamespaceDefinition() : connectionSearch.getNamespaceDefinition());
+    fromSearch.prefix(Strings.isBlank(connectionSearch.getPrefix()) ? connectionRead.getPrefix() : connectionSearch.getPrefix());
+    fromSearch.schedule(connectionSearch.getSchedule() == null ? connectionRead.getSchedule() : connectionSearch.getSchedule());
+    fromSearch.sourceId(connectionSearch.getSourceId() == null ? connectionRead.getSourceId() : connectionSearch.getSourceId());
+    fromSearch.status(connectionSearch.getStatus() == null ? connectionRead.getStatus() : connectionSearch.getStatus());
+
+    // these properties are not enabled in the search
+    fromSearch.resourceRequirements(connectionRead.getResourceRequirements());
+    fromSearch.syncCatalog(connectionRead.getSyncCatalog());
+    fromSearch.operationIds(connectionRead.getOperationIds());
+
+    return fromSearch;
+  }
+
+  private SourceRead fromSourceSearch(SourceSearch sourceSearch, SourceRead sourceRead) {
+    if (sourceSearch == null)
+      return sourceRead;
+
+    final SourceRead fromSearch = new SourceRead();
+    fromSearch.name(Strings.isBlank(sourceSearch.getName()) ? sourceRead.getName() : sourceSearch.getName());
+    fromSearch
+        .sourceDefinitionId(sourceSearch.getSourceDefinitionId() == null ? sourceRead.getSourceDefinitionId() : sourceSearch.getSourceDefinitionId());
+    fromSearch.sourceId(sourceSearch.getSourceId() == null ? sourceRead.getSourceId() : sourceSearch.getSourceId());
+    fromSearch.sourceName(Strings.isBlank(sourceSearch.getSourceName()) ? sourceRead.getSourceName() : sourceSearch.getSourceName());
+    fromSearch.workspaceId(sourceSearch.getWorkspaceId() == null ? sourceRead.getWorkspaceId() : sourceSearch.getWorkspaceId());
+    if (sourceSearch.getConnectionConfiguration() == null) {
+      fromSearch.connectionConfiguration(sourceRead.getConnectionConfiguration());
+    } else {
+      JsonNode connectionConfiguration = sourceSearch.getConnectionConfiguration();
+      sourceRead.getConnectionConfiguration().fieldNames()
+          .forEachRemaining(field -> {
+            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
+              ((ObjectNode) connectionConfiguration).set(field, sourceRead.getConnectionConfiguration().get(field));
+            }
+          });
+      fromSearch.connectionConfiguration(connectionConfiguration);
+    }
+
+    return fromSearch;
+  }
+
+  private DestinationRead fromDestinationSearch(DestinationSearch destinationSearch, DestinationRead destinationRead) {
+    if (destinationSearch == null)
+      return destinationRead;
+
+    final DestinationRead fromSearch = new DestinationRead();
+    fromSearch.name(Strings.isBlank(destinationSearch.getName()) ? destinationRead.getName() : destinationSearch.getName());
+    fromSearch.destinationDefinitionId(destinationSearch.getDestinationDefinitionId() == null ? destinationRead.getDestinationDefinitionId()
+        : destinationSearch.getDestinationDefinitionId());
+    fromSearch
+        .destinationId(destinationSearch.getDestinationId() == null ? destinationRead.getDestinationId() : destinationSearch.getDestinationId());
+    fromSearch.destinationName(
+        Strings.isBlank(destinationSearch.getDestinationName()) ? destinationRead.getDestinationName() : destinationSearch.getDestinationName());
+    fromSearch.workspaceId(destinationSearch.getWorkspaceId() == null ? destinationRead.getWorkspaceId() : destinationSearch.getWorkspaceId());
+    if (destinationSearch.getConnectionConfiguration() == null) {
+      fromSearch.connectionConfiguration(destinationRead.getConnectionConfiguration());
+    } else {
+      JsonNode connectionConfiguration = destinationSearch.getConnectionConfiguration();
+      destinationRead.getConnectionConfiguration().fieldNames()
+          .forEachRemaining(field -> {
+            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
+              ((ObjectNode) connectionConfiguration).set(field, destinationRead.getConnectionConfiguration().get(field));
+            }
+          });
+      fromSearch.connectionConfiguration(connectionConfiguration);
+    }
+
+    return fromSearch;
   }
 
   public WebBackendConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)

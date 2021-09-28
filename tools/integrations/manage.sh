@@ -90,7 +90,7 @@ cmd_publish() {
   docker push "$versioned_image"
   docker push "$latest_image"
 
-  if [[ "true" == "${publish_spec_to_cache}" ]]; then
+  if [[ "true" == "${publish_spec_to_cache}" && "airbyte/normalization" != "${image_name}" ]]; then
     echo "Publishing and writing to spec cache."
 
     # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
