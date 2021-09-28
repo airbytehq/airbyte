@@ -4,11 +4,13 @@
 
 package io.airbyte.workers.temporal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -66,12 +68,12 @@ public interface CheckConnectionWorkflow {
   class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
     private final ProcessFactory processFactory;
-    private final Optional<ReadOnlySecretPersistence> secretPersistence;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
       this.processFactory = processFactory;
-      this.secretPersistence = secretPersistence;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
     }
 
@@ -79,14 +81,10 @@ public interface CheckConnectionWorkflow {
                                              IntegrationLauncherConfig launcherConfig,
                                              StandardCheckConnectionInput connectionConfiguration) {
 
-      final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
-          .withConnectionConfiguration(connectionConfiguration.getConnectionConfiguration());
+      final JsonNode fullConfig = secretsHydrator.hydrate(connectionConfiguration.getConnectionConfiguration());
 
-      if (secretPersistence.isPresent()) {
-        final var partialConfig = connectionConfiguration.getConnectionConfiguration();
-        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence.get());
-        input.setConnectionConfiguration(fullConfig);
-      }
+      final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+          .withConnectionConfiguration(fullConfig);
 
       final Supplier<StandardCheckConnectionInput> inputSupplier = () -> input;
 

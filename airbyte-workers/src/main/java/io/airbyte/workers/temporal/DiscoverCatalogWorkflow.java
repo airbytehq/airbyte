@@ -4,10 +4,12 @@
 
 package io.airbyte.workers.temporal;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -68,12 +70,12 @@ public interface DiscoverCatalogWorkflow {
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     private final ProcessFactory processFactory;
-    private final Optional<ReadOnlySecretPersistence> secretPersistence;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
       this.processFactory = processFactory;
-      this.secretPersistence = secretPersistence;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
     }
 
@@ -81,14 +83,10 @@ public interface DiscoverCatalogWorkflow {
                               IntegrationLauncherConfig launcherConfig,
                               StandardDiscoverCatalogInput config) {
 
-      final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
-          .withConnectionConfiguration(config.getConnectionConfiguration());
+      final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
-      if (secretPersistence.isPresent()) {
-        final var partialConfig = config.getConnectionConfiguration();
-        final var fullConfig = SecretsHelpers.combineConfig(partialConfig, secretPersistence.get());
-        input.setConnectionConfiguration(fullConfig);
-      }
+      final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
+          .withConnectionConfiguration(fullConfig);
 
       final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> input;
 

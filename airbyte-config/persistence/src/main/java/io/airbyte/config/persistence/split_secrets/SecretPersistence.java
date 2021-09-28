@@ -21,7 +21,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
 
-  static Optional<SecretPersistence> getLongLived(Configs configs) throws IOException {
+  static Optional<SecretPersistence> getLongLived(final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new ConfigsDatabaseInstance(
@@ -41,7 +41,17 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static Optional<SecretPersistence> getEphemeral(Configs configs) throws IOException {
+  static SecretsHydrator getSecretsHydrator(final Configs configs) throws IOException {
+    final var persistence = getLongLived(configs);
+
+    if(persistence.isPresent()) {
+      return new RealSecretsHydrator(persistence.get());
+    } else {
+      return new NoOpSecretsHydrator();
+    }
+  }
+
+  static Optional<SecretPersistence> getEphemeral(final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new ConfigsDatabaseInstance(
