@@ -1,57 +1,23 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
-
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
@@ -129,21 +95,21 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     return Databases.createDatabase(
-            db.getUsername(),
-            db.getPassword(),
-            String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-                    db.getHost(),
-                    db.getFirstMappedPort(),
-                    db.getDatabaseName()),
-            "com.mysql.cj.jdbc.Driver",
-            SQLDialect.MYSQL).query(
+        db.getUsername(),
+        db.getPassword(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()),
+        "com.mysql.cj.jdbc.Driver",
+        SQLDialect.MYSQL).query(
             ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                            JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(r -> r.formatJSON(JSON_FORMAT))
-                    .map(Jsons::deserialize)
-                    .collect(Collectors.toList()));
+                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(r -> r.formatJSON(JSON_FORMAT))
+                .map(Jsons::deserialize)
+                .collect(Collectors.toList()));
   }
 
   private void setLocalInFileToTrue() {
