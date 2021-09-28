@@ -52,6 +52,12 @@ public class KubeProcessFactory implements ProcessFactory {
   public static final String DISCOVER_JOB = "discover";
   public static final String NORMALIZATION_JOB = "normalize";
 
+  public static final String SYNC_STEP = "sync_step";
+  public static final String READ_STEP = "read";
+  public static final String WRITE_STEP = "write";
+  public static final String NORMALISE_STEP = "normalise";
+  public static final String CUSTOM_STEP = "custom";
+
   private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
   private static final String JOB_LABEL_KEY = "job_id";
   private static final String ATTEMPT_LABEL_KEY = "attempt_id";

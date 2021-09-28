@@ -124,7 +124,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       throws Exception {
     try {
       process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements,
-          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.NORMALIZATION_JOB), args);
+          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

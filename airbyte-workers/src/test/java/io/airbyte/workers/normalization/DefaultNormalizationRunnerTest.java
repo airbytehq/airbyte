@@ -73,7 +73,8 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, false, files, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.NORMALIZATION_JOB),
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
         "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,

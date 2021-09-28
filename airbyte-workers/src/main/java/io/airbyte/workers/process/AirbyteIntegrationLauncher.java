@@ -149,7 +149,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB),
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
         arguments);
   }
 
@@ -173,7 +173,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB),
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);
