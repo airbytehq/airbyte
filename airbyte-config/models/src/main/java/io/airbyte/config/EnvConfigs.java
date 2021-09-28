@@ -403,6 +403,11 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
   }
 
+  /**
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
+   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
+   * no-op value.
+   */
   @Override
   public String getJobsImagePullSecret() {
     return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
