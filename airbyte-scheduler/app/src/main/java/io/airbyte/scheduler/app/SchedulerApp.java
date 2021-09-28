@@ -61,7 +61,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +160,8 @@ public class SchedulerApp {
         CLEANING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
 
-    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduleJobsPool, executeJobsPool, cleanupJobsPool));
+    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
+        scheduleJobsPool, executeJobsPool, cleanupJobsPool));
   }
 
   private void cleanupZombies(JobPersistence jobPersistence, JobNotifier jobNotifier) throws IOException {

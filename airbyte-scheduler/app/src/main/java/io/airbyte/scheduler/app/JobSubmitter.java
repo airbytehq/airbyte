@@ -111,10 +111,10 @@ public class JobSubmitter implements Runnable {
         submitJob(job);
         var pending = SchedulerApp.PENDING_JOBS.decrementAndGet();
         LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
-        LOGGER.info("Pending jobs: {}", pending);
+        LOGGER.debug("Pending jobs: {}", pending);
       } else {
         LOGGER.info("Attempting to submit already running job {}. There are probably too many queued jobs.", job.getId());
-        LOGGER.info("Pending jobs: {}", SchedulerApp.PENDING_JOBS.get());
+        LOGGER.debug("Pending jobs: {}", SchedulerApp.PENDING_JOBS.get());
       }
     };
   }
