@@ -183,9 +183,6 @@ class SecretsMigrationTest {
         Sets.newHashSet(writeToConfigPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)));
 
     failOnDifferingConfigurations(readFromConfigPersistence.dumpConfigs(), writeToConfigPersistence.dumpConfigs());
-
-    // TODO: Writing over the old configurations to use new secrets coordinates
-    // fail();
   }
 
   @AfterEach
