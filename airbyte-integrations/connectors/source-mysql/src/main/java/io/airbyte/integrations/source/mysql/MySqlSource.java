@@ -183,6 +183,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
+    List<String> additionalParameters = new ArrayList<>();
+
     final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -192,6 +194,16 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbc_url.append("&").append(config.get("jdbc_url_params").asText());
     }
+
+    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+      jdbc_url.append("&");
+      additionalParameters.add("useSSL=true");
+      additionalParameters.add("requireSSL=true");
+      additionalParameters.add("verifyServerCertificate=false");
+    }
+
+    additionalParameters.forEach(x -> jdbc_url.append(x).append("&"));
+
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbc_url.toString());

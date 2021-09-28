@@ -42,6 +42,13 @@
         "type": "string",
         "order": 5
       },
+      "ssl": {
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
+        "type": "boolean",
+        "default": false,
+        "order": 7
+      },
       "replication_method": {
         "type": "string",
         "title": "Replication Method",
