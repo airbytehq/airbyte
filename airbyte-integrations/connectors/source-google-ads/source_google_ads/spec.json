@@ -107,10 +107,7 @@
         ["client_secret"],
         ["developer_token"]
       ],
-      "oauthFlowOutputParameters": [
-        ["access_token"],
-        ["refresh_token"]
-      ]
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }

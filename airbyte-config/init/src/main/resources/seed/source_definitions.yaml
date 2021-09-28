@@ -374,7 +374,7 @@
 - sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   name: Harvest
   dockerRepository: airbyte/source-harvest
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   sourceType: api
 - sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
