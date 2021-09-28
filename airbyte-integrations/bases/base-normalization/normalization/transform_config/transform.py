@@ -217,6 +217,10 @@ class TransformConfig:
     @staticmethod
     def transform_mysql(config: Dict[str, Any]):
         print("transform_mysql")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://github.com/dbeatty10/dbt-mysql#configuring-your-profile
         dbt_config = {
             # MySQL 8.x - type: mysql
