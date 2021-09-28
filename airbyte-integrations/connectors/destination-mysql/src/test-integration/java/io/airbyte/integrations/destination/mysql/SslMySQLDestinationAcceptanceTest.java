@@ -53,32 +53,12 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest {
+public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private MySQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/destination-mysql:dev";
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
 
   @Override
   protected JsonNode getConfig() {
@@ -105,14 +85,6 @@ public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected String getDefaultSchema(JsonNode config) {
-    if (config.get("database") == null) {
-      return null;
-    }
-    return config.get("database").asText();
-  }
-
-  @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
                                            String namespace,
@@ -122,6 +94,37 @@ public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+    String tableName = namingResolver.getIdentifier(streamName);
+    String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
+  }
+
+  @Override
+  @Test
+  public void testCustomDbtTransformations() {
+    // We need to create view for testing custom dbt transformations
+    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
+    // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
+    // super.testCustomDbtTransformations();
+  }
+
+  @Override
+  protected void setup(TestDestinationEnv testEnv) {
+    db = new MySQLContainer<>("mysql:8.0");
+    db.start();
+    setLocalInFileToTrue();
+    revokeAllPermissions();
+    grantCorrectPermissions();
+  }
+
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    db.stop();
+    db.close();
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
@@ -135,40 +138,12 @@ public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
             "com.mysql.cj.jdbc.Driver",
             SQLDialect.MYSQL).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
-  }
-
-  @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
-    return retrieveRecordsFromTable(tableName, schema);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-    }
-    return result;
-  }
-
-  @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    db = new MySQLContainer<>("mysql:8.0");
-    db.start();
-    setLocalInFileToTrue();
-    revokeAllPermissions();
-    grantCorrectPermissions();
+                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                            JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(Jsons::deserialize)
+                    .collect(Collectors.toList()));
   }
 
   private void setLocalInFileToTrue() {
@@ -188,7 +163,7 @@ public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
       Databases.createDatabase(
           "root",
           "test",
-          String.format("jdbc:mysql://%s:%s/%s",
+          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
               db.getHost(),
               db.getFirstMappedPort(),
               db.getDatabaseName()),
@@ -198,78 +173,6 @@ public class MySQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
                   .execute(query));
     } catch (SQLException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
-  }
-
-  @Override
-  @Test
-  public void testCustomDbtTransformations() throws Exception {
-    // We need to create view for testing custom dbt transformations
-    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
-    // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
-    // super.testCustomDbtTransformations();
-  }
-
-  @Test
-  public void testJsonSync() throws Exception {
-    final String catalogAsText = "{\n"
-        + "  \"streams\": [\n"
-        + "    {\n"
-        + "      \"name\": \"exchange_rate\",\n"
-        + "      \"json_schema\": {\n"
-        + "        \"properties\": {\n"
-        + "          \"id\": {\n"
-        + "            \"type\": \"integer\"\n"
-        + "          },\n"
-        + "          \"data\": {\n"
-        + "            \"type\": \"string\"\n"
-        + "          }"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}\n";
-
-    final AirbyteCatalog catalog = Jsons.deserialize(catalogAsText, AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = Lists.newArrayList(
-        new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(catalog.getStreams().get(0).getName())
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.builder()
-                    .put("id", 1)
-                    .put("data", "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
-                    .build()))),
-        new AirbyteMessage()
-            .withType(Type.STATE)
-            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
-
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
-  }
-
-  @Override
-  @Test
-  public void testLineBreakCharacters() {
-    // overrides test with a no-op until we handle full UTF-8 in the destination
-  }
-
-  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
-    if (expectedValue.isBoolean()) {
-      // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
-      assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
-    } else {
-      assertEquals(expectedValue, actualValue);
     }
   }
 
