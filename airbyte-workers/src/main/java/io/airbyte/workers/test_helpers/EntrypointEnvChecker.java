@@ -34,7 +34,8 @@ public class EntrypointEnvChecker {
         false,
         Collections.emptyMap(),
         "printenv",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Collections.emptyMap());
 
     BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
