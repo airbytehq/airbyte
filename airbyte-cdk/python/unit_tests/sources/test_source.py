@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -34,6 +14,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class MockSource(Source):
@@ -81,6 +62,7 @@ def abstract_source(mocker):
     class MockHttpStream(MagicMock, HttpStream):
         url_base = "http://example.com"
         path = "/dummy/path"
+        get_json_schema = MagicMock()
 
         def supports_incremental(self):
             return True
@@ -92,6 +74,7 @@ def abstract_source(mocker):
 
     class MockStream(MagicMock, Stream):
         page_size = None
+        get_json_schema = MagicMock()
 
         def __init__(self, *args, **kvargs):
             MagicMock.__init__(self)
@@ -145,8 +128,7 @@ def test_read_catalog(source):
 def test_internal_config(abstract_source, catalog):
     streams = abstract_source.streams(None)
     assert len(streams) == 2
-    http_stream = streams[0]
-    non_http_stream = streams[1]
+    http_stream, non_http_stream = streams
     assert isinstance(http_stream, HttpStream)
     assert not isinstance(non_http_stream, HttpStream)
     http_stream.read_records.return_value = [{}] * 3
@@ -216,3 +198,44 @@ def test_internal_config_limit(abstract_source, catalog):
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
     assert read_log_record[0].startswith(f"Read {STREAM_LIMIT} ")
+
+
+SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
+
+
+def test_source_config_no_transform(abstract_source, catalog):
+    logger_mock = MagicMock()
+    streams = abstract_source.streams(None)
+    http_stream, non_http_stream = streams
+    http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
+    http_stream.read_records.return_value, non_http_stream.read_records.return_value = [[{"value": 23}] * 5] * 2
+    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    assert len(records) == 2 * 5
+    assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
+    assert http_stream.get_json_schema.call_count == 1
+    assert non_http_stream.get_json_schema.call_count == 1
+
+
+def test_source_config_transform(abstract_source, catalog):
+    logger_mock = MagicMock()
+    streams = abstract_source.streams(None)
+    http_stream, non_http_stream = streams
+    http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    non_http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
+    http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
+    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    assert len(records) == 2
+    assert [r.record.data for r in records] == [{"value": "23"}] * 2
+
+
+def test_source_config_transform_and_no_transform(abstract_source, catalog):
+    logger_mock = MagicMock()
+    streams = abstract_source.streams(None)
+    http_stream, non_http_stream = streams
+    http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
+    http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
+    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    assert len(records) == 2
+    assert [r.record.data for r in records] == [{"value": "23"}, {"value": 23}]

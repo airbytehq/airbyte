@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-pod-sweeper
-        image: "{{ .Values.podSweeper.image.repository }}:{{ .Values.podSweeper.image.tag}}"
+        image: {{ include "airbyte.podSweeperImage" . }}
         imagePullPolicy: "{{ .Values.podSweeper.image.pullPolicy }}"
         env:
         - name: KUBE_NAMESPACE

@@ -67,6 +67,12 @@
                 "type": "string",
                 "description": "A refresh token generated using the above client ID and secret",
                 "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "A access token generated using the above client ID, secret and refresh_token",
+                "airbyte_secret": true
               }
             }
           },
@@ -95,13 +101,17 @@
       }
     }
   },
-    "authSpecification": {
+  "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
+      "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [
-        ["credentials", "client_id"],
-        ["credentials", "client_secret"],
-        ["credentials", "refresh_token"]
+        ["client_id"],
+        ["client_secret"]
+      ],
+      "oauthFlowOutputParameters": [
+        ["access_token"],
+        ["refresh_token"]
       ]
     }
   }
