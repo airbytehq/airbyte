@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airbyte-env
+data:
+  AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
+  API_URL: {{ .Values.webapp.api.url }}
+  AWS_ACCESS_KEY_ID: {{ .Values.minio.accessKey.password }}
+  AWS_SECRET_ACCESS_KEY: {{ .Values.minio.secretKey.password }}
+  CONFIG_ROOT: /configs
+  DATA_DOCKER_MOUNT: airbyte_data
+  DATABASE_DB: {{ include "airbyte.database.name" . }}
+  DATABASE_HOST: {{ include "airbyte.database.host" . }}
+  DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
+  DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
+  DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
+  DATABASE_USER: {{ include "airbyte.database.user" . }}
+  DB_DOCKER_MOUNT: airbyte_db
+  FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
+  GCP_STORAGE_BUCKET: ""
+  GOOGLE_APPLICATION_CREDENTIALS: ""
+  INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
+  IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
+  LOCAL_ROOT: /tmp/airbyte_local
+  OPENREPLAY: {{ ternary "enabled" "disabled" .Values.webapp.openreplay.enabled }}
+  PAPERCUPS_STORYTIME: {{ ternary "enabled" "disabled" .Values.webapp.storytime.enabled }}
+  RESOURCE_CPU_LIMIT: ""
+  RESOURCE_CPU_REQUEST: ""
+  RESOURCE_MEMORY_LIMIT: ""
+  RESOURCE_MEMORY_REQUEST: ""
+  RUN_DATABASE_MIGRATION_ON_STARTUP: "true"
+  S3_LOG_BUCKET: airbyte-dev-logs
+  S3_LOG_BUCKET_REGION: ""
+  S3_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . }}
+  S3_PATH_STYLE_ACCESS: "true"
+  SUBMITTER_NUM_THREADS: "10"
+  TEMPORAL_HOST: {{ include "common.names.fullname" . }}-temporal:{{ .Values.temporal.service.port }}
+  TEMPORAL_WORKER_PORTS: 9001,9002,9003,9004,9005,9006,9007,9008,9009,9010,9011,9012,9013,9014,9015,9016,9017,9018,9019,9020,9021,9022,9023,9024,9025,9026,9027,9028,9029,9030,9031,9032,9033,9034,9035,9036,9037,9038,9039,9040
+  TRACKING_STRATEGY: segment
+  WEBAPP_URL: http://{{ include "common.names.fullname" . }}-webapp:{{ .Values.webapp.service.port }}
+  WORKER_ENVIRONMENT: kubernetes
+  WORKSPACE_DOCKER_MOUNT: airbyte_workspace
+  WORKSPACE_ROOT: /workspace

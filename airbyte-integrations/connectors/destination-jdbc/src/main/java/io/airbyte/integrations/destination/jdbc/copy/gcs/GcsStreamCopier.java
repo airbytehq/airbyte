@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -30,10 +10,13 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -44,6 +27,10 @@ import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -54,11 +41,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
 
-  private final String gcsStagingFile;
   private final Storage storageClient;
   private final GcsConfig gcsConfig;
-  private final WriteChannel channel;
-  private final CSVPrinter csvPrinter;
   private final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
   private final String schemaName;
@@ -66,6 +50,10 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
+  private final Set<String> gcsStagingFiles = new HashSet<>();
+  private final HashMap<String, WriteChannel> channels = new HashMap<>();
+  private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
+  private final String stagingFolder;
 
   public GcsStreamCopier(String stagingFolder,
                          DestinationSyncMode destSyncMode,
@@ -79,57 +67,79 @@ public abstract class GcsStreamCopier implements StreamCopier {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
+    this.stagingFolder = stagingFolder;
     this.db = db;
     this.nameTransformer = nameTransformer;
     this.sqlOperations = sqlOperations;
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.storageClient = storageClient;
     this.gcsConfig = gcsConfig;
+  }
 
-    this.gcsStagingFile = String.join("/", stagingFolder, schemaName, streamName);
+  private String prepareGcsStagingFile() {
+    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + streamName);
+  }
 
-    var blobId = BlobId.of(gcsConfig.getBucketName(), gcsStagingFile);
+  @Override
+  public String prepareStagingFile() {
+    var name = prepareGcsStagingFile();
+    gcsStagingFiles.add(name);
+    var blobId = BlobId.of(gcsConfig.getBucketName(), name);
     var blobInfo = BlobInfo.newBuilder(blobId).build();
     var blob = storageClient.create(blobInfo);
-    this.channel = blob.writer();
+    var channel = blob.writer();
+    channels.put(name, channel);
     OutputStream outputStream = Channels.newOutputStream(channel);
 
     var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
     try {
-      this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+      csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    return name;
   }
 
   @Override
-  public void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception {
-    csvPrinter.printRecord(id, jsonDataString, emittedAt);
+  public void write(UUID id, AirbyteRecordMessage recordMessage, String gcsFileName) throws Exception {
+    if (csvPrinters.containsKey(gcsFileName)) {
+      csvPrinters.get(gcsFileName).printRecord(id,
+          Jsons.serialize(recordMessage.getData()),
+          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+    }
   }
 
   @Override
   public void closeStagingUploader(boolean hasFailed) throws Exception {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
-    csvPrinter.close();
-    channel.close();
+    for (var csvPrinter : csvPrinters.values()) {
+      csvPrinter.close();
+    }
+    for (var channel : channels.values()) {
+      channel.close();
+    }
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}.", tmpTableName, streamName, schemaName);
-    copyGcsCsvFileIntoTable(db, getFullGcsPath(gcsConfig.getBucketName(), gcsStagingFile), schemaName, tmpTableName, gcsConfig);
+    for (var gcsStagingFile : gcsStagingFiles) {
+      copyGcsCsvFileIntoTable(db, getFullGcsPath(gcsConfig.getBucketName(), gcsStagingFile), schemaName, tmpTableName, gcsConfig);
+    }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    LOGGER.info("Begin cleaning gcs staging file {}.", gcsStagingFile);
-    var blobId = BlobId.of(gcsConfig.getBucketName(), gcsStagingFile);
-    if (storageClient.get(blobId).exists()) {
-      storageClient.delete(blobId);
+    for (var gcsStagingFile : gcsStagingFiles) {
+      LOGGER.info("Begin cleaning gcs staging file {}.", gcsStagingFile);
+      var blobId = BlobId.of(gcsConfig.getBucketName(), gcsStagingFile);
+      if (storageClient.get(blobId).exists()) {
+        storageClient.delete(blobId);
+      }
+      LOGGER.info("GCS staging file {} cleaned.", gcsStagingFile);
     }
-    LOGGER.info("GCS staging file {} cleaned.", gcsStagingFile);
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);

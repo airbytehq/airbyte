@@ -10,6 +10,9 @@ import Table from "components/Table";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+import { User } from "packages/cloud/lib/domain/users";
 
 const Header = styled.div`
   display: flex;
@@ -18,15 +21,20 @@ const Header = styled.div`
 `;
 
 export const UsersSettingsView: React.FC = () => {
+  const [modalIsOpen, toggleModal] = useToggle(false);
   const userService = useGetUserService();
   const { workspaceId } = useCurrentWorkspace();
-  const { data } = useQuery(
-    ["users"],
+
+  const { data, refetch } = useQuery(
+    ["users", workspaceId],
     () => userService.listByWorkspaceId(workspaceId),
     { suspense: true }
   );
 
-  const [modalIsOpen, toggleModal] = useToggle(false);
+  // TODO: show error with request fails
+  const { isLoading, mutate } = useUserHook(console.log, console.log);
+
+  const { user } = useAuthService();
 
   const columns = React.useMemo(
     () => [
@@ -52,17 +60,23 @@ export const UsersSettingsView: React.FC = () => {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
         accessor: "status",
-        Cell: (_: CellProps<any>) =>
+        Cell: ({ row }: CellProps<User>) =>
           [
-            <Button secondary>
+            <Button
+              disabled={user?.userId === row.original.userId}
+              secondary
+              onClick={() => mutate(row.original.userId)}
+              isLoading={isLoading}
+            >
               <FormattedMessage id="userSettings.user.remove" />
             </Button>,
             // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
-    []
+    [isLoading, mutate]
   );
+
   return (
     <>
       <Header>
@@ -74,7 +88,9 @@ export const UsersSettingsView: React.FC = () => {
         </Button>
       </Header>
       <Table data={data ?? []} columns={columns} />
-      {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}
+      {modalIsOpen && (
+        <InviteUsersModal onClose={toggleModal} onSubmit={() => refetch()} />
+      )}
     </>
   );
 };

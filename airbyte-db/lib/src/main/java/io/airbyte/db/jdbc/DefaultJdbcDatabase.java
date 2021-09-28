@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -49,10 +29,20 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   private final CloseableConnectionSupplier connectionSupplier;
 
   public DefaultJdbcDatabase(final DataSource dataSource) {
-    this(new DataSourceConnectionSupplier(dataSource));
+    this(new DataSourceConnectionSupplier(dataSource), JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public DefaultJdbcDatabase(final DataSource dataSource, JdbcSourceOperations sourceOperations) {
+    this(new DataSourceConnectionSupplier(dataSource), sourceOperations);
+  }
+
+  public DefaultJdbcDatabase(CloseableConnectionSupplier connectionSupplier, JdbcSourceOperations sourceOperations) {
+    super(sourceOperations);
+    this.connectionSupplier = connectionSupplier;
   }
 
   public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier) {
+    super(JdbcUtils.getDefaultSourceOperations());
     this.connectionSupplier = connectionSupplier;
   }
 
@@ -68,7 +58,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = connectionSupplier.getConnection()) {
-      return JdbcUtils.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+      return sourceOperations.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
     }
   }
 
@@ -77,7 +67,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                       CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return JdbcUtils.toStream(query.apply(connection), recordTransform)
+    return sourceOperations.toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
@@ -114,7 +104,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                              CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return JdbcUtils.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    return sourceOperations.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");

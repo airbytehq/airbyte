@@ -116,13 +116,11 @@
                 "title": "Columns",
                 "description": "If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
                 "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "items": { "type": "string" }
               },
               "batch_size": {
                 "title": "Batch Size",
-                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren\u2019t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
                 "default": 65536,
                 "type": "integer"
               }
@@ -156,6 +154,22 @@
             "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
             "default": "",
             "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
+            "default": "",
+            "type": "string"
+          },
+          "use_ssl": {
+            "title": "Use Ssl",
+            "description": "Is remote server using secure SSL/TLS connection",
+            "type": "boolean"
+          },
+          "verify_ssl_cert": {
+            "title": "Verify Ssl Cert",
+            "description": "Allow self signed certificates",
+            "type": "boolean"
           }
         },
         "required": ["bucket"]

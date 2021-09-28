@@ -1,0 +1,35 @@
+{
+  "title": "FBA Fulfillment Removal Shipment Detail Data",
+  "description": "FBA Fulfillment Removal Shipment Detail Data Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "removal-date": {
+      "type": ["null", "string"]
+    },
+    "order-id": {
+      "type": ["null", "string"]
+    },
+    "shipment-date": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "type": ["null", "string"]
+    },
+    "disposition": {
+      "type": ["null", "string"]
+    },
+    "quantity shipped": {
+      "type": ["null", "string"]
+    },
+    "carrier": {
+      "type": ["null", "string"]
+    },
+    "tracking-number": {
+      "type": ["null", "string"]
+    }
+  }
+}

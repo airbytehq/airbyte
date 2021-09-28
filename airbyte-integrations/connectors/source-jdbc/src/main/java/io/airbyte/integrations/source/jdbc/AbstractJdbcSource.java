@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -34,6 +14,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
@@ -80,11 +61,20 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   private final String driverClass;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
+  protected final JdbcSourceOperations sourceOperations;
+
   private String quoteString;
 
   public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+    this(driverClass, jdbcStreamingQueryConfiguration, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public AbstractJdbcSource(final String driverClass,
+                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            JdbcSourceOperations sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
+    this.sourceOperations = sourceOperations;
   }
 
   /**
@@ -95,7 +85,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -246,7 +236,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
-            JdbcUtils::rowToJson);
+            sourceOperations::rowToJson);
         return AutoCloseableIterators.fromStream(stream);
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -269,6 +259,10 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
+  }
+
+  protected JdbcSourceOperations getSourceOperations() {
+    return JdbcUtils.getDefaultSourceOperations();
   }
 
 }

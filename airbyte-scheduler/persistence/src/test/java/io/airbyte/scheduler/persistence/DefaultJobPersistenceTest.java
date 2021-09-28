@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
@@ -48,7 +28,9 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -160,6 +142,10 @@ class DefaultJobPersistenceTest {
   public void setup() throws Exception {
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     resetDb();
+
+    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
+    jobDbMigrator.createBaseline();
+    jobDbMigrator.migrate();
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
@@ -337,6 +323,43 @@ class DefaultJobPersistenceTest {
   private long createJobAt(Instant created_at) throws IOException {
     when(timeSupplier.get()).thenReturn(created_at);
     return jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+  }
+
+  @Nested
+  class TemporalWorkflowId {
+
+    @Test
+    void testSuccessfulGet() throws IOException, SQLException {
+      var jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      var defaultWorkflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      assertTrue(defaultWorkflowId.isEmpty());
+
+      database.query(ctx -> ctx.execute(
+          "UPDATE attempts SET temporal_workflow_id = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
+          attemptNumber));
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
+      assertEquals(workflowId, "56a81f3a-006c-42d7-bce2-29d675d08ea4");
+    }
+
+    @Test
+    void testGetMissingAttempt() throws IOException {
+      assertTrue(jobPersistence.getAttemptTemporalWorkflowId(0, 0).isEmpty());
+    }
+
+    @Test
+    void testSuccessfulSet() throws IOException {
+      long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      var temporalWorkflowId = "test-id-usually-uuid";
+
+      jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
+
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
+      assertEquals(workflowId, temporalWorkflowId);
+    }
+
   }
 
   @Nested

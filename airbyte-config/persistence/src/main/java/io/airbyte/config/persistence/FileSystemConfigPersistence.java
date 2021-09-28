@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -31,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -171,7 +152,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
     final String oldConfigsDir = "config_deprecated";
     // create a new folder
     final String importDirectory = TMP_DIR + UUID.randomUUID();
@@ -179,7 +160,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.createDirectories(rootOverride);
 
     // write everything
-    for (final Map.Entry<AirbyteConfig, Stream<T>> config : configs.entrySet()) {
+    for (final Map.Entry<AirbyteConfig, Stream<?>> config : configs.entrySet()) {
       writeConfigs(config.getKey(), config.getValue(), rootOverride);
     }
 
@@ -196,6 +177,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
     FileUtils.deleteDirectory(storageRoot.resolve(oldConfigsDir).toFile());
     LOGGER.info("Deleted {}", oldConfigsDir);
+  }
+
+  @Override
+  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+    throw new UnsupportedEncodingException("This method is not supported in this implementation");
   }
 
   private <T> T getConfigInternal(AirbyteConfig configType, String configId, Class<T> clazz)

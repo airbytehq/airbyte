@@ -26,6 +26,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
+|[Close.com](./sources/close-com.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
 |[Dixa](./sources/dixa.md) | Alpha |
@@ -54,10 +55,13 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Jira](./sources/jira.md)| Certified |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
 |[Klaviyo](./sources/kustomer.md)| Alpha |
+|[LinkedIn Ads](./sources/linkedin-ads.md)| Beta |
+|[Kustomer](./sources/kustomer.md)| Alpha |
+|[Lever Hiring](./sources/lever-hiring.md)| Beta |
 |[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
-|[Marketo](./sources/marketo.md)| Certified |
+|[Marketo](./sources/marketo.md)| Beta |
 |[Microsoft SQL Server \(MSSQL\)](./sources/mssql.md)| Certified |
 |[Microsoft Dynamics AX](./sources/microsoft-dynamics-ax.md)| Beta |
 |[Microsoft Dynamics Customer Engagement](./sources/microsoft-dynamics-customer-engagement.md)| Beta |
@@ -65,7 +69,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Microsoft Dynamics NAV](./sources/microsoft-dynamics-nav.md)| Beta |
 |[Microsoft Teams](./sources/microsoft-teams.md)| Certified |
 |[Mixpanel](./sources/mixpanel.md)| Beta |
-|[Mongo DB](./sources/mongodb.md)| Alpha |
+|[Mongo DB](./sources/mongodb-v2.md)| Beta |
 |[MySQL](./sources/mysql.md)| Certified |
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
@@ -116,6 +120,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Chargify (Keen)](./destinations/keen.md)| Alpha |
+|[Databricks](./destinations/databricks.md) | Beta |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Kafka](./destinations/kafka.md)| Alpha |
