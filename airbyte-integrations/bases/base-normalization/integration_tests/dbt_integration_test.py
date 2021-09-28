@@ -141,7 +141,6 @@ class DbtIntegrationTest(object):
         command_create_db = [
             "docker",
             "exec",
-            "-it",
             f"{self.container_prefix}_mssql",
             "/opt/mssql-tools/bin/sqlcmd",
             "-S",
