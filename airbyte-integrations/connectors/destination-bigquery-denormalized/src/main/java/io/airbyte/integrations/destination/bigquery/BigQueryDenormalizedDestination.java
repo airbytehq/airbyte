@@ -39,6 +39,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected static final String PROPERTIES_FIELD = "properties";
   protected static final String NESTED_ARRAY_FIELD = "value";
   private static final String TYPE_FIELD = "type";
+  private static final String FORMAT_FIELD = "format";
 
   @Override
   protected String getTargetTableName(String streamName) {
@@ -134,6 +135,16 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
         }
       }
     }
+
+    // If a specific format is defined, use their specific type instead of the JSON's one
+    final JsonNode fieldFormat = fieldDefinition.get(FORMAT_FIELD);
+    if (fieldFormat != null) {
+      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
+      if (schemaFormat != null) {
+        builder.setType(schemaFormat.getBigQueryType());
+      }
+    }
+
     return builder;
   }
 
