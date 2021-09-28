@@ -307,14 +307,35 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should return correct set of jobs when querying on end timestamp")
-  void testListJobsWithTimestamp() throws IOException, InterruptedException {
-    jobPersistence = new DefaultJobPersistence(database);
+  void testListJobsWithTimestamp() throws IOException {
+    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    //TODO : Once we fix the problem of precision loss in DefaultJobPersistence, change the test value to contain miliseconds as well
+    Instant now = Instant.parse("2021-01-01T00:00:00Z");
+    when(timeSupplier.get()).thenReturn(
+        now,
+        now.plusSeconds(1),
+        now.plusSeconds(2),
+        now.plusSeconds(3),
+        now.plusSeconds(4),
+        now.plusSeconds(5),
+        now.plusSeconds(6),
+        now.plusSeconds(7),
+        now.plusSeconds(8),
+        now.plusSeconds(9),
+        now.plusSeconds(10),
+        now.plusSeconds(11),
+        now.plusSeconds(12),
+        now.plusSeconds(13),
+        now.plusSeconds(14),
+        now.plusSeconds(15),
+        now.plusSeconds(16)
+    );
+    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
     final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
     final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
     final Path syncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
     final int syncJobAttemptNumber1 = jobPersistence.createAttempt(syncJobId, syncJobSecondAttemptLogPath);
-    Thread.sleep(1000);
     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber1);
 
     final long specJobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
@@ -322,7 +343,6 @@ class DefaultJobPersistenceTest {
     jobPersistence.failAttempt(specJobId, specJobAttemptNumber0);
     final Path specJobSecondAttemptLogPath = LOG_PATH.resolve("2");
     final int specJobAttemptNumber1 = jobPersistence.createAttempt(specJobId, specJobSecondAttemptLogPath);
-    Thread.sleep(1000);
     jobPersistence.succeedAttempt(specJobId, specJobAttemptNumber1);
 
     List<Job> jobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.EPOCH);
@@ -334,16 +354,13 @@ class DefaultJobPersistenceTest {
 
     final Path syncJobThirdAttemptLogPath = LOG_PATH.resolve("3");
     final int syncJobAttemptNumber2 = jobPersistence.createAttempt(syncJobId, syncJobThirdAttemptLogPath);
-    Thread.sleep(1000);
     jobPersistence.succeedAttempt(syncJobId, syncJobAttemptNumber2);
 
     final long newSyncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
     final int newSyncJobAttemptNumber0 = jobPersistence.createAttempt(newSyncJobId, LOG_PATH);
-    Thread.sleep(1000);
     jobPersistence.failAttempt(newSyncJobId, newSyncJobAttemptNumber0);
     final Path newSyncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
     final int newSyncJobAttemptNumber1 = jobPersistence.createAttempt(newSyncJobId, newSyncJobSecondAttemptLogPath);
-    Thread.sleep(1000);
     jobPersistence.succeedAttempt(newSyncJobId, newSyncJobAttemptNumber1);
 
     Long maxEndedAtTimestamp = jobs.get(0).getAttempts().stream().map(c -> c.getEndedAtInSecond().orElseThrow()).max(Long::compareTo).orElseThrow();

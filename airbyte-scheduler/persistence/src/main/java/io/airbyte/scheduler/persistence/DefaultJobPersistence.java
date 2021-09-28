@@ -243,7 +243,6 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void failAttempt(long jobId, int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    final LocalDateTime endedAtTruncatedToSeconds = LocalDateTime.ofEpochSecond(now.toEpochSecond(ZoneOffset.UTC), 0, ZoneOffset.UTC);
     database.transaction(ctx -> {
       // do not overwrite terminal states.
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
@@ -252,7 +251,7 @@ public class DefaultJobPersistence implements JobPersistence {
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.FAILED),
           now,
-          endedAtTruncatedToSeconds,
+          now,
           jobId,
           attemptNumber);
       return null;
@@ -262,7 +261,6 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void succeedAttempt(long jobId, int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    final LocalDateTime endedAtTruncatedToSeconds = LocalDateTime.ofEpochSecond(now.toEpochSecond(ZoneOffset.UTC), 0, ZoneOffset.UTC);
     database.transaction(ctx -> {
       // override any other terminal statuses if we are now succeeded.
       updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
@@ -271,7 +269,7 @@ public class DefaultJobPersistence implements JobPersistence {
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.SUCCEEDED),
           now,
-          endedAtTruncatedToSeconds,
+          now,
           jobId,
           attemptNumber);
       return null;
