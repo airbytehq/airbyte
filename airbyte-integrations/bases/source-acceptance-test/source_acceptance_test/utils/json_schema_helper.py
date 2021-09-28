@@ -183,20 +183,23 @@ def get_expected_schema_structure(schema: dict) -> List[str]:
     :returns list of object property keys pathes
     """
     pathes = []
+    # Resolve all references to simplify schema processing.
     schema = JsonRef.replace_refs(schema)
 
     def _scan_schema(subschema, path=""):
         if "oneOf" in subschema or "anyOf" in subschema:
             return [_scan_schema({"type": "object", **s}, path) for s in subschema.get("oneOf") or subschema.get("anyOf")]
-        type = subschema.get("type", "null")
-        if "object" in type:
+        schema_type = subschema.get("type", ["null"])
+        if not isinstance(schema_type, list):
+            schema_type = [schema_type]
+        if "object" in schema_type:
             props = subschema.get("properties")
             if not props:
                 # Handle objects with arbitrary properties:
                 # {"type": "object", "additionalProperties": {"type": "string"}}
                 return pathes.append(path)
             return {k: _scan_schema(v, path + "/" + k) for k, v in props.items()}
-        elif "array" in type:
+        elif "array" in schema_type:
             items = subschema.get("items", {})
             return [_scan_schema(items, path + "/[]")]
         pathes.append(path)

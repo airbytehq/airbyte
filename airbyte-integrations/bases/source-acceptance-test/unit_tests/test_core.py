@@ -79,7 +79,7 @@ def test_read(schema, record, should_fail):
     ]
     t = _TestBasicRead()
     if should_fail:
-        with pytest.raises(AssertionError, match="should have some common fields with json schema"):
+        with pytest.raises(AssertionError, match="stream should have some fields mentioned by json schema"):
             t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
     else:
         t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
