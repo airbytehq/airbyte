@@ -294,6 +294,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- | :--- |
+| 0.29.17-alpha | 0.1.47 | 2021-09-20 | [#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel  |
 | 0.29.17-alpha | 0.1.45 | 2021-09-18 | [#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format  |
 | 0.29.8-alpha | 0.1.40 | 2021-08-18 | [#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials_json for BigQuery  |
 | 0.29.5-alpha | 0.1.39 | 2021-08-11 | [#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
