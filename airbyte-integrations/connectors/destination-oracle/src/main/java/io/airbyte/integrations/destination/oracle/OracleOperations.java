@@ -36,7 +36,10 @@ public class OracleOperations implements SqlOperations {
       LOGGER.warn("Schema " + schemaName + " is not found! Trying to create a new one.");
       final String query = String.format("create user %s identified by %s quota unlimited on %s",
           schemaName, schemaName, tablespace);
+      // need to grant privileges to new user / this option is not mandatory for Oracle DB 18c or higher
+      final String privileges = String.format("GRANT ALL PRIVILEGES TO %s", schemaName);
       database.execute(query);
+      database.execute(privileges);
     }
   }
 
