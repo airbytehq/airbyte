@@ -13,7 +13,7 @@ Assuming that you are running Airbyte by running `docker-compose up`, then what 
 that should handle you getting reset to the beginning.
 I would be curious if we can see the logs associated with the failure you are seeing. I would say if after you reset you run into it again we can debug that.
 
-## Git says file names are too long
+## Git says file names are too long.
 If you are cloning the repo, you might run into a problem where git indicates that certain filenames are too long and it therefore can't create the local file. So if you received this error after cloning the repo, run the following commands in *git bash*:
 ```bash
 cd airbyte
