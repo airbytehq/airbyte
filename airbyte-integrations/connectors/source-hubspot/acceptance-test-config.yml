@@ -9,11 +9,14 @@ tests:
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+    - config_path: "integration_tests/invalid_config_oauth.json"
+      status: "exception"
+    - config_path: "integration_tests/invalid_config_wrong_title.json"
+      status: "exception"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      # TODO: permissions error with Workflows stream for Test Account
       configured_catalog_path: "sample_files/configured_catalog.json"
       empty_streams:
         [
@@ -29,7 +32,6 @@ tests:
           "workflows",
         ]
     - config_path: "secrets/config_oauth.json"
-      # TODO: permissions error with Workflows stream for Test Account
       configured_catalog_path: "sample_files/configured_catalog.json"
       empty_streams:
         [

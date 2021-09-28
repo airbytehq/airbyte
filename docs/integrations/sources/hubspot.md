@@ -73,6 +73,7 @@ This connector supports only authentication with API Key. To obtain API key for 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.16   | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
 | 0.1.15   | 2021-09-23 | [6374](https://github.com/airbytehq/airbyte/pull/6374) | Use correct schema for `owners` stream |
 | 0.1.14   | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693) | Include deal_to_contact association when pulling deal stream and include contact ID in contact stream |
 | 0.1.13   | 2021-09-08 | [5834](https://github.com/airbytehq/airbyte/pull/5834) | Fixed array fields without items property in schema |
