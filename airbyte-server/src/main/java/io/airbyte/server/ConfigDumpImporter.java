@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -89,14 +69,13 @@ public class ConfigDumpImporter {
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
   private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
-  private static final String TMP_AIRBYTE_STAGED_RESOURCES = "/tmp/airbyte_staged_resources";
+  private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
   private final SpecFetcher specFetcher;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
-  private final Path stagedResourceRoot;
 
   public ConfigDumpImporter(ConfigRepository configRepository,
                             JobPersistence jobPersistence,
@@ -116,13 +95,22 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
     this.specFetcher = specFetcher;
+  }
+
+  /**
+   * Re-initialize the staged resource folder that contains uploaded artifacts when importing
+   * workspaces. This is because they need to be done in two steps (two API endpoints), upload
+   * resource first then import. When server starts, we flush the content of this folder, deleting
+   * previously staged resources that were not imported yet.
+   */
+  public static void initStagedResourceFolder() {
     try {
-      this.stagedResourceRoot = Path.of(TMP_AIRBYTE_STAGED_RESOURCES);
-      if (stagedResourceRoot.toFile().exists()) {
-        FileUtils.forceDelete(stagedResourceRoot.toFile());
+      File stagedResourceRoot = TMP_AIRBYTE_STAGED_RESOURCES.toFile();
+      if (stagedResourceRoot.exists()) {
+        FileUtils.forceDelete(stagedResourceRoot);
       }
-      FileUtils.forceMkdir(stagedResourceRoot.toFile());
-      FileUtils.forceDeleteOnExit(stagedResourceRoot.toFile());
+      FileUtils.forceMkdir(stagedResourceRoot);
+      FileUtils.forceDeleteOnExit(stagedResourceRoot);
     } catch (IOException e) {
       throw new RuntimeException("Failed to create staging resource folder", e);
     }
@@ -325,7 +313,7 @@ public class ConfigDumpImporter {
   public UploadRead uploadArchiveResource(File archive) {
     try {
       final UUID resourceId = UUID.randomUUID();
-      FileUtils.moveFile(archive, stagedResourceRoot.resolve(resourceId.toString()).toFile());
+      FileUtils.moveFile(archive, TMP_AIRBYTE_STAGED_RESOURCES.resolve(resourceId.toString()).toFile());
       return new UploadRead()
           .status(UploadRead.StatusEnum.SUCCEEDED)
           .resourceId(resourceId);
@@ -336,7 +324,7 @@ public class ConfigDumpImporter {
   }
 
   public File getArchiveResource(UUID resourceId) {
-    final File archive = stagedResourceRoot.resolve(resourceId.toString()).toFile();
+    final File archive = TMP_AIRBYTE_STAGED_RESOURCES.resolve(resourceId.toString()).toFile();
     if (!archive.exists()) {
       throw new IdNotFoundKnownException("Archive Resource not found", resourceId.toString());
     }
