@@ -83,6 +83,7 @@ Using this feature requires additional configuration, when creating the source. 
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.8 | 2021-09-28 | [#6370](https://github.com/airbytehq/airbyte/pull/6370)| Add SSH Support for Oracle Destination |
 | 0.1.7 | 2021-08-30 | [#5746](https://github.com/airbytehq/airbyte/pull/5746) | Use default column name for raw tables |
 | 0.1.6 | 2021-08-23 | [#5542](https://github.com/airbytehq/airbyte/pull/5542) | Remove support for Oracle 11g to allow normalization |
 | 0.1.5 | 2021-08-10 | [#5307](https://github.com/airbytehq/airbyte/pull/5307) | 🐛 Destination Oracle: Fix destination check for users without dba role |
