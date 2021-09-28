@@ -15,7 +15,7 @@ import java.util.Optional;
  * are always strings. See {@link SecretCoordinate} for more information on how secrets are
  * identified.
  */
-public interface SecretPersistence {
+public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   Optional<String> read(final SecretCoordinate coordinate);
 

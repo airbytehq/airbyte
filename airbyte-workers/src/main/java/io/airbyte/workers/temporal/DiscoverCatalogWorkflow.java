@@ -6,7 +6,7 @@ package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -68,10 +68,10 @@ public interface DiscoverCatalogWorkflow {
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     private final ProcessFactory processFactory;
-    private final Optional<SecretPersistence> secretPersistence;
+    private final Optional<ReadOnlySecretPersistence> secretPersistence;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;

@@ -8,6 +8,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -45,13 +46,13 @@ public class WorkerApp {
 
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
-  private final Optional<SecretPersistence> secretPersistence;
+  private final Optional<ReadOnlySecretPersistence> secretPersistence;
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
-                   Optional<SecretPersistence> secretPersistence,
+                   Optional<ReadOnlySecretPersistence> secretPersistence,
                    WorkflowServiceStubs temporalService,
                    MaxWorkersConfig maxWorkers) {
     this.workspaceRoot = workspaceRoot;
@@ -134,7 +135,8 @@ public class WorkerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<ReadOnlySecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs)
+        .map(fullPersistence -> fullPersistence::read);
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 

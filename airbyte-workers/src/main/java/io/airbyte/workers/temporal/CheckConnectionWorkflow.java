@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -66,10 +66,10 @@ public interface CheckConnectionWorkflow {
   class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
     private final ProcessFactory processFactory;
-    private final Optional<SecretPersistence> secretPersistence;
+    private final Optional<ReadOnlySecretPersistence> secretPersistence;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
       this.processFactory = processFactory;
       this.secretPersistence = secretPersistence;
       this.workspaceRoot = workspaceRoot;

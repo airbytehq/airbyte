@@ -109,7 +109,8 @@ public class RunMigrationTest {
 
   private void assertPreMigrationConfigs(final Path configRoot, final JobPersistence jobPersistence) throws Exception {
     assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
-    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), Optional.of(secretPersistence));
+    final ConfigRepository configRepository =
+        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), Optional.of(secretPersistence));
     final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
@@ -123,7 +124,8 @@ public class RunMigrationTest {
   }
 
   private void assertPostMigrationConfigs(final Path importRoot) throws Exception {
-    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot), Optional.of(secretPersistence));
+    final ConfigRepository configRepository =
+        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot), Optional.of(secretPersistence));
     final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
     // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and

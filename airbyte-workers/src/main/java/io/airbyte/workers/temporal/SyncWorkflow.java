@@ -19,7 +19,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -129,17 +129,17 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
     private final ProcessFactory processFactory;
-    private final Optional<SecretPersistence> secretPersistence;
+    private final Optional<ReadOnlySecretPersistence> secretPersistence;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
+    public ReplicationActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
       this(processFactory, secretPersistence, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
     ReplicationActivityImpl(ProcessFactory processFactory,
-                            Optional<SecretPersistence> secretPersistence,
+                            Optional<ReadOnlySecretPersistence> secretPersistence,
                             Path workspaceRoot,
                             AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
@@ -267,17 +267,17 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
 
     private final ProcessFactory processFactory;
-    private final Optional<SecretPersistence> secretPersistence;
+    private final Optional<ReadOnlySecretPersistence> secretPersistence;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
+    public NormalizationActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
       this(processFactory, secretPersistence, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
     NormalizationActivityImpl(ProcessFactory processFactory,
-                              Optional<SecretPersistence> secretPersistence,
+                              Optional<ReadOnlySecretPersistence> secretPersistence,
                               Path workspaceRoot,
                               AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
@@ -346,17 +346,17 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
 
     private final ProcessFactory processFactory;
-    private final Optional<SecretPersistence> secretPersistence;
+    private final Optional<ReadOnlySecretPersistence> secretPersistence;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, Optional<SecretPersistence> secretPersistence, Path workspaceRoot) {
+    public DbtTransformationActivityImpl(ProcessFactory processFactory, Optional<ReadOnlySecretPersistence> secretPersistence, Path workspaceRoot) {
       this(processFactory, secretPersistence, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
     DbtTransformationActivityImpl(ProcessFactory processFactory,
-                                  Optional<SecretPersistence> secretPersistence,
+                                  Optional<ReadOnlySecretPersistence> secretPersistence,
                                   Path workspaceRoot,
                                   AirbyteConfigValidator validator) {
       this.processFactory = processFactory;

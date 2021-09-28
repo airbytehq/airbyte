@@ -60,7 +60,7 @@ public interface ServerFactory {
           MDC.getCopyOfContextMap(),
           configsDatabase,
           jobsDatabase,
-         ephemeralSecretPersistence);
+          ephemeralSecretPersistence);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);
