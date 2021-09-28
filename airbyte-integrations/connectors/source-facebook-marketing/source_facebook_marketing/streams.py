@@ -7,7 +7,7 @@ import urllib.parse as urlparse
 from abc import ABC
 from collections import deque
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence, Union
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
 import backoff
 import pendulum
@@ -15,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
@@ -45,6 +46,7 @@ class FBMarketingStream(Stream, ABC):
     """Base stream class"""
 
     primary_key = "id"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     page_size = 100
 
@@ -90,63 +92,7 @@ class FBMarketingStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         for record in self._read_records(params=self.request_params(stream_state=stream_state)):
-            yield self.transform(self._extend_record(record, fields=self.fields))
-
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Use this method to remove update fields types in record according to schema.
-        """
-        schema = self.get_json_schema()
-        self.convert_to_schema_types(record, schema["properties"])
-        return record
-
-    def get_python_type(self, _types: Union[list, str]) -> tuple:
-        """Converts types from schema to python types. Examples:
-        - `["string", "null"]` will be converted to `(str,)`
-        - `["array", "string", "null"]` will be converted to `(list, str,)`
-        - `"boolean"` will be converted to `(bool,)`
-        """
-        types_mapping = {
-            "string": str,
-            "number": float,
-            "integer": int,
-            "object": dict,
-            "array": list,
-            "boolean": bool,
-        }
-
-        if isinstance(_types, list):
-            return tuple([types_mapping[t] for t in _types if t != "null"])
-
-        return (types_mapping[_types],)
-
-    def convert_to_schema_types(self, record: Mapping[str, Any], schema: Mapping[str, Any]):
-        """
-        Converts values' type from record to appropriate type from schema. For example, let's say we have `reach` value
-        and in schema it has `number` type because it's, well, a number, but from API we are getting `reach` as string.
-        This function fixes this and converts `reach` value from `string` to `number`. Same for all fields and all
-        types from schema.
-        """
-        if not schema:
-            return
-
-        for key, value in record.items():
-            if key not in schema:
-                continue
-
-            if isinstance(value, dict):
-                self.convert_to_schema_types(record=value, schema=schema[key].get("properties", {}))
-            elif isinstance(value, list) and "items" in schema[key]:
-                for record_list_item in value:
-                    if list in self.get_python_type(schema[key]["items"]["type"]):
-                        # TODO Currently we don't have support for list of lists.
-                        pass
-                    elif dict in self.get_python_type(schema[key]["items"]["type"]):
-                        self.convert_to_schema_types(record=record_list_item, schema=schema[key]["items"]["properties"])
-                    elif not isinstance(record_list_item, self.get_python_type(schema[key]["items"]["type"])):
-                        record[key] = self.get_python_type(schema[key]["items"]["type"])[0](record_list_item)
-            elif not isinstance(value, self.get_python_type(schema[key]["type"])):
-                record[key] = self.get_python_type(schema[key]["type"])[0](value)
+            yield self._extend_record(record, fields=self.fields)
 
     def _read_records(self, params: Mapping[str, Any]) -> Iterable:
         """Wrapper around query to backoff errors.
@@ -361,7 +307,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
         for obj in result.get_result():
-            yield self.transform(obj.export_all_data())
+            yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
