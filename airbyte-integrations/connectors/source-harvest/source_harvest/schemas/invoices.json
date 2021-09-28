@@ -48,20 +48,16 @@
       "type": ["null", "string"]
     },
     "period_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "period_end": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "issue_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "due_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "payment_term": {
       "type": ["null", "string"]
