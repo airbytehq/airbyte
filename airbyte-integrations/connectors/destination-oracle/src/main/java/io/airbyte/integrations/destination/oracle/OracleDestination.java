@@ -10,13 +10,17 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OracleDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleDestination.class);
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
@@ -46,7 +50,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   public static void main(String[] args) throws Exception {
-    final Destination destination = new OracleDestination();
+    final Destination destination = new SshWrappedDestination(new OracleDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", OracleDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleDestination.class);
