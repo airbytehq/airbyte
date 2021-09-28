@@ -1,22 +1,17 @@
 # Basic Normalization
 
-At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
+## High-Level Overview
 
-However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
+{% hint style="info" %}
+The high-level overview contains all the information you need to use Basic Normalization when pulling from APIs. Information past that can be read for advanced or educational purposes.
+{% endhint %}
 
-So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization".
+When you run your first Airbyte sync without the basic normalization, you'll notice that your data gets written to your destination as one data column with a JSON blob that contains all of your data. This is the `_airbyte_raw_` table that you may have seen before. Why do we create this table? A core tenet of ELT philosophy is that data should be untouched as it moves through the E and L stages so that the raw data is always accessible. If an unmodified version of the
+data exists in the destination, it can be retransformed without needing to sync data again.
 
-Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
+If you have Basic Normalization enabled, Airbyte automatically uses this JSON blob to create a schema and tables with your data in mind, converting it to the format of your destination. This runs after your sync and may take a long time if you have a large amount of data synced. If you don't enable Basic Normalization, you'll have to transform the JSON data from that column yourself.
 
-To summarize, we can represent the ELT process in the diagram below. These are steps that happens between your "Source Database or API" and the final "Replicated Tables" with examples of implementation underneath:
-
-![](../.gitbook/assets/connecting-EL-with-T-4.png)
-
-In Airbyte, the current normalization option is implemented using a dbt Transformer composed of:
-- Airbyte base-normalization python package to generate dbt SQL models files
-- dbt to compile and executes the models on top of the data in the destinations that supports it.
-
-## Overview
+## Example
 
 Basic Normalization uses a fixed set of rules to map a json object from a source to the types and format that are native to the destination. For example if a source emits data that looks like this:
 
@@ -49,6 +44,24 @@ You'll notice that we add some metadata to keep track of important information a
 The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
 
 Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using dbt, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
+
+## Why does Airbyte have Basic Normalization?
+
+At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination". 
+
+However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
+
+So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization".
+
+Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
+
+To summarize, we can represent the ELT process in the diagram below. These are steps that happens between your "Source Database or API" and the final "Replicated Tables" with examples of implementation underneath:
+
+![](../.gitbook/assets/connecting-EL-with-T-4.png)
+
+In Airbyte, the current normalization option is implemented using a dbt Transformer composed of:
+- Airbyte base-normalization python package to generate dbt SQL models files
+- dbt to compile and executes the models on top of the data in the destinations that supports it.
 
 ## Destinations that Support Basic Normalization
 
