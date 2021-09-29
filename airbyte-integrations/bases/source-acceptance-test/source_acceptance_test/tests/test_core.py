@@ -88,7 +88,6 @@ class TestSpec(BaseTest):
         else:
             params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
             schema_path = set(get_expected_schema_structure(spec_schema))
-        print(schema_path)
         diff = params - schema_path
         assert diff == set(), f"Specified ouath fields are missed from spec schema: {diff}"
 
