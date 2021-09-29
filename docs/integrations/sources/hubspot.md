@@ -59,7 +59,7 @@ Example of the output message when trying to read `workflows` stream with missin
 
 * Hubspot Account
 * Api credentials
-* [Scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
+* If using Oauth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
 
 ### Setup guide
 
@@ -72,7 +72,7 @@ This connector supports only authentication with API Key. To obtain API key for 
 
 ### Required scopes
 
-Most of the streams require the [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
+If you are using Oauth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
 
 | Stream | Required Scope |
 | :--- | :---- |
