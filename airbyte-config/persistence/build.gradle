@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation 'commons-io:commons-io:2.7'
 
+    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-protocol:models')

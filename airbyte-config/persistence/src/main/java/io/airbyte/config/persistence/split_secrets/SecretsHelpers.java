@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
  * These are the three main helpers provided by this class:
  * {@link SecretsHelpers#splitConfig(UUID, JsonNode, ConnectorSpecification)}
  * {@link SecretsHelpers#splitAndUpdateConfig(UUID, JsonNode, JsonNode, ConnectorSpecification, ReadOnlySecretPersistence)}
- * {@link SecretsHelpers#combineConfig(JsonNode, SecretPersistence)}
+ * {@link SecretsHelpers#combineConfig(JsonNode, ReadOnlySecretPersistence)}
  *
  * Here's an overview on some terminology used in this class:
  *
@@ -99,7 +99,7 @@ public class SecretsHelpers {
    * @param secretPersistence secret storage mechanism
    * @return full config including actual secret values
    */
-  public static JsonNode combineConfig(final JsonNode partialConfig, final SecretPersistence secretPersistence) {
+  public static JsonNode combineConfig(final JsonNode partialConfig, final ReadOnlySecretPersistence secretPersistence) {
     final var config = partialConfig.deepCopy();
 
     // if the entire config is a secret coordinate object
@@ -328,7 +328,7 @@ public class SecretsHelpers {
    * @throws RuntimeException when a secret at that coordinate is not available in the persistence
    * @return a json text node containing the secret value
    */
-  private static TextNode getOrThrowSecretValueNode(final SecretPersistence secretPersistence, final SecretCoordinate coordinate) {
+  private static TextNode getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence, final SecretCoordinate coordinate) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {

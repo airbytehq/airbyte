@@ -6,6 +6,7 @@ package io.airbyte.server;
 
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -17,6 +18,8 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -166,7 +169,13 @@ public class ServerApp implements ServerRunnable {
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
     configPersistence.migrateFileConfigs(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
+
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -207,6 +216,9 @@ public class ServerApp implements ServerRunnable {
         new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
+
+    // required before migration
+    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.execute(dockerImage)));
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {

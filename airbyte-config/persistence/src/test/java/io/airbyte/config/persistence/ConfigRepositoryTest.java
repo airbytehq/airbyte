@@ -10,8 +10,11 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +29,9 @@ class ConfigRepositoryTest {
   @BeforeEach
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
-    configRepository = new ConfigRepository(configPersistence);
+    final var secretPersistence = new MemorySecretPersistence();
+    configRepository =
+        new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence));
   }
 
   @Test

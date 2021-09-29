@@ -43,8 +43,6 @@ public interface Configs {
 
   String getSecretStoreGcpCredentials();
 
-  String getSecretStoreForConfigs();
-
   boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
@@ -109,6 +107,8 @@ public interface Configs {
 
   String getGoogleApplicationCredentials();
 
+  SecretPersistenceType getSecretPersistenceType();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
@@ -122,6 +122,12 @@ public interface Configs {
   enum DeploymentMode {
     OSS,
     CLOUD
+  }
+
+  enum SecretPersistenceType {
+    NONE,
+    TESTING_CONFIG_DB_TABLE,
+    GOOGLE_SECRET_MANAGER
   }
 
 }

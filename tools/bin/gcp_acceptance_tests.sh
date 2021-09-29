@@ -21,4 +21,4 @@ echo "Running config persistence integration tests..."
 SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true \
 SECRET_STORE_GCP_CREDENTIALS=${SECRET_STORE_GCP_CREDENTIALS} \
 SECRET_STORE_GCP_PROJECT_ID=${SECRET_STORE_GCP_PROJECT_ID} \
-SECRET_STORE_FOR_CONFIGS=${SECRET_STORE_FOR_CONFIGS}  ./gradlew :airbyte-config:persistence:integrationTest --rerun-tasks --scan
+./gradlew :airbyte-config:persistence:integrationTest --rerun-tasks --scan

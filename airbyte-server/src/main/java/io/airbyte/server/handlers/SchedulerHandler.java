@@ -68,6 +68,7 @@ import org.slf4j.LoggerFactory;
 public class SchedulerHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
+  private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
@@ -136,11 +137,16 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        sourceConfig.getConnectionConfiguration(),
+        specFetcher.execute(imageName));
+
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(sourceConfig.getConnectionConfiguration());
+        .withConfiguration(partialConfig);
 
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
@@ -172,11 +178,17 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
+
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        destinationConfig.getConnectionConfiguration(),
+        specFetcher.execute(imageName));
+
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(destinationConfig.getConnectionConfiguration());
+        .withConfiguration(partialConfig);
+
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 

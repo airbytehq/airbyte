@@ -15,6 +15,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -117,13 +118,15 @@ public class DestinationHandler {
       connectionsHandler.deleteConnection(connectionRead);
     }
 
+    final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
+
     // persist
     persistDestinationConnection(
         destination.getName(),
         destination.getDestinationDefinitionId(),
         destination.getWorkspaceId(),
         destination.getDestinationId(),
-        destination.getConnectionConfiguration(),
+        fullConfig,
         true);
   }
 
@@ -222,7 +225,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
+    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
     dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =

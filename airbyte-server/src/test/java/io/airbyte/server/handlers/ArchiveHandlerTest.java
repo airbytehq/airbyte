@@ -29,6 +29,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -44,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -107,7 +109,7 @@ public class ArchiveHandlerTest {
     configPersistence = new DatabaseConfigPersistence(database);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
-    configRepository = new ConfigRepository(configPersistence);
+    configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
     jobPersistence.setVersion(VERSION);
 
@@ -239,7 +241,7 @@ public class ArchiveHandlerTest {
         .workspaceId(secondWorkspaceId));
     assertEquals(StatusEnum.SUCCEEDED, secondImportResult.getStatus());
 
-    final UUID secondSourceId = configRepository.listSourceConnection()
+    final UUID secondSourceId = configRepository.listSourceConnectionWithSecrets()
         .stream()
         .filter(sourceConnection -> secondWorkspaceId.equals(sourceConnection.getWorkspaceId()))
         .map(SourceConnection::getSourceId)

@@ -54,7 +54,8 @@ public interface ServerFactory {
           configs,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
-          configsDatabase, jobsDatabase);
+          configsDatabase,
+          jobsDatabase);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

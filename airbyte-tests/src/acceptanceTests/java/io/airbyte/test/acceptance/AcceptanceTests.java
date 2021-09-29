@@ -135,6 +135,8 @@ public class AcceptanceTests {
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
+  private static final boolean USE_EXTERNAL_DEPLOYMENT =
+      System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
 
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
@@ -167,6 +169,7 @@ public class AcceptanceTests {
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException {
+    System.out.println("in init");
     if (IS_GKE && !IS_KUBE) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
@@ -178,7 +181,7 @@ public class AcceptanceTests {
     }
 
     // by default use airbyte deployment governed by a test container.
-    if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || !System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true")) {
+    if (!USE_EXTERNAL_DEPLOYMENT) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
           .setEnv(ENV_FILE)
