@@ -72,14 +72,6 @@ def test_backoff_cases(prepare_stream_args, header_name, header_value, expected)
             assert result is None
 
 
-def fake_ticket_objects():
-    raise Exception("aa")
-    yield {
-        "id": 12355,
-        "comment_count": 1,
-    }
-
-
 @pytest.mark.parametrize(
     "status_code,expected_comment_count,expected_expection",
     [
