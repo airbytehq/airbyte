@@ -18,7 +18,7 @@ from airbyte_cdk.models import (
 )
 from pydantic import BaseModel
 from source_acceptance_test.tests.test_incremental import records_with_state
-from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
 @pytest.fixture(name="simple_state")
@@ -167,3 +167,53 @@ def test_json_schema_helper_pydantic_generated():
     assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
     # TODO: implement validation for pydantic generated objects as well
     # js_helper.validate_variant_paths(variant_paths)
+
+
+@pytest.mark.parametrize(
+    "object, pathes",
+    [
+        ({}, []),
+        ({"a": 12}, ["/a"]),
+        ({"a": {"b": 12}}, ["/a", "/a/b"]),
+        ({"a": {"b": 12}, "c": 45}, ["/a", "/a/b", "/c"]),
+        (
+            {"a": [{"b": 12}]},
+            ["/a", "/a/[]", "/a/[]/b"],
+        ),
+        ({"a": [{"b": 12}, {"b": 15}]}, ["/a", "/a/[]", "/a/[]/b"]),
+        ({"a": [[[{"b": 12}, {"b": 15}]]]}, ["/a", "/a/[]", "/a/[]/[]", "/a/[]/[]/[]", "/a/[]/[]/[]/b"]),
+    ],
+)
+def test_get_object_strucutre(object, pathes):
+    assert get_object_structure(object) == pathes
+
+
+@pytest.mark.parametrize(
+    "schema, pathes",
+    [
+        ({"type": "object", "properties": {"a": {"type": "string"}}}, ["/a"]),
+        ({"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "number"}}}, ["/a", "/b"]),
+        (
+            {
+                "type": "object",
+                "properties": {"a": {"type": "string"}, "b": {"$ref": "#definitions/b_type"}},
+                "definitions": {"b_type": {"type": "number"}},
+            },
+            ["/a", "/b"],
+        ),
+        ({"type": "object", "oneOf": [{"properties": {"a": {"type": "string"}}}, {"properties": {"b": {"type": "string"}}}]}, ["/a", "/b"]),
+        # Some of pydantic generatec schemas have anyOf keyword
+        ({"type": "object", "anyOf": [{"properties": {"a": {"type": "string"}}}, {"properties": {"b": {"type": "string"}}}]}, ["/a", "/b"]),
+        (
+            {"type": "array", "items": {"oneOf": [{"properties": {"a": {"type": "string"}}}, {"properties": {"b": {"type": "string"}}}]}},
+            ["/[]/a", "/[]/b"],
+        ),
+        # There could be an object with any properties with specific type
+        ({"type": "object", "properties": {"a": {"type": "object", "additionalProperties": {"type": "string"}}}}, ["/a"]),
+        # Array with no item type specified
+        ({"type": "array"}, ["/[]"]),
+        ({"type": "array", "items": {"type": "object", "additionalProperties": {"type": "string"}}}, ["/[]"]),
+    ],
+)
+def test_get_expected_schema_structure(schema, pathes):
+    assert get_expected_schema_structure(schema) == pathes
