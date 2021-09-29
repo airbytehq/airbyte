@@ -82,3 +82,8 @@ Collection names should begin with an underscore or a letter character, and cann
 * be an empty string (e.g. "").
 * contain the null character.
 * begin with the system. prefix. (Reserved for internal use.)
+
+## Changelog
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-09-29 | [](https://github.com/airbytehq/airbyte/pull/) | Destination MongoDb: added support via TLS/SSL |
