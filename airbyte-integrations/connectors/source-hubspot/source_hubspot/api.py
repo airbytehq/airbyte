@@ -118,15 +118,6 @@ def retry_after_handler(**kwargs):
 
 
 class API:
-    """
-    Oauth2Authenticator(
-                token_refresh_endpoint="https://api.hubapi.com/oauth/v1/token",
-                client_id="fake-client-id-not1234-id12345",
-                client_secret="fake-client-secret-not1234-secret12345",
-                refresh_token="fake-refresh-token-not1234-token12345"
-            )
-    """
-
     """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
 
     BASE_URL = "https://api.hubapi.com"
