@@ -149,8 +149,7 @@ class SchedulerHandlerTest {
         specFetcher,
         jobPersistence,
         jobNotifier,
-        mock(WorkflowServiceStubs.class),
-        Optional.empty());
+        mock(WorkflowServiceStubs.class));
   }
 
   @Test
