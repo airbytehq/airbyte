@@ -95,4 +95,4 @@ Collection names should begin with an underscore or a letter character, and cann
 ## Changelog
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.1   | 2021-09-29 | [](https://github.com/airbytehq/airbyte/pull/) | Destination MongoDb: added support via TLS/SSL |
+| 0.1.1   | 2021-09-29 | [6536](https://github.com/airbytehq/airbyte/pull/6536) | Destination MongoDb: added support via TLS/SSL |

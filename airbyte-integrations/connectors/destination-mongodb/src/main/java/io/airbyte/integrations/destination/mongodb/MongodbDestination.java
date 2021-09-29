@@ -130,9 +130,8 @@ public class MongodbDestination extends BaseConnector implements Destination {
         ? String.format("%s:%s@", config.get(AUTH_TYPE).get(USERNAME).asText(), config.get(AUTH_TYPE).get(PASSWORD).asText())
         : StringUtils.EMPTY;
 
-    StringBuilder connectionStrBuilder = new StringBuilder();
-
     if (config.has(INSTANCE_TYPE)) {
+      StringBuilder connectionStrBuilder = new StringBuilder();
       JsonNode instanceConfig = config.get(INSTANCE_TYPE);
       if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
         // Standalone MongoDb Instance
