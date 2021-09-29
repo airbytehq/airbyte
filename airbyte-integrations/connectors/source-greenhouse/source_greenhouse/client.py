@@ -145,7 +145,7 @@ class Client(BaseClient):
     @property
     def streams(self) -> Generator[AirbyteStream, None, None]:
         """Process accessible streams only"""
-        accessible_endpoints = self.get_accessible_endpoints()
+        accessible_endpoints = self.ENTITIES
         for stream in super().streams:
             if stream.name in accessible_endpoints:
                 yield stream
