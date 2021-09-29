@@ -211,10 +211,7 @@ definitions:
   OAuth2Specification:
     description: An object containing any metadata needed to describe this connector's Oauth flow
     type: object
-    required:
-      - rootObject
-      - oauthFlowInitParameters
-      - oauthFlowOutputParameters
+    additionalProperties: true
     properties:
       rootObject:
         description:
