@@ -11,7 +11,9 @@ interface ConnectorDefinitionSpecificationBase {
   authSpecification?: {
     type: "oauth2.0";
     oauth2Specification: {
-      oauthFlowInitParameters: string[][];
+      rootObject?: string[];
+      oauthFlowInitParameters?: string[][];
+      oauthFlowOutputParameters?: string[][];
     };
   };
 }

@@ -1,4 +1,5 @@
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
+import { isDefined } from "utils/common";
 
 function removeNestedPaths(
   schema: JSONSchema7Definition,
@@ -51,4 +52,39 @@ function removeNestedPaths(
   return resultSchema;
 }
 
-export { removeNestedPaths };
+function applyFuncAt(
+  schema: JSONSchema7Definition,
+  path: (string | number)[],
+  f: (schema: JSONSchema7Definition) => JSONSchema7
+): JSONSchema7 {
+  if (typeof schema === "boolean") {
+    return schema as any;
+  }
+
+  const [pathElem, ...restPath] = path;
+
+  if (!isDefined(pathElem)) {
+    return f(schema);
+  }
+
+  const resultSchema: JSONSchema7 = schema;
+
+  if (schema.oneOf && typeof pathElem === "number") {
+    resultSchema.oneOf = schema.oneOf.map((o, index) =>
+      index === pathElem ? applyFuncAt(o, restPath, f) : o
+    );
+  }
+
+  if (schema.properties && typeof pathElem === "string") {
+    resultSchema.properties = Object.fromEntries(
+      Object.entries(schema.properties).map(([key, value]) => [
+        key,
+        key === pathElem ? applyFuncAt(value, restPath, f) : value,
+      ])
+    );
+  }
+
+  return resultSchema;
+}
+
+export { applyFuncAt, removeNestedPaths };

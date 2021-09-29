@@ -1,5 +1,5 @@
 import { AirbyteJSONSchema } from "./types";
-import { removeNestedPaths } from "./utils";
+import { applyFuncAt, removeNestedPaths } from "./utils";
 
 test("should filter paths", () => {
   const schema: AirbyteJSONSchema = {
@@ -149,5 +149,74 @@ test("should exclude paths in oneOf", () => {
       },
     },
     type: "object",
+  });
+});
+
+test("apply func at", () => {
+  const schema: AirbyteJSONSchema = {
+    type: "object",
+    properties: {
+      ssl: {
+        type: "object",
+        oneOf: [
+          {
+            properties: {
+              ssl_string: {
+                type: "string",
+              },
+            },
+          },
+          {
+            properties: {
+              ssl_path: {
+                type: "string",
+              },
+            },
+          },
+        ],
+      },
+    },
+  };
+
+  const applied = applyFuncAt(schema, ["ssl", 0], (sch) => {
+    if (typeof sch === "boolean") {
+      return sch as any;
+    }
+
+    sch.properties = sch.properties ?? {};
+
+    sch.properties["marked"] = {
+      type: "string",
+    };
+
+    return sch;
+  });
+
+  expect(applied).toEqual({
+    type: "object",
+    properties: {
+      ssl: {
+        type: "object",
+        oneOf: [
+          {
+            properties: {
+              ssl_string: {
+                type: "string",
+              },
+              marked: {
+                type: "string",
+              },
+            },
+          },
+          {
+            properties: {
+              ssl_path: {
+                type: "string",
+              },
+            },
+          },
+        ],
+      },
+    },
   });
 });

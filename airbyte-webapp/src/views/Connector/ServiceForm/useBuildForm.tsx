@@ -12,7 +12,7 @@ import { buildPathInitialState } from "core/form/uiWidget";
 import { ServiceFormValues } from "./types";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useFeatureService } from "hooks/services/Feature";
-import { removeNestedPaths } from "core/jsonSchema";
+import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 
 function useBuildInitialSchema(
   connectorSpecification?: ConnectorDefinitionSpecification
@@ -24,10 +24,23 @@ function useBuildInitialSchema(
       hasFeature("ALLOW_OAUTH_CONNECTOR") &&
       connectorSpecification?.authSpecification
     ) {
-      return removeNestedPaths(
+      const spec = connectorSpecification.authSpecification.oauth2Specification;
+      return applyFuncAt(
         connectorSpecification.connectionSpecification,
-        connectorSpecification.authSpecification.oauth2Specification
-          .oauthFlowInitParameters
+        spec.rootObject ?? [],
+        (schema) => {
+          const schemaWithoutPaths = removeNestedPaths(
+            schema,
+            spec.oauthFlowInitParameters ?? []
+          );
+
+          const schemaWithoutOutputPats = removeNestedPaths(
+            schemaWithoutPaths,
+            spec.oauthFlowOutputParameters ?? []
+          );
+
+          return schemaWithoutOutputPats;
+        }
       );
     }
 
