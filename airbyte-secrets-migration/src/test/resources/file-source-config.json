@@ -1,0 +1,8 @@
+{
+  "provider": {
+    "storage": "HTTPS"
+  },
+  "url": "http://www.example.com/foobadurltest",
+  "format": "csv",
+  "dataset_name": "foo"
+}

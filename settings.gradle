@@ -34,6 +34,7 @@ include ':airbyte-json-validation'
 include ':airbyte-protocol:models'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
+include ':airbyte-secrets-migration'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.

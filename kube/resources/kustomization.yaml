@@ -8,6 +8,7 @@ resources:
   - scheduler.yaml
   - secret-gcs-log-creds.yaml
   - scheduler-service-account.yaml
+  - secrets-migration.yaml
   - server.yaml
   - temporal.yaml
   - volume-configs.yaml
