@@ -21,7 +21,7 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 * **Using data integration in a workflow:** Airbyte’s API lets engineering teams add data integration jobs into their workflow seamlessly. 
 * **Integrates with your data stack and your needs:** Airflow, Kubernetes, dbt, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use dbt to do more complicated things.
 * **Debugging autonomy:** if you experience any connector issue, you won’t need to wait for Fivetran’s customer support team to get back to you, if you can fix the issue fast yourself. 
-* **No more security and privacy compliance, as self-hosted and open-sourced \(MIT\)**. Any team can directly address their integration needs.
+* **No more security and privacy compliance, as self-hosted, source-available and open-sourced \(MIT\)**. Any team can directly address their integration needs.
 
 Your data stays in your cloud. Have full control over your data, and the costs of your data transfers.
 
