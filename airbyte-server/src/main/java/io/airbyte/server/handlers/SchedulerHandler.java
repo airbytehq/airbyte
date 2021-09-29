@@ -4,6 +4,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.AuthSpecification;
@@ -45,6 +46,7 @@ import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
@@ -76,13 +78,15 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public SchedulerHandler(ConfigRepository configRepository,
                           SchedulerJobClient schedulerJobClient,
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
                           JobNotifier jobNotifier,
-                          WorkflowServiceStubs temporalService) {
+                          WorkflowServiceStubs temporalService,
+                          OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
         schedulerJobClient,
@@ -92,7 +96,8 @@ public class SchedulerHandler {
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
         jobNotifier,
-        temporalService);
+        temporalService,
+        oAuthConfigSupplier);
   }
 
   @VisibleForTesting
@@ -104,7 +109,8 @@ public class SchedulerHandler {
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
                    JobNotifier jobNotifier,
-                   WorkflowServiceStubs temporalService) {
+                   WorkflowServiceStubs temporalService,
+                   OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -114,6 +120,7 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -276,13 +283,24 @@ public class SchedulerHandler {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
-    final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
-    final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        sourceConnection.getSourceDefinitionId(),
+        sourceConnection.getWorkspaceId(),
+        sourceConnection.getConfiguration());
+    sourceConnection.withConfiguration(sourceConfiguration);
+    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destinationConnection.getDestinationId(),
+        destinationConnection.getWorkspaceId(),
+        destinationConnection.getConfiguration());
+    destinationConnection.withConfiguration(destinationConfiguration);
 
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final String sourceImageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+    final StandardDestinationDefinition destinationDef =
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
     final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
@@ -292,8 +310,8 @@ public class SchedulerHandler {
     }
 
     final Job job = schedulerJobClient.createOrGetActiveSyncJob(
-        source,
-        destination,
+        sourceConnection,
+        destinationConnection,
         standardSync,
         sourceImageName,
         destinationImageName,
