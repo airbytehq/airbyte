@@ -50,7 +50,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
         "COPY %s.%s FROM '%s'\n"
             + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
             + "CSV REGION '%s' TIMEFORMAT 'auto'\n"
-            + "STATUPDATE OFF;\n",
+            + "STATUPDATE OFF\n"
+            + "MANIFEST;",
         schemaName,
         tmpTableName,
         manifestFullS3Path,
@@ -69,7 +70,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
 
   /**
    * Creates a manifest file and uploads the file to s3. Note: Using a manifest to COPY a set of s3
-   * files into Redshift, is accordance AWS Redshift best practices.
+   * files into Redshift, which is in accordance AWS Redshift best practices.
    *
    * @return the full s3 path of the newly created manifest file
    */
