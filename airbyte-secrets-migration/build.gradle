@@ -1,0 +1,20 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.secretsmigration.SecretsMigration'
+}
+
+dependencies {
+    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    testImplementation project(':airbyte-json-validation')
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation "org.testcontainers:postgresql:1.15.1"
+    integrationTestJavaImplementation project(':airbyte-secrets-migration')
+}
+
