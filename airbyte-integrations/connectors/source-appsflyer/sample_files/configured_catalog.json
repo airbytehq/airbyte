@@ -642,13 +642,13 @@
                         "is_lat": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "store_reinstall": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "placement": {
@@ -1379,13 +1379,13 @@
                         "is_lat": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "store_reinstall": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "placement": {
@@ -2092,13 +2092,13 @@
                         "is_lat": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "store_reinstall": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "placement": {
@@ -2829,13 +2829,13 @@
                         "is_lat": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "store_reinstall": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "placement": {
@@ -3566,13 +3566,13 @@
                         "is_lat": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "store_reinstall": {
                             "type": [
                                 "null",
-                                "string"
+                                "boolean"
                             ]
                         },
                         "placement": {
