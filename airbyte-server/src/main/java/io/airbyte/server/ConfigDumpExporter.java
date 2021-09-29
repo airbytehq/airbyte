@@ -162,7 +162,7 @@ public class ConfigDumpExporter {
     final Collection<SourceConnection> sourceConnections = writeConfigsToArchive(
         parentFolder,
         ConfigSchema.SOURCE_CONNECTION.name(),
-        configRepository::listSourceConnection,
+        configRepository::listSourceConnectionWithSecrets,
         (sourceConnection) -> workspaceId.equals(sourceConnection.getWorkspaceId()));
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
         () -> listSourceDefinition(sourceConnections),
@@ -171,7 +171,7 @@ public class ConfigDumpExporter {
     final Collection<DestinationConnection> destinationConnections = writeConfigsToArchive(
         parentFolder,
         ConfigSchema.DESTINATION_CONNECTION.name(),
-        configRepository::listDestinationConnection,
+        configRepository::listDestinationConnectionWithSecrets,
         (destinationConnection) -> workspaceId.equals(destinationConnection.getWorkspaceId()));
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
         () -> listDestinationDefinition(destinationConnections),

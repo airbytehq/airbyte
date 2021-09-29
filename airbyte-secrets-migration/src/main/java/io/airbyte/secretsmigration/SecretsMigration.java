@@ -11,10 +11,12 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +40,10 @@ public class SecretsMigration {
   public void run() throws IOException {
     LOGGER.info("Starting migration run.");
 
-    final ConfigRepository readFromConfigRepository = new ConfigRepository(readFromPersistence);
-    final ConfigRepository writeToConfigRepository = new ConfigRepository(writeToPersistence);
+    final ConfigRepository readFromConfigRepository =
+        new ConfigRepository(readFromPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
+    final ConfigRepository writeToConfigRepository =
+        new ConfigRepository(writeToPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
     LOGGER.info("... Dry Run: deserializing configurations and writing to the new store...");
     Map<String, Stream<JsonNode>> configurations = readFromConfigRepository.dumpConfigs();
