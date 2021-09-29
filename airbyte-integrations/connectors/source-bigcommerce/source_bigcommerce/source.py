@@ -7,6 +7,8 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from email.utils import parsedate_tz
+from datetime import datetime
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -18,10 +20,10 @@ class BigcommerceStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "v3"
     # Page size
-    limit = 10
+    limit = 250
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
     primary_key = "id"
-    order_field = "date_created:asc"
+    order_field = "date_modified:asc"
     filter_field = "date_modified:min"
     data = "data"
 
@@ -49,10 +51,9 @@ class BigcommerceStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
+        params.update({"sort": self.order_field})
         if next_page_token:
             params.update(**next_page_token)
-        else:
-            params.update({"sort": self.order_field})
         return params
 
     def request_headers(
@@ -66,7 +67,6 @@ class BigcommerceStream(HttpStream, ABC):
         json_response = response.json()
         records = json_response.get(self.data, []) if self.data is not None else json_response
         yield from records
-
 
 class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     # Getting page size as 'limit' from parent class
@@ -85,11 +85,8 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
-        if not next_page_token:
-            params["sort"] = f"{self.order_field}"
-            params["limit"] = f"{self.limit}"
-            if stream_state:
-                params[self.filter_field] = stream_state.get(self.cursor_field)
+        if stream_state:
+            params[self.filter_field] = stream_state.get(self.cursor_field)
         return params
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
@@ -112,18 +109,16 @@ class OrderSubstream(IncrementalBigcommerceStream):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
-
 class Customers(IncrementalBigcommerceStream):
     data_field = "customers"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
 
-
 class Orders(IncrementalBigcommerceStream):
     data_field = "orders"
     api_version = "v2"
-    order_field = "id:asc"
+    order_field = "date_modified:asc"
     filter_field = "min_date_modified"
     page = 1
 
@@ -133,13 +128,26 @@ class Orders(IncrementalBigcommerceStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json() if len(response.content) > 0 else []
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        max_date = ""
+        if not current_stream_state.get(self.cursor_field) :
+            max_date = latest_record.get(self.cursor_field, "")
+        elif latest_record.get(self.cursor_field) and current_stream_state.get(self.cursor_field):
+            latest_state_date_time = parsedate_tz(latest_record.get(self.cursor_field))
+            current_state_date_time = parsedate_tz(current_stream_state.get(self.cursor_field))
+            max_date = current_stream_state.get(self.cursor_field)
+            if current_state_date_time < latest_state_date_time:
+                max_date = latest_record.get(self.cursor_field)
+
+        return {self.cursor_field: max_date}
+
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
             self.page = self.page + 1
             return dict(page=self.page)
         else:
             return None
-
 
 class Pages(IncrementalBigcommerceStream):
     data_field = "pages"
@@ -163,7 +171,6 @@ class Pages(IncrementalBigcommerceStream):
         slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
-
 class Transactions(OrderSubstream):
     data_field = "transactions"
     cursor_field = "id"
@@ -181,14 +188,12 @@ class Transactions(OrderSubstream):
         params = {"limit": self.limit}
         return params
 
-
 class BigcommerceAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
         self.token = token
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"X-Auth-Token": f"{self.token}"}
-
 
 class SourceBigcommerce(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
