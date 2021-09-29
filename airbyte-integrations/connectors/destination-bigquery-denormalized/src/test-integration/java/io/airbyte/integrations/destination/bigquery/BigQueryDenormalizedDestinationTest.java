@@ -13,13 +13,17 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -40,6 +44,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -63,6 +68,10 @@ class BigQueryDenormalizedDestinationTest {
   private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(getDataWithEmptyObjectAndArray())
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_USERS3 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(getDataWithFormats())
           .withEmittedAt(NOW.toEpochMilli()));
 
   private JsonNode config;
@@ -99,6 +108,7 @@ class BigQueryDenormalizedDestinationTest {
     final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS3.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
@@ -166,7 +176,39 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
     assertEquals(extractJsonValues(resultJson, "grants"), extractJsonValues(expectedUsersJson, "grants"));
     assertEquals(extractJsonValues(resultJson, "domain"), extractJsonValues(expectedUsersJson, "domain"));
+  }
 
+  @Test
+  void testWriteWithFormat() throws Exception {
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithFormats()))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+
+    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS3);
+    consumer.close();
+
+    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
+    final JsonNode expectedUsersJson = MESSAGE_USERS3.getRecord().getData();
+    assertEquals(usersActual.size(), 1);
+    final JsonNode resultJson = usersActual.get(0);
+    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(extractJsonValues(resultJson, "date_of_birth"), extractJsonValues(expectedUsersJson, "date_of_birth"));
+
+    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't expect to receive the value we sent.
+    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2018-08-19T12:11:35.220"));
+
+    final Schema expectedSchema = Schema.of(
+        Field.of("name", StandardSQLTypeName.STRING),
+        Field.of("date_of_birth", StandardSQLTypeName.DATE),
+        Field.of("updated_at", StandardSQLTypeName.DATETIME),
+        Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP)
+    );
+
+    assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
   }
 
   private Set<String> extractJsonValues(JsonNode node, String attributeName) {
@@ -252,6 +294,34 @@ class BigQueryDenormalizedDestinationTest {
 
   }
 
+  private static JsonNode getSchemaWithFormats() {
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"type\": [\n"
+            + "    \"object\"\n"
+            + "  ],\n"
+            + "  \"properties\": {\n"
+            + "    \"name\": {\n"
+            + "      \"type\": [\n"
+            + "        \"string\"\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    \"date_of_birth\": {\n"
+            + "      \"type\": [\n"
+            + "        \"string\"\n"
+            + "      ],\n"
+            + "      \"format\": \"date\"\n"
+            + "    },\n"
+            + "    \"updated_at\": {\n"
+            + "      \"type\": [\n"
+            + "        \"string\"\n"
+            + "      ],\n"
+            + "      \"format\": \"date-time\"\n"
+            + "    }\n"
+            + "  }\n"
+            + "}");
+  }
+
   private static JsonNode getSchemaWithInvalidArrayType() {
     return Jsons.deserialize(
         "{\n"
@@ -310,7 +380,15 @@ class BigQueryDenormalizedDestinationTest {
             + "    }\n"
             + "  ]\n"
             + "}");
+  }
 
+  private static JsonNode getDataWithFormats() {
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"name\": \"Andrii\",\n"
+            + "  \"date_of_birth\": \"1996-01-25\",\n"
+            + "  \"updated_at\": \"2018-08-19 12:11:35.22\"\n"
+            + "}");
   }
 
   private static JsonNode getDataWithEmptyObjectAndArray() {
