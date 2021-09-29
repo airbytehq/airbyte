@@ -4,17 +4,18 @@
 
 
 from functools import partial
-from typing import Callable, Generator, List, Mapping, Optional, Tuple
+from typing import Any, Callable, Generator, Iterable, List, Mapping, Optional, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import AirbyteLogger, BaseClient
 from grnhse import Harvest
 from grnhse.exceptions import HTTPError
+from grnhse.harvest.api import HarvestObject
 
 DEFAULT_ITEMS_PER_PAGE = 100
 
 
-def paginator(request, **params):
+def paginator(request: HarvestObject, **params) -> Iterable[Optional[Mapping[str, Any]]]:
     """
     Split requests in multiple batches and return records as generator.
     Use recursion in case of nested streams.
@@ -60,6 +61,9 @@ class HarvestClient(Harvest):
 
 
 class Client(BaseClient):
+    # TODO: Adopt connector best practices https://github.com/airbytehq/airbyte/issues/1943.
+    # TODO: Add the incremental support where it's possible https://github.com/airbytehq/airbyte/issues/1386.
+
     ENTITIES = [
         "applications",
         "applications.demographics_answers",
@@ -92,7 +96,7 @@ class Client(BaseClient):
         self._client = HarvestClient(api_key=api_key)
         super().__init__()
 
-    def list(self, name, **kwargs):
+    def list(self, name: str, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         name_parts = name.split(".")
         nested_names = name_parts[1:]
         kwargs["per_page"] = DEFAULT_ITEMS_PER_PAGE

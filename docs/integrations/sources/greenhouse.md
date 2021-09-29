@@ -50,4 +50,5 @@ Please follow the [Greenhouse documentation for generating an API key](https://d
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.5   | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377) | Implement additional stream support. Add nested stream support |
 | 0.2.4   | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238) | added identification of accessible streams for API keys with limited permissions |
