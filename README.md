@@ -1,6 +1,6 @@
 # Introduction
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/github/license/airbytehq/airbyte)](./LICENSE)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](./LICENSE) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](./LICENSE)
 
 ![](docs/.gitbook/assets/airbyte_new_logo.svg)
 
@@ -73,5 +73,5 @@ Check out our [roadmap](docs/project-overview/roadmap.md) to get informed on wha
 
 ## License
 
-Airbyte is licensed under the MIT license. See the [LICENSE](docs/project-overview/license.md) file for licensing information.
+See the [LICENSE](docs/project-overview/licenses/README.md) file for licensing information.
 
