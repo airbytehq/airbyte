@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
@@ -34,15 +35,14 @@ public class MongoDatabase extends AbstractDatabase {
   private static final int BATCH_SIZE = 1000;
 
   private final ConnectionString connectionString;
-  private final String databaseName;
+  private final com.mongodb.client.MongoDatabase database;
+  private final MongoClient mongoClient;
 
-  private MongoClient mongoClient;
-
-  public MongoDatabase(String uri, String databaseName) {
+  public MongoDatabase(String connectionString, String databaseName) {
     try {
-      connectionString = new ConnectionString(uri);
-      mongoClient = MongoClients.create(connectionString);
-      this.databaseName = databaseName;
+      this.connectionString = new ConnectionString(connectionString);
+      mongoClient = MongoClients.create(this.connectionString);
+      database = mongoClient.getDatabase(databaseName);
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);
@@ -55,32 +55,42 @@ public class MongoDatabase extends AbstractDatabase {
   }
 
   public com.mongodb.client.MongoDatabase getDatabase() {
-    return mongoClient.getDatabase(databaseName);
+    return database;
   }
 
   public MongoIterable<String> getCollectionNames() {
-    return getDatabase().listCollectionNames();
+    return database.listCollectionNames();
   }
 
   public MongoCollection<Document> getCollection(String collectionName) {
-    return getDatabase().getCollection(collectionName)
+    return database.getCollection(collectionName)
         .withReadConcern(ReadConcern.MAJORITY);
+  }
+
+  public MongoCollection<Document> getOrCreateNewCollection(String collectionName) {
+    var collectionNames = StreamSupport
+        .stream(database.listCollectionNames().spliterator(), false)
+        .collect(Collectors.toSet());
+    if (!collectionNames.contains(collectionName)) {
+      database.createCollection(collectionName);
+    }
+    return database.getCollection(collectionName);
   }
 
   @VisibleForTesting
   public MongoCollection<Document> createCollection(String name) {
-    getDatabase().createCollection(name);
-    return getDatabase().getCollection(name);
+    database.createCollection(name);
+    return database.getCollection(name);
   }
 
   @VisibleForTesting
   public String getName() {
-    return getDatabase().getName();
+    return database.getName();
   }
 
   public Stream<JsonNode> read(String collectionName, List<String> columnNames, Optional<Bson> filter) {
     try {
-      final MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
+      final MongoCollection<Document> collection = database.getCollection(collectionName);
       final MongoCursor<Document> cursor = collection
           .find(filter.orElse(new BsonDocument()))
           .batchSize(BATCH_SIZE)
