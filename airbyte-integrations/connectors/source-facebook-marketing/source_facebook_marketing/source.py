@@ -34,7 +34,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams import Stream
-from pydantic import BaseModel, Field, Json
+from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
     AdCreatives,
@@ -46,15 +46,27 @@ from source_facebook_marketing.streams import (
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
-    Campaigns,
-    CustomAdsInsights,
-    CustomAdsInsightsAgeAndGender,
-    CustomAdsInsightsCountry,
-    CustomAdsInsightsRegion,
-    CustomAdsInsightsDma,
-    CustomAdsInsightsPlatformAndDevice,
-
+    Campaigns
 )
+
+
+class InsightConfig(BaseModel):
+
+    name: str = Field(
+        description='The name value of insight'
+    )
+
+    fields: Optional[List[str]] = Field(
+        description='A list of chosen fields for fields parameter'
+    )
+
+    breakdowns: Optional[List[str]] = Field(
+        description='A list of chosen breakdowns for breakdowns'
+    )
+
+    action_breakdowns: Optional[List[str]] = Field(
+        description='A list of chosen action_breakdowns for action_breakdowns'
+    )
 
 
 class ConnectorConfig(BaseModel):
@@ -89,7 +101,10 @@ class ConnectorConfig(BaseModel):
         minimum=1,
         maximum=30,
     )
-    custom_insights: Optional[Json] = Field(description="A json objet with custom insights")
+    insights: Optional[List[InsightConfig]] = Field(
+        description="A defined list wich contains insights entries, each entry must have a name and can contain these entries(fields, breakdowns or action_breakdowns)",
+        examples=["[{\"name\": \"AdsInsights\",\"fields\": [\"account_id\",\"account_name\",\"ad_id\",\"ad_name\",\"adset_id\",\"adset_name\",\"campaign_id\",\"campaign_name\",\"date_start\",\"impressions\",\"spend\"],\"breakdowns\": [],\"action_breakdowns\": []}]"]
+    )
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -141,7 +156,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsPlatformAndDevice(**insights_args),
         ]
 
-        return self._add_custom_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
+        return self._update_insights_streams(insights=config.insights, args=insights_args, streams=streams)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """
@@ -156,17 +171,21 @@ class SourceFacebookMarketing(AbstractSource):
             connectionSpecification=ConnectorConfig.schema(),
         )
 
-    def _add_custom_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
-        """ Update method, returns streams plus custom streams
-        After we checked if 'custom_insights_fields' exists we add the custom streams with the
-        fields that we setted in the confi
+    def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
+        """ Update method, if insights have values returns streams replacing the
+        default insights streams else returns streams
+
         """
+        if not insights:
+            return streams
+
         insights_custom_streams = list()
-        for insight_entry in insights.get('insights'):
-            args['name'] = insight_entry.get('name')
-            args['fields'] = insight_entry.get('fields')
-            args['breakdowns'] = insight_entry.get('breakdowns')
-            args['action_breakdowns'] = insight_entry.get('action_breakdowns')
+
+        for insight in insights:
+            args['name'] = insight.name
+            args['fields'] = insight.fields
+            args['breakdowns'] = insight.breakdowns
+            args['action_breakdowns'] = insight.action_breakdowns
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 
