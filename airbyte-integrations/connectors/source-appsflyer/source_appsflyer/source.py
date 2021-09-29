@@ -227,15 +227,14 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         try:
-            latest_state = parse_date(latest_record.get(self.cursor_field), self.timezone)
-            current_state = parse_date(current_stream_state.get(self.cursor_field), self.timezone) or latest_state
+            latest_state = latest_record.get(self.cursor_field)
+            current_state = current_stream_state.get(self.cursor_field) or latest_state
+
             if current_state:
                 return {self.cursor_field: max(latest_state, current_state)}
             return {}
         except TypeError as e:
             raise TypeError(f"Expected {self.cursor_field} type '{type(current_state).__name__}' but returned type '{type(latest_state).__name__}'.") from e
-        except ParserError as e:
-            raise ParserError(f"Field {self.cursor_field} is not DateTime.") from e
 
     def stream_slices(
         self,
@@ -244,7 +243,8 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = self.get_date(stream_state.get(self.cursor_field), self.start_date, max)
+        cursor_value = stream_state.get(self.cursor_field)
+        start_date = self.get_date(parse_date(cursor_value, self.timezone), self.start_date, max)
         return self.chunk_date_range(start_date)
 
     def get_date(self, cursor_value: Any, default_date: datetime, comparator: Callable[[datetime, datetime], datetime]) -> datetime:
@@ -399,9 +399,11 @@ class RawDataMixin:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         cursor_start_value = stream_slice.get(self.cursor_field)
         cursor_end_value = stream_slice.get(self.cursor_field + '_end')
-        params["from"] = self.get_date(cursor_start_value, self.start_date, max).to_datetime_string()
-        params["to"] = self.get_date(cursor_end_value, self.end_date, min).to_datetime_string()
-        
+        start_date = self.get_date(cursor_start_value, self.start_date, max).in_tz(self.timezone)
+        end_date = self.get_date(cursor_end_value, self.end_date, min).in_tz(self.timezone)
+        params["from"] = start_date.to_datetime_string()
+        params["to"] = end_date.to_datetime_string()
+
         return params
 
 class AggregateDataMixin:
@@ -416,8 +418,10 @@ class AggregateDataMixin:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         cursor_start_value = stream_slice.get(self.cursor_field)
         cursor_end_value = stream_slice.get(self.cursor_field + '_end')
-        params["from"] = self.get_date(cursor_start_value, self.start_date, max).to_date_string()
-        params["to"] = self.get_date(cursor_end_value, self.end_date, min).to_date_string()
+        start_date = self.get_date(cursor_start_value, self.start_date, max).in_tz(self.timezone)
+        end_date = self.get_date(cursor_end_value, self.end_date, min).in_tz(self.timezone)
+        params["from"] = start_date.to_date_string()
+        params["to"] = end_date.to_date_string()
 
         return params
 

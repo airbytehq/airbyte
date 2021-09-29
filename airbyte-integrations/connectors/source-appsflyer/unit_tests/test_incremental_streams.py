@@ -413,7 +413,7 @@ def test_get_updated_state_all_exists(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
     stream = IncrementalAppsflyerStream()
     inputs = {"current_stream_state": dict(event_time="2021-09-09"), "latest_record": dict(event_time="2021-09-09")}
-    expected_state = dict(event_time=pendulum.parse("2021-09-09"))
+    expected_state = dict(event_time="2021-09-09")
     assert stream.get_updated_state(**inputs) == expected_state
 
 
@@ -433,7 +433,7 @@ def test_get_updated_state_empty_current_stream_and_exists_latest_record(patch_i
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
     stream = IncrementalAppsflyerStream()
     inputs = {"current_stream_state": {}, "latest_record": dict(event_time="2021-09-09")}
-    expected_state = dict(event_time=pendulum.parse("2021-09-09"))
+    expected_state = dict(event_time="2021-09-09")
     assert stream.get_updated_state(**inputs) == expected_state
 
 
@@ -444,16 +444,6 @@ def test_get_updated_state_exists_current_stream_and_empty_latest_record(patch_i
         mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
         stream = IncrementalAppsflyerStream()
         inputs = {"current_stream_state": dict(event_time="2021-09-09"), "latest_record": {"event_time":None}}
-        stream.get_updated_state(**inputs)
-
-
-def test_get_updated_state_all_unparseable(patch_incremental_base_class, mocker):
-    with raises(ParserError, match=r"Field (.*) is not DateTime."):
-        def __init__(self): self.timezone= pendulum.timezone("UTC")
-        mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
-        mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
-        stream = IncrementalAppsflyerStream()
-        inputs = {"current_stream_state": dict(event_time="Unparseable"), "latest_record": dict(event_time="Unparseable")}
         stream.get_updated_state(**inputs)
 
 
