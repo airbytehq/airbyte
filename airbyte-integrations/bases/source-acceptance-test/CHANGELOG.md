@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.20
+Add oauth init flow parameter verification for spec.
+
 ## 0.1.19
 Assert a non-empty overlap between the fields present in the record and the declared json schema.
 
