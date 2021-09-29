@@ -38,7 +38,7 @@ public class ConfigurationUpdate {
   public SourceConnection source(UUID sourceId, String sourceName, JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
-    final SourceConnection persistedSource = configRepository.getSourceConnection(sourceId);
+    final SourceConnection persistedSource = configRepository.getSourceConnectionWithSecrets(sourceId);
     persistedSource.setName(sourceName);
     // get spec
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
@@ -56,7 +56,7 @@ public class ConfigurationUpdate {
   public DestinationConnection destination(UUID destinationId, String destName, JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing destination
-    final DestinationConnection persistedDestination = configRepository.getDestinationConnection(destinationId);
+    final DestinationConnection persistedDestination = configRepository.getDestinationConnectionWithSecrets(destinationId);
     persistedDestination.setName(destName);
     // get spec
     final StandardDestinationDefinition destinationDefinition = configRepository
