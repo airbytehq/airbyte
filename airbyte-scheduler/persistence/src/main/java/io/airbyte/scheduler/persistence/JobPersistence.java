@@ -6,12 +6,14 @@ package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.State;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,6 +126,15 @@ public interface JobPersistence {
    * @throws IOException - what you do when you IO
    */
   List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
+
+  /**
+   *
+   * @param configType The type of job
+   * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
+   * @return List of jobs that have attempts after the provided timestamp
+   * @throws IOException
+   */
+  List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
 
