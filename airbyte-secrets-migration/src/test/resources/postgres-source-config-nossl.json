@@ -1,0 +1,14 @@
+{
+  "ssl": false,
+  "host": "localhost",
+  "port": 5001,
+  "database": "test",
+  "password": "passwordredacted",
+  "username": "testcaseuser",
+  "tunnel_method": {
+    "tunnel_method": "NONE"
+  },
+  "replication_method": {
+    "method": "Standard"
+  }
+}
