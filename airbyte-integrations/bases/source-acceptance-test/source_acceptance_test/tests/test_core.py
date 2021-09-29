@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -96,7 +76,21 @@ class TestSpec(BaseTest):
     def _validate_authflow_parameters(connector_spec: ConnectorSpecification):
         if not connector_spec.authSpecification:
             return
-        pass
+        spec_schema = connector_spec.connectionSpecification
+        oauth_spec = connector_spec.authSpecification.oauth2Specification
+        parameters: List[List[str]] = oauth_spec.oauthFlowInitParameters + oauth_spec.oauthFlowOutputParameters
+        root_object = oauth_spec.rootObject
+        assert len(root_object) == 2
+        assert root_object[0] in spec_schema.get("properties", {}), f"oauth root object {root_object[0]} does not exists"
+        if "oneOf" in spec_schema.get("properties")[root_object[0]]:
+            params = {"/" + "/".join([f"{root_object[0]}({root_object[1]})", *p]) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema, annotate_one_of=True))
+        else:
+            params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema))
+        print(schema_path)
+        diff = params - schema_path
+        assert diff == set(), f"Specified ouath fields are missed from spec schema: {diff}"
 
 
 @pytest.mark.default_timeout(30)
