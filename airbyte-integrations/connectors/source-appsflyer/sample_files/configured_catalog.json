@@ -387,7 +387,6 @@
                         "customer_user_id": {
                             "type": [
                                 "null",
-                                "integer",
                                 "string"
                             ]
                         },
@@ -1125,7 +1124,6 @@
                         "customer_user_id": {
                             "type": [
                                 "null",
-                                "integer",
                                 "string"
                             ]
                         },
@@ -1863,7 +1861,6 @@
                         "customer_user_id": {
                             "type": [
                                 "null",
-                                "integer",
                                 "string"
                             ]
                         },
@@ -2577,7 +2574,6 @@
                         "customer_user_id": {
                             "type": [
                                 "null",
-                                "integer",
                                 "string"
                             ]
                         },
@@ -3315,7 +3311,6 @@
                         "customer_user_id": {
                             "type": [
                                 "null",
-                                "integer",
                                 "string"
                             ]
                         },
@@ -3811,6 +3806,24 @@
                                 "number"
                             ]
                         },
+                        "af_purchase_registration_unique_users": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
+                        "af_purchase_registration_event_counter": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
+                        "af_purchase_registration_sales_in_idr": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
                         "checkout_success_unique_users": {
                             "type": [
                                 "null",
@@ -4153,6 +4166,24 @@
                                 "number"
                             ]
                         },
+                        "af_purchase_registration_unique_users": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
+                        "af_purchase_registration_event_counter": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
+                        "af_purchase_registration_sales_in_idr": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
                         "checkout_success_unique_users": {
                             "type": [
                                 "null",
@@ -4270,28 +4301,22 @@
                                 "string"
                             ]
                         },
-                        "impressions": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
                         "clicks": {
                             "type": [
                                 "null",
                                 "number"
                             ]
                         },
-                        "click_through_rate": {
+                        "conversions": {
                             "type": [
                                 "null",
                                 "number"
                             ]
                         },
-                        "installs": {
+                        "conversion_type": {
                             "type": [
                                 "null",
-                                "number"
+                                "string"
                             ]
                         },
                         "conversion_rate": {
@@ -4437,24 +4462,6 @@
                                 "null",
                                 "number"
                             ]
-                        },
-                        "pay_premium_pkg_unique_users": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
-                        "pay_premium_pkg_event_counter": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
-                        "pay_premium_pkg_sales_in_idr": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
                         }
                     }
                 },
@@ -4501,28 +4508,22 @@
                                 "string"
                             ]
                         },
-                        "impressions": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
                         "clicks": {
                             "type": [
                                 "null",
                                 "number"
                             ]
                         },
-                        "click_through_rate": {
+                        "conversions": {
                             "type": [
                                 "null",
                                 "number"
                             ]
                         },
-                        "installs": {
+                        "conversion_type": {
                             "type": [
                                 "null",
-                                "number"
+                                "string"
                             ]
                         },
                         "conversion_rate": {
@@ -4612,28 +4613,22 @@
                                 "string"
                             ]
                         },
-                        "impressions": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
                         "clicks": {
                             "type": [
                                 "null",
                                 "number"
                             ]
                         },
-                        "click_through_rate": {
+                        "conversions": {
                             "type": [
                                 "null",
                                 "number"
                             ]
                         },
-                        "installs": {
+                        "conversion_type": {
                             "type": [
                                 "null",
-                                "number"
+                                "string"
                             ]
                         },
                         "conversion_rate": {
@@ -4775,24 +4770,6 @@
                             ]
                         },
                         "init_appsflyer_id_sales_in_idr": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
-                        "pay_premium_pkg_unique_users": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
-                        "pay_premium_pkg_event_counter": {
-                            "type": [
-                                "null",
-                                "number"
-                            ]
-                        },
-                        "pay_premium_pkg_sales_in_idr": {
                             "type": [
                                 "null",
                                 "number"
