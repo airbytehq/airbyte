@@ -11,16 +11,21 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
@@ -69,10 +74,23 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
+    final List<String> additionalParameters = new ArrayList<>();
+
+    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+      additionalParameters.add("useSSL=true");
+      additionalParameters.add("requireSSL=true");
+      additionalParameters.add("verifyServerCertificate=false");
+    }
+
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
+
+    if (!additionalParameters.isEmpty()) {
+      jdbcUrl.append("?");
+      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+    }
 
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
@@ -86,7 +104,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   public static void main(String[] args) throws Exception {
-    final Destination destination = new MySQLDestination();
+    final Destination destination = new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MySQLDestination.class);

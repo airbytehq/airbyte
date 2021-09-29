@@ -83,6 +83,8 @@ public interface Configs {
 
   String getSubmitterNumThreads();
 
+  String getJobsImagePullSecret();
+
   // Resources
   String getCpuRequest();
 

@@ -87,7 +87,7 @@ The Google Ads Query Language can query the Google Ads API. Check out [Google Ad
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.12` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |
+| `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |
 | `0.1.11` | 2021-09-22 | [#6373](https://github.com/airbytehq/airbyte/pull/6373) | Fix inconsistent segments.date field type across all streams |
 | `0.1.10` | 2021-09-13 | [#6022](https://github.com/airbytehq/airbyte/pull/6022) | Annotate Oauth2 flow initialization parameters in connector spec |
 | `0.1.9` | 2021-09-07 | [#5302](https://github.com/airbytehq/airbyte/pull/5302) | Add custom query stream support |

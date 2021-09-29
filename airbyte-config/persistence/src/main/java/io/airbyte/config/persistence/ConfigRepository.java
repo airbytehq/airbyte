@@ -30,6 +30,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -408,6 +409,26 @@ public class ConfigRepository {
 
   public List<DestinationOAuthParameter> listDestinationOAuthParam() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
+  }
+
+  /**
+   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
+   * string/jsonnode into the AirbyteConfig, Stream<Object<AirbyteConfig.getClassName()>
+   *
+   * @param configurations from dumpConfig()
+   * @return input suitable for replaceAllConfigs()
+   */
+  public static Map<AirbyteConfig, Stream<?>> deserialize(Map<String, Stream<JsonNode>> configurations) {
+    Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
+    for (String configSchemaName : configurations.keySet()) {
+      deserialized.put(ConfigSchema.valueOf(configSchemaName),
+          configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
+    }
+    return deserialized;
+  }
+
+  public void replaceAllConfigsDeserializing(final Map<String, Stream<JsonNode>> configs, final boolean dryRun) throws IOException {
+    replaceAllConfigs(deserialize(configs), dryRun);
   }
 
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {

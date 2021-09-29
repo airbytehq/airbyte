@@ -68,6 +68,13 @@ cmd_publish() {
     esac
   done
 
+  if [[ ! $path =~ "connectors" ]]
+  then
+     # Do not publish spec to cache in case this is not a connector
+     publish_spec_to_cache=false
+  fi
+
+
   cmd_build "$path" "$run_tests"
 
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
@@ -90,7 +97,7 @@ cmd_publish() {
   docker push "$versioned_image"
   docker push "$latest_image"
 
-  if [[ "true" == "${publish_spec_to_cache}" && "airbyte/normalization" != "${image_name}" ]]; then
+  if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."
 
     # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
