@@ -49,11 +49,9 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "oauthFlowInitParameters": [
-        ["client_id"],
-        ["client_secret"],
-        ["refresh_token"]
-      ]
+      "rootObject": [],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }

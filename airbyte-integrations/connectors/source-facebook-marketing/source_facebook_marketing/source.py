@@ -121,6 +121,8 @@ class SourceFacebookMarketing(AbstractSource):
             connectionSpecification=ConnectorConfig.schema(),
             authSpecification=AuthSpecification(
                 auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(oauthFlowInitParameters=[["access_token"]]),
+                oauth2Specification=OAuth2Specification(
+                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+                ),
             ),
         )
