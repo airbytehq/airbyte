@@ -61,6 +61,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
@@ -149,7 +150,8 @@ class SchedulerHandlerTest {
         specFetcher,
         jobPersistence,
         jobNotifier,
-        mock(WorkflowServiceStubs.class));
+        mock(WorkflowServiceStubs.class),
+        mock(OAuthConfigSupplier.class));
   }
 
   @Test

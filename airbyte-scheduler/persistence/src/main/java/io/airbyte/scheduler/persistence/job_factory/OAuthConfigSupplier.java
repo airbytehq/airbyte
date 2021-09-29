@@ -16,8 +16,12 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OAuthConfigSupplier {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(OAuthConfigSupplier.class);
 
   public static final String SECRET_MASK = "******";
   final private ConfigRepository configRepository;
@@ -72,9 +76,11 @@ public class OAuthConfigSupplier {
           // TODO secrets should be masked with the correct type
           // https://github.com/airbytehq/airbyte/issues/5990
           // In the short-term this is not world-ending as all secret fields are currently strings
+          LOGGER.debug(String.format("Masking instance wide parameter %s in config", key));
           mainConfig.set(key, Jsons.jsonNode(SECRET_MASK));
         } else {
           if (!mainConfig.has(key) || isSecretMask(mainConfig.get(key).asText())) {
+            LOGGER.debug(String.format("injecting instance wide parameter %s into config", key));
             mainConfig.set(key, fromConfig.get(key));
           }
         }
