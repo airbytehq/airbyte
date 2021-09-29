@@ -397,12 +397,10 @@ class RawDataMixin:
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        cursor_start_value = stream_slice.get(self.cursor_field)
-        cursor_end_value = stream_slice.get(self.cursor_field + '_end')
-        start_date = self.get_date(cursor_start_value, self.start_date, max).in_tz(self.timezone)
-        end_date = self.get_date(cursor_end_value, self.end_date, min).in_tz(self.timezone)
-        params["from"] = start_date.to_datetime_string()
-        params["to"] = end_date.to_datetime_string()
+        params["from"] = stream_slice.get(self.cursor_field).to_datetime_string()
+        params["to"] = stream_slice.get(self.cursor_field + '_end').to_datetime_string()
+        AirbyteLogger().log("INFO", f"from: {params['from']}")
+        AirbyteLogger().log("INFO", f"to: {params['to']}")
 
         return params
 
@@ -416,12 +414,10 @@ class AggregateDataMixin:
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        cursor_start_value = stream_slice.get(self.cursor_field)
-        cursor_end_value = stream_slice.get(self.cursor_field + '_end')
-        start_date = self.get_date(cursor_start_value, self.start_date, max).in_tz(self.timezone)
-        end_date = self.get_date(cursor_end_value, self.end_date, min).in_tz(self.timezone)
-        params["from"] = start_date.to_date_string()
-        params["to"] = end_date.to_date_string()
+        params["from"] = stream_slice.get(self.cursor_field).to_date_string()
+        params["to"] = stream_slice.get(self.cursor_field + '_end').to_date_string()
+        AirbyteLogger().log("INFO", f"from: {params['from']}")
+        AirbyteLogger().log("INFO", f"to: {params['to']}")
 
         return params
 

@@ -133,7 +133,10 @@ def test_request_params_in_app_events(mocker):
     mocker.patch.object(InAppEvents, "cursor_field", "date")
     stream = InAppEvents()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_datetime_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -159,7 +162,10 @@ def test_request_params_installs(mocker):
     mocker.patch.object(Installs, "cursor_field", "date")
     stream = Installs()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_datetime_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -185,7 +191,10 @@ def test_request_params_retargeting_in_app_events(mocker):
     mocker.patch.object(RetargetingInAppEvents, "cursor_field", "date")
     stream = RetargetingInAppEvents()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_datetime_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -212,7 +221,10 @@ def test_request_params_retargeting_conversions(mocker):
     mocker.patch.object(RetargetingConversions, "cursor_field", "date")
     stream = RetargetingConversions()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_datetime_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -239,7 +251,10 @@ def test_request_params_uninstall_events(mocker):
     mocker.patch.object(UninstallEvents, "cursor_field", "date")
     stream = UninstallEvents()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_datetime_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -265,7 +280,10 @@ def test_request_params_partners_report(mocker):
     mocker.patch.object(PartnersReport, "cursor_field", "date")
     stream = PartnersReport()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_date_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -290,7 +308,10 @@ def test_request_params_daily_report(mocker):
     mocker.patch.object(DailyReport, "cursor_field", "date")
     stream = DailyReport()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_date_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -315,7 +336,10 @@ def test_request_params_geo_report(mocker):
     mocker.patch.object(GeoReport, "cursor_field", "date")
     stream = GeoReport()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_date_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -340,7 +364,10 @@ def test_request_params_retargeting_partners_report(mocker):
     mocker.patch.object(RetargetingPartnersReport, "cursor_field", "date")
     stream = RetargetingPartnersReport()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_date_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -366,7 +393,10 @@ def test_request_params_retargeting_daily_report(mocker):
     mocker.patch.object(RetargetingDailyReport, "cursor_field", "date")
     stream = RetargetingDailyReport()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_date_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
@@ -392,7 +422,10 @@ def test_request_params_retargeting_geo_report(mocker):
     mocker.patch.object(RetargetingGeoReport, "cursor_field", "date")
     stream = RetargetingGeoReport()
     inputs = {
-        "stream_slice": dict(date=pendulum.yesterday(timezone).to_date_string()),
+        "stream_slice": {
+            "date": pendulum.yesterday(timezone),
+            "date_end": pendulum.today(timezone)
+        },
         "next_page_token": None,
         "stream_state": None
     }
