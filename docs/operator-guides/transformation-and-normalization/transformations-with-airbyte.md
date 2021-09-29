@@ -32,6 +32,7 @@ Note that if you need to connect to a private git repository, the recommended wa
 
 - [GitHub - Personal Access Tokens](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 - [Gitlab - Personal Access Tokens](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
+- [Azure DevOps - Personal Access Tokens](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
 
 And then use it for cloning:
 
