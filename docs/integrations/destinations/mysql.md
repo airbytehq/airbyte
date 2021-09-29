@@ -91,6 +91,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.13 | 2021-09-28 | [#6506](https://github.com/airbytehq/airbyte/pull/6506) | Added support for MySQL destination via TLS/SSL |
 | 0.1.12 | 2021-09-24 | [#6317](https://github.com/airbytehq/airbyte/pull/6317) | Added option to connect to DB via SSH |
 | 0.1.11 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.1.10 | 2021-07-28 | [#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names |
