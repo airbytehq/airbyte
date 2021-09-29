@@ -68,7 +68,7 @@
     },
     "last_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "lost_reason": {
       "type": ["null", "string"]
@@ -172,7 +172,7 @@
     },
     "rotten_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "time"
     },
     "owner_name": {
       "type": ["null", "string"]

@@ -118,6 +118,8 @@ class Activities(PipedriveStream):
 class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
 
+    primary_key = None
+
 
 class Organizations(PipedriveStream):
     """
