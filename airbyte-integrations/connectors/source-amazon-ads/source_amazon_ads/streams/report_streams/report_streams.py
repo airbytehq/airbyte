@@ -257,6 +257,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # Amazon ads updates the data for the next 3 days
+        LOOK_BACK_WINDOW = 3
+
         if sync_mode == SyncMode.full_refresh:
             # For full refresh stream use date from config start_date field.
             start_date = self._start_date
@@ -266,8 +269,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             start_date = stream_state.get(self.cursor_field)
             if start_date:
                 start_date = pendulum.from_format(start_date, ReportStream.REPORT_DATE_FORMAT, tz="UTC")
-                # Amazon ads updates the data for the next 3 days
-                start_date += timedelta(days=-3)
+                start_date += timedelta(days=-LOOK_BACK_WINDOW)
             else:
                 start_date = self._start_date
 

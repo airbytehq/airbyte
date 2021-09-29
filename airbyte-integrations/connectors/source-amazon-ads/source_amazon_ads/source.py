@@ -131,5 +131,6 @@ class SourceAmazonAds(AbstractSource):
 
     @staticmethod
     def _choose_profiles(config: AmazonAdsConfig, profiles: List[Profile]):
-        print(config.profiles)
+        if not config.profiles:
+            return profiles
         return filter(lambda profile: profile.profileId in config.profiles, profiles)

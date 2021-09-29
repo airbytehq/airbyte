@@ -67,6 +67,7 @@ class AmazonAdsConfig(BaseModel):
     region: AmazonAdsRegion = Field(
         name="Region",
         description="Region to pull data from",
+        default=AmazonAdsRegion.NA
     )
 
     profiles: List[int] = Field(
