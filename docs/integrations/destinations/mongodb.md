@@ -45,11 +45,20 @@ You will need to choose an existing database or create a new database that will 
 
 You should now have all the requirements needed to configure MongoDB as a destination in the UI. You'll need the following information to configure the MongoDB destination:
 
-* **Host**
-* **Port**
+* **Standalone MongoDb instance**
+    * Host: URL of the database
+    * Port: Port to use for connecting to the database
+    * TLS: indicates whether to create encrypted connection
+* **Replica Set**
+    * Server addresses: the members of a replica set
+    * Replica Set: A replica set name
+* **MongoDb Atlas Cluster**
+    * Cluster URL: URL of a cluster to connect to
 * **Database**
 * **Username**
 * **Password**
+
+For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
 ## Notes about MongoDB Naming Conventions
 

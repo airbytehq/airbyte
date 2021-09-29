@@ -75,7 +75,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       var database = getDatabase(config);
       var databaseName = config.get(DATABASE).asText();
       var databaseNames = StreamSupport
-          .stream(database.getCollectionNames().spliterator(), false)
+          .stream(database.getDatabaseNames().spliterator(), false)
           .collect(Collectors.toSet());
       if (!databaseNames.contains(databaseName)) {
         throw new MongodbDatabaseException(databaseName);

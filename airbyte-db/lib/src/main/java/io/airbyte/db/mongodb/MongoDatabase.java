@@ -58,6 +58,10 @@ public class MongoDatabase extends AbstractDatabase {
     return database;
   }
 
+  public MongoIterable<String> getDatabaseNames() {
+    return mongoClient.listDatabaseNames();
+  }
+
   public MongoIterable<String> getCollectionNames() {
     return database.listCollectionNames();
   }
