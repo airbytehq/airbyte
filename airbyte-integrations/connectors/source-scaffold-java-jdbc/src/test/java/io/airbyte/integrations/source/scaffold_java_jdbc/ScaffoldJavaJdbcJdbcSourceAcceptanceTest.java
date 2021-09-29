@@ -40,7 +40,7 @@ class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest 
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource getSource() {
     return new ScaffoldJavaJdbcSource();
   }
 
