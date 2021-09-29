@@ -59,6 +59,7 @@ Example of the output message when trying to read `workflows` stream with missin
 
 * Hubspot Account
 * Api credentials
+* [Scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
 
 ### Setup guide
 
@@ -68,6 +69,29 @@ Hubspot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-de
 
 This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 
+
+### Required scopes
+
+Most of the streams require the [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
+
+| Stream | Required Scope |
+| :--- | :---- |
+| `campaigns` | `content` |
+| `companies` | `contacts` |
+| `contact_lists` | `contacts` |
+| `contacts` | `contacts` |
+| `deal_pipelines` | either the `contacts` scope (to fetch deals pipelines) or the `tickets` scope. |
+| `deals` | `contacts` |
+| `email_events` | `content` |
+| `engagements` | `contacts` |
+| `forms` | `forms` |
+| `line_items` | `e-commerce` |
+| `owners` | `contacts` |
+| `products` | `e-commerce` |
+| `quotes` | no scope required |
+| `subscription_changes` | `content` |
+| `tickets` | `tickets` |
+| `workflows` | `automation` |
 
 ## Changelog
 
