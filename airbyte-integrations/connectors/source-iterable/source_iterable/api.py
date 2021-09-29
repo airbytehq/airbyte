@@ -7,7 +7,7 @@ import json
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -15,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 EVENT_ROWS_LIMIT = 200
+CAMPAIGNS_PER_REQUEST = 20
 
 
 class IterableStream(HttpStream, ABC):
@@ -171,29 +172,42 @@ class CampaignsMetrics(IterableStream):
 
     def request_params(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["campaignId"] = stream_slice.get("campaign_id")
+        params["campaignId"] = stream_slice.get("campaign_ids")
         params["startDateTime"] = self.start_date
 
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         lists = Campaigns(api_key=self._api_key)
+        campaign_ids = []
         for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
-            yield {"campaign_id": list_record["id"]}
+            campaign_ids.append(list_record["id"])
+
+            if len(campaign_ids) == CAMPAIGNS_PER_REQUEST:
+                yield {"campaign_ids": campaign_ids}
+                campaign_ids = []
+
+        if campaign_ids:
+            yield {"campaign_ids": campaign_ids}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         content = response.content.decode()
-        yield {"data": self._parse_csv_string_to_dict(content)}
+        records = self._parse_csv_string_to_dict(content)
+
+        for record in records:
+            yield {"data": record}
 
     @staticmethod
-    def _parse_csv_string_to_dict(csv_string: str) -> Dict[str, Any]:
+    def _parse_csv_string_to_dict(csv_string: str) -> List[Dict[str, Any]]:
         """
         Parse a response with a csv type to dict object
         Example:
-            csv_string = "a,b,c
-                          1,2,3"
+            csv_string = "a,b,c,d
+                          1,2,,3
+                          6,,1,2"
 
-            output = {"a": 1, "b": 2, "c": 3}
+            output = [{"a": 1, "b": 2, "d": 3},
+                      {"a": 6, "c": 1, "d": 2}]
 
 
         :param csv_string: API endpoint response with csv format
@@ -202,13 +216,19 @@ class CampaignsMetrics(IterableStream):
         """
 
         reader = csv.DictReader(StringIO(csv_string), delimiter=",")
-        result = next(reader)
+        result = []
 
-        for key, value in result.items():
-            try:
-                result[key] = int(value)
-            except ValueError:
-                result[key] = float(value)
+        for row in reader:
+            for key, value in row.items():
+                if value == "":
+                    continue
+                try:
+                    row[key] = int(value)
+                except ValueError:
+                    row[key] = float(value)
+            row = {k: v for k, v in row.items() if v != ""}
+
+            result.append(row)
 
         return result
 
