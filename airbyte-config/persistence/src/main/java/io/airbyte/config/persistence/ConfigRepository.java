@@ -452,8 +452,8 @@ public class ConfigRepository {
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
       final List<StandardDestinationDefinition> destinationDefs =
-          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION).collect(Collectors.toList());
-      augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, destinationDefs.stream());
+          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
+      augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
           .stream()
           .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
