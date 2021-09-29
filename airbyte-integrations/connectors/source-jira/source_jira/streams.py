@@ -207,7 +207,7 @@ class Boards(V1ApiJiraStream):
             yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["project_id"] = stream_slice["project_id"]
+        record["projectId"] = stream_slice["project_id"]
         return record
 
 
@@ -772,6 +772,24 @@ class ScreenSchemes(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "screenscheme"
+
+class Sprints(V1ApiJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-sprint-get
+    """
+
+    parse_response_root = "values"
+    raise_on_http_errors = False
+    top_level_stream = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        board_id = stream_slice["board_id"]
+        return f"board/{board_id}/sprint"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain)
+        for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 
 class TimeTracking(JiraStream):
