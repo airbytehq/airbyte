@@ -44,7 +44,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.30.0-alpha
+    tag: 0.30.1-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -141,7 +141,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.30.0-alpha
+    tag: 0.30.1-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -240,7 +240,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.30.0-alpha
+    tag: 0.30.1-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
