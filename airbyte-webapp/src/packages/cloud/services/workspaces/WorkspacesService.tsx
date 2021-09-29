@@ -13,7 +13,13 @@ type Context = {
   currentWorkspaceId?: string | null;
   selectWorkspace: (workspaceId: string | null) => void;
   createWorkspace: (name: string) => Promise<CloudWorkspace>;
-  renameWorkspace: (name: string) => Promise<CloudWorkspace>;
+  renameWorkspace: {
+    mutateAsync: (payload: {
+      workspaceId: string;
+      name: string;
+    }) => Promise<void>;
+    isLoading: boolean;
+  };
   removeWorkspace: {
     mutateAsync: (workspaceId: string) => Promise<void>;
     isLoading: boolean;
@@ -99,9 +105,8 @@ export function useRemoveWorkspace() {
 export function useRenameWorkspace() {
   const service = useGetWorkspaceService();
 
-  return useMutation(
-    async ({ workspaceId, name }: { workspaceId: string; name: string }) =>
-      service.rename(workspaceId, name)
+  return useMutation(async (payload: { workspaceId: string; name: string }) =>
+    service.rename(payload.workspaceId, payload.name)
   );
 }
 

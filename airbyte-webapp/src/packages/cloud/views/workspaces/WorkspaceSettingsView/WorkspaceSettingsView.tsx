@@ -32,7 +32,11 @@ const Buttons = styled.div`
 export const WorkspaceSettingsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
-  const { selectWorkspace, removeWorkspace } = useWorkspaceService();
+  const {
+    selectWorkspace,
+    removeWorkspace,
+    renameWorkspace,
+  } = useWorkspaceService();
   const { name, workspaceId } = useCurrentWorkspace();
   return (
     <>
@@ -48,8 +52,8 @@ export const WorkspaceSettingsView: React.FC = () => {
       >
         <Formik
           initialValues={{ name: name }}
-          onSubmit={async (_, formikHelpers) =>
-            formikHelpers.setFieldError("name", "Not implemented")
+          onSubmit={async (payload) =>
+            renameWorkspace.mutateAsync({ workspaceId: "", name: payload })
           }
         >
           {({ dirty, isSubmitting, resetForm, isValid }) => (
