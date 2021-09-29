@@ -41,23 +41,33 @@ from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, ge
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-    def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
-        output = docker_runner.call_spec()
-        spec_messages = filter_output(output, Type.SPEC)
 
-        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+    spec_cache: ConnectorSpecification = None
+
+    @pytest.fixture(name="actual_connector_spec")
+    def actual_connector_spec_fixture(request: BaseTest, docker_runner):
+        if not request.spec_cache:
+            output = docker_runner.call_spec()
+            spec_messages = filter_output(output, Type.SPEC)
+            assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+            assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+            assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+                docker_runner.entry_point
+            ), "env should be equal to space-joined entrypoint"
+            spec = spec_messages[0].spec
+            request.spec_cache = spec
+        return request.spec_cache
+
+    def test_match_expected(
+        self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict
+    ):
+
         if connector_spec:
-            assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
-
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            docker_runner.entry_point
-        ), "env should be equal to space-joined entrypoint"
-
+            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.json file"
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
 
-        spec_message_schema = spec_messages[0].spec.connectionSpecification
+        spec_message_schema = actual_connector_spec.connectionSpecification
         validate(instance=config, schema=spec_message_schema)
 
         js_helper = JsonSchemaHelper(spec_message_schema)
@@ -75,6 +85,18 @@ class TestSpec(BaseTest):
 
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
+
+    def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
+        """
+        Check if connector has correct oauth flow parameters according to https://docs.airbyte.io/connector-development/connector-specification-reference
+        """
+        self._validate_authflow_parameters(actual_connector_spec)
+
+    @staticmethod
+    def _validate_authflow_parameters(connector_spec: ConnectorSpecification):
+        if not connector_spec.authSpecification:
+            return
+        pass
 
 
 @pytest.mark.default_timeout(30)

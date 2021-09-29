@@ -25,10 +25,19 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    Type,
+)
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
+from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
 
 @pytest.mark.parametrize(
@@ -89,3 +98,14 @@ def test_read(schema, record, should_fail):
             t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
     else:
         t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
+
+
+@pytest.mark.parametrize("connector_spec, should_fail", [(ConnectorSpecification(connectionSpecification={}), False)])
+def test_validate_oauth_flow(connector_spec, should_fail):
+    t = _TestSpec()
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_oauth_flow_parameters(connector_spec)
+    else:
+        t.test_oauth_flow_parameters(connector_spec)
+    t.test_validate_oauth_flow()
