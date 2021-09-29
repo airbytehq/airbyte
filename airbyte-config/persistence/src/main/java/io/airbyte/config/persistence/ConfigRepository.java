@@ -47,18 +47,16 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
-  private final Function<String, ConnectorSpecification> specFetcherFn;
+  private Function<String, ConnectorSpecification> specFetcherFn;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
                           final Optional<SecretPersistence> longLivedSecretPersistence,
-                          final Optional<SecretPersistence> ephemeralSecretPersistence,
-                          final Function<String, ConnectorSpecification> specFetcherFn) {
+                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
     this.persistence = persistence;
     this.secretsHydrator = secretsHydrator;
     this.longLivedSecretPersistence = longLivedSecretPersistence;
     this.ephemeralSecretPersistence = ephemeralSecretPersistence;
-    this.specFetcherFn = specFetcherFn;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -497,6 +495,10 @@ public class ConfigRepository {
 
   public void loadData(ConfigPersistence seedPersistence) throws IOException {
     persistence.loadData(seedPersistence);
+  }
+
+  public void setSpecFetcher(Function<String, ConnectorSpecification> specFetcherFn) {
+    this.specFetcherFn = specFetcherFn;
   }
 
 }
