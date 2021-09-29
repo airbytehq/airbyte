@@ -63,12 +63,12 @@
 - destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   name: MySQL
   dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
 - destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   name: MS SQL Server
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
 - destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   name: Oracle (Alpha)

@@ -180,9 +180,12 @@ class TestBasicRead(BaseTest):
             schemas[stream.stream.name] = set(get_expected_schema_structure(stream.stream.json_schema))
 
         for record in records:
+            schema_pathes = schemas.get(record.stream)
+            if not schema_pathes:
+                continue
             record_fields = set(get_object_structure(record.data))
-            common_fields = set.intersection(record_fields, schemas.get(record.stream))
-            assert common_fields, f" Record from {record.stream} stream should have some fields mentioned by json schema"
+            common_fields = set.intersection(record_fields, schema_pathes)
+            assert common_fields, f" Record from {record.stream} stream should have some fields mentioned by json schema, {schema_pathes}"
 
     @staticmethod
     def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):

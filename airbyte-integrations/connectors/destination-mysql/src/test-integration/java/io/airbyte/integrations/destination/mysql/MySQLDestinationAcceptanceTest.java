@@ -67,6 +67,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("password", db.getPassword())
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
+        .put("ssl", false)
         .build());
   }
 
@@ -78,6 +79,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("password", "wrong password")
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
+        .put("ssl", false)
         .build());
   }
 

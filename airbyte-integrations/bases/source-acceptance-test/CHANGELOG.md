@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.19
-Check record structure before validating it against json schema.
+Assert a non-empty overlap between the fields present in the record and the declared json schema.
 
 ## 0.1.18
 Fix checking date-time format againt nullable field.
