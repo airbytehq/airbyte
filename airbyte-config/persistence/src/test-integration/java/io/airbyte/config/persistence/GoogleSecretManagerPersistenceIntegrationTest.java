@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1.SecretName;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
@@ -41,9 +42,13 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
     try (final var client = GoogleSecretManagerPersistence.getSecretManagerServiceClient(configs.getSecretStoreGcpCredentials())) {
       // try to delete this so we aren't charged for the secret
       // if this is missed due to some sort of failure the secret will be deleted after the ttl
-      client.deleteSecret(SecretName.of(
-          configs.getSecretStoreGcpProjectId(),
-          baseCoordinate));
+      try {
+        client.deleteSecret(SecretName.of(
+            configs.getSecretStoreGcpProjectId(),
+            baseCoordinate));
+      } catch (NotFoundException nfe) {
+        // do nothing
+      }
     }
   }
 
