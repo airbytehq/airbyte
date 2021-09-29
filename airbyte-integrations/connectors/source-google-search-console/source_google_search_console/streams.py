@@ -1,28 +1,7 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
@@ -32,13 +11,9 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
-from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3"
-GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 ROW_LIMIT = 25000
-CLIENT_AUTH = "Client"
 
 
 class GoogleSearchConsole(HttpStream, ABC):
@@ -48,26 +23,15 @@ class GoogleSearchConsole(HttpStream, ABC):
 
     def __init__(
         self,
-        auth_type: str,
+        authenticator: Union[HttpAuthenticator, requests.auth.AuthBase],
         site_urls: list,
         start_date: str,
         end_date: str,
-        client_id: str = None,
-        client_secret: str = None,
-        refresh_token: str = None,
-        service_account_info: str = None,
     ):
-        super().__init__()
-        self._auth_type = auth_type
+        super().__init__(authenticator=authenticator)
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date
-
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._refresh_token = refresh_token
-
-        self._service_account_info = service_account_info
 
     @staticmethod
     def sanitize_urls_list(site_urls: list) -> List[str]:
@@ -90,20 +54,6 @@ class GoogleSearchConsole(HttpStream, ABC):
             records = response.json().get(self.data_field) or []
             for record in records:
                 yield record
-
-    @property
-    def authenticator(self) -> Union[HttpAuthenticator, None]:
-        if self._auth_type == CLIENT_AUTH:
-            return Oauth2Authenticator(
-                token_refresh_endpoint=GOOGLE_TOKEN_URI,
-                client_secret=self._client_secret,
-                client_id=self._client_id,
-                refresh_token=self._refresh_token,
-            )
-
-        else:
-            info = json.loads(self._service_account_info)
-            return ServiceAccountAuthenticator(service_account_info=info)
 
 
 class Sites(GoogleSearchConsole):

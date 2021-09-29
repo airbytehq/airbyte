@@ -27,7 +27,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-webapp-container
-        image: "{{ .Values.webapp.image.repository }}:{{ default .Chart.AppVersion .Values.webapp.image.tag }}"
+        image: {{ include "airbyte.webappImage" . }}
         imagePullPolicy: "{{ .Values.webapp.image.pullPolicy }}"
         env:
         - name: AIRBYTE_VERSION

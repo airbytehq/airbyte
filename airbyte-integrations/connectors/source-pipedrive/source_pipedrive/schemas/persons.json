@@ -141,7 +141,7 @@
     },
     "next_activity_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "time"
     },
     "next_activity_id": {
       "type": ["null", "integer"]

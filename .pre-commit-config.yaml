@@ -3,7 +3,7 @@ repos:
     rev: v0.8.8
     hooks:
       - id: licenseheaders
-        args: ["--tmpl=LICENSE", "--ext=py", "-f"]
+        args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
 
   - repo: https://github.com/ambv/black
     rev: 20.8b1
