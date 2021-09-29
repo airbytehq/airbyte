@@ -6,17 +6,17 @@ import logging
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping
+from typing import Any, Dict, List, Mapping, MutableMapping, Set
 
 import dpath.util
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, serialize, verify_records_schema
-from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
 @pytest.mark.default_timeout(10)
@@ -126,10 +126,37 @@ def primary_keys_for_records(streams, records):
 @pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
     @staticmethod
-    def _validate_schema(records, configured_catalog):
+    def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+        """
+        Check object structure simmilar to one expected by schema. Sometimes
+        just running schema validation is not enough case schema could have
+        additionalProperties parameter set to true and no required fields
+        therefore any arbitrary object would pass schema validation.
+        This method is here to catch those cases by extracting all the pathes
+        from the object and compare it to pathes expected from jsonschema. If
+        there no common pathes then raise an alert.
+
+        :param records: List of airbyte record messages gathered from connector instances.
+        :param configured_catalog: SAT testcase parameters parsed from yaml file
+        """
+        schemas: Dict[str, Set] = {}
+        for stream in configured_catalog.streams:
+            schemas[stream.stream.name] = set(get_expected_schema_structure(stream.stream.json_schema))
+
+        for record in records:
+            schema_pathes = schemas.get(record.stream)
+            if not schema_pathes:
+                continue
+            record_fields = set(get_object_structure(record.data))
+            common_fields = set.intersection(record_fields, schema_pathes)
+            assert common_fields, f" Record from {record.stream} stream should have some fields mentioned by json schema, {schema_pathes}"
+
+    @staticmethod
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
+        TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
         streams_errors = verify_records_schema(records, configured_catalog)
         for stream_name, errors in streams_errors.items():
