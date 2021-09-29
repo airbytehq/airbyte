@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -72,14 +52,24 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   private final JdbcSourceOperations sourceOperations;
 
-  public PostgresSource() {
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
+  }
+
+  PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
     this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
+    return toDatabaseConfigStatic(config);
+  }
 
+  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor. the
+  // current structure forces us to declarehave a bunch of pure function methods as instance members
+  // when they could be static.
+  public JsonNode toDatabaseConfigStatic(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
@@ -87,7 +77,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -267,7 +258,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
+    final Source source = PostgresSource.sshWrappedSource();
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);

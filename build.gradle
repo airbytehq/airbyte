@@ -89,7 +89,7 @@ spotless {
 
         eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -266,7 +266,7 @@ subprojects {
     if(pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE'))
+            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")

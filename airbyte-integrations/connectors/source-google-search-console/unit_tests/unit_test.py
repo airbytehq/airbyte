@@ -1,32 +1,13 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from urllib.parse import quote_plus
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_google_search_console.streams import CLIENT_AUTH, ROW_LIMIT, SearchAnalyticsByDate
+from airbyte_cdk.sources.streams.http.auth import NoAuth
+from source_google_search_console.streams import ROW_LIMIT, SearchAnalyticsByDate
 
 
 class MockResponse:
@@ -46,7 +27,7 @@ class MockResponse:
     ],
 )
 def test_pagination(count, expected):
-    stream = SearchAnalyticsByDate(CLIENT_AUTH, ["https://example.com"], "start_date", "end_date")
+    stream = SearchAnalyticsByDate(NoAuth(), ["https://example.com"], "start_date", "end_date")
     response = MockResponse(stream.data_field, count)
     stream.next_page_token(response)
     assert stream.start_row == expected
@@ -62,7 +43,7 @@ def test_pagination(count, expected):
     ],
 )
 def test_slice(site_urls, sync_mode):
-    stream = SearchAnalyticsByDate(CLIENT_AUTH, site_urls, "start_date", "end_date")
+    stream = SearchAnalyticsByDate(NoAuth(), site_urls, "start_date", "end_date")
 
     search_types = stream.search_types
     stream_slice = stream.stream_slices(sync_mode=sync_mode)
@@ -95,7 +76,7 @@ def test_slice(site_urls, sync_mode):
     ],
 )
 def test_state(current_stream_state, latest_record, expected):
-    stream = SearchAnalyticsByDate(CLIENT_AUTH, ["https://example.com"], "start_date", "end_date")
+    stream = SearchAnalyticsByDate(NoAuth(), ["https://example.com"], "start_date", "end_date")
 
     value = stream.get_updated_state(current_stream_state, latest_record)
     assert value == expected
