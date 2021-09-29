@@ -7,6 +7,7 @@ package io.airbyte.config.persistence.split_secrets;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.NotFoundException;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.secretmanager.v1.ProjectName;
 import com.google.cloud.secretmanager.v1.Replication;
 import com.google.cloud.secretmanager.v1.Secret;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
@@ -101,7 +102,7 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
           secretBuilder.setTtl(ttl);
         }
 
-        client.createSecret(gcpProjectId, coordinate.getFullCoordinate(), secretBuilder.build());
+        client.createSecret(ProjectName.of(gcpProjectId), coordinate.getFullCoordinate(), secretBuilder.build());
       }
 
       final var name = SecretName.of(gcpProjectId, coordinate.getFullCoordinate());

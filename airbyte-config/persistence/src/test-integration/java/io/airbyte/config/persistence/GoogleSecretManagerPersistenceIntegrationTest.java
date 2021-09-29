@@ -65,7 +65,7 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
     // update
     final var secondPayload = "def";
     final var coordinate2 = new SecretCoordinate(baseCoordinate, 2);
-    persistence.write(coordinate2, firstPayload);
+    persistence.write(coordinate2, secondPayload);
     final var thirdRead = persistence.read(coordinate2);
     assertTrue(thirdRead.isPresent());
     assertEquals(secondPayload, thirdRead.get());
