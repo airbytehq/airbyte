@@ -33,7 +33,7 @@
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   sourceType: api
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
@@ -140,7 +140,7 @@
 - sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   name: Google Analytics v4
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -356,7 +356,7 @@
 - sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   name: Google Search Console
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-search-console
   sourceType: api
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
