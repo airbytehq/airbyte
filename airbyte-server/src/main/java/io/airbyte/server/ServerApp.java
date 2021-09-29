@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -33,8 +13,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.ConfigSeedProvider;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
@@ -170,10 +150,13 @@ public class ServerApp implements ServerRunnable {
     TrackingClientSingleton.get().identify(workspaceId);
   }
 
-  public static ServerRunnable getServer(final ServerFactory apiFactory) throws Exception {
+  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
+
+    LOGGER.info("Creating Staged Resource folder...");
+    ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = new ConfigsDatabaseInstance(
@@ -182,7 +165,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-    configPersistence.loadData(ConfigSeedProvider.get(configs));
+    configPersistence.migrateFileConfigs(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
 
     LOGGER.info("Creating Scheduler persistence...");
@@ -231,7 +214,7 @@ public class ServerApp implements ServerRunnable {
       final boolean versionSupportsAutoMigrate =
           new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
+        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
         // After migration, upgrade the DB version
         airbyteDatabaseVersion = jobPersistence.getVersion();
       } else {
@@ -239,10 +222,11 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
-    runFlywayMigration(configs, configDatabase, jobDatabase);
-
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
+
+      runFlywayMigration(configs, configDatabase, jobDatabase);
+      configPersistence.loadData(seed);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -250,6 +234,7 @@ public class ServerApp implements ServerRunnable {
           temporalService,
           configRepository,
           jobPersistence,
+          seed,
           configDatabase,
           jobDatabase,
           configs);
@@ -260,7 +245,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api()).start();
+    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
   }
 
   /**
@@ -269,6 +254,7 @@ public class ServerApp implements ServerRunnable {
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,
+                                            final ConfigPersistence seed,
                                             final SpecFetcher specFetcher,
                                             final String airbyteVersion,
                                             final String airbyteDatabaseVersion) {
@@ -277,7 +263,7 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configRepository,
         airbyteVersion,
-        YamlSeedConfigPersistence.get(),
+        seed,
         specFetcher)) {
       runMigration.run();
     } catch (final Exception e) {

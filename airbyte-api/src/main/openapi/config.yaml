@@ -1234,7 +1234,7 @@ paths:
     post:
       tags:
         - oauth
-      summary: Given a source def ID and optional workspaceID generate an access/refresh token etc.
+      summary: Given a source def ID generate an access/refresh token etc.
       operationId: completeSourceOAuth
       requestBody:
         content:
@@ -1280,7 +1280,7 @@ paths:
     post:
       tags:
         - oauth
-      summary:
+      summary: Given a destination def ID generate an access/refresh token etc.
       operationId: completeDestinationOAuth
       requestBody:
         content:
@@ -1408,6 +1408,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/search:
+    post:
+      tags:
+        - web_backend
+      summary: Search connections
+      operationId: webBackendConnectionSearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionSearch"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/sources/create:
@@ -1700,6 +1723,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        displaySetupWizard:
+          type: boolean
     Notification:
       type: object
       required:
@@ -1906,6 +1931,62 @@ components:
       description: The specification for what values are required to configure the sourceDefinition.
       type: object
       example: { user: { type: string } }
+    SourceAuthSpecification:
+      $ref: "#/components/schemas/AuthSpecification"
+    AuthSpecification:
+      type: object
+      properties:
+        auth_type:
+          type: string
+          enum: ["oauth2.0"] # Future auth types should be added here
+        oauth2Specification:
+          "$ref": "#/components/schemas/OAuth2Specification"
+    OAuth2Specification:
+      description: An object containing any metadata needed to describe this connector's Oauth flow
+      type: object
+      required:
+        - rootObject
+        - oauthFlowInitParameters
+        - oauthFlowOutputParameters
+      properties:
+        rootObject:
+          description:
+            "A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.
+
+            Examples:
+
+            if oauth parameters were contained inside the top level, rootObject=[]
+            If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials']
+            If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
+            "
+          type: array
+          items:
+            type: string
+        oauthFlowInitParameters:
+          description:
+            "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
+            Each inner array represents the path in the rootObject of the referenced field.
+            For example.
+            Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
+            If they are not nested in the rootObject, then the array would look like this [['app_secret'], ['app_id']]
+            If they are nested inside an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]"
+          type: array
+          items:
+            description: A list of strings denoting a pointer into the rootObject for where to find this property
+            type: array
+            items:
+              type: string
+        oauthFlowOutputParameters:
+          description:
+            "Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters.
+            This is typically a refresh/access token.
+            Each inner array represents the path in the rootObject of the referenced field."
+          type: array
+          items:
+            description: A list of strings denoting a pointer into the rootObject for where to find this property
+            type: array
+            items:
+              type: string
     SourceDefinitionSpecificationRead:
       type: object
       required:
@@ -1918,6 +1999,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        authSpecification:
+          $ref: "#/components/schemas/SourceAuthSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
@@ -2014,10 +2097,27 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+    SourceSearch:
+      type: object
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
+        sourceName:
+          type: string
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
       format: uuid
+    DestinationAuthSpecification:
+      $ref: "#/components/schemas/AuthSpecification"
     DestinationDefinitionIdRequestBody:
       type: object
       required:
@@ -2101,6 +2201,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        authSpecification:
+          $ref: "#/components/schemas/DestinationAuthSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
         supportedDestinationSyncModes:
@@ -2196,6 +2298,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationRead"
+    DestinationSearch:
+      type: object
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
+        destinationName:
+          type: string
     # CONNECTION
     ConnectionId:
       type: string
@@ -2408,6 +2525,35 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+    WebBackendConnectionSearch:
+      type: object
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceSearch"
+        destination:
+          $ref: "#/components/schemas/DestinationSearch"
     ConnectionReadList:
       type: object
       required:
@@ -3062,7 +3208,7 @@ components:
     SetInstancewideSourceOauthParamsRequestBody:
       type: object
       required:
-        - sourceConnectorDefinitionId
+        - sourceDefinitionId
         - params
       properties:
         sourceDefinitionId:

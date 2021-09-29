@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.db2.Db2Source'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {

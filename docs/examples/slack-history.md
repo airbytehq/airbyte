@@ -45,7 +45,7 @@ cd airbyte
 docker-compose up
 ```
 
-If you run into any problems, feel free to check out our more extensive [getting started](https://docs.airbyte.io/faq/getting-started) for more help.
+If you run into any problems, feel free to check out our more extensive [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) for help.
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/). Once you have set your user preferences, you will be brought to a page that asks you to set up a source. In the next step, we'll go over how to do that.
 

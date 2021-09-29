@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.migration;
@@ -123,22 +103,22 @@ public class RunMigrationTest {
     }
   }
 
-  private void assertPreMigrationConfigs(Path configRoot, JobPersistence jobPersistence) throws Exception {
+  private void assertPreMigrationConfigs(final Path configRoot, final JobPersistence jobPersistence) throws Exception {
     assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
-    ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
-    Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
+    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
+    final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
   }
 
-  private void assertDatabaseVersion(JobPersistence jobPersistence, String version) throws IOException {
+  private void assertDatabaseVersion(final JobPersistence jobPersistence, final String version) throws IOException {
     final Optional<String> versionFromDb = jobPersistence.getVersion();
     assertTrue(versionFromDb.isPresent());
     assertEquals(versionFromDb.get(), version);
   }
 
-  private void assertPostMigrationConfigs(Path importRoot) throws Exception {
+  private void assertPostMigrationConfigs(final Path importRoot) throws Exception {
     final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
     final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
@@ -154,7 +134,7 @@ public class RunMigrationTest {
     assertDestinationDefinitions(configRepository);
   }
 
-  private void assertSourceDefinitions(ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private void assertSourceDefinitions(final ConfigRepository configRepository) throws JsonValidationException, IOException {
     final Map<String, StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSources()
         .stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
@@ -170,7 +150,7 @@ public class RunMigrationTest {
     assertEquals("MySQL", mysqlDefinition.getName());
 
     final StandardSourceDefinition postgresDefinition = sourceDefinitions.get("decd338e-5647-4c0b-adf4-da0e75f5a750");
-    String[] tagBrokenAsArray = postgresDefinition.getDockerImageTag().replace(".", ",").split(",");
+    final String[] tagBrokenAsArray = postgresDefinition.getDockerImageTag().replace(".", ",").split(",");
     assertEquals(3, tagBrokenAsArray.length);
     assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
     assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -178,7 +158,7 @@ public class RunMigrationTest {
     assertTrue(postgresDefinition.getName().contains("Postgres"));
   }
 
-  private void assertDestinationDefinitions(ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private void assertDestinationDefinitions(final ConfigRepository configRepository) throws JsonValidationException, IOException {
     final Map<String, StandardDestinationDefinition> sourceDefinitions = configRepository.listStandardDestinationDefinitions()
         .stream()
         .collect(Collectors.toMap(c -> c.getDestinationDefinitionId().toString(), c -> c));
@@ -193,7 +173,7 @@ public class RunMigrationTest {
     assertEquals("0.2.0", localCsvDefinition.getDockerImageTag());
 
     final StandardDestinationDefinition snowflakeDefinition = sourceDefinitions.get("424892c4-daac-4491-b35d-c6688ba547ba");
-    String[] tagBrokenAsArray = snowflakeDefinition.getDockerImageTag().replace(".", ",").split(",");
+    final String[] tagBrokenAsArray = snowflakeDefinition.getDockerImageTag().replace(".", ",").split(",");
     assertEquals(3, tagBrokenAsArray.length);
     assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
     assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -201,12 +181,12 @@ public class RunMigrationTest {
     assertTrue(snowflakeDefinition.getName().contains("Snowflake"));
   }
 
-  private void assertStandardSyncs(ConfigRepository configRepository,
-                                   StandardSyncOperation standardSyncOperation)
+  private void assertStandardSyncs(final ConfigRepository configRepository,
+                                   final StandardSyncOperation standardSyncOperation)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<StandardSync> standardSyncs = configRepository.listStandardSyncs();
     assertEquals(standardSyncs.size(), 2);
-    for (StandardSync standardSync : standardSyncs) {
+    for (final StandardSync standardSync : standardSyncs) {
       if (standardSync.getConnectionId().toString().equals("a294256f-1abe-4837-925f-91602c7207b4")) {
         assertEquals(standardSync.getPrefix(), "");
         assertEquals(standardSync.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
@@ -233,7 +213,7 @@ public class RunMigrationTest {
   }
 
   @NotNull
-  private StandardSyncOperation assertSyncOperations(ConfigRepository configRepository) throws IOException, JsonValidationException {
+  private StandardSyncOperation assertSyncOperations(final ConfigRepository configRepository) throws IOException, JsonValidationException {
     final List<StandardSyncOperation> standardSyncOperations = configRepository.listStandardSyncOperations();
     assertEquals(standardSyncOperations.size(), 1);
     final StandardSyncOperation standardSyncOperation = standardSyncOperations.get(0);
@@ -245,7 +225,7 @@ public class RunMigrationTest {
     return standardSyncOperation;
   }
 
-  private void assertSources(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
+  private void assertSources(final ConfigRepository configRepository, final UUID workspaceId) throws JsonValidationException, IOException {
     final Map<String, SourceConnection> sources = configRepository.listSourceConnection()
         .stream()
         .collect(Collectors.toMap(sourceConnection -> sourceConnection.getSourceId().toString(), sourceConnection -> sourceConnection));
@@ -264,7 +244,7 @@ public class RunMigrationTest {
 
   }
 
-  private void assertWorkspace(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
+  private void assertWorkspace(final ConfigRepository configRepository, final UUID workspaceId) throws JsonValidationException, IOException {
     final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(true);
     assertEquals(1, standardWorkspaces.size());
     final StandardWorkspace workspace = standardWorkspaces.get(0);
@@ -279,7 +259,7 @@ public class RunMigrationTest {
     assertEquals(false, workspace.getDisplaySetupWizard());
   }
 
-  private void assertDestinations(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
+  private void assertDestinations(final ConfigRepository configRepository, final UUID workspaceId) throws JsonValidationException, IOException {
     final List<DestinationConnection> destinationConnections = configRepository.listDestinationConnection();
     assertEquals(destinationConnections.size(), 2);
     for (final DestinationConnection destination : destinationConnections) {
@@ -305,12 +285,12 @@ public class RunMigrationTest {
     }
   }
 
-  private void runMigration(JobPersistence jobPersistence, Path configRoot) throws Exception {
+  private void runMigration(final JobPersistence jobPersistence, final Path configRoot) throws Exception {
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
         TARGET_VERSION,
-        YamlSeedConfigPersistence.get(),
+        YamlSeedConfigPersistence.getDefault(),
         mock(SpecFetcher.class) // this test was disabled/broken when this fetcher mock was added. apologies if you have to fix this
                                 // in the future.
     )) {
@@ -319,7 +299,7 @@ public class RunMigrationTest {
   }
 
   @SuppressWarnings("SameParameterValue")
-  private JobPersistence getJobPersistence(Database database, File file, String version) throws IOException {
+  private JobPersistence getJobPersistence(final Database database, final File file, final String version) throws IOException {
     final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database);
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");
     resourceToBeCleanedUp.add(tempFolder.toFile());
