@@ -63,6 +63,7 @@ class HarvestClient(Harvest):
 class Client(BaseClient):
     # TODO: Adopt connector best practices https://github.com/airbytehq/airbyte/issues/1943.
     # TODO: Add the incremental support where it's possible https://github.com/airbytehq/airbyte/issues/1386.
+    # TODO: Fill all streams with data https://github.com/airbytehq/airbyte/issues/6546
 
     ENTITIES = [
         "applications",
