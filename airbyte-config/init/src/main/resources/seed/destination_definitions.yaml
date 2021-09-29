@@ -27,7 +27,7 @@
 - destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   name: BigQuery (denormalized typed struct)
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   name: Google Cloud Storage (GCS)

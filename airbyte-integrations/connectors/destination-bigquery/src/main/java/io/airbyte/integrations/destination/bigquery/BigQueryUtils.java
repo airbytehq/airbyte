@@ -120,4 +120,9 @@ public class BigQueryUtils {
     }
   }
 
+  static TableDefinition getTableDefinition(BigQuery bigquery, String datasetName, String tableName) {
+    final TableId tableId = TableId.of(datasetName, tableName);
+    return bigquery.getTable(tableId).getDefinition();
+  }
+
 }
