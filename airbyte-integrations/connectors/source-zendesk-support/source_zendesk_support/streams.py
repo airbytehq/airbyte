@@ -248,6 +248,7 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
         return current_stream_state
 
     def get_last_end_time(self) -> Optional[Union[str, int]]:
+        """Updating of last_end_time for comparing with cursor fields"""
         if not self.last_end_time:
             return self.last_end_time
         return self.datetime2str(datetime.fromtimestamp(self.last_end_time))
@@ -256,9 +257,10 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
 
-        data = response.json()
         # save  previous end time for filtering of a current response
         previous_end_time = self.get_last_end_time()
+
+        data = response.json()
         # save a last end time for the next attempt
         self.last_end_time = data["end_time"]
         # end_of_stream is true if the current request has returned all the results up to the current time; false otherwise
