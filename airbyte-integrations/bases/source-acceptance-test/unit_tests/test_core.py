@@ -57,6 +57,8 @@ def test_discovery(schema, cursors, should_fail):
 @pytest.mark.parametrize(
     "schema, record, should_fail",
     [
+        ({"type": "object"}, {"aa": 23}, False),
+        ({"type": "object"}, {}, False),
         ({"type": "object", "properties": {"created": {"type": "string"}}}, {"aa": 23}, True),
         ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, False),
         ({"type": "object", "properties": {"created": {"type": "string"}}}, {"root": {"created": "23"}}, True),
