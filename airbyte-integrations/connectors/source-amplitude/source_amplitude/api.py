@@ -137,7 +137,12 @@ class Events(IncrementalAmplitudeStream):
         # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
         if pendulum.parse(params["start"]).add(hours=6) > pendulum.parse(params["end"]):
             return []
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except requests.exceptions.HTTPError as error:
+            self.logger.info(f"Error during syncing {self.name} stream - {error}")
+            return []
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
