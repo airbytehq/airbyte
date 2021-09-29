@@ -22,16 +22,6 @@
 # SOFTWARE.
 #
 
-
-# from airbyte_cdk.models import (
-#     AirbyteCatalog,
-#     AirbyteMessage,
-#     AirbyteRecordMessage,
-#     AirbyteStream,
-#     ConfiguredAirbyteCatalog,
-#     Status,
-#     Type,
-# )
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
