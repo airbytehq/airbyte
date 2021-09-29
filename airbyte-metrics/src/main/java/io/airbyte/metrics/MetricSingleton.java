@@ -41,6 +41,7 @@ public class MetricSingleton {
       // metrics object, i.e.:
 
       // counter.inc(rand(0, 5));
+      LOGGER.info("publishing this!");
       gauge.set(rand(-5, 10));
       // histogram.observe(rand(0, 5));
       // summary.observe(rand(0, 5));
