@@ -75,13 +75,12 @@ class GoogleAds:
 
         if cursor_field:
             if from_category == 'click_view':
-                # Queries including ClickView must have a filter limiting the results to one day.
-                from_date = pendulum.parse(from_date)
-                to_date = from_date.add(days=1).to_date_string()
-                from_date = from_date.to_date_string()
+                # ClickView must have a filter limiting the results to one day.
+                to_date = pendulum.parse(from_date).add(days=1).to_date_string()
                 query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
             else:
-                query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field} ASC"
+                # Fix issue 5411: Make date_start and date_end inclusive.
+                query_template += f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
 
         return query_template
 
