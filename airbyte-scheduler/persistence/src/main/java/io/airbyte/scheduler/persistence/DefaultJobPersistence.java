@@ -415,8 +415,9 @@ public class DefaultJobPersistence implements JobPersistence {
     final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(Sets.newHashSet(configType)) + " AND " +
-            " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC", timeConvertedIntoLocalDateTime)));
+            "CAST(config_type AS VARCHAR) =  ? AND " +
+            " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC", Sqls.toSqlName(configType),
+            timeConvertedIntoLocalDateTime)));
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {

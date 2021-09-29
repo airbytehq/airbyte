@@ -131,6 +131,7 @@ class DefaultJobPersistenceTest {
         NOW.getEpochSecond(),
         null);
   }
+
   private static Job createJob(long id, JobConfig jobConfig, JobStatus status, List<Attempt> attempts, long time) {
     return createJob(id, jobConfig, status, attempts, time, SCOPE);
   }
@@ -304,12 +305,12 @@ class DefaultJobPersistenceTest {
     assertEquals(expected, actual);
   }
 
-
   @Test
   @DisplayName("Should return correct set of jobs when querying on end timestamp")
   void testListJobsWithTimestamp() throws IOException {
     Supplier<Instant> timeSupplier = mock(Supplier.class);
-    //TODO : Once we fix the problem of precision loss in DefaultJobPersistence, change the test value to contain miliseconds as well
+    // TODO : Once we fix the problem of precision loss in DefaultJobPersistence, change the test value
+    // to contain milliseconds as well
     Instant now = Instant.parse("2021-01-01T00:00:00Z");
     when(timeSupplier.get()).thenReturn(
         now,
@@ -328,8 +329,7 @@ class DefaultJobPersistenceTest {
         now.plusSeconds(13),
         now.plusSeconds(14),
         now.plusSeconds(15),
-        now.plusSeconds(16)
-    );
+        now.plusSeconds(16));
     jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
     final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
     final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
