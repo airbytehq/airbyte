@@ -7,8 +7,6 @@ package io.airbyte.workers.temporal;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -29,7 +27,6 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @WorkflowInterface

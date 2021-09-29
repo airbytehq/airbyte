@@ -19,8 +19,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.persistence.split_secrets.ReadOnlySecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -49,7 +47,6 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,8 +156,8 @@ public interface SyncWorkflow {
       final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
 
       final var fullSyncInput = Jsons.clone(syncInput)
-              .withSourceConfiguration(fullSourceConfig)
-              .withDestinationConfiguration(fullDestinationConfig);
+          .withSourceConfiguration(fullSourceConfig)
+          .withDestinationConfiguration(fullDestinationConfig);
 
       final Supplier<StandardSyncInput> inputSupplier = () -> {
         validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));

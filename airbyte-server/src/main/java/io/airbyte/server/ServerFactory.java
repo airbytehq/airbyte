@@ -8,14 +8,12 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.MDC;
@@ -31,8 +29,7 @@ public interface ServerFactory {
 
                         Database configsDatabase,
                         Database jobsDatabase,
-                        Configs configs,
-                        Optional<SecretPersistence> ephemeralSecretPersistence);
+                        Configs configs);
 
   class Api implements ServerFactory {
 
@@ -45,8 +42,7 @@ public interface ServerFactory {
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
                                  final Database jobsDatabase,
-                                 final Configs configs,
-                                 final Optional<SecretPersistence> ephemeralSecretPersistence) {
+                                 final Configs configs) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -59,8 +55,7 @@ public interface ServerFactory {
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
           configsDatabase,
-          jobsDatabase,
-          ephemeralSecretPersistence);
+          jobsDatabase);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

@@ -8,7 +8,6 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -16,7 +15,6 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.util.Map;
-import java.util.Optional;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
@@ -33,7 +31,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Map<String, String> mdc;
   private static Database configsDatabase;
   private static Database jobsDatabase;
-  private static Optional<SecretPersistence> ephemeralSecretPersistence;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -46,8 +43,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final FileTtlManager archiveTtlManager,
                                final Map<String, String> mdc,
                                final Database configsDatabase,
-                               final Database jobsDatabase,
-                               final Optional<SecretPersistence> ephemeralSecretPersistence) {
+                               final Database jobsDatabase) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -59,11 +55,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.temporalService = temporalService;
     ConfigurationApiFactory.configsDatabase = configsDatabase;
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
-    ConfigurationApiFactory.ephemeralSecretPersistence = ephemeralSecretPersistence;
-  }
-
-  public static void setEphemeralSecretPersistence(Optional<SecretPersistence> ephemeralSecretPersistence) {
-    ConfigurationApiFactory.ephemeralSecretPersistence = ephemeralSecretPersistence;
   }
 
   @Override
@@ -80,8 +71,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.archiveTtlManager,
         ConfigurationApiFactory.temporalService,
         ConfigurationApiFactory.configsDatabase,
-        ConfigurationApiFactory.jobsDatabase,
-        ConfigurationApiFactory.ephemeralSecretPersistence);
+        ConfigurationApiFactory.jobsDatabase);
   }
 
   @Override

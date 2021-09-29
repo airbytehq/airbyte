@@ -37,9 +37,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
-import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -80,15 +77,13 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
-  private final Optional<SecretPersistence> ephemeralSecretPersistence;
 
   public SchedulerHandler(ConfigRepository configRepository,
                           SchedulerJobClient schedulerJobClient,
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
                           JobNotifier jobNotifier,
-                          WorkflowServiceStubs temporalService,
-                          Optional<SecretPersistence> ephemeralSecretPersistence) {
+                          WorkflowServiceStubs temporalService) {
     this(
         configRepository,
         schedulerJobClient,
@@ -98,8 +93,7 @@ public class SchedulerHandler {
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
         jobNotifier,
-        temporalService,
-        ephemeralSecretPersistence);
+        temporalService);
   }
 
   @VisibleForTesting
@@ -111,8 +105,7 @@ public class SchedulerHandler {
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
                    JobNotifier jobNotifier,
-                   WorkflowServiceStubs temporalService,
-                   Optional<SecretPersistence> ephemeralSecretPersistence) {
+                   WorkflowServiceStubs temporalService) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -122,7 +115,6 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
-    this.ephemeralSecretPersistence = ephemeralSecretPersistence;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -139,22 +131,15 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        sourceConfig.getConnectionConfiguration(),
+        specFetcher.execute(imageName));
+
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
-    SourceConnection source = new SourceConnection()
+    final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(sourceConfig.getConnectionConfiguration());;
-
-    if (ephemeralSecretPersistence.isPresent()) {
-      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
-          NO_WORKSPACE,
-          sourceConfig.getConnectionConfiguration(),
-          specFetcher.execute(imageName));
-
-      splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence.get()::write);
-
-      source.setConfiguration(splitSecretConfig.getPartialConfig());
-    }
+        .withConfiguration(partialConfig);
 
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
@@ -187,22 +172,15 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
 
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        destinationConfig.getConnectionConfiguration(),
+        specFetcher.execute(imageName));
+
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
-    DestinationConnection destination = new DestinationConnection()
+    final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(destinationConfig.getConnectionConfiguration());
-
-    if (ephemeralSecretPersistence.isPresent()) {
-      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(
-          NO_WORKSPACE,
-          destinationConfig.getConnectionConfiguration(),
-          specFetcher.execute(imageName));
-
-      splitSecretConfig.getCoordinateToPayload().forEach(ephemeralSecretPersistence.get()::write);
-
-      destination.setConfiguration(splitSecretConfig.getPartialConfig());
-    }
+        .withConfiguration(partialConfig);
 
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
   }

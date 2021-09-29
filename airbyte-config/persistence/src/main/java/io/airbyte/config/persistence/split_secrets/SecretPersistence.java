@@ -44,7 +44,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
   static SecretsHydrator getSecretsHydrator(final Configs configs) throws IOException {
     final var persistence = getLongLived(configs);
 
-    if(persistence.isPresent()) {
+    if (persistence.isPresent()) {
       return new RealSecretsHydrator(persistence.get());
     } else {
       return new NoOpSecretsHydrator();

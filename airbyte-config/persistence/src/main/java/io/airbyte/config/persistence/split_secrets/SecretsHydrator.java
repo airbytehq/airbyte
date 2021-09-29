@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,10 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public interface SecretsHydrator {
 
-    /**
-     * Adds secrets to a partial config.
-     * @param partialConfig partial config (without secrets)
-     * @return full config with secrets
-     */
-    JsonNode hydrate(JsonNode partialConfig);
+  /**
+   * Adds secrets to a partial config.
+   *
+   * @param partialConfig partial config (without secrets)
+   * @return full config with secrets
+   */
+  JsonNode hydrate(JsonNode partialConfig);
+
 }
