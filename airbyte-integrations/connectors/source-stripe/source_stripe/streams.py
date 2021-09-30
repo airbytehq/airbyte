@@ -84,7 +84,8 @@ class IncrementalStripeStream(StripeStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         start_timestamp = self.get_start_timestamp(stream_state)
-        params["created[gte]"] = start_timestamp
+        if start_timestamp:
+            params["created[gte]"] = start_timestamp
         return params
 
     def get_start_timestamp(self, stream_state) -> int:
@@ -92,7 +93,7 @@ class IncrementalStripeStream(StripeStream, ABC):
         if stream_state and self.cursor_field in stream_state:
             start_point = max(start_point, stream_state[self.cursor_field])
 
-        if self.lookback_window_days:
+        if start_point and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
             start_point = int(pendulum.from_timestamp(start_point).subtract(days=abs(self.lookback_window_days)).timestamp())
 
