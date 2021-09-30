@@ -7,9 +7,12 @@ package io.airbyte.integrations.destination.mongodb;
 import static com.mongodb.client.model.Projections.excludeId;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.mongodb.MongoDatabase;
+import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -27,8 +30,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
   private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   private static final String INSTANCE_TYPE = "instance_type";
+  private static final String INSTANCE = "instance";
   private static final String CLUSTER_URL = "cluster_url";
   private static final String SERVER_ADDRESSES = "server_addresses";
   private static final String REPLICA_SET = "replica_set";
@@ -74,9 +76,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
     try {
       var database = getDatabase(config);
       var databaseName = config.get(DATABASE).asText();
-      var databaseNames = StreamSupport
-          .stream(database.getDatabaseNames().spliterator(), false)
-          .collect(Collectors.toSet());
+      Set<String> databaseNames = MoreIterators.toSet(database.getDatabaseNames().iterator());
       if (!databaseNames.contains(databaseName)) {
         throw new MongodbDatabaseException(databaseName);
       }
@@ -125,26 +125,34 @@ public class MongodbDestination extends BaseConnector implements Destination {
     return new MongoDatabase(getConnectionString(config), config.get(DATABASE).asText());
   }
 
-  private String getConnectionString(JsonNode config) {
+  @VisibleForTesting
+  String getConnectionString(JsonNode config) {
     var credentials = config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
         ? String.format("%s:%s@", config.get(AUTH_TYPE).get(USERNAME).asText(), config.get(AUTH_TYPE).get(PASSWORD).asText())
         : StringUtils.EMPTY;
 
+    // backward compatibility check
     if (config.has(INSTANCE_TYPE)) {
-      StringBuilder connectionStrBuilder = new StringBuilder();
-      JsonNode instanceConfig = config.get(INSTANCE_TYPE);
-      if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
-        // Standalone MongoDb Instance
+      return buildConnectionString(config, credentials);
+    } else {
+      return String.format(MONGODB_SERVER_URL, credentials, config.get(HOST).asText(),
+          config.get(PORT).asText(), config.get(DATABASE).asText(), false);
+    }
+  }
+
+  private String buildConnectionString(JsonNode config, String credentials) {
+    StringBuilder connectionStrBuilder = new StringBuilder();
+
+    JsonNode instanceConfig = config.get(INSTANCE_TYPE);
+    MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
+
+    switch (instance) {
+      case STANDALONE -> {
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
                 config.get(DATABASE).asText(), instanceConfig.get(TLS).asBoolean()));
-      } else if (instanceConfig.has(CLUSTER_URL)) {
-        // MongoDB Atlas
-        connectionStrBuilder.append(
-            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
-                config.get(DATABASE).asText()));
-      } else {
-        // Replica Set & Shard
+      }
+      case REPLICA -> {
         connectionStrBuilder.append(
             String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
                 config.get(DATABASE).asText()));
@@ -152,12 +160,14 @@ public class MongodbDestination extends BaseConnector implements Destination {
           connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
         }
       }
-      return connectionStrBuilder.toString();
-    } else {
-      // backward compatibility
-      return String.format(MONGODB_SERVER_URL, credentials, config.get(HOST).asText(),
-          config.get(PORT).asText(), config.get(DATABASE).asText(), false);
+      case ATLAS -> {
+        connectionStrBuilder.append(
+            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
+                config.get(DATABASE).asText()));
+      }
+      default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
+    return connectionStrBuilder.toString();
   }
 
 }

@@ -14,13 +14,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
@@ -72,9 +73,7 @@ public class MongoDatabase extends AbstractDatabase {
   }
 
   public MongoCollection<Document> getOrCreateNewCollection(String collectionName) {
-    var collectionNames = StreamSupport
-        .stream(database.listCollectionNames().spliterator(), false)
-        .collect(Collectors.toSet());
+    Set<String> collectionNames = MoreIterators.toSet(database.listCollectionNames().iterator());
     if (!collectionNames.contains(collectionName)) {
       database.createCollection(collectionName);
     }
