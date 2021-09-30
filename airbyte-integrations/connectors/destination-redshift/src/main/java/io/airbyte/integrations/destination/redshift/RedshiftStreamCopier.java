@@ -72,9 +72,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
 
   /**
    * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
-   * entry in a manifest file otherwise it is not valid, thus this method will return Empty when a
-   * proper manifest file cannot be constructed. and uploads the file to s3. Note: Using a manifest to
-   * COPY a set of s3 files into Redshift, which is in accordance AWS Redshift best practices.
+   * entry in a manifest file otherwise it is not considered valid for the COPY command.
    *
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
@@ -107,7 +105,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   }
 
   /**
-   * Run Redshift Copy command with the given manifest file
+   * Run Redshift COPY command with the given manifest file
    *
    * @param manifestPath the path in S3 to the manifest file
    */
