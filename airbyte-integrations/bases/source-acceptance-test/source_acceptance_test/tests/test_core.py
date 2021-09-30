@@ -80,16 +80,20 @@ class TestSpec(BaseTest):
         oauth_spec = connector_spec.authSpecification.oauth2Specification
         parameters: List[List[str]] = oauth_spec.oauthFlowInitParameters + oauth_spec.oauthFlowOutputParameters
         root_object = oauth_spec.rootObject
-        assert len(root_object) == 2
-        assert root_object[0] in spec_schema.get("properties", {}), f"oauth root object {root_object[0]} does not exists"
-        if "oneOf" in spec_schema.get("properties")[root_object[0]]:
+        if len(root_object) == 0:
+            params = {"/" + "/".join(p) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema))
+        elif len(root_object) == 1:
+            params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema))
+        elif len(root_object) == 2:
             params = {"/" + "/".join([f"{root_object[0]}({root_object[1]})", *p]) for p in parameters}
             schema_path = set(get_expected_schema_structure(spec_schema, annotate_one_of=True))
         else:
-            params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
-            schema_path = set(get_expected_schema_structure(spec_schema))
+            assert "rootObject cannot have more than 2 elements"
+
         diff = params - schema_path
-        assert diff == set(), f"Specified ouath fields are missed from spec schema: {diff}"
+        assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
 
 @pytest.mark.default_timeout(30)
