@@ -26,10 +26,11 @@ export function useConfig<T extends Config>(): T {
 
 const ConfigServiceInner: React.FC<{
   defaultConfig: Config;
-  providers: ValueProvider<Config>;
+  providers?: ValueProvider<Config>;
 }> = ({ children, defaultConfig, providers }) => {
   const { loading, value } = useAsync(
-    async () => applyProviders(defaultConfig, providers),
+    async () =>
+      providers ? applyProviders(defaultConfig, providers) : defaultConfig,
     [providers]
   );
   const config: ConfigContext | null = useMemo(
@@ -38,7 +39,7 @@ const ConfigServiceInner: React.FC<{
   );
   return (
     <configContext.Provider value={config}>
-      {loading ? <LoadingPage /> : children}
+      {loading && providers ? <LoadingPage /> : children}
     </configContext.Provider>
   );
 };

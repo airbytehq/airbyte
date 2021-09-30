@@ -87,6 +87,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
@@ -158,7 +159,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         synchronousSchedulerClient,
         jobPersistence,
         jobNotifier,
-        temporalService);
+        temporalService,
+        new OAuthConfigSupplier(configRepository, false));
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
