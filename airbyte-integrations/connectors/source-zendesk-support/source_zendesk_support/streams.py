@@ -15,6 +15,7 @@ import pytz
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY = "_last_end_time"
@@ -126,6 +127,13 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         self._start_date = self.str2datetime(start_date) if isinstance(start_date, str) else start_date
         # Flag for marking of completed process
         self._finished = False
+
+    @property
+    def authenticator(self) -> HttpAuthenticator:
+        """This function was redefined because CDK return NoAuth for some authenticator class.
+        It is bug and I hope it will be fixed in the future
+        """
+        return self._session.auth or super().authenticator
 
     @property
     def is_finished(self):

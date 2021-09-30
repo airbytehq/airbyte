@@ -79,8 +79,8 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
   * API Token
     * Zendesk API Token 
     * Zendesk Email 
-  * oAuth2 (not implemented)
-
+  * oAuth2
+    * Access Token
 
 ### Setup guide
 
@@ -91,6 +91,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 ### CHANGELOG
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.2` | 2021-10-01 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2 access tocken |
 | `0.1.1` | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787) | fixed incremental logic for the ticket_comments stream |
 | `0.1.0` | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861) | created CDK native zendesk connector |
 

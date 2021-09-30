@@ -8,7 +8,7 @@ from typing import Any, List, Mapping, Tuple
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import (
     GroupMemberships,
@@ -29,6 +29,8 @@ from .streams import (
     UserSettingsStream,
 )
 
+# from airbyte_cdk.sources.streams.http.auth.token import TokenAuthenticator
+
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
     """basic Authorization header"""
@@ -47,7 +49,9 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        if config["auth_method"].get("email") and config["auth_method"].get("api_token"):
+        if config["auth_method"].get("access_token"):
+            return TokenAuthenticator(token=config["auth_method"]["access_token"])
+        elif config["auth_method"].get("email") and config["auth_method"].get("api_token"):
             return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
         raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
 

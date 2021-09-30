@@ -32,8 +32,8 @@ class TestIntegrationZendeskSupport:
             # save the first 5 records
             if len(record_timestamps) > 5:
                 break
-            if stream._last_end_time not in record_timestamps.values():
-                record_timestamps[record["id"]] = stream._last_end_time
+            if stream.last_end_time not in record_timestamps.values():
+                record_timestamps[record["id"]] = stream.last_end_time
 
         stream.page_size = 10
         for record_id, timestamp in record_timestamps.items():
