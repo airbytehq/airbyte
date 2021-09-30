@@ -17,6 +17,15 @@
         "type": "string",
         "description": "The API Token for a Typeform account.",
         "airbyte_secret": true
+      },
+      "form_ids": {
+        "title": "Form ids",
+        "description": "List of form ids to sync from. By default all forms will be synced, you can use this parameter to select set of forms",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
       }
     }
   }

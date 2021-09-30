@@ -83,8 +83,13 @@ class TrimForms(TypeformStream):
 
 class TrimFormsMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
-            yield {"form_id": item["id"]}
+        form_ids = self.config.get("form_ids", [])
+        if form_ids:
+            for item in form_ids:
+                yield {"form_id": item}
+        else:
+            for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
+                yield {"form_id": item["id"]}
 
         yield from []
 
