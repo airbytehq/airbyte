@@ -29,12 +29,12 @@ import org.testcontainers.containers.MySQLContainer;
 
 class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final String TEST_USER = "test";
-  private static final String TEST_PASSWORD = "test";
-  private static MySQLContainer<?> container;
+  protected static final String TEST_USER = "test";
+  protected static final String TEST_PASSWORD = "test";
+  protected static MySQLContainer<?> container;
 
-  private JsonNode config;
-  private Database database;
+  protected JsonNode config;
+  protected Database database;
 
   @BeforeAll
   static void init() throws SQLException {

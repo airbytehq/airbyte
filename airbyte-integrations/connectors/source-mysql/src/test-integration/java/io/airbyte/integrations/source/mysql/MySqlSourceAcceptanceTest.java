@@ -33,8 +33,8 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private MySQLContainer<?> container;
-  private JsonNode config;
+  protected MySQLContainer<?> container;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
