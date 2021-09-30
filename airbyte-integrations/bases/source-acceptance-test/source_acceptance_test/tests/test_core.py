@@ -90,7 +90,7 @@ class TestSpec(BaseTest):
             params = {"/" + "/".join([f"{root_object[0]}({root_object[1]})", *p]) for p in parameters}
             schema_path = set(get_expected_schema_structure(spec_schema, annotate_one_of=True))
         else:
-            assert "rootObject cannot have more than 3 elements"
+            assert "rootObject cannot have more than 2 elements"
 
         diff = params - schema_path
         assert diff == set(), f"Specified ouath fields are missed from spec schema: {diff}"
