@@ -29,6 +29,7 @@ function useBuildInitialSchema(
         connectorSpecification.connectionSpecification,
         spec.rootObject ?? [],
         (schema) => {
+          // Very hacky way to allow placing button within section
           (schema as any).is_auth = true;
           const schemaWithoutPaths = removeNestedPaths(
             schema,
