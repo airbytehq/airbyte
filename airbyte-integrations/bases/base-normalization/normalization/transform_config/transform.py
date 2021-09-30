@@ -174,6 +174,10 @@ class TransformConfig:
             "threads": 32,
         }
 
+        # if unset, we assume true.
+        if config.get("ssl", True):
+            config["sslmode"] = "require"
+
         return dbt_config
 
     @staticmethod
