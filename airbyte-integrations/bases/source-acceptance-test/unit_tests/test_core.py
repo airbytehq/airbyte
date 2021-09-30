@@ -102,6 +102,29 @@ def test_read(schema, record, should_fail):
             ),
             "Specified ouath fields are missed from spec schema:",
         ),
+        # SUCCESS: Empty root object
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "client_id": {"type": "string"},
+                        "client_secret": {"type": "string"},
+                        "access_token": {"type": "string"},
+                        "refresh_token": {"type": "string"},
+                    },
+                },
+                authSpecification={
+                    "auth_type": "oauth2.0",
+                    "oauth2Specification": {
+                        "rootObject": [],
+                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
+                    },
+                },
+            ),
+            "",
+        ),
         # FAIL: Some oauth fields missed
         (
             ConnectorSpecification(
