@@ -66,7 +66,7 @@ class AmazonAdsConfig(BaseModel):
 
     region: AmazonAdsRegion = Field(
         name="Region",
-        description="Region to pull data from",
+        description="Region to pull data from (EU/NA/FE/SANDBOX)",
         default=AmazonAdsRegion.NA
     )
 
