@@ -54,6 +54,9 @@ public class SecretsMigration {
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
 
+    LOGGER.info("secretPersistence.isPresent() = " + secretPersistence.isPresent());
+    LOGGER.info("ephemeralSecretPersistence.isPresent() = " + ephemeralSecretPersistence.isPresent());
+
     final ConfigRepository writeToConfigRepository =
         new ConfigRepository(writeToPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
