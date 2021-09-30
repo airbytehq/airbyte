@@ -35,3 +35,16 @@ repos:
     hooks:
       - id: mypy
         args: ["--config-file=tools/python/.mypy.ini"]
+
+  - repo: local
+    hooks:
+      - id: spec-linter
+        name: validate connectors spec files
+        language: system
+        entry: python tools/git_hooks/spec_linter.py
+        files: ^.*/spec.json$
+        exclude: |
+          (?x)^.*(
+              /connectors/destination-e2e-test|
+              /connectors/source-e2e-test
+          ).*$
