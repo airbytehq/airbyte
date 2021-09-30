@@ -51,7 +51,7 @@ class API:
         requests_per_minute: int = None,
         verify: bool = True,
         proxies: MutableMapping[str, Any] = None,
-        tickets_updated_since: str = None,
+        start_date: str = None,
     ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
@@ -66,7 +66,7 @@ class API:
 
         self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
-        self._tickets_updated_since = tickets_updated_since
+        self._start_date = start_date
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -126,8 +126,8 @@ class API:
             self._call_credit.consume(credit)
 
     @property
-    def tickets_updated_since(self):
-        return self._tickets_updated_since
+    def start_date(self):
+        return self._start_date
 
 
 class StreamAPI(ABC):
@@ -334,8 +334,8 @@ class TicketsAPI(IncrementalStreamAPI):
         """Read using getter, patched to respect current state"""
         params = params or {}
         state_params = self._state_params()
-        if not state_params and self._api.tickets_updated_since:
-            params["updated_since"] = pendulum.parse(self._api.tickets_updated_since)
+        if not state_params and self._api.start_date:
+            params["updated_since"] = pendulum.parse(self._api.start_date)
         params = {**params, **state_params}
         latest_cursor = None
         for record in self.get_tickets(self.result_return_limit, getter, params):

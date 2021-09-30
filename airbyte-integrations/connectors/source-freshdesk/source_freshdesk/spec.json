@@ -23,10 +23,10 @@
         "type": "integer",
         "description": "Number of requests per minute that this source allowed to use."
       },
-      "tickets_updated_since": {
+      "start_date": {
         "title": "Tickets updated since",
-        "description": "By default, only tickets that have been created within the past 30 days will be returned. For older tickets, use this parameter",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "description": "By default, only tickets that have been created within the past 30 days will be returned. For older tickets, set start date for syncing",
+        "format": "date-time",
         "examples": ["2020-12-01T00:00:00Z"]
       }
     }
