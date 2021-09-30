@@ -22,6 +22,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.Job;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +85,7 @@ class WorkspaceHelperTest {
   public void setup() throws IOException {
     tmpDir = Files.createTempDirectory("workspace_helper_test_" + RandomStringUtils.randomAlphabetic(5));
 
-    configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
+    configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir), new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
     jobPersistence = mock(JobPersistence.class);
 
     workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
