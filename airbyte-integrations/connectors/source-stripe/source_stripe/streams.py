@@ -58,10 +58,10 @@ class IncrementalStripeStream(StripeStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
-    def __init__(self, start_date: str, loopback_window_days: int, **kwargs):
+    def __init__(self, start_date: str, lookback_window_days: int, **kwargs):
         super().__init__(**kwargs)
         self.start_date = pendulum.parse(start_date).int_timestamp
-        self.loopback_window_days = loopback_window_days
+        self.lookback_window_days = lookback_window_days
 
     @property
     @abstractmethod
@@ -92,9 +92,9 @@ class IncrementalStripeStream(StripeStream, ABC):
         if stream_state and self.cursor_field in stream_state:
             start_point = max(start_point, stream_state[self.cursor_field])
 
-        if self.loopback_window_days:
-            self.logger.info(f"Applying loopback window of {self.loopback_window_days} days to stream {self.name}")
-            start_point = int(pendulum.from_timestamp(start_point).subtract(days=abs(self.loopback_window_days)).timestamp())
+        if self.lookback_window_days:
+            self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
+            start_point = int(pendulum.from_timestamp(start_point).subtract(days=abs(self.lookback_window_days)).timestamp())
 
         return start_point
 

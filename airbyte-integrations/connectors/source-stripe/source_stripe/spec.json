@@ -23,9 +23,9 @@
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"]
       },
-      "loopback_window_days": {
+      "lookback_window_days": {
         "type": "integer",
-        "description": "Loopback window in days for incremental streams"
+        "description": "Lookback window in days for incremental streams"
       }
     }
   }
