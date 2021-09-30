@@ -15,14 +15,7 @@ from source_zuora.source import (
     ZuoraSubmitJob,
 )
 from source_zuora.zuora_auth import ZuoraAuthenticator
-
-
-# Method to get url_base from config input
-def get_url_base(is_sandbox: bool = False) -> str:
-    url_base = "https://rest.zuora.com"
-    if is_sandbox:
-        url_base = "https://rest.apisandbox.zuora.com"
-    return url_base
+from source_zuora.zuora_endpoint import get_url_base
 
 
 def get_config(config_path: str) -> Mapping[str, Any]:
@@ -37,7 +30,7 @@ def client(config: Dict):
     """
     Create client by extending config dict with authenticator and url_base
     """
-    url_base = get_url_base(config["is_sandbox"])
+    url_base = get_url_base(config["tenant_endpoint"])
     authenticator = ZuoraAuthenticator(
         token_refresh_endpoint=f"{url_base}/oauth/token",
         client_id=config["client_id"],

@@ -15,15 +15,9 @@ from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
 
+from .zuora_endpoint import get_url_base
 from .zuora_auth import ZuoraAuthenticator
 from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFailed, ZOQLQueryFieldCannotResolve
-
-
-def get_url_base(is_sandbox: bool = False) -> str:
-    url_base = "https://rest.zuora.com"
-    if is_sandbox:
-        url_base = "https://rest.apisandbox.zuora.com"
-    return url_base
 
 
 class ZuoraStream(HttpStream, ABC):
@@ -449,7 +443,7 @@ class SourceZuora(AbstractSource):
         """
 
         # Define the endpoint from user's config
-        url_base = get_url_base(config["is_sandbox"])
+        url_base = get_url_base(config["tenant_endpoint"])
         try:
             ZuoraAuthenticator(
                 token_refresh_endpoint=f"{url_base}/oauth/token",
@@ -467,7 +461,7 @@ class SourceZuora(AbstractSource):
         Defining streams to run by building stream classes dynamically.
         """
         # Define the endpoint from user's config
-        url_base = get_url_base(config["is_sandbox"])
+        url_base = get_url_base(config["tenant_endpoint"])
 
         # Get Authotization Header with Access Token
         authenticator = ZuoraAuthenticator(
