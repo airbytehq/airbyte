@@ -4,82 +4,190 @@
 
 package io.airbyte.metrics;
 
+import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Use the prometheus library to publish prometheus metrics to a specified port. These metrics can
+ * be consumed by any agent understanding the OpenMetrics format.
+ *
+ * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. Within
+ * Airbyte Cloud, the metrics are consumed by a Datadog agent and transformed into Datadog metrics
+ * as per https://docs.datadoghq.com/integrations/guide/prometheus-metrics/.
+ *
+ * Open source users are free to turn this on and consume the same metrics.
+ */
 public class MetricSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetricSingleton.class);
 
-  // enum of supported prom types
-  // start with gauge and counter to begin with
-  // distribution
-  // The following represents a class we want to add instrumentation
-  // (metrics) to:
-  public static class AnInstrumentedClass {
+  private final boolean publish;
 
-    // Number and type of metrics per class is left on discretion
-    // of a Developer.
-    // A "namespace()" here sets the prefix of a metric.
-    // static final Counter counter =
-    // Counter.build().namespace("app_prom_java").name("my_counter").help("This is my
-    // counter").register();
-    static final Gauge gauge = Gauge.build().name("test_metric_gauges").help("test scheduler metric").register();
-    // static final Histogram histogram =
-    // Histogram.build().namespace("app_prom_java").name("my_histogram").help("This is my
-    // histogram").register();
-    // static final Summary summary =
-    // Summary.build().namespace("app_prom_java").name("my_summary").help("This is my
-    // summary").register();
+  private final Map<String, Gauge> nameToGauge = new HashMap<>();
+  private final Map<String, Counter> nameToCounter = new HashMap<>();
+  private final Map<String, Histogram> nameToHistogram = new HashMap<>();
 
-    public static void doSomething() {
-      // Here goes some business logic. Whenever we want to report
-      // something to a monitoring system -- we update a corresponding
-      // metrics object, i.e.:
-
-      // counter.inc(rand(0, 5));
-      LOGGER.info("publishing this!");
-      gauge.set(rand(-5, 10));
-      // histogram.observe(rand(0, 5));
-      // summary.observe(rand(0, 5));
-    }
-
-    private static double rand(double min, double max) {
-      return min + (Math.random() * (max - min));
-    }
-
+  public MetricSingleton(boolean publish) {
+    this.publish = publish;
   }
 
-  public static void initializeMonitoringServiceDaemon(String monitorPort) {
+  // Gauge. See
+  // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=gauge#monotonic-count.
+  /**
+   * Track value at a given timestamp.
+   *
+   * @param name of gauge
+   * @param val to set
+   */
+  public void setGauge(String name, double val) {
+    ifPublish(() -> {
+      if (nameToGauge.containsKey(name)) {
+        LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
+      }
+
+      if (!nameToGauge.containsKey(name)) {
+        Gauge gauge = Gauge.build().name(name).help("").register();
+        nameToGauge.put(name, gauge);
+      }
+      nameToGauge.get(name).set(val);
+    });
+  }
+
+  /**
+   * Increment value.
+   *
+   * @param name of gauge
+   * @param val to increment
+   */
+  public void incrementGauge(String name, double val) {
+    ifPublish(() -> {
+      if (nameToGauge.containsKey(name)) {
+        LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
+      }
+
+      if (!nameToGauge.containsKey(name)) {
+        Gauge gauge = Gauge.build().name(name).help("").register();
+        nameToGauge.put(name, gauge);
+      }
+      nameToGauge.get(name).inc(val);
+    });
+  }
+
+  /**
+   * Decrement value.
+   *
+   * @param name of gauge
+   * @param val to decrement
+   */
+  public void decrementGauge(String name, double val) {
+    ifPublish(() -> {
+      if (nameToGauge.containsKey(name)) {
+        LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
+      }
+
+      if (!nameToGauge.containsKey(name)) {
+        Gauge gauge = Gauge.build().name(name).help("").register();
+        nameToGauge.put(name, gauge);
+      }
+      nameToGauge.get(name).dec(val);
+    });
+  }
+
+  // Counter - Monotonically Increasing. See
+  // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=count#monotonic-count.
+  /**
+   * Increment a monotoically increasing counter.
+   *
+   * @param name of counter
+   * @param amt to increment
+   */
+  public void incrementCounter(String name, double amt) {
+    ifPublish(() -> {
+      if (nameToCounter.containsKey(name)) {
+        LOGGER.warn("Overriding existing metric, type: Counter, name: {}", name);
+      }
+
+      if (!nameToCounter.containsKey(name)) {
+        Counter counter = Counter.build().name(name).help("").register();
+        nameToCounter.put(name, counter);
+      }
+      nameToCounter.get(name).inc(amt);
+    });
+  }
+
+  // Histogram. See
+  // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=histogram#monotonic-count.
+  /**
+   * Time code execution.
+   *
+   * @param name of histogram
+   * @param runnable to time
+   * @return duration of code execution.
+   */
+  public double timeCode(String name, Runnable runnable) {
+    var duration = new AtomicReference<>(0.0);
+    ifPublish(() -> {
+      if (nameToHistogram.containsKey(name)) {
+        LOGGER.warn("Overriding existing metric, type: Histogram, name: {}", name);
+      }
+
+      if (!nameToHistogram.containsKey(name)) {
+        Histogram hist = Histogram.build().name(name).help("").register();
+        nameToHistogram.put(name, hist);
+      }
+      duration.set(nameToHistogram.get(name).time(runnable));
+    });
+    return duration.get();
+  }
+
+  /**
+   * Submit a single execution time.
+   *
+   * @param name of the underlying histogram.
+   * @param time to be recorded.
+   */
+  public void recordTime(String name, double time) {
+    ifPublish(() -> {
+      if (nameToHistogram.containsKey(name)) {
+        LOGGER.warn("Overriding existing metric, type: Histogram, name: {}", name);
+      }
+
+      if (!nameToHistogram.containsKey(name)) {
+        Histogram hist = Histogram.build().name(name).help("").register();
+        nameToHistogram.put(name, hist);
+      }
+      nameToHistogram.get(name).observe(time);
+    });
+  }
+
+  private void ifPublish(Runnable execute) {
+    if (publish) {
+      execute.run();
+    }
+  }
+
+  /**
+   * Stand up a separate thread to publish metrics to the specified port.
+   *
+   * @param monitorPort to publish metrics to
+   */
+  public void initializeMonitoringServiceDaemon(String monitorPort) {
+
     try {
-      // The second constructor argument ('true') makes this server
-      // start as a separate daemon thread.
+      // The second constructor argument ('true') makes this server start as a separate daemon thread.
       // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
       new HTTPServer(Integer.parseInt(monitorPort), true);
     } catch (IOException e) {
       LOGGER.error("Error starting up Prometheus publishing server..", e);
     }
-  }
-
-  public static void main(String[] args) {
-    initializeMonitoringServiceDaemon("8081");
-
-    // The following block along with an instance of the instrumented
-    // class simulates activity inside instrumented class object, which
-    // we may track later by watching metrics' values:
-    while (true) {
-      try {
-        AnInstrumentedClass.doSomething();
-
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
   }
 
 }

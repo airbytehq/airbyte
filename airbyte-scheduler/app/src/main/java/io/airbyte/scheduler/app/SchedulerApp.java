@@ -23,7 +23,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.MetricSingleton;
-import io.airbyte.metrics.MetricSingleton.AnInstrumentedClass;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -219,19 +218,7 @@ public class SchedulerApp {
 
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
-    MetricSingleton.initializeMonitoringServiceDaemon("8082");
-
-    // Test
-    Executors.newSingleThreadScheduledExecutor().submit(() -> {
-      while (true) {
-      try {
-        AnInstrumentedClass.doSomething();
-
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }});
+    new MetricSingleton(true).initializeMonitoringServiceDaemon("8082");
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)

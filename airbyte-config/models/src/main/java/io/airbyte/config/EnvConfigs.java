@@ -68,6 +68,7 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
   private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
+  private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
