@@ -19,7 +19,7 @@ public class MetricSingleton {
   // distribution
   // The following represents a class we want to add instrumentation
   // (metrics) to:
-  static class AnInstrumentedClass {
+  public static class AnInstrumentedClass {
 
     // Number and type of metrics per class is left on discretion
     // of a Developer.
@@ -27,7 +27,7 @@ public class MetricSingleton {
     // static final Counter counter =
     // Counter.build().namespace("app_prom_java").name("my_counter").help("This is my
     // counter").register();
-    static final Gauge gauge = Gauge.build().namespace("app_prom_java").name("my_gauge").help("This is my gauge").register();
+    static final Gauge gauge = Gauge.build().name("test_metric_gauges").help("test scheduler metric").register();
     // static final Histogram histogram =
     // Histogram.build().namespace("app_prom_java").name("my_histogram").help("This is my
     // histogram").register();

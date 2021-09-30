@@ -26,7 +26,7 @@ dependencies {
 
 application {
     applicationName = "airbyte-scheduler"
-    mainClass = 'io.airbyte.metrics.MetricSingleton'
+    mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
 }
 
 Properties env = new Properties()
