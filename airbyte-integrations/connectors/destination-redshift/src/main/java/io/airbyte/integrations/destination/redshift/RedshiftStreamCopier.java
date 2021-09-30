@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopier.class);
 
   private final ObjectMapper objectMapper;
+  private String manifestFilePath = null;
 
   public RedshiftStreamCopier(String stagingFolder,
                               DestinationSyncMode destSyncMode,
@@ -42,10 +44,74 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   }
 
   @Override
-  public void copyStagingFileToTemporaryTable() throws Exception {
-    final var manifestFullS3Path = createManifest();
-
+  public void copyStagingFileToTemporaryTable() {
+    var possibleManifest = Optional.ofNullable(createManifest());
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
+    possibleManifest.stream()
+        .map(this::putManifest)
+        .forEach(this::executeCopy);
+    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+  }
+
+  @Override
+  public void copyS3CsvFileIntoTable(JdbcDatabase database, String s3FileLocation, String schema, String tableName, S3Config s3Config) {
+    throw new RuntimeException("Redshift Stream Copier should not copy individual files without use of a manifest");
+  }
+
+  @Override
+  public void removeFileAndDropTmpTable() throws Exception {
+    super.removeFileAndDropTmpTable();
+    if (manifestFilePath != null) {
+      LOGGER.info("Begin cleaning s3 manifest file {}.", manifestFilePath);
+      if (s3Client.doesObjectExist(s3Config.getBucketName(), manifestFilePath)) {
+        s3Client.deleteObject(s3Config.getBucketName(), manifestFilePath);
+      }
+      LOGGER.info("S3 manifest file {} cleaned.", manifestFilePath);
+    }
+  }
+
+  /**
+   * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
+   * entry in a manifest file otherwise it is not valid, thus this method will return Empty when a
+   * proper manifest file cannot be constructed. and uploads the file to s3. Note: Using a manifest to
+   * COPY a set of s3 files into Redshift, which is in accordance AWS Redshift best practices.
+   *
+   * @return null if no stagingFiles exist otherwise the manifest body String
+   */
+  private String createManifest() {
+    if (s3StagingFiles.isEmpty()) {
+      return null;
+    }
+
+    final var s3FileEntries = s3StagingFiles.stream()
+        .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
+        .collect(Collectors.toList());
+    final var manifest = new Manifest(s3FileEntries);
+
+    return Exceptions.toRuntime(() -> objectMapper.writeValueAsString(manifest));
+  }
+
+  /**
+   * Upload the supplied manifest file to S3
+   *
+   * @param manifestContents the manifest contents, never null
+   * @return the path where the manifest file was placed in S3
+   */
+  private String putManifest(String manifestContents) {
+    manifestFilePath =
+        String.join("/", stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
+
+    s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
+
+    return manifestFilePath;
+  }
+
+  /**
+   * Run Redshift Copy command with the given manifest file
+   *
+   * @param manifestPath the path in S3 to the manifest file
+   */
+  private void executeCopy(String manifestPath) {
     final var copyQuery = String.format(
         "COPY %s.%s FROM '%s'\n"
             + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
@@ -54,40 +120,12 @@ public class RedshiftStreamCopier extends S3StreamCopier {
             + "MANIFEST;",
         schemaName,
         tmpTableName,
-        manifestFullS3Path,
+        getFullS3Path(s3Config.getBucketName(), manifestPath),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey(),
         s3Config.getRegion());
 
-    db.execute(copyQuery);
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
-  }
-
-  @Override
-  public void copyS3CsvFileIntoTable(JdbcDatabase database, String s3FileLocation, String schema, String tableName, S3Config s3Config) {
-    throw new RuntimeException("Redshift Stream Copier should not be copying individual files without use of a manifest");
-  }
-
-  /**
-   * Creates a manifest file and uploads the file to s3. Note: Using a manifest to COPY a set of s3
-   * files into Redshift, which is in accordance AWS Redshift best practices.
-   *
-   * @return the full s3 path of the newly created manifest file
-   */
-  public String createManifest() {
-    final var manifestFilePath =
-        String.join("/", stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
-
-    final var s3FilesFullPath = s3StagingFiles.stream()
-        .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
-        .collect(Collectors.toList());
-
-    final var manifest = new Manifest(s3FilesFullPath);
-
-    final String manifestContents = Exceptions.toRuntime(() -> objectMapper.writeValueAsString(manifest));
-    s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
-
-    return getFullS3Path(s3Config.getBucketName(), manifestFilePath);
+    Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
 
 }
