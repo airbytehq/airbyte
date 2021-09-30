@@ -32,6 +32,7 @@ export type Config = {
   openreplay: OpenReplayOptions;
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
+  oauthRedirectUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;

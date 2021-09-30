@@ -2,6 +2,8 @@ import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 
 interface AirbyteJSONSchemaProps {
   airbyte_secret?: boolean;
+  is_auth?: boolean;
+  airbyte_hidden?: boolean;
   multiline?: boolean;
   order?: number;
 }

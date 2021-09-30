@@ -1,7 +1,7 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 class SourceService extends AirbyteRequestService {
-  get url() {
+  get url(): string {
     return "sources";
   }
 }

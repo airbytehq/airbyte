@@ -19,11 +19,11 @@ import {
 } from "core/domain/connection/operation";
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import useWorkspace from "hooks/services/useWorkspace";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;

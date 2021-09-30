@@ -86,10 +86,7 @@ const DestinationForm: React.FC<IProps> = ({
         onSubmit={onSubmitForm}
         formType="destination"
         availableServices={destinationDefinitions}
-        specifications={
-          destinationDefinitionSpecification?.connectionSpecification
-        }
-        documentationUrl={destinationDefinitionSpecification?.documentationUrl}
+        selectedConnector={destinationDefinitionSpecification}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         isLoading={isLoading}

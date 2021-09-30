@@ -1,4 +1,4 @@
-import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import { ConnectionConfiguration } from "core/domain/connection";
 
@@ -60,6 +60,24 @@ export class SourceResource extends BaseResource implements Source {
         return response;
       },
       schema: this,
+    };
+  }
+
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Source>> {
+    return {
+      ...super.createShape(),
+      schema: this,
+      fetch: async (
+        _: Readonly<Record<string, string>>,
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Source> =>
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/sources/create`,
+          body
+        ),
     };
   }
 }

@@ -6,13 +6,12 @@ import DestinationResource, { Destination } from "core/resources/Destination";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouter";
-import DestinationDefinitionSpecificationResource, {
-  DestinationDefinitionSpecification,
-} from "core/resources/DestinationDefinitionSpecification";
+import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 import { useAnalytics } from "hooks/useAnalytics";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type ValuesProps = {
   name: string;

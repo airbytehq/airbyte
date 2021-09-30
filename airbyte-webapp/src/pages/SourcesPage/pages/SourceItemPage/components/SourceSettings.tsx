@@ -106,9 +106,7 @@ const SourceSettings: React.FC<IProps> = ({
             ...currentSource,
             serviceType: currentSource.sourceDefinitionId,
           }}
-          specifications={
-            sourceDefinitionSpecification?.connectionSpecification
-          }
+          selectedConnector={sourceDefinitionSpecification}
         />
         <JobsLogItem jobInfo={errorStatusRequest?.response} />
       </ContentCard>

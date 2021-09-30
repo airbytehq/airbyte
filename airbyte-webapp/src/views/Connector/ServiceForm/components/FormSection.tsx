@@ -13,6 +13,8 @@ import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "components/GroupControls";
 import { naturalComparator } from "utils/objects";
 import { IDataItem } from "components/base/DropDown/components/Option";
+import { AuthButton } from "./AuthButton";
+import { WithFeature } from "hooks/services/Feature";
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {
   const aIsNumber = Number.isInteger(a.order);
@@ -160,7 +162,8 @@ const FormSection: React.FC<{
   blocks: FormBlock[] | FormBlock;
   path?: string;
   skipAppend?: boolean;
-}> = ({ blocks = [], path, skipAppend }) => {
+  hasOauth?: boolean;
+}> = ({ blocks = [], path, skipAppend, hasOauth }) => {
   const sections = useMemo(() => {
     const flattenedBlocks = [blocks].flat();
 
@@ -173,53 +176,61 @@ const FormSection: React.FC<{
 
   return (
     <>
-      {sections.map((formField) => {
-        const sectionPath = path
-          ? skipAppend
-            ? path
-            : `${path}.${formField.fieldKey}`
-          : formField.fieldKey;
+      {hasOauth && (
+        <WithFeature featureId="ALLOW_OAUTH_CONNECTOR">
+          {
+            <SectionContainer>
+              <AuthButton />
+            </SectionContainer>
+          }
+        </WithFeature>
+      )}
+      {sections
+        .filter((formField) => !formField.airbyte_hidden)
+        .map((formField) => {
+          const sectionPath = path
+            ? skipAppend
+              ? path
+              : `${path}.${formField.fieldKey}`
+            : formField.fieldKey;
 
-        if (formField._type === "formGroup") {
+          if (formField._type === "formGroup") {
+            return (
+              <FormSection
+                key={sectionPath}
+                blocks={formField.properties}
+                path={sectionPath}
+                hasOauth={formField.hasOauth}
+              />
+            );
+          } else if (formField._type === "formCondition") {
+            return (
+              <ConditionSection
+                key={sectionPath}
+                formField={formField}
+                path={sectionPath}
+              />
+            );
+          } else if (formField._type === "objectArray") {
+            return (
+              <ArraySection
+                key={sectionPath}
+                formField={formField}
+                path={sectionPath}
+              />
+            );
+          }
+
+          if (formField.const !== undefined) {
+            return null;
+          }
+
           return (
-            <FormSection
-              key={sectionPath}
-              blocks={formField.properties}
-              path={sectionPath}
-            />
+            <SectionContainer key={`form-field-${formField.fieldKey}`}>
+              <PropertySection property={formField} path={sectionPath} />
+            </SectionContainer>
           );
-        }
-
-        if (formField._type === "formCondition") {
-          return (
-            <ConditionSection
-              key={sectionPath}
-              formField={formField}
-              path={sectionPath}
-            />
-          );
-        }
-
-        if (formField._type === "objectArray") {
-          return (
-            <ArraySection
-              key={sectionPath}
-              formField={formField}
-              path={sectionPath}
-            />
-          );
-        }
-
-        if (formField.const !== undefined) {
-          return null;
-        }
-
-        return (
-          <SectionContainer key={`form-field-${formField.fieldKey}`}>
-            <PropertySection property={formField} path={sectionPath} />
-          </SectionContainer>
-        );
-      })}
+        })}
     </>
   );
 };

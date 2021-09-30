@@ -8,6 +8,8 @@ import { ThemeProvider } from "styled-components";
 import { theme, Theme } from "../src/theme";
 import GlobalStyle from "../src/global-styles";
 import messages from "../src/locales/en.json";
+import { FeatureService } from "../src/hooks/services/Feature";
+import { ConfigServiceProvider, defaultConfig } from "../src/config";
 
 interface Props {
   theme?: Theme;
@@ -24,12 +26,19 @@ class WithProviders extends React.Component<Props> {
 
     return (
       <Router history={createMemoryHistory()}>
-        <IntlProvider messages={messages} locale={"en"}>
-          <ThemeProvider theme={theme}>
-            <GlobalStyle />
-            {children}
-          </ThemeProvider>
-        </IntlProvider>
+        <FeatureService>
+          <IntlProvider messages={messages} locale={"en"}>
+            <ThemeProvider theme={theme}>
+              <ConfigServiceProvider
+                defaultConfig={defaultConfig}
+                providers={[]}
+              >
+                <GlobalStyle />
+                {children}
+              </ConfigServiceProvider>
+            </ThemeProvider>
+          </IntlProvider>
+        </FeatureService>
       </Router>
     );
   }

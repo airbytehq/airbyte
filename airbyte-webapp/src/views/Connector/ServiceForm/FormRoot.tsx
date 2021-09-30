@@ -4,12 +4,10 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-
 import { FormBlock } from "core/form/types";
 import { ServiceFormValues } from "./types";
 import { useServiceForm } from "./serviceFormContext";
+
 import { FormSection } from "./components/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
@@ -30,7 +28,6 @@ const LoadingMessage = styled.div`
 
 const FormRoot: React.FC<{
   formFields: FormBlock;
-  selectedService?: SourceDefinition | DestinationDefinition;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
@@ -41,7 +38,6 @@ const FormRoot: React.FC<{
   onRetest,
   formFields,
   successMessage,
-  selectedService,
   errorMessage,
   fetchingConnectorError,
   hasSuccess,
@@ -57,6 +53,7 @@ const FormRoot: React.FC<{
   const {
     resetUiFormProgress,
     isLoadingSchema,
+    selectedService,
     isEditMode,
     formType,
   } = useServiceForm();
