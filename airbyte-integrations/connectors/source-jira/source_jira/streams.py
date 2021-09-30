@@ -5,7 +5,7 @@
 import os
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs
 
 import pendulum
@@ -18,13 +18,13 @@ from vcr.cassette import Cassette
 API_VERSION = 3
 
 
-def request_cache() -> Cassette:
+def request_cache(name: str) -> Cassette:
     """
     Builds VCR instance.
     It deletes file everytime we create it, normally should be called only once.
     We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
     """
-    filename = "request_cache.yml"
+    filename = f"request_cache_{name}.yml"
     try:
         os.remove(filename)
     except FileNotFoundError:
@@ -38,7 +38,6 @@ class JiraStream(HttpStream, ABC):
     Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/
     """
 
-    cache = request_cache()
     primary_key = "id"
     parse_response_root = None
 
@@ -52,9 +51,11 @@ class JiraStream(HttpStream, ABC):
     # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
     top_level_stream = True
 
-    def __init__(self, domain: str, **kwargs):
+    def __init__(self, domain: str, projects: List[str], **kwargs):
         super(JiraStream, self).__init__(**kwargs)
+        self._cache = request_cache(self.__class__.__name__)
         self._domain = domain
+        self._projects = projects
 
     @property
     def url_base(self) -> str:
@@ -97,7 +98,7 @@ class JiraStream(HttpStream, ABC):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         if self.top_level_stream:
-            with self.cache:
+            with self._cache:
                 yield from super().read_records(**kwargs)
         else:
             yield from super().read_records(**kwargs)
@@ -122,6 +123,11 @@ class V1ApiJiraStream(JiraStream, ABC):
 
 
 class IncrementalJiraStream(JiraStream, ABC):
+
+    def __init__(self, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -183,7 +189,7 @@ class Boards(V1ApiJiraStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
 
@@ -253,14 +259,14 @@ class Issues(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
         stream_state = stream_state or {}
+        project_key = stream_slice["project_key"]
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
-        if stream_state.get(self.cursor_field):
-            issues_state = pendulum.parse(stream_state.get(self.cursor_field))
-            issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-            params["jql"] = f"updated > '{issues_state_row}'"
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"project = '{project_key}' and updated > '{issues_state_row}'"
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -271,6 +277,11 @@ class Issues(IncrementalJiraStream):
                 return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
         else:
             return {self.cursor_field: str(latest_record_date)}
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"project_key": project["key"]}, **kwargs)
 
 
 class IssueComments(JiraStream):
@@ -581,6 +592,12 @@ class Projects(JiraStream):
     def path(self, **kwargs) -> str:
         return "project/search"
 
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for project in super().read_records(**kwargs):
+            if project["key"] in self._projects:
+                yield project
+        yield from []
+
 
 class ProjectAvatars(JiraStream):
     """
@@ -599,7 +616,7 @@ class ProjectAvatars(JiraStream):
             yield from records
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -626,7 +643,7 @@ class ProjectComponents(JiraStream):
         return f"project/{key}/component"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -643,7 +660,7 @@ class ProjectEmail(JiraStream):
         return f"project/{project_id}/email"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
 
@@ -660,7 +677,7 @@ class ProjectPermissionSchemes(JiraStream):
         return f"project/{key}/securitylevel"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -687,7 +704,7 @@ class ProjectVersions(JiraStream):
         return f"project/{key}/version"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 

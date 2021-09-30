@@ -66,6 +66,13 @@ from .streams import (
 
 class SourceJira(AbstractSource):
     @staticmethod
+    def _generate_projects(config: Mapping[str, Any]) -> List[str]:
+        projects = list(filter(None, config["projects"].split(" ")))
+        if not projects:
+            raise Exception("Must provide a list of project keys")
+        return list(set(projects))
+
+    @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
         token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
         authenticator = TokenAuthenticator(token, auth_method="Basic")
@@ -96,7 +103,9 @@ class SourceJira(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"]}
+        projects = self._generate_projects(config)
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": projects}
+        incremental_args = {**args, "start_date": config["start_date"]}
         return [
             ApplicationRoles(**args),
             Avatars(**args),
@@ -105,7 +114,7 @@ class SourceJira(AbstractSource):
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(**args),
+            Issues(**incremental_args),
             IssueComments(**args),
             IssueFields(**args),
             IssueFieldConfigurations(**args),
