@@ -14,12 +14,13 @@ public class NormalizationRunnerFactory {
       ImmutableMap.<String, DefaultNormalizationRunner.DestinationType>builder()
           .put("airbyte/destination-bigquery", DefaultNormalizationRunner.DestinationType.BIGQUERY)
           .put("airbyte/destination-postgres", DefaultNormalizationRunner.DestinationType.POSTGRES)
+          .put("airbyte/destination-postgres-strict-encrypt", DefaultNormalizationRunner.DestinationType.POSTGRES)
           .put("airbyte/destination-redshift", DefaultNormalizationRunner.DestinationType.REDSHIFT)
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .put("airbyte/destination-mysql", DefaultNormalizationRunner.DestinationType.MYSQL)
           .build();
 
-  public static NormalizationRunner create(String imageName, ProcessFactory processFactory) {
+  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
 
     final String imageNameWithoutTag = imageName.split(":")[0];
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination;
+package io.airbyte.integrations.destination.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,7 +13,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -77,7 +76,7 @@ public class PostgresDestinationTest {
     expectedRecords.forEach(m -> {
       try {
         consumer.accept(m);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });
@@ -97,7 +96,7 @@ public class PostgresDestinationTest {
         actualRecords.stream().map(o -> o.get("_airbyte_data").asText()).map(Jsons::deserialize).collect(Collectors.toList()));
   }
 
-  private List<AirbyteMessage> getNRecords(int n) {
+  private List<AirbyteMessage> getNRecords(final int n) {
     return IntStream.range(0, n)
         .boxed()
         .map(i -> new AirbyteMessage()
