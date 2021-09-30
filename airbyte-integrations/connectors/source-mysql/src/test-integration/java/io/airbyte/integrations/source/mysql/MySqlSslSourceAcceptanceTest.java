@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -33,7 +35,7 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSSLSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
@@ -53,10 +55,11 @@ public class MySqlSSLSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true",
+        String.format("jdbc:mysql://%s:%s/%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()),
+            config.get("database").asText(),
+            String.join("&", SSL_PARAMETERS)),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL);
 
