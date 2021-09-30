@@ -105,5 +105,6 @@ For more information visit [Create an API User page](https://knowledgecenter.zuo
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :--------    | :------ |
+| :------ | :------
+| 0.1.1   | 2021-10-01 | [6575](https://github.com/airbytehq/airbyte/pull/6575) | Added OAuth support for Airbyte Cloud |
 | 0.1.0   | 2021-08-01 | [4661](https://github.com/airbytehq/airbyte/pull/4661) | Initial release of Native Zuora connector for Airbyte |
