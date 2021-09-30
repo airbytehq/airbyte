@@ -50,6 +50,10 @@ logging.basicConfig(format="%(message)s")
 
 
 def read_spec_file(spec_path: str) -> bool:
+    """
+    Parses spec file and applies validation rules.
+    Returns True if spec is valid else False
+    """
     errors: List[Tuple[str, Optional[str]]] = []
     with open(spec_path) as json_file:
         try:
@@ -83,11 +87,15 @@ def validate_schema(
     schema: Mapping[str, Any],
     parent_fields: Optional[List[str]] = None,
 ) -> List[Tuple[str, str]]:
+    """
+    Validates given spec dictionary object. Returns list of errors
+    """
     errors: List[Tuple[str, str]] = []
     parent_fields = parent_fields if parent_fields else []
     for field_name, field_schema in schema.items():
-        errors.extend(validate_field(field_name, field_schema, parent_fields))
-        if errors:
+        field_errors = validate_field(field_name, field_schema, parent_fields)
+        errors.extend(field_errors)
+        if field_errors:
             continue
 
         for index, oneof_schema in enumerate(fetch_oneof_schemas(field_schema)):
@@ -115,7 +123,7 @@ def validate_field(
     parent_fields: Optional[List[str]] = None,
 ) -> List[Tuple[str, str]]:
     """
-    Validates single field objects and return errors if thay are exist
+    Validates single field objects and return errors if they exist
     """
     errors: List[Tuple[str, str]] = []
     full_field_name = get_full_field_name(field_name, parent_fields)

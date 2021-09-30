@@ -136,3 +136,45 @@ def test_validate_schema_success():
 
     errors = spec_linter.validate_schema("path", schema, ["root"])
     assert len(errors) == 0
+
+
+def test_validate_schema_with_nested_oneof():
+    schema = {
+        "store_name": {"type": "string", "description": "Store name."},
+        "start_date": {
+            "title": "Start Date",
+            "type": "string",
+            "description": "The date from which you'd like to replicate the data",
+        },
+        "nested_field": {
+            "type": "object",
+            "title": "Nested field title",
+            "description": "Nested field description",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "settings": {
+                            "type": "object",
+                            "title": "Settings",
+                            "description": "blah-blah-blah",
+                            "oneOf": [
+                                {"type": "object", "properties": {"access_token": {"type": "object"}}},
+                                {"type": "string", "multipleOf": 3},
+                            ],
+                        }
+                    },
+                },
+                {"type": "string", "title": "Start Date"},
+            ],
+        },
+    }
+
+    errors = spec_linter.validate_schema("path", schema, [])
+    assert len(errors) == 2
+    # check error type
+    assert "Check failed for field" == errors[0][0]
+    assert "Check failed for field" == errors[1][0]
+    # check failed fields
+    assert "store_name" == errors[0][1]
+    assert "nested_field.0.settings.0.access_token" == errors[1][1]
