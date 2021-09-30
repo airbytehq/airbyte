@@ -5,7 +5,7 @@
 from datetime import datetime
 from typing import Any, List, Mapping, Tuple, Type
 
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -119,4 +119,10 @@ class SourceFacebookMarketing(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
+            authSpecification=AuthSpecification(
+                auth_type="oauth2.0",
+                oauth2Specification=OAuth2Specification(
+                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+                ),
+            ),
         )

@@ -6,7 +6,14 @@ from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AuthSpecification,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    OAuth2Specification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -89,4 +96,10 @@ class SourceInstagram(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
+            authSpecification=AuthSpecification(
+                auth_type="oauth2.0",
+                oauth2Specification=OAuth2Specification(
+                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+                ),
+            ),
         )

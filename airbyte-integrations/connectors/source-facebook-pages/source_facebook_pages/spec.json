@@ -17,5 +17,13 @@
         "description": "Page ID"
       }
     }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["access_token"]]
+    }
   }
 }
