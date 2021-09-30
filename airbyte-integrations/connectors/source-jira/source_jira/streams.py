@@ -261,12 +261,12 @@ class Issues(IncrementalJiraStream):
 
     def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
         stream_state = stream_state or {}
-        project_key = stream_slice["project_key"]
+        project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"project = '{project_key}' and updated > '{issues_state_row}'"
+        params["jql"] = f"project = '{project_id}' and updated > '{issues_state_row}'"
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -281,7 +281,11 @@ class Issues(IncrementalJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_key": project["key"]}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = stream_slice["project_id"]
+        return record
 
 
 class IssueComments(JiraStream):
