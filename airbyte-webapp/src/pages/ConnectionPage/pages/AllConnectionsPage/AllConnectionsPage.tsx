@@ -14,6 +14,7 @@ import useWorkspace from "hooks/services/useWorkspace";
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
+
   const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });

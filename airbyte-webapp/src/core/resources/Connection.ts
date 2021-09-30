@@ -101,6 +101,31 @@ export default class ConnectionResource
     };
   }
 
+  static deleteShapeItem<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Connection>> {
+    return {
+      ...super.deleteShape(),
+      fetch: async (
+        _: Readonly<Record<string, string>>,
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Connection> => {
+        const result = await this.fetch(
+          "post",
+          `${super.rootUrl()}connections/delete`,
+          body
+        );
+
+        if (result.status === "failure") {
+          throw new CommonRequestError(result, result.message);
+        }
+
+        return result;
+      },
+      schema: this,
+    };
+  }
+
   static createShape<T extends typeof Resource>(
     this: T
   ): MutateShape<SchemaDetail<Connection>> {
