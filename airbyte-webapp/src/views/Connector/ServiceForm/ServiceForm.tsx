@@ -159,6 +159,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             widgetsInfo={uiWidgetsInfo}
             setUiWidgetsInfo={setUiWidgetsInfo}
             formType={formType}
+            selectedService={props.availableServices.find(
+              (s) => Connector.id(s) === values.serviceType
+            )}
+            selectedConnector={props.selectedConnector}
             isEditMode={props.isEditMode}
             isLoadingSchema={props.isLoading}
           >
@@ -170,10 +174,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
                 await onRetestForm(values);
                 setSubmitting(false);
               }}
-              selectedService={props.availableServices.find(
-                (s) => Connector.id(s) === values.serviceType
-              )}
-              selectedConnector={props.selectedConnector}
               formFields={formFields}
             />
             {isOpenRequestModal && (

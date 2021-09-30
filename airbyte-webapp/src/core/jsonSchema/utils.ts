@@ -1,10 +1,12 @@
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 import { isDefined } from "utils/common";
+import { AirbyteJSONSchema, AirbyteJSONSchemaDefinition } from "./types";
 
 function removeNestedPaths(
-  schema: JSONSchema7Definition,
-  pathList: string[][]
-): JSONSchema7 {
+  schema: AirbyteJSONSchemaDefinition,
+  pathList: string[][],
+  ignoreProp = true
+): AirbyteJSONSchema {
   if (typeof schema === "boolean") {
     return null as any;
   }
@@ -15,13 +17,14 @@ function removeNestedPaths(
 
   const resultSchema: JSONSchema7 = schema;
 
-  const oneOf = schema.oneOf;
-  if (oneOf) {
-    resultSchema.oneOf = oneOf.map((o) => removeNestedPaths(o, pathList));
+  if (schema.oneOf) {
+    resultSchema.oneOf = schema.oneOf.map((o) =>
+      removeNestedPaths(o, pathList, ignoreProp)
+    );
   }
 
-  const properties = schema.properties;
-  if (properties) {
+  if (schema.properties) {
+    const properties = schema.properties;
     const filteredProperties: Record<string, JSONSchema7Definition> = {};
 
     for (const propertiesKey in properties) {
@@ -37,16 +40,26 @@ function removeNestedPaths(
             (requiredFiled) => requiredFiled !== propertiesKey
           );
         }
+
+        if (!ignoreProp) {
+          const prop = properties[propertiesKey];
+          if (typeof prop !== "boolean") {
+            prop.airbyte_hidden = true;
+          }
+          filteredProperties[propertiesKey] = prop;
+        }
       } else {
         const innerPath = matchingPaths.map(([, ...rest]) => rest);
 
         filteredProperties[propertiesKey] = removeNestedPaths(
           properties[propertiesKey],
-          innerPath
+          innerPath,
+          ignoreProp
         );
       }
-      resultSchema.properties = filteredProperties;
     }
+
+    resultSchema.properties = filteredProperties;
   }
 
   return resultSchema;
@@ -69,9 +82,10 @@ function applyFuncAt(
 
   const resultSchema: JSONSchema7 = schema;
 
-  if (schema.oneOf && typeof pathElem === "number") {
+  if (schema.oneOf) {
+    const idx = typeof pathElem === "number" ? pathElem : parseInt(pathElem);
     resultSchema.oneOf = schema.oneOf.map((o, index) =>
-      index === pathElem ? applyFuncAt(o, restPath, f) : o
+      index === idx ? applyFuncAt(o, restPath, f) : o
     );
   }
 

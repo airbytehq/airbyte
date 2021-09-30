@@ -29,6 +29,7 @@ function useBuildInitialSchema(
         connectorSpecification.connectionSpecification,
         spec.rootObject ?? [],
         (schema) => {
+          (schema as any).is_auth = true;
           const schemaWithoutPaths = removeNestedPaths(
             schema,
             spec.oauthFlowInitParameters ?? []
@@ -36,7 +37,8 @@ function useBuildInitialSchema(
 
           const schemaWithoutOutputPats = removeNestedPaths(
             schemaWithoutPaths,
-            spec.oauthFlowOutputParameters ?? []
+            spec.oauthFlowOutputParameters ?? [],
+            false
           );
 
           return schemaWithoutOutputPats;

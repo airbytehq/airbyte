@@ -1,13 +1,10 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
-import {
-  ConnectorDefinition,
-  ConnectorDefinitionSpecification,
-} from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
-import styled from "styled-components";
+import { useServiceForm } from "../serviceFormContext";
 
 const AuthSectionRow = styled.div`
   display: flex;
@@ -23,16 +20,11 @@ const SuccessMessage = styled.div`
   margin-left: 14px;
 `;
 
-type AuthButtonProps = {
-  connectorSpecification: ConnectorDefinitionSpecification;
-  connector: ConnectorDefinition;
-};
+export const AuthButton: React.FC = () => {
+  const { selectedService, selectedConnector } = useServiceForm();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { loading, done, run } = useRunOauthFlow(selectedConnector!);
 
-export const AuthButton: React.FC<AuthButtonProps> = ({
-  connector,
-  connectorSpecification,
-}) => {
-  const { loading, done, run } = useRunOauthFlow(connectorSpecification);
   return (
     <AuthSectionRow>
       <Button isLoading={loading} type="button" onClick={run}>
@@ -43,7 +35,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         ) : (
           <FormattedMessage
             id="connectorForm.authenticate"
-            values={{ connector: connector.name }}
+            values={{ connector: selectedService?.name }}
           />
         )}
       </Button>
