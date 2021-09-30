@@ -12,16 +12,16 @@ SECONDS_IN_DAY = 24 * 60 * 60
 
 
 @pytest.mark.parametrize(
-    "loopback_window_days, current_state, expected, message",
+    "lookback_window_days, current_state, expected, message",
     [
-        (None, now_dt.timestamp(), now_dt.timestamp(), "if loopback_window_days is not set should not affect cursor value"),
-        (0, now_dt.timestamp(), now_dt.timestamp(), "if loopback_window_days is not set should not affect cursor value"),
+        (None, now_dt.timestamp(), now_dt.timestamp(), "if lookback_window_days is not set should not affect cursor value"),
+        (0, now_dt.timestamp(), now_dt.timestamp(), "if lookback_window_days is not set should not affect cursor value"),
         (10, now_dt.timestamp(), int(now_dt.timestamp() - SECONDS_IN_DAY * 10), "Should calculate cursor value as expected"),
         # ignore sign
         (-10, now_dt.timestamp(), int(now_dt.timestamp() - SECONDS_IN_DAY * 10), "Should not care for the sign, use the module"),
     ],
 )
-def test_loopback_window(loopback_window_days, current_state, expected, message):
-    inv_stream = Invoices(account_id=213, start_date="2020", loopback_window_days=loopback_window_days)
+def test_lookback_window(lookback_window_days, current_state, expected, message):
+    inv_stream = Invoices(account_id=213, start_date="2020", lookback_window_days=lookback_window_days)
     inv_stream.cursor_field = "created"
     assert inv_stream.get_start_timestamp({"created": current_state}) == expected, message

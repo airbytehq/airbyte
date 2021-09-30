@@ -125,5 +125,5 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 ### additional connector/streams properties of note
 
 Some stripe streams are mutable, meaning that after an incremental update, new data items could appear *before* 
-the latest update date. To work around that, define the loopback_window_days to define a window in days to fetch results
+the latest update date. To work around that, define the lookback_window_days to define a window in days to fetch results
 before the latest state date, in order to capture "delayed" data items.
