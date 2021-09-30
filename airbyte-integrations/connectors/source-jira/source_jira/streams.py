@@ -134,6 +134,7 @@ class JiraStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
 
+
 class V1ApiJiraStream(JiraStream, ABC):
     @property
     def url_base(self) -> str:
@@ -772,6 +773,7 @@ class ScreenSchemes(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "screenscheme"
+
 
 class Sprints(V1ApiJiraStream):
     """
