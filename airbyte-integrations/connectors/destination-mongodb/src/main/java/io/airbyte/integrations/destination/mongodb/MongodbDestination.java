@@ -132,6 +132,8 @@ public class MongodbDestination extends BaseConnector implements Destination {
         : StringUtils.EMPTY;
 
     // backward compatibility check
+    // the old mongo db spec only includes host, port, database, and auth_type
+    // the new spec replaces host and port with the instance_type property
     if (config.has(INSTANCE_TYPE)) {
       return buildConnectionString(config, credentials);
     } else {
