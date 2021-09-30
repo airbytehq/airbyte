@@ -93,7 +93,7 @@ class TestSpec(BaseTest):
             assert "rootObject cannot have more than 2 elements"
 
         diff = params - schema_path
-        assert diff == set(), f"Specified ouath fields are missed from spec schema: {diff}"
+        assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
 
 @pytest.mark.default_timeout(30)

@@ -100,7 +100,7 @@ def test_read(schema, record, should_fail):
                     },
                 },
             ),
-            "Specified ouath fields are missed from spec schema:",
+            "Specified oauth fields are missed from spec schema:",
         ),
         # SUCCESS: Empty root object
         (
@@ -150,7 +150,7 @@ def test_read(schema, record, should_fail):
                     },
                 },
             ),
-            "Specified ouath fields are missed from spec schema:",
+            "Specified oauth fields are missed from spec schema:",
         ),
         # SUCCESS: case w/o oneOf property
         (
@@ -252,7 +252,7 @@ def test_read(schema, record, should_fail):
                     },
                 },
             ),
-            "Specified ouath fields are missed from spec schema:",
+            "Specified oauth fields are missed from spec schema:",
         ),
     ],
 )
