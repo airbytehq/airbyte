@@ -178,7 +178,6 @@ class Boards(V1ApiJiraStream):
     """
 
     parse_response_root = "values"
-    top_level_stream = False
 
     def path(self, **kwargs) -> str:
         return "board"
@@ -248,6 +247,47 @@ class Groups(JiraStream):
         return "group/bulk"
 
 
+class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-issue-get
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "issues"
+    top_level_stream = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        board_id = stream_slice["board_id"]
+        return f"board/{board_id}/issue"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["fields"] = ["key", "updated"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"updated > '{issues_state_row}'"
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
+        if current_stream_state:
+            current_stream_state = current_stream_state.get(self.cursor_field)
+            if current_stream_state:
+                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
+        else:
+            return {self.cursor_field: str(latest_record_date)}
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["boardId"] = stream_slice["board_id"]
+        return record
+
+
 class Issues(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
@@ -262,7 +302,7 @@ class Issues(IncrementalJiraStream):
     def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
         stream_state = stream_state or {}
         project_id = stream_slice["project_id"]
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
