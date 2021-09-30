@@ -29,7 +29,7 @@
 | `webapp.replicaCount`        | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`    | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`    | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.30.1-alpha`   |
+| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.30.2-alpha`   |
 | `webapp.podAnnotations`      | Add extra annotations to the scheduler pod                       | `{}`             |
 | `webapp.service.type`        | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
@@ -57,7 +57,7 @@
 | `scheduler.replicaCount`       | Number of scheduler replicas                                        | `1`                 |
 | `scheduler.image.repository`   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
 | `scheduler.image.pullPolicy`   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.30.1-alpha`      |
+| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.30.2-alpha`      |
 | `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
 | `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
 | `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
@@ -87,7 +87,7 @@
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
-| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.30.1-alpha`   |
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.30.2-alpha`   |
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
 | `server.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
