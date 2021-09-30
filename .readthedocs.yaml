@@ -1,0 +1,23 @@
+# .readthedocs.yaml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+  builder: html
+  configuration: airbyte-cdk/python/reference_docs/_source/conf.py
+
+submodules:
+  include:
+    - airbyte-cdk/python/reference_docs/_build
+  recursive: true
+
+# Optionally set the version of Python and requirements required to build your docs
+python:
+  version: "3.7"
+  install:
+    - method: setuptools
+      path: airbyte-cdk/python
