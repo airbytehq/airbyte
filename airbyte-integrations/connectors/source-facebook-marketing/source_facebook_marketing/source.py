@@ -3,9 +3,9 @@
 #
 
 from datetime import datetime
-import pendulum
 from typing import Any, List, Mapping, Tuple, Type
 
+import pendulum
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -49,7 +49,6 @@ class ConnectorConfig(BaseModel):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
     )
-
 
     include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
 
@@ -107,7 +106,8 @@ class SourceFacebookMarketing(AbstractSource):
         return [
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted), 
+            Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            AdCreatives(api=api),
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
