@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -74,6 +54,9 @@ def setup_test_path(request):
         ]
     ),
 )
+# Uncomment the following line as an example on how to run the test against local destinations only...
+# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
+# Run tests on all destinations:
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
@@ -81,14 +64,18 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
     # Use destination connector to create _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
     dbt_test_utils.dbt_run(test_root_dir)
-    # Run checks on Tests results
-    dbt_test(destination_type, test_resource_name, test_root_dir)
-    check_outputs(destination_type, test_resource_name, test_root_dir)
+
+    if integration_type != DestinationType.ORACLE.value:
+        # Oracle doesnt support nested with clauses
+        # Run checks on Tests results
+        dbt_test(destination_type, test_resource_name, test_root_dir)
+        check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
@@ -233,7 +220,9 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             if destination_type.value in identifiers_map:
                 for entry in identifiers_map[destination_type.value]:
                     for k in entry:
-                        pattern.append(k)
+                        # re.escape() must not be used for the replacement string in sub(), only backslashes should be escaped:
+                        # see https://docs.python.org/3/library/re.html#re.escape
+                        pattern.append(k.replace("\\", r"\\"))
                         replace_value.append(entry[k])
             if pattern and replace_value:
 

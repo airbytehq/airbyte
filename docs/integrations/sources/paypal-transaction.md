@@ -60,4 +60,6 @@ Balances sync is similarly performed with default `stream_slice_period` = 1 day,
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-08-03 | [5155](https://github.com/airbytehq/airbyte/pull/5155) | fix start_date_min limit |
 | 0.1.0   | 2021-06-10 | [4240](https://github.com/airbytehq/airbyte/pull/4240) | PayPal Transaction Search API |
+

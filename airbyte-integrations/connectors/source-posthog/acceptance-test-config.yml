@@ -12,11 +12,15 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      validate_output_from_all_streams: yes
+      empty_streams:
+        - events_sessions
+        - insights_path
+        - insights_sessions
+        - trends
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/state.json"
+      future_state_path: "integration_tests/future_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

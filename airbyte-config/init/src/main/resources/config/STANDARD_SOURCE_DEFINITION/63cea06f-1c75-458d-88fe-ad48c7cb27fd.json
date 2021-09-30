@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "63cea06f-1c75-458d-88fe-ad48c7cb27fd",
+  "name": "Braintree",
+  "dockerRepository": "airbyte/source-braintree",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/braintree",
+  "icon": "braintree.svg"
+}

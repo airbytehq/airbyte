@@ -10,36 +10,63 @@ The Postgres source does not alter the schema present in your database. Dependin
 
 ### Data type mapping
 
-Postgres data types are mapped to the following data types when synchronizing data:
+Postgres data types are mapped to the following data types when synchronizing data. 
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostresSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | Postgres Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
-| `bigint` | integer |  |
-| `bit` | boolean |  |
+| `bigint` | number |  |
+| `bigserial` | number |  |
+| `bit` | boolean | |
+| `blob` | boolean |  |
 | `boolean` | boolean |  |
+| `box` | string |  |
+| `bytea` | object |  |
 | `character` | string |  |
 | `character varying` | string |  |
 | `cidr` | string |  |
+| `circle` | string |  |
 | `citext` | string |  |
 | `date` | string |  |
 | `double precision` | string |  |
 | `enum` | number |  |
+| `float` | number |  |
+| `float8` | number |  |
 | `hstore` | object | may be de-nested depending on the destination you are syncing into |
 | `inet` | string |  |
-| `int` | integer |  |
+| `int` | number |  |
+| `interval` | string |  |
+| `inventory_item` | string |  |
 | `json` | string |  |
 | `jsonb` | string |  |
+| `line` | string |  |
+| `lseg` | string |  |
 | `macaddr` | string |  |
+| `macaddr8` | string |  |
 | `money` | string |  |
+| `mood` | string |  |
 | `numeric` | number |  |
+| `path` | string |  |
+| `point` | number |  |
+| `polygon` | number |  |
 | `real` | number |  |
-| `smallint` | integer |  |
+| `serial` | number |  |
+| `smallint` | number |  |
+| `smallserial` | number |  |
 | `text` | string |  |
+| `text[]` | string |  |
+| `time` | string |  |
+| `timez` | string |  |
 | `time with timezone` | string | may be written as a native date type depending on the destination |
 | `time without timezone` | string | may be written as a native date type depending on the destination |
 | `timestamp with timezone` | string | may be written as a native date type depending on the destination |
 | `timestamp without timezone` | string | may be written as a native date type depending on the destination |
+| `tsrange` | string |  |
+| `tsvector` | string |  |
 | `uuid` | string |  |
+| `varchar` | string |  |
+| `xml` | string |  |
 
 **Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination. Byte arrays are currently unsupported.
 
@@ -107,9 +134,9 @@ Your database user should now be ready for use with Airbyte.
 
 ## Change Data Capture \(CDC\) / Logical Replication / WAL Replication
 
-We use [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log \(WAL\) to incrementally capture deletes using the `pgoutput` plugin.
+We use [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log \(WAL\) to incrementally capture deletes using a replication plugin.
 
-We do not require installing custom plugins like `wal2json` or `test_decoding`. We use `pgoutput`, which is included in Postgres 10+ by default.
+We use `pgoutput` as a default plugin, which is included in Postgres 10+. Also `wal2json` plugin is supported, please read [the section on replication plugins below](postgres.md#select-replication-plugin) for more information.
 
 Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte approaches CDC.
 
@@ -145,6 +172,11 @@ Follow one of these guides to enable logical replication:
 
 We recommend using a user specifically for Airbyte's replication so you can minimize access. This Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. You can create a role with `CREATE ROLE <name> REPLICATION LOGIN;` and grant that role to the user. You still need to make sure the user can connect to the database, use the schema, and to use `SELECT` on tables \(the same are required for non-CDC incremental syncs and all full refreshes\).
 
+#### Select replication plugin
+
+We recommend using a `pgoutput` plugin as it is the standard logical decoding plugin in Postgres.
+In case the replication table contains a lot of big JSON blobs and table size exceeds 1 GB, we recommend using a `wal2json` instead. Please note that `wal2json` may require additional installation for Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc. For more information read [wal2json documentation](https://github.com/eulerto/wal2json).
+
 #### Create replication slot
 
 Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
@@ -153,11 +185,11 @@ Next, you will need to create a replication slot. Here is the query used to crea
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
-This slot **must** use `pgoutput`.
+If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
 #### Create publications and replication identities for tables
 
-For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLES <tbl1, tbl2, tbl3>;`. This publication name is customizable. **You must add the replication identity before creating the publication. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.** Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. **You must add the replication identity before creating the publication. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.** Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 
@@ -214,11 +246,33 @@ Unfortunately, logical replication is not configurable for Google CloudSQL. You 
 
 If you encounter one of those not listed below, please consider [contributing to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) and providing setup instructions.
 
+## Connection to Postgres via an SSH Tunnel
+
+Airbyte has the ability to connect to a Postgres instance via an SSH Tunnel. The reason you might want to do this because it is not possible (or against security policy) to connect to the database directly (e.g. it does not have a public IP address).
+
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (a.k.a. a bastion sever) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+
+Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
+2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+   1. Choose `Key Authentication` if you will be using an RSA Private as your secrets for establishing the SSH Tunnel (see below for more information on generating this key).
+   2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
+3. `SSH Tunnel Jump Server Host` refers to the intermediate (bastion) server that Airbyte will connect to. This should be a hostname or an IP Address.
+4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
+5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the Postgres username.
+6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Postgres password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
+7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+
+### Generating an RSA Private Key
+_Coming soon_
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.11   | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
+| 0.3.9   | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |
+| 0.3.8   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.3.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.3.3   | 2021-06-08 | [3960](https://github.com/airbytehq/airbyte/pull/3960) | Add method field in specification parameters |
 | 0.3.2   | 2021-05-26 | [3179](https://github.com/airbytehq/airbyte/pull/3179) | Remove `isCDC` logging |

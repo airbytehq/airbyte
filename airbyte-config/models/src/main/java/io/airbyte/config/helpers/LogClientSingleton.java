@@ -1,36 +1,19 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -52,7 +35,10 @@ public class LogClientSingleton {
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
+  public static String CLOUD_WORKSPACE_MDC_KEY = "cloud_workspace_app_root";
+
   public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
+  public static String CLOUD_JOB_LOG_PATH_MDC_KEY = "cloud_job_log_path";
 
   // S3/Minio
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
@@ -85,7 +71,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
@@ -101,7 +86,6 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
@@ -116,17 +100,51 @@ public class LogClientSingleton {
     }
 
     var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
+  /**
+   * Primarily to clean up logs after testing. Only valid for Kube logs.
+   */
+  @VisibleForTesting
+  public static void deleteLogs(Configs configs, String logPath) {
+    if (shouldUseLocalLogs(configs)) {
+      throw new NotImplementedException("Local log deletes not supported.");
+    }
+    var logConfigs = new LogConfigDelegator(configs);
+    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    logClient.deleteLogs(logConfigs, cloudLogPath);
+  }
+
   public static void setJobMdc(Path path) {
-    MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    var configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs)) {
+      LOGGER.debug("Setting docker job mdc");
+      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    } else {
+      LOGGER.debug("Setting kube job mdc");
+      var logConfigs = new LogConfigDelegator(configs);
+      createCloudClientIfNull(logConfigs);
+      MDC.put(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    }
+  }
+
+  public static void setWorkspaceMdc(Path path) {
+    var configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs)) {
+      LOGGER.debug("Setting docker workspace mdc");
+      MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
+    } else {
+      LOGGER.debug("Setting kube workspace mdc");
+      var logConfigs = new LogConfigDelegator(configs);
+      createCloudClientIfNull(logConfigs);
+      MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.toString());
+    }
   }
 
   private static boolean shouldUseLocalLogs(Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
+    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER);
   }
 
   private static void createCloudClientIfNull(LogConfigs configs) {

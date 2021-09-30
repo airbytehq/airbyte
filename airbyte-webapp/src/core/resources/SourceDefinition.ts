@@ -1,5 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import { getService } from "core/servicesProvider";
+import { SourceDefinitionService } from "../domain/connector/SourceDefinitionService";
 
 export interface SourceDefinition {
   sourceDefinitionId: string;
@@ -36,16 +38,10 @@ export default class SourceDefinitionResource
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<{ sourceDefinitions: SourceDefinition[] }> => {
-        const definition = await this.fetch(
-          "post",
-          `${this.url(params)}/list`,
-          params
-        );
-        const latestDefinition = await this.fetch(
-          "post",
-          `${this.url(params)}/list_latest`,
-          params
-        );
+        const [definition, latestDefinition] = await Promise.all([
+          this.fetch("post", `${this.url(params)}/list`, params),
+          this.fetch("post", `${this.url(params)}/list_latest`, params),
+        ]);
 
         const result: SourceDefinition[] = definition.sourceDefinitions.map(
           (source: SourceDefinition) => {
@@ -81,6 +77,14 @@ export default class SourceDefinitionResource
   ): MutateShape<SchemaDetail<SourceDefinition>> {
     return {
       ...super.partialUpdateShape(),
+      fetch(
+        _: Readonly<Record<string, unknown>>,
+        body: SourceDefinition
+      ): Promise<SourceDefinition> {
+        return getService<SourceDefinitionService>(
+          "SourceDefinitionService"
+        ).update(body);
+      },
       schema: this,
     };
   }

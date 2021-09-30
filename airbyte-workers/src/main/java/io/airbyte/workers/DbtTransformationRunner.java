@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -32,6 +12,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.normalization.NormalizationRunner;
+import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -82,7 +63,9 @@ public class DbtTransformationRunner implements AutoCloseable {
   public boolean transform(String jobId, int attempt, Path jobRoot, JsonNode config, ResourceRequirements resourceRequirements, OperatorDbt dbtConfig)
       throws Exception {
     try {
-      final Map<String, String> files = ImmutableMap.of(DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
+      final Map<String, String> files = ImmutableMap.of(
+          DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
+          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
       final List<String> dbtArguments = new ArrayList<>();
       dbtArguments.add(DBT_ENTRYPOINT_SH);
       if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
@@ -90,7 +73,9 @@ public class DbtTransformationRunner implements AutoCloseable {
       }
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       process =
-          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements, dbtArguments);
+          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
+              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
+              dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

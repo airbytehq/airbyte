@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -27,12 +7,11 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
-import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
@@ -40,7 +19,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DbtTransformationRunner;
@@ -68,9 +47,6 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,8 +64,10 @@ public interface SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
 
+    private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
+
     private static final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofDays(3))
+        .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
         .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
@@ -148,19 +126,22 @@ public interface SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
-    private static final int MAX_RETRIES = 3;
-
     private final ProcessFactory processFactory;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    ReplicationActivityImpl(ProcessFactory processFactory,
+                            SecretsHydrator secretsHydrator,
+                            Path workspaceRoot,
+                            AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -171,65 +152,47 @@ public interface SyncWorkflow {
                                         IntegrationLauncherConfig destinationLauncherConfig,
                                         StandardSyncInput syncInput) {
 
+      final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
+      final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
+
+      final var fullSyncInput = Jsons.clone(syncInput)
+          .withSourceConfiguration(fullSourceConfig)
+          .withDestinationConfiguration(fullDestinationConfig);
+
       final Supplier<StandardSyncInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(syncInput));
-        return syncInput;
+        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
+        return fullSyncInput;
       };
 
-      final Predicate<ReplicationOutput> shouldAttemptAgain =
-          output -> output.getReplicationAttemptSummary().getStatus() != ReplicationStatus.COMPLETED;
+      final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
 
-      final BiFunction<StandardSyncInput, ReplicationOutput, StandardSyncInput> nextAttemptInput = (input, lastOutput) -> {
-        final StandardSyncInput newInput = Jsons.clone(input);
-        newInput.setState(lastOutput.getState());
-        return newInput;
-      };
+      final ReplicationOutput attemptOutput = temporalAttempt.get();
+      final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-      final RetryingTemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttemptExecution =
-          new RetryingTemporalAttemptExecution<>(
-              workspaceRoot,
-              jobRunConfig,
-              getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
-              inputSupplier,
-              new CancellationHandler.TemporalCancellationHandler(),
-              shouldAttemptAgain,
-              nextAttemptInput,
-              MAX_RETRIES);
-
-      final List<ReplicationOutput> attemptOutputs = temporalAttemptExecution.get();
-      final StandardSyncOutput standardSyncOutput = reduceReplicationOutputs(attemptOutputs);
-
-      LOGGER.info("attempt summaries: {}", attemptOutputs);
       LOGGER.info("sync summary: {}", standardSyncOutput);
 
       return standardSyncOutput;
     }
 
-    // todo (cgardens) - this operation is lossy (we lose the ability to see the amount of data
-    // replicated by each attempt). likely in the future, we will want to retain this info and surface
-    // it.
-    /**
-     * aggregate each attempts output into a sync summary.
-     */
-    private static StandardSyncOutput reduceReplicationOutputs(List<ReplicationOutput> attemptOutputs) {
-      final long totalBytesReplicated = attemptOutputs
-          .stream()
-          .map(ReplicationOutput::getReplicationAttemptSummary)
-          .mapToLong(ReplicationAttemptSummary::getBytesSynced).sum();
-      final long totalRecordsReplicated = attemptOutputs
-          .stream()
-          .map(ReplicationOutput::getReplicationAttemptSummary)
-          .mapToLong(ReplicationAttemptSummary::getRecordsSynced).sum();
+    private static StandardSyncOutput reduceReplicationOutput(ReplicationOutput output) {
+      final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
+      final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
+
       final StandardSyncSummary syncSummary = new StandardSyncSummary();
       syncSummary.setBytesSynced(totalBytesReplicated);
       syncSummary.setRecordsSynced(totalRecordsReplicated);
-      syncSummary.setStartTime(attemptOutputs.get(0).getReplicationAttemptSummary().getStartTime());
-      syncSummary.setEndTime(MoreLists.last(attemptOutputs).orElseThrow().getReplicationAttemptSummary().getEndTime());
-      syncSummary.setStatus(MoreLists.last(attemptOutputs).orElseThrow().getReplicationAttemptSummary().getStatus());
+      syncSummary.setStartTime(output.getReplicationAttemptSummary().getStartTime());
+      syncSummary.setEndTime(output.getReplicationAttemptSummary().getEndTime());
+      syncSummary.setStatus(output.getReplicationAttemptSummary().getStatus());
 
       final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
-      standardSyncOutput.setState(MoreLists.last(attemptOutputs).orElseThrow().getState());
-      standardSyncOutput.setOutputCatalog(MoreLists.last(attemptOutputs).orElseThrow().getOutputCatalog());
+      standardSyncOutput.setState(output.getState());
+      standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
       standardSyncOutput.setStandardSyncSummary(syncSummary);
 
       return standardSyncOutput;
@@ -287,16 +250,21 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    NormalizationActivityImpl(ProcessFactory processFactory,
+                              SecretsHydrator secretsHydrator,
+                              Path workspaceRoot,
+                              AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -306,9 +274,12 @@ public interface SyncWorkflow {
                           IntegrationLauncherConfig destinationLauncherConfig,
                           NormalizationInput input) {
 
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+
       final Supplier<NormalizationInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(input));
-        return input;
+        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
       };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -349,16 +320,21 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    DbtTransformationActivityImpl(ProcessFactory processFactory,
+                                  SecretsHydrator secretsHydrator,
+                                  Path workspaceRoot,
+                                  AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -369,9 +345,12 @@ public interface SyncWorkflow {
                     ResourceRequirements resourceRequirements,
                     OperatorDbtInput input) {
 
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+
       final Supplier<OperatorDbtInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(input));
-        return input;
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
       };
 
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(

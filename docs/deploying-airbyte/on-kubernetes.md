@@ -10,7 +10,7 @@ Airbyte allows scaling sync workloads horizontally using Kubernetes. The core co
 For local testing we recommend following one of the following setup guides:
 * [Docker Desktop (Mac)](https://docs.docker.com/desktop/kubernetes/)
 * [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-  * NOTE: Start Minikube with at least 4gb RAM to Minikube with `minikube start --memory=4000`
+  * NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 For testing on GKE you can [create a cluster with the command line or the Cloud Console UI](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster).
@@ -63,8 +63,7 @@ AWS_SECRET_ACCESS_KEY=
 # Endpoint where Minio is deployed at.
 S3_MINIO_ENDPOINT=
 ```
-The `S3_PATH_STYLE_ACCESS` should remain `true`. Although `S3_LOG_BUCKET_REGION` is used to create the Minio client, it's value is not actually used
-and can remain untouched.
+The `S3_PATH_STYLE_ACCESS` variable should remain `true`. The `S3_LOG_BUCKET_REGION` variable should remain empty.
 
 #### Configuring Custom S3 Log Location
 Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
@@ -135,6 +134,25 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 
 ## Production Airbyte on Kubernetes
 
+### Setting resource limits
+
+* Core container pods
+  * Instead of launching Airbyte with `kubectl apply -k kube/overlays/stable`, you can run with `kubectl apply -k kube/overlays/stable-with-resource-limits`.
+  * The `kube/overlays/stable-with-resource-limits/set-resource-limits.yaml` file can be modified to provide different resource requirements for core pods.
+* Connector pods
+  * By default, connector pods launch without resource limits.
+  * To add resource limits, configure the "Docker Resource Limits" section of the `.env` file in the overlay folder you're using.
+* Volume sizes
+  * You can modify `kube/resources/volume-*` files to specify different volume sizes for the persistent volumes backing Airbyte.
+
+### Increasing job parallelism
+
+The number of simultaneous jobs (getting specs, checking connections, discovering schemas, and performing syncs) is limited by a few factors. First of all, the `SUBMITTER_NUM_THREADS` (set in the `.env` file for your Kustimization overlay) provides a global limit on the number of simultaneous jobs that can run across all worker pods. 
+
+The number of worker pods can be changed by increasing the number of replicas for the `airbyte-worker` deployment. An example of a Kustomization patch that increases this number can be seen in `airbyte/kube/overlays/dev-integration-test/kustomization.yaml` and `airbyte/kube/overlays/dev-integration-test/parallelize-worker.yaml`. The number of simultaneous jobs on a specific worker pod is also limited by the number of ports exposed by the worker deployment and set by `TEMPORAL_WORKER_PORTS` in your `.env` file. Without additional ports used to communicate to connector pods, jobs will start to run but will hang until ports become available. 
+
+You can also tune environment variables for the max simultaneous job types that can run on the worker pod by setting `MAX_SPEC_WORKERS`, `MAX_CHECK_WORKERS`, `MAX_DISCOVER_WORKERS`, `MAX_SYNC_WORKERS` for the worker pod deployment (not in the `.env` file). These values can be used if you want to create separate worker deployments for separate types of workers with different resource allocations.
+
 ### Cloud logging
 
 Airbyte writes logs to two directories. App logs, including server and scheduler logs, are written to the `app-logging` directory.
@@ -163,10 +181,7 @@ there are any other issues blocking your adoption of Airbyte or if you would lik
 
 * The server and scheduler deployments must run on the same node. ([#4232](https://github.com/airbytehq/airbyte/issues/4232))
 * Some UI operations have higher latency on Kubernetes than Docker-Compose. ([#4233](https://github.com/airbytehq/airbyte/issues/4233))
-* Pod histories must be cleaned up manually. ([#3634](https://github.com/airbytehq/airbyte/issues/3634))
-* Specifying resource limits for pods is not supported yet. ([#3638](https://github.com/airbytehq/airbyte/issues/3638))
-* Pods Airbyte launches to run connector jobs are always launched in the `default` namespace. ([#3636](https://github.com/airbytehq/airbyte/issues/3636))
-* S3 is the only Cloud Storage currently supported. ([#4200](https://github.com/airbytehq/airbyte/issues/4200))
+* Logging to Azure Storage is not supported. ([#4200](https://github.com/airbytehq/airbyte/issues/4200))
 * Large log files might take a while to load. ([#4201](https://github.com/airbytehq/airbyte/issues/4201))
 * UI does not include configured buckets in the displayed log path. ([#4204](https://github.com/airbytehq/airbyte/issues/4204))
 * Logs are not reset when Airbyte is re-deployed. ([#4235](https://github.com/airbytehq/airbyte/issues/4235))
@@ -214,7 +229,7 @@ See [Upgrading K8s](../operator-guides/upgrading-airbyte.md).
 
 ### Resizing Volumes
 To resize a volume, change the `.spec.resources.requests.storage` value. After re-applying, the mount should be extended if that operation is supported
-for your type of mount. For a production instance, it's useful to track the usage of volumes to ensure they don't run out of space.
+for your type of mount. For a production deployment, it's useful to track the usage of volumes to ensure they don't run out of space.
 
 ### Copy Files To/From Volumes
 See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).
@@ -231,8 +246,7 @@ kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.
 
 ### Persistent storage on GKE regional cluster
 Running Airbyte on GKE regional cluster requires enabling persistent regional storage. To do so, enable [CSI driver](https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/gce-pd-csi-driver)
-on GKE. After enabling, add `storageClassName: standard-rwo` to the [volume-configs](../../kube/resources/volume-configs.yaml) and [volume-workspace](../../kube/resources/volume-workspace.yaml)
-yamls.
+on GKE. After enabling, add `storageClassName: standard-rwo` to the [volume-configs](../../kube/resources/volume-configs.yaml) yaml.
 
 `volume-configs.yaml` example:
 ```yaml

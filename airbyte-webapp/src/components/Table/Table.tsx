@@ -1,6 +1,15 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import styled from "styled-components";
-import { ColumnInstance, useTable, Column, Cell } from "react-table";
+import {
+  Cell,
+  Column,
+  ColumnInstance,
+  SortingRule,
+  useSortBy,
+  useTable,
+} from "react-table";
+
+import { Card } from "components";
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
@@ -18,14 +27,10 @@ type IThProps = {
   customWidth?: number;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
-const TableView = styled.table`
+const TableView = styled(Card).attrs({ as: "table" })`
   border-spacing: 0;
   width: 100%;
   overflow: hidden;
-  background: ${({ theme }) => theme.whiteColor};
-  border: 1px solid ${({ theme }) => theme.greyColor20};
-  box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
-  border-radius: 8px;
   max-width: 100%;
 `;
 
@@ -40,8 +45,8 @@ const Tr = styled.tr<{
 
 const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
   padding: 16px 13px;
-  font-size: 14px;
-  line-height: 17px;
+  font-size: 12px;
+  line-height: 15px;
   font-weight: normal;
   color: ${({ theme }) => theme.darkPrimaryColor};
   white-space: nowrap;
@@ -57,17 +62,18 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 `;
 
 const Th = styled.th<IThProps>`
-  background: ${({ theme }) => theme.greyColor0};
-  padding: 7px 13px 8px;
+  background: ${({ theme }) => theme.textColor};
+  padding: 9px 13px 10px;
   text-align: left;
-  font-size: 14px;
-  line-height: 17px;
-  font-weight: normal;
-  opacity: ${({ highlighted }) => (highlighted ? 1 : 0.6)};
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+  font-size: 10px;
+  line-height: 12px;
+  color: ${({ theme, highlighted }) =>
+    highlighted ? theme.whiteColor : theme.lightTextColor};
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundColor};
   width: ${({ collapse, customWidth }) =>
     customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
+  font-weight: 600;
+  text-transform: uppercase;
 
   &:first-child {
     padding-left: 45px;
@@ -81,6 +87,8 @@ type IProps = {
   data: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClickRow?: (data: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sortBy?: Array<SortingRule<any>>;
 };
 
 const Table: React.FC<IProps> = ({
@@ -88,17 +96,32 @@ const Table: React.FC<IProps> = ({
   data,
   onClickRow,
   erroredRows,
+  sortBy,
 }) => {
+  const [plugins, config] = useMemo(() => {
+    const pl = [];
+    const plConfig: Record<string, unknown> = {};
+
+    if (sortBy) {
+      pl.push(useSortBy);
+      plConfig.initialState = { sortBy };
+    }
+    return [pl, plConfig];
+  }, [sortBy]);
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({
-    columns,
-    data,
-  });
+  } = useTable(
+    {
+      ...config,
+      columns,
+      data,
+    },
+    ...plugins
+  );
 
   return (
     <TableView {...getTableProps()}>

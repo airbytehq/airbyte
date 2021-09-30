@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Item",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "name": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "description": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["active", "archived", "deleted"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "item_family_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": ["plan", "addon", "charge"]
+    },
+    "is_shippable": {
+      "type": ["boolean", "null"]
+    },
+    "is_giftable": {
+      "type": ["boolean", "null"]
+    },
+    "redirect_url": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "enabled_for_checkout": {
+      "type": ["boolean", "null"]
+    },
+    "enabled_in_portal": {
+      "type": ["boolean", "null"]
+    },
+    "included_in_mrr": {
+      "type": ["boolean", "null"]
+    },
+    "item_applicability": {
+      "type": ["string", "null"],
+      "enum": ["all", "restricted"]
+    },
+    "gift_claim_redirect_url": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "unit": {
+      "type": ["string", "null"],
+      "maxLength": 30
+    },
+    "metered": {
+      "type": ["boolean", "null"]
+    },
+    "usage_calculation": {
+      "type": ["string", "null"],
+      "enum": ["sum_of_usages", "last_usage", "max_usage"]
+    },
+    "archived_at": {
+      "type": ["integer", "null"]
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "properties": {}
+    },
+    "applicable_items": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
+      }
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    }
+  }
+}

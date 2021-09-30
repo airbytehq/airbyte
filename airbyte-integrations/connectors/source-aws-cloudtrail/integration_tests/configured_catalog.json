@@ -6,50 +6,7 @@
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["EventTime"],
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "properties": {
-            "AccessKeyId": {
-              "type": "string"
-            },
-            "CloudTrailEvent": {
-              "type": "string"
-            },
-            "EventId": {
-              "type": "string"
-            },
-            "EventName": {
-              "type": "string"
-            },
-            "EventSource": {
-              "type": "string"
-            },
-            "EventTime": {
-              "type": "integer"
-            },
-            "ReadOnly": {
-              "type": "string"
-            },
-            "Resources": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "properties": {
-                  "ResourceName": {
-                    "type": "string"
-                  },
-                  "ResourceType": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "Username": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        }
+        "json_schema": {}
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",

@@ -1,3 +1,3 @@
-import { Row, Header, Cell, LightCell } from "./SimpleTableComponents";
+import { Row, Header, Cell } from "./SimpleTableComponents";
 
-export { Row, Header, Cell, LightCell };
+export { Row, Header, Cell };

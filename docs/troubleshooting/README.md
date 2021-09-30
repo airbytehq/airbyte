@@ -2,7 +2,7 @@
 
 This section is aimed at collecting common issues users have to provide quick solutions. 
 There are some sections you can find:
-- [On Deployment](on-deployment.md): 
+- [On Deploying](on-deploying.md): 
 - [On Setting up a New Connection](new-connection.md)
 - [On Running a Sync](running-sync.md)
 - [On Upgrading](on-upgrading.md)

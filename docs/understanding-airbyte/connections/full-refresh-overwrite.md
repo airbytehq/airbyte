@@ -1,6 +1,12 @@
 # Full Refresh - Overwrite
 
-This readme describes Airbyte conventions around the "full refresh - Overwrite" concept.
+## Overview
+
+The **Full Refresh** modes are the simplest methods that Airbyte uses to sync data, as they always retrieve all available information requested from the source, regardless of whether it has been synced before. This contrasts with [**Incremental sync**](./incremental-append.md), which does not sync data that has already been synced before.
+
+In the **Overwrite** variant, new syncs will destroy all data in the existing destination table and then pull the new data in. Therefore, data that has been removed from the source after an old sync will be deleted in the destination table.
+
+## Example Behavior
 
 On the nth sync of a full refresh connection:
 

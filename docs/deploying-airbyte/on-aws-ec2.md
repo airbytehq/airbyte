@@ -123,6 +123,10 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP
 
 * Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
+## Pushing Airbyte logs to CloudWatch
+
+If you want to get your logs from your Airbyte Docker containers in CloudWatch, simply follow [this](https://aws.amazon.com/pt/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) guide to do so.
+
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.

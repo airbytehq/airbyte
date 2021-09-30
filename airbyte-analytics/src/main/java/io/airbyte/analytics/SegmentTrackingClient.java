@@ -1,32 +1,11 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
@@ -34,7 +13,8 @@ import com.segment.analytics.messages.TrackMessage;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.UUID;
+import java.util.function.Function;
 
 public class SegmentTrackingClient implements TrackingClient {
 
@@ -44,56 +24,70 @@ public class SegmentTrackingClient implements TrackingClient {
 
   // Analytics is threadsafe.
   private final Analytics analytics;
-  private final Supplier<TrackingIdentity> identitySupplier;
+  private final Function<UUID, TrackingIdentity> identityFetcher;
+  private final Deployment deployment;
   private final String airbyteRole;
 
   @VisibleForTesting
-  SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
+  SegmentTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher,
+                        final Deployment deployment,
                         final String airbyteRole,
                         final Analytics analytics) {
-    this.identitySupplier = identitySupplier;
+    this.identityFetcher = identityFetcher;
+    this.deployment = deployment;
     this.analytics = analytics;
     this.airbyteRole = airbyteRole;
   }
 
-  public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier, final String airbyteRole) {
-    this(identitySupplier, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
+  public SegmentTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher,
+                               final Deployment deployment,
+
+                               final String airbyteRole) {
+    this(identityFetcher, deployment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
-  public void identify() {
-    final TrackingIdentity trackingIdentity = identitySupplier.get();
-    final ImmutableMap.Builder<String, Object> identityMetadataBuilder = ImmutableMap.<String, Object>builder()
-        .put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion())
-        .put("anonymized", trackingIdentity.isAnonymousDataCollection())
-        .put("subscribed_newsletter", trackingIdentity.isNews())
-        .put("subscribed_security", trackingIdentity.isSecurityUpdates());
+  public void identify(UUID workspaceId) {
+    final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
+    final Map<String, Object> identityMetadata = new HashMap<>();
 
+    // deployment
+    identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    identityMetadata.put("deployment_mode", deployment.getDeploymentMode());
+    identityMetadata.put("deployment_env", deployment.getDeploymentEnv());
+    identityMetadata.put("deployment_id", deployment.getDeploymentId());
+
+    // workspace (includes info that in the future we would store in an organization)
+    identityMetadata.put("anonymized", trackingIdentity.isAnonymousDataCollection());
+    identityMetadata.put("subscribed_newsletter", trackingIdentity.isNews());
+    identityMetadata.put("subscribed_security", trackingIdentity.isSecurityUpdates());
+    trackingIdentity.getEmail().ifPresent(email -> identityMetadata.put("email", email));
+
+    // other
     if (!Strings.isNullOrEmpty(airbyteRole)) {
-      identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
+      identityMetadata.put(AIRBYTE_ROLE, airbyteRole);
     }
 
-    trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
-
     analytics.enqueue(IdentifyMessage.builder()
+        // user id is scoped by workspace. there is no cross-workspace tracking.
         .userId(trackingIdentity.getCustomerId().toString())
-        .traits(identityMetadataBuilder.build()));
+        .traits(identityMetadata));
   }
 
   @Override
-  public void alias(String previousCustomerId) {
-    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identitySupplier.get().getCustomerId().toString()));
+  public void alias(UUID workspaceId, String previousCustomerId) {
+    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identityFetcher.apply(workspaceId).getCustomerId().toString()));
   }
 
   @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
+  public void track(UUID workspaceId, String action) {
+    track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(String action, Map<String, Object> metadata) {
+  public void track(UUID workspaceId, String action, Map<String, Object> metadata) {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
-    final TrackingIdentity trackingIdentity = identitySupplier.get();
+    final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
     if (!metadata.isEmpty()) {
       trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));

@@ -2,6 +2,6 @@
   "destinationDefinitionId": "356668e2-7e34-47f3-a3b0-67a8a481b692",
   "name": "Google PubSub",
   "dockerRepository": "airbyte/destination-pubsub",
-  "dockerImageTag": "0.1.0",
+  "dockerImageTag": "0.1.1",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pubsub"
 }

@@ -4,25 +4,24 @@
 
 The Intercom source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Intercom source wraps the [Singer Intercom Tap](https://github.com/singer-io/tap-intercom).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ### Output schema
 
 Several output streams are available from this source:
 
-* [Admins](https://developers.intercom.com/intercom-api-reference/reference#list-admins)
-* [Companies](https://developers.intercom.com/intercom-api-reference/reference#list-companies)
-* [Conversations](https://developers.intercom.com/intercom-api-reference/reference#list-conversations)
-  * [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference#get-a-single-conversation)
-* [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference#data-attributes)
-  * [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-customer-data-attributes)
-  * [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-company-data-attributes)
-* [Leads](https://developers.intercom.com/intercom-api-reference/reference#list-leads)
-* [Segments](https://developers.intercom.com/intercom-api-reference/reference#list-segments)
-  * [Company Segments](https://developers.intercom.com/intercom-api-reference/reference#list-segments)
-* [Tags](https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app)
-* [Teams](https://developers.intercom.com/intercom-api-reference/reference#list-teams)
-* [Users](https://developers.intercom.com/intercom-api-reference/reference#list-users)
+* [Admins](https://developers.intercom.com/intercom-api-reference/reference#list-admins) \(Full table\)
+* [Companies](https://developers.intercom.com/intercom-api-reference/reference#list-companies) \(Incremental\)
+    * [Company Segments](https://developers.intercom.com/intercom-api-reference/reference#list-attached-segments-1) \(Incremental\)
+* [Conversations](https://developers.intercom.com/intercom-api-reference/reference#list-conversations) \(Incremental\)
+  * [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference#get-a-single-conversation) \(Incremental\)
+* [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference#data-attributes) \(Full table\)
+  * [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-customer-data-attributes) \(Full table\)
+  * [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-company-data-attributes) \(Full table\)
+* [Contacts](https://developers.intercom.com/intercom-api-reference/reference#list-contacts) \(Incremental\)
+* [Segments](https://developers.intercom.com/intercom-api-reference/reference#list-segments) \(Incremental\)
+* [Tags](https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app) \(Full table\)
+* [Teams](https://developers.intercom.com/intercom-api-reference/reference#list-teams) \(Full table\)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -38,6 +37,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Performance considerations
 
+The connector is restricted by normal Intercom [requests limitation](https://developers.intercom.com/intercom-api-reference/reference#rate-limiting).
+
 The Intercom connector should not run into Intercom API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
@@ -50,3 +51,13 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 Please read [How to get your Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token).
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.5   | 2021-09-28 | [6082](https://github.com/airbytehq/airbyte/pull/6082) | Corrected android_last_seen_at field data type in schemas |
+| 0.1.4   | 2021-09-20 | [6087](https://github.com/airbytehq/airbyte/pull/6087) | Corrected updated_at field data type in schemas |
+| 0.1.3   | 2021-09-08 | [5908](https://github.com/airbytehq/airbyte/pull/5908) | Corrected timestamp and arrays in schemas |
+| 0.1.2   | 2021-08-19 | [5531](https://github.com/airbytehq/airbyte/pull/5531) | Corrected pagination |
+| 0.1.1   | 2021-07-31 | [5123](https://github.com/airbytehq/airbyte/pull/5123) | Corrected rate limit |
+| 0.1.0   | 2021-07-19 | [4676](https://github.com/airbytehq/airbyte/pull/4676) | Release Slack CDK Connector |

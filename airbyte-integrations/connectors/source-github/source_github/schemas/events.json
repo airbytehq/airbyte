@@ -2,8 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "_ab_github_repository": {
-      "type": ["null", "string"]
+    "repository": {
+      "type": ["string"]
     },
     "type": {
       "type": ["null", "string"]
@@ -15,14 +15,42 @@
       "type": ["null", "object"],
       "properties": {}
     },
-    "repo_id": {
-      "type": ["null", "integer"]
+    "repo": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        }
+      }
     },
-    "actor_id": {
-      "type": ["null", "integer"]
+    "actor": {
+      "$ref": "user.json"
     },
-    "org_id": {
-      "type": ["null", "integer"]
+    "org": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "login": {
+          "type": ["null", "string"]
+        },
+        "gravatar_id": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "created_at": {
       "type": ["null", "string"]

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -27,6 +7,7 @@ package io.airbyte.config.helpers;
 import com.google.api.client.util.Preconditions;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Blob.BlobSourceOption;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.collect.Lists;
@@ -113,6 +94,19 @@ public class GcsLogs implements CloudLogs {
 
     LOGGER.debug("Done retrieving GCS logs: {}.", logPath);
     return lines;
+  }
+
+  @Override
+  public void deleteLogs(LogConfigs configs, String logPath) {
+    LOGGER.debug("Retrieving logs from GCS path: {}", logPath);
+    createGcsClientIfNotExists(configs);
+
+    LOGGER.debug("Start GCS list and delete request.");
+    Page<Blob> blobs = GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
+    for (Blob blob : blobs.iterateAll()) {
+      blob.delete(BlobSourceOption.generationMatch());
+    }
+    LOGGER.debug("Finished all deletes.");
   }
 
   private static void createGcsClientIfNotExists(LogConfigs configs) {

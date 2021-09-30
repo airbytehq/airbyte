@@ -5,8 +5,8 @@ import { useResource } from "rest-hooks";
 
 import { Source } from "core/resources/Source";
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
-import useSource from "components/hooks/services/useSourceHook";
+import ServiceForm from "views/Connector/ServiceForm";
+import useSource from "hooks/services/useSourceHook";
 import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
 import DeleteBlock from "components/DeleteBlock";
 import { Connection } from "core/resources/Connection";

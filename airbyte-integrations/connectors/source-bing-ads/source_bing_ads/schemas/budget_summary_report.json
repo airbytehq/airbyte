@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "Date": {
+      "type": ["null", "string"]
+    },
+    "MonthlyBudget": {
+      "type": ["null", "number"]
+    },
+    "DailySpend": {
+      "type": ["null", "number"]
+    },
+    "MonthToDateSpend": {
+      "type": ["null", "number"]
+    }
+  }
+}

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -65,7 +45,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
         "spec");
   }
 
@@ -74,7 +54,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.check(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
         "check",
         "--config", "config");
   }
@@ -84,7 +64,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.discover(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
         "discover",
         "--config", "config");
   }
@@ -95,6 +75,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
         WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
         Lists.newArrayList(
             "read",
             "--config", "config",
@@ -108,6 +89,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
         WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
         "write",
         "--config", "config",
         "--catalog", "catalog");

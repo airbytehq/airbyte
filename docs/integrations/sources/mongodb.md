@@ -84,3 +84,19 @@ Make sure that MongoDB is accessible from external servers. Specific commands wi
 
 Your `READ_ONLY_USER` should now be ready for use with Airbyte.
 
+
+#### Possible configuration Parameters
+
+* [Authentication Source](https://docs.mongodb.com/manual/reference/connection-string/#mongodb-urioption-urioption.authSource)
+* Host: URL of the database
+* Port: Port to use for connecting to the database
+* User: username to use when connecting
+* Password: used to authenticate the user
+* [Replica Set](https://docs.mongodb.com/manual/reference/connection-string/#mongodb-urioption-urioption.replicaSet)
+* Whether to enable SSL
+
+
+## Changelog
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.3   | 2021-07-20 | [4669](https://github.com/airbytehq/airbyte/pull/4669) | Subscriptions Stream now returns all kinds of subscriptions (including expired and canceled)|

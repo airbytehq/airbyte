@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -33,6 +13,7 @@ import string
 import subprocess
 import sys
 import threading
+import time
 from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
@@ -77,10 +58,18 @@ class DbtIntegrationTest(object):
             "-p",
             f"{config['port']}:5432",
             "-d",
-            "postgres",
+            "marcosmarxm/postgres-ssl:dev",
+            "-c",
+            "ssl=on",
+            "-c",
+            "ssl_cert_file=/var/lib/postgresql/server.crt",
+            "-c",
+            "ssl_key_file=/var/lib/postgresql/server.key",
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
+        time.sleep(5)
+
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/postgres.json", "w") as fh:
@@ -90,7 +79,6 @@ class DbtIntegrationTest(object):
         print("Starting localhost mysql container for tests")
         port = self.find_free_port()
         config = {
-            "type": "mysql",
             "host": "localhost",
             "port": port,
             "database": self.target_schema,
@@ -116,6 +104,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
+        time.sleep(5)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
@@ -151,6 +140,12 @@ class DbtIntegrationTest(object):
         else:
             os.chdir(request.fspath.dirname)
 
+    def generate_project_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
+        config_generator = TransformConfig()
+        project_yaml = config_generator.transform_dbt_project(destination_type)
+        config_generator.write_yaml_config(test_root_dir, project_yaml, "dbt_project.yml")
+        return project_yaml
+
     def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
         """
         Each destination requires different settings to connect to. This step generates the adequate profiles.yml
@@ -160,12 +155,18 @@ class DbtIntegrationTest(object):
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
-            profiles_config["credentials_json"] = json.dumps(profiles_config)
-            profiles_config["dataset_id"] = self.target_schema
+            credentials = profiles_config["basic_bigquery_config"]
+            profiles_config = {
+                "credentials_json": json.dumps(credentials),
+                "dataset_id": self.target_schema,
+                "project_id": credentials["project_id"],
+            }
+        elif destination_type.value == DestinationType.MYSQL.value:
+            profiles_config["database"] = self.target_schema
         else:
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
-        config_generator.write_yaml_config(test_root_dir, profiles_yaml)
+        config_generator.write_yaml_config(test_root_dir, profiles_yaml, "profiles.yml")
         return profiles_config
 
     @staticmethod
@@ -251,6 +252,7 @@ class DbtIntegrationTest(object):
                         "PASS=",  # DBT Summary
                         "Nothing to do.",  # When no schema/data tests are setup
                         "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
+                        "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
                     ]:
                         if except_clause in str_line:
                             is_exception = True

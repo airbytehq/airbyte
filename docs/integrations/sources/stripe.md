@@ -12,20 +12,28 @@ This Source is capable of syncing the following core Streams:
 * [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
 * [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
 * [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
+* [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 * [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
-* [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) \(Incremental\)
 * [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 * [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
-* [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 * [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 * [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+* [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
+* [PaymentIntents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 * [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 * [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 * [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 * [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
-* [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+* [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+
+### Notes
+
+The `created` field is used to organize Incremental streams. Filtration occurs by the date the entity was created, and it is impossible to filter by the update date, since:
+  * The Stripe API allows filtering only by the `created` field for all streams.
+  * There is no such field as `updated`.
+The only alternative way at the moment is to do a Full Refresh sync and filtering client side.
 
 ### Data type mapping
 
@@ -64,6 +72,12 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.19   | 2021-09-27 | [6466](https://github.com/airbytehq/airbyte/pull/6466) | Use `start_date` parameter in incremental streams |
+| 0.1.18   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Fix coupons and subscriptions stream schemas by removing incorrect timestamp formatting |
+| 0.1.17   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Add `PaymentIntents` stream |
+| 0.1.16   | 2021-07-28 | [4980](https://github.com/airbytehq/airbyte/pull/4980) | Remove Updated field from schemas |
+| 0.1.15   | 2021-07-21 | [4878](https://github.com/airbytehq/airbyte/pull/4878) | Fix incorrect percent_off and discounts data filed types |
+| 0.1.14   | 2021-07-09 | [4669](https://github.com/airbytehq/airbyte/pull/4669) | Subscriptions Stream now returns all kinds of subscriptions (including expired and canceled) |
 | 0.1.13   | 2021-07-03 | [4528](https://github.com/airbytehq/airbyte/pull/4528) | Remove regex for acc validation |
 | 0.1.12   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.1.11   | 2021-05-30 | [3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix types in schema |

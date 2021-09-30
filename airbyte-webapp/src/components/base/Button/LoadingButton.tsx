@@ -47,7 +47,7 @@ const LoadingButton: React.FC<IProps> = (props) => {
           </>
         ) : (
           props.children
-        )}{" "}
+        )}
       </ButtonView>
     );
   }

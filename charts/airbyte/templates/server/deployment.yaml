@@ -1,0 +1,201 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-server
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  selector:
+    matchLabels:
+      airbyte: server
+  strategy:
+    type: Recreate # Needed due to volume claims
+  template:
+    metadata:
+      labels:
+        airbyte: server
+      {{- if .Values.server.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.server.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.server.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.server.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.server.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.server.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: airbyte-server-container
+        image: {{ include "airbyte.serverImage" . }}
+        imagePullPolicy: "{{ .Values.server.image.pullPolicy }}"
+        env:
+        - name: AIRBYTE_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AIRBYTE_VERSION
+        - name: CONFIG_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: CONFIG_ROOT
+        {{- if .Values.postgresql.enabled }}
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_PASSWORD
+        {{- else }}
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.externalDatabase.existingSecret }}
+              key: {{ .Values.externalDatabase.existingSecretPasswordKey }}
+        {{- end }}
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_URL
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_USER
+        - name: TRACKING_STRATEGY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: TRACKING_STRATEGY
+        - name: WORKER_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: WORKER_ENVIRONMENT
+        - name: WORKSPACE_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: WORKSPACE_ROOT
+        - name: WEBAPP_URL
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: WEBAPP_URL
+        - name: TEMPORAL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: TEMPORAL_HOST
+        - name: LOG_LEVEL
+          value: "{{ .Values.scheduler.log.level }}"
+        - name: RESOURCE_CPU_REQUEST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_CPU_REQUEST
+        - name: RESOURCE_CPU_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_CPU_LIMIT
+        - name: RESOURCE_MEMORY_REQUEST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_MEMORY_REQUEST
+        - name: RESOURCE_MEMORY_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_MEMORY_LIMIT
+        - name: S3_LOG_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_LOG_BUCKET
+        - name: S3_LOG_BUCKET_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_LOG_BUCKET_REGION
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AWS_SECRET_ACCESS_KEY
+        - name: S3_MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_MINIO_ENDPOINT
+        - name: S3_PATH_STYLE_ACCESS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_PATH_STYLE_ACCESS
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: GOOGLE_APPLICATION_CREDENTIALS
+        - name: GCP_STORAGE_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: GCP_STORAGE_BUCKET
+        {{- if .Values.server.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: http
+          initialDelaySeconds: {{ .Values.server.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.server.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.server.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.server.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.server.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.server.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: http
+          initialDelaySeconds: {{ .Values.server.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.server.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.server.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.server.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.server.readinessProbe.failureThreshold }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 8001
+          protocol: TCP
+        {{- if .Values.server.resources }}
+        resources: {{- toYaml .Values.server.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: airbyte-data
+          mountPath: /configs
+          subPath: configs
+        - name: airbyte-data
+          mountPath: /workspace
+          subPath: workspace
+        - name: gcs-log-creds-volume
+          mountPath: /secrets/gcs-log-creds
+          readOnly: true
+      volumes:
+      - name: airbyte-data
+        persistentVolumeClaim:
+          claimName: {{ include "common.names.fullname" . }}-data
+      - name: gcs-log-creds-volume
+        secret:
+          secretName: gcs-log-creds

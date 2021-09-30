@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FieldProps } from "formik";
 
-import config from "config";
+import { useConfig } from "config";
 
 import { LabeledRadioButton, Link } from "components";
 import { NormalizationType } from "core/domain/connection/operation";
@@ -18,16 +18,20 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
   form,
   field,
 }) => {
+  const config = useConfig();
+
   return (
     <Normalization>
       <LabeledRadioButton
         {...form.getFieldProps("normalization")}
+        id="normalization.raw"
         label={<FormattedMessage id="form.rawData" />}
         value={NormalizationType.RAW}
         checked={field.value === NormalizationType.RAW}
       />
       <LabeledRadioButton
         {...form.getFieldProps("normalization")}
+        id="normalization.basic"
         label={<FormattedMessage id="form.basicNormalization" />}
         value={NormalizationType.BASIC}
         checked={field.value === NormalizationType.BASIC}

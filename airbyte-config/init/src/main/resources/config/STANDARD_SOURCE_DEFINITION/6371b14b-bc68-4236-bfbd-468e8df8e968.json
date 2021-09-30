@@ -3,5 +3,5 @@
   "name": "PokeAPI",
   "dockerRepository": "airbyte/source-pokeapi",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-pokeapi"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pokeapi"
 }

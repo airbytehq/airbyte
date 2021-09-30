@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.1.20
+Add oauth init flow parameter verification for spec.
+
+## 0.1.19
+Assert a non-empty overlap between the fields present in the record and the declared json schema.
+
+## 0.1.18
+Fix checking date-time format againt nullable field.
+
+## 0.1.17
+Fix serialize function for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5738
+
+## 0.1.16
+Fix for flake8-ckeck for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5785
+
+## 0.1.15
+Add detailed logging for acceptance tests: https://github.com/airbytehq/airbyte/pull/5392
+
+## 0.1.14
+Fix for NULL datetime in MySQL format (i.e. 0000-00-00): https://github.com/airbytehq/airbyte/pull/4465
+
+## 0.1.13
+Replace `validate_output_from_all_streams` with `empty_streams` param: https://github.com/airbytehq/airbyte/pull/4897
+
+## 0.1.12
+Improve error message when data mismatches schema: https://github.com/airbytehq/airbyte/pull/4753
+
 ## 0.1.11
 Fix error in the naming of method `test_match_expected` for class `TestSpec`.
 
@@ -22,3 +49,4 @@ Add test whether PKs present and not None if `source_defined_primary_key` define
 
 ## 0.1.5
 Add configurable timeout for the acceptance tests: https://github.com/airbytehq/airbyte/pull/4296
+

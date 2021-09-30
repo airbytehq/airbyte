@@ -12,14 +12,7 @@ services:
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-db
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  seed:
-    image: airbyte/seed:${VERSION}
-    build:
-      dockerfile: seed.Dockerfile
-      context: airbyte-server
+      context: airbyte-db/lib
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:
@@ -27,6 +20,13 @@ services:
     build:
       dockerfile: Dockerfile
       context: airbyte-scheduler/app
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  worker:
+    image: airbyte/worker:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-workers
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   server:

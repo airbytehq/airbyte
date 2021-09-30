@@ -26,7 +26,7 @@ Several output streams are available from this source:
   * [Webinar Questions](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarregistrantsquestionsget)
   * [Webinar Tracking Sources](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/gettrackingsources)
   * [Webinar Q&A Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/listpastwebinarqa)
-  * [Webinar Files](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/listpastwebinarfiles)
+  * [Webinar Files](https://marketplace.zoom.us/docs/api-reference/zoom-api/deprecated-api-endpoints/listpastwebinarfiles)
 * [Report Meetings](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingdetails)
 * [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
 * [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)

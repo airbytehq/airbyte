@@ -1,8 +1,11 @@
 {
-  "developer_token": "developer_token",
-  "client_id": "client_id",
-  "client_secret": "client_secret",
-  "refresh_token": "refresh_token",
-  "start_date": "start_date",
-  "customer_id": "customer_id"
+  "credentials": {
+    "developer_token": "developer_token",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "customer_id": "customer_id",
+  "start_date": "2021-06-01",
+  "conversion_window_days": 14
 }

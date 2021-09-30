@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
@@ -42,6 +22,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -96,6 +77,9 @@ public class DefaultJobPersistence implements JobPersistence {
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
+  public static final String DEPLOYMENT_ID_KEY = "deployment_id";
+  public static final String METADATA_KEY_COL = "key";
+  public static final String METADATA_VAL_COL = "value";
 
   @VisibleForTesting
   static final String BASE_JOB_SELECT_AND_JOIN =
@@ -264,8 +248,9 @@ public class DefaultJobPersistence implements JobPersistence {
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
 
       ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.FAILED),
+          now,
           now,
           jobId,
           attemptNumber);
@@ -281,13 +266,37 @@ public class DefaultJobPersistence implements JobPersistence {
       updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
 
       ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.SUCCEEDED),
+          now,
           now,
           jobId,
           attemptNumber);
       return null;
     });
+  }
+
+  @Override
+  public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
+    database.query(ctx -> ctx.execute(
+        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
+        temporalWorkflowId,
+        jobId,
+        attemptNumber));
+  }
+
+  @Override
+  public Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
+    var result = database.query(ctx -> ctx.fetch(
+        " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
+        jobId,
+        attemptNumber)).stream().findFirst();
+
+    if (result.isEmpty() || result.get().get("temporal_workflow_id") == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(result.get().get("temporal_workflow_id", String.class));
   }
 
   @Override
@@ -401,6 +410,16 @@ public class DefaultJobPersistence implements JobPersistence {
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
   }
 
+  @Override
+  public List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
+    return database.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(config_type AS VARCHAR) =  ? AND " +
+            " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC", Sqls.toSqlName(configType),
+            timeConvertedIntoLocalDateTime)));
+  }
+
   private static List<Job> getJobsFromResult(Result<Record> result) {
     // keeps results strictly in order so the sql query controls the sort
     List<Job> jobs = new ArrayList<Job>();
@@ -449,18 +468,60 @@ public class DefaultJobPersistence implements JobPersistence {
   public Optional<String> getVersion() throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select()
         .from(AIRBYTE_METADATA_TABLE)
-        .where(DSL.field("key").eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
+        .where(DSL.field(METADATA_KEY_COL).eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
         .fetch());
-    return result.stream().findFirst().map(r -> r.getValue("value", String.class));
+    return result.stream().findFirst().map(r -> r.getValue(METADATA_VAL_COL, String.class));
   }
 
   @Override
   public void setVersion(String airbyteVersion) throws IOException {
     database.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (key) DO UPDATE SET value = '%s'",
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
         AIRBYTE_METADATA_TABLE,
-        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
-        current_timestamp(), airbyteVersion, airbyteVersion)));
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME,
+        airbyteVersion,
+        current_timestamp(),
+        airbyteVersion,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        airbyteVersion)));
+  }
+
+  @Override
+  public Optional<UUID> getDeployment() throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(DEPLOYMENT_ID_KEY))
+        .fetch());
+    return result.stream().findFirst().map(r -> UUID.fromString(r.getValue(METADATA_VAL_COL, String.class)));
+  }
+
+  @Override
+  public void setDeployment(UUID deployment) throws IOException {
+    // if an existing deployment id already exists, on conflict, return it so we can log it.
+    final UUID committedDeploymentId = database.query(ctx -> ctx.fetch(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO NOTHING RETURNING (SELECT %s FROM %s WHERE %s='%s') as existing_deployment_id",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        DEPLOYMENT_ID_KEY,
+        deployment,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        DEPLOYMENT_ID_KEY)))
+        .stream()
+        .filter(record -> record.get("existing_deployment_id", String.class) != null)
+        .map(record -> UUID.fromString(record.get("existing_deployment_id", String.class)))
+        .findFirst()
+        .orElse(deployment); // if no record was returned that means that the new deployment id was used.
+
+    if (!deployment.equals(committedDeploymentId)) {
+      LOGGER.warn("Attempted to set a deployment id %s, but deployment id %s already set. Retained original value.");
+    }
   }
 
   private static String current_timestamp() {
@@ -468,7 +529,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
+  public Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
@@ -493,12 +554,12 @@ public class DefaultJobPersistence implements JobPersistence {
     return result;
   }
 
-  private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+  private Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
-    final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
 
     for (final String table : tables) {
-      result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
+      result.put(JobsDatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
     }
 
     return result;
@@ -512,7 +573,7 @@ public class DefaultJobPersistence implements JobPersistence {
       return database.query(context -> context.meta().getSchemas(schema).stream()
           .flatMap(s -> context.meta(s).getTables().stream())
           .map(Named::getName)
-          .filter(table -> DatabaseSchema.getLowerCaseTableNames().contains(table.toLowerCase()))
+          .filter(table -> JobsDatabaseSchema.getTableNames().contains(table.toLowerCase()))
           .collect(Collectors.toList()));
     } else {
       return List.of();
@@ -576,19 +637,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void importDatabase(final String airbyteVersion, final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
+  public void importDatabase(final String airbyteVersion, final Map<JobsDatabaseSchema, Stream<JsonNode>> data) throws IOException {
     importDatabase(airbyteVersion, DEFAULT_SCHEMA, data, false);
   }
 
   private void importDatabase(final String airbyteVersion,
                               final String targetSchema,
-                              final Map<DatabaseSchema, Stream<JsonNode>> data,
+                              final Map<JobsDatabaseSchema, Stream<JsonNode>> data,
                               boolean incrementalImport)
       throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
       database.transaction(ctx -> {
-        for (final DatabaseSchema tableType : data.keySet()) {
+        for (final JobsDatabaseSchema tableType : data.keySet()) {
           if (!incrementalImport) {
             truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
           }
@@ -617,9 +678,12 @@ public class DefaultJobPersistence implements JobPersistence {
     ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
-  private static void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+  /**
+   * TODO: we need version specific importers to copy data to the database. Issue: #5682.
+   */
+  private static void importTable(DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
-    final JsonNode jsonSchema = tableType.toJsonNode();
+    final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
       // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
       // written consistently in the same order in the stream
@@ -629,7 +693,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final Stream<List<?>> data = jsonStream.map(node -> {
         final List<Object> values = new ArrayList<>();
         for (final Field<?> column : columns) {
-          values.add(getJsonNodeValue(column.getName(), node.get(column.getName())));
+          values.add(getJsonNodeValue(node, column.getName()));
         }
         return values;
       });
@@ -656,7 +720,7 @@ public class DefaultJobPersistence implements JobPersistence {
    *
    * This function reset such Identity states (called SQL Sequence objects).
    */
-  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final DatabaseSchema tableType) {
+  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType) {
     final Result<Record> result = ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
     final Optional<Integer> maxId = result.stream()
         .map(r -> r.get(0, Integer.class))
@@ -674,7 +738,11 @@ public class DefaultJobPersistence implements JobPersistence {
    */
   private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
     ctx.execute(String.format("INSERT INTO %s VALUES('%s_import_db', '%s');", AIRBYTE_METADATA_TABLE, current_timestamp(), airbyteVersion));
-    ctx.execute(String.format("UPDATE %s SET value = '%s' WHERE key = '%s';", AIRBYTE_METADATA_TABLE, airbyteVersion,
+    ctx.execute(String.format("UPDATE %s SET %s = '%s' WHERE %s = '%s';",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_VAL_COL,
+        airbyteVersion,
+        METADATA_KEY_COL,
         AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
   }
 
@@ -692,9 +760,13 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * Convert the JSON @param valueNode and @return Java Values for the @param columnName
+   * @return Java Values for the @param columnName in @param jsonNode
    */
-  private static Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
+  private static Object getJsonNodeValue(final JsonNode jsonNode, final String columnName) {
+    if (!jsonNode.has(columnName)) {
+      return null;
+    }
+    final JsonNode valueNode = jsonNode.get(columnName);
     final JsonNodeType nodeType = valueNode.getNodeType();
     if (nodeType == JsonNodeType.OBJECT) {
       return valueNode.toString();

@@ -8,7 +8,7 @@
       "type": "string"
     },
     "event": {
-      "type": "string"
+      "type": ["string", "object"]
     },
     "timestamp": {
       "type": "string",
@@ -34,7 +34,7 @@
     "elements": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": ["string", "object"]
       }
     },
     "elements_chain": {

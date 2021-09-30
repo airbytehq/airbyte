@@ -1,0 +1,22 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-google-sheets:dev
+tests:
+  spec:
+    - spec_path: "google_sheets_source/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    # Sometimes test could fail (on weekends) because transactions could temporary disappear from Paypal Sandbox account
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+
+

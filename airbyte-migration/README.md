@@ -2,6 +2,8 @@
 
 This module migrates configs specified in `airbyte-config` to new versions.
 
+WARNING: the file-based migrations are deprecated. Please write a Flyway migration whenever you want to update the database. See [here](../airbyte-db/lib/README.md) for details.
+
 ## Change Airbyte Configs
 - Update the config json schema in [`airbyte-config/models`](../airbyte-config/models).
 - Add the changed json schema to the [main resources](./src/main/resources/migrations).
@@ -24,7 +26,7 @@ Run the following command in project root:
 BUILD_VERSION=$(cat .env | grep VERSION | awk -F"=" '{print $2}')
 
 # Build the migration bundle file
-./gradlew airbyte-migration:build
+SUB_BUILD=PLATFORM ./gradlew airbyte-migration:build
 
 # Extract the bundle file
 tar xf ./airbyte-migration/build/distributions/airbyte-migration-${BUILD_VERSION}.tar --strip-components=1

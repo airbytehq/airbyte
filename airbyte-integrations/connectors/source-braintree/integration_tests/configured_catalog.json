@@ -1,0 +1,81 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "customer_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "discount_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dispute_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "transaction_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "merchant_account_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "plan_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "subscription_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

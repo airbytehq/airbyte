@@ -4,11 +4,11 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["string", "null"],
       "maxLength": 100
     },
     "name": {
-      "type": "string",
+      "type": ["string", "null"],
       "maxLength": 50
     },
     "invoice_name": {
@@ -17,7 +17,7 @@
     },
     "description": {
       "type": ["string", "null"],
-      "maxLength": 100
+      "maxLength": 500
     },
     "price": {
       "type": ["integer", "null"],
@@ -28,52 +28,43 @@
       "maxLength": 3
     },
     "period": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 1
     },
     "period_unit": {
-      "type": "array",
-      "enum": ["day", "week", "month", "year"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["day", "week", "month", "year"]
     },
     "trial_period": {
       "type": ["integer", "null"],
-      "minimum": 0
+      "minimum": 1
     },
     "trial_period_unit": {
-      "type": ["array", "null"],
-      "enum": ["day", "month"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["day", "month"]
+    },
+    "trial_end_action": {
+      "type": ["string", "null"],
+      "enum": ["site_default", "activate_subscription", "cancel_subscription"]
     },
     "pricing_model": {
-      "type": "array",
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
     },
     "free_quantity": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 0
     },
     "setup_cost": {
       "type": ["integer", "null"],
-      "minimum": 0
+      "minimum": 1
     },
     "status": {
-      "type": "array",
-      "enum": ["active", "archived"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["active", "archived"]
     },
     "archived_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": ["integer", "null"]
     },
     "billing_cycles": {
       "type": ["integer", "null"],
@@ -84,32 +75,26 @@
       "maxLength": 500
     },
     "enabled_in_hosted_pages": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "enabled_in_portal": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "addon_applicability": {
-      "type": "array",
-      "enum": ["all", "restricted"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["all", "restricted"]
     },
     "tax_code": {
       "type": ["string", "null"],
-      "maxLength": 59
+      "maxLength": 50
     },
     "taxjar_product_code": {
       "type": ["string", "null"],
-      "maxLength": 59
+      "maxLength": 50
     },
     "avalara_sale_type": {
-      "type": ["array", "null"],
-      "enum": ["wholesale", "retail", "consumed", "vendor_use"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["wholesale", "retail", "consumed", "vendor_use"]
     },
     "avalara_transaction_type": {
       "type": ["integer", "null"]
@@ -149,11 +134,8 @@
       "minimum": 1
     },
     "shipping_frequency_period_unit": {
-      "type": ["array", "null"],
-      "enum": ["year", "month", "week", "day"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["year", "month", "week", "day"]
     },
     "resource_version": {
       "type": ["integer", "null"]
@@ -162,7 +144,7 @@
       "type": ["integer", "null"]
     },
     "giftable": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "claim_url": {
       "type": ["string", "null"],
@@ -188,9 +170,9 @@
       "maxLength": 50
     },
     "meta_data": {
-      "type": ["object", "null"]
+      "type": ["object", "null"],
+      "properties": {}
     },
-
     "show_description_in_invoices": {
       "type": ["boolean", "null"]
     },
@@ -200,17 +182,17 @@
     "tiers": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "starting_unit": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 1
           },
           "ending_unit": {
-            "type": "integer"
+            "type": ["integer", "null"]
           },
           "price": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "starting_unit_in_decimal": {
@@ -231,10 +213,10 @@
     "applicable_addons": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 100
           }
         }
@@ -243,14 +225,14 @@
     "attached_addons": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 100
           },
           "quantity": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 1
           },
           "billing_cycles": {
@@ -258,11 +240,8 @@
             "minimum": 1
           },
           "type": {
-            "type": "array",
-            "enum": ["recommended", "mandatory"],
-            "items": {
-              "type": "string"
-            }
+            "type": ["string", "null"],
+            "enum": ["recommended", "mandatory"]
           },
           "quantity_in_decimal": {
             "type": ["string", "null"],
@@ -274,31 +253,28 @@
     "event_based_addons": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 100
           },
           "quantity": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 1
           },
           "on_event": {
-            "type": "array",
+            "type": ["string", "null"],
             "enum": [
               "subscription_creation",
               "subscription_trial_start",
               "plan_activation",
               "subscription_activation",
               "contract_termination"
-            ],
-            "items": {
-              "type": "string"
-            }
+            ]
           },
           "charge_once": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           },
           "quantity_in_decimal": {
             "type": ["string", "null"],
