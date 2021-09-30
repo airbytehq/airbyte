@@ -89,6 +89,7 @@ export const jsonSchemaToUiWidget = (
       jsonSchema,
       path: path || key,
       fieldKey: key,
+      hasOauth: jsonSchema.is_auth,
       properties,
       isRequired,
     };
@@ -129,6 +130,9 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
   "order",
   "const",
   "title",
+
+  // airbyte specific fields
+  "airbyte_hidden",
 ];
 
 const pickDefaultFields = (

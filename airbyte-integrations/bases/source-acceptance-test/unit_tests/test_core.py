@@ -100,7 +100,30 @@ def test_read(schema, record, should_fail):
                     },
                 },
             ),
-            "oauth root object credentials does not exists",
+            "Specified oauth fields are missed from spec schema:",
+        ),
+        # SUCCESS: Empty root object
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "client_id": {"type": "string"},
+                        "client_secret": {"type": "string"},
+                        "access_token": {"type": "string"},
+                        "refresh_token": {"type": "string"},
+                    },
+                },
+                authSpecification={
+                    "auth_type": "oauth2.0",
+                    "oauth2Specification": {
+                        "rootObject": [],
+                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
+                    },
+                },
+            ),
+            "",
         ),
         # FAIL: Some oauth fields missed
         (
@@ -127,7 +150,7 @@ def test_read(schema, record, should_fail):
                     },
                 },
             ),
-            "Specified ouath fields are missed from spec schema: {'/credentials/refresh_token'}",
+            "Specified oauth fields are missed from spec schema:",
         ),
         # SUCCESS: case w/o oneOf property
         (
@@ -149,7 +172,7 @@ def test_read(schema, record, should_fail):
                 authSpecification={
                     "auth_type": "oauth2.0",
                     "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
+                        "rootObject": ["credentials"],
                         "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
                         "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
                     },
@@ -229,7 +252,7 @@ def test_read(schema, record, should_fail):
                     },
                 },
             ),
-            "Specified ouath fields are missed from spec schema:",
+            "Specified oauth fields are missed from spec schema:",
         ),
     ],
 )
