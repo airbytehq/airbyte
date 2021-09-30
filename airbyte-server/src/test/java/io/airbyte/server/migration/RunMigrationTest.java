@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.migration;
@@ -47,6 +27,9 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.migrate.Migrations;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -78,10 +61,12 @@ public class RunMigrationTest {
   private static final String DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED = "d2147be5-fa36-4936-977e-f031affa5895";
   private static final String DEPRECATED_SOURCE_DEFINITION_BEING_USED = "4eb22946-2a79-4d20-a3e6-effd234613c3";
   private List<File> resourceToBeCleanedUp;
+  private SecretPersistence secretPersistence;
 
   @BeforeEach
   public void setup() {
     resourceToBeCleanedUp = new ArrayList<>();
+    secretPersistence = new MemorySecretPersistence();
   }
 
   @AfterEach
@@ -125,7 +110,9 @@ public class RunMigrationTest {
 
   private void assertPreMigrationConfigs(final Path configRoot, final JobPersistence jobPersistence) throws Exception {
     assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
-    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
+    final ConfigRepository configRepository =
+        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
+            Optional.of(secretPersistence));
     final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
@@ -139,7 +126,9 @@ public class RunMigrationTest {
   }
 
   private void assertPostMigrationConfigs(final Path importRoot) throws Exception {
-    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
+    final ConfigRepository configRepository =
+        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
+            Optional.of(secretPersistence));
     final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
     // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and
@@ -308,7 +297,8 @@ public class RunMigrationTest {
   private void runMigration(final JobPersistence jobPersistence, final Path configRoot) throws Exception {
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
-        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
+        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
+            Optional.of(secretPersistence)),
         TARGET_VERSION,
         YamlSeedConfigPersistence.getDefault(),
         mock(SpecFetcher.class) // this test was disabled/broken when this fetcher mock was added. apologies if you have to fix this
