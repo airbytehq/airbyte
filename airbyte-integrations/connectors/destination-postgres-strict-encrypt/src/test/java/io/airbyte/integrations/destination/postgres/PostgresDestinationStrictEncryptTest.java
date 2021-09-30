@@ -15,7 +15,6 @@ class PostgresDestinationStrictEncryptTest {
 
   @Test
   void testGetSpec() throws Exception {
-    System.out.println(new PostgresDestinationStrictEncrypt().spec().getConnectionSpecification());
     assertEquals(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class),
         new PostgresDestinationStrictEncrypt().spec());
   }

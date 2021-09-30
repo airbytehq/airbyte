@@ -28,7 +28,8 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 
 /**
- * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file or with a password.
+ * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
+ * or with a password.
  */
 public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -62,9 +63,9 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -131,7 +132,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
             .query(
                 ctx -> ctx
                     .fetch(String.format("USE %s;"
-                            + "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                        + "SELECT * FROM %s.%s ORDER BY %s ASC;",
                         database, schema, tableName.toLowerCase(), JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()
                     .map(r -> r.formatJSON(JSON_FORMAT))

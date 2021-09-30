@@ -176,7 +176,10 @@ class TransformConfig:
 
         # if unset, we assume true.
         if config.get("ssl", True):
+            print("using ssl.")
             config["sslmode"] = "require"
+        else:
+            print("not using ssl.")
 
         return dbt_config
 
