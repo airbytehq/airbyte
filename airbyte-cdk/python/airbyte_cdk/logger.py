@@ -43,15 +43,19 @@ def get_logger():
 
 
 class AirbyteLogFormatter(logging.Formatter):
-    def format(self, record):
+    """Output log records using AirbyteMessage"""
+
+    def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
         log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=record.levelname, message=message))
         return log_message.json(exclude_unset=True)
 
 
 class AirbyteNativeLogger(logging.Logger):
+    """Using native logger with implementing all AirbyteLogger features"""
+
     def __init__(self, name):
-        logging.Logger.__init__(self, name)
+        super().__init__(name)
         self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
 
     def log_by_prefix(self, msg, default_level):
