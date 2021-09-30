@@ -154,7 +154,7 @@ def detailed_logger() -> Logger:
     if os.environ.get("ACCEPTANCE_TEST_DOCKER_CONTAINER"):
         LOG_DIR = os.path.join("/test_input", LOG_DIR)
     run(["mkdir", "-p", LOG_DIR])
-    filename = os.environ["PYTEST_CURRENT_TEST"].split("/")[-1].replace(" (setup)", "") + ".txt"
+    filename = os.environ["PYTEST_CURRENT_TEST"].split("/")[-1].replace(" (setup)", "").replace(":", "_") + ".txt"
     filename = os.path.join(LOG_DIR, filename)
     formatter = logging.Formatter("%(message)s")
     logger = logging.getLogger(f"detailed_logger {filename}")
