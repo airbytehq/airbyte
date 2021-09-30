@@ -9,16 +9,23 @@ as a one-time bulk.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-secrets-migrationsbuild
+SUB_BUILD=PLATFORM ./gradlew :airbyte-secrets-migrations:build
 ```
 
 #### Build
-Build the connector image via Gradle:
+Build the image via Gradle:
 ```
-./gradlew :airbyte-secrets-migration:airbyteDocker
+SUB_BUILD=PLATFORM ./gradlew :airbyte-secrets-migration:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
+
+### Publish
+Publish the image to Docker hub:
+```
+docker login
+docker push airbyte/secrets-migration:dev
+```
 
 #### Run
 
