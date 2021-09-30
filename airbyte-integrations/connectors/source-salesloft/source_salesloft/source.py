@@ -32,6 +32,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 
 
 # Basic full refresh stream
@@ -134,17 +135,25 @@ class CadenceMemberships(IncrementalSalesloftStream):
 
 # Source
 class SourceSalesloft(AbstractSource):
+    def _create_authenticator(self, config):
+        return Oauth2Authenticator(
+            token_refresh_endpoint='https://accounts.salesloft.com/oauth/token',
+            client_id=config['client_id'],
+            client_secret=config['client_secret'],
+            refresh_token=config['refresh_token']
+        )
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            api_key = config['api_key']
-            response = requests.get('https://api.salesloft.com/v2/me.json', headers={'Authorization': f'Bearer {api_key}'})
+            access_token, _ = self._create_authenticator(config).refresh_access_token()
+            response = requests.get('https://api.salesloft.com/v2/me.json', headers={'Authorization': f'Bearer {access_token}'})
             response.raise_for_status()
             return True, None
         except Exception as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config['api_key'])  # Oauth2Authenticator is also available if you need oauth support
+        auth = self._create_authenticator(config)
         return [
             Cadences(authenticator=auth, **config),
             CadenceMemberships(authenticator=auth, **config),

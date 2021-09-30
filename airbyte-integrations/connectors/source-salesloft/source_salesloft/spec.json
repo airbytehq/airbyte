@@ -5,14 +5,25 @@
     "title": "Source Salesloft Spec",
     "type": "object",
     "required": [
-      "api_key",
+      "client_id",
+      "client_secret",
+      "refresh_token",
       "start_date"
     ],
     "additionalProperties": false,
     "properties": {
-      "api_key": {
+      "client_id": {
         "type": "string",
-        "description": "Salesloft API Key.",
+        "description": "Salesloft client id."
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Salesloft client secret.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "description": "Salesloft refresh token.",
         "airbyte_secret": true
       },
       "start_date": {
