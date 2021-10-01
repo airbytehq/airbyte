@@ -134,8 +134,7 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
   }
 
-  public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition)
-      throws JsonValidationException, IOException {
+  public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinition.getSourceDefinitionId().toString(),
