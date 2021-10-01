@@ -22,12 +22,11 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import org.jooq.SQLDialect;
-import org.testcontainers.containers.MySQLContainer;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.jooq.SQLDialect;
+import org.testcontainers.containers.MySQLContainer;
 
 public class MysqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -43,23 +42,23 @@ public class MysqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", container.getHost())
-            .put("port", container.getFirstMappedPort())
-            .put("database", container.getDatabaseName())
-            .put("username", container.getUsername())
-            .put("password", container.getPassword())
-            .put("replication_method", MySqlSource.ReplicationMethod.STANDARD)
-            .build());
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", container.getDatabaseName())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("replication_method", MySqlSource.ReplicationMethod.STANDARD)
+        .build());
 
     final Database database = Databases.createDatabase(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("database").asText()),
-            "com.mysql.cj.jdbc.Driver",
-            SQLDialect.MYSQL);
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
+        "com.mysql.cj.jdbc.Driver",
+        SQLDialect.MYSQL);
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -95,24 +94,24 @@ public class MysqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
-                                    Field.of("id", JsonSchemaPrimitive.NUMBER),
-                                    Field.of("name", JsonSchemaPrimitive.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
-                                    Field.of("id", JsonSchemaPrimitive.NUMBER),
-                                    Field.of("name", JsonSchemaPrimitive.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override

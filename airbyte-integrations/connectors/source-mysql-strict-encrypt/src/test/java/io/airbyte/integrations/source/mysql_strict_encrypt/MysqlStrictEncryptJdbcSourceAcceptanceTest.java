@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -17,21 +19,16 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MysqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -45,10 +42,10 @@ class MysqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @BeforeAll
   static void init() throws SQLException {
     container = new MySQLContainer<>("mysql:8.0")
-            .withUsername(TEST_USER)
-            .withPassword(TEST_PASSWORD)
-            .withEnv("MYSQL_ROOT_HOST", "%")
-            .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
+        .withUsername(TEST_USER)
+        .withPassword(TEST_PASSWORD)
+        .withEnv("MYSQL_ROOT_HOST", "%")
+        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
     final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
@@ -57,22 +54,22 @@ class MysqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", container.getHost())
-            .put("port", container.getFirstMappedPort())
-            .put("database", Strings.addRandomSuffix("db", "_", 10))
-            .put("username", TEST_USER)
-            .put("password", TEST_PASSWORD)
-            .build());
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", Strings.addRandomSuffix("db", "_", 10))
+        .put("username", TEST_USER)
+        .put("password", TEST_PASSWORD)
+        .build());
 
     database = Databases.createDatabase(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:mysql://%s:%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-                    config.get("host").asText(),
-                    config.get("port").asText()),
-            MySqlSource.DRIVER_CLASS,
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:mysql://%s:%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+            config.get("host").asText(),
+            config.get("port").asText()),
+        MySqlSource.DRIVER_CLASS,
 
-            SQLDialect.MYSQL);
+        SQLDialect.MYSQL);
 
     database.query(ctx -> {
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());
@@ -123,7 +120,8 @@ class MysqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected = SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+    final ConnectorSpecification expected =
+        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
 
