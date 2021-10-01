@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
     - name: airbyte-secrets-migration
-      image: airbyte/secrets-migration:dev
+      image: airbyte/secrets-migration:dev-5
       env:
         - name: DATABASE_PASSWORD
           valueFrom:
@@ -23,6 +23,16 @@ spec:
             secretKeyRef:
               name: dev-airbyte-secrets
               key: DATABASE_USER
+        - name: TEMPORAL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: dev-airbyte-secrets
+              key: TEMPORAL_HOST
+        - name: WORKSPACE_ROOT
+          valueFrom:
+            secretKeyRef:
+              name: dev-airbyte-secrets
+              key: WORKSPACE_ROOT
         - name: SECRET_PERSISTENCE
           value: GOOGLE_SECRET_MANAGER
         - name: SECRET_STORE_GCP_PROJECT_ID

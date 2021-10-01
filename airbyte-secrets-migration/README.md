@@ -24,7 +24,8 @@ the Dockerfile.
 Publish the image to Docker hub:
 ```
 docker login
-docker push airbyte/secrets-migration:dev
+docker tag airbyte/secrets-migration:dev airbyte/secrets-migration:dev-5
+docker push airbyte/secrets-migration:dev-5
 ```
 
 #### Run

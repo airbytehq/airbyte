@@ -10,8 +10,13 @@ application {
 
 dependencies {
     implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-scheduler:client')
+    implementation project(':airbyte-scheduler:persistence')
+    implementation project(':airbyte-server')
+    implementation project(':airbyte-workers')
     testImplementation project(':airbyte-json-validation')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation "org.testcontainers:postgresql:1.15.1"
