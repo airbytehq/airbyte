@@ -476,7 +476,8 @@ public class ConfigRepository {
                 throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
               }
 
-              final var connectionConfig = statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
+              final var connectionConfig =
+                  statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
 
               return source.withConfiguration(connectionConfig);
             });
