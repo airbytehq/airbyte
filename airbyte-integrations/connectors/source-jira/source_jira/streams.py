@@ -124,7 +124,7 @@ class V1ApiJiraStream(JiraStream, ABC):
 
 class IncrementalJiraStream(JiraStream, ABC):
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
 
@@ -273,6 +273,42 @@ class Epics(IncrementalJiraStream):
         return record
 
 
+class EpicIssues(IncrementalJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "issues"
+    top_level_stream = False
+
+    def __init__(self, start_date: str = "", **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+
+    def path(self, **kwargs) -> str:
+        return "search"
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
+        stream_state = stream_state or {}
+        epic_id = stream_slice["epic_id"]
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["fields"] = ["key", "updated"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"parent = {epic_id} or 'Epic Link' = {epic_id} and updated > '{issues_state_row}'"
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        epics_stream = Epics(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
+        for epic in epics_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"epic_id": epic["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["epicId"] = stream_slice["epic_id"]
+        return record
+
+
 class Filters(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
@@ -320,6 +356,10 @@ class Issues(IncrementalJiraStream):
     cursor_field = "updated"
     parse_response_root = "issues"
 
+    def __init__(self, additional_fields: List[str], **kwargs):
+        super().__init__(**kwargs)
+        self._additional_fields = additional_fields
+
     def path(self, **kwargs) -> str:
         return "search"
 
@@ -327,16 +367,23 @@ class Issues(IncrementalJiraStream):
         stream_state = stream_state or {}
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
+        params["fields"] = stream_slice["fields"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
         params["jql"] = f"project = '{project_id}' and updated > '{issues_state_row}'"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
+        field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
+        fields = ["attachment", "issuelinks", "security", "issuetype", "updated"]
+        additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
+        for name in additional_field_names + self._additional_fields:
+            if name in field_ids_by_name:
+                fields.append(field_ids_by_name[name])
+        projects_stream = Projects(**stream_args)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"], "fields": fields}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
@@ -368,6 +415,9 @@ class IssueFields(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "field"
+
+    def field_ids_by_name(self) -> Mapping[str, str]:
+        return {f["name"]: f["id"] for f in self.read_records(sync_mode=SyncMode.full_refresh)}
 
 
 class IssueFieldConfigurations(JiraStream):
