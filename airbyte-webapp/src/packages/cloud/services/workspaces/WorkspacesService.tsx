@@ -95,19 +95,23 @@ export function useRemoveWorkspace() {
   );
 }
 
-export function useGetWorkspace(workspaceId: string) {
+export function useGetWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return useQuery(["workspace", workspaceId], () => service.get(workspaceId), {
-    suspense: true,
-  });
+  return useQuery(
+    ["cloud_workspace", workspaceId],
+    () => service.get(workspaceId),
+    {
+      suspense: true,
+    }
+  ) as any;
 }
 
 export function useGetUsage(workspaceId: string) {
   const service = useGetWorkspaceService();
 
   return useQuery(
-    ["workspace", workspaceId],
+    ["cloud_workspace", workspaceId, "usage"],
     () => service.getUsage(workspaceId),
     {
       suspense: true,

@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
 
 import styled from "styled-components";
+import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 const Block = styled.div`
   background: ${({ theme }) => theme.darkBeigeColor};
@@ -25,12 +27,14 @@ const StarIcon = styled(FontAwesomeIcon)`
 `;
 
 const RemainingCredits: React.FC = () => {
+  const currentWorkspace = useCurrentWorkspace();
+  const { remainingCredits } = useGetWorkspace(currentWorkspace.workspaceId);
   return (
     <Block>
       <FormattedMessage id="credits.remainingCredits" />
       <Count>
         <StarIcon icon={faStar} />
-        <FormattedNumber value={2200} />
+        <FormattedNumber value={remainingCredits} />
       </Count>
     </Block>
   );

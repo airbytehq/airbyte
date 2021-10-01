@@ -20,6 +20,7 @@ import Destination from "views/layout/SideBar/components/DestinationIcon";
 import Onboarding from "views/layout/SideBar/components/OnboardingIcon";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import useWorkspace from "hooks/services/useWorkspace";
+import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 
 const Bar = styled.nav`
   width: 100px;
@@ -127,6 +128,7 @@ const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
   const config = useConfig();
   const { workspace } = useWorkspace();
+  const { remainingCredits } = useGetWorkspace(workspace.workspaceId);
 
   return (
     <Bar>
@@ -188,9 +190,9 @@ const SideBar: React.FC = () => {
         <li>
           <MenuItem to={Routes.Credits} activeClassName="active">
             <SettingsIcon icon={faStar} />
-            {/* TODO: fix text */}
             <Text>
               <FormattedMessage id="credits.credits" />
+              {remainingCredits}
             </Text>
           </MenuItem>
         </li>
