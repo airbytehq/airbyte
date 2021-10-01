@@ -14,11 +14,9 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.apache.kafka.clients.admin.*;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -26,6 +24,12 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -53,7 +57,9 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
       .put("client_dns_lookup", "use_all_dns_ips")
       .put("enable_auto_commit", false)
       .put("group_id", "groupid")
+      .put("repeated_calls", 3)
       .put("protocol", protocolConfig)
+      .put("auto_offset_reset", "earliest")
       .build());
   }
 
@@ -66,7 +72,7 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
     sendEvent();
   }
 
-  private void sendEvent() {
+  private void sendEvent() throws ExecutionException, InterruptedException {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
       .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
       .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
@@ -81,7 +87,7 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
       if (exception != null) {
         throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
       }
-    });
+    }).get();
   }
 
   private void createTopic() throws Exception {
