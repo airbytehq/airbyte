@@ -47,6 +47,9 @@ export enum Routes {
 
 const MainViewRoutes = () => {
   const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
 
   return (
     <MainView>
@@ -72,10 +75,10 @@ const MainViewRoutes = () => {
               <OnboardingPage />
             </Route>
           )}
-          <Route exact path={Routes.Root}>
+          <Route exact path={Routes.Source}>
             <SourcesPage />
           </Route>
-          <Redirect to={Routes.Root} />
+          <Redirect to={mainRedirect} />
         </Switch>
       </Suspense>
     </MainView>
