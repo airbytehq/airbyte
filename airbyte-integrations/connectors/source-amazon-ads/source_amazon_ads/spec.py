@@ -2,10 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from pydantic import BaseModel, Field
 from typing import List
 
+from pydantic import BaseModel, Field
 from source_amazon_ads.constants import AmazonAdsRegion
+
 
 class AmazonAdsConfig(BaseModel):
     class Config:
@@ -44,11 +45,7 @@ class AmazonAdsConfig(BaseModel):
         examples=["2022-10-10", "2022-10-22"],
     )
 
-    region: AmazonAdsRegion = Field(
-        name="Region",
-        description="Region to pull data from (EU/NA/FE/SANDBOX)",
-        default=AmazonAdsRegion.NA
-    )
+    region: AmazonAdsRegion = Field(name="Region", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA)
 
     profiles: List[int] = Field(
         None,
@@ -63,4 +60,10 @@ class AmazonAdsConfig(BaseModel):
         # environment for SAT but dont want it to be visible for end users,
         # filter out it from the jsonschema output
         schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
+        # Transform pydantic generated enum for region
+        schema["definitions"]["AmazonAdsRegion"].pop("description")
+        schema["properties"]["region"].update(schema["definitions"]["AmazonAdsRegion"])
+        schema["properties"]["region"].pop("allOf", None)
+        schema["properties"]["region"].pop("$ref", None)
+        del schema["definitions"]
         return schema
