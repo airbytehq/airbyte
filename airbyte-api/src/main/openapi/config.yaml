@@ -1557,6 +1557,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthCheckRead"
+      # This route is unsecured for external monitoring.
+      security: []
   /v1/logs/get:
     post:
       tags:
