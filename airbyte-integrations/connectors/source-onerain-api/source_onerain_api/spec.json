@@ -109,7 +109,7 @@
                     "type":"string",
                     "description":"end of the device reading time period (yyyy-mm-dd hh:mm:ss)"
                 },
-                "timezone": {"$ref":"#/definitions/tmezone"},
+                "timezone": {"$ref":"#/definitions/timezone"},
                 "class": {"$ref": "#/definitions/class"}
             }
         }]
