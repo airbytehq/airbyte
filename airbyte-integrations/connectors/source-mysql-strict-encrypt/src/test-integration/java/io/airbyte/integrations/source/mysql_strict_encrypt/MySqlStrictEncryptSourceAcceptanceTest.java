@@ -28,6 +28,8 @@ import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+
 public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
@@ -53,10 +55,11 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+        String.format("jdbc:mysql://%s:%s/%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()),
+            config.get("database").asText(),
+            String.join("&", SSL_PARAMETERS)),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL);
 

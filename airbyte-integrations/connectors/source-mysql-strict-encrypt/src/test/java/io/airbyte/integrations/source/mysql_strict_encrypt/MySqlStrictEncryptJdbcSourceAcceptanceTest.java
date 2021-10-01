@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,9 +65,10 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+        String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
-            config.get("port").asText()),
+            config.get("port").asText(),
+            String.join("&", SSL_PARAMETERS)),
         MySqlSource.DRIVER_CLASS,
 
         SQLDialect.MYSQL);
