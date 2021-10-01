@@ -174,7 +174,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return configs.entrySet().stream().map(entry -> {
         AirbyteConfig configType = entry.getKey();
         return entry.getValue()
-            .map(configObject -> insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName()))
+            .map(configObject -> {
+              final var configJson = Jsons.jsonNode(configObject);
+              System.out.println("configType.name() = " + configType.name());
+              System.out.println("configType.getIdFieldName() = " + configType.getIdFieldName());
+              System.out.println("(configJson != null) = " + (configJson != null));
+              System.out.println("configJson.isObject() = " + configJson.isObject());
+              System.out.println("Jsons.keys(configJson) = " + Jsons.keys(configJson));
+              return insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
+            })
             .reduce(0, Integer::sum);
       }).reduce(0, Integer::sum);
     });

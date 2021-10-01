@@ -83,10 +83,9 @@ public class SecretsMigration {
     LOGGER.info("destinationCount = " + destinationCount.get());
     LOGGER.info("otherCount = " + otherCount.get());
 
-    // LOGGER.info("... With dryRun=" + dryRun + ": deserializing configurations and writing to the new
-    // store...");
-    // configurations = readFrom.dumpConfigs();
-    // writeTo.replaceAllConfigsDeserializing(configurations, dryRun);
+     LOGGER.info("... With dryRun=" + dryRun + ": deserializing configurations and writing to the new store...");
+     configurations = readFrom.dumpConfigs();
+     writeTo.replaceAllConfigsDeserializing(configurations, dryRun);
 
     LOGGER.info("Migration run complete.");
   }

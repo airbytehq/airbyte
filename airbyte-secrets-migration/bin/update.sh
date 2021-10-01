@@ -21,4 +21,4 @@ while read -r var1 && read -r var2; do
 
      gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$var1"/"$var2"/spec.json
 
-done < <(echo "airbyte/destination-keen" && echo "0.1.0")
+done < <(echo "airbyte/destination-databricks" && echo "0.1.0")
