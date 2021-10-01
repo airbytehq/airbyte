@@ -41,6 +41,7 @@ import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
 import useWorkspace from "../../hooks/services/useWorkspace";
+import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -57,6 +58,7 @@ export enum Routes {
   Settings = "/settings",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
   SelectWorkspace = "/workspaces",
   Configuration = "/configuration",
@@ -78,6 +80,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   useGetWorkspace(currentWorkspaceId);
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -153,10 +158,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
           <OnboardingPage />
         </Route>
       )}
-      <Route exact path={Routes.Root}>
-        <SourcesPage />
-      </Route>
-      <Redirect to={Routes.Connections} />
+      <Redirect to={mainRedirect} />
     </Switch>
   );
 };
@@ -167,20 +169,27 @@ const MainViewRoutes = () => {
 
   return (
     <>
-      {currentWorkspaceId ? (
-        <MainView>
-          <Suspense fallback={<LoadingPage />}>
-            <MainRoutes currentWorkspaceId={currentWorkspaceId} />
-          </Suspense>
-        </MainView>
-      ) : (
-        <Switch>
-          <Route exact path={Routes.SelectWorkspace}>
-            <WorkspacesPage />
-          </Route>
-          <Redirect to={Routes.SelectWorkspace} />
-        </Switch>
-      )}
+      <Switch>
+        <Route path={Routes.AuthFlow}>
+          <CompleteOauthRequest />
+        </Route>
+        <Route>
+          {currentWorkspaceId ? (
+            <MainView>
+              <Suspense fallback={<LoadingPage />}>
+                <MainRoutes currentWorkspaceId={currentWorkspaceId} />
+              </Suspense>
+            </MainView>
+          ) : (
+            <Switch>
+              <Route exact path={Routes.SelectWorkspace}>
+                <WorkspacesPage />
+              </Route>
+              <Redirect to={Routes.SelectWorkspace} />
+            </Switch>
+          )}
+        </Route>
+      </Switch>
     </>
   );
 };

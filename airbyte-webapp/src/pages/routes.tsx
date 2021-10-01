@@ -41,17 +41,21 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
 }
 
 const MainViewRoutes = () => {
   const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
 
   return (
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
-          <Route path="/auth_flow">
+          <Route path={Routes.AuthFlow}>
             <CompleteOauthRequest />
           </Route>
           <Route path={Routes.Destination}>
@@ -71,10 +75,10 @@ const MainViewRoutes = () => {
               <OnboardingPage />
             </Route>
           )}
-          <Route exact path={Routes.Root}>
+          <Route exact path={Routes.Source}>
             <SourcesPage />
           </Route>
-          <Redirect to={Routes.Root} />
+          <Redirect to={mainRedirect} />
         </Switch>
       </Suspense>
     </MainView>
