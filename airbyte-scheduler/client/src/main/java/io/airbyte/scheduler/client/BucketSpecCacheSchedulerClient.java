@@ -70,19 +70,19 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
 
   @Override
   public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage) throws IOException {
-    LOGGER.debug("getting spec!");
+    LOGGER.info("getting spec!");
     Optional<ConnectorSpecification> cachedSpecOptional;
     // never want to fail because we could not fetch from off board storage.
     try {
       cachedSpecOptional = bucketSpecFetcher.apply(dockerImage);
-      LOGGER.debug("Spec bucket cache: Call to cache did not fail.");
+      LOGGER.info("Spec bucket cache: Call to cache did not fail.");
     } catch (final RuntimeException e) {
       cachedSpecOptional = Optional.empty();
-      LOGGER.debug("Spec bucket cache: Call to cache failed.");
+      LOGGER.info("Spec bucket cache: Call to cache failed.");
     }
 
     if (cachedSpecOptional.isPresent()) {
-      LOGGER.debug("Spec bucket cache: Cache hit.");
+      LOGGER.info("Spec bucket cache: Cache hit.");
       final long now = Instant.now().toEpochMilli();
       final SynchronousJobMetadata mockMetadata = new SynchronousJobMetadata(
           UUID.randomUUID(),
@@ -94,7 +94,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
           Path.of(""));
       return new SynchronousResponse<>(cachedSpecOptional.get(), mockMetadata);
     } else {
-      LOGGER.debug("Spec bucket cache: Cache miss.");
+      LOGGER.info("Spec bucket cache: Cache miss.");
       return client.createGetSpecJob(dockerImage);
     }
   }

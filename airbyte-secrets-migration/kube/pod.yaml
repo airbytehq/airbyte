@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
     - name: airbyte-secrets-migration
-      image: airbyte/secrets-migration:dev-5
+      image: airbyte/secrets-migration:dev-18
       env:
         - name: DATABASE_PASSWORD
           valueFrom:

@@ -159,6 +159,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   @Override
   public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
     if (dryRun) {
+      for (Entry<AirbyteConfig, Stream<?>> entry : configs.entrySet()) {
+        System.out.println("dry run entry " + entry.getKey().name() + ": " + entry.getValue().collect(Collectors.toSet()).size());
+      }
       return;
     }
 

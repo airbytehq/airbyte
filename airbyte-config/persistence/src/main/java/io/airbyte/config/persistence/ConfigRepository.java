@@ -424,6 +424,11 @@ public class ConfigRepository {
       deserialized.put(ConfigSchema.valueOf(configSchemaName),
           configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
     }
+
+    for (AirbyteConfig airbyteConfig : deserialized.keySet()) {
+      System.out.println("deserialized airbyteConfig key = " + airbyteConfig);
+    }
+
     return deserialized;
   }
 
@@ -452,8 +457,8 @@ public class ConfigRepository {
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
       final List<StandardDestinationDefinition> destinationDefs =
-          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
-      augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, destinationDefs.stream());
+          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
+      augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
           .stream()
           .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
@@ -467,7 +472,7 @@ public class ConfigRepository {
             .map(config -> {
               final SourceConnection source = (SourceConnection) config;
 
-              if (sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
+              if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
                 throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
               }
 
@@ -481,16 +486,18 @@ public class ConfigRepository {
             .map(config -> {
               final DestinationConnection destination = (DestinationConnection) config;
 
-              if (destinationDefIdToSpec.containsKey(destination.getDestinationId())) {
+              if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
                 throw new RuntimeException(
                     new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
               }
 
               return statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
-                  sourceDefIdToSpec.get(destination.getDestinationDefinitionId()));
+                      destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
             });
         augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
       }
+
+      persistence.replaceAllConfigs(augmentedMap, dryRun);
     } else {
       persistence.replaceAllConfigs(configs, dryRun);
     }
@@ -498,6 +505,11 @@ public class ConfigRepository {
 
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
     final var map = new HashMap<>(persistence.dumpConfigs());
+
+    for (String key : map.keySet()) {
+      System.out.println("ConfigRepo dumpConfigs key = " + key);
+    }
+
     final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
     final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
 

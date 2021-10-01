@@ -73,13 +73,14 @@ public class SecretsMigration {
                 Class<Object> className = ConfigSchema.valueOf(configSchemaName).getClassName();
                 Object object = Jsons.object(configJson, className);
 
-                if(object instanceof SourceConnection) {
+                if(className.getSimpleName().equals("SourceConnection")) {
                   LOGGER.info("SOURCE_CONNECTION " + ((SourceConnection) object).getSourceId());
                   sourceCount.incrementAndGet();
-                } else if (object instanceof DestinationConnection){
+                } else if (className.getSimpleName().equals("DestinationConnection")){
                   LOGGER.info("DESTINATION_CONNECTION " + ((DestinationConnection) object).getDestinationId());
                   destinationCount.incrementAndGet();
                 } else {
+                  LOGGER.info("className.getSimpleName(): " + className.getSimpleName());
                   otherCount.incrementAndGet();
                 }
               }));
@@ -119,11 +120,8 @@ public class SecretsMigration {
     final ConfigRepository writeToConfigRepository =
             new ConfigRepository(dbPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-    final DefaultSynchronousSchedulerClient syncSchedulerClient =
-            new DefaultSynchronousSchedulerClient(temporalClient, null, null);
     final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
-            new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
+            new BucketSpecCacheSchedulerClient(new FakeSyncSchedulerClient(), configs.getSpecCacheBucket());
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
 

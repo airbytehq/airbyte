@@ -9,7 +9,7 @@ as a one-time bulk.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-SUB_BUILD=PLATFORM ./gradlew :airbyte-secrets-migrations:build
+SUB_BUILD=PLATFORM ./gradlew :airbyte-secrets-migration:build -x test
 ```
 
 #### Build
@@ -24,8 +24,8 @@ the Dockerfile.
 Publish the image to Docker hub:
 ```
 docker login
-docker tag airbyte/secrets-migration:dev airbyte/secrets-migration:dev-5
-docker push airbyte/secrets-migration:dev-5
+docker tag airbyte/secrets-migration:dev airbyte/secrets-migration:dev-18
+docker push airbyte/secrets-migration:dev-18
 ```
 
 #### Run
