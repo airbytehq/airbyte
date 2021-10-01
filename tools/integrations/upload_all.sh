@@ -21,4 +21,4 @@ while read -r var1 && read -r var2; do
 
     gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$var1"/"$var2"/spec.json
 
-done < <(cat ./airbyte-config/init/src/main/resources/seed/source_definitions.yaml ./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml | grep -v https | grep docker | cut -d":" -f 2- | head -n 2)
+done < <(cat ./airbyte-config/init/src/main/resources/seed/source_definitions.yaml ./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml | grep -v https | grep docker | cut -d":" -f 2- )
