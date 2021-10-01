@@ -77,7 +77,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
    */
   private Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
-      "airbyte/source-google-workspace-admin-reports");
+      "airbyte/source-google-workspace-admin-reports", "airbyte/source-kafka");
 
   /**
    * Specification for integration. Will be passed to integration where appropriate in each test.

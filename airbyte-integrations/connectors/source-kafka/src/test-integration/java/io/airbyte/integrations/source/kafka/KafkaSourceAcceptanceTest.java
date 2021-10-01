@@ -14,11 +14,22 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.connect.json.JsonSerializer;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -34,19 +45,56 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    ObjectNode stubProtocolConfig = mapper.createObjectNode();
-    stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
+    ObjectNode protocolConfig = mapper.createObjectNode();
+    ObjectNode subscriptionConfig = mapper.createObjectNode();
+    protocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
+    subscriptionConfig.put("subscription_type", "subscribe");
+    subscriptionConfig.put("topic_pattern", TOPIC_NAME);
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", KAFKA.getBootstrapServers())
-        .put("topic_pattern", TOPIC_NAME)
-        .build());
+      .put("bootstrap_servers", KAFKA.getBootstrapServers())
+      .put("subscription", subscriptionConfig)
+      .put("client_dns_lookup", "use_all_dns_ips")
+      .put("enable_auto_commit", false)
+      .put("group_id", "groupid")
+      .put("repeated_calls", 3)
+      .put("protocol", protocolConfig)
+      .put("auto_offset_reset", "earliest")
+      .build());
   }
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
     KAFKA.start();
+
+    createTopic();
+    sendEvent();
+  }
+
+  private void sendEvent() throws ExecutionException, InterruptedException {
+    final Map<String, Object> props = ImmutableMap.<String, Object>builder()
+      .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
+      .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
+      .put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
+      .build();
+    KafkaProducer<String, JsonNode> producer = new KafkaProducer<>(props);
+
+    ObjectNode event = mapper.createObjectNode();
+    event.put("test", "value");
+
+    producer.send(new ProducerRecord<>(TOPIC_NAME, event), (recordMetadata, exception) -> {
+      if (exception != null) {
+        throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
+      }
+    }).get();
+  }
+
+  private void createTopic() throws Exception {
+    try (var admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
+      NewTopic topic = new NewTopic(TOPIC_NAME, 1, (short) 1);
+      admin.createTopics(Collections.singletonList(topic)).all().get();
+    }
   }
 
   @Override
@@ -61,10 +109,9 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(
-        TOPIC_NAME,
-        null,
-        Field.of("value", JsonSchemaPrimitive.STRING));
+    ConfiguredAirbyteStream streams = CatalogHelpers.createConfiguredAirbyteStream(TOPIC_NAME, null, Field.of("value", JsonSchemaPrimitive.STRING));
+    streams.setSyncMode(SyncMode.FULL_REFRESH);
+    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(streams));
   }
 
   @Override
