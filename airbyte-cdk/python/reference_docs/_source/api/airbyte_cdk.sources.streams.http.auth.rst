@@ -5,7 +5,7 @@ Submodules
 ----------
 
 airbyte\_cdk.sources.streams.http.auth.core module
----------------------------------------------------
+--------------------------------------------------
 
 .. automodule:: airbyte_cdk.sources.streams.http.auth.core
    :members:

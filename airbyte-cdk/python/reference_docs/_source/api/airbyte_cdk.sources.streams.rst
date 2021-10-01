@@ -1,5 +1,5 @@
 airbyte\_cdk.sources.streams package
-=====================================
+====================================
 
 Subpackages
 -----------
@@ -13,7 +13,7 @@ Submodules
 ----------
 
 airbyte\_cdk.sources.streams.core module
------------------------------------------
+----------------------------------------
 
 .. automodule:: airbyte_cdk.sources.streams.core
    :members:

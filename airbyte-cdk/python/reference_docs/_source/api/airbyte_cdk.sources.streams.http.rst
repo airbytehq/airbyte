@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    airbyte_cdk.sources.streams.http.auth
+   airbyte_cdk.sources.streams.http.requests_native_auth
 
 Submodules
 ----------

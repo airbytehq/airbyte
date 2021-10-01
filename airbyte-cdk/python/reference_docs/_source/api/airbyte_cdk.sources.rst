@@ -1,5 +1,5 @@
 airbyte\_cdk.sources package
-================================
+============================
 
 Subpackages
 -----------
@@ -24,7 +24,7 @@ airbyte\_cdk.sources.abstract\_source module
    :show-inheritance:
 
 airbyte\_cdk.sources.source module
-------------------------------------------
+----------------------------------
 
 .. automodule:: airbyte_cdk.sources.source
    :members:

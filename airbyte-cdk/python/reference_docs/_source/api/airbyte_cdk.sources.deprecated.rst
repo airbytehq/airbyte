@@ -1,11 +1,11 @@
 airbyte\_cdk.sources.deprecated package
-========================================
+=======================================
 
 Submodules
 ----------
 
 airbyte\_cdk.sources.deprecated.base\_source module
--------------------------------------------------------
+---------------------------------------------------
 
 .. automodule:: airbyte_cdk.sources.deprecated.base_source
    :members:
@@ -13,9 +13,17 @@ airbyte\_cdk.sources.deprecated.base\_source module
    :show-inheritance:
 
 airbyte\_cdk.sources.deprecated.client module
--------------------------------------------------
+---------------------------------------------
 
 .. automodule:: airbyte_cdk.sources.deprecated.client
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: airbyte_cdk.sources.deprecated
    :members:
    :undoc-members:
    :show-inheritance:

@@ -14,6 +14,14 @@ Subpackages
 Submodules
 ----------
 
+airbyte\_cdk.connector module
+-----------------------------
+
+.. automodule:: airbyte_cdk.connector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 airbyte\_cdk.entrypoint module
 ------------------------------
 
@@ -26,14 +34,6 @@ airbyte\_cdk.logger module
 --------------------------
 
 .. automodule:: airbyte_cdk.logger
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-airbyte\_cdk.connector module
------------------------------------
-
-.. automodule:: airbyte_cdk.connector
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,5 +1,5 @@
 airbyte\_cdk.sources.singer package
-=====================================
+===================================
 
 Submodules
 ----------
@@ -13,7 +13,7 @@ airbyte\_cdk.sources.singer.singer\_helpers module
    :show-inheritance:
 
 airbyte\_cdk.sources.singer.source module
-------------------------------------------
+-----------------------------------------
 
 .. automodule:: airbyte_cdk.sources.singer.source
    :members:
