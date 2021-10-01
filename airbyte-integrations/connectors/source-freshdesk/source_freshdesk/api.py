@@ -66,7 +66,7 @@ class API:
 
         self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
-        self._start_date = start_date
+        self._start_date = pendulum.parse(start_date)
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -124,10 +124,6 @@ class API:
         """Consume call credit, if there is no credit left within current window will sleep til next period"""
         if self._call_credit:
             self._call_credit.consume(credit)
-
-    @property
-    def start_date(self):
-        return self._start_date
 
 
 class StreamAPI(ABC):
@@ -282,6 +278,13 @@ class SurveysAPI(ClientIncrementalStreamAPI):
 class TicketsAPI(IncrementalStreamAPI):
     call_credit = 3  # each include consumes 2 additional credits
 
+    def _state_params(self) -> Mapping[str, Any]:
+        """Build query parameters responsible for current state"""
+        params = super(TicketsAPI, self)._state_params()
+        if not params and self._api._start_date:
+            params["updated_since"] = self._api._start_date
+        return params
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         params = {"include": "description"}
@@ -333,10 +336,7 @@ class TicketsAPI(IncrementalStreamAPI):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter, patched to respect current state"""
         params = params or {}
-        state_params = self._state_params()
-        if not state_params and self._api.start_date:
-            params["updated_since"] = pendulum.parse(self._api.start_date)
-        params = {**params, **state_params}
+        params = {**params, **self._state_params()}
         latest_cursor = None
         for record in self.get_tickets(self.result_return_limit, getter, params):
             cursor = pendulum.parse(record[self.state_pk])
