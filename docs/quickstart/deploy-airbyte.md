@@ -1,6 +1,6 @@
-# Deploy Airbyte
+# Deploy Airbyte Open-Source
 
-Deploying Airbyte just takes two steps.
+Deploying Airbyte Open-Source just takes two steps.
 
 1. Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
 
@@ -16,7 +16,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000]
 
 ## FAQ
 
-If you have any questions about the Airbyte setup and deployment process, head over to our [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse that answers the following questions and more:
+If you have any questions about the Airbyte Open-Source setup and deployment process, head over to our [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse that answers the following questions and more:
 
 - How long does it take to set up Airbyte?
 - Where can I see my data once I've run a sync?
