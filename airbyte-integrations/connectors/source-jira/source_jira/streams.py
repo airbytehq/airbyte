@@ -137,13 +137,15 @@ class IncrementalJiraStream(JiraStream, ABC):
         """
         pass
 
-    @abstractmethod
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent
-        state object and returning an updated state object.
-        """
-        return {}
+        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
+        if current_stream_state:
+            current_stream_state = current_stream_state.get(self.cursor_field)
+            if current_stream_state:
+                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
+        else:
+            return {self.cursor_field: str(latest_record_date)}
+
 
 
 class ApplicationRoles(JiraStream):
@@ -219,15 +221,6 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
         params["jql"] = f"updated > '{issues_state_row}'"
         return params
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
-        if current_stream_state:
-            current_stream_state = current_stream_state.get(self.cursor_field)
-            if current_stream_state:
-                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
-        else:
-            return {self.cursor_field: str(latest_record_date)}
-
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -247,6 +240,37 @@ class Dashboards(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "dashboard"
+
+
+class Epics(IncrementalJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "issues"
+
+    def path(self, **kwargs) -> str:
+        return "search"
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
+        stream_state = stream_state or {}
+        project_id = stream_slice["project_id"]
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["fields"] = ["summary", "description", "status", "updated"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"issuetype = 'Epic' and project = '{project_id}' and updated > '{issues_state_row}'"
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = stream_slice["project_id"]
+        return record
 
 
 class Filters(JiraStream):
@@ -308,15 +332,6 @@ class Issues(IncrementalJiraStream):
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
         params["jql"] = f"project = '{project_id}' and updated > '{issues_state_row}'"
         return params
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
-        if current_stream_state:
-            current_stream_state = current_stream_state.get(self.cursor_field)
-            if current_stream_state:
-                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
-        else:
-            return {self.cursor_field: str(latest_record_date)}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -858,15 +873,6 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
         params["jql"] = f"updated > '{issues_state_row}'"
         return params
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
-        if current_stream_state:
-            current_stream_state = current_stream_state.get(self.cursor_field)
-            if current_stream_state:
-                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
-        else:
-            return {self.cursor_field: str(latest_record_date)}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         sprints_stream = Sprints(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
