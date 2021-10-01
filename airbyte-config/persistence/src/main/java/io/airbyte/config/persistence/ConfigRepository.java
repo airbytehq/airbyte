@@ -39,8 +39,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigRepository {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
 
   private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
@@ -130,12 +134,19 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
   }
 
-  public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition)
-      throws JsonValidationException, IOException {
+  public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinition.getSourceDefinitionId().toString(),
         sourceDefinition);
+  }
+
+  public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete source definition with id: {}, but it does not exist", sourceDefId);
+    }
   }
 
   public List<StandardSourceDefinition> listStandardSources() throws JsonValidationException, IOException {
@@ -180,6 +191,14 @@ public class ConfigRepository {
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destinationDefinition.getDestinationDefinitionId().toString(),
         destinationDefinition);
+  }
+
+  public void deleteStandardDestinationDefinition(final UUID destDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", destDefId);
+    }
   }
 
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
