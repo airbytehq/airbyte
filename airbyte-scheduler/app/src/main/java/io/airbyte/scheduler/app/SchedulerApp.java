@@ -142,6 +142,22 @@ public class SchedulerApp {
         CLEANING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
 
+    Executors.newSingleThreadScheduledExecutor().submit(() -> {
+      MDC.setContextMap(mdc);
+      while (true) {
+        LOGGER.info("==== test metrics");
+        MetricSingleton.incrementCounter("test_davin_counter", 1, "test counter");
+        MetricSingleton.setGauge("test_davin_gauge", 1, "test gauge");
+        MetricSingleton.recordTime("test_davin_histogram", new Random().nextInt(10), "test timer");
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          LOGGER.error("===== POOP", e);
+          e.printStackTrace();
+        }
+      }
+    });
+
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
         scheduleJobsPool, executeJobsPool, cleanupJobsPool));
   }
@@ -186,7 +202,7 @@ public class SchedulerApp {
 
     // Wait for the server to initialize the database and run migration
     waitForServer(configs);
-
+    LOGGER.info("====== blaaaaaah");
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
@@ -221,22 +237,6 @@ public class SchedulerApp {
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
     MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc);
-    LOGGER.info("======= new stuff");
-    Executors.newSingleThreadScheduledExecutor().submit(() -> {
-      MDC.setContextMap(mdc);
-      while (true) {
-        LOGGER.info("==== test metrics");
-        LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
-        MetricSingleton.incrementCounter("test_davin_counter", 1);
-        MetricSingleton.setGauge("test_davin_gauge", 1);
-        MetricSingleton.recordTime("test_davin_histogram", new Random().nextInt(10));
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-    });
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)

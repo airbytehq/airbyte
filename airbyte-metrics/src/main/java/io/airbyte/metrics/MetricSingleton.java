@@ -5,7 +5,6 @@
 package io.airbyte.metrics;
 
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.helpers.LogClientSingleton;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
@@ -45,20 +44,14 @@ public class MetricSingleton {
    * @param name of gauge
    * @param val to set
    */
-  public static void setGauge(String name, double val) {
-    ifPublish(() -> {
-      if (nameToGauge.containsKey(name)) {
-        LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
-      }
-
-      LOGGER.info("setting gauge, name: {}, time: {}", name, val);
-
+  public static void setGauge(String name, double val, String description) {
+    checkDescriptionExist(description, () -> ifPublish(() -> {
       if (!nameToGauge.containsKey(name)) {
-        Gauge gauge = Gauge.build().name(name).help("").register();
+        Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
       }
       nameToGauge.get(name).set(val);
-    });
+    }));
   }
 
   /**
@@ -67,18 +60,18 @@ public class MetricSingleton {
    * @param name of gauge
    * @param val to increment
    */
-  public static void incrementGauge(String name, double val) {
-    ifPublish(() -> {
+  public static void incrementGauge(String name, double val, String description) {
+    checkDescriptionExist(description, () -> ifPublish(() -> {
       if (nameToGauge.containsKey(name)) {
         LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
       }
 
       if (!nameToGauge.containsKey(name)) {
-        Gauge gauge = Gauge.build().name(name).help("").register();
+        Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
       }
       nameToGauge.get(name).inc(val);
-    });
+    }));
   }
 
   /**
@@ -87,18 +80,14 @@ public class MetricSingleton {
    * @param name of gauge
    * @param val to decrement
    */
-  public static void decrementGauge(String name, double val) {
-    ifPublish(() -> {
-      if (nameToGauge.containsKey(name)) {
-        LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
-      }
-
+  public static void decrementGauge(String name, double val, String description) {
+    checkDescriptionExist(description, () -> ifPublish(() -> {
       if (!nameToGauge.containsKey(name)) {
-        Gauge gauge = Gauge.build().name(name).help("").register();
+        Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
       }
       nameToGauge.get(name).dec(val);
-    });
+    }));
   }
 
   // Counter - Monotonically Increasing. See
@@ -109,20 +98,15 @@ public class MetricSingleton {
    * @param name of counter
    * @param amt to increment
    */
-  public static void incrementCounter(String name, double amt) {
-    ifPublish(() -> {
-      if (nameToCounter.containsKey(name)) {
-        LOGGER.warn("Overriding existing metric, type: Counter, name: {}", name);
-      }
-
-      LOGGER.info("incrementing counter, name: {}, time: {}", name, amt);
-
+  public static void incrementCounter(String name, double amt, String description) {
+    checkDescriptionExist(description, () -> ifPublish(() -> {
       if (!nameToCounter.containsKey(name)) {
-        Counter counter = Counter.build().name(name).help("").register();
+        Counter counter = Counter.build().name(name).help(description).register();
         nameToCounter.put(name, counter);
       }
+
       nameToCounter.get(name).inc(amt);
-    });
+    }));
   }
 
   // Histogram. See
@@ -134,19 +118,15 @@ public class MetricSingleton {
    * @param runnable to time
    * @return duration of code execution.
    */
-  public static double timeCode(String name, Runnable runnable) {
+  public static double timeCode(String name, Runnable runnable, String description) {
     var duration = new AtomicReference<>(0.0);
-    ifPublish(() -> {
-      if (nameToHistogram.containsKey(name)) {
-        LOGGER.warn("Overriding existing metric, type: Histogram, name: {}", name);
-      }
-
+    checkDescriptionExist(description, () -> ifPublish(() -> {
       if (!nameToHistogram.containsKey(name)) {
-        Histogram hist = Histogram.build().name(name).help("").register();
+        Histogram hist = Histogram.build().name(name).help(description).register();
         nameToHistogram.put(name, hist);
       }
       duration.set(nameToHistogram.get(name).time(runnable));
-    });
+    }));
     return duration.get();
   }
 
@@ -156,12 +136,8 @@ public class MetricSingleton {
    * @param name of the underlying histogram.
    * @param time to be recorded.
    */
-  public static void recordTime(String name, double time) {
-    ifPublish(() -> {
-      if (nameToHistogram.containsKey(name)) {
-        LOGGER.warn("Overriding existing metric, type: Histogram, name: {}", name);
-      }
-
+  public static void recordTime(String name, double time, String description) {
+    checkDescriptionExist(description, () -> ifPublish(() -> {
       LOGGER.info("publishing record time, name: {}, time: {}", name, time);
 
       if (!nameToHistogram.containsKey(name)) {
@@ -169,13 +145,20 @@ public class MetricSingleton {
         nameToHistogram.put(name, hist);
       }
       nameToHistogram.get(name).observe(time);
-    });
+    }));
   }
 
   private static void ifPublish(Runnable execute) {
     if (PUBLISH) {
       execute.run();
     }
+  }
+
+  private static void checkDescriptionExist(String description, Runnable execute) {
+    if (description.isBlank()) {
+      throw new RuntimeException("Counter description cannot be blank.");
+    }
+    execute.run();
   }
 
   /**
