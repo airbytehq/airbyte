@@ -25,13 +25,18 @@
       "projects": {
         "type": "string",
         "examples": ["PROJ1"],
-        "description": "Space-delimited list of Jira project keys to replicate data for"
+        "description": "Comma-separated list of Jira project keys to replicate data for"
       },
       "start_date": {
         "type": "string",
         "description": "The date from which you'd like to replicate data for Jira in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only in the following incremental streams: issues.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "additional_fields": {
+        "type": "string",
+        "description": "Comma-separated list of additional fields to include in replicating issues",
+        "examples": ["Field A, Field B"]
       }
     }
   }

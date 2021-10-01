@@ -19,6 +19,7 @@ from .streams import (
     BoardIssues,
     Dashboards,
     Epics,
+    EpicIssues,
     Filters,
     FilterSharing,
     Groups,
@@ -70,10 +71,15 @@ from .streams import (
 class SourceJira(AbstractSource):
     @staticmethod
     def _generate_projects(config: Mapping[str, Any]) -> List[str]:
-        projects = list(filter(None, config["projects"].split(" ")))
+        projects = list(filter(None, config["projects"].split(",")))
         if not projects:
             raise Exception("Must provide a list of project keys")
         return list(set(projects))
+
+    @staticmethod
+    def _generate_additional_fields(config: Mapping[str, Any]) -> List[str]:
+        fields = list(filter(None, config.get("additional_fields", "").split(",")))
+        return list(set(fields))
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
@@ -107,6 +113,7 @@ class SourceJira(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
         projects = self._generate_projects(config)
+        additional_fields = self._generate_additional_fields(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": projects}
         incremental_args = {**args, "start_date": config["start_date"]}
         return [
@@ -116,10 +123,11 @@ class SourceJira(AbstractSource):
             BoardIssues(**incremental_args),
             Dashboards(**args),
             Epics(**incremental_args),
+            EpicIssues(**incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(**incremental_args),
+            Issues(**incremental_args, additional_fields=additional_fields),
             IssueComments(**args),
             IssueFields(**args),
             IssueFieldConfigurations(**args),
