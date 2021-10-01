@@ -10,10 +10,10 @@ import requests
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from pydantic import BaseModel, ValidationError
+from source_amazon_ads.constants import URL_MAPPING
 from source_amazon_ads.schemas import CatalogModel
 from source_amazon_ads.schemas.profile import Profile
 from source_amazon_ads.spec import AmazonAdsConfig
-from source_amazon_ads.constants import URL_MAPPING
 
 """
 This class hierarchy may seem overcomplicated so here is a visualization of
