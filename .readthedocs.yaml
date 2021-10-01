@@ -10,14 +10,11 @@ sphinx:
   builder: html
   configuration: airbyte-cdk/python/reference_docs/_source/conf.py
 
-submodules:
-  include:
-    - airbyte-cdk/python/reference_docs/_build
-  recursive: true
-
-# Optionally set the version of Python and requirements required to build your docs
+# Set the version of Python and requirements required to build your docs
 python:
   version: "3.7"
   install:
-    - method: setuptools
+    - method: pip
       path: airbyte-cdk/python
+      extra_requirements:
+        - sphinx-docs
