@@ -30,7 +30,7 @@
 | `webapp.image.repository`    | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`    | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
 | `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.30.3-alpha`   |
-| `webapp.podAnnotations`      | Add extra annotations to the scheduler pod                       | `{}`             |
+| `webapp.podAnnotations`      | Add extra annotations to the webapp pod(s)                       | `{}`             |
 | `webapp.service.type`        | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
 | `webapp.resources.limits`    | The resources limits for the Web container                       | `{}`             |
@@ -111,6 +111,35 @@
 | `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
 | `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
 | `server.log.level`                          | The log level to log at                                          | `INFO`           |
+
+
+### Worker Parameters
+
+| Name                                        | Description                                                      | Value            |
+| ------------------------------------------- | ---------------------------------------------------------------- | ---------------- |
+| `worker.replicaCount`                       | Number of worker replicas                                        | `1`              |
+| `worker.image.repository`                   | The repository to use for the airbyte worker image.              | `airbyte/worker` |
+| `worker.image.pullPolicy`                   | the pull policy to use for the airbyte worker image              | `IfNotPresent`   |
+| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.30.3-alpha`   |
+| `worker.podAnnotations`                     | Add extra annotations to the worker pod(s)                       | `{}`             |
+| `worker.livenessProbe.enabled`              | Enable livenessProbe on the worker                               | `true`           |
+| `worker.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
+| `worker.livenessProbe.periodSeconds`        | Period seconds for livenessProbe                                 | `10`             |
+| `worker.livenessProbe.timeoutSeconds`       | Timeout seconds for livenessProbe                                | `1`              |
+| `worker.livenessProbe.failureThreshold`     | Failure threshold for livenessProbe                              | `3`              |
+| `worker.livenessProbe.successThreshold`     | Success threshold for livenessProbe                              | `1`              |
+| `worker.readinessProbe.enabled`             | Enable readinessProbe on the worker                              | `true`           |
+| `worker.readinessProbe.initialDelaySeconds` | Initial delay seconds for readinessProbe                         | `10`             |
+| `worker.readinessProbe.periodSeconds`       | Period seconds for readinessProbe                                | `10`             |
+| `worker.readinessProbe.timeoutSeconds`      | Timeout seconds for readinessProbe                               | `1`              |
+| `worker.readinessProbe.failureThreshold`    | Failure threshold for readinessProbe                             | `3`              |
+| `worker.readinessProbe.successThreshold`    | Success threshold for readinessProbe                             | `1`              |
+| `worker.resources.limits`                   | The resources limits for the worker container                    | `{}`             |
+| `worker.resources.requests`                 | The requested resources for the worker container                 | `{}`             |
+| `worker.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
+| `worker.tolerations`                        | Tolerations for worker pod assignment.                           | `[]`             |
+| `worker.log.level`                          | The log level to log at.                                         | `INFO`           |
+| `worker.extraEnv`                           | Additional env vars for worker pod(s).                           | `[]`             |
 
 
 ### Temporal parameters
