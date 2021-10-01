@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -98,10 +78,11 @@ class PipedriveStream(HttpStream, ABC):
         """
         records = response.json().get(self.data_field) or []
         for record in records:
-            if record.get(self.data_field):
-                yield record.get(self.data_field)
-            else:
-                yield record
+            record = record.get(self.data_field) or record
+            if self.primary_key in record and record[self.primary_key] is None:
+                # Convert "id: null" fields to "id: 0" since id is primary key and SAT checks if it is not null.
+                record[self.primary_key] = 0
+            yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -136,6 +117,15 @@ class Activities(PipedriveStream):
 
 class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
+
+    primary_key = None
+
+
+class Organizations(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
 
 
 class Persons(PipedriveStream):

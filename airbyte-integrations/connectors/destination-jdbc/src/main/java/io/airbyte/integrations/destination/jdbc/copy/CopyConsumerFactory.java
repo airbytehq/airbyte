@@ -1,30 +1,9 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -37,8 +16,6 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,8 +71,7 @@ public class CopyConsumerFactory {
     for (var configuredStream : catalog.getStreams()) {
       var stream = configuredStream.getStream();
       var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var syncMode = configuredStream.getDestinationSyncMode();
-      var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, syncMode, stream, namingResolver, database, sqlOperations);
+      var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
 
       pairToCopier.put(pair, copier);
     }
@@ -111,14 +87,13 @@ public class CopyConsumerFactory {
                                                    SqlOperations sqlOperations,
                                                    Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
+      var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (AirbyteRecordMessage recordMessage : records) {
         var id = UUID.randomUUID();
-        var data = Jsons.serialize(recordMessage.getData());
-        if (sqlOperations.isValidData(data)) {
+        if (sqlOperations.isValidData(recordMessage.getData())) {
           // TODO Truncate json data instead of throwing whole record away?
           // or should we upload it into a special rejected record folder in s3 instead?
-          var emittedAt = Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()));
-          pairToCopier.get(pair).write(id, data, emittedAt);
+          pairToCopier.get(pair).write(id, recordMessage, fileName);
         } else {
           pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
         }

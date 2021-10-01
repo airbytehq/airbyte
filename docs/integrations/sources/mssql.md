@@ -10,19 +10,43 @@ The MSSQL source does not alter the schema present in your database. Depending o
 
 ### Data type mapping
 
-MSSQL data types are mapped to the following data types when synchronizing data:
+MSSQL data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MSSQL Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `bigint` | number |  |
-| `numeric` | number |  |
+| `binary` | string |  |
 | `bit` | boolean |  |
-| `smallint` | number |  |
+| `char` | string |  |
+| `date` | number |  |
+| `datetime` | string |  |
+| `datetime2` | string |  |
+| `datetimeoffset` | string |  |
 | `decimal` | number |  |
 | `int` | number |  |
-| `tinyint` | number |  |
 | `float` | number |  |
-| everything else | string |  |
+| `geography` | string |  |
+| `geometry` | string |  |
+| `money` | number |  |
+| `numeric` | number |  |
+| `ntext` | string |  |
+| `nvarchar` | string |  |
+| `nvarchar(max)` | string |  |
+| `real` | number |  |
+| `smalldatetime` | string |  |
+| `smallint` | number |  |
+| `smallmoney` | number |  |
+| `sql_variant` | string |  |
+| `uniqueidentifier` | string |  |
+| `text` | string |  |
+| `time` | string |  |
+| `tinyint` | number |  |
+| `varbinary` | string |  |
+| `varchar` | string |  |
+| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string |  |
+| `xml` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
@@ -171,7 +195,9 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
   -- we recommend 14400 minutes (10 days) as retention period
   EXEC sp_cdc_change_job @job_type='cleanup', @retention = {minutes}
 ```
+
 - After making this change, a restart of the cleanup job is required:
+
 ```text
   EXEC sys.sp_cdc_stop_job @job_type = 'cleanup';
   
@@ -180,21 +206,65 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 
 #### Ensuring the SQL Server Agent is running
 
-- MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for to CDC to work effectively. You can check the status of the SQL Server Agent as follows:
+- MSSQL uses the SQL Server Agent
+  to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs)
+  for CDC. It is therefore vital that the Agent is operational in order for to CDC to work effectively. You can check
+  the status of the SQL Server Agent as follows:
+
 ```text
   EXEC xp_servicecontrol 'QueryState', N'SQLServerAGENT';
 ```
-- If you see something other than 'Running.' please follow the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15) to start the service.
+
+- If you see something other than 'Running.' please follow
+  the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)
+  to start the service.
 
 #### Setting up CDC on managed versions of SQL Server
 
-We readily welcome [contributions to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) providing setup instructions. Please consider contributing to expand our docs!
+We readily welcome [contributions to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) providing setup
+instructions. Please consider contributing to expand our docs!
 
+## Connection to MSSQL via an SSH Tunnel
+
+Airbyte has the ability to connect to a MSSQL instance via an SSH Tunnel. The reason you might want to do this because
+it is not possible (or against security policy) to connect to the database directly (e.g. it does not have a public IP
+address).
+
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (a.k.a. a bastion sever)
+that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect
+directly to the server.
+
+Using this feature requires additional configuration, when creating the source. We will talk through what each piece of
+configuration means.
+
+1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
+2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an
+   SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
+   establishing the SSH Tunnel (see below for more information on generating this key).
+2. Choose `Password Authentication` if you will be using a password as your secret for establishing
+   the SSH Tunnel.
+3. `SSH Tunnel Jump Server Host` refers to the intermediate (bastion) server that Airbyte will connect to. This should
+   be a hostname or an IP Address.
+4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for
+   SSH connections is `22`, so unless you have explicitly changed something, go with the default.
+5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the
+   MSSQL username.
+6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the
+   password of the User from the previous step. If you are using `SSH Key Authentication` leave this
+   blank. Again, this is not the MSSQL password, but the password for the OS-user that Airbyte is
+   using to perform commands on the bastion.
+7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA
+   private Key that you are using to create the SSH connection. This should be the full contents of
+   the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
+   with `-----END RSA PRIVATE KEY-----`.
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.6   | 2021-09-17 | [6318](https://github.com/airbytehq/airbyte/pull/6318) | Added option to connect to DB via SSH |
+| 0.3.4   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator | 
 | 0.3.3   | 2021-07-05 | [4689](https://github.com/airbytehq/airbyte/pull/4689) | Add CDC support |
 | 0.3.2   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.3.1   | 2021-06-08 | [3893](https://github.com/airbytehq/airbyte/pull/3893) | Enable SSL connection |

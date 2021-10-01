@@ -1,35 +1,16 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
 
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.SpecFetcher;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,46 +25,42 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
   private final String targetVersion;
-  private final ConfigDumpExport configDumpExport;
-  private final ConfigDumpImport configDumpImport;
+  private final ConfigPersistence seedPersistence;
+  private final ConfigDumpExporter configDumpExporter;
+  private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
-  public RunMigration(String initialVersion,
-                      JobPersistence jobPersistence,
+  public RunMigration(JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       String targetVersion,
-                      Path latestSeeds) {
+                      ConfigPersistence seedPersistence,
+                      SpecFetcher specFetcher) {
     this.targetVersion = targetVersion;
-    this.configDumpExport = new ConfigDumpExport(configRepository, jobPersistence, initialVersion);
-    this.configDumpImport = new ConfigDumpImport(initialVersion, targetVersion, latestSeeds, jobPersistence, configRepository);
+    this.seedPersistence = seedPersistence;
+    this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
+    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null, specFetcher);
   }
 
   @Override
   public void run() {
     try {
       // Export data
-      File exportData = configDumpExport.dump();
+      File exportData = configDumpExporter.dump();
       filesToBeCleanedUp.add(exportData);
 
       // Define output target
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive_output");
-      final File output = Files.createTempFile(tempFolder, "airbyte_archive_output", ".tar.gz")
-          .toFile();
+      final File output = Files.createTempFile(tempFolder, "airbyte_archive_output", ".tar.gz").toFile();
       filesToBeCleanedUp.add(output);
       filesToBeCleanedUp.add(tempFolder.toFile());
 
       // Run Migration
-      MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(),
-          targetVersion);
+      MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImport.importData(output);
-      if (importRead.getStatus() == StatusEnum.FAILED) {
-        throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
-      }
-
-    } catch (IOException e) {
+      configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
+    } catch (IOException | JsonValidationException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
   }

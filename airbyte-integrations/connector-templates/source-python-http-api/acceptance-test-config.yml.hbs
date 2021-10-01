@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-{{dashCase name}}:dev
 tests:
@@ -8,13 +8,13 @@ tests:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
-      status: "exception"
+      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      validate_output_from_all_streams: yes
+      empty_streams: []
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #      expect_records:
 #        path: "integration_tests/expected_records.txt"

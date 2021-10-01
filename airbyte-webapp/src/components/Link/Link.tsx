@@ -8,11 +8,13 @@ import {
 export type ILinkProps = {
   bold?: boolean;
   $clear?: boolean;
+  $light?: boolean;
 };
 
 // TODO: fix typings
 const Link = styled(ReactLink)<ILinkProps /*& ReactLinkProps */>`
-  color: ${({ theme }) => theme.primaryColor};
+  color: ${({ theme, $light }) =>
+    $light ? theme.darkGreyColor : theme.primaryColor};
 
   font-weight: ${({ bold }) => (bold ? "bold" : "normal")};
   text-decoration: ${({ $clear }) => ($clear ? "none" : "underline")};

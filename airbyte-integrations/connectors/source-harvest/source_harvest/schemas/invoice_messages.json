@@ -34,11 +34,11 @@
     },
     "created_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "updated_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "attach_pdf": {
       "type": ["null", "boolean"]
@@ -47,14 +47,17 @@
       "type": ["null", "string"]
     },
     "recipients": {
-      "type": ["null", "object"],
-      "properties": {
-        "name": {
-          "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
         },
-        "email": {
-          "type": ["null", "string"]
-        }
+        "type": "object"
       }
     },
     "subject": {

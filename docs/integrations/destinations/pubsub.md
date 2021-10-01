@@ -28,6 +28,7 @@ The data will be a serialized JSON, containing the following fields
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | Yes |  |
 
 ## Getting started
@@ -86,4 +87,5 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.1 | August 13, 2021 | [#4699](https://github.com/airbytehq/airbyte/pull/4699)| Added json config validator | 
 | 0.1.0 | June 24, 2021 | [#4339](https://github.com/airbytehq/airbyte/pull/4339)| Initial release | 

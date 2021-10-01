@@ -3,6 +3,6 @@
   "name": "Plaid",
   "dockerRepository": "airbyte/source-plaid",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-plaid",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/plaid",
   "icon": "plaid.svg"
 }

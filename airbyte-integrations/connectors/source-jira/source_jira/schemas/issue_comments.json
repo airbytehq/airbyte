@@ -17,6 +17,7 @@
       "readOnly": true
     },
     "body": {
+      "type": "object",
       "description": "The comment text in [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/)."
     },
     "renderedBody": {
@@ -25,6 +26,8 @@
       "readOnly": true
     },
     "updateAuthor": {
+      "type": "object",
+      "additionalProperties": true,
       "description": "The ID of the user who updated the comment last.",
       "readOnly": true
     },
@@ -41,7 +44,20 @@
       "readOnly": true
     },
     "visibility": {
-      "description": "The group or role to which this comment is visible. Optional on create and update."
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Whether visibility of this item is restricted to a group or role.",
+          "enum": ["group", "role"]
+        },
+        "value": {
+          "type": "string",
+          "description": "The name of the group or role to which visibility of this item is restricted."
+        }
+      },
+      "additionalProperties": true,
+      "description": "The group or role to which this item is visible."
     },
     "jsdPublic": {
       "type": "boolean",

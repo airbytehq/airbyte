@@ -19,21 +19,18 @@ checkPlatformImages() {
 checkConnectorImages() {
   echo "Checking connector images exist..."
 
-  CONFIG_FILES=$(find airbyte-config/init | grep json | grep -v STANDARD_WORKSPACE | grep -v build)
-  [ -z "$CONFIG_FILES" ] && echo "ERROR: Could not find any config files." && exit 1
+  CONNECTOR_DEFINITIONS=$(grep "dockerRepository" -h -A1 airbyte-config/init/src/main/resources/seed/*.yaml | grep -v -- "^--$" | tr -d ' ')
+  [ -z "CONNECTOR_DEFINITIONS" ] && echo "ERROR: Could not find any connector definition." && exit 1
 
-  while IFS= read -r file; do
-      REPO=$(jq -r .dockerRepository < "$file")
-      TAG=$(jq -r .dockerImageTag < "$file")
-      echo "Checking $file..."
-      printf "\tREPO: %s\n" "$REPO"
-      printf "\tTAG: %s\n" "$TAG"
+  while IFS=":" read -r _ REPO; do
+      IFS=":" read -r _ TAG
+      printf "${REPO}: ${TAG}\n"
       if docker_tag_exists "$REPO" "$TAG"; then
           printf "\tSTATUS: found\n"
       else
           printf "\tERROR: not found!\n" && exit 1
       fi
-  done <<< "$CONFIG_FILES"
+  done <<< "${CONNECTOR_DEFINITIONS}"
 
   echo "Success! All connector images exist!"
 }

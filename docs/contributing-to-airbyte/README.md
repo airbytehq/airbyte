@@ -28,15 +28,15 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 It's easy to add your own connector to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing connectors in other languages.
 
-For sources, simply head over to our [Python CDK](./python/README.md).
+For sources, simply head over to our [Python CDK](../connector-development/cdk-python/README.md).
 
 {% hint style="info" %}
 The CDK currently does not support creating destinations, but it will very soon.
 {% endhint %}
 
-* See [Building new connectors](building-new-connector/) to get started.
-* Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](tutorials/building-a-python-source.md) and [Build Java Connectors](building-new-connector/java-connectors.md)
-* Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](building-new-connector/testing-connectors.md)
+* See [Building new connectors](../connector-development/README.md) to get started.
+* Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../connector-development/tutorials/building-a-python-source.md) and [Build Java Destination Connectors](../connector-development/tutorials/building-a-java-destination.md)
+* Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](../connector-development/testing-connectors/source-acceptance-tests-reference.md)
 
 **Please note that, at no point in time, we will ask you to maintain your connector.** The goal is that the Airbyte team and the community helps maintain the connector.
 
@@ -72,7 +72,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](./#review-process).
+Here are some details about [our review process](#review-process).
 
 ### **Upvoting issues, feature and connector requests**
 

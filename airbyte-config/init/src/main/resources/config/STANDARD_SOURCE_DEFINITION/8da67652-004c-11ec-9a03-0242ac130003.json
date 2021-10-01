@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "8da67652-004c-11ec-9a03-0242ac130003",
+  "name": "Trello",
+  "dockerRepository": "airbyte/source-trello",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/trello"
+}

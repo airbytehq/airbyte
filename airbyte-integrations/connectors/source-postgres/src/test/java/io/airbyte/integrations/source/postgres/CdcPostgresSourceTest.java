@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -58,9 +38,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-class CdcPostgresSourceTest extends CdcSourceTest {
+abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
@@ -71,6 +52,8 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   private PostgresSource source;
   private JsonNode config;
 
+  protected abstract String getPluginName();
+
   @AfterEach
   void tearDown() throws Exception {
     database.close();
@@ -79,7 +62,8 @@ class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
+    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -94,7 +78,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 
       return null;
@@ -103,10 +87,11 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     super.setup();
   }
 
-  private JsonNode getConfig(String dbName) {
+  private JsonNode getConfig(final String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
+        .put("plugin", getPluginName())
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -120,7 +105,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
         .build());
   }
 
-  private Database getDatabaseFromConfig(JsonNode config) {
+  private Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -133,14 +118,14 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Test
-  void testCheckWithoutPublication() throws SQLException {
+  void testCheckWithoutPublication() throws Exception {
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
   @Test
-  void testCheckWithoutReplicationSlot() throws SQLException {
+  void testCheckWithoutReplicationSlot() throws Exception {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 
@@ -168,14 +153,14 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void assertExpectedStateMessages(List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
   }
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
-    JdbcDatabase database = Databases.createJdbcDatabase(
+    final JdbcDatabase database = Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:postgresql://%s:%s/%s",
@@ -187,19 +172,19 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(JsonNode record) {
+  protected CdcTargetPosition extractPosition(final JsonNode record) {
     return new PostgresCdcTargetPosition(PgLsn.fromLong(record.get(CDC_LSN).asLong()));
   }
 
   @Override
-  protected void assertNullCdcMetaData(JsonNode data) {
+  protected void assertNullCdcMetaData(final JsonNode data) {
     assertNull(data.get(CDC_LSN));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
   }
 
   @Override
-  protected void assertCdcMetaData(JsonNode data, boolean deletedAtNull) {
+  protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
     assertNotNull(data.get(CDC_LSN));
     assertNotNull(data.get(CDC_UPDATED_AT));
     if (deletedAtNull) {
@@ -210,21 +195,22 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void removeCDCColumns(ObjectNode data) {
+  protected void removeCDCColumns(final ObjectNode data) {
     data.remove(CDC_LSN);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
   }
 
   @Override
-  protected void addCdcMetadataColumns(AirbyteStream stream) {
-    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+  protected void addCdcMetadataColumns(final AirbyteStream stream) {
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
+    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
     properties.set(CDC_LSN, numberType);
-    properties.set(CDC_UPDATED_AT, numberType);
-    properties.set(CDC_DELETED_AT, numberType);
+    properties.set(CDC_UPDATED_AT, stringType);
+    properties.set(CDC_DELETED_AT, stringType);
 
   }
 
@@ -244,7 +230,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public String createSchemaQuery(String schemaName) {
+  public String createSchemaQuery(final String schemaName) {
     return "CREATE SCHEMA " + schemaName + ";";
   }
 

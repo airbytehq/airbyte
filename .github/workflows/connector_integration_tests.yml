@@ -3,11 +3,12 @@ name: Connector Integration Tests
 on:
   workflow_dispatch:
   schedule:
-    # 5pm UTC is 10am PDT.
-    - cron: '0 17 * * *'
+    # 11am UTC is 4am PDT.
+    - cron: '0 11 * * *'
 
 jobs:
   launch_integration_tests:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:

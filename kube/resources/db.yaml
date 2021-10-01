@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: airbyte-db-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 5432
       protocol: TCP

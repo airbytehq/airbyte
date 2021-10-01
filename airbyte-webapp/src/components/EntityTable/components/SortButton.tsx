@@ -9,14 +9,16 @@ import { Button } from "components";
 const SortButtonView = styled(Button)<{ wasActive?: boolean }>`
   min-width: 18px;
   font-size: 11px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
+  line-height: 12px;
   opacity: ${({ wasActive }) => (wasActive ? 1 : 0.4)};
   pointer-events: all;
   background: none;
   border: none;
+  color: inherit;
+  padding: 0;
 
   &:hover {
-    color: ${({ theme }) => theme.darkPrimaryColor};
+    color: inherit;
   }
 `;
 

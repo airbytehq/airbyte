@@ -1,0 +1,124 @@
+{
+  "streams": [
+    {
+      "name": "StreamWithoutCursors",
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "StringTypeStream1",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "StringTypeStream2",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": "varchar"
+          }
+        }
+      }
+    },
+    {
+      "name": "StringTypeStream3",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": "time"
+          }
+        }
+      }
+    },
+    {
+      "name": "NumberTypeStream1",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "name": "NumberTypeStream2",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "ArrayTypeStream1",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    {
+      "name": "ArrayTypeStream2",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": [null, "integer"]
+          }
+        }
+      }
+    },
+    {
+      "name": "ArrayTypeStream3",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "type": ["anything", "integer", "anything"]
+          }
+        }
+      }
+    },
+    {
+      "name": "NestedCursorStream",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1", "inside"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "inside": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<discounts type="array">
+    <discount>
+        <amount>2.00</amount>
+        <created-at type="datetime">2021-08-10T12:43:41Z</created-at>
+        <description>This is test discount</description>
+        <id>dissscount</id>
+        <kind>discount</kind>
+        <merchant-id>v4h2qqxh3krhq7p3</merchant-id>
+        <name>test discount</name>
+        <never-expires type="boolean">true</never-expires>
+        <number-of-billing-cycles nil="true"/>
+        <updated-at type="datetime">2021-08-10T12:43:41Z</updated-at>
+    </discount>
+</discounts>

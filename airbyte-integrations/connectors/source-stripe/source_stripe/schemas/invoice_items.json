@@ -108,7 +108,7 @@
           "type": ["null", "number"]
         },
         "start": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         }
       }
     },
@@ -150,10 +150,6 @@
     },
     "subscription_item": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

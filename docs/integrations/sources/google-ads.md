@@ -1,7 +1,7 @@
 # Google Ads
 
 {% hint style="warning" %}
-If you don't already have a developer token from Google Ads, make sure you follow the [instructions](google-ads.md#how-to-apply-for-the-developer-token) so your request doesn't get denied.
+If you don't already have a developer token from Google Ads, make sure you follow the [instructions](#how-to-apply-for-the-developer-token) so your request doesn't get denied.
 {% endhint %}
 
 ## Sync overview
@@ -12,8 +12,18 @@ This source can sync data for the [Google Ads](https://developers.google.com/goo
 
 This source is capable of syncing the following streams:
 
-* [ad_group_ad_report](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+*Main streams*:
+* [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
+* [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+* [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
+* [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
 
+*Report streams*
+* [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
+* [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
+* [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
+* [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
+* [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 
 ### Features
 
@@ -41,6 +51,7 @@ Google Ads Account with an approved Developer Token \(note: In order to get API 
 * refresh_token
 * start_date
 * customer_id
+* login_customer_id (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
 
 ### Setup guide
 
@@ -49,7 +60,7 @@ This guide will provide information as if starting from scratch. Please skip ove
 * Create an Google Ads Account. Here are [Google's instruction](https://support.google.com/google-ads/answer/6366720) on how to create one.
 * Create an Google Ads MANAGER Account. Here are [Google's instruction](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
 * You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
-* Apply for a developer token \(**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token)\) on your Manager account.  This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
+* Apply for a developer token \(**make sure you follow our** [**instructions**](#how-to-apply-for-the-developer-token)\) on your Manager account.  This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
 * Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
 * Select your `customer_id`. The `customer_is` refer to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in google ads ui. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
@@ -76,5 +87,15 @@ The Google Ads Query Language can query the Google Ads API. Check out [Google Ad
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.2` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |
+| `0.1.11` | 2021-09-22 | [#6373](https://github.com/airbytehq/airbyte/pull/6373) | Fix inconsistent segments.date field type across all streams |
+| `0.1.10` | 2021-09-13 | [#6022](https://github.com/airbytehq/airbyte/pull/6022) | Annotate Oauth2 flow initialization parameters in connector spec |
+| `0.1.9` | 2021-09-07 | [#5302](https://github.com/airbytehq/airbyte/pull/5302) | Add custom query stream support |
+| `0.1.8` | 2021-08-03 | [#5509](https://github.com/airbytehq/airbyte/pull/5509) | allow additionalProperties in spec.json |
+| `0.1.7` | 2021-08-03 | [#5422](https://github.com/airbytehq/airbyte/pull/5422) | Correct query to not skip dates |
+| `0.1.6` | 2021-08-03 | [#5423](https://github.com/airbytehq/airbyte/pull/5423) | Added new stream UserLocationReport |
+| `0.1.5` | 2021-08-03 | [#5159](https://github.com/airbytehq/airbyte/pull/5159) | Add field `login_customer_id` to spec |
+| `0.1.4` | 2021-07-28 | [#4962](https://github.com/airbytehq/airbyte/pull/4962) | Support new Report streams |
+| `0.1.3` | 2021-07-23 | [#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
+| `0.1.2` | 2021-07-06 | [#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | `0.1.1` | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters ` |

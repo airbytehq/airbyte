@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -44,10 +24,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,12 +37,10 @@ public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private List<Integer> openPorts;
-  private List<Integer> openWorkerPorts;
   private int heartbeatPort;
   private String heartbeatUrl;
   private ApiClient officialClient;
   private KubernetesClient fabricClient;
-  private BlockingQueue<Integer> workerPorts;
   private KubeProcessFactory processFactory;
 
   private static WorkerHeartbeatServer server;
@@ -71,14 +48,14 @@ public class KubePodProcessIntegrationTest {
   @BeforeEach
   public void setup() throws Exception {
     openPorts = new ArrayList<>(getOpenPorts(5));
-    openWorkerPorts = openPorts.subList(1, openPorts.size() - 1);
+    KubePortManagerSingleton.setWorkerPorts(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
-    workerPorts = new LinkedBlockingDeque<>(openWorkerPorts);
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, workerPorts);
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost());
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
@@ -92,50 +69,74 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
     process.waitFor();
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
+    assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testSuccessfulSpawningWithQuotes() throws Exception {
+    // start a finite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
+    var output = new String(process.getInputStream().readAllBytes());
+    assertEquals("h\"i\nhi2\n", output);
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi | cat");
     process.waitFor();
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("exit 10");
     process.waitFor();
 
     // the pod should be dead with the correct error code
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(10, process.exitValue());
   }
 
   @Test
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
-    final Process process = getProcess("ksaiiiasdfjklaslkei");
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final Process process = getProcess(null);
     process.waitFor();
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(127, process.exitValue());
   }
 
   @Test
   public void testKillingWithoutHeartbeat() throws Exception {
     // start an infinite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
 
     // kill the heartbeat server
@@ -146,6 +147,7 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertNotEquals(0, process.exitValue());
   }
 
@@ -173,7 +175,7 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
   }
 
   private static Set<Integer> getOpenPorts(int count) {

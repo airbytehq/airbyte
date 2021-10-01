@@ -1,239 +1,71 @@
 import React from "react";
-import { DropdownList } from "react-widgets";
-import { useIntl } from "react-intl";
-import styled from "styled-components";
+import { Props } from "react-select";
+import { SelectComponentsConfig } from "react-select/src/components";
 
-import "react-widgets/dist/css/react-widgets.css";
+import DropdownIndicator from "./components/DropdownIndicator";
+import Menu from "./components/Menu";
+import SingleValue from "./components/SingleValue";
+import Option, { IDataItem } from "./components/Option";
 
-import ListItem, { IDataItem } from "./components/ListItem";
-import ValueInput from "./components/ValueInput";
-import WithButtonItem from "./components/WithButtonItem";
-import GroupHeader from "./components/GroupHeader";
+import { equal, naturalComparatorBy } from "utils/objects";
+import { SelectContainer } from "./SelectContainer";
+import { CustomSelect } from "./CustomSelect";
 
-type DropdownProps = {
-  className?: string;
-  hasFilter?: boolean;
-  fullText?: boolean;
-  filterPlaceholder?: string;
+export type OptionType = any;
+type DropdownProps = Props<OptionType> & {
   withBorder?: boolean;
+  fullText?: boolean;
   error?: boolean;
-  name?: string;
+};
 
-  withButton?: boolean;
-  textButton?: string;
-} & DropdownList.DropdownListProps;
+const DropDown: React.FC<DropdownProps> = (props) => {
+  const propsComponents = props.components;
 
-const StyledDropdownList = styled(DropdownList)<{
-  $withBorder?: boolean;
-  $error?: boolean;
-}>`
-  text-align: left;
+  const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
+    () =>
+      ({
+        DropdownIndicator,
+        SelectContainer,
+        Menu,
+        Option,
+        SingleValue,
+        IndicatorSeparator: null,
+        ClearIndicator: null,
+        MultiValueRemove: null,
+        ...(propsComponents ?? {}),
+      } as any),
+    [propsComponents]
+  );
 
-  &.rw-state-disabled {
-    pointer-events: none;
-    cursor: auto;
-
-    & .rw-btn {
-      opacity: 0;
-    }
-
-    & .rw-placeholder,
-    & .rw-input {
-      color: ${({ theme }) => theme.greyColor40};
-    }
-  }
-
-  & > .rw-widget-container {
-    height: ${({ $withBorder }) => ($withBorder ? 31 : 36)}px;
-    box-shadow: none;
-    border: 1px solid
-      ${({ theme, $withBorder, $error }) =>
-        $error
-          ? theme.dangerColor
-          : $withBorder
-          ? theme.greyColor30
-          : theme.greyColor0};
-    background: ${({ theme }) => theme.greyColor0};
-    border-radius: 4px;
-
-    &:hover {
-      border-color: ${({ theme, $error }) =>
-        $error ? theme.dangerColor : theme.greyColor20};
-      background: ${({ theme }) => theme.greyColor20};
-    }
-  }
-
-  & .rw-btn {
-    color: ${({ theme }) => theme.greyColor40};
-  }
-
-  & .rw-filter-input {
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
-    padding: 10px 16px;
-    width: 100%;
-  }
-
-  & .rw-placeholder {
-    color: ${({ theme }) => theme.textColor};
-  }
-
-  & .rw-popup {
-    border: 0.5px solid ${({ theme }) => theme.greyColor20};
-    border-radius: 4px;
-    box-shadow: 0 8px 10px 0 rgba(11, 10, 26, 0.04),
-      0 3px 14px 0 rgba(11, 10, 26, 0.08), 0 5px 5px 0 rgba(11, 10, 26, 0.12);
-  }
-
-  & .rw-list-option.rw-state-focus,
-  & .rw-list-option,
-  & .rw-list-empty {
-    color: ${({ theme }) => theme.textColor};
-    border: none;
-    padding: 10px 16px;
-    font-size: 14px;
-    line-height: 19px;
-  }
-
-  & .rw-input {
-    color: ${({ theme }) => theme.textColor};
-  }
-
-  & .rw-list-option:hover {
-    background: ${({ theme }) => theme.greyColor20};
-  }
-
-  & .rw-list-option.rw-state-selected {
-    background: ${({ theme }) => theme.primaryColor12};
-    color: ${({ theme }) => theme.primaryColor};
-    pointer-events: none;
-  }
-
-  &.rw-state-focus {
-    & > .rw-widget-container {
-      border: 1px solid ${({ theme }) => theme.primaryColor};
-      box-shadow: none;
-      background: ${({ theme }) => theme.primaryColor12};
-    }
-
-    & .rw-btn {
-      color: ${({ theme }) => theme.primaryColor};
-    }
-  }
-
-  & > .rw-popup-container {
-    min-width: 260px;
-    z-index: 9;
-
-    & .rw-select {
-      display: none;
-    }
-
-    & .rw-list-optgroup {
-      width: 100%;
-      padding: 0;
-      border: none;
-    }
-  }
-
-  & .withButton,
-  &.rw-state-focus .withButton {
-    border: 1px solid ${(props) => props.theme.primaryColor};
-    outline: none;
-    border-radius: 4px;
-    padding: 5px 10px 6px;
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 15px;
-    text-align: center;
-    letter-spacing: 0.03em;
-    cursor: pointer;
-    color: ${(props) => props.theme.whiteColor};
-    background: ${(props) => props.theme.primaryColor};
-    text-decoration: none;
-    min-width: 130px;
-    height: 28px;
-
-    &:hover {
-      box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2),
-        0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
-      background: ${(props) => props.theme.primaryColor};
-      border: 1px solid ${(props) => props.theme.primaryColor};
-    }
-
-    & .rw-input,
-    & .rw-placeholder {
-      padding: 0;
-      color: ${(props) => props.theme.whiteColor};
-    }
-
-    & .rw-select {
-      display: none;
-    }
-
-    & ~ .rw-popup-container {
-      min-width: 260px;
-      left: auto;
-    }
-  }
-`;
-
-const DropDown: React.FC<DropdownProps> = ({
-  hasFilter,
-  fullText,
-  filterPlaceholder,
-  withButton,
-  withBorder,
-  error,
-  textButton,
-  className,
-  name,
-  ...props
-}) => {
-  const formatMessage = useIntl().formatMessage;
-
-  const containerClassName = [
-    className,
-    props.containerClassName,
-    withButton ? "withButton" : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const currentValue = props.isMulti
+    ? props.options?.filter((op) =>
+        props.value.find((o: OptionType) => equal(o, op.value))
+      )
+    : props.options?.find((op) => equal(op.value, props.value));
 
   return (
-    <StyledDropdownList
-      data-testid={name}
-      $error={error}
-      $withBorder={withBorder}
-      filter={hasFilter ? "contains" : false}
-      placeholder={withButton ? textButton : props.placeholder || "..."}
-      messages={{
-        filterPlaceholder: filterPlaceholder || "",
-        emptyFilter: formatMessage({
-          id: "form.noResult",
-        }),
-      }}
-      valueComponent={({ item }: { item?: IDataItem }) =>
-        withButton ? (
-          <WithButtonItem text={textButton} />
-        ) : (
-          <ValueInput item={item} />
-        )
-      }
-      itemComponent={({ item }) => (
-        <ListItem {...item} item={item} fullText={fullText} />
-      )}
-      textField="text"
-      valueField="value"
-      groupComponent={GroupHeader}
+    <CustomSelect
+      data-testid={props.name}
+      $error={props.error}
+      className="react-select-container"
+      classNamePrefix="react-select"
+      menuPortalTarget={document.body}
+      placeholder="..."
+      isSearchable={false}
+      closeMenuOnSelect={!props.isMulti}
+      hideSelectedOptions={false}
+      styles={{ menuPortal: (base: any) => ({ ...base, zIndex: 9999 }) }}
       {...props}
-      containerClassName={containerClassName}
+      value={currentValue}
+      components={components}
     />
   );
 };
 
+const defaultDataItemSort = naturalComparatorBy<IDataItem>(
+  (dataItem) => dataItem.label || ""
+);
+
 export default DropDown;
-export { DropDown };
+export { DropDown, defaultDataItemSort };
 export type { DropdownProps };

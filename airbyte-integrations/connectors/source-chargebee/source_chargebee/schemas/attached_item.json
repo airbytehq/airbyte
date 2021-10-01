@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Attached Items",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "parent_item_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "item_id": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": ["recommended", "mandatory", "optional"]
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["active", "archived", "deleted"]
+    },
+    "quantity": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "quantity_in_decimal": {
+      "type": ["string", "null"],
+      "maxLength": 33
+    },
+    "billing_cycles": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "charge_on_event": {
+      "type": ["string", "null"],
+      "enum": [
+        "subscription_creation",
+        "subscription_trial_start",
+        "plan_activation",
+        "subscription_activation",
+        "contract_termination",
+        "on_demand"
+      ]
+    },
+    "charge_once": {
+      "type": ["boolean", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    }
+  }
+}

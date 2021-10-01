@@ -1,28 +1,8 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import copy
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -43,9 +23,16 @@ class SlackStream(HttpStream, ABC):
     primary_key = "id"
     page_size = 100
 
+    @property
+    def max_retries(self) -> int:
+        # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
+        return 20
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # Slack uses a cursor-based pagination strategy.
-        # Extract the cursor from the response if it exists and return it in a format that can be used to update request parameters
+        """Slack uses a cursor-based pagination strategy.
+        Extract the cursor from the response if it exists and return it in a format
+        that can be used to update request parameters"""
+
         json_response = response.json()
         next_cursor = json_response.get("response_metadata", {}).get("next_cursor")
         if next_cursor:
@@ -73,11 +60,17 @@ class SlackStream(HttpStream, ABC):
         yield from json_response.get(self.data_field, [])
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # This method is called if we run into the rate limit. Slack puts the retry time in the `Retry-After` response header so we
-        # we return that value. If the response is anything other than a 429 (e.g: 5XX) fall back on default retry behavior.
-        # https://api.slack.com/docs/rate-limits#web
-        if response.status_code == 429:
-            return int(response.headers.get("Retry-After", 0))
+        """This method is called if we run into the rate limit.
+        Slack puts the retry time in the `Retry-After` response header so we
+        we return that value. If the response is anything other than a 429 (e.g: 5XX)
+        fall back on default retry behavior.
+        Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
+
+        if "Retry-After" in response.headers:
+            return int(response.headers["Retry-After"])
+        else:
+            self.logger.info("Retry-after header not found. Using default backoff value")
+            return 5
 
     @property
     @abstractmethod
@@ -132,6 +125,7 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -
     Yields a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a pendulum.period
     """
+
     now = pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
@@ -147,7 +141,16 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def __init__(self, default_start_date: DateTime, **kwargs):
         self._start_ts = default_start_date.timestamp()
+        self.set_sub_primary_key()
         super().__init__(**kwargs)
+
+    def set_sub_primary_key(self):
+        if isinstance(self.primary_key, list):
+            for index, value in enumerate(self.primary_key):
+                setattr(self, f"sub_primary_key_{index + 1}", value)
+        else:
+            logger = AirbyteLogger()
+            logger.error("Failed during setting sub primary keys. Primary key should be list.")
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -156,8 +159,8 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            record[self.primary_key[0]] = stream_slice.get("channel", "")
-            record[self.cursor_field] = float(record[self.primary_key[1]])
+            record[self.sub_primary_key_1] = stream_slice.get("channel", "")
+            record[self.cursor_field] = float(record[self.sub_primary_key_2])
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -219,21 +222,38 @@ class Threads(IncrementalMessageStream):
 
         stream_state = stream_state or {}
         channels_stream = Channels(authenticator=self.authenticator)
+
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
-            # found in the state minus 7 days to pick up any new messages in threads.
+            # found in the state minus X days to pick up any new messages in threads.
             # If there is state always use lookback
             messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = pendulum.from_timestamp(self._start_ts)
+
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
+
         for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             self.logger.info(f"Syncing replies {message_chunk}")
+
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
+
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel["id"], self.cursor_field: message[self.primary_key]}
+                    yield {"channel": channel["id"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Filtering already readed records for incremental sync. Copied state value to X after the last sync
+        to really 100% make sure no one can edit the state during the run.
+        """
+
+        initial_state = copy.deepcopy(stream_state) or {}
+
+        for record in super().read_records(stream_state=stream_state, **kwargs):
+            if record.get(self.cursor_field, 0) >= initial_state.get(self.cursor_field, 0):
+                yield record
 
 
 class JoinChannelsStream(HttpStream):

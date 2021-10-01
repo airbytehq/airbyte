@@ -57,7 +57,7 @@ select
     _airbyte_partition_hashid,
     case when json_extract_path_text(_airbyte_nested_data, 'id', true) != '' then json_extract_path_text(_airbyte_nested_data, 'id', true) end as id,
     _airbyte_emitted_at
-from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
+from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid
 where double_array_data is not null
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
@@ -74,13 +74,13 @@ from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_pa
 
 -- SQL model to build a hash column based on the values of this record
 select
-    *,
     md5(cast(
     
     coalesce(cast(_airbyte_partition_hashid as varchar), '') || '-' || coalesce(cast(id as varchar), '')
 
- as varchar)) as _airbyte_double_array_data_hashid
-from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab2
+ as varchar)) as _airbyte_double_array_data_hashid,
+    tmp.*
+from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab2 tmp
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
 )-- Final base SQL model
 select

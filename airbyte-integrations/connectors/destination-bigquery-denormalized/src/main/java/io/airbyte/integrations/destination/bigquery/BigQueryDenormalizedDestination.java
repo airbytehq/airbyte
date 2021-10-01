@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -59,6 +39,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected static final String PROPERTIES_FIELD = "properties";
   protected static final String NESTED_ARRAY_FIELD = "value";
   private static final String TYPE_FIELD = "type";
+  private static final String FORMAT_FIELD = "format";
 
   @Override
   protected String getTargetTableName(String streamName) {
@@ -71,7 +52,9 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
                                                      Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                      ConfiguredAirbyteCatalog catalog,
-                                                     Consumer<AirbyteMessage> outputRecordCollector) {
+                                                     Consumer<AirbyteMessage> outputRecordCollector,
+                                                     boolean isGcsUploadingMode,
+                                                     boolean isKeepFilesInGcs) {
     return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
   }
 
@@ -117,7 +100,10 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             if (fieldDefinition.has("items")) {
               items = fieldDefinition.get("items");
             } else {
-              items = fieldDefinition;
+              LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+              // this is handler for case when we get "array" without "items"
+              // (https://github.com/airbytehq/airbyte/issues/5486)
+              items = getTypeStringSchema();
             }
             final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
             // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
@@ -149,7 +135,25 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
         }
       }
     }
+
+    // If a specific format is defined, use their specific type instead of the JSON's one
+    final JsonNode fieldFormat = fieldDefinition.get(FORMAT_FIELD);
+    if (fieldFormat != null) {
+      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
+      if (schemaFormat != null) {
+        builder.setType(schemaFormat.getBigQueryType());
+      }
+    }
+
     return builder;
+  }
+
+  private static JsonNode getTypeStringSchema() {
+    return Jsons.deserialize("{\n"
+        + "    \"type\": [\n"
+        + "      \"string\"\n"
+        + "    ]\n"
+        + "  }");
   }
 
   private static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {

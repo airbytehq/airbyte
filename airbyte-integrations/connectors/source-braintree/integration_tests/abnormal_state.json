@@ -1,0 +1,11 @@
+{
+  "customer_stream": {
+    "created_at": "2222"
+  },
+  "dispute_stream": {
+    "received_date": "2222"
+  },
+  "transaction_stream": {
+    "created_at": "2222"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["string"]
+    },
+    "boardId": {
+      "type": ["string"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "fullName": {
+      "type": ["null", "string"]
+    }
+  }
+}

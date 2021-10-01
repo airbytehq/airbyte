@@ -1,31 +1,13 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import os
+import random
 import socket
+import string
 import tempfile
 import uuid
 from pathlib import Path
@@ -42,6 +24,10 @@ from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import SSHException
 
 HERE = Path(__file__).parent.absolute()
+
+
+def random_char(length):
+    return "".join(random.choice(string.ascii_letters) for x in range(length))
 
 
 @pytest.fixture(scope="session")
@@ -196,7 +182,7 @@ def private_aws_file(aws_credentials, cloud_bucket_name, download_gcs_public_dat
 def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
     acc_url = f"https://{azblob_credentials['storage_account']}.blob.core.windows.net"
     azblob_client = BlobServiceClient(account_url=acc_url, credential=azblob_credentials["shared_key"])
-    container_name = cloud_bucket_name
+    container_name = cloud_bucket_name + random_char(3).lower()
     if public:
         container_name += "public"
     print(f"\nUpload dataset to private azure blob container {container_name}")

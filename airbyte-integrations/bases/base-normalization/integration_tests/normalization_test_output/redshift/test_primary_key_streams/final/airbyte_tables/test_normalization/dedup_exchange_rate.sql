@@ -11,6 +11,7 @@ select
     id,
     currency,
     date,
+    timestamp_col,
     "hkd@spéçiäl & characters",
     hkd_special___characters,
     nzd,
@@ -19,5 +20,5 @@ select
     _airbyte_dedup_exchange_rate_hashid
 from "integrationtests".test_normalization."dedup_exchange_rate_scd"
 -- dedup_exchange_rate from "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
-where _airbyte_active_row = True
+where _airbyte_active_row = 1
   );

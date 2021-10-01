@@ -66,10 +66,6 @@
     },
     "amount": {
       "type": ["null", "integer"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

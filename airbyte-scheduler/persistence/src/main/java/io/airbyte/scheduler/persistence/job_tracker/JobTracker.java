@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence.job_tracker;
@@ -47,6 +27,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
@@ -71,48 +52,58 @@ public class JobTracker {
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
+  private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
 
   public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence) {
-    this(configRepository, jobPersistence, TrackingClientSingleton.get());
+    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), TrackingClientSingleton.get());
   }
 
   @VisibleForTesting
-  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient) {
+  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
+    this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
   }
 
-  public void trackCheckConnectionSource(UUID jobId, UUID sourceDefinitionId, JobState jobState, StandardCheckConnectionOutput output) {
+  public void trackCheckConnectionSource(UUID jobId,
+                                         UUID sourceDefinitionId,
+                                         UUID workspaceId,
+                                         JobState jobState,
+                                         StandardCheckConnectionOutput output) {
     Exceptions.swallow(() -> {
       final ImmutableMap<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_SOURCE);
       final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(MoreMaps.merge(checkConnMetadata, jobMetadata, sourceDefMetadata, stateMetadata));
+      track(workspaceId, MoreMaps.merge(checkConnMetadata, jobMetadata, sourceDefMetadata, stateMetadata));
     });
   }
 
-  public void trackCheckConnectionDestination(UUID jobId, UUID destinationDefinitionId, JobState jobState, StandardCheckConnectionOutput output) {
+  public void trackCheckConnectionDestination(UUID jobId,
+                                              UUID destinationDefinitionId,
+                                              UUID workspaceId,
+                                              JobState jobState,
+                                              StandardCheckConnectionOutput output) {
     Exceptions.swallow(() -> {
       final ImmutableMap<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_DESTINATION);
       final ImmutableMap<String, Object> destinationDefinitionMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(MoreMaps.merge(checkConnMetadata, jobMetadata, destinationDefinitionMetadata, stateMetadata));
+      track(workspaceId, MoreMaps.merge(checkConnMetadata, jobMetadata, destinationDefinitionMetadata, stateMetadata));
     });
   }
 
-  public void trackDiscover(UUID jobId, UUID sourceDefinitionId, JobState jobState) {
+  public void trackDiscover(UUID jobId, UUID sourceDefinitionId, UUID workspaceId, JobState jobState) {
     Exceptions.swallow(() -> {
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.DISCOVER_SCHEMA);
       final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(MoreMaps.merge(jobMetadata, sourceDefMetadata, stateMetadata));
+      track(workspaceId, MoreMaps.merge(jobMetadata, sourceDefMetadata, stateMetadata));
     });
   }
 
@@ -135,14 +126,16 @@ public class JobTracker {
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
       final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(job.getConfig());
 
-      track(MoreMaps.merge(
-          jobMetadata,
-          jobAttemptMetadata,
-          sourceDefMetadata,
-          destinationDefMetadata,
-          syncMetadata,
-          stateMetadata,
-          syncConfigMetadata));
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId);
+      track(workspaceId,
+          MoreMaps.merge(
+              jobMetadata,
+              jobAttemptMetadata,
+              sourceDefMetadata,
+              destinationDefMetadata,
+              syncMetadata,
+              stateMetadata,
+              syncConfigMetadata));
     });
   }
 
@@ -276,8 +269,12 @@ public class JobTracker {
     }
   }
 
-  private void track(Map<String, Object> metadata) {
-    trackingClient.track(MESSAGE_NAME, metadata);
+  private void track(UUID workspaceId, Map<String, Object> metadata) {
+    // unfortunate but in the case of jobs that cannot be linked to a workspace there not a sensible way
+    // track it.
+    if (workspaceId != null) {
+      trackingClient.track(workspaceId, MESSAGE_NAME, metadata);
+    }
   }
 
 }

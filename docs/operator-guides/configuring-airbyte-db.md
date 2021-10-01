@@ -58,26 +58,11 @@ CONFIG_DATABASE_URL=jdbc:postgresql://<host>:<port>/<database>?<extra-parameters
 This step is only required when you setup Airbyte with a custom database for the first time.
 {% endhint %}
 
-If you provide an empty database to Airbyte and start Airbyte up for the first time, the server and scheduler services won't be able to start because there is no data in the database yet.
-
-For the Job Database, you need to make sure that the proper tables have been created by running the init SQL script [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql).
-
-You can replace:
-- "airbyte" with your actual "DATABASE_DB" value
-- "docker" with your actual "DATABASE_USER" value
-then run the SQL script to populate the database manually.
-
-For the Config Database, tables will be created automatically. But you should make sure that the database exists, and the user have full access to it.
-
-Now, when you run `docker-compose up`, the Airbyte server and scheduler should connect to the configured database successfully.
-
-## When upgrading Airbyte
-
-When updating Airbyte as described in [the upgrade process docs](upgrading-airbyte.md), scripts are also published in order to handle necessary migrations. These are introduced whenever we make changes to the data model.
-
-Those migration scripts work primarily with an archive file to be updated. Once the archive is ready, the scripts assume that they are being applied on top of an empty database afterward, but with tables already created with the correct schema. They will re-populate and re-import whatever was saved in the upgraded archive back into the database.
-
-Thus, if you deploy Airbyte using an external database, you might need to flush and perform updates to the table schemas by deleting them and re-initializing them as described previously (using the latest `schema.sql` script). This step is implicitly done on the default Docker Postgres database when running `docker-compose down -v` or when deleting Docker volumes).
+If you provide an empty database to Airbyte and start Airbyte up for the first time, the server will automatically create the relevant tables in your database, and copy the data. Please make sure:
+* The database exists in the server.
+* The user has both read and write permissions to the database.
+* The database is empty.
+  * If the database is not empty, and has a table that shares the same name as one of the Airbyte tables, the server will assume that the database has been initialized, and will not copy the data over, resulting in server failure. If you run into this issue, just wipe out the database, and launch the server again.
 
 ## Accessing the default database located in docker airbyte-db
 In extraordinary circumstances while using the default `airbyte-db` Postgres database, if a developer wants to access the data that tracks jobs, they can do so with the following instructions.
@@ -96,3 +81,5 @@ The following command will allow you to access the database instance using `psql
 ```shell
 docker exec -ti airbyte-db psql -U docker -d airbyte
 ```
+
+To access the configuration files for sources, destinations, and connections that have been added, simply query the `airbyte-configs` table.

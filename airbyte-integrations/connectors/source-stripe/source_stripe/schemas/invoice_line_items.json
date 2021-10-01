@@ -42,7 +42,7 @@
       "type": ["null", "object"],
       "properties": {
         "start": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "end": {
           "type": ["null", "number"]

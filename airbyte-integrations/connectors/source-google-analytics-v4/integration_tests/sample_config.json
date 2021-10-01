@@ -1,0 +1,6 @@
+{
+  "view_id": "id",
+  "start_date": "start_date",
+  "window_in_days": 1,
+  "custom_reports": "custom_reports"
+}

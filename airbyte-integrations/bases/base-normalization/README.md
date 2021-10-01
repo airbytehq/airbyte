@@ -2,8 +2,8 @@
 
 Related documentation on normalization is available here:
 
-- [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
-* [tutorials / Custom dbt normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
+- [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
+* [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
 
 # Testing normalization
 
@@ -55,6 +55,7 @@ allowed characters, if quotes are needed or not, and the length limitations:
 - [redshift](../../../docs/integrations/destinations/redshift.md)
 - [snowflake](../../../docs/integrations/destinations/snowflake.md)
 - [mysql](../../../docs/integrations/destinations/mysql.md)
+- [oracle](../../../docs/integrations/destinations/oracle.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
 - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
@@ -232,7 +233,7 @@ Generally, to invoke standard destination tests, you run with gradle using:
 
     ./gradlew :airbyte-integrations:connectors:destination-<connector name>:integrationTest
 
-For more details and options, you can also refer to the [testing connectors docs](../../../docs/contributing-to-airbyte/building-new-connector/testing-connectors.md).
+For more details and options, you can also refer to the [testing connectors docs](../../../docs/connector-development/testing-connectors/README.md).
 
 ## Acceptance Tests
 

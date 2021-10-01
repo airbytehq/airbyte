@@ -8,8 +8,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Oracle Destination Spec",
     "type": "object",
-    "required": ["host", "port", "username", "database"],
-    "additionalProperties": false,
+    "required": ["host", "port", "username", "sid"],
+    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
@@ -27,9 +27,9 @@
         "examples": ["1521"],
         "order": 1
       },
-      "database": {
-        "title": "DB Name",
-        "description": "Name of the database.",
+      "sid": {
+        "title": "SID",
+        "description": "SID",
         "type": "string",
         "order": 2
       },

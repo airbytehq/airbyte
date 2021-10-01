@@ -3,24 +3,27 @@ import { useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import config from "config";
 import SourceDefinitionResource, {
   SourceDefinition,
 } from "core/resources/SourceDefinition";
 import { SourceResource } from "core/resources/Source";
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
+
+  const { workspace } = useWorkspace();
   const formatMessage = useIntl().formatMessage;
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 
@@ -30,7 +33,6 @@ const SourcesPage: React.FC = () => {
 
   const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
 
-  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {

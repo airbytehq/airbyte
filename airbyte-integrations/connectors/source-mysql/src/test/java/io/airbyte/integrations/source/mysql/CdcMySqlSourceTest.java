@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -209,6 +189,76 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
     ((ObjectNode) config).put("database", "test_schema");
   }
 
+  @Test
+  public void dateTimeDataTypeTest() throws Exception {
+    JsonNode record1 = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "datetime_col", "\'2013-09-05T10:10:02\'"));
+    JsonNode record2 = Jsons.jsonNode(ImmutableMap.of(
+        "id", 2,
+        "datetime_col", "\'2013-09-06T10:10:02\'"));
+    ImmutableList<JsonNode> records = ImmutableList.of(record1, record2);
+    setupForDateTimeDataTypeTest(records);
+    Set<JsonNode> originalData = records.stream().peek(c -> {
+      String dateTimeValue = c.get("datetime_col").asText();
+      ((ObjectNode) c).put("datetime_col", dateTimeValue.substring(1, dateTimeValue.length() - 1));
+    }).collect(Collectors.toSet());
+
+    AirbyteCatalog discover = source.discover(config);
+    List<AirbyteStream> streams = discover.getStreams();
+
+    assertEquals(streams.size(), 1);
+    JsonNode jsonSchema = streams.get(0).getJsonSchema().get("properties");
+    assertEquals(jsonSchema.get("id").get("type").asText(), "number");
+    assertEquals(jsonSchema.get("datetime_col").get("type").asText(), "string");
+
+    AirbyteCatalog catalog = new AirbyteCatalog().withStreams(streams);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.INCREMENTAL));
+    Set<JsonNode> dataFromDebeziumSnapshot =
+        extractRecordMessages(AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
+            .stream()
+            .map(airbyteRecordMessage -> {
+              JsonNode data = airbyteRecordMessage.getData();
+              removeCDCColumns((ObjectNode) data);
+              return data;
+            })
+            .collect(Collectors.toSet());
+
+    assertEquals(originalData, dataFromDebeziumSnapshot);
+
+    // TODO: Fix full refresh (non-cdc) mode. The value of the datetime_col is adjusted by the TIMEZONE
+    // the code is running in,
+    // in my case it got adjusted to IST i.e. "2013-09-05T15:40:02Z" and "2013-09-06T15:40:02Z".
+    // configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
+    // Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
+    // AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
+    // .stream()
+    // .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
+    // assertEquals(dataFromFullRefresh, originalData);
+  }
+
+  private void setupForDateTimeDataTypeTest(ImmutableList<JsonNode> data) {
+    executeQuery("CREATE DATABASE " + "test_schema" + ";");
+    executeQuery(String.format(
+        "CREATE TABLE %s.%s(%s INTEGER, %s DATETIME, PRIMARY KEY (%s));",
+        "test_schema", "table_with_date_time", "id", "datetime_col", "id"));
+
+    executeQuery(String
+        .format("INSERT INTO %s.%s (%s, %s) VALUES (%s, %s);", "test_schema",
+            "table_with_date_time",
+            "id", "datetime_col",
+            data.get(0).get("id").asInt(), data.get(0).get("datetime_col").asText()));
+
+    executeQuery(String
+        .format("INSERT INTO %s.%s (%s, %s) VALUES (%s, %s);", "test_schema",
+            "table_with_date_time",
+            "id", "datetime_col",
+            data.get(1).get("id").asInt(), data.get(1).get("datetime_col").asText()));
+    ((ObjectNode) config).put("database", "test_schema");
+  }
+
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
     JdbcDatabase jdbcDatabase = Databases.createJdbcDatabase(
@@ -261,11 +311,12 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
-    properties.set(CDC_UPDATED_AT, numberType);
-    properties.set(CDC_DELETED_AT, numberType);
+    properties.set(CDC_UPDATED_AT, stringType);
+    properties.set(CDC_DELETED_AT, stringType);
   }
 
   @Override

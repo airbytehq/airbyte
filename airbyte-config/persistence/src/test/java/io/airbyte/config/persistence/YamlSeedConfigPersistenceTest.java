@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -38,35 +18,23 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class YamlSeedConfigPersistenceTest {
 
-  private static final YamlSeedConfigPersistence PERSISTENCE;
+  private static YamlSeedConfigPersistence PERSISTENCE;
 
-  static {
-    try {
-      PERSISTENCE = new YamlSeedConfigPersistence();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  @BeforeAll
+  static void setup() throws IOException {
+    PERSISTENCE = YamlSeedConfigPersistence.getDefault();
   }
 
   @Test
   public void testGetConfig() throws Exception {
-    // workspace
-    StandardWorkspace defaultWorkspace = PERSISTENCE
-        .getConfig(ConfigSchema.STANDARD_WORKSPACE, PersistenceConstants.DEFAULT_WORKSPACE_ID.toString(), StandardWorkspace.class);
-    assertEquals(PersistenceConstants.DEFAULT_WORKSPACE_ID, defaultWorkspace.getWorkspaceId());
-    assertEquals("default", defaultWorkspace.getName());
-    assertEquals("default", defaultWorkspace.getSlug());
-    assertEquals(false, defaultWorkspace.getInitialSetupComplete());
-    assertEquals(true, defaultWorkspace.getDisplaySetupWizard());
-    assertEquals(false, defaultWorkspace.getTombstone());
-
     // source
-    String mySqlSourceId = "435bb9a5-7887-4809-aa58-28c27df0d7ad";
-    StandardSourceDefinition mysqlSource = PERSISTENCE
+    final String mySqlSourceId = "435bb9a5-7887-4809-aa58-28c27df0d7ad";
+    final StandardSourceDefinition mysqlSource = PERSISTENCE
         .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, mySqlSourceId, StandardSourceDefinition.class);
     assertEquals(mySqlSourceId, mysqlSource.getSourceDefinitionId().toString());
     assertEquals("MySQL", mysqlSource.getName());
@@ -75,8 +43,8 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals("mysql.svg", mysqlSource.getIcon());
 
     // destination
-    String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
-    StandardDestinationDefinition s3Destination = PERSISTENCE
+    final String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
+    final StandardDestinationDefinition s3Destination = PERSISTENCE
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, s3DestinationId, StandardDestinationDefinition.class);
     assertEquals(s3DestinationId, s3Destination.getDestinationDefinitionId().toString());
     assertEquals("S3", s3Destination.getName());
@@ -89,21 +57,20 @@ public class YamlSeedConfigPersistenceTest {
     assertThrows(UnsupportedOperationException.class,
         () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_SYNC, "invalid_id", StandardSync.class));
     assertThrows(ConfigNotFoundException.class,
-        () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_WORKSPACE, "invalid_id", StandardWorkspace.class));
+        () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "invalid_id", StandardWorkspace.class));
   }
 
   @Test
   public void testDumpConfigs() {
-    Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
-    assertEquals(3, allSeedConfigs.size());
-    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_WORKSPACE.name()).count() > 0);
-    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).count() > 0);
-    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).count() > 0);
+    final Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
+    assertEquals(2, allSeedConfigs.size());
+    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
+    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
   }
 
   @Test
   public void testWriteMethods() {
-    assertThrows(UnsupportedOperationException.class, () -> PERSISTENCE.writeConfig(ConfigSchema.STANDARD_WORKSPACE, "id", new Object()));
+    assertThrows(UnsupportedOperationException.class, () -> PERSISTENCE.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "id", new Object()));
     assertThrows(UnsupportedOperationException.class, () -> PERSISTENCE.replaceAllConfigs(Collections.emptyMap(), false));
   }
 

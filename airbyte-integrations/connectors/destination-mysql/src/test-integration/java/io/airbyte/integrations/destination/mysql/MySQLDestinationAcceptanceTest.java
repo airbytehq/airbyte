@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -28,12 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,6 +67,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("password", db.getPassword())
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
+        .put("ssl", false)
         .build());
   }
 
@@ -89,6 +79,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("password", "wrong password")
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
+        .put("ssl", false)
         .build());
   }
 
@@ -202,6 +193,48 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
     executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
     // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
     // super.testCustomDbtTransformations();
+  }
+
+  @Test
+  public void testJsonSync() throws Exception {
+    final String catalogAsText = "{\n"
+        + "  \"streams\": [\n"
+        + "    {\n"
+        + "      \"name\": \"exchange_rate\",\n"
+        + "      \"json_schema\": {\n"
+        + "        \"properties\": {\n"
+        + "          \"id\": {\n"
+        + "            \"type\": \"integer\"\n"
+        + "          },\n"
+        + "          \"data\": {\n"
+        + "            \"type\": \"string\"\n"
+        + "          }"
+        + "        }\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]\n"
+        + "}\n";
+
+    final AirbyteCatalog catalog = Jsons.deserialize(catalogAsText, AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
+                    .put("data", "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
   @Override

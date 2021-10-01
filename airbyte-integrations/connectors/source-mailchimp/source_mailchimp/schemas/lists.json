@@ -243,7 +243,6 @@
         },
         "campaign_last_sent": {
           "type": "string",
-          "format": "date-time",
           "title": "Campaign Last Sent",
           "description": "The date and time the last campaign was sent to this list in ISO 8601 format. This is updated when a campaign is sent to 10 or more recipients.",
           "readOnly": true
@@ -286,14 +285,12 @@
         },
         "last_sub_date": {
           "type": "string",
-          "format": "date-time",
           "title": "Date of Last List Subscribe",
           "description": "The date and time of the last time someone subscribed to this list in ISO 8601 format.",
           "readOnly": true
         },
         "last_unsub_date": {
           "type": "string",
-          "format": "date-time",
           "title": "Date of Last List Unsubscribe",
           "description": "The date and time of the last time someone unsubscribed from this list in ISO 8601 format.",
           "readOnly": true

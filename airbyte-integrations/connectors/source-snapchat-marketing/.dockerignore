@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_snapchat_marketing
+!setup.py
+!secrets

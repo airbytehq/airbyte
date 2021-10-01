@@ -6,7 +6,7 @@ select
     cast(_AB_CDC_LSN as {{ dbt_utils.type_float() }}) as _AB_CDC_LSN,
     cast(_AB_CDC_UPDATED_AT as {{ dbt_utils.type_float() }}) as _AB_CDC_UPDATED_AT,
     cast(_AB_CDC_DELETED_AT as {{ dbt_utils.type_float() }}) as _AB_CDC_DELETED_AT,
-    _airbyte_emitted_at
+    _AIRBYTE_EMITTED_AT
 from {{ ref('DEDUP_CDC_EXCLUDED_AB1') }}
 -- DEDUP_CDC_EXCLUDED
 
