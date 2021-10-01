@@ -14,11 +14,11 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MysqlStrictEncryptSource extends SpecModifyingSource implements Source {
+public class MySqlStrictEncryptSource extends SpecModifyingSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MysqlStrictEncryptSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlStrictEncryptSource.class);
 
-  MysqlStrictEncryptSource() {
+  MySqlStrictEncryptSource() {
     super(MySqlSource.sshWrappedSource());
   }
 
@@ -30,10 +30,10 @@ public class MysqlStrictEncryptSource extends SpecModifyingSource implements Sou
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new MysqlStrictEncryptSource();
-    LOGGER.info("starting source: {}", MysqlStrictEncryptSource.class);
+    final Source source = new MySqlStrictEncryptSource();
+    LOGGER.info("starting source: {}", MySqlStrictEncryptSource.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", MysqlStrictEncryptSource.class);
+    LOGGER.info("completed source: {}", MySqlStrictEncryptSource.class);
   }
 
 }

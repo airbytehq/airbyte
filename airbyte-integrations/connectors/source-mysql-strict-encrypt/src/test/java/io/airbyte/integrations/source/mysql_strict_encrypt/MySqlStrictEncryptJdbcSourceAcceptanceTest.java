@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-class MysqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   protected static final String TEST_USER = "test";
   protected static final String TEST_PASSWORD = "test";
@@ -104,7 +104,7 @@ class MysqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
 
   @Override
   public Source getSource() {
-    return new MysqlStrictEncryptSource();
+    return new MySqlStrictEncryptSource();
   }
 
   @Override
