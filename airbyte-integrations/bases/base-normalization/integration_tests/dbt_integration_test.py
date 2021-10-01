@@ -69,7 +69,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        print(f"....Waiting for Postgres DB to start...15 sec")
+        print("....Waiting for Postgres DB to start...15 sec")
         time.sleep(15)
 
         if not os.path.exists("../secrets"):
@@ -106,7 +106,7 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
-        print(f"....Waiting for MySQL DB to start...15 sec")
+        print("....Waiting for MySQL DB to start...15 sec")
         time.sleep(15)
 
         if not os.path.exists("../secrets"):
