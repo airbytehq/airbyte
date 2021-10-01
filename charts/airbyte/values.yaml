@@ -46,7 +46,7 @@ webapp:
     pullPolicy: IfNotPresent
     tag: 0.30.3-alpha
 
-  ## @param webapp.podAnnotations [object] Add extra annotations to the scheduler pod
+  ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
   podAnnotations: {}
 
@@ -331,6 +331,98 @@ server:
   ## @param server.log.level The log level to log at
   log:
     level: "INFO"
+
+## @section Worker Parameters
+
+worker:
+  ## @param worker.replicaCount Number of worker replicas
+  replicaCount: 1
+
+  ## @param worker.image.repository The repository to use for the airbyte worker image.
+  ## @param worker.image.pullPolicy the pull policy to use for the airbyte worker image
+  ## @param worker.image.tag The airbyte worker image tag. Defaults to the chart's AppVersion
+  image:
+    repository: airbyte/worker
+    pullPolicy: IfNotPresent
+    tag: 0.30.3-alpha
+
+  ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
+  ##
+  podAnnotations: {}
+
+  ## Configure extra options for the worker containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ## @param worker.livenessProbe.enabled Enable livenessProbe on the worker
+  ## @param worker.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ## @param worker.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ## @param worker.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ## @param worker.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ## @param worker.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## @param worker.readinessProbe.enabled Enable readinessProbe on the worker
+  ## @param worker.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ## @param worker.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ## @param worker.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ## @param worker.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ## @param worker.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## worker resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param worker.resources.limits [object] The resources limits for the worker container
+  ## @param worker.resources.requests [object] The requested resources for the worker container
+  resources:
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
+    ## Examples:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+
+  ## @param worker.nodeSelector [object] Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: {}
+
+  ## @param worker.tolerations [array] Tolerations for worker pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ##
+  tolerations: []
+
+  ## @param worker.log.level The log level to log at.
+  log:
+    level: "INFO"
+
+  ## @param worker.extraEnv [array] Additional env vars for worker pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: WORKER_POD_TOLERATIONS
+  ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
+  extraEnv: []
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
