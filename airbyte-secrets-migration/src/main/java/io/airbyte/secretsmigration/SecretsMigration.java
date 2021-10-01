@@ -12,32 +12,23 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
+import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.converters.SpecFetcher;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-
-import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
-import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
-import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.workers.temporal.TemporalClient;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,21 +60,21 @@ public class SecretsMigration {
 
     for (String configSchemaName : configurations.keySet()) {
       configurations.put(configSchemaName,
-              configurations.get(configSchemaName).peek(configJson -> {
-                Class<Object> className = ConfigSchema.valueOf(configSchemaName).getClassName();
-                Object object = Jsons.object(configJson, className);
+          configurations.get(configSchemaName).peek(configJson -> {
+            Class<Object> className = ConfigSchema.valueOf(configSchemaName).getClassName();
+            Object object = Jsons.object(configJson, className);
 
-                if(className.getSimpleName().equals("SourceConnection")) {
-                  LOGGER.info("SOURCE_CONNECTION " + ((SourceConnection) object).getSourceId());
-                  sourceCount.incrementAndGet();
-                } else if (className.getSimpleName().equals("DestinationConnection")){
-                  LOGGER.info("DESTINATION_CONNECTION " + ((DestinationConnection) object).getDestinationId());
-                  destinationCount.incrementAndGet();
-                } else {
-                  LOGGER.info("className.getSimpleName(): " + className.getSimpleName());
-                  otherCount.incrementAndGet();
-                }
-              }));
+            if (className.getSimpleName().equals("SourceConnection")) {
+              LOGGER.info("SOURCE_CONNECTION " + ((SourceConnection) object).getSourceId());
+              sourceCount.incrementAndGet();
+            } else if (className.getSimpleName().equals("DestinationConnection")) {
+              LOGGER.info("DESTINATION_CONNECTION " + ((DestinationConnection) object).getDestinationId());
+              destinationCount.incrementAndGet();
+            } else {
+              LOGGER.info("className.getSimpleName(): " + className.getSimpleName());
+              otherCount.incrementAndGet();
+            }
+          }));
     }
 
     writeTo.replaceAllConfigsDeserializing(configurations, true);
@@ -92,9 +83,10 @@ public class SecretsMigration {
     LOGGER.info("destinationCount = " + destinationCount.get());
     LOGGER.info("otherCount = " + otherCount.get());
 
-//    LOGGER.info("... With dryRun=" + dryRun + ": deserializing configurations and writing to the new store...");
-//    configurations = readFrom.dumpConfigs();
-//    writeTo.replaceAllConfigsDeserializing(configurations, dryRun);
+    // LOGGER.info("... With dryRun=" + dryRun + ": deserializing configurations and writing to the new
+    // store...");
+    // configurations = readFrom.dumpConfigs();
+    // writeTo.replaceAllConfigsDeserializing(configurations, dryRun);
 
     LOGGER.info("Migration run complete.");
   }
@@ -108,7 +100,7 @@ public class SecretsMigration {
             .getInitialized()).withValidation();
 
     final ConfigRepository readFromConfigRepository =
-            new ConfigRepository(dbPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
+        new ConfigRepository(dbPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
@@ -118,10 +110,10 @@ public class SecretsMigration {
     LOGGER.info("ephemeralSecretPersistence.isPresent() = " + ephemeralSecretPersistence.isPresent());
 
     final ConfigRepository writeToConfigRepository =
-            new ConfigRepository(dbPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+        new ConfigRepository(dbPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
-            new BucketSpecCacheSchedulerClient(new FakeSyncSchedulerClient(), configs.getSpecCacheBucket());
+        new BucketSpecCacheSchedulerClient(new FakeSyncSchedulerClient(), configs.getSpecCacheBucket());
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
 

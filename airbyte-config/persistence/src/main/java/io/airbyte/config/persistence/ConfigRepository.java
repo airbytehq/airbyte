@@ -492,7 +492,7 @@ public class ConfigRepository {
               }
 
               return statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
-                      destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
+                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
             });
         augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
       }

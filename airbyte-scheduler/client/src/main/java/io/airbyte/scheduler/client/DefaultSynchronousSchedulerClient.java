@@ -114,7 +114,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       // track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
       final TemporalResponse<T> operationOutput = executor.apply(jobId);
       JobState outputState = operationOutput.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
-      // track(jobId, configType, connectorDefinitionId, workspaceId, outputState, operationOutput.getOutput().orElse(null));
+      // track(jobId, configType, connectorDefinitionId, workspaceId, outputState,
+      // operationOutput.getOutput().orElse(null));
       final long endedAt = Instant.now().toEpochMilli();
 
       return SynchronousResponse.fromTemporalResponse(
