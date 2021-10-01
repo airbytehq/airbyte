@@ -14,7 +14,7 @@ from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.spec import AmazonAdsConfig
-from source_amazon_ads.streams import SponsoredBrandsReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
+from source_amazon_ads.streams import SponsoredBrandsReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream, SponsoredBrandsVideoReportStream
 from source_amazon_ads.streams.report_streams.report_streams import TooManyRequests
 
 """
@@ -153,6 +153,22 @@ def test_brands_report_stream(test_config):
     profiles = make_profiles()
 
     stream = SponsoredBrandsReportStream(config, profiles, authenticator=mock.MagicMock())
+    stream_slice = {"reportDate": "20210725"}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+@responses.activate
+def test_brands_video_report_stream(test_config):
+    setup_responses(
+        init_response_brands=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    config = AmazonAdsConfig(**test_config)
+    profiles = make_profiles()
+
+    stream = SponsoredBrandsVideoReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)

@@ -72,6 +72,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     primary_key = None
     CHECK_INTERVAL_SECONDS = 30
+    # Amazon ads updates the data for the next 3 days
+    LOOK_BACK_WINDOW = 3
     # Async report generation time is 15 minutes according to docs:
     # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
@@ -224,6 +226,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         now = datetime.utcnow()
         if not start_report_date:
             start_report_date = now
+        
+        # You cannot pull data for amazon ads more than 60 days
+        if (now - start_report_date).days > (60 - ReportStream.LOOK_BACK_WINDOW):
+            start_report_date = now + timedelta(days=-(60-ReportStream.LOOK_BACK_WINDOW))
 
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
@@ -233,6 +239,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+
         if sync_mode == SyncMode.full_refresh:
             # For full refresh stream use date from config start_date field.
             start_date = self._start_date
@@ -242,8 +249,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             start_date = stream_state.get(self.cursor_field)
             if start_date:
                 start_date = pendulum.from_format(start_date, ReportStream.REPORT_DATE_FORMAT, tz="UTC")
-                # We already processed records for date specified in stream state, move to the day after
-                start_date += timedelta(days=1)
+                start_date += timedelta(days=-ReportStream.LOOK_BACK_WINDOW)
+
             else:
                 start_date = self._start_date
 

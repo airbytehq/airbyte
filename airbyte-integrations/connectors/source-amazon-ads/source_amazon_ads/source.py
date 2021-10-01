@@ -30,7 +30,10 @@ from .streams import (
     SponsoredProductNegativeKeywords,
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
+    SponsoredBrandsVideoReportStream,
 )
+from .schemas import Profile
+
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
@@ -67,7 +70,7 @@ class SourceAmazonAds(AbstractSource):
         # stream and should have information about all profiles.
         profiles_stream = Profiles(**stream_args)
         profiles_list = profiles_stream.get_all_profiles()
-        stream_args["profiles"] = profiles_list
+        stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
             SponsoredDisplayCampaigns,
             SponsoredDisplayAdGroups,
@@ -85,6 +88,7 @@ class SourceAmazonAds(AbstractSource):
             SponsoredBrandsAdGroups,
             SponsoredBrandsKeywords,
             SponsoredBrandsReportStream,
+            SponsoredBrandsVideoReportStream,
         ]
         return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 
@@ -103,3 +107,10 @@ class SourceAmazonAds(AbstractSource):
             refresh_token=config.refresh_token,
             scopes=[config.scope],
         )
+
+
+    @staticmethod
+    def _choose_profiles(config: AmazonAdsConfig, profiles: List[Profile]):
+        if not config.profiles:
+            return profiles
+        return list(filter(lambda profile: profile.profileId in config.profiles, profiles))
