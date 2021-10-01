@@ -13,8 +13,7 @@ from pydantic import BaseModel, ValidationError
 from source_amazon_ads.schemas import CatalogModel
 from source_amazon_ads.schemas.profile import Profile
 from source_amazon_ads.spec import AmazonAdsConfig
-
-URL_BASE = "https://advertising-api.amazon.com/"
+from source_amazon_ads.constants import URL_MAPPING
 
 """
 This class hierarchy may seem overcomplicated so here is a visualization of
@@ -77,7 +76,7 @@ class BasicAmazonAdsStream(Stream, ABC):
     def __init__(self, config: AmazonAdsConfig, profiles: List[Profile] = None):
         self._profiles = profiles or []
         self._client_id = config.client_id
-        self._url = config.host or URL_BASE
+        self._url = URL_MAPPING[config.region]
 
     @property
     @abstractmethod

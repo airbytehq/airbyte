@@ -3,7 +3,9 @@
 #
 
 from pydantic import BaseModel, Field
+from typing import List
 
+from source_amazon_ads.constants import AmazonAdsRegion
 
 class AmazonAdsConfig(BaseModel):
     class Config:
@@ -41,7 +43,18 @@ class AmazonAdsConfig(BaseModel):
         description="Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
         examples=["2022-10-10", "2022-10-22"],
     )
-    host: str = Field(None, alias="_host")
+
+    region: AmazonAdsRegion = Field(
+        name="Region",
+        description="Region to pull data from (EU/NA/FE/SANDBOX)",
+        default=AmazonAdsRegion.NA
+    )
+
+    profiles: List[int] = Field(
+        None,
+        name="Profile Ids",
+        description="profile Ids you want to fetch data for",
+    )
 
     @classmethod
     def schema(cls, **kvargs):

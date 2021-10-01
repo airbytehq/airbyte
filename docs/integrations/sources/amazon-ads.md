@@ -23,6 +23,7 @@ This source is capable of syncing the following streams:
 * [Sponsored Products Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads)
 * [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 * [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
+* [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 * [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports)
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 
@@ -59,6 +60,8 @@ Information about expected report generation waiting time you may find [here](ht
 * client_secret
 * refresh_token
 * scope
+* profiles
+* region
 * start_date (optional)
 
 More how to get client_id and client_secret you can find on [AWS docs](https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app).
@@ -74,5 +77,6 @@ Start date used for generating reports starting from the specified start date. S
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.2` | 2021-10-01 | [#6367](https://github.com/airbytehq/airbyte/pull/6461) | `Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback` |
 | `0.1.1` | 2021-09-22 | [#6367](https://github.com/airbytehq/airbyte/pull/6367) | `Add seller and vendor filters to profiles stream` |
 | `0.1.0` | 2021-08-13 | [#5023](https://github.com/airbytehq/airbyte/pull/5023) | `Initial version` |
