@@ -429,6 +429,11 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
   }
 
+  @Override
+  public boolean getPublishMetrics() {
+    return getEnvOrDefault(PUBLISH_METRICS, true);
+  }
+
   private String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }

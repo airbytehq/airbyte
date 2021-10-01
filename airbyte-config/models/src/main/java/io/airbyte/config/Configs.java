@@ -109,6 +109,8 @@ public interface Configs {
 
   String getGoogleApplicationCredentials();
 
+  boolean getPublishMetrics();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -218,7 +219,24 @@ public class SchedulerApp {
 
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
-    new MetricSingleton(true).initializeMonitoringServiceDaemon("8082");
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
+    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc);
+    LOGGER.info("======= new stuff");
+    Executors.newSingleThreadScheduledExecutor().submit(() -> {
+      MDC.setContextMap(mdc);
+      while (true) {
+        LOGGER.info("==== test metrics");
+        LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
+        MetricSingleton.incrementCounter("test_davin_counter", 1);
+        MetricSingleton.setGauge("test_davin_gauge", 1);
+        MetricSingleton.recordTime("test_davin_histogram", new Random().nextInt(10));
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    });
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)
