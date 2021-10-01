@@ -64,6 +64,8 @@ public class KafkaSourceConfig {
         config.has("request_timeout_ms") ? config.get("request_timeout_ms").intValue() : null);
     props.put(ConsumerConfig.RECEIVE_BUFFER_CONFIG,
         config.has("receive_buffer_bytes") ? config.get("receive_buffer_bytes").intValue() : null);
+    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+        config.has("auto_offset_reset") ? config.get("auto_offset_reset").asText() : null);
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
 
