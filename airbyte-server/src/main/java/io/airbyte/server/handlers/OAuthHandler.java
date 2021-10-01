@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -48,66 +28,84 @@ import java.util.UUID;
 public class OAuthHandler {
 
   private final ConfigRepository configRepository;
+  private final OAuthImplementationFactory oAuthImplementationFactory;
 
   public OAuthHandler(ConfigRepository configRepository) {
     this.configRepository = configRepository;
+    this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository);
   }
 
   public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getConsentUrl());
+    return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
+        sourceDefinitionIdRequestBody.getWorkspaceId(),
+        sourceDefinitionIdRequestBody.getSourceDefinitionId(),
+        sourceDefinitionIdRequestBody.getRedirectUrl()));
   }
 
   public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation =
         getDestinationOAuthFlowImplementation(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getConsentUrl());
+    return new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
+        destinationDefinitionIdRequestBody.getWorkspaceId(),
+        destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
+        destinationDefinitionIdRequestBody.getRedirectUrl()));
   }
 
   public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(oauthSourceRequestBody.getSourceDefinitionId());
-    return oAuthFlowImplementation.completeOAuth(oauthSourceRequestBody.getWorkspaceId(), oauthSourceRequestBody.getQueryParams());
+    return oAuthFlowImplementation.completeSourceOAuth(
+        oauthSourceRequestBody.getWorkspaceId(),
+        oauthSourceRequestBody.getSourceDefinitionId(),
+        oauthSourceRequestBody.getQueryParams(),
+        oauthSourceRequestBody.getRedirectUrl());
   }
 
   public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest oauthDestinationRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation =
         getDestinationOAuthFlowImplementation(oauthDestinationRequestBody.getDestinationDefinitionId());
-    return oAuthFlowImplementation.completeOAuth(oauthDestinationRequestBody.getWorkspaceId(), oauthDestinationRequestBody.getQueryParams());
+    return oAuthFlowImplementation.completeDestinationOAuth(
+        oauthDestinationRequestBody.getWorkspaceId(),
+        oauthDestinationRequestBody.getDestinationDefinitionId(),
+        oauthDestinationRequestBody.getQueryParams(),
+        oauthDestinationRequestBody.getRedirectUrl());
+  }
+
+  public void setSourceInstancewideOauthParams(SetInstancewideSourceOauthParamsRequestBody requestBody) throws JsonValidationException, IOException {
+    final SourceOAuthParameter param = configRepository
+        .getSourceOAuthParamByDefinitionIdOptional(null, requestBody.getSourceDefinitionId())
+        .orElseGet(() -> new SourceOAuthParameter().withOauthParameterId(UUID.randomUUID()))
+        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
+        .withSourceDefinitionId(requestBody.getSourceDefinitionId());
+    configRepository.writeSourceOAuthParam(param);
   }
 
   public void setDestinationInstancewideOauthParams(SetInstancewideDestinationOauthParamsRequestBody requestBody)
       throws JsonValidationException, IOException {
-    DestinationOAuthParameter param = new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
+    final DestinationOAuthParameter param = configRepository
+        .getDestinationOAuthParamByDefinitionIdOptional(null, requestBody.getDestinationDefinitionId())
+        .orElseGet(() -> new DestinationOAuthParameter().withOauthParameterId(UUID.randomUUID()))
         .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
         .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
     configRepository.writeDestinationOAuthParam(param);
-  }
-
-  public void setSourceInstancewideOauthParams(SetInstancewideSourceOauthParamsRequestBody requestBody) throws JsonValidationException, IOException {
-    SourceOAuthParameter param = new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
-        .withSourceDefinitionId(requestBody.getSourceDefinitionId());
-    configRepository.writeSourceOAuthParam(param);
   }
 
   private OAuthFlowImplementation getSourceOAuthFlowImplementation(UUID sourceDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceDefinitionId);
-    return OAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
+    return oAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
   }
 
   private OAuthFlowImplementation getDestinationOAuthFlowImplementation(UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition standardDestinationDefinition = configRepository
         .getStandardDestinationDefinition(destinationDefinitionId);
-    return OAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
+    return oAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
   }
 
 }

@@ -1,9 +1,9 @@
 # Connector Specification Reference
 The [connector specification](../understanding-airbyte/airbyte-specification.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.  
 
-{% hint style="info" %}
+## Demoing your specification
 While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
-{% endhint %}
+
 
 ### Secret obfuscation
 By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API (for example when working with a password), add the `airbyte_secret` annotation to your connector's `spec.json` e.g: 
@@ -64,7 +64,7 @@ In order for the Airbyte UI to correctly render a specification, however, a few 
 Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In this example, we have `provider` as a dropdown
 list option, which allows the user to select what provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider` object as follows:
 
-In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. This can
+In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const`, `default` and `enum` value unique to that item. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/6384) to improve it and use only `const` in the specification. This helps the UI and the connector distinguish between the option that was chosen by the user. This can
 be displayed with adapting the file source spec to this example:
 
 ```json
@@ -98,7 +98,10 @@ be displayed with adapting the file source spec to this example:
             "properties": {
               "option_title": {
                 "type": "string",
-                "const": "HTTPS: Public Web"
+                "const": "HTTPS: Public Web",
+                "enum": ["HTTPS: Public Web"],
+                "default": "HTTPS: Public Web",
+                "order": 0
               }
             }
           },
@@ -109,7 +112,10 @@ be displayed with adapting the file source spec to this example:
             "properties": {
               "option_title": {
                 "type": "string",
-                "const": "GCS: Google Cloud Storage"
+                "const": "GCS: Google Cloud Storage",
+                "enum": ["GCS: Google Cloud Storage"],
+                "default": "GCS: Google Cloud Storage",
+                "order": 0
               },
               "service_account_json": {
                 "type": "string",

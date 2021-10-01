@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -35,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
@@ -46,22 +27,26 @@ from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url, params):
-    parsed_url = urlparse.urlparse(url)
-    res_query = []
-    for q in parsed_url.query.split("&"):
-        key, value = q.split("=")
-        if key not in params:
-            res_query.append(f"{key}={value}")
-
-    parse_result = parsed_url._replace(query="&".join(res_query))
-    return urlparse.urlunparse(parse_result)
+def remove_params_from_url(url: str, params: List[str]) -> str:
+    """
+    Parses a URL and removes the query parameters specified in params
+    :param url: URL
+    :param params: list of query parameters
+    :return: URL with params removed
+    """
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
+    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    return urlparse.urlunparse(
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+    )
 
 
 class FBMarketingStream(Stream, ABC):
     """Base stream class"""
 
     primary_key = "id"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     page_size = 100
 
@@ -295,7 +280,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 3
+    MAX_ASYNC_JOBS = 10
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
@@ -353,7 +338,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
             job_id = job["report_run_id"]
-            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
+            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete ({job['async_status']})")
             runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":
@@ -479,3 +464,8 @@ class AdsInsightsDma(AdsInsights):
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
     action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
+
+
+class AdsInsightsActionType(AdsInsights):
+    breakdowns = []
+    action_breakdowns = ["action_type"]

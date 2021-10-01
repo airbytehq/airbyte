@@ -1,30 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from functools import wraps
 from time import sleep
+from typing import Dict
 
 import requests
 
@@ -106,5 +87,52 @@ class ShopifyRateLimiter:
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit
+
+        return decorator
+
+
+class EagerlyCachedStreamState:
+
+    """
+    This is the placeholder for the tmp stream state for each incremental stream,
+    It's empty, once the sync has started and is being updated while sync operation takes place,
+    It holds the `temporary stream state values` before they are updated to have the opportunity to reuse this state.
+    """
+
+    cached_state: Dict = {}
+
+    @staticmethod
+    def stream_state_to_tmp(*args, state_object: Dict = cached_state, **kwargs) -> Dict:
+        """
+        Method to save the current stream state for future re-use within slicing.
+        The method requires having the temporary `state_object` as placeholder.
+        Because of the specific of Shopify's entities relations, we have the opportunity to fetch the updates,
+        for particular stream using the `Incremental Refresh`, inside slicing.
+        For example:
+            if `order refund` records were updated, then the `orders` is updated as well.
+            if 'transaction` was added to the order, then the `orders` is updated as well.
+            etc.
+        """
+        # Map the input *args, the sequece should be always keeped up to the input function
+        # change the mapping if needed
+        stream: object = args[0]  # the self instance of the stream
+        current_stream_state: Dict = kwargs["stream_state"] or {}
+        # get the current tmp_state_value
+        tmp_stream_state_value = state_object.get(stream.name, {}).get(stream.cursor_field, "")
+        # Save the curent stream value for current sync, if present.
+        if current_stream_state:
+            state_object[stream.name] = {stream.cursor_field: current_stream_state.get(stream.cursor_field, "")}
+            # Check if we have the saved state and keep the minimun value
+            if tmp_stream_state_value:
+                state_object[stream.name] = {
+                    stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value)
+                }
+        return state_object
+
+    def cache_stream_state(func):
+        @wraps(func)
+        def decorator(*args, **kwargs):
+            EagerlyCachedStreamState.stream_state_to_tmp(*args, **kwargs)
+            return func(*args, **kwargs)
 
         return decorator

@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "airbyte.fullname" . }}-scheduler
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.scheduler.replicaCount }}
+  selector:
+    matchLabels:
+      airbyte: scheduler
+  template:
+    metadata:
+      labels:
+        airbyte: scheduler
+      {{- if .Values.scheduler.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.scheduler.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.scheduler.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: airbyte-scheduler-container
+        image: {{ include "airbyte.schedulerImage" . }}
+        imagePullPolicy: "{{ .Values.scheduler.image.pullPolicy }}"
+        env:
+        - name: AIRBYTE_VERSION
+          value: {{ .Chart.AppVersion }}
+        - name: CONFIG_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: CONFIG_ROOT
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_PORT
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_PASSWORD
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_URL
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_USER
+        - name: TRACKING_STRATEGY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: TRACKING_STRATEGY
+        - name: WORKSPACE_DOCKER_MOUNT
+          value: workspace
+        - name: WORKSPACE_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: WORKSPACE_ROOT
+        - name: WORKER_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: WORKER_ENVIRONMENT
+        - name: LOCAL_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: LOCAL_ROOT
+        - name: WEBAPP_URL
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: WEBAPP_URL
+        - name: TEMPORAL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: TEMPORAL_HOST
+        - name: TEMPORAL_WORKER_PORTS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: TEMPORAL_WORKER_PORTS
+        - name: LOG_LEVEL
+          value: "{{ .Values.scheduler.log.level }}"
+        - name: KUBE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: SUBMITTER_NUM_THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: SUBMITTER_NUM_THREADS
+        - name: RESOURCE_CPU_REQUEST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_CPU_REQUEST
+        - name: RESOURCE_CPU_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_CPU_LIMIT
+        - name: RESOURCE_MEMORY_REQUEST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_MEMORY_REQUEST
+        - name: RESOURCE_MEMORY_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: RESOURCE_MEMORY_LIMIT
+        - name: S3_LOG_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_LOG_BUCKET
+        - name: S3_LOG_BUCKET_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_LOG_BUCKET_REGION
+        - name: AWS_ACCESS_KEY_ID
+          value: {{ .Values.minio.accessKey.password }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{ .Values.minio.secretKey.password }}
+        - name: S3_MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_MINIO_ENDPOINT
+        - name: S3_PATH_STYLE_ACCESS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: S3_PATH_STYLE_ACCESS
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: GOOGLE_APPLICATION_CREDENTIALS
+        - name: GCP_STORAGE_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: GCP_STORAGE_BUCKET
+        - name: INTERNAL_API_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: INTERNAL_API_HOST
+        {{- if .Values.scheduler.resources }}
+        resources: {{- toYaml .Values.scheduler.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: gcs-log-creds-volume
+          mountPath: /secrets/gcs-log-creds
+          readOnly: true
+      volumes:
+      - name: gcs-log-creds-volume
+        secret:
+          secretName: gcs-log-creds

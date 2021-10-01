@@ -1,32 +1,15 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC, abstractmethod
 from typing import Any, Mapping
 
+from deprecated import deprecated
 
+
+@deprecated(version="0.1.20", reason="Use requests.auth.AuthBase instead")
 class HttpAuthenticator(ABC):
     """
     Base abstract class for various HTTP Authentication strategies. Authentication strategies are generally
@@ -40,6 +23,7 @@ class HttpAuthenticator(ABC):
         """
 
 
+@deprecated(version="0.1.20", reason="Set `authenticator=None` instead")
 class NoAuth(HttpAuthenticator):
     def get_auth_header(self) -> Mapping[str, Any]:
         return {}

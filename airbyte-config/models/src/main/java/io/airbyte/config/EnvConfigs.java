@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -46,10 +26,12 @@ public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
+  // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
+  public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -67,6 +49,7 @@ public class EnvConfigs implements Configs {
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
+  public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -84,9 +67,16 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
+  private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
+
+  // defaults
+  private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
+  private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
+  private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -192,6 +182,16 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getSecretStoreGcpCredentials() {
+    return getEnv(SECRET_STORE_GCP_CREDENTIALS);
+  }
+
+  @Override
+  public String getSecretStoreGcpProjectId() {
+    return getEnv(SECRET_STORE_GCP_PROJECT_ID);
+  }
+
+  @Override
   public boolean runDatabaseMigrationOnStartup() {
     return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
   }
@@ -246,16 +246,21 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getSpecCacheBucket() {
+    return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
+  }
+
+  @Override
   public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
-    long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-    long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
 
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
 
-  private WorkerPodToleration workerPodToleration(String tolerationStr) {
-    Map<String, String> tolerationMap = Splitter.on(",")
+  private WorkerPodToleration workerPodToleration(final String tolerationStr) {
+    final Map<String, String> tolerationMap = Splitter.on(",")
         .splitToStream(tolerationStr)
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
@@ -288,9 +293,9 @@ public class EnvConfigs implements Configs {
    */
   @Override
   public List<WorkerPodToleration> getWorkerPodTolerations() {
-    String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+    final String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
 
-    Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
+    final Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
         : Splitter.on(";")
             .splitToStream(tolerationsStr)
             .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
@@ -299,6 +304,25 @@ public class EnvConfigs implements Configs {
         .map(this::workerPodToleration)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns a map of node selectors from its own environment variable. The value of the env is a
+   * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
+   * <p>
+   * For example:- The following represents two node selectors
+   * <p>
+   * airbyte=server,type=preemptive
+   *
+   * @return map containing kv pairs of node selectors
+   */
+  @Override
+  public Map<String, String> getWorkerNodeSelectors() {
+    return Splitter.on(",")
+        .splitToStream(getEnvOrDefault(WORKER_POD_NODE_SELECTORS, ""))
+        .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
+        .map(s -> s.split("="))
+        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
   }
 
   @Override
@@ -317,7 +341,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<Integer> getTemporalWorkerPorts() {
-    var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    final var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
     if (ports.isEmpty()) {
       return new HashSet<>();
     }
@@ -352,6 +376,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getMemoryLimit() {
     return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+  }
+
+  /**
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
+   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
+   * no-op value.
+   */
+  @Override
+  public String getJobsImagePullSecret() {
+    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
   }
 
   @Override
@@ -389,32 +423,38 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
   }
 
-  private String getEnvOrDefault(String key, String defaultValue) {
+  @Override
+  public SecretPersistenceType getSecretPersistenceType() {
+    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
+    return SecretPersistenceType.valueOf(secretPersistenceStr);
+  }
+
+  private String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 
-  private String getEnvOrDefault(String key, String defaultValue, boolean isSecret) {
+  private String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
-  private long getEnvOrDefault(String key, long defaultValue) {
+  private long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
   }
 
-  private boolean getEnvOrDefault(String key, boolean defaultValue) {
+  private boolean getEnvOrDefault(final String key, final boolean defaultValue) {
     return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
-  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
+  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);
   }
 
-  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser, boolean isSecret) {
+  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info("{} not found or empty, defaulting to {}", key, isSecret ? "*****" : defaultValue);
+      LOGGER.info("Using default value for environment variable {}: '{}'", key, isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }

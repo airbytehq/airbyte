@@ -45,7 +45,7 @@
     },
     "expected_close_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_id": {
       "type": ["null", "integer"]

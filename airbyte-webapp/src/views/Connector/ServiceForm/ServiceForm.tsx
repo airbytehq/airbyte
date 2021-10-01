@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
+import { useToggle } from "react-use";
 
 import {
   useBuildForm,
+  useBuildInitialSchema,
   useBuildUiWidgets,
   useConstructValidationSchema,
   usePatchFormik,
@@ -12,29 +14,31 @@ import { ServiceFormValues } from "./types";
 import { ServiceFormContextProvider } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
-import { isSourceDefinition } from "core/domain/connector/source";
+import {
+  Connector,
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+} from "core/domain/connector";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
-  availableServices: (SourceDefinition | DestinationDefinition)[];
+  availableServices: ConnectorDefinition[];
+  selectedConnector?: ConnectorDefinitionSpecification;
+  onServiceSelect?: (id: string) => void;
   onSubmit: (values: ServiceFormValues) => void;
   onRetest?: (values: ServiceFormValues) => void;
-  specifications?: JSONSchema7;
-  documentationUrl?: string;
   isLoading?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
+  fetchingConnectorError?: Error;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onServiceSelect?: (id: string) => void;
 };
 
 const FormikPatch: React.FC = () => {
@@ -43,16 +47,18 @@ const FormikPatch: React.FC = () => {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
-  const [isOpenRequestModal, setIsOpenRequestModal] = useState(false);
-
+  const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const {
-    specifications,
     formType,
     formValues,
     onSubmit,
     isLoading,
+    selectedConnector,
     onRetest,
   } = props;
+
+  const specifications = useBuildInitialSchema(selectedConnector);
+
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
@@ -82,22 +88,22 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={props.documentationUrl}
+            documentationUrl={selectedConnector?.documentationUrl}
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
-            onOpenRequestConnectorModal={() => setIsOpenRequestModal(true)}
+            onOpenRequestConnectorModal={toggleOpenRequestModal}
           />
         ),
       },
     }),
     [
       formType,
-      setIsOpenRequestModal,
+      toggleOpenRequestModal,
       props.allowChangeConnector,
       props.availableServices,
-      props.documentationUrl,
+      props.selectedConnector,
       props.isEditMode,
       props.onServiceSelect,
     ]
@@ -153,6 +159,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             widgetsInfo={uiWidgetsInfo}
             setUiWidgetsInfo={setUiWidgetsInfo}
             formType={formType}
+            selectedService={props.availableServices.find(
+              (s) => Connector.id(s) === values.serviceType
+            )}
+            selectedConnector={props.selectedConnector}
             isEditMode={props.isEditMode}
             isLoadingSchema={props.isLoading}
           >
@@ -164,18 +174,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
                 await onRetestForm(values);
                 setSubmitting(false);
               }}
-              selectedService={props.availableServices.find(
-                (s) =>
-                  (isSourceDefinition(s)
-                    ? s.sourceDefinitionId
-                    : s.destinationDefinitionId) === values.serviceType
-              )}
               formFields={formFields}
             />
             {isOpenRequestModal && (
               <RequestConnectorModal
                 connectorType={formType}
-                onClose={() => setIsOpenRequestModal(false)}
+                onClose={toggleOpenRequestModal}
               />
             )}
           </ServiceFormContextProvider>
@@ -184,5 +188,4 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     </>
   );
 };
-
 export default ServiceForm;

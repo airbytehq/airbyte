@@ -14,9 +14,7 @@ import {
 } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { isSourceDefinition } from "core/domain/connector/source";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
 
 import Instruction from "./Instruction";
 import { IDataItem } from "components/base/DropDown/components/Option";
@@ -56,14 +54,10 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   </>
 );
 
-const DropdownLabels = styled(ControlLabels)`
-  max-width: 202px;
-`;
-
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
   formType: "source" | "destination";
-  availableServices: (SourceDefinition | DestinationDefinition)[];
+  availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
   allowChangeConnector?: boolean;
@@ -85,11 +79,9 @@ const ConnectorServiceTypeControl: React.FC<{
   const sortedDropDownData = useMemo(
     () =>
       availableServices
-        .map((item: SourceDefinition | DestinationDefinition) => ({
+        .map((item) => ({
           label: item.name,
-          value: isSourceDefinition(item)
-            ? item.sourceDefinitionId
-            : item.destinationDefinitionId,
+          value: Connector.id(item),
           img: <ImageBlock img={item.icon} />,
         }))
         .sort(defaultDataItemSort),
@@ -97,13 +89,7 @@ const ConnectorServiceTypeControl: React.FC<{
   );
 
   const selectedService = React.useMemo(
-    () =>
-      availableServices.find(
-        (s) =>
-          (isSourceDefinition(s)
-            ? s.sourceDefinitionId
-            : s.destinationDefinitionId) === field.value
-      ),
+    () => availableServices.find((s) => Connector.id(s) === field.value),
     [field.value, availableServices]
   );
 
@@ -121,7 +107,7 @@ const ConnectorServiceTypeControl: React.FC<{
 
   return (
     <>
-      <DropdownLabels
+      <ControlLabels
         label={formatMessage({
           id: `form.${formType}Type`,
         })}
@@ -141,7 +127,7 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
         />
-      </DropdownLabels>
+      </ControlLabels>
       {selectedService && documentationUrl && (
         <Instruction
           selectedService={selectedService}

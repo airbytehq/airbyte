@@ -6,15 +6,6 @@ description: >-
 
 # BigQuery
 
-## Uploading options
-There are 2 available options to upload data to bigquery `Standard` and `GCS Staging`.
-- `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
-Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours. 
-This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
-- `GCS Uploading (CSV format)`. This approach has been implemented in order to avoid the issue for big datasets mentioned above.
-At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
-The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
-
 ## Overview
 
 The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
@@ -39,7 +30,19 @@ Each stream will be output into its own table in BigQuery. Each table will conta
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
+| Bulk loading | Yes | | 
 | Namespaces | Yes |  |
+
+## Uploading options
+There are 2 available options to upload data to bigquery `Standard` and `GCS Staging`.
+- `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
+Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours. 
+This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
+- `GCS Uploading (CSV format)`. This approach has been implemented in order to avoid the issue for big datasets mentioned above.
+At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
+The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
+
 
 ## Getting started
 
@@ -143,7 +146,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 ## CHANGELOG
 
-### destination-bigquery
+### bigquery
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
@@ -155,10 +158,11 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 | 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
 | 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
 
-### destination-bigquery-denormalized
+### bigquery-denormalized
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.6 | 2021-09-16 | [#6145](https://github.com/airbytehq/airbyte/pull/6145) | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key
 | 0.1.5 | 2021-09-07 | [#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix
 | 0.1.4 | 2021-09-04 | [#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
 | 0.1.3 | 2021-08-07 | [#5261](https://github.com/airbytehq/airbyte/pull/5261) | 🐛 Destination BigQuery(Denormalized): Fix processing arrays of records |

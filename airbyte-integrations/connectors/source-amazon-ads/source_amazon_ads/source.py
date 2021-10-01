@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -50,7 +30,10 @@ from .streams import (
     SponsoredProductNegativeKeywords,
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
+    SponsoredBrandsVideoReportStream,
 )
+from .schemas import Profile
+
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
@@ -87,7 +70,7 @@ class SourceAmazonAds(AbstractSource):
         # stream and should have information about all profiles.
         profiles_stream = Profiles(**stream_args)
         profiles_list = profiles_stream.get_all_profiles()
-        stream_args["profiles"] = profiles_list
+        stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
             SponsoredDisplayCampaigns,
             SponsoredDisplayAdGroups,
@@ -105,6 +88,7 @@ class SourceAmazonAds(AbstractSource):
             SponsoredBrandsAdGroups,
             SponsoredBrandsKeywords,
             SponsoredBrandsReportStream,
+            SponsoredBrandsVideoReportStream,
         ]
         return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 
@@ -123,3 +107,10 @@ class SourceAmazonAds(AbstractSource):
             refresh_token=config.refresh_token,
             scopes=[config.scope],
         )
+
+
+    @staticmethod
+    def _choose_profiles(config: AmazonAdsConfig, profiles: List[Profile]):
+        if not config.profiles:
+            return profiles
+        return list(filter(lambda profile: profile.profileId in config.profiles, profiles))

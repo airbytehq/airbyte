@@ -173,7 +173,7 @@
             "type": ["null", "integer"]
           },
           "price": {
-            "type": ["null", "string"]
+            "type": ["null", "number"]
           },
           "image_id": {
             "type": ["null", "integer"]
@@ -209,7 +209,7 @@
             "type": ["null", "string"]
           },
           "compare_at_price": {
-            "type": ["null", "string"]
+            "type": ["null", "number"]
           },
           "updated_at": {
             "type": ["null", "string"],
@@ -230,7 +230,7 @@
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {
-                      "type": ["null", "string"]
+                      "type": ["null", "number"]
                     },
                     "currency_code": {
                       "type": ["null", "string"]
@@ -238,7 +238,7 @@
                   }
                 },
                 "compare_at_price": {
-                  "type": ["null", "string"]
+                  "type": ["null", "number"]
                 }
               }
             }

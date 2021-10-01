@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.25
+Modified `OAuth2Specification` model, added new fields: `rootObject` and `oauthFlowOutputParameters`
+
+## 0.1.24
+Added Transform class to use for mutating record value types so they adhere to jsonschema definition.
+
+## 0.1.23
+Added the ability to use caching for efficient synchronization of nested streams.
+
+## 0.1.22
+Allow passing custom headers to request in `OAuth2Authenticator.refresh_access_token()`: https://github.com/airbytehq/airbyte/pull/6219
+
+## 0.1.21
+Resolve nested schema references and move external references to single schema definitions.
+
+## 0.1.20
+- Allow using `requests.auth.AuthBase` as authenticators instead of custom CDK authenticators.
+- Implement Oauth2Authenticator, MultipleTokenAuthenticator and TokenAuthenticator authenticators.
+- Add support for both legacy and requests native authenticator to HttpStream class.
+
+## 0.1.19
+No longer prints full config files on validation error to prevent exposing secrets to log file: https://github.com/airbytehq/airbyte/pull/5879
+
 ## 0.1.18
 Fix incremental stream not saved state when internal limit config set.
 

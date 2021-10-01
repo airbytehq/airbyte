@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -34,7 +14,7 @@ from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.spec import AmazonAdsConfig
-from source_amazon_ads.streams import SponsoredBrandsReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
+from source_amazon_ads.streams import SponsoredBrandsReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream, SponsoredBrandsVideoReportStream
 from source_amazon_ads.streams.report_streams.report_streams import TooManyRequests
 
 """
@@ -173,6 +153,22 @@ def test_brands_report_stream(test_config):
     profiles = make_profiles()
 
     stream = SponsoredBrandsReportStream(config, profiles, authenticator=mock.MagicMock())
+    stream_slice = {"reportDate": "20210725"}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+@responses.activate
+def test_brands_video_report_stream(test_config):
+    setup_responses(
+        init_response_brands=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    config = AmazonAdsConfig(**test_config)
+    profiles = make_profiles()
+
+    stream = SponsoredBrandsVideoReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)

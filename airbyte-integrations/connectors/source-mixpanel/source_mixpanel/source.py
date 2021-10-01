@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -56,7 +36,10 @@ class MixpanelStream(HttpStream, ABC):
         send requests with planned delay: 3600/reqs_per_hour_limit seconds
     """
 
-    url_base = "https://mixpanel.com/api/2.0/"
+    @property
+    def url_base(self):
+        prefix = "eu." if self.region == "EU" else ""
+        return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
     reqs_per_hour_limit = 400  # 1 req in 9 secs
@@ -64,6 +47,7 @@ class MixpanelStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
+        region: str = None,
         start_date: Union[date, str] = None,
         end_date: Union[date, str] = None,
         date_window_size: int = 30,  # in days
@@ -76,6 +60,7 @@ class MixpanelStream(HttpStream, ABC):
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
+        self.region = region if region else "US"
 
         super().__init__(authenticator=authenticator)
 
@@ -111,6 +96,12 @@ class MixpanelStream(HttpStream, ABC):
 
         # wait for X seconds to match API limitations
         time.sleep(3600 / self.reqs_per_hour_limit)
+
+    def get_stream_params(self) -> Mapping[str, Any]:
+        """
+        Fetch required parameters in a given stream. Used to create sub-streams
+        """
+        return {"authenticator": self.authenticator, "region": self.region}
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
@@ -229,7 +220,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return "funnels"
 
     def funnel_slices(self, sync_mode) -> List[dict]:
-        funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        funnel_slices = FunnelsList(**self.get_stream_params()).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
@@ -523,7 +514,7 @@ class Engage(MixpanelStream):
         }
 
         # read existing Engage schema from API
-        schema_properties = EngageSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        schema_properties = EngageSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
         for property_entry in schema_properties:
             property_name: str = property_entry["name"]
             property_type: str = property_entry["type"]
@@ -553,7 +544,7 @@ class CohortMembers(Engage):
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_slices = []
-        cohorts = Cohorts(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        cohorts = Cohorts(**self.get_stream_params()).read_records(sync_mode=sync_mode)
         for cohort in cohorts:
             stream_slices.append({"id": cohort["id"]})
 
@@ -692,7 +683,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     cursor_field = "time"
     reqs_per_hour_limit = 60  # 1 query per minute
 
-    url_base = "https://data.mixpanel.com/api/2.0/"
+    @property
+    def url_base(self):
+        prefix = "-eu" if self.region == "EU" else ""
+        return f"https://data{prefix}.mixpanel.com/api/2.0/"
 
     def path(self, **kwargs) -> str:
         return "export"
@@ -716,6 +710,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         """
+        if response.text == "terminated early\n":
+            # no data available
+            self.logger.warn(f"Couldn't fetch data from Export API. Response: {response.text}")
+            return []
 
         for record_line in response.text.splitlines():
             record = json.loads(record_line)
@@ -758,7 +756,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         schema["additionalProperties"] = self.additional_properties
 
         # read existing Export schema from API
-        schema_properties = ExportSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        schema_properties = ExportSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
         for property_entry in schema_properties:
             property_name: str = property_entry
             if property_name.startswith("$"):
@@ -781,7 +779,7 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -790,14 +788,15 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        authenticator = TokenAuthenticatorBase64(token=config["api_secret"])
+        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+        funnels = FunnelsList(authenticator=auth, **config)
         try:
             response = requests.request(
                 "GET",
-                url="https://mixpanel.com/api/2.0/funnels/list",
+                url=funnels.url_base + funnels.path(),
                 headers={
                     "Accept": "application/json",
-                    **authenticator.get_auth_header(),
+                    **auth.get_auth_header(),
                 },
             )
 

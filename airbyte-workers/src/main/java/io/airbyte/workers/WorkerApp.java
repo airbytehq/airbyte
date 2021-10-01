@@ -1,36 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
 
-import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -66,15 +45,18 @@ public class WorkerApp {
 
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
+  private final SecretsHydrator secretsHydrator;
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
+                   SecretsHydrator secretsHydrator,
                    WorkflowServiceStubs temporalService,
                    MaxWorkersConfig maxWorkers) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
+    this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
   }
@@ -100,18 +82,20 @@ public class WorkerApp {
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
-    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, workspaceRoot));
+    checkConnectionWorker
+        .registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
-    discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, workspaceRoot));
+    discoverWorker
+        .registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new SyncWorkflow.ReplicationActivityImpl(processFactory, workspaceRoot),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, workspaceRoot),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, workspaceRoot));
+        new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot));
 
     factory.start();
   }
@@ -133,26 +117,7 @@ public class WorkerApp {
     }
   }
 
-  public static void waitForServer(Configs configs) throws InterruptedException {
-    final AirbyteApiClient apiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
-            .setHost(configs.getAirbyteApiHost())
-            .setPort(configs.getAirbyteApiPort())
-            .setBasePath("/api"));
-
-    boolean isHealthy = false;
-    while (!isHealthy) {
-      try {
-        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
-        isHealthy = healthCheck.getDb();
-      } catch (ApiException e) {
-        LOGGER.info("Waiting for server to become available...");
-        Thread.sleep(2000);
-      }
-    }
-  }
-
-  private static final WorkerOptions getWorkerOptions(int max) {
+  private static WorkerOptions getWorkerOptions(int max) {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
         .build();
@@ -160,8 +125,6 @@ public class WorkerApp {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
-
-    waitForServer(configs);
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
 
@@ -171,11 +134,13 @@ public class WorkerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
-    new WorkerApp(workspaceRoot, processFactory, temporalService, configs.getMaxWorkers()).start();
+    new WorkerApp(workspaceRoot, processFactory, secretsHydrator, temporalService, configs.getMaxWorkers()).start();
   }
 
 }
