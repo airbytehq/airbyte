@@ -21,8 +21,20 @@ input_test_data = [
                             ]
                         }
                     },
-                    {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
-                    {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                    {
+                        "or": {
+                            "urn:li:adTargetingFacet:locations": [
+                                "urn:li:geo:103644278"
+                            ]
+                        }
+                    },
+                    {
+                        "or": {
+                            "urn:li:adTargetingFacet:interfaceLocales": [
+                                "urn:li:locale:en_US"
+                            ]
+                        }
+                    },
                 ]
             },
             "exclude": {
@@ -52,6 +64,10 @@ input_test_data = [
                     "activity": "urn:li:activity:1234",
                     "directSponsoredContent": 0,
                     "share": "urn:li:share:1234",
+                    "custom_num_var": 1234,
+                    "custom_obj_var": {'key': 1234},
+                    "custom_arr_var": [1, 2, 3, 4],
+                    "custom_null_var": None,
                 }
             }
         },
@@ -103,8 +119,12 @@ output_test_data = [
             "type": "com.linkedin.ads.SponsoredUpdateCreativeVariables",
             "values": [
                 {"key": "activity", "value": "urn:li:activity:1234"},
-                {"key": "directSponsoredContent", "value": 0},
+                {"key": "directSponsoredContent", "value": "0"},
                 {"key": "share", "value": "urn:li:share:1234"},
+                {"key": "custom_num_var", "value": "1234"},
+                {"key": "custom_obj_var", "value": "{'key': 1234}"},
+                {"key": "custom_arr_var", "value": "[1, 2, 3, 4]"},
+                {"key": "custom_null_var", "value": "None"},
             ],
         },
         "created": "2021-08-21 21:27:55",
