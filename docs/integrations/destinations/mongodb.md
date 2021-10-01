@@ -45,11 +45,20 @@ You will need to choose an existing database or create a new database that will 
 
 You should now have all the requirements needed to configure MongoDB as a destination in the UI. You'll need the following information to configure the MongoDB destination:
 
-* **Host**
-* **Port**
+* **Standalone MongoDb instance**
+    * Host: URL of the database
+    * Port: Port to use for connecting to the database
+    * TLS: indicates whether to create encrypted connection
+* **Replica Set**
+    * Server addresses: the members of a replica set
+    * Replica Set: A replica set name
+* **MongoDb Atlas Cluster**
+    * Cluster URL: URL of a cluster to connect to
 * **Database**
 * **Username**
 * **Password**
+
+For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
 ## Notes about MongoDB Naming Conventions
 
@@ -82,3 +91,8 @@ Collection names should begin with an underscore or a letter character, and cann
 * be an empty string (e.g. "").
 * contain the null character.
 * begin with the system. prefix. (Reserved for internal use.)
+
+## Changelog
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-09-29 | [6536](https://github.com/airbytehq/airbyte/pull/6536) | Destination MongoDb: added support via TLS/SSL |

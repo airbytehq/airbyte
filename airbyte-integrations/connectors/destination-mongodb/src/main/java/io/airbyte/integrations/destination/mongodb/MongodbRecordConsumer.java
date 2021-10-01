@@ -8,11 +8,10 @@ import static com.mongodb.client.model.Projections.excludeId;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -24,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.joda.time.LocalDateTime;
@@ -145,8 +142,8 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
 
   private static void copyTable(MongoDatabase mongoDatabase, String collectionName, String tmpCollectionName) {
 
-    var tempCollection = getOrCreateNewMongodbCollection(mongoDatabase, tmpCollectionName);
-    var collection = getOrCreateNewMongodbCollection(mongoDatabase, collectionName);
+    var tempCollection = mongoDatabase.getOrCreateNewCollection(tmpCollectionName);
+    var collection = mongoDatabase.getOrCreateNewCollection(collectionName);
     List<Document> documents = new ArrayList<>();
     try (MongoCursor<Document> cursor = tempCollection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
@@ -156,16 +153,6 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     if (!documents.isEmpty()) {
       collection.insertMany(documents);
     }
-  }
-
-  private static MongoCollection<Document> getOrCreateNewMongodbCollection(MongoDatabase database, String collectionName) {
-    var collectionNames = StreamSupport
-        .stream(database.listCollectionNames().spliterator(), false)
-        .collect(Collectors.toSet());
-    if (!collectionNames.contains(collectionName)) {
-      database.createCollection(collectionName);
-    }
-    return database.getCollection(collectionName);
   }
 
 }
