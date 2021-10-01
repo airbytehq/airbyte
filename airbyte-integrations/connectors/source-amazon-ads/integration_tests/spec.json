@@ -38,6 +38,21 @@
         "name": "Start date",
         "examples": ["2022-10-10", "2022-10-22"],
         "type": "string"
+      },
+      "region": {
+        "description": "Region to pull data from (EU/NA/FE/SANDBOX)",
+        "default": "NA",
+        "name": "Region",
+        "title": "AmazonAdsRegion",
+        "enum": ["NA", "EU", "FE", "SANDBOX"],
+        "type": "string"
+      },
+      "profiles": {
+        "title": "Profiles",
+        "description": "profile Ids you want to fetch data for",
+        "name": "Profile Ids",
+        "type": "array",
+        "items": { "type": "integer" }
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"]

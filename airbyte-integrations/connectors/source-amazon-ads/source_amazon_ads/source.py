@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
+from .schemas import Profile
 from .spec import AmazonAdsConfig
 from .streams import (
     Profiles,
@@ -18,6 +19,7 @@ from .streams import (
     SponsoredBrandsCampaigns,
     SponsoredBrandsKeywords,
     SponsoredBrandsReportStream,
+    SponsoredBrandsVideoReportStream,
     SponsoredDisplayAdGroups,
     SponsoredDisplayCampaigns,
     SponsoredDisplayProductAds,
@@ -30,10 +32,7 @@ from .streams import (
     SponsoredProductNegativeKeywords,
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
-    SponsoredBrandsVideoReportStream,
 )
-from .schemas import Profile
-
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
@@ -107,7 +106,6 @@ class SourceAmazonAds(AbstractSource):
             refresh_token=config.refresh_token,
             scopes=[config.scope],
         )
-
 
     @staticmethod
     def _choose_profiles(config: AmazonAdsConfig, profiles: List[Profile]):

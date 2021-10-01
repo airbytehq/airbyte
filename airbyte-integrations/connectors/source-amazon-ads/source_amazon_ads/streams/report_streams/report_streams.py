@@ -226,10 +226,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         now = datetime.utcnow()
         if not start_report_date:
             start_report_date = now
-        
+
         # You cannot pull data for amazon ads more than 60 days
         if (now - start_report_date).days > (60 - ReportStream.LOOK_BACK_WINDOW):
-            start_report_date = now + timedelta(days=-(60-ReportStream.LOOK_BACK_WINDOW))
+            start_report_date = now + timedelta(days=-(60 - ReportStream.LOOK_BACK_WINDOW))
 
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
@@ -317,14 +317,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         reports from day before specified report date and we should take into
         account timezone for each profile.
         :param report_date requested date that stored in stream state.
-        :return date parameter for Amazon Ads generate report. It equial to day
-        before current day for the profile's timezone.
+        :return date parameter for Amazon Ads generate report.
         """
         report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
         profile_tz = pytz.timezone(profile.timezone)
         profile_time = report_date.astimezone(profile_tz)
-        profile_yesterday = profile_time - timedelta(days=1)
-        return profile_yesterday.strftime(ReportStream.REPORT_DATE_FORMAT)
+        return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
 
     def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
         """

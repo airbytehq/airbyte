@@ -51,7 +51,7 @@ def test_source_streams(test_config):
     setup_responses()
     source = SourceAmazonAds()
     streams = source.streams(test_config)
-    assert len(streams) == 17
+    assert len(streams) == 18
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(
         [
