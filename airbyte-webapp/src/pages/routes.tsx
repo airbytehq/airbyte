@@ -41,6 +41,7 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
 }
 
@@ -51,7 +52,7 @@ const MainViewRoutes = () => {
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
-          <Route path="/auth_flow">
+          <Route path={Routes.AuthFlow}>
             <CompleteOauthRequest />
           </Route>
           <Route path={Routes.Destination}>
