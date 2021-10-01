@@ -9,7 +9,7 @@ jobs:
   action:
     runs-on: ubuntu-latest
     steps:
-      - uses: harshithmullapudi/label-actions@69b4832ee035d0d6d6e5dc139a449e6efb051d80
+      - uses: harshithmullapudi/label-actions@39670d1730b11746d38773712de1f549d5c8ada8
         with:
           github-token: ${{ secrets.LABEL_BOT_TOKEN }}
           github-username: ${{ secrets.LABEL_BOT_USERNAME }}
