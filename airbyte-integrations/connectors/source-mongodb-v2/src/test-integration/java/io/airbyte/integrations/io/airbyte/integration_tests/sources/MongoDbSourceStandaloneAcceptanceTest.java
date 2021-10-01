@@ -36,7 +36,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("auth_source", "admin")
         .build());
 
-    String connectionString = String.format("mongodb://%s:%s/",
+    var connectionString = String.format("mongodb://%s:%s/",
         mongoDBContainer.getHost(),
         mongoDBContainer.getFirstMappedPort());
 

@@ -23,7 +23,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-temporal
-        image: "{{ .Values.temporal.image.repository}}:{{ .Values.temporal.image.tag }}"
+        image: {{ include "airbyte.temporalImage" . }}
         imagePullPolicy: {{ .Values.temporal.image.pullPolicy }}
         env:
         - name: AUTO_SETUP
