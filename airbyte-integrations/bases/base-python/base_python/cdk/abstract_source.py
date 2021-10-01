@@ -42,9 +42,11 @@ class AbstractSource(Source, ABC):
         """
 
     @abstractmethod
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], state: Mapping[str, Any] = None) -> List[Stream]:
         """
         :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
+        :param state: The state of the source at the start of a sync. Streams that rely on the output of other incremental streams and use utilize
+        the state to run those incremental streams in incremental mode.
         :return: A list of the streams in this source connector.
         """
 
@@ -77,7 +79,7 @@ class AbstractSource(Source, ABC):
         logger.info(f"Starting syncing {self.name}")
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self.streams(config)}
+        stream_instances = {s.name: s for s in self.streams(config, connector_state)}
         for configured_stream in catalog.streams:
             try:
                 stream_instance = stream_instances[configured_stream.stream.name]

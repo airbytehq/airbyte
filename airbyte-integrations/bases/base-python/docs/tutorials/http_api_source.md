@@ -260,7 +260,7 @@ class SourcePythonHttpTutorial(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         ...
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], state: Mapping[str, Any] = None) -> List[Stream]:
         # NoAuth just means there is no authentication required for this API and is included for completeness.
         # Skip passing an authenticator if no authentication is required.
         # Other authenticators are available for API token-based auth and Oauth2. 
