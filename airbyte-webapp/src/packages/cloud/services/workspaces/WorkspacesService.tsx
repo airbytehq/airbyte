@@ -95,7 +95,7 @@ export function useRemoveWorkspace() {
   );
 }
 
-export function useGetWorkspace(workspaceId: string): CloudWorkspace {
+export function useGetWorkspace(workspaceId: string) {
   const service = useGetWorkspaceService();
 
   return useQuery(

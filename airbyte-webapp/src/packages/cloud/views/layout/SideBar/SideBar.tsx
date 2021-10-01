@@ -128,7 +128,7 @@ const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
   const config = useConfig();
   const { workspace } = useWorkspace();
-  const { remainingCredits } = useGetWorkspace(workspace.workspaceId);
+  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
 
   return (
     <Bar>
@@ -192,7 +192,7 @@ const SideBar: React.FC = () => {
             <SettingsIcon icon={faStar} />
             <Text>
               <FormattedMessage id="credits.credits" />
-              {remainingCredits}
+              <div> {cloudWorkspace.remainingCredits}</div>
             </Text>
           </MenuItem>
         </li>

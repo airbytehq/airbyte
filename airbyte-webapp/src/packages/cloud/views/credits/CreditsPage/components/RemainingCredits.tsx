@@ -28,13 +28,15 @@ const StarIcon = styled(FontAwesomeIcon)`
 
 const RemainingCredits: React.FC = () => {
   const currentWorkspace = useCurrentWorkspace();
-  const { remainingCredits } = useGetWorkspace(currentWorkspace.workspaceId);
+  const { data: cloudWorkspace } = useGetWorkspace(
+    currentWorkspace.workspaceId
+  );
   return (
     <Block>
       <FormattedMessage id="credits.remainingCredits" />
       <Count>
         <StarIcon icon={faStar} />
-        <FormattedNumber value={remainingCredits} />
+        <FormattedNumber value={cloudWorkspace.remainingCredits} />
       </Count>
     </Block>
   );
