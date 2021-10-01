@@ -16,12 +16,12 @@ public class MemorySecretPersistence implements SecretPersistence {
   final Map<SecretCoordinate, String> secretMap = new HashMap<>();
 
   @Override
-  public Optional<String> read(SecretCoordinate coordinate) {
+  public Optional<String> read(final SecretCoordinate coordinate) {
     return Optional.ofNullable(secretMap.get(coordinate));
   }
 
   @Override
-  public void write(SecretCoordinate coordinate, String payload) {
+  public void write(final SecretCoordinate coordinate, final String payload) {
     secretMap.put(coordinate, payload);
   }
 
