@@ -53,7 +53,7 @@ export const WorkspaceSettingsView: React.FC = () => {
         <Formik
           initialValues={{ name: name }}
           onSubmit={async (payload) =>
-            renameWorkspace.mutateAsync({ workspaceId: "", name: payload })
+            renameWorkspace.mutateAsync({ workspaceId: "", name: payload.name })
           }
         >
           {({ dirty, isSubmitting, resetForm, isValid }) => (

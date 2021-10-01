@@ -1,18 +1,19 @@
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
+import { useMutation } from "react-query";
 import styled from "styled-components";
 
 import {
   Content,
   SettingsCard,
 } from "pages/SettingsPage/pages/SettingsComponents";
+
+import { Button } from "components/base/Button";
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
+import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import { LabeledInput } from "components/LabeledInput";
-import { Button } from "../../../../../../components/base/Button";
-import { useMutation } from "react-query";
-import { useAuth } from "../../../../../firebaseReact";
-import { GoogleAuthService } from "../../../../lib/auth/GoogleAuthService";
+import { useAuth } from "packages/firebaseReact";
 
 const ChangeEmailFooter = styled.div`
   display: flex;

@@ -95,10 +95,14 @@ export class GoogleAuthService implements AuthService {
   async changePassword(passwd: string, newPassword: string): Promise<void> {
     const user = await this.getCurrentUser()!;
 
-    const credential = EmailAuthProvider.credential(user.email!, passwd);
-    await reauthenticateWithCredential(user, credential);
+    if (user.email) {
+      const credential = EmailAuthProvider.credential(user.email, passwd);
+      await reauthenticateWithCredential(user, credential);
 
-    return updatePassword(user, newPassword);
+      return updatePassword(user, newPassword);
+    }
+
+    return Promise.resolve();
   }
 
   async resetPassword(email: string): Promise<void> {
