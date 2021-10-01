@@ -28,6 +28,7 @@ __pycache__
 .mypy_cache
 .ipynb_checkpoints
 .pytest_
+request_cache.yml
 request_cache_*.yml
 
 # Python unit test / coverage reports
