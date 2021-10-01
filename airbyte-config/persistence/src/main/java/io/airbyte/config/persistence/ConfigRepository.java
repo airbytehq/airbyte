@@ -452,8 +452,8 @@ public class ConfigRepository {
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
       final List<StandardDestinationDefinition> destinationDefs =
-          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
-      augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, destinationDefs.stream());
+          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
+      augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
           .stream()
           .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
@@ -467,7 +467,7 @@ public class ConfigRepository {
             .map(config -> {
               final SourceConnection source = (SourceConnection) config;
 
-              if (sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
+              if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
                 throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
               }
 
@@ -481,7 +481,7 @@ public class ConfigRepository {
             .map(config -> {
               final DestinationConnection destination = (DestinationConnection) config;
 
-              if (destinationDefIdToSpec.containsKey(destination.getDestinationId())) {
+              if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
                 throw new RuntimeException(
                     new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
               }
@@ -491,6 +491,8 @@ public class ConfigRepository {
             });
         augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
       }
+
+      persistence.replaceAllConfigs(augmentedMap, dryRun);
     } else {
       persistence.replaceAllConfigs(configs, dryRun);
     }
