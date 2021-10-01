@@ -49,6 +49,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
+  }
+
   public MySqlSource() {
     super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
   }
@@ -165,29 +169,30 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public JsonNode toDatabaseConfig(JsonNode config) {
     List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
 
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
-    jdbc_url.append("?useCursorFetch=true");
+    jdbcUrl.append("?useCursorFetch=true");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
-      jdbc_url.append("&").append(config.get("jdbc_url_params").asText());
+      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
-      jdbc_url.append("&");
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+      jdbcUrl.append("&");
       additionalParameters.add("useSSL=true");
       additionalParameters.add("requireSSL=true");
       additionalParameters.add("verifyServerCertificate=false");
     }
 
-    additionalParameters.forEach(x -> jdbc_url.append(x).append("&"));
+    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbc_url.toString());
+        .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -239,7 +244,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
+    final Source source = MySqlSource.sshWrappedSource();
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);
