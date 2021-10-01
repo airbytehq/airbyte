@@ -912,19 +912,25 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         sprint_id = stream_slice["sprint_id"]
         return f"sprint/{sprint_id}/issue"
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["fields"] = ["key", "updated"]
+        params["fields"] = stream_slice["fields"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
         params["jql"] = f"updated > '{issues_state_row}'"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        sprints_stream = Sprints(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
+        field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
+        fields = ["key", "updated"]
+        for name in ["Story Points", "Story point estimate"]:
+            if name in field_ids_by_name:
+                fields.append(field_ids_by_name[name])
+        sprints_stream = Sprints(**stream_args)
         for sprints in sprints_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"sprint_id": sprints["id"]}, **kwargs)
+            yield from super().read_records(stream_slice={"sprint_id": sprints["id"], "fields": fields}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["sprintId"] = stream_slice["sprint_id"]
