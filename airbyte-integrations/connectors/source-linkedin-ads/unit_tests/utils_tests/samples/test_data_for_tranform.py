@@ -21,20 +21,8 @@ input_test_data = [
                             ]
                         }
                     },
-                    {
-                        "or": {
-                            "urn:li:adTargetingFacet:locations": [
-                                "urn:li:geo:103644278"
-                            ]
-                        }
-                    },
-                    {
-                        "or": {
-                            "urn:li:adTargetingFacet:interfaceLocales": [
-                                "urn:li:locale:en_US"
-                            ]
-                        }
-                    },
+                    {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
+                    {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
                 ]
             },
             "exclude": {
@@ -65,7 +53,7 @@ input_test_data = [
                     "directSponsoredContent": 0,
                     "share": "urn:li:share:1234",
                     "custom_num_var": 1234,
-                    "custom_obj_var": {'key': 1234},
+                    "custom_obj_var": {"key": 1234},
                     "custom_arr_var": [1, 2, 3, 4],
                     "custom_null_var": None,
                 }

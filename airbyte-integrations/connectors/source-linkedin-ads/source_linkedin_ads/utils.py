@@ -209,7 +209,7 @@ def transform_targeting_criteria(
     def unnest_dict(nested_dict: Dict) -> Iterable[List]:
         """
         Unnest the nested dict to simplify the normalization
-        
+
         EXAMPLE OUTPUT:
             [
                 {"type": "some_key", "values": "some_values"},
@@ -231,7 +231,6 @@ def transform_targeting_criteria(
                 values.append(value)
             result.append({"type": key, "values": values})
         yield from result
-    
 
     # get the target dict from record
     targeting_criteria = record.get(dict_key)
@@ -298,7 +297,7 @@ def transform_variables(
         record["variables"]["type"] = key
         record["variables"]["values"] = []
         for key, param in params.items():
-            value = str(param) # convert various datatypes of values into the string
+            value = str(param)  # convert various datatypes of values into the string
             record["variables"]["values"].append({"key": key, "value": value})
         # Clean the nested structure
         record["variables"].pop("data")
