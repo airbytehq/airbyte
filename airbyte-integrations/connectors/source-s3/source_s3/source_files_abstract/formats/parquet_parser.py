@@ -68,7 +68,7 @@ class ParquetParser(AbstractFileParser):
         elif logical_type == "TIMESTAMP":
             return "string", "date-time"
         elif logical_type == "UUID":
-            return "string", "uiud"
+            return "string", "uuid"
         elif logical_type == "DATE":
             return "string", "date"
         raise TypeError(f"unsupported schema logical type: {logical_type}")
