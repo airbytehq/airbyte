@@ -60,4 +60,5 @@ mainClassName = 'io.airbyte.workers.WorkerApp'
 
 application {
     mainClass = mainClassName
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }

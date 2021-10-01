@@ -99,6 +99,7 @@ mainClassName = 'io.airbyte.server.ServerApp'
 
 application {
     mainClass = mainClassName
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 Properties env = new Properties()
