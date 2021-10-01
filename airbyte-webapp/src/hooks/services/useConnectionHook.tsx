@@ -115,7 +115,9 @@ const useConnection = (): {
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
   );
-  const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
+  const deleteConnectionResource = useFetcher(
+    ConnectionResource.deleteShapeItem()
+  );
   const resetConnectionResource = useFetcher(ConnectionResource.reset());
   const syncConnectionResource = useFetcher(ConnectionResource.syncShape());
 
@@ -172,6 +174,33 @@ const useConnection = (): {
     }
   };
 
+  const updateConnectionsStore = useFetcher(ConnectionResource.listShape());
+
+  const deleteConnection = async ({
+    connectionId,
+  }: {
+    connectionId: string;
+  }) => {
+    await deleteConnectionResource({}, { connectionId }, [
+      [
+        ConnectionResource.listShape(),
+        { workspaceId: workspace.workspaceId },
+        (cId: string, connectionsIds: { connections: string[] }) => {
+          const res = connectionsIds?.connections || [];
+          const index = res.findIndex((c) => c === cId);
+
+          return {
+            connections: [...res.slice(0, index), ...res.slice(index + 1)],
+          };
+        },
+      ],
+    ]);
+
+    await updateConnectionsStore({ workspaceId: workspace.workspaceId });
+
+    push(Routes.Connections);
+  };
+
   const updateConnection = async ({
     withRefreshedCatalog,
     ...formValues
@@ -209,16 +238,6 @@ const useConnection = (): {
         },
       }
     );
-  };
-
-  const deleteConnection = async ({
-    connectionId,
-  }: {
-    connectionId: string;
-  }) => {
-    await deleteConnectionResource({ connectionId });
-
-    push(Routes.Connections);
   };
 
   const resetConnection = useCallback(

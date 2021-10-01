@@ -48,6 +48,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
+  public static final List<String> SSL_PARAMETERS = List.of(
+      "useSSL=true",
+      "requireSSL=true",
+      "verifyServerCertificate=false");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
@@ -167,8 +171,6 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
-    List<String> additionalParameters = new ArrayList<>();
-
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -182,13 +184,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
     // assume ssl if not explicitly mentioned.
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
-      jdbcUrl.append("&");
-      additionalParameters.add("useSSL=true");
-      additionalParameters.add("requireSSL=true");
-      additionalParameters.add("verifyServerCertificate=false");
+      jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
     }
-
-    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
