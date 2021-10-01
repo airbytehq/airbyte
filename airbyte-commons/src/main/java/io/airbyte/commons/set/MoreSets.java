@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class MoreSets {
 
-  public static <T> void assertEqualsVerbose(Set<T> set1, Set<T> set2) {
+  public static <T> void assertEqualsVerbose(final Set<T> set1, final Set<T> set2) {
     Preconditions.checkNotNull(set1);
     Preconditions.checkNotNull(set2);
 
