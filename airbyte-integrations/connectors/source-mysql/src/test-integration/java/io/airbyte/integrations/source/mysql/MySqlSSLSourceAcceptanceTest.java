@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -12,8 +14,6 @@ import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
-
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 
 public class MySqlSSLSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 

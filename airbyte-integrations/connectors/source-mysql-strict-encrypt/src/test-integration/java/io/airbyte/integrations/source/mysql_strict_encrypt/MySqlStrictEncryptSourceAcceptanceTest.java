@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -27,8 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
-
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 
 public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
