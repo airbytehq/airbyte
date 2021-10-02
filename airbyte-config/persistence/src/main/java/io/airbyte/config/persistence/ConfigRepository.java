@@ -39,8 +39,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigRepository {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
 
   private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
@@ -126,6 +130,25 @@ public class ConfigRepository {
     }
   }
 
+  public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+  }
+
+  public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
+    persistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinition.getSourceDefinitionId().toString(),
+        sourceDefinition);
+  }
+
+  public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete source definition with id: {}, but it does not exist", sourceDefId);
+    }
+  }
+
   public List<StandardSourceDefinition> listStandardSources() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
   }
@@ -170,6 +193,14 @@ public class ConfigRepository {
         destinationDefinition);
   }
 
+  public void deleteStandardDestinationDefinition(final UUID destDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", destDefId);
+    }
+  }
+
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
@@ -183,7 +214,7 @@ public class ConfigRepository {
   private Optional<SourceConnection> getOptionalSourceConnection(final UUID sourceId) throws JsonValidationException, IOException {
     try {
       return Optional.of(getSourceConnection(sourceId));
-    } catch (ConfigNotFoundException e) {
+    } catch (final ConfigNotFoundException e) {
       return Optional.empty();
     }
   }
@@ -304,7 +335,7 @@ public class ConfigRepository {
   private Optional<DestinationConnection> getOptionalDestinationConnection(final UUID destinationId) throws JsonValidationException, IOException {
     try {
       return Optional.of(getDestinationConnection(destinationId));
-    } catch (ConfigNotFoundException e) {
+    } catch (final ConfigNotFoundException e) {
       return Optional.empty();
     }
   }
@@ -418,9 +449,9 @@ public class ConfigRepository {
    * @param configurations from dumpConfig()
    * @return input suitable for replaceAllConfigs()
    */
-  public static Map<AirbyteConfig, Stream<?>> deserialize(Map<String, Stream<JsonNode>> configurations) {
-    Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
-    for (String configSchemaName : configurations.keySet()) {
+  public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
+    final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
+    for (final String configSchemaName : configurations.keySet()) {
       deserialized.put(ConfigSchema.valueOf(configSchemaName),
           configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
     }
@@ -531,11 +562,11 @@ public class ConfigRepository {
     return map;
   }
 
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     persistence.loadData(seedPersistence);
   }
 
-  public void setSpecFetcher(Function<String, ConnectorSpecification> specFetcherFn) {
+  public void setSpecFetcher(final Function<String, ConnectorSpecification> specFetcherFn) {
     this.specFetcherFn = specFetcherFn;
   }
 
