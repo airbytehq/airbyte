@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+// todo (cgardens) - make this an actual singleton so we can write tests and mock the components.
 /**
  * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to
  * cloud storages.
@@ -31,8 +32,10 @@ public class LogClientSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LogClientSingleton.class);
 
-  private static final int LOG_TAIL_SIZE = 1000000;
-  private static CloudLogs logClient;
+  @VisibleForTesting
+  static final int LOG_TAIL_SIZE = 1000000;
+  @VisibleForTesting
+  static CloudLogs logClient;
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
@@ -114,6 +117,10 @@ public class LogClientSingleton {
    */
   @VisibleForTesting
   public static void deleteLogs(final Configs configs, final String logPath) {
+    if (logPath == null || logPath.equals(Path.of(""))) {
+      return;
+    }
+
     if (shouldUseLocalLogs(configs)) {
       throw new NotImplementedException("Local log deletes not supported.");
     }
