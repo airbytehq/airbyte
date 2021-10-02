@@ -2,6 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
 
+import { AuthErrorCodes } from "firebase/auth";
+
 import { H5, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
 import FormContent from "../components/FormContent";
@@ -54,12 +56,6 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
-// https://firebase.google.com/docs/reference/js/v8/firebase.auth.Error
-enum FirebaseAuthError {
-  NetworkFailure = "auth/network-request-failed",
-  TooManyRequests = "auth/too-many-requests",
-}
-
 enum FirebaseAuthMessageId {
   Success = "firebase.auth.success",
   NetworkFailure = "firebase.auth.error.networkRequestFailed",
@@ -84,7 +80,7 @@ const ConfirmEmailPage: React.FC = () => {
       })
       .catch((error) => {
         switch (error.code) {
-          case FirebaseAuthError.NetworkFailure:
+          case AuthErrorCodes.NETWORK_REQUEST_FAILED:
             registerNotification({
               id: error.code,
               title: formatMessage({
@@ -93,7 +89,7 @@ const ConfirmEmailPage: React.FC = () => {
               isError: true,
             });
             break;
-          case FirebaseAuthError.TooManyRequests:
+          case AuthErrorCodes.TOO_MANY_ATTEMPTS_TRY_LATER:
             registerNotification({
               id: error.code,
               title: formatMessage({
