@@ -64,7 +64,7 @@ enum FirebaseAuthMessageId {
   Success = "firebase.auth.success",
   NetworkFailure = "firebase.auth.error.networkRequestFailed",
   TooManyRequests = "firebase.auth.error.tooManyRequests",
-  DefaultError = "firebase.auth.error.default"
+  DefaultError = "firebase.auth.error.default",
 }
 
 const ConfirmEmailPage: React.FC = () => {
@@ -89,21 +89,27 @@ const ConfirmEmailPage: React.FC = () => {
           case FirebaseAuthError.NetworkFailure:
             registerNotification({
               id: error.code,
-              title: formatMessage({ id: FirebaseAuthMessageId.NetworkFailure }),
+              title: formatMessage({
+                id: FirebaseAuthMessageId.NetworkFailure,
+              }),
               isError: true,
             });
             break;
           case FirebaseAuthError.TooManyRequests:
             registerNotification({
               id: error.code,
-              title: formatMessage({ id: FirebaseAuthMessageId.TooManyRequests }),
+              title: formatMessage({
+                id: FirebaseAuthMessageId.TooManyRequests,
+              }),
               isError: true,
             });
             break;
           default:
             registerNotification({
               id: error.code,
-              title: formatMessage({ id: FirebaseAuthMessageId.DefaultError }),
+              title: formatMessage({
+                id: FirebaseAuthMessageId.DefaultError,
+              }),
               isError: true,
             });
         }
