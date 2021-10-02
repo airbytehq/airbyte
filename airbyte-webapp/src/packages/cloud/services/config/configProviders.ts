@@ -13,6 +13,7 @@ const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
       return config;
     } catch (e) {
       console.error("error occurred while parsing the json config");
+      return {};
     }
   }
 
