@@ -406,5 +406,10 @@
   "connector.destination": "Destination",
 
   "demo.message.title": "This Airbyte demo is read-only",
-  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
+  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
+
+  "firebase.auth.success": "A new confirmation email has been sent to you",
+  "firebase.auth.error.networkRequestFailed": "It appears to be a network issue. Please try again later.",
+  "firebase.auth.error.tooManyRequests": "You have requested too many confirmation links. Please check your inbox first, or wait 10 minutes before you try again.",
+  "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later."
 }
