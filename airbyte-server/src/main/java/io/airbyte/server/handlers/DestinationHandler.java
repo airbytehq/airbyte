@@ -26,7 +26,6 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.handlers.search.DestinationSearcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -194,20 +193,13 @@ public class DestinationHandler {
     for (DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getTombstone()) {
         DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
-        if (matchSearch(destinationSearch, destinationRead)) {
+        if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
           reads.add(destinationRead);
         }
       }
     }
 
     return new DestinationReadList().destinations(reads);
-  }
-
-  public boolean matchSearch(DestinationSearch sourceSearch, DestinationRead destinationRead) {
-    final DestinationSearcher destinationSearcher = new DestinationSearcher(sourceSearch);
-    final DestinationRead destinationReadFromSearch = destinationSearcher.search(destinationRead);
-
-    return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
   private void validateDestination(final ConnectorSpecification spec, final JsonNode configuration) throws JsonValidationException {
