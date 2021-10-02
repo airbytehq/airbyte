@@ -31,7 +31,7 @@ const SourcesPage: React.FC = () => {
             <SourceItemPage />
           </ErrorBoundary>
         </Route>
-        <Route path={Routes.Source} exact>
+        <Route path={Routes.Root} exact>
           <AllSourcesPage />
         </Route>
         <Redirect to={Routes.Root} />
