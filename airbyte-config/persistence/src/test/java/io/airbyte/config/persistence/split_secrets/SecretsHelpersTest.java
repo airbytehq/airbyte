@@ -48,13 +48,13 @@ public class SecretsHelpersTest {
    */
   private static Stream<Arguments> provideTestCases() {
     return Stream.of(
-//        new OptionalPasswordTestCase(),
-//        new SimpleTestCase(),
-//        new NestedObjectTestCase(),
-//        new OneOfTestCase(),
-//        new ArrayTestCase(),
-//        new ArrayOneOfTestCase(),
-//        new NestedOneOfTestCase(),
+        new OptionalPasswordTestCase(),
+        new SimpleTestCase(),
+        new NestedObjectTestCase(),
+        new OneOfTestCase(),
+        new ArrayTestCase(),
+        new ArrayOneOfTestCase(),
+        new NestedOneOfTestCase(),
         new PostgresSshKeyTestCase()).map(Arguments::of);
   }
 
