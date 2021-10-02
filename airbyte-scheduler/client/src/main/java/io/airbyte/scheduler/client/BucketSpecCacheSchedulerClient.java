@@ -91,7 +91,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
           now,
           now,
           true,
-          Path.of(""));
+          null);
       return new SynchronousResponse<>(cachedSpecOptional.get(), mockMetadata);
     } else {
       LOGGER.debug("Spec bucket cache: Cache miss.");
