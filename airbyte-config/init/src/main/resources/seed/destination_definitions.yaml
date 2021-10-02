@@ -85,11 +85,6 @@
   dockerRepository: airbyte/destination-dynamodb
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
-- destinationDefinitionId: 8aaf41d0-f6d2-46de-9e79-c9540f828142
-  name: Keen
-  dockerRepository: airbyte/destination-keen
-  dockerImageTag: 0.2.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
 - destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
   name: Chargify (Keen)
   dockerRepository: airbyte/destination-keen
