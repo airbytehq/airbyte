@@ -469,62 +469,62 @@ public class ConfigRepository {
       // get all source defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
       final List<StandardSourceDefinition> sourceDefs =
-              (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
+          (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
       // restore data in the map that gets consumed downstream.
       augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
       final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
-              .stream()
-              .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, sourceDefinition -> {
-                final String imageName = DockerUtils
-                        .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-                return specFetcherFn.apply(imageName);
-              }));
+          .stream()
+          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, sourceDefinition -> {
+            final String imageName = DockerUtils
+                .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+            return specFetcherFn.apply(imageName);
+          }));
 
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
       final List<StandardDestinationDefinition> destinationDefs =
-              (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
+          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
       augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
-              .stream()
-              .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
-                final String imageName = DockerUtils
-                        .getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
-                return specFetcherFn.apply(imageName);
-              }));
+          .stream()
+          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
+            final String imageName = DockerUtils
+                .getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
+            return specFetcherFn.apply(imageName);
+          }));
 
       if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
         final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
-                .map(config -> {
-                  final SourceConnection source = (SourceConnection) config;
+            .map(config -> {
+              final SourceConnection source = (SourceConnection) config;
 
-                  if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
-                    throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
-                  }
+              if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
+                throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
+              }
 
-                  final var connectionConfig =
-                          statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
+              final var connectionConfig =
+                  statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
 
-                  return source.withConfiguration(connectionConfig);
-                });
+              return source.withConfiguration(connectionConfig);
+            });
         augmentedMap.put(ConfigSchema.SOURCE_CONNECTION, augmentedValue);
       }
 
       if (augmentedMap.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
         final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION)
-                .map(config -> {
-                  final DestinationConnection destination = (DestinationConnection) config;
+            .map(config -> {
+              final DestinationConnection destination = (DestinationConnection) config;
 
-                  if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
-                    throw new RuntimeException(
-                            new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
-                  }
+              if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
+                throw new RuntimeException(
+                    new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
+              }
 
-                  final var connectionConfig = statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
-                          destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
+              final var connectionConfig = statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
+                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
 
-                  return destination.withConfiguration(connectionConfig);
-                });
+              return destination.withConfiguration(connectionConfig);
+            });
         augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
       }
 
