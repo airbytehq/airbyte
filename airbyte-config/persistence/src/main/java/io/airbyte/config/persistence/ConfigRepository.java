@@ -494,7 +494,7 @@ public class ConfigRepository {
           }));
 
       if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
-        final Stream<JsonNode> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
+        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
             .map(config -> {
               final SourceConnection source = (SourceConnection) config;
 
@@ -502,13 +502,16 @@ public class ConfigRepository {
                 throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
               }
 
-              return statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
+              final var connectionConfig =
+                  statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
+
+              return source.withConfiguration(connectionConfig);
             });
         augmentedMap.put(ConfigSchema.SOURCE_CONNECTION, augmentedValue);
       }
 
       if (augmentedMap.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
-        final Stream<JsonNode> augmentedValue = augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION)
+        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION)
             .map(config -> {
               final DestinationConnection destination = (DestinationConnection) config;
 
@@ -517,8 +520,10 @@ public class ConfigRepository {
                     new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
               }
 
-              return statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
+              final var connectionConfig = statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
                   destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
+
+              return destination.withConfiguration(connectionConfig);
             });
         augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
       }
