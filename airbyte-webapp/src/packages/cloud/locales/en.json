@@ -70,5 +70,10 @@
   "modals.addUser.button.addUser": "Add another user",
   "modals.addUser.button.cancel": "Cancel",
   "modals.addUser.button.submit": "Send invitation",
-  "workspaces.viewAllWorkspaces": "View all workspaces"
+  "workspaces.viewAllWorkspaces": "View all workspaces",
+
+  "firebase.auth.success": "A new confirmation email has been sent to you",
+  "firebase.auth.error.networkRequestFailed": "There appears to be a network issue. Please try again later.",
+  "firebase.auth.error.tooManyRequests": "You have requested too many confirmation links. Please check your inbox first, or wait 10 minutes before you try again.",
+  "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later."
 }
