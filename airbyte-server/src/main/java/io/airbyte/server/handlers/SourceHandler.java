@@ -11,6 +11,7 @@ import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -23,6 +24,7 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.SpecFetcher;
+import io.airbyte.server.handlers.search.SourceSearcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -145,6 +147,29 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
+  public SourceReadList searchSources(SourceSearch sourceSearch)
+    throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<SourceRead> reads = Lists.newArrayList();
+
+    for (SourceConnection sci : configRepository.listSourceConnection()) {
+      if (!sci.getTombstone()) {
+        SourceRead sourceRead = buildSourceRead(sci.getSourceId());
+        if (matchSearch(sourceSearch, sourceRead)) {
+          reads.add(sourceRead);
+        }
+      }
+    }
+
+    return new SourceReadList().sources(reads);
+  }
+
+  public boolean matchSearch(SourceSearch sourceSearch, SourceRead sourceRead) {
+    final SourceSearcher sourceSearcher = new SourceSearcher(sourceSearch);
+    final SourceRead sourceReadFromSearch = sourceSearcher.search(sourceRead);
+
+    return (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead));
+  }
+
   public void deleteSource(SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
@@ -250,7 +275,7 @@ public class SourceHandler {
     configRepository.writeSourceConnection(sourceConnection, spec);
   }
 
-  private SourceRead toSourceRead(final SourceConnection sourceConnection,
+  protected static SourceRead toSourceRead(final SourceConnection sourceConnection,
                                   final StandardSourceDefinition standardSourceDefinition) {
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
