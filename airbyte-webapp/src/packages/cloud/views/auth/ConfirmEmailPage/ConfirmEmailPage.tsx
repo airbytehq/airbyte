@@ -68,16 +68,14 @@ enum FirebaseAuthMessageId {
 }
 
 const ConfirmEmailPage: React.FC = () => {
-  console.log(FirebaseAuthError);
   const { sendEmailVerification } = useAuthService();
   const { email } = useCurrentUser();
   const { registerNotification } = useNotificationService();
   const { formatMessage } = useIntl();
 
-  const sendEmailVerificationFn = () => {
+  const onClickSendEmailVerification = () => {
     sendEmailVerification()
-      .then((x) => {
-        console.log(JSON.stringify(x));
+      .then(() => {
         registerNotification({
           id: "auth/success",
           title: formatMessage({ id: FirebaseAuthMessageId.Success }),
@@ -138,7 +136,7 @@ const ConfirmEmailPage: React.FC = () => {
                 values={{ email }}
               />
             </Text>
-            <Resend $light as="div" onClick={sendEmailVerificationFn}>
+            <Resend $light as="div" onClick={onClickSendEmailVerification}>
               <FormattedMessage id="login.resendEmail" />
             </Resend>
           </div>
