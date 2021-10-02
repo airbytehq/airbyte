@@ -60,6 +60,13 @@ enum FirebaseAuthError {
   TooManyRequests = "auth/too-many-requests",
 }
 
+enum FirebaseAuthMessageId {
+  Success = "firebase.auth.success",
+  NetworkFailure = "firebase.auth.error.networkRequestFailed",
+  TooManyRequests = "firebase.auth.error.tooManyRequests",
+  DefaultError = "firebase.auth.error.default"
+}
+
 const ConfirmEmailPage: React.FC = () => {
   console.log(FirebaseAuthError);
   const { sendEmailVerification } = useAuthService();
@@ -72,8 +79,8 @@ const ConfirmEmailPage: React.FC = () => {
       .then((x) => {
         console.log(JSON.stringify(x));
         registerNotification({
-          id: "firebase.auth.success",
-          title: formatMessage({ id: "firebase.auth.success" }),
+          id: "auth/success",
+          title: formatMessage({ id: FirebaseAuthMessageId.Success }),
           isError: false,
         });
       })
@@ -82,27 +89,21 @@ const ConfirmEmailPage: React.FC = () => {
           case FirebaseAuthError.NetworkFailure:
             registerNotification({
               id: error.code,
-              title: formatMessage({
-                id: "firebase.auth.error.networkRequestFailed",
-              }),
+              title: formatMessage({ id: FirebaseAuthMessageId.NetworkFailure }),
               isError: true,
             });
             break;
           case FirebaseAuthError.TooManyRequests:
             registerNotification({
               id: error.code,
-              title: formatMessage({
-                id: "firebase.auth.error.tooManyRequests",
-              }),
+              title: formatMessage({ id: FirebaseAuthMessageId.TooManyRequests }),
               isError: true,
             });
             break;
           default:
             registerNotification({
               id: error.code,
-              title: formatMessage({
-                id: "firebase.auth.error.default",
-              }),
+              title: formatMessage({ id: FirebaseAuthMessageId.DefaultError }),
               isError: true,
             });
         }
