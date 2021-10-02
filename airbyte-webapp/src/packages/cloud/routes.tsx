@@ -80,9 +80,6 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   useGetWorkspace(currentWorkspaceId);
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const { workspace } = useWorkspace();
-  const mainRedirect = workspace.displaySetupWizard
-    ? Routes.Onboarding
-    : Routes.Connections;
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -158,7 +155,10 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
           <OnboardingPage />
         </Route>
       )}
-      <Redirect to={mainRedirect} />
+      <Route exact path={Routes.Root}>
+        <SourcesPage />
+      </Route>
+      <Redirect to={Routes.Connections} />
     </Switch>
   );
 };

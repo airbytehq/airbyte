@@ -130,13 +130,7 @@ const SideBar: React.FC = () => {
   return (
     <Bar>
       <div>
-        <Link
-          to={
-            workspace.displaySetupWizard
-              ? Routes.Onboarding
-              : Routes.Connections
-          }
-        >
+        <Link to={Routes.Root}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
@@ -164,7 +158,15 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Source} activeClassName="active">
+            <MenuItem
+              to={Routes.Root}
+              exact
+              activeClassName="active"
+              isActive={(_, location) =>
+                location.pathname === Routes.Root ||
+                location.pathname.startsWith(Routes.Source)
+              }
+            >
               <Source />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
