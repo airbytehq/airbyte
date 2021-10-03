@@ -1,20 +1,6 @@
 # Mongodb
 
-## Overview
-
-The Airbyte MongoDB destination allows you to sync data to MongoDB.
-
-## Sync overview
-
-### Output schema of `destination-mongodb`
-
-Each stream will be output into its own collection in MongoDB. Each collection will contain 3 fields:
-
-* `_id`: an identifier assigned to each document that is processed. The filed type in MongoDB is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The field type in MongoDB is `Timestamp`.
-* `_airbyte_data`: a json blob representing with the event data. The field type in MongoDB is `Object`.
-* 
-#### Features
+## Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
@@ -23,23 +9,26 @@ Each stream will be output into its own collection in MongoDB. Each collection w
 | Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | Yes |  |
 
-## Getting started
+## Output Schema for `destination-mongodb`
 
-### Requirements
+Each stream will be output into its own collection in MongoDB. Each collection will contain 3 fields:
+
+* `_id`: an identifier assigned to each document that is processed. The filed type in MongoDB is `String`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The field type in MongoDB is `Timestamp`.
+* `_airbyte_data`: a json blob representing with the event data. The field type in MongoDB is `Object`.
+
+## Getting Started (Airbyte Cloud)
+On Airbyte Cloud, only TLS connections to your MongoDB instance are supported in destination configuration. Other than that, you can proceed with the open-source instructions below.
+
+## Getting Started (Airbyte Open-Source)
+
+#### Requirements
 
 To use the MongoDB destination, you'll need:
 
-* A MongoDB server
-
-### Setup guide
-
-#### **Permissions**
-
-You need a MongoDB user that can create collections and write documents. We highly recommend creating an Airbyte-specific user for this purpose.
-
-#### Target Database
-
-You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
+1. A MongoDB server
+2. You need a MongoDB user that can create collections and write documents. We highly recommend creating an Airbyte-specific user for this purpose.
+3. You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
 
 ### Setup the MongoDB destination in Airbyte
 
@@ -60,9 +49,9 @@ You should now have all the requirements needed to configure MongoDB as a destin
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
-## Notes about MongoDB Naming Conventions
+## Naming Conventions
 
-From [MongoDB Identifiers syntax](https://docs.mongodb.com/manual/reference/limits/):
+The following information comes from the [MongoDB Limits and Thresholds](https://docs.mongodb.com/manual/reference/limits/) documentation.
 
 #### Database Name Case Sensitivity
 
