@@ -57,7 +57,9 @@ GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airbyte;
 ```
 
-#### 3. That's it!
+#### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
+
+#### 4. That's it!
 
 Your database user should now be ready for use with Airbyte.
 
