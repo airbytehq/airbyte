@@ -54,7 +54,7 @@ If for any reason the request gets denied, let us know and we will be able to un
 
 Tokens issued after April 28, 2021 are only given access to the Google Ads API as the AdWords API is no longer available for new users. Thus, this source can only be used if you already have a token issued previously. A new source using the Google Ads API is being built \(see [issue 3457](https://github.com/airbytehq/airbyte/issues/3457) for more information\).
 
-## Rate Limiting and Performance Considerations
+## Rate Limiting & Performance Considerations
 
 This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [google developer docs](https://developers.google.com/adwords/api/faq#access).
 
