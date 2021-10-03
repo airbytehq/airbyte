@@ -28,9 +28,10 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 
 ## Getting Started (Airbyte Cloud)
 
-1. Grab your Ads Account ID. The steps to find it are [here](https://www.facebook.com/business/help/1492627900875762).
-2. Click `Authenticate your Facebook Marketing account`.
-3. Enter your Account ID.
+1. Click `Authenticate your Facebook Marketing account`.
+2. Enter your Account ID. Learn how to find it are [here](https://www.facebook.com/business/help/1492627900875762).
+3. Enter a start date and your Insights settings.   
+4. You're done.
 
 ## Getting Started (Airbyte Open-Source)
 
