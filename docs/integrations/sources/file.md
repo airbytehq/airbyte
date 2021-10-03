@@ -48,7 +48,7 @@ This source produces a single table for the target file as it replicates only on
 | Parquet | Yes |
 | Pickle | No |
 
-## Getting Started 
+## Getting Started (Airbyte Open-Source / Airbyte Cloud)
 
 1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
