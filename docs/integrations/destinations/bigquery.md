@@ -29,7 +29,7 @@ Each stream will be output into its own table in BigQuery. Each table will conta
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `String`. Due to a Google [limitations](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types) for data migration from GCs to BigQuery by its native job - the timestamp (seconds from 1970' can't be used). Only date format, so only String is accepted for us in this case.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
-## Getting started
+## Getting Started (Airbyte Open-Source / Airbyte Cloud)
 
 #### Requirements
 
