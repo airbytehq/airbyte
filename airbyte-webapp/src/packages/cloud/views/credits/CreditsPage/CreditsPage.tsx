@@ -50,7 +50,7 @@ const CreditsPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "credits" }]} />}
+      headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
       pageTitle={<CreditsTitle />}
     >
       <Content>
