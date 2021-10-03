@@ -23,7 +23,7 @@ const CreditsUsagePage: React.FC = () => {
     () =>
       data?.creditConsumptionByDay?.map((item) => ({
         name: item.date?.[2],
-        value: [item.creditsConsumed],
+        value: item.creditsConsumed,
       })),
     [data]
   );
