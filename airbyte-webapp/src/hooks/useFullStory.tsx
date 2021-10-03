@@ -6,8 +6,12 @@ let inited = false;
 const useFullStory = (config: FullStory.SnippetOptions): boolean => {
   useEffect(() => {
     if (!inited) {
-      FullStory.init(config);
-      inited = true;
+      try {
+        FullStory.init(config);
+        inited = true;
+      } catch (e) {
+        console.error("Failed to init Full Story");
+      }
     }
   }, [config]);
 

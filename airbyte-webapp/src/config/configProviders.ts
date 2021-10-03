@@ -20,6 +20,14 @@ const windowConfigProvider: ConfigProvider = async () => {
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,
     isDemo: window.IS_DEMO === "true",
+    // cloud only start
+    firebase: {
+      apiKey: window.FIREBASE_API_KEY,
+      authDomain: window.FIREBASE_AUTH_DOMAIN,
+    },
+    cloudApiUrl: window.CLOUD_API_URL,
+    cloud: window.CLOUD === "true",
+    // cloud only end
   };
 };
 
