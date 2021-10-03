@@ -10,7 +10,6 @@ import random
 import shutil
 import sys
 import tempfile
-import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, List, Mapping
@@ -24,9 +23,6 @@ from source_s3.source_files_abstract.formats.parquet_parser import PARQUET_TYPES
 from .abstract_test_parser import AbstractTestParser
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
-
-PARQUET_TYPE_NAMES = list(PARQUET_TYPES.values())
-PARQUET_TYPE_NAMES += ["format_datetime", "format_date", "format_uuid"]
 
 
 class TestParquetParser(AbstractTestParser):
@@ -65,7 +61,7 @@ class TestParquetParser(AbstractTestParser):
         """Generates random values with request types"""
         row = []
         for needed_type in types:
-            for json_type in PARQUET_TYPE_NAMES:
+            for json_type in PARQUET_TYPES:
                 if json_type == needed_type:
                     row.append(cls._generate_value(needed_type))
                     break
@@ -91,13 +87,14 @@ class TestParquetParser(AbstractTestParser):
         elif typ == "string":
             random_length = random.randint(0, 10 * 1024)  # max size of bytes is 10k
             return os.urandom(random_length)
-        elif typ == "format_datetime":
+        elif typ == "timestamp":
             return datetime.now() + timedelta(seconds=random.randint(0, 7200))
-        elif typ == "format_date":
-            dt = cls._generate_value("format_datetime")
+        elif typ == "date":
+            dt = cls._generate_value("timestamp")
             return dt.date() if dt else None
-        elif typ == "format_uuid":
-            return str(uuid.uuid4())
+        elif typ == "time":
+            dt = cls._generate_value("timestamp")
+            return dt.time() if dt else None
         raise Exception(f"not supported type: {typ}")
 
     @property
@@ -134,12 +131,13 @@ class TestParquetParser(AbstractTestParser):
             "degrees": "number",
             "birthday": "string",
             "last_seen": "string",
-            "created_at": "format_datetime",
-            "created_date_at": "format_date",
-            "uuid": "format_uuid",
+            "created_at": "timestamp",
+            "created_date_at": "date",
+            "created_time_at": "time",
         }
         # datetime => string type
-        master_schema = {k: (v if not v.startswith("format_") else "string") for k, v in schema.items()}
+
+        master_schema = {k: ParquetParser.parse_field_type(needed_logical_type=v)[0] for k, v in schema.items()}
         suite = []
         # basic 'normal' test
         num_records = 10
@@ -209,14 +207,15 @@ class TestParquetParser(AbstractTestParser):
             "degrees": -9.2,
             "birthday": self._generate_value("string"),
             "last_seen": self._generate_value("string"),
-            "created_at": self._generate_value("format_datetime"),
-            "created_date_at": self._generate_value("format_date"),
-            "uuid": self._generate_value("format_uuid"),
+            "created_at": self._generate_value("timestamp"),
+            "created_date_at": self._generate_value("date"),
+            "created_time_at": self._generate_value("time"),
         }
+
         expected_record = copy.deepcopy(test_record)
-        expected_record["uuid"] = str(expected_record["uuid"]) if expected_record["uuid"] else None
-        expected_record["created_at"] = expected_record["created_at"].isoformat() if expected_record["created_at"] else None
-        expected_record["created_date_at"] = expected_record["created_date_at"].isoformat() if expected_record["created_date_at"] else None
+        expected_record["created_date_at"] = ParquetParser.convert_field_data("date", expected_record["created_date_at"])
+        expected_record["created_time_at"] = ParquetParser.convert_field_data("time", expected_record["created_time_at"])
+        expected_record["created_at"] = ParquetParser.convert_field_data("timestamp", expected_record["created_at"])
 
         suite.append(
             {

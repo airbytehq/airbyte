@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, BinaryIO, Iterator, List, Mapping, Optional, TextIO, Tuple, Union
+from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 
 import pyarrow.parquet as pq
 from pyarrow.parquet import ParquetFile
@@ -10,15 +10,18 @@ from pyarrow.parquet import ParquetFile
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
 
-# All possible parquet data typess
+# All possible parquet data types
 PARQUET_TYPES = {
-    "BOOLEAN": "boolean",
-    "DOUBLE": "number",
-    "FLOAT": "number",
-    "BYTE_ARRAY": "string",
-    "INT32": "integer",
-    "INT64": "integer",
-    "INT96": "integer",
+    # logical_type: (json_type, parquet_types, convert_function)
+    # standard types
+    "string": ("string", ["BYTE_ARRAY"], None),
+    "boolean": ("boolean", ["BOOLEAN"], None),
+    "number": ("number", ["DOUBLE", "FLOAT"], None),
+    "integer": ("integer", ["INT32", "INT64", "INT96"], None),
+    # supported by PyArrow types
+    "timestamp": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
+    "date": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
+    "time": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
 }
 
 
@@ -55,35 +58,33 @@ class ParquetParser(AbstractFileParser):
         return pq.ParquetFile(file, **options)
 
     @staticmethod
-    def __parse_field_type(field) -> Tuple[str, Optional[str]]:
-        """Pyarrow can parse non-JSON types
-        * ParquetLogicalType_DATE
-        * ParquetLogicalType_TIMESTAMP
-        * ParquetLogicalType_UUID
-
+    def parse_field_type(needed_logical_type: str, need_physical_type: str = None) -> Tuple[str, str]:
+        """Pyarrow can parse/support non-JSON types
+        Docs: https://github.com/apache/arrow/blob/5aa2901beddf6ad7c0a786ead45fdb7843bfcccd/python/pyarrow/_parquet.pxd#L56
         """
-        logical_type = field.logical_type.type
-        if logical_type in ["NONE", "STRING"]:
-            return PARQUET_TYPES[field.physical_type], None
-        elif logical_type == "TIMESTAMP":
-            return "string", "date-time"
-        elif logical_type == "UUID":
-            return "string", "uuid"
-        elif logical_type == "DATE":
-            return "string", "date"
-        raise TypeError(f"unsupported schema logical type: {logical_type}")
+        if needed_logical_type not in PARQUET_TYPES:
+            # by default the pyarrow library marks scalar types as 'none' logical type.
+            # For these cases we need to look for by a physical type
+            for logical_type, (json_type, physical_types, _) in PARQUET_TYPES.items():
+                if need_physical_type in physical_types:
+                    return json_type, logical_type
+        else:
+            json_type, physical_types, _ = PARQUET_TYPES[needed_logical_type]
+            if need_physical_type and need_physical_type not in physical_types:
+                raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
+            return json_type, needed_logical_type
+
+        raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
 
     @staticmethod
-    def __convert_field_data(format_value: str, field_value: Any) -> Any:
+    def convert_field_data(logical_type: str, field_value: Any) -> Any:
         """Converts not JSON format to JSON one"""
-        if not format_value or not field_value:
-            return field_value
-        elif format_value in ["date-time", "date"]:
-            return field_value.isoformat()
-        elif format_value == "uuid":
-            return str(field_value)
-
-        raise TypeError(f"unsupported field type: {format_value}, value: {field_value}")
+        if field_value is None:
+            return None
+        if logical_type in PARQUET_TYPES:
+            _, _, func = PARQUET_TYPES[logical_type]
+            return func(field_value) if func else field_value
+        raise TypeError(f"unsupported field type: {logical_type}, value: {field_value}")
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
@@ -92,7 +93,9 @@ class ParquetParser(AbstractFileParser):
         A stored schema is a part of metadata and we can extract it without parsing of full file
         """
         reader = self._init_reader(file)
-        schema_dict = {field.name: self.__parse_field_type(field)[0] for field in reader.schema}
+        schema_dict = {
+            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[0] for field in reader.schema
+        }
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
@@ -106,7 +109,9 @@ class ParquetParser(AbstractFileParser):
 
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
-        logical_types = {field.name: self.__parse_field_type(field)[1] for field in reader.schema}
+        logical_types = {
+            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1] for field in reader.schema
+        }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
@@ -127,6 +132,6 @@ class ParquetParser(AbstractFileParser):
                 # we zip this to get row-by-row
                 for record_values in zip(*columnwise_record_values):
                     yield {
-                        batch_columns[i]: self.__convert_field_data(logical_types[batch_columns[i]], record_values[i])
+                        batch_columns[i]: self.convert_field_data(logical_types[batch_columns[i]], record_values[i])
                         for i in range(len(batch_columns))
                     }
