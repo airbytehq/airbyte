@@ -3,8 +3,7 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
-import { faSlack } from "@fortawesome/free-brands-svg-icons";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Routes } from "packages/cloud/routes";
@@ -187,7 +186,9 @@ const SideBar: React.FC = () => {
             <SettingsIcon icon={faStar} />
             <Text>
               <FormattedMessage id="credits.credits" />
-              <div> {cloudWorkspace.remainingCredits}</div>
+              <div>
+                <FormattedNumber value={cloudWorkspace.remainingCredits} />
+              </div>
             </Text>
           </MenuItem>
         </li>

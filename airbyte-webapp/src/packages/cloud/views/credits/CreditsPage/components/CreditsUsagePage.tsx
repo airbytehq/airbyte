@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -13,19 +13,25 @@ export const ChartWrapper = styled.div`
   padding: 0 50px 24px 0;
 `;
 
+const LegendLabels = ["value"];
+
 const CreditsUsagePage: React.FC = () => {
   const { workspaceId } = useCurrentWorkspace();
   const { data } = useGetUsage(workspaceId);
 
-  const chartData = data?.creditConsumptionByDay?.map((item) => ({
-    name: item.date,
-    creditsConsumed: item.creditsConsumed,
-  }));
+  const chartData = useMemo(
+    () =>
+      data?.creditConsumptionByDay?.map((item) => ({
+        name: item.date?.[2],
+        value: [item.creditsConsumed],
+      })),
+    [data]
+  );
 
   return (
     <ContentCard title={<FormattedMessage id="credits.totalUsage" />} $light>
       <ChartWrapper>
-        <BarChart data={chartData} legendLabels={["creditsConsumed"]} />
+        <BarChart data={chartData} legendLabels={LegendLabels} />
       </ChartWrapper>
     </ContentCard>
   );

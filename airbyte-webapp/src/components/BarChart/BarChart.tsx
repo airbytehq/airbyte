@@ -10,8 +10,11 @@ import {
 import { barChartColors, theme } from "theme";
 
 type BarChartProps = {
-  data: any; // TODO: fix type
-  legendLabels: string[]; // TODO: fix type
+  data?: {
+    name: string;
+    value: number | number[];
+  }[];
+  legendLabels: string[];
 };
 
 const BarChart: React.FC<BarChartProps> = ({ data, legendLabels }) => {
@@ -45,4 +48,4 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels }) => {
   );
 };
 
-export default BarChart;
+export default React.memo(BarChart);
