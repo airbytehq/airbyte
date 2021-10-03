@@ -23,6 +23,7 @@ import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
+import { CompleteOauthRequest } from "./CompleteOauthRequest";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -40,6 +41,7 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
 }
 
@@ -50,6 +52,9 @@ const MainViewRoutes = () => {
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
+          <Route path={Routes.AuthFlow}>
+            <CompleteOauthRequest />
+          </Route>
           <Route path={Routes.Destination}>
             <DestinationPage />
           </Route>

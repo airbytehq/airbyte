@@ -13,6 +13,18 @@ Assuming that you are running Airbyte by running `docker-compose up`, then what 
 that should handle you getting reset to the beginning.
 I would be curious if we can see the logs associated with the failure you are seeing. I would say if after you reset you run into it again we can debug that.
 
+## Git says file names are too long.
+If you are cloning the repo, you might run into a problem where git indicates that certain filenames are too long and it therefore can't create the local file. So if you received this error after cloning the repo, run the following commands in *git bash*:
+```bash
+cd airbyte
+git config core.longpaths true
+git reset --hard HEAD
+```
+However it's worth pointing out that the `core.longpaths` option is defaulted to false for a reason, so use with caution. This git configuration is only changed within the cloned Airbyte repo, so you won't need to worry about changing this setting for other repositories. Find more details about this issue in [this stack overflow question](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
+
+Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases). Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker-compose up`. After this, you should see the Airbyte containers in the Docker application as in the image below.
+
+![](../.gitbook/assets/airbyte_deploy_windows_docker.png)
 
 ## I have run `docker-compose up` and can not access the interface
 

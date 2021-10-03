@@ -29,7 +29,9 @@ Our SSH connector support is designed to be easy to plug into any existing conne
         config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
     ```
     Replace port_key and host_key as necessary. Look at `transform_postgres()` to see an example.
-2. If your `host_key="host"` and `port_key="port"` then step 1 should be sufficient. However if the key names differ for your connector, you will also need to add some logic into `sshtunneling.sh` (within airbyte-workers) to handle this, as currently it assumes that the keys are exactly `host` and `port`.
+2. To make sure your changes are present in Normalization when running tests on the connector locally, you'll need to change [this version tag](https://github.com/airbytehq/airbyte/blob/6d9ba022646441c7f298ca4dcaa3df59b9a19fbb/airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java#L50) to `dev` so that the new locally built docker image for Normalization is used. Don't push this change with the PR though.
+3. If your `host_key="host"` and `port_key="port"` then this step is not necessary. However if the key names differ for your connector, you will also need to add some logic into `sshtunneling.sh` (within airbyte-workers) to handle this, as currently it assumes that the keys are exactly `host` and `port`.
+4. When making your PR, make sure that you've version bumped Normalization (in `airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java` and `airbyte-integrations/bases/base-normalization/Dockerfile`). You'll need to /test & /publish Normalization _first_ so that when you /test the connector, it can use the new version.
 
 ## Misc
 
@@ -47,6 +49,13 @@ There is a tradeoff here.
 * (Good) The way we have structured this allows users to configure a connector in the UI in a way that it is intuitive to user. They put in the host and port they think about referring to the database as (they don't need to worry about any of the localhost version).
 * (Good) The connector code does not need to know anything about SSH, it can just operate on the host and port it gets (and we let SSH Tunnel handle swapping the names for us) which makes writing a connector easier.
 * (Bad) The downside is that the `SshTunnel` logic is more complicated because it is absorbing all of this name swapping so that neither user nor connector developer need to worry about it. In our estimation, the good outweighs the extra complexity incurred here.
+
+
+### Acceptance Testing via ssh tunnel using SshBastion and JdbcDatabaseContainer in Docker 
+1. The `SshBastion` class provides 3 helper functions:
+   `initAndStartBastion()`to initialize and start SSH Bastion server in Docker test container and creates new `Network` for bastion and tested jdbc container
+   `getTunnelConfig()`which return JsoneNode with all necessary configuration to establish ssh tunnel. Connection configuration for integration tests is now taken directly from container settings and does not require a real database connection
+   `stopAndCloseContainers` to stop and close SshBastion and JdbcDatabaseContainer at the end of the test
 
 ## Future Work
 * Add unit / integration testing for `ssh` package.

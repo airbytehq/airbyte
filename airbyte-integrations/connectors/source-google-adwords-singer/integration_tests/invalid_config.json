@@ -1,9 +1,0 @@
-{
-  "developer_token": "hahaha",
-  "oauth_client_id": "notvalid.apps.googleusercontent.com",
-  "oauth_client_secret": "notasecret",
-  "refresh_token": "1//notarefrshtoken",
-  "customer_ids": ["0000000000"],
-  "start_date": "2020-06-01T00:00:00Z",
-  "user_agent": "unknown"
-}

@@ -1,0 +1,15 @@
+{
+  "username": "charles",
+  "password1": {
+    "key1": {
+      "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_9eba44d8-51e7-48f1-bde2-619af0e42c22_v1"
+    }
+  },
+  "password2": {
+    "key6": {
+      "key8": {
+        "_secret": "airbyte_workspace_e0eb0554-ffe0-4e9c-9dc0-ed7f52023eb2_secret_2c2ef2b3-259a-4e73-96d1-f56dacee2e5e_v1"
+      }
+    }
+  }
+}

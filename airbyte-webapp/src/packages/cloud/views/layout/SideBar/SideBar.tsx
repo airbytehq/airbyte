@@ -88,11 +88,6 @@ const DocsIcon = styled(FontAwesomeIcon)`
   line-height: 18px;
 `;
 
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
-
 const SettingsIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 15px;
@@ -195,15 +190,6 @@ const SideBar: React.FC = () => {
               <div> {cloudWorkspace.remainingCredits}</div>
             </Text>
           </MenuItem>
-        </li>
-        <li>
-          <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore slack icon fails here*/}
-            <HelpIcon icon={faSlack} />
-            <Text>
-              <FormattedMessage id="sidebar.slack" />
-            </Text>
-          </MenuLinkItem>
         </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">

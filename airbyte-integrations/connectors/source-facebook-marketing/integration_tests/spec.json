@@ -50,5 +50,13 @@
     "required": ["account_id", "access_token", "start_date"]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["append"]
+  "supported_destination_sync_modes": ["append"],
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["access_token"]]
+    }
+  }
 }
