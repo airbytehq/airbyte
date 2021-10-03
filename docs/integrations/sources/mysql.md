@@ -19,7 +19,10 @@ The MySQL source does not alter the schema present in your database. Depending o
 
 There may be problems with mapping values in MySQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting `zerodatetimebehavior=Converttonull`.
 
-## Getting Started (Airbyte Open-Source / Airbyte Cloud)
+## Getting Started (Airbyte Cloud)
+On Airbyte Cloud, only TLS connections to your MySQL instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.  
+
+## Getting Started (Airbyte Open-Source)
 
 #### Requirements
 
