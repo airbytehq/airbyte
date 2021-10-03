@@ -1,5 +1,14 @@
 # Google Analytics
 
+## Features
+
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
+| SSL connection | Yes |
+
 ## Overview
 
 The Google Analytics source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
@@ -21,16 +30,6 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connec
 * Any custom reports you configure. See the section below on custom reports. 
 
 Please reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
-
-### Features
-
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
-| Namespaces | No |
 
 ### Performance considerations
 
