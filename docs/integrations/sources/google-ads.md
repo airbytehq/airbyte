@@ -12,7 +12,6 @@ If you don't already have a developer token from Google Ads, make sure you follo
 | Incremental Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
-| Namespaces | No |
 
 ## Supported Tables
 
