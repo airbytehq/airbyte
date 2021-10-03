@@ -18,7 +18,7 @@ Each stream will be output into its own collection in MongoDB. Each collection w
 * `_airbyte_data`: a json blob representing with the event data. The field type in MongoDB is `Object`.
 
 ## Getting Started (Airbyte Cloud)
-On Airbyte Cloud, only TLS connections to your MongoDB instance are supported in destination configuration. Other than that, you can proceed with the open-source instructions below.
+Airbyte Cloud only supports connecting to your MongoDB instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
 ## Getting Started (Airbyte Open-Source)
 
