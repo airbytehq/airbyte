@@ -88,6 +88,7 @@ export const EmailSection: React.FC = () => {
                     {({ field, meta }: FieldProps<string>) => (
                       <LabeledInput
                         {...field}
+                        disabled
                         label={
                           <FormattedMessage id="settings.accountSettings.email" />
                         }
@@ -137,7 +138,7 @@ export const EmailSection: React.FC = () => {
                   securityUpdates: workspace.securityUpdates,
                 }}
               />
-              <ChangeEmailFooter>
+              <ChangeEmailFooter style={{ display: "none" }}>
                 <Button
                   isLoading={isChangingEmail}
                   type="submit"

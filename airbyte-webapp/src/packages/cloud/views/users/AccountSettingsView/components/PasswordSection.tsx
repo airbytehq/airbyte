@@ -31,14 +31,9 @@ export const PasswordSection: React.FC = () => {
     void,
     Error,
     { currentPassword: string; password: string }
-  >(
-    async ({ password, currentPassword }) => {
-      return authService.changePassword(currentPassword, password);
-    },
-    {
-      onSuccess: () => window.location.reload(),
-    }
-  );
+  >(async ({ password, currentPassword }) => {
+    return authService.changePassword(currentPassword, password);
+  });
 
   return (
     <SettingsCard>
@@ -49,8 +44,9 @@ export const PasswordSection: React.FC = () => {
             repeatPassword: "",
             password: "",
           }}
-          onSubmit={({ password, currentPassword }) => {
+          onSubmit={({ password, currentPassword }, formikHelpers) => {
             changePassword({ password, currentPassword });
+            formikHelpers.resetForm();
           }}
         >
           {({ values }) => (
@@ -125,7 +121,10 @@ export const PasswordSection: React.FC = () => {
                 <Button
                   isLoading={isChangingPassword}
                   type="submit"
-                  disabled={values.password !== values.repeatPassword}
+                  disabled={
+                    values.password !== values.repeatPassword ||
+                    values.password.length === 0
+                  }
                 >
                   <FormattedMessage id="settings.accountSettings.updatePassword" />
                 </Button>
