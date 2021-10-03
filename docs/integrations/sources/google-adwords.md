@@ -1,6 +1,6 @@
 # Google Adwords (Deprecated)
 
-As mentioned by Google, the AdWords API will sunet in [April 2022](https://ads-developers.googleblog.com/2021/04/upgrade-to-google-ads-api-from-adwords.html). Migrate all requests to the Google Ads API by then to continue managing your Google Ads accounts.
+As mentioned by Google, the AdWords API will sunset in [April 2022](https://ads-developers.googleblog.com/2021/04/upgrade-to-google-ads-api-from-adwords.html). Migrate all requests to the Google Ads API by then to continue managing your Google Ads accounts.
 
 {% hint style="warning" %}
 If you don't already have a developer token from Google Ads, make sure you follow the [instructions](google-adwords.md#how-to-apply-for-the-developer-token) so your request doesn't get denied.
