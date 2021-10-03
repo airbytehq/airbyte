@@ -20,11 +20,11 @@ from .streams import (
     AdGroupAds,
     AdGroups,
     Campaigns,
+    ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
     UserLocationReport,
-    ClickView
 )
 
 
@@ -75,5 +75,5 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(api=google_api),
             Accounts(api=google_api),
             Campaigns(api=google_api),
-            ClickView(**incremental_stream_config)
+            ClickView(**incremental_stream_config),
         ] + custom_query_streams
