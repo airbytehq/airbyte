@@ -18,7 +18,10 @@
 
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-## Getting Started (Airbyte Open-Source / Airbyte Cloud)
+## Getting Started (Airbyte Cloud)
+On Airbyte Cloud, only TLS connections to your Postgres instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.
+
+## Getting Started (Airbyte Open-Source)
 
 #### Requirements
 
