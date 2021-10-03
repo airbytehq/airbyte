@@ -48,7 +48,11 @@ This source produces a single table for the target file as it replicates only on
 | Parquet | Yes |
 | Pickle | No |
 
-## Getting Started (Airbyte Open-Source / Airbyte Cloud)
+## Getting Started (Airbyte Cloud)
+
+Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are naturally disabled.
+
+## Getting Started (Airbyte Open-Source)
 
 1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
