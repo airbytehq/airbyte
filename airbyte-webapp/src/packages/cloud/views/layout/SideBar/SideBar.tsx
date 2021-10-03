@@ -2,7 +2,6 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
-import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
@@ -84,11 +83,6 @@ const Text = styled.div`
 const DocsIcon = styled(FontAwesomeIcon)`
   font-size: 18px;
   line-height: 18px;
-`;
-
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
 `;
 
 const SettingsIcon = styled(FontAwesomeIcon)`
@@ -184,15 +178,6 @@ const SideBar: React.FC = () => {
         </Menu>
       </div>
       <Menu>
-        <li>
-          <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore slack icon fails here*/}
-            <HelpIcon icon={faSlack} />
-            <Text>
-              <FormattedMessage id="sidebar.slack" />
-            </Text>
-          </MenuLinkItem>
-        </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">
             <DocsIcon icon={faBook} />
