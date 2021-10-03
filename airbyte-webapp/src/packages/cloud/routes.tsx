@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
 import { useAsync } from "react-use";
+import { useIntercom } from "react-use-intercom";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -205,6 +206,17 @@ const VerifyEmailRoute: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
+
+  const { boot } = useIntercom();
+
+  useEffect(() => {
+    if (user && user.email && user.name) {
+      boot({
+        email: user.email,
+        name: user.name,
+      });
+    }
+  }, [user]);
 
   return (
     <Router>
