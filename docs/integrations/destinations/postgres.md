@@ -22,7 +22,7 @@ Each stream will be output into its own table in Postgres. Each table will conta
 * `_airbyte_data`: a json blob representing with the event data. The column type in Postgres is `JSONB`.
 
 ## Getting Started (Airbyte Cloud)
-Airbyte Cloud only supports connecting to your Postgres instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
+Airbyte Cloud only supports connecting to your Postgres instance with SSL or TLS encryption. TLS is used by default. Other than that, you can proceed with the open-source instructions below.
 
 ## Getting Started (Airbyte Open-Source)
 
