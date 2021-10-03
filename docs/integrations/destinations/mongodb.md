@@ -26,9 +26,13 @@ On Airbyte Cloud, only TLS connections to your MongoDB instance are supported in
 
 To use the MongoDB destination, you'll need:
 
-1. A MongoDB server
-2. You need a MongoDB user that can create collections and write documents. We highly recommend creating an Airbyte-specific user for this purpose.
-3. You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
+* A MongoDB server
+   
+#### **Permissions**
+You need a MongoDB user that can create collections and write documents. We highly recommend creating an Airbyte-specific user for this purpose.
+
+#### Target Database
+You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
 
 ### Setup the MongoDB destination in Airbyte
 
