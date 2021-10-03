@@ -44,9 +44,15 @@
   "settings.accountSettings.lastName": "Last name",
   "settings.accountSettings.lastName.placeholder": "Smith",
   "settings.accountSettings.email": "Email",
-  "settings.accountSettings.password": "Password",
   "settings.accountSettings.currentPassword": "Current password",
-  "settings.accountSettings.repeatPassword": "Repeat password",
+  "settings.accountSettings.currentPassword.placeholder": "Current password",
+  "settings.accountSettings.newPassword": "New password",
+  "settings.accountSettings.newPasswordConfirmation": "Password confirmation",
+  "settings.accountSettings.updatePassword": "Update",
+  "settings.accountSettings.error.newPasswordMismatch": "New password and confirmation do not match",
+  "settings.accountSettings.error.newPasswordSameAsCurrent": "New password is the same as the current one",
+  "settings.accountSettings.updatePasswordError": "Password update failed: ",
+  "settings.accountSettings.updatePasswordSuccess": "Your password has been updated!",
   "settings.userSettings": "User settings",
   "settings.workspaceSettings": "Workspace settings",
   "settings.generalSettings": "General Settings",
@@ -73,7 +79,8 @@
   "workspaces.viewAllWorkspaces": "View all workspaces",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
+  "firebase.auth.error.invalidPassword": "Incorrect password",
   "firebase.auth.error.networkRequestFailed": "There appears to be a network issue. Please try again later.",
-  "firebase.auth.error.tooManyRequests": "You have requested too many confirmation links. Please check your inbox first, or wait 10 minutes before you try again.",
+  "firebase.auth.error.tooManyRequests": "Too many retries. Please wait 10 minutes before trying again.",
   "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later."
 }
