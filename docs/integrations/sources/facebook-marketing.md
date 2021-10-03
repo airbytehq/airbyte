@@ -26,7 +26,13 @@ You can segment the AdInsights table into parts based on the following informati
 
 For more information, see the [Facebook Insights API documentation. ](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)\\
 
-## Getting started
+## Getting Started (Airbyte Cloud)
+
+1. Grab your Ads Account ID. The steps to find it are [here](https://www.facebook.com/business/help/1492627900875762).
+2. Click `Authenticate your Facebook Marketing account`.
+3. Enter your Account ID.
+
+## Getting Started (Airbyte Open-Source)
 
 #### Requirements
 
