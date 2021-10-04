@@ -14,6 +14,11 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Secure-only version of MySQL source that can be used in the Airbyte cloud.
+ * This connector inherently prevent certain insecure connections such as connecting to
+ * a database over the public internet without encryption.
+ */
 public class MySqlStrictEncryptSource extends SpecModifyingSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlStrictEncryptSource.class);
@@ -25,6 +30,8 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
+    // SSL property should be enabled by default for secure versions of connectors
+    // that can be used in the Airbyte cloud. User should not be able to change this property.
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
     return spec;
   }
