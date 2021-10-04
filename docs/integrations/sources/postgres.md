@@ -15,6 +15,7 @@
 | Custom Types | Yes |  |
 | Arrays | Yes | Byte-arrays are not supported yet. |
 | Generating an RSA Private Key | No | Coming Soon. |
+| Schema Selection | No | Track issue [here.](https://github.com/airbytehq/airbyte/issues/1435) |
 
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
