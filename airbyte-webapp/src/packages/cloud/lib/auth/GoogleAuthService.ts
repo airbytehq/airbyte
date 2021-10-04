@@ -8,6 +8,9 @@ import {
   confirmPasswordReset,
   applyActionCode,
   sendEmailVerification,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
 } from "firebase/auth";
 
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -20,6 +23,13 @@ interface AuthService {
   signOut(): Promise<any>;
 
   signUp(email: string, password: string): Promise<UserCredential>;
+
+  reauthenticate(
+    email: string,
+    passwordPassword: string
+  ): Promise<UserCredential>;
+
+  updatePassword(newPassword: string): Promise<void>;
 
   resetPassword(email: string): Promise<void>;
 
@@ -73,6 +83,26 @@ export class GoogleAuthService implements AuthService {
         throw err;
       }
     );
+  }
+
+  async reauthenticate(
+    email: string,
+    password: string
+  ): Promise<UserCredential> {
+    if (this.auth.currentUser === null) {
+      throw new Error("You must log in first to reauthenticate!");
+    }
+    const credential = EmailAuthProvider.credential(email, password);
+    return reauthenticateWithCredential(this.auth.currentUser, credential);
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    if (this.auth.currentUser === null) {
+      throw new Error("You must log in first to update password!");
+    }
+    return updatePassword(this.auth.currentUser, newPassword).catch((err) => {
+      throw err;
+    });
   }
 
   async resetPassword(email: string): Promise<void> {
