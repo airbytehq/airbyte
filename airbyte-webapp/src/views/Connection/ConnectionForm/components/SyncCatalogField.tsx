@@ -21,6 +21,7 @@ const TreeViewContainer = styled.div`
   border-radius: 4px;
   max-height: 600px;
   overflow-y: auto;
+  -webkit-overlay: true;
 `;
 
 const SchemaHeader = styled(Header)`

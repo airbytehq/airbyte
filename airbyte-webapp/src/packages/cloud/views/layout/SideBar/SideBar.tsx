@@ -2,10 +2,11 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
-import { FormattedMessage } from "react-intl";
+import { faStar } from "@fortawesome/free-regular-svg-icons";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { Routes } from "pages/routes";
+import { Routes } from "packages/cloud/routes";
 import { useConfig } from "config";
 
 import useConnector from "hooks/services/useConnector";
@@ -18,6 +19,7 @@ import Destination from "views/layout/SideBar/components/DestinationIcon";
 import Onboarding from "views/layout/SideBar/components/OnboardingIcon";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import useWorkspace from "hooks/services/useWorkspace";
+import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 
 const Bar = styled.nav`
   width: 100px;
@@ -120,6 +122,7 @@ const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
   const config = useConfig();
   const { workspace } = useWorkspace();
+  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
 
   return (
     <Bar>
@@ -176,6 +179,17 @@ const SideBar: React.FC = () => {
         </Menu>
       </div>
       <Menu>
+        <li>
+          <MenuItem to={Routes.Credits} activeClassName="active">
+            <SettingsIcon icon={faStar} />
+            <Text>
+              <FormattedMessage id="credits.credits" />
+              <div>
+                <FormattedNumber value={cloudWorkspace.remainingCredits} />
+              </div>
+            </Text>
+          </MenuItem>
+        </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">
             <DocsIcon icon={faBook} />
