@@ -5,6 +5,7 @@
 from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
+import json
 
 
 def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
@@ -206,7 +207,7 @@ def transform_targeting_criteria(
 
     """
 
-    def unnest_dict(nested_dict: Dict) -> Iterable[List]:
+    def unnest_dict(nested_dict: Dict) -> Iterable[Dict]:
         """
         Unnest the nested dict to simplify the normalization
 
@@ -218,7 +219,6 @@ def transform_targeting_criteria(
             ]
         """
 
-        result = []
         for key, value in nested_dict.items():
             values = []
             if isinstance(value, List):
@@ -229,8 +229,7 @@ def transform_targeting_criteria(
                         values.append(v)
             elif isinstance(value, Dict):
                 values.append(value)
-            result.append({"type": key, "values": values})
-        yield from result
+            yield {"type": key, "values": values}
 
     # get the target dict from record
     targeting_criteria = record.get(dict_key)
@@ -241,8 +240,7 @@ def transform_targeting_criteria(
         updated_include = {"and": []}
         for k in and_list:
             or_dict = k.get("or")
-            unnested = unnest_dict(or_dict)
-            for j in unnested:
+            for j in unnest_dict(or_dict):
                 updated_include["and"].append(j)
         # Replace the original 'and' with updated_include
         record["targetingCriteria"]["include"] = updated_include
@@ -251,8 +249,7 @@ def transform_targeting_criteria(
     if "exclude" in targeting_criteria:
         or_dict = targeting_criteria.get("exclude").get("or")
         updated_exclude = {"or": []}
-        unnested_dict = unnest_dict(or_dict)
-        for k in unnested_dict:
+        for k in unnest_dict(or_dict):
             updated_exclude["or"].append(k)
         # Replace the original 'or' with updated_exclude
         record["targetingCriteria"]["exclude"] = updated_exclude
@@ -296,9 +293,9 @@ def transform_variables(
     for key, params in variables.items():
         record["variables"]["type"] = key
         record["variables"]["values"] = []
-        for key, param in params.items():
-            value = str(param)  # convert various datatypes of values into the string
-            record["variables"]["values"].append({"key": key, "value": value})
+        for key, value in params.items():
+            # convert various datatypes of values into the string
+            record["variables"]["values"].append({"key": key, "value": json.dumps(value)})
         # Clean the nested structure
         record["variables"].pop("data")
     return record
