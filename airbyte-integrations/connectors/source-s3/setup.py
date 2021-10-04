@@ -11,6 +11,7 @@ MAIN_REQUIREMENTS = [
     "smart-open[s3]==5.1.0",
     "wcmatch==8.2",
     "dill==0.3.4",
+    "pytz",
 ]
 
 TEST_REQUIREMENTS = [
