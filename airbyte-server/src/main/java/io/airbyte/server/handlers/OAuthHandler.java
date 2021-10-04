@@ -5,7 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
@@ -32,10 +32,12 @@ public class OAuthHandler {
 
   private final ConfigRepository configRepository;
   private final OAuthImplementationFactory oAuthImplementationFactory;
+  private final TrackingClient trackingClient;
 
-  public OAuthHandler(ConfigRepository configRepository) {
+  public OAuthHandler(ConfigRepository configRepository, TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository);
+    this.trackingClient = trackingClient;
   }
 
   public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody)
@@ -46,7 +48,7 @@ public class OAuthHandler {
         sourceDefinitionIdRequestBody.getWorkspaceId(),
         sourceDefinitionIdRequestBody.getSourceDefinitionId(),
         sourceDefinitionIdRequestBody.getRedirectUrl()));
-    TrackingClientSingleton.get().track(sourceDefinitionIdRequestBody.getWorkspaceId(), "OAuth Consent - Backend", metadata);
+    trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "OAuth Consent - Backend", metadata);
     return result;
   }
 
@@ -59,7 +61,7 @@ public class OAuthHandler {
         destinationDefinitionIdRequestBody.getWorkspaceId(),
         destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
         destinationDefinitionIdRequestBody.getRedirectUrl()));
-    TrackingClientSingleton.get().track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+    trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     return result;
   }
 
@@ -72,7 +74,7 @@ public class OAuthHandler {
         oauthSourceRequestBody.getSourceDefinitionId(),
         oauthSourceRequestBody.getQueryParams(),
         oauthSourceRequestBody.getRedirectUrl());
-    TrackingClientSingleton.get().track(oauthSourceRequestBody.getWorkspaceId(), "OAuth Flow - Backend", metadata);
+    trackingClient.track(oauthSourceRequestBody.getWorkspaceId(), "OAuth Flow - Backend", metadata);
     return result;
   }
 
@@ -86,7 +88,7 @@ public class OAuthHandler {
         oauthDestinationRequestBody.getDestinationDefinitionId(),
         oauthDestinationRequestBody.getQueryParams(),
         oauthDestinationRequestBody.getRedirectUrl());
-    TrackingClientSingleton.get().track(oauthDestinationRequestBody.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+    trackingClient.track(oauthDestinationRequestBody.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     return result;
   }
 

@@ -166,14 +166,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
-    connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper);
+    connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper, trackingClient);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
-    oAuthHandler = new OAuthHandler(configRepository);
+    oAuthHandler = new OAuthHandler(configRepository, trackingClient);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
         sourceHandler,
