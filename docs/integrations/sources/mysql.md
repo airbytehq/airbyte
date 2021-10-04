@@ -11,7 +11,7 @@
 | SSL Support | Yes |  |
 | SSH Tunnel Connection | Coming soon |  |
 | Namespaces | Yes | Enabled by default |
-| Arrays | Yes | Byte arrays are not supported | 
+| Arrays | Yes | Byte arrays are not supported yet | 
 
 The MySQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
