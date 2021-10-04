@@ -376,6 +376,7 @@ class IssuePropertyKeys(JiraStream):
     """
 
     parse_response_root = "key"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -708,6 +709,7 @@ class ScreenTabs(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
     """
 
+    raise_on_http_errors = False
     top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -741,7 +743,8 @@ class ScreenTabFields(JiraStream):
         screen_tabs_stream = ScreenTabs(authenticator=self.authenticator, domain=self._domain)
         for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
             for tab in screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
-                yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
+                if id in screen and id in tab:
+                    yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
 
 
 class ScreenSchemes(JiraStream):
