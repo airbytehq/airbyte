@@ -93,6 +93,7 @@ class SourceNmbgmrGwl(Source):
                        'properties': {'OBJECTID': {'type': 'number'},
                                       'PointID': {'type': 'string'},
                                       'OSEWellID': {'type': 'string'},
+                                      'WellID': {'type': 'string'},
                                       'OSEWelltagID': {'type': 'string'},
                                       'HoleDepth': {'type': 'number'},
                                       'WellDepth': {'type': 'number'},
@@ -179,6 +180,7 @@ class SourceNmbgmrGwl(Source):
                                       'LatitudeDD': {'type': 'string'},
                                       'LongitudeDD': {'type': 'string'},
                                       'PublicRelease': {'type': 'boolean'},
+                                      'screens': {'type': 'array'},
                                       }}
 
         streams = [AirbyteStream(name='Acoustic',
