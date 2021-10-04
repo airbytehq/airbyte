@@ -160,9 +160,9 @@ class ZuoraObjectsBase(ZuoraBase):
         """
         Custom method.
         Returns the formated datetime string in a way Zuora API endpoint recognises it as timestamp.
-        :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S %Z"
+        :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S.%f %Z"
         """
-        return date.strftime("%Y-%m-%d %H:%M:%S %Z")
+        return date.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
     def get_cursor_from_schema(self, schema: Dict) -> str:
         """
