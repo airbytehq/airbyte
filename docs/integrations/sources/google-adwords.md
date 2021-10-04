@@ -1,20 +1,12 @@
-# Google Adwords
+# Google Adwords (Deprecated)
+
+As mentioned by Google, the AdWords API will sunset in [April 2022](https://ads-developers.googleblog.com/2021/04/upgrade-to-google-ads-api-from-adwords.html). Migrate all requests to the Google Ads API by then to continue managing your Google Ads accounts.
 
 {% hint style="warning" %}
 If you don't already have a developer token from Google Ads, make sure you follow the [instructions](google-adwords.md#how-to-apply-for-the-developer-token) so your request doesn't get denied.
 {% endhint %}
 
-## Overview
-
-The Adwords source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-
-This Adwords source wraps the [Singer Adwords Tap](https://github.com/singer-io/tap-adwords).
-
-### Output schema
-
-Several output streams are available from this source \(accounts, campaigns, ads, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-adwords/tree/master/tap_adwords/schemas).
-
-### Features
+## Features
 
 | Feature | Supported? |
 | :--- | :--- |
@@ -24,17 +16,17 @@ Several output streams are available from this source \(accounts, campaigns, ads
 | SSL connection | Yes |
 | Namespaces | No |
 
-### Performance considerations
+This Adwords source wraps the [Singer Adwords Tap](https://github.com/singer-io/tap-adwords).
 
-This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [google developer docs](https://developers.google.com/adwords/api/faq#access).
+## Supported Tables
 
-## Getting started
+Several tables and their data are available from this source \(accounts, campaigns, ads, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-adwords/tree/master/tap_adwords/schemas).
 
-### Requirements
+## Getting Started (Airbyte Open-Source / Airbyte Cloud)
 
-* Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
+#### Requirements
 
-### Setup guide
+* Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
@@ -62,6 +54,9 @@ If for any reason the request gets denied, let us know and we will be able to un
 
 Tokens issued after April 28, 2021 are only given access to the Google Ads API as the AdWords API is no longer available for new users. Thus, this source can only be used if you already have a token issued previously. A new source using the Google Ads API is being built \(see [issue 3457](https://github.com/airbytehq/airbyte/issues/3457) for more information\).
 
+## Rate Limiting & Performance Considerations (Airbyte Open-Source)
+
+This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/adwords/api/faq#access).
 
 ## Changelog
 
