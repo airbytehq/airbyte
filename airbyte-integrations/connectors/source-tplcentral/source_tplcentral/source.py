@@ -81,7 +81,7 @@ class TplcentralStream(HttpStream, ABC):
 
 
 class InventoryStockSummaries(TplcentralStream):
-    primary_key = ["facility_id", "item_identifier.id"]
+    primary_key = ["facility_id", ["item_identifier", "id"]]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
