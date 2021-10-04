@@ -4,28 +4,7 @@
 If you don't already have a developer token from Google Ads, make sure you follow the [instructions](#how-to-apply-for-the-developer-token) so your request doesn't get denied.
 {% endhint %}
 
-## Sync overview
-
-This source can sync data for the [Google Ads](https://developers.google.com/google-ads/api/fields/v8/overview).
-
-### Output schema
-
-This source is capable of syncing the following streams:
-
-*Main streams*:
-* [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
-* [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
-* [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
-* [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
-
-*Report streams*
-* [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
-* [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
-* [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
-* [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
-* [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
-
-### Features
+## Features
 
 | Feature | Supported? |
 | :--- | :--- |
@@ -33,15 +12,35 @@ This source is capable of syncing the following streams:
 | Incremental Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
-| Namespaces | No |
 
-### Performance considerations
+## Supported Tables
 
-This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [google developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
+This source is capable of syncing the following tables and their data:
 
-## Getting started
+#### Main Tables
+* [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
+* [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+* [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
+* [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
 
-### Requirements
+#### Report Tables
+* [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
+* [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
+* [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
+* [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
+* [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+
+## Getting Started (Airbyte-Cloud)
+
+1. Click `Authenticate your Google Ads account` to sign in with Google and authorize your account.
+2. Get the customer ID for your account. Learn how to do that [here](https://support.google.com/google-ads/answer/1704344)
+3. If your access to the account is through a manager account, get the customer ID of the manager account.
+4. Fill out a start date, and optionally, a conversion window, and custom [GAQL](https://developers.google.com/google-ads/api/docs/query/overview).
+5. You're done.
+
+## Getting Started (Airbyte Open-Source)
+
+#### Requirements
 
 Google Ads Account with an approved Developer Token \(note: In order to get API access to Google Ads, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
@@ -53,7 +52,7 @@ Google Ads Account with an approved Developer Token \(note: In order to get API 
 * customer_id
 * login_customer_id (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
 
-### Setup guide
+#### Setup guide
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
@@ -66,7 +65,7 @@ This guide will provide information as if starting from scratch. Please skip ove
 
 Wow! That was a lot of steps. We are working on making the OAuth flow for all of our connectors simpler \(allowing you to skip needing to get a `developer_token` and a `refresh_token` which are the most painful / time-consuming steps in this walkthrough\).
 
-## How to apply for the developer token
+### How to apply for the developer token
 
 Google is very picky about which software and which use case can get access to a developer token. The Airbyte team has worked with the Google Ads team to whitelist Airbyte and make sure you can get one \(see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information\).
 
@@ -79,9 +78,14 @@ When you apply for a token, you need to mention:
 
 If for any reason the request gets denied, let us know and we will be able to unblock you.
 
-## Understanding Google Ads Query Language
+#### Understanding Google Ads Query Language
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
+
+## Rate Limiting & Performance Considerations (Airbyte Open Source)
+
+This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
+
 
 ## CHANGELOG
 
