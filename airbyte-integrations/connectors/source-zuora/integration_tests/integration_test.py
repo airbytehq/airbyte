@@ -122,15 +122,33 @@ class TestZuora:
 
         # Making example query using input
         example_query = f"""
-            select * from {self.test_stream} where
+            select *
+            from {self.test_stream} where
             {self.test_cursor_field} >= TIMESTAMP '{test_date_slice.get("start_date")}' and
             {self.test_cursor_field} <= TIMESTAMP '{test_date_slice.get("end_date")}'
+            order by {self.test_cursor_field} asc
             """
 
         # Making test query using query() method
         test_query = ZuoraObjectsBase.query(
             self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice
         )
+
+        # If the query is correctly build using connector class return True
+        assert example_query == test_query
+
+    def test_query_full_object(self):
+        """
+        The ZuoraObjectsBase.query() works with streams that doesn't support any of the cursor available,
+        such as `UpdatedDate` or `CreatedDate`. In this case, we cannot filter the object by date,
+        so we pull the whole object.
+        """
+
+        # Making example query using input
+        example_query = f"""select * from {self.test_stream}"""
+
+        # Making test query using query() method
+        test_query = ZuoraObjectsBase.query(self, stream_name=self.test_stream, full_object=True)
 
         # If the query is correctly build using connector class return True
         assert example_query == test_query

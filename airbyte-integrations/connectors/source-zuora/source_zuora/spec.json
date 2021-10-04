@@ -4,8 +4,12 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zuora Connector Configuration",
     "type": "object",
-    "required": ["start_date","client_id","client_secret","tenant_endpoint"],
-    "additionalProperties": false,
+    "required": [
+      "start_date",
+      "client_id",
+      "client_secret",
+      "tenant_endpoint"
+    ],
     "properties": {
       "start_date": {
         "type": "string",
@@ -15,7 +19,14 @@
       "window_in_days": {
         "type": "integer",
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
-        "examples": [30,60,90,120,200,364],
+        "examples": [
+          30,
+          60,
+          90,
+          120,
+          200,
+          364
+        ],
         "default": 90
       },
       "client_id": {
@@ -29,47 +40,38 @@
         "airbyte_secret": true
       },
       "tenant_endpoint": {
-        "title": "Tenant Endpoint Type",
-        "type": "object",
+        "title": "Tenant Endpoint Location",
+        "type": "string",
         "description": "Please choose the right endpoint where your Tenant is located. More info by this <a href=\"https://www.zuora.com/developer/api-reference/#section/Introduction/Access-to-the-API\">Link</a>",
-        "oneOf": [
-          {
-            "title": "Production",
-            "description": "Choose between production endpoints",
-            "required": ["production"],
-            "properties": {
-              "production": {
-                "title": "Choose between production endpoints",
-                "type": "string",
-                "enum": ["US Production","US Cloud Production","EU Production"]
-              }
-            }
-          },
-          {
-            "title": "Sandbox",
-            "description": "Choose between sandbox endpoints",
-            "required": ["sandbox"],
-            "properties": {
-              "sandbox": {
-                "title": "Choose between sandbox endpoints",
-                "type": "string",
-                "enum": ["US API Sandbox","US Cloud API Sandbox","US Central Sandbox","EU API Sandbox","EU Central Sandbox"]
-              }
-            }
-          },
-          {
-            "title": "Custom",
-            "description": "Enter the URL link for your tenant.",
-            "required": ["custom"],
-            "properties": {
-              "custom": {
-                "title": "Enter your custom tenant URL",
-                "type": "string",
-                "description": "Specifies the URL for Zuora Tenant",
-                "examples": ["https://my.zuora.tenant.com/"]
-              }
-            }
-          }
+        "enum": [
+          "US Production",
+          "US Cloud Production",
+          "US API Sandbox",
+          "US Cloud API Sandbox",
+          "US Central Sandbox",
+          "US Performance Test",
+          "EU Production",
+          "EU API Sandbox",
+          "EU Central Sandbox"
+        ]
+      }
+    },
+    "authSpecification": {
+      "auth_type": "oauth2.0",
+      "oauth2Specification": {
+        "rootObject": [],
+        "oauthFlowInitParameters": [
+          [
+            "client_id"
+          ],
+          [
+            "client_secret"
+          ]
+        ],
+        "oauthFlowOutputParameters": [
+          [
+            "access_token"
+          ]
         ]
       }
     }
