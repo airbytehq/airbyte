@@ -134,7 +134,7 @@ class TestTransformConfig:
             "project_id": "my_project_id",
             "dataset_id": "my_dataset_id",
             "credentials_json": '{ "type": "service_account-json" }',
-            "dataset_location": "EU"
+            "dataset_location": "EU",
         }
 
         actual_output = TransformConfig().transform_bigquery(input)
