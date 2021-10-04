@@ -15,6 +15,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import (
     ApplicationRoles,
     Avatars,
+    Boards,
     Dashboards,
     Filters,
     FilterSharing,
@@ -53,6 +54,7 @@ from .streams import (
     ScreenSchemes,
     ScreenTabFields,
     ScreenTabs,
+    Sprints,
     TimeTracking,
     Users,
     Workflows,
@@ -98,6 +100,7 @@ class SourceJira(AbstractSource):
         return [
             ApplicationRoles(**args),
             Avatars(**args),
+            Boards(**args),
             Dashboards(**args),
             Filters(**args),
             FilterSharing(**args),
@@ -136,6 +139,7 @@ class SourceJira(AbstractSource):
             ScreenTabs(**args),
             ScreenTabFields(**args),
             ScreenSchemes(**args),
+            Sprints(**args),
             TimeTracking(**args),
             Users(**args),
             Workflows(**args),
