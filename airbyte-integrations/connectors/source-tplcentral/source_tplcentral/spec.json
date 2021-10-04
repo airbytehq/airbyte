@@ -1,0 +1,45 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Tplcentral Spec",
+    "type": "object",
+    "required": [
+      "url_base",
+      "client_id",
+      "client_secret"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "url_base": {
+        "type": "string",
+        "format": "uri"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string"
+      },
+      "user_login_id": {
+        "type": "integer"
+      },
+      "user_login": {
+        "type": "string"
+      },
+      "tpl_key": {
+        "type": "string"
+      },
+      "customer_id": {
+        "type": "integer"
+      },
+      "facility_id": {
+        "type": "integer"
+      }
+    }
+  }
+}

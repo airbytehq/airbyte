@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sku": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "qualifier": {
+      "type": "string"
+    },
+    "total_received": {
+      "type": "number"
+    },
+    "allocated": {
+      "type": "number"
+    },
+    "available": {
+      "type": "number"
+    },
+    "on_hold": {
+      "type": "number"
+    },
+    "on_hand": {
+      "type": "number"
+    },
+    "facility_id": {
+      "type": "integer"
+    }
+  }
+}
