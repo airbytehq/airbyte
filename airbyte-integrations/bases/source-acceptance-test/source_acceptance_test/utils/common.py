@@ -29,6 +29,7 @@ from typing import Iterable, List
 
 import pytest
 from yaml import load
+from airbyte_cdk.models import Type
 
 try:
     from yaml import CLoader as Loader
@@ -77,6 +78,17 @@ def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Co
 def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessage]:
     """Filter messages to match specific type"""
     return list(filter(lambda x: x.type == type_, records))
+
+
+def remove_ignored_fields(output, ignored_fields):
+    data = []
+    for message in output:
+        if message.type == Type.RECORD:
+            stream = message.record.stream
+            stream_ignored_fields = ignored_fields.get(stream, [])
+            record_data = message.record.data
+            data.append({key: value for key, value in record_data.items() if key not in stream_ignored_fields})
+    return data
 
 
 class SecretDict(UserDict):

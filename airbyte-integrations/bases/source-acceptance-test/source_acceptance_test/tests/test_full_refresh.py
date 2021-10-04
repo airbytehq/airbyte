@@ -21,23 +21,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
+from typing import List, Mapping
 
 import pytest
-from airbyte_cdk.models import Type
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog, serialize
+from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog, remove_ignored_fields, serialize
 
 
 @pytest.mark.default_timeout(20 * 60)
 class TestFullRefresh(BaseTest):
-    def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner, detailed_logger):
+    def test_sequential_reads(self, connector_config, configured_catalog, ignored_fields: Mapping[str, List[str]], docker_runner: ConnectorRunner, detailed_logger):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records_1 = [message.record.data for message in output if message.type == Type.RECORD]
+        # records_1 = [message.record.data for message in output if message.type == Type.RECORD]
+        records_1 = remove_ignored_fields(output, ignored_fields)
 
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records_2 = [message.record.data for message in output if message.type == Type.RECORD]
+        # records_2 = [message.record.data for message in output if message.type == Type.RECORD]
+        records_2 = remove_ignored_fields(output, ignored_fields)
 
         output_diff = set(map(serialize, records_1)) - set(map(serialize, records_2))
         if output_diff:

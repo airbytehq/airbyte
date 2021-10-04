@@ -104,6 +104,7 @@ class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
     timeout_seconds: int = timeout_seconds
+    ignored_fields: Optional[Mapping[str, List[str]]] = Field(description="List of fields for ignoring in sequential reads test")
 
 
 class IncrementalConfig(BaseConfig):
