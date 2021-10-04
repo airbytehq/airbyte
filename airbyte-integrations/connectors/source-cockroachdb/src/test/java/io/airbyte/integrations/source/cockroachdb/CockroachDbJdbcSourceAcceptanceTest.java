@@ -17,7 +17,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -468,16 +467,16 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
