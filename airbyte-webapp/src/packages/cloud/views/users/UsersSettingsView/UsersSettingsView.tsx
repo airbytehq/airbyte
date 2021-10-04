@@ -32,7 +32,8 @@ export const UsersSettingsView: React.FC = () => {
   );
 
   // TODO: show error with request fails
-  const { isLoading, mutate: removeUser } = useUserHook();
+  const { removeUserLogic } = useUserHook();
+  const { isLoading, mutate: removeUser } = removeUserLogic;
 
   const { user } = useAuthService();
 

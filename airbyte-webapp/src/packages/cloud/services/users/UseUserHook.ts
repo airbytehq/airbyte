@@ -5,7 +5,10 @@ import { useGetUserService } from "./UserService";
 export const useUserHook = () => {
   const service = useGetUserService();
 
-  return useMutation(async (payload: { email: string; workspaceId: string }) =>
-    service.remove(payload.email, payload.workspaceId)
-  );
+  return {
+    removeUserLogic: useMutation(
+      async (payload: { email: string; workspaceId: string }) =>
+        service.remove(payload.workspaceId, payload.email)
+    ),
+  };
 };
