@@ -116,7 +116,7 @@ A custom report can contain no more than 10 unique metrics. The default availabl
 
 Incremental sync supports only if you add `ga:date` dimension to your custom report.
 
-## Rate Limits & Performance Considerations
+## Rate Limits & Performance Considerations (Airbyte Open-Source)
 
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)
 
