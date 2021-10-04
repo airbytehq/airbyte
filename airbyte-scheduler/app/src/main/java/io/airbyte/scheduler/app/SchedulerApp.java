@@ -99,7 +99,7 @@ public class SchedulerApp {
     final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
+    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, TrackingClientSingleton.get());
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,

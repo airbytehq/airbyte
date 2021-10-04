@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -32,10 +32,12 @@ public class OAuthConfigSupplier {
   public static final String SECRET_MASK = "******";
   final private ConfigRepository configRepository;
   private final boolean maskSecrets;
+  private final TrackingClient trackingClient;
 
-  public OAuthConfigSupplier(ConfigRepository configRepository, boolean maskSecrets) {
+  public OAuthConfigSupplier(ConfigRepository configRepository, boolean maskSecrets, TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.maskSecrets = maskSecrets;
+    this.trackingClient = trackingClient;
   }
 
   public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
@@ -49,7 +51,8 @@ public class OAuthConfigSupplier {
               sourceOAuthParameter -> {
                 injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration());
                 if (!maskSecrets) {
-                  TrackingClientSingleton.get().track(workspaceId, "OAuth Injection - Backend", metadata);
+                  // when maskSecrets = true, no real oauth injections is happening
+                  trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata);
                 }
               });
       return sourceConnectorConfig;
@@ -67,7 +70,8 @@ public class OAuthConfigSupplier {
             injectJsonNode((ObjectNode) destinationConnectorConfig,
                 (ObjectNode) destinationOAuthParameter.getConfiguration());
             if (!maskSecrets) {
-              TrackingClientSingleton.get().track(workspaceId, "OAuth Injection - Backend", metadata);
+              // when maskSecrets = true, no real oauth injections is happening
+              trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata);
             }
           });
       return destinationConnectorConfig;

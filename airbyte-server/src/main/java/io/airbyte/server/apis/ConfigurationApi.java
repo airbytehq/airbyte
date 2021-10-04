@@ -4,6 +4,7 @@
 
 package io.airbyte.server.apis;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
@@ -149,7 +150,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final FileTtlManager archiveTtlManager,
                           final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
-                          final Database jobsDatabase) {
+                          final Database jobsDatabase,
+                          final TrackingClient trackingClient) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
@@ -160,7 +162,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, false));
+        new OAuthConfigSupplier(configRepository, false, trackingClient));
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
@@ -179,8 +181,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository);
-    webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository);
+    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient);
+    webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository, trackingClient);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
         configs.getAirbyteVersion(),
