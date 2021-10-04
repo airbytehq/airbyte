@@ -13,7 +13,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -24,12 +35,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -52,15 +57,15 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
     subscriptionConfig.put("topic_pattern", TOPIC_NAME);
 
     return Jsons.jsonNode(ImmutableMap.builder()
-      .put("bootstrap_servers", KAFKA.getBootstrapServers())
-      .put("subscription", subscriptionConfig)
-      .put("client_dns_lookup", "use_all_dns_ips")
-      .put("enable_auto_commit", false)
-      .put("group_id", "groupid")
-      .put("repeated_calls", 3)
-      .put("protocol", protocolConfig)
-      .put("auto_offset_reset", "earliest")
-      .build());
+        .put("bootstrap_servers", KAFKA.getBootstrapServers())
+        .put("subscription", subscriptionConfig)
+        .put("client_dns_lookup", "use_all_dns_ips")
+        .put("enable_auto_commit", false)
+        .put("group_id", "groupid")
+        .put("repeated_calls", 3)
+        .put("protocol", protocolConfig)
+        .put("auto_offset_reset", "earliest")
+        .build());
   }
 
   @Override
@@ -74,10 +79,10 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private void sendEvent() throws ExecutionException, InterruptedException {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
-      .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
-      .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
-      .put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
-      .build();
+        .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
+        .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
+        .put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
+        .build();
     KafkaProducer<String, JsonNode> producer = new KafkaProducer<>(props);
 
     ObjectNode event = mapper.createObjectNode();
