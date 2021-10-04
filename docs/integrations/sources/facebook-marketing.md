@@ -70,7 +70,7 @@ See the Facebook [documentation on Authorization](https://developers.facebook.co
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 
-## Rate Limiting & Performance Considerations
+## Rate Limiting & Performance Considerations (Airbyte Open Source)
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 
