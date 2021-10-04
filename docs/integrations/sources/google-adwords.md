@@ -56,7 +56,7 @@ Tokens issued after April 28, 2021 are only given access to the Google Ads API a
 
 ## Rate Limiting & Performance Considerations
 
-This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [google developer docs](https://developers.google.com/adwords/api/faq#access).
+This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/adwords/api/faq#access).
 
 ## Changelog
 
