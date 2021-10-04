@@ -195,7 +195,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         seed,
         workspaceHelper,
         archiveTtlManager,
-        specFetcher);
+        specFetcher,
+        true);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
@@ -637,6 +638,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ImportRead importIntoWorkspace(final ImportRequestBody importRequestBody) {
     return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
+  }
+
+  public boolean canImportDefinitons() {
+    return archiveHandler.canImportDefinitions();
   }
 
   private <T> T execute(final HandlerCall<T> call) {
