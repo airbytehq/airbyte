@@ -80,7 +80,7 @@ class TplcentralStream(HttpStream, ABC):
         return [deep_snake_keys(v) for v in response.json()['Summaries']]
 
 
-class InventoryStockSummaries(TplcentralStream):
+class StockSummaries(TplcentralStream):
     primary_key = ["facility_id", ["item_identifier", "id"]]
 
     def path(
@@ -232,6 +232,6 @@ class SourceTplcentral(AbstractSource):
         config['authenticator'] = self._auth(config)
 
         return [
-            InventoryStockSummaries(config),
+            StockSummaries(config),
             Employees(config),
         ]

@@ -1,7 +1,7 @@
 {
   "streams": [
     {
-      "name": "inventory_stock_summaries",
+      "name": "stock_summaries",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
