@@ -11,7 +11,7 @@
 
 ## Troubleshooting
 
-#### Issue: `Normalization failing, keyError updated` [Discuss here.](https://discuss.airbyte.io/t/source-jira-failing-in-normalization-step-keyerror-updated/57)
+#### Issue: `Normalization failing, keyError updated` [\[Discussion.\]](https://discuss.airbyte.io/t/source-jira-failing-in-normalization-step-keyerror-updated/57)
 
 ## Supported Tables
 
