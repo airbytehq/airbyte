@@ -14,18 +14,45 @@ import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
 
+export type AuthUpdatePassword = (
+  email: string,
+  currentPassword: string,
+  newPassword: string
+) => Promise<void>;
+
+export type AuthRequirePasswordReset = (email: string) => Promise<void>;
+export type AuthConfirmPasswordReset = (
+  code: string,
+  newPassword: string
+) => Promise<void>;
+
+export type AuthLogin = (values: {
+  email: string;
+  password: string;
+}) => Promise<User | null>;
+
+export type AuthSignUp = (form: {
+  email: string;
+  password: string;
+}) => Promise<User | null>;
+
+export type AuthSendEmailVerification = () => Promise<void>;
+export type AuthVerifyEmail = (code: string) => Promise<void>;
+export type AuthLogout = () => void;
+
 type AuthContextApi = {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
-  login: (values: { email: string; password: string }) => Promise<User | null>;
-  signUp: (form: { email: string; password: string }) => Promise<User | null>;
-  requirePasswordReset: (email: string) => Promise<void>;
-  confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
-  sendEmailVerification: () => Promise<void>;
-  verifyEmail: (code: string) => Promise<void>;
-  logout: () => void;
+  login: AuthLogin;
+  signUp: AuthSignUp;
+  updatePassword: AuthUpdatePassword;
+  requirePasswordReset: AuthRequirePasswordReset;
+  confirmPasswordReset: AuthConfirmPasswordReset;
+  sendEmailVerification: AuthSendEmailVerification;
+  verifyEmail: AuthVerifyEmail;
+  logout: AuthLogout;
 };
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
@@ -94,6 +121,16 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
+      },
+      async updatePassword(
+        email: string,
+        currentPassword: string,
+        newPassword: string
+      ): Promise<void> {
+        // re-authentication may be needed before updating password
+        // https://firebase.google.com/docs/auth/web/manage-users#re-authenticate_a_user
+        await authService.reauthenticate(email, currentPassword);
+        return authService.updatePassword(newPassword);
       },
       async requirePasswordReset(email: string): Promise<void> {
         await authService.resetPassword(email);

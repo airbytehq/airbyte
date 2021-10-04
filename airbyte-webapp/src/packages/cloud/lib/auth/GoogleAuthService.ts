@@ -1,7 +1,6 @@
 import {
   Auth,
   User,
-  EmailAuthProvider,
   UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -9,9 +8,9 @@ import {
   confirmPasswordReset,
   applyActionCode,
   sendEmailVerification,
-  updateEmail,
-  updatePassword,
+  EmailAuthProvider,
   reauthenticateWithCredential,
+  updatePassword,
 } from "firebase/auth";
 
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -25,11 +24,14 @@ interface AuthService {
 
   signUp(email: string, password: string): Promise<UserCredential>;
 
+  reauthenticate(
+    email: string,
+    passwordPassword: string
+  ): Promise<UserCredential>;
+
+  updatePassword(newPassword: string): Promise<void>;
+
   resetPassword(email: string): Promise<void>;
-
-  changeEmail(email: string, passwd: string): Promise<void>;
-
-  changePassword(passwd: string, newPassword: string): Promise<void>;
 
   finishResetPassword(code: string, newPassword: string): Promise<void>;
 
@@ -83,26 +85,24 @@ export class GoogleAuthService implements AuthService {
     );
   }
 
-  async changeEmail(email: string, passwd: string): Promise<void> {
-    const user = await this.getCurrentUser()!;
-
-    const credential = EmailAuthProvider.credential(user.email!, passwd);
-    await reauthenticateWithCredential(user, credential);
-
-    return updateEmail(user, email);
+  async reauthenticate(
+    email: string,
+    password: string
+  ): Promise<UserCredential> {
+    if (this.auth.currentUser === null) {
+      throw new Error("You must log in first to reauthenticate!");
+    }
+    const credential = EmailAuthProvider.credential(email, password);
+    return reauthenticateWithCredential(this.auth.currentUser, credential);
   }
 
-  async changePassword(passwd: string, newPassword: string): Promise<void> {
-    const user = await this.getCurrentUser()!;
-
-    if (user.email) {
-      const credential = EmailAuthProvider.credential(user.email, passwd);
-      await reauthenticateWithCredential(user, credential);
-
-      return updatePassword(user, newPassword);
+  async updatePassword(newPassword: string): Promise<void> {
+    if (this.auth.currentUser === null) {
+      throw new Error("You must log in first to update password!");
     }
-
-    return Promise.resolve();
+    return updatePassword(this.auth.currentUser, newPassword).catch((err) => {
+      throw err;
+    });
   }
 
   async resetPassword(email: string): Promise<void> {

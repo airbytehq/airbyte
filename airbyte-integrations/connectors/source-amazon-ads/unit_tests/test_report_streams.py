@@ -14,7 +14,12 @@ from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.spec import AmazonAdsConfig
-from source_amazon_ads.streams import SponsoredBrandsReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
+from source_amazon_ads.streams import (
+    SponsoredBrandsReportStream,
+    SponsoredBrandsVideoReportStream,
+    SponsoredDisplayReportStream,
+    SponsoredProductsReportStream,
+)
 from source_amazon_ads.streams.report_streams.report_streams import TooManyRequests
 
 """
@@ -159,6 +164,23 @@ def test_brands_report_stream(test_config):
 
 
 @responses.activate
+def test_brands_video_report_stream(test_config):
+    setup_responses(
+        init_response_brands=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    config = AmazonAdsConfig(**test_config)
+    profiles = make_profiles()
+
+    stream = SponsoredBrandsVideoReportStream(config, profiles, authenticator=mock.MagicMock())
+    stream_slice = {"reportDate": "20210725"}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+
+@responses.activate
 def test_display_report_stream_report_generation_failure(test_config):
     setup_responses(
         init_response=REPORT_INIT_RESPONSE,
@@ -268,6 +290,10 @@ def test_display_report_stream_slices_incremental(test_config):
     stream_state = {"reportDate": "20210726"}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
     assert slices == [
+        {"reportDate": "20210723"},
+        {"reportDate": "20210724"},
+        {"reportDate": "20210725"},
+        {"reportDate": "20210726"},
         {"reportDate": "20210727"},
         {"reportDate": "20210728"},
         {"reportDate": "20210729"},
@@ -275,11 +301,20 @@ def test_display_report_stream_slices_incremental(test_config):
     ]
     stream_state = {"reportDate": "20210730"}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
-    assert slices == [None]
+    assert slices == [
+        {"reportDate": "20210727"},
+        {"reportDate": "20210728"},
+        {"reportDate": "20210729"},
+        {"reportDate": "20210730"},
+    ]
 
     stream_state = {"reportDate": "20210731"}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
-    assert slices == [None]
+    assert slices == [
+        {"reportDate": "20210728"},
+        {"reportDate": "20210729"},
+        {"reportDate": "20210730"},
+    ]
 
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={})
     assert slices == [{"reportDate": "20210730"}]

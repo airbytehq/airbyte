@@ -25,6 +25,7 @@ dependencies {
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
@@ -59,4 +60,5 @@ mainClassName = 'io.airbyte.workers.WorkerApp'
 
 application {
     mainClass = mainClassName
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
