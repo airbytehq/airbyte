@@ -405,6 +405,13 @@
   "connector.source": "Source",
   "connector.destination": "Destination",
 
+  "credits.credits": "Credits",
+  "credits.whatAreCredits": "What are credits?",
+  "credits.buyCredits": "+ Buy credits",
+  "credits.remainingCredits": "Remaining credits",
+  "credits.creditUsage": "Credit Usage",
+  "credits.totalUsage": "Total usage",
+
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
 }

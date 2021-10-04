@@ -184,6 +184,7 @@ Airbyte has the ability to connect to a Postgres instance via an SSH Tunnel. The
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (a.k.a. a bastion sever) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
    1. Choose `Key Authentication` if you will be using an RSA Private as your secrets for establishing the SSH Tunnel (see below for more information on generating this key).
@@ -193,6 +194,16 @@ Using this feature requires additional configuration, when creating the source. 
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the Postgres username.
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Postgres password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+
+### Generating an RSA Private Key
+
+The connector expects an RSA key in PEM format.  To generate this key:
+
+    ssh-keygen -t rsa -m PEM -f myuser_rsa
+
+This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on 
+your bastion host.  The public key should be added to your bastion host to whichever user you want to use with Airbyte.  The private
+key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 ## Data type mapping
 
@@ -258,6 +269,7 @@ If you can't find the data type you are looking for or have any problems feel fr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.12   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.3.11   | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
 | 0.3.9   | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |
 | 0.3.8   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
