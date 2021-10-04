@@ -91,7 +91,6 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         String algorithm = encryption.get("encryption_algorithm").asText();
         additionalParameters.add("oracle.net.encryption_client=REQUIRED");
         additionalParameters.add("oracle.net.encryption_types_client=( "+algorithm+" )");
-        System.out.println(additionalParameters.toString());
         return Protocol.TCP;
       }
       case "encrypted_verify_certificate" -> {
