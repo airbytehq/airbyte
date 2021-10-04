@@ -83,7 +83,7 @@ The Google Ads Query Language can query the Google Ads API. Check out [Google Ad
 
 ## Rate Limiting & Performance Considerations (Airbyte Open Source)
 
-This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [google developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
+This source is constrained by whatever API limits are set for the Google Ads that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/google-ads/api/docs/best-practices/quotas).
 
 
 ## CHANGELOG
