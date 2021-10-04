@@ -23,7 +23,7 @@ There are two flavors of connectors for this destination:
 
 ## Troubleshooting
 
-#### Issue: `Dataset not found` after running sync. [Solution](https://discuss.airbyte.io/t/destination-bigquery-dataset-not-found/52)
+#### Issue: `Dataset not found` after running sync. [\[Solution\]](https://discuss.airbyte.io/t/destination-bigquery-dataset-not-found/52)
 
 ## Output Schema for BigQuery
 
