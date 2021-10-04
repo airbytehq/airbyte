@@ -55,7 +55,7 @@
         },
         "ssh_key": {
           "title": "SSH Private Key",
-          "description": "OS-level user account ssh key credentials for logging into the jump server host.",
+          "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
           "type": "string",
           "airbyte_secret": true,
           "multiline": true,

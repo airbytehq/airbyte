@@ -190,10 +190,10 @@ configuration means.
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an
    SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
-   establishing the SSH Tunnel (see below for more information on generating this key).
-2. Choose `Password Authentication` if you will be using a password as your secret for establishing
-   the SSH Tunnel.
+    1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
+       establishing the SSH Tunnel (see below for more information on generating this key).
+    2. Choose `Password Authentication` if you will be using a password as your secret for establishing
+       the SSH Tunnel.
 3. `SSH Tunnel Jump Server Host` refers to the intermediate (bastion) server that Airbyte will connect to. This should
    be a hostname or an IP Address.
 4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for
@@ -208,6 +208,16 @@ configuration means.
    private Key that you are using to create the SSH connection. This should be the full contents of
    the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
    with `-----END RSA PRIVATE KEY-----`.
+
+### Generating an SSH Key Pair
+
+The connector expects an RSA key in PEM format.  To generate this key:
+
+    ssh-keygen -t rsa -m PEM -f myuser_rsa
+
+This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on 
+your bastion host.  The public key should be added to your bastion host to whichever user you want to use with Airbyte.  The private
+key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 ## Data type mapping
 
@@ -255,6 +265,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.7   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.3.6   | 2021-09-17 | [6318](https://github.com/airbytehq/airbyte/pull/6318) | Added option to connect to DB via SSH |
 | 0.3.4   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator | 
 | 0.3.3   | 2021-07-05 | [4689](https://github.com/airbytehq/airbyte/pull/4689) | Add CDC support |

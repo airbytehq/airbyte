@@ -28,15 +28,13 @@ jobs:
           column_name: "Needs Triage"
       - name: Assign New Community Issues to Github Project
         uses: srggrs/assign-one-project-github-action@1.2.0
-        if: 
-          contains(github.event.issue.labels.*.name, 'community')
+        if: contains(github.event.issue.labels.*.name, 'community')
         with:
           project: "https://github.com/airbytehq/airbyte/projects/16"
           column_name: "To do"
       - name: Assign New Community PR to Github Project
         uses: srggrs/assign-one-project-github-action@1.2.0
-        if: 
-          contains(github.event.pull_request.labels.*.name, 'community')
+        if: contains(github.event.pull_request.labels.*.name, 'community')
         with:
           project: "https://github.com/airbytehq/airbyte/projects/15"
           column_name: "To do"
