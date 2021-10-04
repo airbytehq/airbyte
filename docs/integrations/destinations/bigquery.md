@@ -25,6 +25,8 @@ There are two flavors of connectors for this destination:
 
 #### Issue: `Dataset not found` after running sync. [\[Solution\]](https://discuss.airbyte.io/t/destination-bigquery-dataset-not-found/52)
 
+#### Issue: `Field _airbyte_emitted_at has changed type from TIMESTAMP to STRING` sync error. [\[Solution\]](https://discuss.airbyte.io/t/destination-bigquery-field-airbyte-emitted-at-has-changed-type-from-timestamp-to-string/60)
+
 ## Output Schema for BigQuery
 
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
