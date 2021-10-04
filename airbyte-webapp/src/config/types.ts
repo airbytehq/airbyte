@@ -13,6 +13,10 @@ declare global {
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
+    CLOUD?: string;
+    FIREBASE_API_KEY?: string;
+    FIREBASE_AUTH_DOMAIN?: string;
+    CLOUD_API_URL?: string;
 
     analytics: SegmentAnalytics;
     _API_URL: string;
