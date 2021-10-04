@@ -267,11 +267,10 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
   protected void setString(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
     preparedStatement.setString(parameterIndex, value);
   }
+
   protected void setBinary(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
     preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
   }
-
-
 
   public String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
     final StringJoiner joiner = new StringJoiner(",");
