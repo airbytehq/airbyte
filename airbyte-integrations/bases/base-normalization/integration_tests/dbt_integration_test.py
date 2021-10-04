@@ -58,7 +58,13 @@ class DbtIntegrationTest(object):
             "-p",
             f"{config['port']}:5432",
             "-d",
-            "postgres",
+            "marcosmarxm/postgres-ssl:dev",
+            "-c",
+            "ssl=on",
+            "-c",
+            "ssl_cert_file=/var/lib/postgresql/server.crt",
+            "-c",
+            "ssl_key_file=/var/lib/postgresql/server.key",
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
