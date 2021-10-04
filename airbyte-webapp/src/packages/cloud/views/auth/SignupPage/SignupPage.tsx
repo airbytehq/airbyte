@@ -27,7 +27,7 @@ const SignupPageValidationSchema = yup.object().shape({
   password: yup.string().required("form.empty.error"),
   name: yup.string().required("form.empty.error"),
   company: yup.string().required("form.empty.error"),
-  security: yup.boolean().required("form.empty.error"),
+  security: yup.boolean().oneOf([true], "form.empty.error"),
 });
 
 const SignupPage: React.FC = () => {
