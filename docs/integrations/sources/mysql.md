@@ -27,7 +27,7 @@ On Airbyte Cloud, only TLS connections to your MySQL instance are supported. Oth
 #### Requirements
 
 1. MySQL Server `8.0`, `5.7`, or `5.6`.
-2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
+2. Create a dedicated read-only Airbyte user with access to all tables needed for replication.
 
 #### 1. Make sure your database is accessible from the machine running Airbyte
 
