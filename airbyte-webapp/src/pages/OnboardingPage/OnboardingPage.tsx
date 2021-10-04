@@ -206,7 +206,7 @@ const OnboardingPage: React.FC = () => {
     const onSync = () => syncConnection(connections[0]);
     const onCloseOnboarding = () => {
       finishOnboarding();
-      push(Routes.Root);
+      push(Routes.Connections);
     };
 
     return (
