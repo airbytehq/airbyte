@@ -8,6 +8,7 @@
 | Incremental - Append Sync | Yes |  |
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
+| SSH Tunnel Connection | Yes |  |
 
 #### Output Schema
 
