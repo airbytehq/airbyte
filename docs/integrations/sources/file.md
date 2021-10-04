@@ -50,7 +50,7 @@ This source produces a single table for the target file as it replicates only on
 
 ## Getting Started (Airbyte Cloud)
 
-Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are naturally disabled.
+Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
 
 ## Getting Started (Airbyte Open-Source)
 
