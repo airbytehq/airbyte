@@ -1,6 +1,9 @@
 # Chargebee
 
-Chargebee is a generally straightforward CRUD API.
+Chargebee is the subscription billing and revenue management platform.
+It supports two API versions - [V1](https://apidocs.chargebee.com/docs/api/v1?prod_cat_ver=2) and [V2](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
+It also has two Product Catalog versions - [1.0](https://www.chargebee.com/docs/1.0/product-catalog.html) and [2.0](https://www.chargebee.com/docs/2.0/product-catalog.html).
+
 It uses `chargebee` - a [public client library](https://github.com/chargebee/chargebee-python).
 
 See the links below for information about specific streams and some nuances about the connector:
