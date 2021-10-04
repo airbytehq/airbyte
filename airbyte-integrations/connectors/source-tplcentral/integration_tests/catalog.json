@@ -1,39 +1,105 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "column1",
+      "name": "inventory_stock_summaries",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
+        "additionalProperties": false,
         "properties": {
-          "column1": {
+          "item_identifier": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sku": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              }
+            }
+          },
+          "qualifier": {
             "type": "string"
           },
-          "column2": {
+          "total_received": {
             "type": "number"
+          },
+          "allocated": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number"
+          },
+          "on_hold": {
+            "type": "number"
+          },
+          "on_hand": {
+            "type": "number"
+          },
+          "facility_id": {
+            "type": "integer"
           }
         }
-      }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "facility_id"
+        ],
+        [
+          "item_identifier.id"
+        ]
+      ]
     },
     {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
+      "name": "employees",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "column1": {
-            "type": "string"
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "column2": {
-            "type": "number"
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "years_of_service": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "start_date": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
-      }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": true,
+      "default_cursor_field": [
+        "start_date"
+      ],
+      "source_defined_primary_key": [
+        [
+          "employee_id"
+        ]
+      ]
     }
   ]
 }
