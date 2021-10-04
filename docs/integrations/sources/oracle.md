@@ -9,7 +9,7 @@
 | Replicate Incremental Deletes | Coming soon |  |
 | Logical Replication \(WAL\) | Coming soon |  |
 | SSL Support | Coming soon |  |
-| SSH Tunnel Connection | Coming soon |  |
+| SSH Tunnel Connection | Yes |  |
 | LogMiner | Coming soon |  |
 | Flashback | Coming soon |  |
 | Namespaces | Yes | Enabled by default |
