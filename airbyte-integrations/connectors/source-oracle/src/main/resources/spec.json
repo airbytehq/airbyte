@@ -93,8 +93,8 @@
               },
                 "encryption_algorithm": {
                   "type": "string",
-                  "description": "The location of the dataset. Warning: Changes made after creation will not be applied.",
-                  "title": "Dataset Location",
+                  "description": "This parameter defines the encryption algorithm to be used",
+                  "title": "Encryption Algorithm",
                   "default": "AES256",
                   "enum": [
                     "AES256",

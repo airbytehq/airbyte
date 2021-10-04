@@ -67,6 +67,9 @@ class OracleSourceTest {
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
         .put("schemas", List.of("TEST"))
+            .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+                    .put("encryption_method", "unencrypted")
+                    .build()))
         .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),

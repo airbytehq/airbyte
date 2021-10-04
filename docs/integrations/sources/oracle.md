@@ -117,11 +117,22 @@ Using this feature requires additional configuration, when creating the source. 
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Oracle password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
+## Encryption Options
+
+Airbite has the ability to connect to the Oracle source with 3 network connectivity options:
+
+1.`Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the network will be transmitted in unencrypted form.
+2.`Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports.
+In this case, the *SQLNET.ENCRYPTION_CLIENT* option will always be set as *REQUIRED* by default: The client or server will only accept encrypted traffic,
+but the user has the opportunity to choose an `Encryption algorithm` according to the security policies he needs.
+3.`TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be transfered using the TLS protocol, taking into account the handshake procedure and certificate verification.
+To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.6   | 2021-10-01 | [6616](https://github.com/airbytehq/airbyte/pull/6616) | Added network encryption options |
 | 0.3.5   | 2021-09-22 | [6356](https://github.com/airbytehq/airbyte/pull/6356) | Added option to connect to DB via SSH. |
 | 0.3.4   | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038) | Remove automatic filtering of system schemas. |
 | 0.3.3   | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779) | Ability to only discover certain schemas. |
