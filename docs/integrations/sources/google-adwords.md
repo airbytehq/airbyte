@@ -26,7 +26,7 @@ Several tables and their data are available from this source \(accounts, campaig
 
 #### Requirements
 
-* Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
+* Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
@@ -56,7 +56,7 @@ Tokens issued after April 28, 2021 are only given access to the Google Ads API a
 
 ## Rate Limiting & Performance Considerations (Airbyte Open-Source)
 
-This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [google developer docs](https://developers.google.com/adwords/api/faq#access).
+This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/adwords/api/faq#access).
 
 ## Changelog
 
