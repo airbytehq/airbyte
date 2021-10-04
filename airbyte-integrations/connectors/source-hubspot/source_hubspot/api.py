@@ -6,7 +6,6 @@
 import sys
 import time
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
 from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
@@ -14,6 +13,7 @@ from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapp
 import backoff
 import pendulum as pendulum
 import requests
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -104,57 +104,25 @@ class API:
     USER_AGENT = "Airbyte"
 
     def __init__(self, credentials: Mapping[str, Any]):
-        self._credentials = {**credentials}
         self._session = requests.Session()
+        credentials_title = credentials.get("credentials_title")
+
+        if credentials_title == "OAuth Credentials":
+            self._session.auth = Oauth2Authenticator(
+                token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
+            )
+        elif credentials_title == "API Key Credentials":
+            self._session.params["hapikey"] = credentials.get("api_key")
+        else:
+            raise Exception("No supported `credentials_title` specified. See spec.json for references")
+
         self._session.headers = {
             "Content-Type": "application/json",
             "User-Agent": self.USER_AGENT,
         }
-
-    def _acquire_access_token_from_refresh_token(self):
-        payload = {
-            "grant_type": "refresh_token",
-            "redirect_uri": self._credentials["redirect_uri"],
-            "refresh_token": self._credentials["refresh_token"],
-            "client_id": self._credentials["client_id"],
-            "client_secret": self._credentials["client_secret"],
-        }
-
-        resp = requests.post(self.BASE_URL + "/oauth/v1/token", data=payload)
-        if resp.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotInvalidAuth(resp.content, response=resp)
-
-        resp.raise_for_status()
-        auth = resp.json()
-        self._credentials["access_token"] = auth["access_token"]
-        self._credentials["refresh_token"] = auth["refresh_token"]
-        self._credentials["token_expires"] = datetime.utcnow() + timedelta(seconds=auth["expires_in"] - 600)
-        logger.info(f"Token refreshed. Expires at {self._credentials['token_expires']}")
-
-    @property
-    def api_key(self) -> Optional[str]:
-        """Get API Key if set"""
-        return self._credentials.get("api_key")
-
-    @property
-    def access_token(self) -> Optional[str]:
-        """Get Access Token if set, refreshes token if needed"""
-        if not self._credentials.get("access_token"):
-            return None
-
-        if self._credentials["token_expires"] is None or self._credentials["token_expires"] < datetime.utcnow():
-            self._acquire_access_token_from_refresh_token()
-        return self._credentials.get("access_token")
-
-    def _add_auth(self, params: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """Add auth info to request params/header"""
-        params = params or {}
-
-        if self.access_token:
-            self._session.headers["Authorization"] = f"Bearer {self.access_token}"
-        else:
-            params["hapikey"] = self.api_key
-        return params
 
     @staticmethod
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
@@ -184,12 +152,14 @@ class API:
 
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
-    def get(self, url: str, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
+    def get(self, url: str, params: MutableMapping[str, Any] = None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
+        response = self._session.get(self.BASE_URL + url, params=params)
         return self._parse_and_handle_errors(response)
 
-    def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
-        response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
+    def post(
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+        response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response)
 
 
@@ -505,7 +475,9 @@ class CRMObjectStream(Stream):
         """Entity URL"""
         return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(self, entity: str = None, associations: List[str] = None, include_archived_only: bool = False, **kwargs):
+    def __init__(
+        self, entity: Optional[str] = None, associations: Optional[List[str]] = None, include_archived_only: bool = False, **kwargs
+    ):
         super().__init__(**kwargs)
         self.entity = entity or self.entity
         self.associations = associations or self.associations
