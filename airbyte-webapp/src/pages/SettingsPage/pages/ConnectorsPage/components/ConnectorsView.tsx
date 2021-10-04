@@ -14,6 +14,7 @@ import HeadTitle from "components/HeadTitle";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { WithFeature } from "hooks/services/Feature";
+import { IS_CLOUD } from "core/env";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";
@@ -72,24 +73,28 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerImageTag",
         customWidth: 10,
       },
-      {
-        Header: (
-          <FormContentTitle>
-            <FormattedMessage id="admin.changeTo" />
-          </FormContentTitle>
-        ),
-        accessor: "latestDockerImageTag",
-        collapse: true,
-        Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
-          <VersionCell
-            version={cell.value}
-            id={Connector.id(row.original)}
-            onChange={onUpdateVersion}
-            feedback={feedbackList[Connector.id(row.original)]}
-            currentVersion={row.original.dockerImageTag}
-          />
-        ),
-      },
+      ...(!IS_CLOUD
+        ? [
+            {
+              Header: (
+                <FormContentTitle>
+                  <FormattedMessage id="admin.changeTo" />
+                </FormContentTitle>
+              ),
+              accessor: "latestDockerImageTag",
+              collapse: true,
+              Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
+                <VersionCell
+                  version={cell.value}
+                  id={Connector.id(row.original)}
+                  onChange={onUpdateVersion}
+                  feedback={feedbackList[Connector.id(row.original)]}
+                  currentVersion={row.original.dockerImageTag}
+                />
+              ),
+            },
+          ]
+        : []),
     ],
     [feedbackList, onUpdateVersion]
   );
@@ -101,7 +106,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         <WithFeature featureId={"ALLOW_UPLOAD_CUSTOM_IMAGE"}>
           <CreateConnector type={type} />
         </WithFeature>
-        {(hasNewConnectorVersion || isUpdateSuccess) && (
+        {(hasNewConnectorVersion || isUpdateSuccess) && !IS_CLOUD && (
           <UpgradeAllButton
             isLoading={loading}
             hasError={!!error && !loading}
