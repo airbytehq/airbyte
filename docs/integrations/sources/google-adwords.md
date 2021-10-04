@@ -26,7 +26,7 @@ Several tables and their data are available from this source \(accounts, campaig
 
 #### Requirements
 
-* Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
+* Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
