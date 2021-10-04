@@ -266,7 +266,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 ### Generating an RSA Private Key
 
-The app expects an RSA key in PEM format.  To generate this key:
+The connector expects an RSA key in PEM format.  To generate this key:
 
     ssh-keygen -t rsa -m PEM -f myuser_rsa
 
