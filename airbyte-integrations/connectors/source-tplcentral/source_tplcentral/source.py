@@ -79,6 +79,7 @@ class TplcentralStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return [deep_snake_keys(v) for v in response.json()['Summaries']]
 
+
 class InventoryStockSummaries(TplcentralStream):
     primary_key = ["facility_id", "item_identifier.id"]
 
@@ -157,6 +158,7 @@ class Employees(IncrementalTplcentralStream):
         """
         # raise NotImplementedError("Implement stream slices or delete this method!")
         return {}
+
 
 class TplcentralAuthenticator(Oauth2Authenticator):
     def __init__(
