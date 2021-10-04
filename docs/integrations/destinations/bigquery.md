@@ -88,7 +88,7 @@ You should now have all the requirements needed to configure BigQuery as a desti
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
-#### Uploading options
+#### Uploading Options
 There are 2 available options to upload data to bigquery `Standard` and `GCS Staging`.
 - `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
   Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours.
