@@ -32,7 +32,7 @@ export const UsersSettingsView: React.FC = () => {
   );
 
   // TODO: show error with request fails
-  const { isLoading, mutate } = useUserHook(console.log, console.log);
+  const { isLoading, mutate: removeUser } = useUserHook();
 
   const { user } = useAuthService();
 
@@ -65,7 +65,9 @@ export const UsersSettingsView: React.FC = () => {
             <Button
               disabled={user?.userId === row.original.userId}
               secondary
-              onClick={() => mutate(row.original.userId)}
+              onClick={() =>
+                removeUser({ email: row.original.email, workspaceId })
+              }
               isLoading={isLoading}
             >
               <FormattedMessage id="userSettings.user.remove" />
@@ -74,7 +76,7 @@ export const UsersSettingsView: React.FC = () => {
           ].filter(Boolean),
       },
     ],
-    [isLoading, mutate]
+    [isLoading, workspaceId]
   );
 
   return (

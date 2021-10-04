@@ -2,11 +2,10 @@ import { useMutation } from "react-query";
 
 import { useGetUserService } from "./UserService";
 
-export const useUserHook = (onSuccess: () => void, onError: () => void) => {
+export const useUserHook = () => {
   const service = useGetUserService();
 
-  return useMutation(async (id: string) => service.remove(id), {
-    onSuccess,
-    onError,
-  });
+  return useMutation(async (payload: { email: string; workspaceId: string }) =>
+    service.remove(payload.email, payload.workspaceId)
+  );
 };
