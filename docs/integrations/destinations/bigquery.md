@@ -93,7 +93,7 @@ There are 2 available options to upload data to BigQuery `Standard` and `GCS Sta
 - `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
   Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours.
   This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
-- `GCS Uploading (CSV format)`. This approach has been implemented in order to avoid the issue for big datasets mentioned above.
+- `GCS Uploading (CSV format)`: This approach has been implemented in order to avoid the issue for big datasets mentioned above.
   At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
   The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
 
