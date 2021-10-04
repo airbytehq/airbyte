@@ -210,7 +210,7 @@ This is useful for debugging because it will show the exact resources you are de
 
 ### Helm Charts
 
-Check out the [helm chart readme](https://github.com/airbytehq/airbyte/tree/master/charts/airbyte)
+Check out the [Helm Chart Readme](https://github.com/airbytehq/airbyte/tree/master/charts/airbyte)
 
 ## Operator Guide
 
