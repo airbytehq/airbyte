@@ -92,7 +92,7 @@
         ["client_secret"],
         ["refresh_token"]
       ],
-      "oauthFlowOutputParameters": [["refresh_token"], ["access_token"]]
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }
