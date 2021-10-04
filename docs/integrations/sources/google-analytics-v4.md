@@ -30,7 +30,7 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 
 ## Getting Started (Airbyte Cloud)
 
-1. Click `Authenticate your Google Analytics v4 account`.
+1. Click `OAuth2.0 authorization` then `Authenticate your Google Analytics account`.
 2. Find your View ID for the view you want to fetch data from. Find it [here](https://ga-dev-tools.web.app/account-explorer/).
 3. Enter a start date, window size, and custom report information.
 4. You're done.
