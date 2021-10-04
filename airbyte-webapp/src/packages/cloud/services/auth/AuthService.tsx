@@ -36,6 +36,11 @@ export type AuthSignUp = (form: {
   password: string;
 }) => Promise<User | null>;
 
+export type AuthChangeEmail = (
+  email: string,
+  password: string
+) => Promise<void>;
+
 export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
 export type AuthLogout = () => void;
@@ -48,6 +53,7 @@ type AuthContextApi = {
   login: AuthLogin;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
+  updateEmail: AuthChangeEmail;
   requirePasswordReset: AuthRequirePasswordReset;
   confirmPasswordReset: AuthConfirmPasswordReset;
   sendEmailVerification: AuthSendEmailVerification;
@@ -121,6 +127,10 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
+      },
+      async updateEmail(email, password): Promise<void> {
+        await userService.changeEmail(email);
+        return authService.updateEmail(email, password);
       },
       async updatePassword(
         email: string,

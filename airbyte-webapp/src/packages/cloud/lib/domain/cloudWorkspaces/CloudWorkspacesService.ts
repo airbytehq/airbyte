@@ -15,12 +15,18 @@ class CloudWorkspacesService extends AirbyteRequestService {
     return workspaces;
   }
 
-  public async get(workspaceId: string): Promise<CloudWorkspace> {
-    const cloudWorkspace = await this.fetch<CloudWorkspace>(`${this.url}/get`, {
+  public async get(workspaceId?: string | null): Promise<CloudWorkspace> {
+    if (!workspaceId) {
+      return Promise.resolve({
+        name: "",
+        workspaceId: "",
+        billingUserId: "",
+      });
+    }
+
+    return await this.fetch<CloudWorkspace>(`${this.url}/get`, {
       workspaceId,
     });
-
-    return cloudWorkspace;
   }
 
   public async remove(workspaceId: string): Promise<void> {

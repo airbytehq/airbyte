@@ -76,10 +76,32 @@ export function useUpdateWorkspace() {
       service.update(payload.workspaceId, { name: payload.name }),
     {
       onSuccess: (result) => {
-        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => [
-          ...(old ?? []),
-          result,
-        ]);
+        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => {
+          const list = old ?? [];
+          if (list.length === 0) {
+            return [result];
+          }
+
+          const index = list.findIndex(
+            (item) => item.workspaceId === result.workspaceId
+          );
+
+          if (index === -1) {
+            return list;
+          }
+
+          return [...list.slice(0, index), result, ...list.slice(index + 1)];
+        });
+
+        queryClient.setQueryData<CloudWorkspace>(
+          ["workspace", result.workspaceId],
+          (old) => {
+            return {
+              ...old,
+              ...result,
+            };
+          }
+        );
       },
     }
   );
@@ -103,12 +125,21 @@ export function useRemoveWorkspace() {
   );
 }
 
-export function useGetWorkspace(workspaceId: string) {
+export function useGetWorkspace(workspaceId?: string | null) {
   const service = useGetWorkspaceService();
 
-  return useQuery(["workspace", workspaceId], () => service.get(workspaceId), {
-    suspense: true,
-  });
+  return useQuery<CloudWorkspace>(
+    ["workspace", workspaceId],
+    () => service.get(workspaceId),
+    {
+      suspense: true,
+      initialData: {
+        workspaceId: "",
+        name: "",
+        billingUserId: "",
+      },
+    }
+  );
 }
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
@@ -116,6 +147,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
     string | null
   >(`${user.userId}/workspaceId`, null);
+
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
   const updateWorkspace = useUpdateWorkspace();

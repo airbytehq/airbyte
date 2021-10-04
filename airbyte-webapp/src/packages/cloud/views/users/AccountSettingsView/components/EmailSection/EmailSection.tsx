@@ -16,6 +16,9 @@ import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import useWorkspace from "hooks/services/useWorkspace";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 
+import { FormValues } from "./typings";
+import { useEmail } from "./hooks";
+
 const ChangeEmailFooter = styled.div`
   display: flex;
   align-items: center;
@@ -31,6 +34,8 @@ const TextInputsSection = styled.div`
 const EmailSection: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const user = useCurrentUser();
+
+  const emailService = useEmail();
 
   const { workspace } = useWorkspace();
   const {
@@ -50,14 +55,12 @@ const EmailSection: React.FC = () => {
   return (
     <SettingsCard>
       <Content>
-        <Formik
+        <Formik<FormValues>
           initialValues={{
             email: user.email,
-            passwd: "",
+            password: "",
           }}
-          onSubmit={() => {
-            throw new Error("Change email unimplemented");
-          }}
+          onSubmit={emailService.updateEmail}
         >
           {({ values }) => (
             <Form>
@@ -86,14 +89,14 @@ const EmailSection: React.FC = () => {
                   </Field>
 
                   {user.email !== values.email && (
-                    <Field name="passwd">
+                    <Field name="password">
                       {({ field, meta }: FieldProps<string>) => (
                         <LabeledInput
                           {...field}
                           label={
                             <FormattedMessage id="settings.accountSettings.enterPassword" />
                           }
-                          placeholder="*********"
+                          placeholder=""
                           type="password"
                           error={!!meta.error && meta.touched}
                           message={
