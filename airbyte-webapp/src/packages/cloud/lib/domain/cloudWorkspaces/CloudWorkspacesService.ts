@@ -61,10 +61,10 @@ class CloudWorkspacesService extends AirbyteRequestService {
       name: string;
     }
   ): Promise<CloudWorkspace> {
-    return this.fetch<CloudWorkspace>(
-      `web_backend/permissioned_cloud_workspace/create`,
-      { workspaceId, ...cloudWorkspaceCreatePayload }
-    );
+    return this.fetch<CloudWorkspace>(`${this.url}/update`, {
+      workspaceId,
+      ...cloudWorkspaceCreatePayload,
+    });
   }
 }
 

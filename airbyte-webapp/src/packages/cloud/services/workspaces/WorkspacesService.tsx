@@ -13,11 +13,11 @@ type Context = {
   currentWorkspaceId?: string | null;
   selectWorkspace: (workspaceId: string | null) => void;
   createWorkspace: (name: string) => Promise<CloudWorkspace>;
-  renameWorkspace: {
+  updateWorkspace: {
     mutateAsync: (payload: {
       workspaceId: string;
       name: string;
-    }) => Promise<void>;
+    }) => Promise<CloudWorkspace>;
     isLoading: boolean;
   };
   removeWorkspace: {
@@ -72,7 +72,8 @@ export function useUpdateWorkspace() {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async (workspaceId: string) => service.update(workspaceId, { name: "" }),
+    async (payload: { workspaceId: string; name: string }) =>
+      service.update(payload.workspaceId, { name: payload.name }),
     {
       onSuccess: (result) => {
         queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => [
@@ -81,7 +82,7 @@ export function useUpdateWorkspace() {
         ]);
       },
     }
-  ).mutateAsync;
+  );
 }
 
 export function useRemoveWorkspace() {
@@ -102,14 +103,6 @@ export function useRemoveWorkspace() {
   );
 }
 
-export function useRenameWorkspace() {
-  const service = useGetWorkspaceService();
-
-  return useMutation(async (payload: { workspaceId: string; name: string }) =>
-    service.rename(payload.workspaceId, payload.name)
-  );
-}
-
 export function useGetWorkspace(workspaceId: string) {
   const service = useGetWorkspaceService();
 
@@ -125,7 +118,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   >(`${user.userId}/workspaceId`, null);
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
-  const renameWorkspace = useRenameWorkspace();
+  const updateWorkspace = useUpdateWorkspace();
 
   const queryClient = useQueryClient();
   const resetCache = useResetter();
@@ -139,7 +132,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
           userId: user.userId,
         }),
       removeWorkspace,
-      renameWorkspace,
+      updateWorkspace,
       selectWorkspace: async (workspaceId) => {
         setCurrentWorkspaceId(workspaceId);
         await queryClient.resetQueries();
@@ -151,7 +144,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
       user,
       createWorkspace,
       removeWorkspace,
-      renameWorkspace,
+      updateWorkspace,
     ]
   );
 

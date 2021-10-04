@@ -35,7 +35,7 @@ export const WorkspaceSettingsView: React.FC = () => {
   const {
     selectWorkspace,
     removeWorkspace,
-    renameWorkspace,
+    updateWorkspace,
   } = useWorkspaceService();
   const { name, workspaceId } = useCurrentWorkspace();
   return (
@@ -53,7 +53,7 @@ export const WorkspaceSettingsView: React.FC = () => {
         <Formik
           initialValues={{ name: name }}
           onSubmit={async (payload) =>
-            renameWorkspace.mutateAsync({ workspaceId: "", name: payload.name })
+            updateWorkspace.mutateAsync({ workspaceId, name: payload.name })
           }
         >
           {({ dirty, isSubmitting, resetForm, isValid }) => (

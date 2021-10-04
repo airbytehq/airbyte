@@ -28,7 +28,7 @@ const TextInputsSection = styled.div`
   gap: 15px;
 `;
 
-export const EmailSection: React.FC = () => {
+const EmailSection: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const user = useCurrentUser();
 
@@ -129,3 +129,5 @@ export const EmailSection: React.FC = () => {
     </SettingsCard>
   );
 };
+
+export default EmailSection;
