@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.mongodb;
@@ -34,9 +14,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -54,15 +36,14 @@ public class MongoDatabase extends AbstractDatabase {
   private static final int BATCH_SIZE = 1000;
 
   private final ConnectionString connectionString;
-  private final String databaseName;
+  private final com.mongodb.client.MongoDatabase database;
+  private final MongoClient mongoClient;
 
-  private MongoClient mongoClient;
-
-  public MongoDatabase(String uri, String databaseName) {
+  public MongoDatabase(String connectionString, String databaseName) {
     try {
-      connectionString = new ConnectionString(uri);
-      mongoClient = MongoClients.create(connectionString);
-      this.databaseName = databaseName;
+      this.connectionString = new ConnectionString(connectionString);
+      mongoClient = MongoClients.create(this.connectionString);
+      database = mongoClient.getDatabase(databaseName);
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);
@@ -75,32 +56,44 @@ public class MongoDatabase extends AbstractDatabase {
   }
 
   public com.mongodb.client.MongoDatabase getDatabase() {
-    return mongoClient.getDatabase(databaseName);
+    return database;
+  }
+
+  public MongoIterable<String> getDatabaseNames() {
+    return mongoClient.listDatabaseNames();
   }
 
   public MongoIterable<String> getCollectionNames() {
-    return getDatabase().listCollectionNames();
+    return database.listCollectionNames();
   }
 
   public MongoCollection<Document> getCollection(String collectionName) {
-    return getDatabase().getCollection(collectionName)
+    return database.getCollection(collectionName)
         .withReadConcern(ReadConcern.MAJORITY);
+  }
+
+  public MongoCollection<Document> getOrCreateNewCollection(String collectionName) {
+    Set<String> collectionNames = MoreIterators.toSet(database.listCollectionNames().iterator());
+    if (!collectionNames.contains(collectionName)) {
+      database.createCollection(collectionName);
+    }
+    return database.getCollection(collectionName);
   }
 
   @VisibleForTesting
   public MongoCollection<Document> createCollection(String name) {
-    getDatabase().createCollection(name);
-    return getDatabase().getCollection(name);
+    database.createCollection(name);
+    return database.getCollection(name);
   }
 
   @VisibleForTesting
   public String getName() {
-    return getDatabase().getName();
+    return database.getName();
   }
 
   public Stream<JsonNode> read(String collectionName, List<String> columnNames, Optional<Bson> filter) {
     try {
-      final MongoCollection<Document> collection = getDatabase().getCollection(collectionName);
+      final MongoCollection<Document> collection = database.getCollection(collectionName);
       final MongoCursor<Document> cursor = collection
           .find(filter.orElse(new BsonDocument()))
           .batchSize(BATCH_SIZE)

@@ -38,7 +38,7 @@ INSTANCE_NAME=airbyte # or anyother name that you've used
 {% tab title="MacOS" %}
 ```bash
 # In your workstation terminal
-brew cask install google-cloud-sdk
+brew install --cask google-cloud-sdk
 gcloud init # Follow instructions
 ```
 {% endtab %}

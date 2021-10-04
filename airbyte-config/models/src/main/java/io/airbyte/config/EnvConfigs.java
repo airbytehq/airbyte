@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -87,6 +67,8 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
+  private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -95,7 +77,6 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
-  private static final String SECRET_STORE_FOR_CONFIGS = "SECRET_STORE_CONFIGS_ENABLE";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -208,11 +189,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getSecretStoreGcpProjectId() {
     return getEnv(SECRET_STORE_GCP_PROJECT_ID);
-  }
-
-  @Override
-  public String getSecretStoreForConfigs() {
-    return getEnv(SECRET_STORE_FOR_CONFIGS);
   }
 
   @Override
@@ -402,6 +378,16 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
   }
 
+  /**
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
+   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
+   * no-op value.
+   */
+  @Override
+  public String getJobsImagePullSecret() {
+    return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
+  }
+
   @Override
   public String getS3LogBucket() {
     return getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, "");
@@ -435,6 +421,12 @@ public class EnvConfigs implements Configs {
   @Override
   public String getGoogleApplicationCredentials() {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
+  }
+
+  @Override
+  public SecretPersistenceType getSecretPersistenceType() {
+    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
+    return SecretPersistenceType.valueOf(secretPersistenceStr);
   }
 
   private String getEnvOrDefault(final String key, final String defaultValue) {
