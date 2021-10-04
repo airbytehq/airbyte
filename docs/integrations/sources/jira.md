@@ -9,6 +9,10 @@
 | Replicate Incremental Deletes | Coming soon | |
 | SSL connection | Yes |  |
 
+## Troubleshooting
+
+#### Issue: `Normalization failing, keyError updated` [Discuss here.](https://discuss.airbyte.io/t/source-jira-failing-in-normalization-step-keyerror-updated/57)
+
 ## Supported Tables
 
 This source is capable of syncing the following tables and their data:
