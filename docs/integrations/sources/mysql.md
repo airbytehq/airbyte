@@ -29,11 +29,11 @@ On Airbyte Cloud, only TLS connections to your MySQL instance are supported. Oth
 1. MySQL Server `8.0`, `5.7`, or `5.6`.
 2. Create a dedicated read-only Airbyte user with access to all tables needed for replication.
 
-#### 1. Make sure your database is accessible from the machine running Airbyte
+**1. Make sure your database is accessible from the machine running Airbyte**
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your MySQL instance is via the check connection tool in the UI.
 
-#### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
+**2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)**
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
@@ -56,11 +56,11 @@ GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *
 
 Your database user should now be ready for use with Airbyte.
 
-#### 3. Set up CDC
+**3. Set up CDC**
 
 For `STANDARD` replication method this is not applicable. If you select the `CDC` replication method then only this is required. Please read [the section on CDC below](mysql.md#setting-up-cdc-for-mysql) for more information.
 
-#### 4. That's it!
+**4. That's it!**
 
 Your database user should now be ready for use with Airbyte.
 
@@ -78,7 +78,7 @@ Your database user should now be ready for use with Airbyte.
 * Our CDC implementation uses at least once delivery for all change records.
 
 
-#### 1. Enable binary logging
+**1. Enable binary logging**
 
 You must enable binary logging for MySQL replication. The binary logs record transaction updates for replication tools to propagate changes. You can configure your MySQL server configuration file with the following properties, which are described in below:
 ```
@@ -94,7 +94,7 @@ expire_logs_days  = 10
 * binlog_row_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
 * expire_logs_days : This is the number of days for automatic binlog file removal. We recommend 10 days so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
 
-#### 2. Enable GTIDs \(Optional\)
+**2. Enable GTIDs \(Optional\)**
 
 Global transaction identifiers (GTIDs) uniquely identify transactions that occur on a server within a cluster. 
 Though not required for a Airbyte MySQL connector, using GTIDs simplifies replication and enables you to more easily confirm if primary and replica servers are consistent.
@@ -102,7 +102,7 @@ For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/r
 * Enable gtid_mode : Boolean that specifies whether GTID mode of the MySQL server is enabled or not. Enable it via `mysql> gtid_mode=ON`
 * Enable enforce_gtid_consistency : Boolean that specifies whether the server enforces GTID consistency by allowing the execution of statements that can be logged in a transactionally safe manner. Required when using GTIDs. Enable it via `mysql> enforce_gtid_consistency=ON`
 
-#### Note 
+**Note** 
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. 
 Airbyte doesn't acquire any table locks (for tables defined with MyISAM engine, the tables would still be locked) while creating the snapshot to allow writes by other database clients. 
@@ -127,7 +127,7 @@ Using this feature requires additional configuration, when creating the source. 
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 
-## Data type mapping
+## Data Type Mapping
 
 MySQL data types are mapped to the following data types when synchronizing data.
 You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSourceComprehensiveTest.java).
