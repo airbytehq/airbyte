@@ -16,8 +16,7 @@ The MSSQL source does not alter the schema present in your database. Depending o
 
 ## Troubleshooting
 
-#### Issue: Connector provides wrong values for some data types.
-Please see [this issue](https://github.com/airbytehq/airbyte/issues/4270) for description of unexpected behaviour for certain datatypes.
+#### Issue: `Connector provides wrong values for some data types.` See [discussion](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
 
 ## Getting Started (Airbyte Cloud)
 On Airbyte Cloud, only TLS connections to your MSSQL instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.
