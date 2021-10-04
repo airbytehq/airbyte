@@ -1,0 +1,26 @@
+{
+  "users": {
+    "profileUpdatedAt": "2121-04-14T17:00:41+00:00"
+  },
+  "email_unsubscribe": {
+    "createdAt": "2121-04-14T17:00:44+00:00"
+  },
+  "email_subscribe": {
+    "createdAt": "2121-04-14T16:52:45+00:00"
+  },
+  "email_send": {
+    "createdAt": "2121-04-14T16:25:56+00:00"
+  },
+  "email_open": {
+    "createdAt": "2121-04-14T17:00:11+00:00"
+  },
+  "email_click": {
+    "createdAt": "2121-04-14T16:55:14+00:00"
+  },
+  "email_bounce": {
+    "createdAt": "2121-04-14T16:29:39+00:00"
+  },
+  "templates": {
+    "createdAt": "2121-04-14T16:23:30.700000+00:00"
+  }
+}
