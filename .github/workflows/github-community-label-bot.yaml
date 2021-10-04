@@ -1,0 +1,15 @@
+name: CI
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: harshithmullapudi/label-actions@ffab4047019300b48dc2deaef8fe84aea975d3c1
+        with:
+          github-token: ${{ secrets.LABEL_BOT_TOKEN }}
+          github-username: ${{ secrets.LABEL_BOT_USERNAME }}
