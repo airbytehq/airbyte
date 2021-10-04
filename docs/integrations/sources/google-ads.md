@@ -32,10 +32,11 @@ This source is capable of syncing the following tables and their data:
 
 ## Getting Started (Airbyte-Cloud)
 
-1. Get the customer ID for your account. Learn how to do that [here](https://support.google.com/google-ads/answer/1704344)
-2. If your access to the account is through a manager account, get the customer ID of the manager account.
-3. Fill out a start date, and optionally, a conversion window, and custom [GAQL](https://developers.google.com/google-ads/api/docs/query/overview).
-4. You're done.
+1. Click `Authenticate your Google Ads account` to sign in with Google and authorize your account.
+2. Get the customer ID for your account. Learn how to do that [here](https://support.google.com/google-ads/answer/1704344)
+3. If your access to the account is through a manager account, get the customer ID of the manager account.
+4. Fill out a start date, and optionally, a conversion window, and custom [GAQL](https://developers.google.com/google-ads/api/docs/query/overview).
+5. You're done.
 
 ## Getting Started (Airbyte Open-Source)
 
