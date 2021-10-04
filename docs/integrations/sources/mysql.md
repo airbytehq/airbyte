@@ -9,7 +9,7 @@
 | Replicate Incremental Deletes | Yes |  |
 | CDC | Yes |  |
 | SSL Support | Yes |  |
-| SSH Tunnel Connection | Coming soon |  |
+| SSH Tunnel Connection | Yes |  |
 | Namespaces | Yes | Enabled by default |
 | Arrays | Yes | Byte arrays are not supported | 
 
