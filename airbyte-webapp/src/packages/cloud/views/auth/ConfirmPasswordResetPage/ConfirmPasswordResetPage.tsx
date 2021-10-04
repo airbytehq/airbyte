@@ -49,9 +49,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
                     label={
                       <FormattedMessage id="confirmRestPassword.yourNewPassword" />
                     }
-                    placeholder={formatMessage({
-                      id: "confirmRestPassword.yourNewPassword.placeholder",
-                    })}
+                    placeholder="**********"
                     type="password"
                     error={!!meta.error && meta.touched}
                     message={

@@ -406,5 +406,7 @@
   "connector.destination": "Destination",
 
   "demo.message.title": "This Airbyte demo is read-only",
-  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
+  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
+
+  "confirmRestPassword.yourNewPassword": "Type new password"
 }
