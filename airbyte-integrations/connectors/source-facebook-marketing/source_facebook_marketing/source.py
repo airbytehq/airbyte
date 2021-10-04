@@ -5,7 +5,7 @@
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
-import pendulum
+# import pendulum
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -47,7 +47,7 @@ class ConnectorConfig(BaseModel):
         description="The end date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
-        default=None,
+        default_factory=datetime.now,
     )
 
     include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
@@ -95,8 +95,7 @@ class SourceFacebookMarketing(AbstractSource):
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         api = API(account_id=config.account_id, access_token=config.access_token)
-        if not config.end_date:
-            config.end_date = pendulum.now()
+        print(config.end_date)
 
         insights_args = dict(
             api=api,
