@@ -4,13 +4,12 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import java.nio.file.Path;
+import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
 
 public class SshPasswordMssqlSourceAcceptanceTest extends AbstractSshMssqlSourceAcceptanceTest {
 
   @Override
-  public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-pwd-config.json");
+  public TunnelMethod getTunnelMethod() {
+    return TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
 }
