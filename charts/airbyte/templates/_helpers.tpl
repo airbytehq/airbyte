@@ -174,3 +174,45 @@ Add environment variables to configure minio
 {{- $port := (include "airbyte.minio.port" .) -}}
 {{- printf "http://%s:%s" $host $port -}}
 {{- end -}}
+
+{{/*
+Returns the Airbyte Scheduler Image
+*/}}
+{{- define "airbyte.schedulerImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.scheduler.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Airbyte Server Image
+*/}}
+{{- define "airbyte.serverImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.server.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Airbyte Webapp Image
+*/}}
+{{- define "airbyte.webappImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.webapp.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Airbyte podSweeper Image
+*/}}
+{{- define "airbyte.podSweeperImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.podSweeper.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Airbyte worker Image
+*/}}
+{{- define "airbyte.workerImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.worker.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Temporal Image. TODO: This will probably be replaced if we move to using temporal as a dependency, like minio and postgres.
+*/}}
+{{- define "airbyte.temporalImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.temporal.image "global" .Values.global) -}}
+{{- end -}}

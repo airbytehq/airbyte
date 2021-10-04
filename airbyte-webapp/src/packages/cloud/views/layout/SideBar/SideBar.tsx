@@ -2,7 +2,6 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
-import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
@@ -86,11 +85,6 @@ const DocsIcon = styled(FontAwesomeIcon)`
   line-height: 18px;
 `;
 
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
-
 const SettingsIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 15px;
@@ -130,7 +124,13 @@ const SideBar: React.FC = () => {
   return (
     <Bar>
       <div>
-        <Link to={Routes.Root}>
+        <Link
+          to={
+            workspace.displaySetupWizard
+              ? Routes.Onboarding
+              : Routes.Connections
+          }
+        >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
@@ -158,15 +158,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem
-              to={Routes.Root}
-              exact
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname === Routes.Root ||
-                location.pathname.startsWith(Routes.Source)
-              }
-            >
+            <MenuItem to={Routes.Source} activeClassName="active">
               <Source />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -184,15 +176,6 @@ const SideBar: React.FC = () => {
         </Menu>
       </div>
       <Menu>
-        <li>
-          <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore slack icon fails here*/}
-            <HelpIcon icon={faSlack} />
-            <Text>
-              <FormattedMessage id="sidebar.slack" />
-            </Text>
-          </MenuLinkItem>
-        </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">
             <DocsIcon icon={faBook} />
