@@ -1,58 +1,6 @@
 # Microsoft SQL Server \(MSSQL\)
 
-## Overview
-
-The MSSQL source supports Full Refresh and Incremental syncs, including Change Data Capture. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
-
-### Resulting schema
-
-The MSSQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
-
-### Data type mapping
-
-MSSQL data types are mapped to the following data types when synchronizing data.
-You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
-If you can't find the data type you are looking for or have any problems feel free to add a new test!
-
-| MSSQL Type | Resulting Type | Notes |
-| :--- | :--- | :--- |
-| `bigint` | number |  |
-| `binary` | string |  |
-| `bit` | boolean |  |
-| `char` | string |  |
-| `date` | number |  |
-| `datetime` | string |  |
-| `datetime2` | string |  |
-| `datetimeoffset` | string |  |
-| `decimal` | number |  |
-| `int` | number |  |
-| `float` | number |  |
-| `geography` | string |  |
-| `geometry` | string |  |
-| `money` | number |  |
-| `numeric` | number |  |
-| `ntext` | string |  |
-| `nvarchar` | string |  |
-| `nvarchar(max)` | string |  |
-| `real` | number |  |
-| `smalldatetime` | string |  |
-| `smallint` | number |  |
-| `smallmoney` | number |  |
-| `sql_variant` | string |  |
-| `uniqueidentifier` | string |  |
-| `text` | string |  |
-| `time` | string |  |
-| `tinyint` | number |  |
-| `varbinary` | string |  |
-| `varchar` | string |  |
-| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string |  |
-| `xml` | string |  |
-
-If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
-
-Please see [this issue](https://github.com/airbytehq/airbyte/issues/4270) for description of unexpected behaviour for certain datatypes.
-
-### Features
+## Features
 
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
@@ -61,18 +9,25 @@ Please see [this issue](https://github.com/airbytehq/airbyte/issues/4270) for de
 | Replicate Incremental Deletes | Yes |  |
 | CDC (Change Data Capture) | Yes |  |
 | SSL Support | Yes |  |
-| SSH Tunnel Connection | Coming soon |  |
+| SSH Tunnel Connection | Yes |  |
 | Namespaces | Yes | Enabled by default |
 
-## Getting started
+The MSSQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-### Requirements
+## Troubleshooting
+
+#### Issue: `Connector provides wrong values for some data types.` See [discussion](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
+
+## Getting Started (Airbyte Cloud)
+On Airbyte Cloud, only TLS connections to your MSSQL instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.
+
+## Getting Started (Airbyte Open-Source)
+
+#### Requirements
 
 1. MSSQL Server `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, `PDW 2008R2 AU34`.
 2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 3. If you want to use CDC, please see [the relevant section below](mssql.md#change-data-capture-cdc) for further setup requirements
-
-### Setup guide
 
 #### 1. Make sure your database is accessible from the machine running Airbyte
 
@@ -84,9 +39,9 @@ This step is optional but highly recommended to allow for better permission cont
 
 _Coming soon: suggestions on how to create this user._
 
-Your database user should now be ready for use with Airbyte.
+#### 3. Your database user should now be ready for use with Airbyte!
 
-## Change Data Capture : CDC
+## Change Data Capture (CDC)
 
 We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017)
 to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on cdc-enabled tables.
@@ -102,7 +57,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 * If the limitations below prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
 * If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
-### CDC Limitations
+#### CDC Limitations
 
 * Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
 * There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
@@ -120,7 +75,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 
 ### Setting up CDC for MSSQL
 
-#### Enable CDC on database and tables
+#### 1. Enable CDC on database and tables
 
 MS SQL Server provides some built-in stored procedures to enable CDC.
 
@@ -155,7 +110,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 
 For further detail, see the [Microsoft docs on enabling and disabling CDC](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server?view=sql-server-ver15).
 
-#### Enabling snapshot isolation
+#### 2. Enable snapshot isolation
 
 - When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. To avoid acquiring table locks, Airbyte uses *snapshot isolation*, allowing simultaneous writes by other database clients. This must be enabled on the database like so:
 ```text
@@ -163,7 +118,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
     SET ALLOW_SNAPSHOT_ISOLATION ON;
 ```
 
-#### Create a user and grant appropriate permissions
+#### 3. Create a user and grant appropriate permissions
 - Rather than use *sysadmin* or *db_owner* credentials, we recommend creating a new user with the relevant CDC access for use with Airbyte. First let's create the login and user and add to the [db_datareader](https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver15) role:
 ```text
   USE {database name};
@@ -187,7 +142,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
   GRANT VIEW SERVER STATE TO {user name};
 ```
 
-#### Extending the retention period of CDC data
+#### 4. Extend the retention period of CDC data
 
 - In SQL Server, by default, only three days of data are retained in the change tables. Unless you are running very frequent syncs, we suggest increasing this retention so that in case of a failure in sync or if the sync is paused, there is still some bandwidth to start from the last point in incremental sync.
 - These settings can be changed using the stored procedure [sys.sp_cdc_change_job](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-change-job-transact-sql?view=sql-server-ver15) as below:
@@ -204,7 +159,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
   EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
 ```
 
-#### Ensuring the SQL Server Agent is running
+#### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent
   to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs)
@@ -218,11 +173,6 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 - If you see something other than 'Running.' please follow
   the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)
   to start the service.
-
-#### Setting up CDC on managed versions of SQL Server
-
-We readily welcome [contributions to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) providing setup
-instructions. Please consider contributing to expand our docs!
 
 ## Connection to MSSQL via an SSH Tunnel
 
@@ -269,6 +219,47 @@ This produces the private key in pem format, and the public key remains in the s
 your bastion host.  The public key should be added to your bastion host to whichever user you want to use with Airbyte.  The private
 key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
 
+## Data type mapping
+
+MSSQL data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
+
+| MSSQL Type | Resulting Type | Notes |
+| :--- | :--- | :--- |
+| `bigint` | number |  |
+| `binary` | string |  |
+| `bit` | boolean |  |
+| `char` | string |  |
+| `date` | number |  |
+| `datetime` | string |  |
+| `datetime2` | string |  |
+| `datetimeoffset` | string |  |
+| `decimal` | number |  |
+| `int` | number |  |
+| `float` | number |  |
+| `geography` | string |  |
+| `geometry` | string |  |
+| `money` | number |  |
+| `numeric` | number |  |
+| `ntext` | string |  |
+| `nvarchar` | string |  |
+| `nvarchar(max)` | string |  |
+| `real` | number |  |
+| `smalldatetime` | string |  |
+| `smallint` | number |  |
+| `smallmoney` | number |  |
+| `sql_variant` | string |  |
+| `uniqueidentifier` | string |  |
+| `text` | string |  |
+| `time` | string |  |
+| `tinyint` | number |  |
+| `varbinary` | string |  |
+| `varchar` | string |  |
+| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string |  |
+| `xml` | string |  |
+
+If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 ## Changelog
 

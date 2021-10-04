@@ -1,12 +1,15 @@
 # MS SQL Server
 
-## Overview
+## Features
 
-The Airbyte MS SQL Server destination allows you to sync data to SQL Server databases.
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
+| Namespaces | Yes |  |
 
-### Sync overview
-
-#### Output schema
+## Output Schema
 
 {% hint style="warning" %}
 Tables in MSSQL destinations will be prefixed by `_airbyte_raw` due to the fact that MSSQL does not currently support basic normalization. This prefix cannot be removed and this is normal behavior.
@@ -18,28 +21,20 @@ Each stream will be output into its own table in SQL Server. Each table will con
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in SQL Server is `DATETIMEOFFSET(7)`.
 * `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `NVARCHAR(MAX)`.
 
-#####  Microsoft SQL Server specifics or why NVARCHAR type is used here:
+####  Microsoft SQL Server specifics or why NVARCHAR type is used here:
 * NVARCHAR is Unicode - 2 bytes per character, therefore max. of 1 billion characters; will handle East Asian, Arabic, Hebrew, Cyrillic etc. characters just fine.
 * VARCHAR is non-Unicode - 1 byte per character, max. capacity is 2 billion characters, but limited to the character set you're SQL Server is using, basically - no support for those languages mentioned before
 
-#### Features
+## Getting Started (Airbyte Cloud)
+Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | Yes |  |
-
-## Getting started
+## Getting Started (Airbyte Open-Source)
 
 ### Requirements
 
 To use the SQL Server destination, you'll need:
 
-MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
-
-### Setup guide
+* MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
 
 #### Network Access
 
@@ -75,7 +70,7 @@ You should now have all the requirements needed to configure SQL Server as a des
     * **Encrypted (verify certificate)**: Use the server's SSL certificate, after standard certificate verification.
   * **Host Name In Certificate** (optional): When using certificate verification, this property can be set to specify an expected name for added security.  If this value is present, and the server's certificate's host name does not match it, certificate verification will fail.
   
-### Connection to MS SQL Server via an SSH Tunnel
+## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to the MS SQL Server instance via an SSH Tunnel. The reason you might want to do this because it is not possible 
 (or against security policy) to connect to the database directly (e.g. it does not have a public IP address).
