@@ -1,20 +1,6 @@
 # MySQL
 
-## Overview
-
-The Airbyte MySQL destination allows you to sync data to MySQL.
-
-### Sync overview
-
-#### Output schema
-
-Each stream will be output into its own table in MySQL. Each table will contain 3 columns:
-
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in MySQL is `VARCHAR(256)`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MySQL is `TIMESTAMP(6)`.
-* `_airbyte_data`: a json blob representing with the event data. The column type in MySQL is `JSON`.
-
-#### Features
+## Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
@@ -22,17 +8,27 @@ Each stream will be output into its own table in MySQL. Each table will contain 
 | Incremental - Append Sync | Yes |  |
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
+| SSH Tunnel Connection | Yes |  |
 
-## Getting started
+#### Output Schema
+
+Each stream will be output into its own table in MySQL. Each table will contain 3 columns:
+
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in MySQL is `VARCHAR(256)`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MySQL is `TIMESTAMP(6)`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in MySQL is `JSON`.
+
+## Getting Started (Airbyte Cloud)
+Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
+
+## Getting Started (Airbyte Open-Source)
 
 ### Requirements
 
 To use the MySQL destination, you'll need:
 
 * To sync data to MySQL **with** normalization MySQL database 8.0.0 or above
-* To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above. 
-
-### Setup guide
+* To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above.
 
 #### Network Access
 
@@ -58,7 +54,7 @@ You should now have all the requirements needed to configure MySQL as a destinat
 * **Password**
 * **Database**
 
-## Known limitations
+## Known Limitations
 
 Note that MySQL documentation discusses identifiers case sensitivity using the `lower_case_table_names` system variable.
 One of their recommendations is:
@@ -70,7 +66,7 @@ One of their recommendations is:
 
 As a result, Airbyte MySQL destination forces all identifier (table, schema and columns) names to be lowercase.
 
-## Connection to MySQL via an SSH Tunnel
+## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a MySQl instance via an SSH Tunnel. The reason you might want to do this because it is not possible (or against security policy) to connect to the database directly (e.g. it does not have a public IP address).
 
