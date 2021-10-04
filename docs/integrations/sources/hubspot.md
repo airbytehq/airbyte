@@ -11,7 +11,7 @@
 
 ## Troubleshooting 
 
-#### Issue: `414 Client Error: Request-URI Too Large for url` failing sync. [\[Workaround\]](https://discuss.airbyte.io/t/source-hubspot-failed-sync-request-uri-too-large-for-contact-stream/59)
+**Issue: `414 Client Error: Request-URI Too Large for url` failing sync. [\[Workaround\]](https://discuss.airbyte.io/t/source-hubspot-failed-sync-request-uri-too-large-for-contact-stream/59)**
 
 ## Supported Tables
 
