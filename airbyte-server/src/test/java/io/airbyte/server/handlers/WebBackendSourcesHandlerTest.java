@@ -4,16 +4,24 @@
 
 package io.airbyte.server.handlers;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
@@ -32,10 +40,21 @@ class WebBackendSourcesHandlerTest {
   private WebBackendSourcesHandler webBackendSourcesHandler;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
     sourceHandler = mock(SourceHandler.class);
     configRepository = mock(ConfigRepository.class);
     webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository);
+    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withName("test")
+        .withDockerImageTag("dev"));
+    when(configRepository.getStandardWorkspace(any(), anyBoolean())).thenReturn(new StandardWorkspace());
+    TrackingClientSingleton.initialize(
+        TrackingStrategy.LOGGING,
+        mock(Deployment.class),
+        "test",
+        "dev",
+        configRepository);
   }
 
   @Test
@@ -49,6 +68,7 @@ class WebBackendSourcesHandlerTest {
         .connectionConfiguration(sourceConnection.getConfiguration());
     webBackendSourcesHandler.webBackendCreateSource(Jsons.clone(sourceCreate));
     verify(sourceHandler).createSource(sourceCreate);
+    assertNoTracking();
   }
 
   @Test
@@ -75,6 +95,12 @@ class WebBackendSourcesHandlerTest {
         .put("api_client", OAuthConfigSupplier.SECRET_MASK);
     webBackendSourcesHandler.webBackendCreateSource(Jsons.clone(sourceCreate));
     verify(sourceHandler).createSource(expectedSourceCreate);
+    assertNoTracking();
+  }
+
+  private void assertNoTracking() throws JsonValidationException, ConfigNotFoundException, IOException {
+    // No tracking should be triggered, so accessing standard workspaces is unnecessary
+    verify(configRepository, times(0)).getStandardWorkspace(any(), anyBoolean());
   }
 
 }
