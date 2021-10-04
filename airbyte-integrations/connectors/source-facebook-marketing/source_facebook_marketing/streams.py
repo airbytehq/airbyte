@@ -9,10 +9,9 @@ from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
+import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import pendulum
-import airbyte_cdk.sources.utils.casing as casing
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -300,7 +299,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         fields: List[str] = None,
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
-        **kwargs):
+        **kwargs,
+    ):
 
         super().__init__(**kwargs)
         self.lookback_window = pendulum.duration(days=buffer_days)
@@ -412,7 +412,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         if self._fields:
-            schema["properties"] = {k:v for k,v in schema["properties"].items() if k in self._fields}
+            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 

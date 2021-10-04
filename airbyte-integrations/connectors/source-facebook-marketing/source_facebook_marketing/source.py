@@ -1,15 +1,15 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple, Type, Optional
+from typing import Any, List, Mapping, Optional, Tuple, Type
+
 from airbyte_cdk.entrypoint import logger
-
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
-
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
@@ -24,27 +24,19 @@ from source_facebook_marketing.streams import (
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
-    Campaigns
+    Campaigns,
 )
 
 
 class InsightConfig(BaseModel):
 
-    name: str = Field(
-        description='The name value of insight'
-    )
+    name: str = Field(description="The name value of insight")
 
-    fields: Optional[List[str]] = Field(
-        description='A list of chosen fields for fields parameter'
-    )
+    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter")
 
-    breakdowns: Optional[List[str]] = Field(
-        description='A list of chosen breakdowns for breakdowns'
-    )
+    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns")
 
-    action_breakdowns: Optional[List[str]] = Field(
-        description='A list of chosen action_breakdowns for action_breakdowns'
-    )
+    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns")
 
 
 class ConnectorConfig(BaseModel):
@@ -81,7 +73,9 @@ class ConnectorConfig(BaseModel):
     )
     insights: Optional[List[InsightConfig]] = Field(
         description="A defined list wich contains insights entries, each entry must have a name and can contain these entries(fields, breakdowns or action_breakdowns)",
-        examples=["[{\"name\": \"AdsInsights\",\"fields\": [\"account_id\",\"account_name\",\"ad_id\",\"ad_name\",\"adset_id\",\"adset_name\",\"campaign_id\",\"campaign_name\",\"date_start\",\"impressions\",\"spend\"],\"breakdowns\": [],\"action_breakdowns\": []}]"]
+        examples=[
+            '[{"name": "AdsInsights","fields": ["account_id","account_name","ad_id","ad_name","adset_id","adset_name","campaign_id","campaign_name","date_start","impressions","spend"],"breakdowns": [],"action_breakdowns": []}]'
+        ],
     )
 
 
@@ -125,7 +119,6 @@ class SourceFacebookMarketing(AbstractSource):
             AdSets(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             AdCreatives(api=api),
-
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),
@@ -157,7 +150,7 @@ class SourceFacebookMarketing(AbstractSource):
         )
 
     def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
-        """ Update method, if insights have values returns streams replacing the
+        """Update method, if insights have values returns streams replacing the
         default insights streams else returns streams
 
         """
@@ -167,10 +160,10 @@ class SourceFacebookMarketing(AbstractSource):
         insights_custom_streams = list()
 
         for insight in insights:
-            args['name'] = insight.name
-            args['fields'] = insight.fields
-            args['breakdowns'] = insight.breakdowns
-            args['action_breakdowns'] = insight.action_breakdowns
+            args["name"] = insight.name
+            args["fields"] = insight.fields
+            args["breakdowns"] = insight.breakdowns
+            args["action_breakdowns"] = insight.action_breakdowns
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 
