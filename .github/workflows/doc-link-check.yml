@@ -20,7 +20,7 @@ jobs:
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
         if: github.ref != 'refs/heads/master'
         with:
-          use-quiet-mode: 'no'
+          use-quiet-mode: 'yes'
           use-verbose-mode: 'yes'
           check-modified-files-only: 'yes'
           config-file: .github/workflows/doc-link-check.json
