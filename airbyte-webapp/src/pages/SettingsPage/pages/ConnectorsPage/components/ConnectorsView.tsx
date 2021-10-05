@@ -14,7 +14,7 @@ import HeadTitle from "components/HeadTitle";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { WithFeature } from "hooks/services/Feature";
-import { IS_CLOUD } from "core/env";
+import { IS_CLOUD } from "core/envService";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";
@@ -73,7 +73,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerImageTag",
         customWidth: 10,
       },
-      ...(!IS_CLOUD
+      ...(!IS_CLOUD()
         ? [
             {
               Header: (
@@ -106,7 +106,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         <WithFeature featureId={"ALLOW_UPLOAD_CUSTOM_IMAGE"}>
           <CreateConnector type={type} />
         </WithFeature>
-        {(hasNewConnectorVersion || isUpdateSuccess) && !IS_CLOUD && (
+        {(hasNewConnectorVersion || isUpdateSuccess) && !IS_CLOUD() && (
           <UpgradeAllButton
             isLoading={loading}
             hasError={!!error && !loading}
