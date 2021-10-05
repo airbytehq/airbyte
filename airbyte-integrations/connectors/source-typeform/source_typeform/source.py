@@ -201,10 +201,15 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
 class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            url = f"{TypeformStream.url_base}/forms"
-            auth_headers = {"Authorization": f"Bearer {config['token']}"}
-            session = requests.get(url, headers=auth_headers)
-            session.raise_for_status()
+            form_ids = config.get("form_ids", []).copy()
+            auth = TokenAuthenticator(token=config["token"])
+            # check if form valid
+            if form_ids:
+                for form in TrimForms(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh):
+                    if form.get("id") in form_ids:
+                        form_ids.remove(form.get("id"))
+                if form_ids:
+                    return False, f"{form_ids} is not valid IDs"
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
