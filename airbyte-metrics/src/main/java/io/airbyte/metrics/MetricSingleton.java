@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.EnvConfigs;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
@@ -36,6 +37,8 @@ public class MetricSingleton {
   private static final Map<String, Counter> nameToCounter = new HashMap<>();
   private static final Map<String, Histogram> nameToHistogram = new HashMap<>();
 
+  private static HTTPServer monitoringDaemon;
+
   // Gauge. See
   // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=gauge#monotonic-count.
   /**
@@ -45,7 +48,7 @@ public class MetricSingleton {
    * @param val to set
    */
   public static void setGauge(String name, double val, String description) {
-    checkDescriptionExist(description, () -> ifPublish(() -> {
+    validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToGauge.containsKey(name)) {
         Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
@@ -61,7 +64,7 @@ public class MetricSingleton {
    * @param val to increment
    */
   public static void incrementGauge(String name, double val, String description) {
-    checkDescriptionExist(description, () -> ifPublish(() -> {
+    validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (nameToGauge.containsKey(name)) {
         LOGGER.warn("Overriding existing metric, type: Gauge, name: {}", name);
       }
@@ -81,7 +84,7 @@ public class MetricSingleton {
    * @param val to decrement
    */
   public static void decrementGauge(String name, double val, String description) {
-    checkDescriptionExist(description, () -> ifPublish(() -> {
+    validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToGauge.containsKey(name)) {
         Gauge gauge = Gauge.build().name(name).help(description).register();
         nameToGauge.put(name, gauge);
@@ -99,7 +102,7 @@ public class MetricSingleton {
    * @param amt to increment
    */
   public static void incrementCounter(String name, double amt, String description) {
-    checkDescriptionExist(description, () -> ifPublish(() -> {
+    validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToCounter.containsKey(name)) {
         Counter counter = Counter.build().name(name).help(description).register();
         nameToCounter.put(name, counter);
@@ -120,7 +123,7 @@ public class MetricSingleton {
    */
   public static double timeCode(String name, Runnable runnable, String description) {
     var duration = new AtomicReference<>(0.0);
-    checkDescriptionExist(description, () -> ifPublish(() -> {
+    validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       if (!nameToHistogram.containsKey(name)) {
         Histogram hist = Histogram.build().name(name).help(description).register();
         nameToHistogram.put(name, hist);
@@ -137,11 +140,11 @@ public class MetricSingleton {
    * @param time to be recorded.
    */
   public static void recordTime(String name, double time, String description) {
-    checkDescriptionExist(description, () -> ifPublish(() -> {
+    validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
       LOGGER.info("publishing record time, name: {}, time: {}", name, time);
 
       if (!nameToHistogram.containsKey(name)) {
-        Histogram hist = Histogram.build().name(name).help("").register();
+        Histogram hist = Histogram.build().name(name).help(description).register();
         nameToHistogram.put(name, hist);
       }
       nameToHistogram.get(name).observe(time);
@@ -154,7 +157,10 @@ public class MetricSingleton {
     }
   }
 
-  private static void checkDescriptionExist(String description, Runnable execute) {
+  private static void validateNameAndCheckDescriptionExists(String name, String description, Runnable execute) {
+    if (name.contains("-")) {
+      throw new RuntimeException("Name can only contain underscores.");
+    }
     if (description.isBlank()) {
       throw new RuntimeException("Counter description cannot be blank.");
     }
@@ -173,11 +179,17 @@ public class MetricSingleton {
         LOGGER.info("Starting prometheus metric server..");
         // The second constructor argument ('true') makes this server start as a separate daemon thread.
         // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
-        new HTTPServer(Integer.parseInt(monitorPort), true);
+        monitoringDaemon = new HTTPServer(Integer.parseInt(monitorPort), true);
       } catch (IOException e) {
         LOGGER.error("Error starting up Prometheus publishing server..", e);
       }
     });
+  }
+
+  @VisibleForTesting
+  public static void closeMonitoringServiceDaemon() {
+    monitoringDaemon.close();
+    LOGGER.info("Stopping monitoring daemon..");
   }
 
 }
