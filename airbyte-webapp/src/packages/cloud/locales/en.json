@@ -17,6 +17,7 @@
   "login.forgotPassword": "Forgot your password",
   "login.backLogin": "Back to Log in",
   "login.resetPassword": "Reset your password",
+  "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your 30-day free trial",
   "login.activateAccess.subtitle": "Get our special launch offer of $1,000 worth of free usage. No credit card required.",
   "login.fullName": "Full name*",
@@ -25,6 +26,13 @@
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubcribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
+
+  "confirmResetPassword.newPassword": "Enter a new password",
+  "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
+  "confirmResetPassword.error.expiredActionCode": "The password reset link has expired. Please request password reset again.",
+  "confirmResetPassword.error.invalidActionCode": "The password reset link is invalid. Please double check the reset email.",
+  "confirmResetPassword.error.weakPassword": "Please enter a more sophisticated new password.",
+  "confirmResetPassword.error.default": "Password reset failed: ",
 
   "login.selfhosting": "Interested in self-hosting?",
   "login.opensource": "Open-source",
