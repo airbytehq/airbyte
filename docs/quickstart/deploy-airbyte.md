@@ -14,6 +14,8 @@ docker-compose up
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)!
 
+Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
+
 ## FAQ
 
 If you have any questions about the Airbyte setup and deployment process, head over to our [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse that answers the following questions and more:
