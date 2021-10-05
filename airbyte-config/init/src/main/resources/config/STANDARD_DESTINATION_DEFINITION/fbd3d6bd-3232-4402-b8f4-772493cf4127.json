@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "fbd3d6bd-3232-4402-b8f4-772493cf4127",
+  "name": "Mssql Strict Encrypt",
+  "dockerRepository": "airbyte/destination-mssql-strict-encrypt",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql-strict-encrypt"
+}
