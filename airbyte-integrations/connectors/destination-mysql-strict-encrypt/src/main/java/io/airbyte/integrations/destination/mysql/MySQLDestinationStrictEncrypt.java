@@ -21,7 +21,6 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
     super(MySQLDestination.sshWrappedDestination());
   }
 
-
   @Override
   public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
@@ -35,6 +34,5 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MySQLDestinationStrictEncrypt.class);
   }
-
 
 }

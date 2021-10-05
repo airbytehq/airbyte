@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;

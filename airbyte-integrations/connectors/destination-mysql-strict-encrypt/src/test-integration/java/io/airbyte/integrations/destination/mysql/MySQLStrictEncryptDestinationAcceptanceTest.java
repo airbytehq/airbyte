@@ -67,7 +67,6 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         .put("password", db.getPassword())
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
         .build());
   }
 
@@ -79,7 +78,6 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
         .put("password", "wrong password")
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
         .build());
   }
 
@@ -107,7 +105,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     return Databases.createDatabase(
         db.getUsername(),
         db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
@@ -167,7 +165,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
       Databases.createDatabase(
           "root",
           "test",
-          String.format("jdbc:mysql://%s:%s/%s",
+          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
               db.getHost(),
               db.getFirstMappedPort(),
               db.getDatabaseName()),
@@ -188,11 +186,9 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   @Test
-  public void testCustomDbtTransformations() throws Exception {
+  public void testCustomDbtTransformations() {
     // We need to create view for testing custom dbt transformations
     executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
-    // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
-    // super.testCustomDbtTransformations();
   }
 
   @Test

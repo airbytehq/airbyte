@@ -80,7 +80,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public JsonNode toJdbcConfig(JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    if(!config.has("ssl") || config.get("ssl").asBoolean()) {
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("useSSL=true");
       additionalParameters.add("requireSSL=true");
       additionalParameters.add("verifyServerCertificate=false");
