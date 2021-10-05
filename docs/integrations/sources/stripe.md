@@ -71,7 +71,7 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.19   | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017) | Add lookback_window_days parameter |
+| 0.1.20   | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017) | Add lookback_window_days parameter |
 | 0.1.19   | 2021-09-27 | [6466](https://github.com/airbytehq/airbyte/pull/6466) | Use `start_date` parameter in incremental streams |
 | 0.1.18   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Fix coupons and subscriptions stream schemas by removing incorrect timestamp formatting |
 | 0.1.17   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Add `PaymentIntents` stream |

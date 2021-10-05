@@ -58,7 +58,7 @@ class IncrementalStripeStream(StripeStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
-    def __init__(self, start_date: str, lookback_window_days: int, **kwargs):
+    def __init__(self, start_date: str, lookback_window_days: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.start_date = pendulum.parse(start_date).int_timestamp
         self.lookback_window_days = lookback_window_days
