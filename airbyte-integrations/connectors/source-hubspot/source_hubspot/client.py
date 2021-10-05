@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Iterator, Mapping, Tuple
+from typing import Any, Callable, Iterator, Mapping, Optional, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
@@ -53,7 +53,7 @@ class Client(BaseClient):
 
         super().__init__(**kwargs)
 
-    def _enumerate_methods(self) -> Mapping[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, Callable]:
         return {name: api.list for name, api in self._apis.items()}
 
     @property
@@ -78,7 +78,7 @@ class Client(BaseClient):
         """Set state of stream with corresponding name"""
         self._apis[name].state = state
 
-    def health_check(self) -> Tuple[bool, str]:
+    def health_check(self) -> Tuple[bool, Optional[str]]:
         alive = True
         error_msg = None
 
