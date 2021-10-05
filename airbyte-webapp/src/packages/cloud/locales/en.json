@@ -17,6 +17,7 @@
   "login.forgotPassword": "Forgot your password",
   "login.backLogin": "Back to Log in",
   "login.resetPassword": "Reset your password",
+  "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your free beta access",
   "login.activateAccess.subtitle": "No credit card required. Free until official launch.",
   "login.fullName": "Full name*",
@@ -25,6 +26,8 @@
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubcribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
+
+  "confirmRestPassword.yourNewPassword": "Enter a new password",
 
   "login.selfhosting": "Interested in self-hosting?",
   "login.opensource": "Open-source",
