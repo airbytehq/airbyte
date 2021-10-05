@@ -104,11 +104,11 @@ public class JobNotifier {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
           }
-        } catch (InterruptedException | IOException e) {
+        } catch (Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
         }
       }
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+    } catch (Exception e) {
       LOGGER.error("Unable to read configuration:", e);
     }
   }
