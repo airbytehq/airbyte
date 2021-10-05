@@ -114,7 +114,9 @@ class SourceNmbgmrGwl(Source):
                                       'StaticWater': {'type': 'number'},
                                       'WaterNotes': {'type': 'string'},
                                       'Status': {'type': 'string'},
+                                      'StatusDescription': {'type': 'string'},
                                       'CurrentUse': {'type': 'string'},
+                                      'CurrentUseDescription': {'type': 'string'},
                                       'StatusUserNotes': {'type': 'string'},
                                       'MonitoringStatus': {'type': 'string'},
                                       'OpenWellLoggerOK': {'type': 'string'},
@@ -209,11 +211,11 @@ class SourceNmbgmrGwl(Source):
                    #               source_defined_cursor=True,
                    #               json_schema=gwl_schema),
                    AirbyteStream(name='WellScreens',
-                                 supported_sync_modes=["full_refresh", "incremental"],
+                                 supported_sync_modes=["full_refresh",],
                                  source_defined_cursor=True,
                                  json_schema=screens_schema),
                    AirbyteStream(name='SiteMetaData',
-                                 supported_sync_modes=['full_refresh', 'incremental'],
+                                 supported_sync_modes=['full_refresh',],
                                  source_defined_cursor=True,
                                  json_schema=site_schema)]
 
