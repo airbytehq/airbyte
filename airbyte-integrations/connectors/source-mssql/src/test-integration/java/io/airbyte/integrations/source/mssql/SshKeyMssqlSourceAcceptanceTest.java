@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import java.nio.file.Path;
+import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
 
 public class SshKeyMssqlSourceAcceptanceTest extends AbstractSshMssqlSourceAcceptanceTest {
 
-  @Override
-  public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-key-config.json");
-  }
 
+  @Override
+  public TunnelMethod getTunnelMethod() {
+   return TunnelMethod.SSH_KEY_AUTH;
+  }
 }

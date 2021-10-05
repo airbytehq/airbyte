@@ -9,22 +9,95 @@
     "properties": {
       "start_date": {
         "type": "string",
+        "title": "Replication start date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"]
       },
       "credentials": {
+        "title": "Authentication mechanism",
+        "description": "Choose either to provide the API key or the OAuth2.0 credentials",
         "type": "object",
-        "title": "api key",
-        "required": ["api_key"],
-        "properties": {
-          "api_key": {
-            "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
-            "type": "string",
-            "airbyte_secret": true
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Authenticate via Hubspot (Oauth)",
+            "required": [
+              "redirect_uri",
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "access_token",
+              "credentials_title"
+            ],
+            "properties": {
+              "credentials_title": {
+                "type": "string",
+                "title": "Credentials title",
+                "description": "Name of the credentials set",
+                "const": "OAuth Credentials",
+                "enum": ["OAuth Credentials"],
+                "default": "OAuth Credentials",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Hubspot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this id.",
+                "type": "string",
+                "examples": ["123456789000"]
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Hubspot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this secret.",
+                "type": "string",
+                "examples": ["secret"],
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh token",
+                "description": "Hubspot refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help generating the token.",
+                "type": "string",
+                "examples": ["refresh_token"],
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "API key",
+            "required": ["api_key", "credentials_title"],
+            "properties": {
+              "credentials_title": {
+                "type": "string",
+                "title": "Credentials title",
+                "description": "Name of the credentials set",
+                "const": "API Key Credentials",
+                "enum": ["API Key Credentials"],
+                "default": "API Key Credentials",
+                "order": 0
+              },
+              "api_key": {
+                "title": "API key",
+                "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
           }
-        }
+        ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", 0],
+      "oauthFlowInitParameters": [
+        ["client_id"],
+        ["client_secret"],
+        ["refresh_token"]
+      ],
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }
