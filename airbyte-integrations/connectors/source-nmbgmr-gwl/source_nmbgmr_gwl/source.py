@@ -252,9 +252,15 @@ class SourceNmbgmrGwl(Source):
                 url = screens_url(config)
 
             while 1:
-                url = f'{url}?objectid={state[key]}'
-                logger.info(f'fetching url={url}')
-                jobj = get_json(logger, url)
+                objectid = state[key]
+                if objectid:
+                    # url = f'{url}?objectid={state[key]}'
+                    curl = f'{url}?objectid={objectid}'
+                else:
+                    curl = url
+
+                logger.info(f'fetching url={curl}')
+                jobj = get_json(logger, curl)
                 if jobj:
                     state[key] = jobj[-1]['OBJECTID']
                 else:
