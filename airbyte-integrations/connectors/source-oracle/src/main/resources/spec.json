@@ -4,13 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Oracle Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "sid",
-      "username",
-      "encryption"
-    ],
+    "required": ["host", "port", "sid", "username"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -61,16 +55,12 @@
             "title": "Unencrypted",
             "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
-            "required": [
-              "encryption_method"
-            ],
+            "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
                 "type": "string",
                 "const": "unencrypted",
-                "enum": [
-                  "unencrypted"
-                ],
+                "enum": ["unencrypted"],
                 "default": "unencrypted"
               }
             }
@@ -79,46 +69,33 @@
             "title": "Native Network Ecryption (NNE)",
             "additionalProperties": false,
             "description": "Native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
-            "required": [
-              "encryption_method"
-            ],
+            "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
                 "type": "string",
                 "const": "client_nne",
-                "enum": [
-                  "client_nne"
-                ],
+                "enum": ["client_nne"],
                 "default": "client_nne"
               },
-                "encryption_algorithm": {
-                  "type": "string",
-                  "description": "This parameter defines the encryption algorithm to be used",
-                  "title": "Encryption Algorithm",
-                  "default": "AES256",
-                  "enum": [
-                    "AES256",
-                    "RC4_56",
-                    "3DES168"
-                  ]
-                }
+              "encryption_algorithm": {
+                "type": "string",
+                "description": "This parameter defines the encryption algorithm to be used",
+                "title": "Encryption Algorithm",
+                "default": "AES256",
+                "enum": ["AES256", "RC4_56", "3DES168"]
+              }
             }
           },
           {
             "title": "TLS Encrypted (verify certificate)",
             "additionalProperties": false,
             "description": "Verify and use the cert provided by the server.",
-            "required": [
-              "encryption_method",
-              "ssl_certificate"
-            ],
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "encryption_method": {
                 "type": "string",
                 "const": "encrypted_verify_certificate",
-                "enum": [
-                  "encrypted_verify_certificate"
-                ],
+                "enum": ["encrypted_verify_certificate"],
                 "default": "encrypted_verify_certificate"
               },
               "ssl_certificate": {

@@ -15,12 +15,14 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.JDBCType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +38,9 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
 
-  enum Protocol{
-    TCP,TCPS
+  enum Protocol {
+    TCP,
+    TCPS
   }
 
   public OracleSource() {
@@ -48,14 +51,15 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   public JsonNode toDatabaseConfig(JsonNode config) {
     List<String> additionalParameters = new ArrayList<>();
 
-    JsonNode encryption = config.get("encryption");
-    Protocol protocol = obtainConnectionProtocol(encryption, additionalParameters);
+    Protocol protocol = config.has("encryption")
+        ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
+        : Protocol.TCP;
     final String connectionString = String.format(
-            "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
-            protocol,
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText());
+        "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
+        protocol,
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("sid").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
@@ -75,7 +79,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     }
     if (!additionalParameters.isEmpty()) {
       String connectionParams = String.join(";", additionalParameters);
-      configBuilder.put("connection_properties",connectionParams);
+      configBuilder.put("connection_properties", connectionParams);
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -90,7 +94,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       case "client_nne" -> {
         String algorithm = encryption.get("encryption_algorithm").asText();
         additionalParameters.add("oracle.net.encryption_client=REQUIRED");
-        additionalParameters.add("oracle.net.encryption_types_client=( "+algorithm+" )");
+        additionalParameters.add("oracle.net.encryption_types_client=( " + algorithm + " )");
         return Protocol.TCP;
       }
       case "encrypted_verify_certificate" -> {
@@ -99,13 +103,13 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         } catch (IOException | InterruptedException e) {
           throw new RuntimeException("Failed to import certificate into Java Keystore");
         }
-        additionalParameters.add("javax.net.ssl.trustStore="+KEY_STORE_FILE_PATH);
+        additionalParameters.add("javax.net.ssl.trustStore=" + KEY_STORE_FILE_PATH);
         additionalParameters.add("javax.net.ssl.trustStoreType=JKS");
-        additionalParameters.add("javax.net.ssl.trustStorePassword="+KEY_STORE_PASS);
+        additionalParameters.add("javax.net.ssl.trustStorePassword=" + KEY_STORE_PASS);
         return Protocol.TCPS;
       }
     }
-    throw new RuntimeException("Failed to obtain connection protocol from config"+encryption.asText());
+    throw new RuntimeException("Failed to obtain connection protocol from config" + encryption.asText());
   }
 
   private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
@@ -114,17 +118,16 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
-    runProcess("keytool -import -alias rds-root -keystore "+KEY_STORE_FILE_PATH+" -file certificate.der -storepass "+KEY_STORE_PASS+" -noprompt", run);
+    runProcess("keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt", run);
   }
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
     Process pr = run.exec(cmd);
-    if (!pr.waitFor(10, TimeUnit.SECONDS)){
+    if (!pr.waitFor(10, TimeUnit.SECONDS)) {
       pr.destroy();
-      throw new RuntimeException("Timeout while executing: "+ cmd);
-    };
+      throw new RuntimeException("Timeout while executing: " + cmd);
+    } ;
   }
-
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
