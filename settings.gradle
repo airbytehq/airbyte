@@ -25,7 +25,6 @@ if(!System.getenv().containsKey("SUB_BUILD")) {
 }
 
 // shared
-include ':airbyte-api'
 include ':airbyte-commons'
 include ':airbyte-commons-docker'
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
@@ -49,6 +48,7 @@ include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
 // platformm
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+    include ':airbyte-api'
     include ':airbyte-cli'
     include ':airbyte-e2e-testing'
     include ':airbyte-migration'
