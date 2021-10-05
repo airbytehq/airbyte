@@ -29,7 +29,12 @@ export const useUserHook = () => {
   return {
     removeUserLogic: useMutation(
       async (payload: { email: string; workspaceId: string }) =>
-        service.remove(payload.workspaceId, payload.email)
+        service.remove(payload.workspaceId, payload.email),
+      {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries(userKeys.lists());
+        },
+      }
     ),
     inviteUserLogic: useMutation(
       async (payload: {
