@@ -34,4 +34,13 @@ public class MaxWorkersConfig {
     return maxSyncWorkers;
   }
 
+  @Override
+  public String toString() {
+    return "MaxWorkersConfig{" +
+            "maxSpecWorkers=" + maxSpecWorkers +
+            ", maxCheckWorkers=" + maxCheckWorkers +
+            ", maxDiscoverWorkers=" + maxDiscoverWorkers +
+            ", maxSyncWorkers=" + maxSyncWorkers +
+            '}';
+  }
 }
