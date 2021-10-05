@@ -6,8 +6,8 @@ import * as yup from "yup";
 
 import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
-import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useUserHook } from "packages/cloud/services/users/UseUserHook";
 
 const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
@@ -45,12 +45,12 @@ const FormRow = styled(Row)`
 `;
 
 export const InviteUsersModal: React.FC<{
-  onSubmit: () => void;
   onClose: () => void;
 }> = (props) => {
   const formatMessage = useIntl().formatMessage;
-  const userService = useGetUserService();
   const { workspaceId } = useCurrentWorkspace();
+  const { inviteUserLogic } = useUserHook();
+  const { mutateAsync: invite } = inviteUserLogic;
   const roleOptions = [
     {
       value: "admin",
@@ -75,9 +75,12 @@ export const InviteUsersModal: React.FC<{
           ],
         }}
         onSubmit={async (values) => {
-          await userService.invite(values.users, workspaceId);
-          props.onSubmit();
-          props.onClose();
+          await invite(
+            { users: values.users, workspaceId },
+            {
+              onSuccess: () => props.onClose(),
+            }
+          );
         }}
       >
         {({ values, isValid, isSubmitting, dirty }) => {
