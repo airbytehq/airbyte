@@ -69,9 +69,17 @@ export enum Routes {
   Signup = "/signup",
   Login = "/login",
   ResetPassword = "/reset-password",
-  ConfirmPasswordReset = "/confirm-password-reset",
-  VerifyEmail = "/verify-email",
   ConfirmVerifyEmail = "/confirm-verify-email",
+
+  // Firebase email routes
+  // These URLs come from Firebase emails, and all have the same
+  // action URL ("/verify-email") with different "mode" parameter
+  // TODO: rename this route and match on the mode parameter
+  // Currently VerifyEmail and ConfirmPasswordReset are called
+  // in different route branches, which is why they work even though
+  // the path are the same.
+  VerifyEmail = "/verify-email", // mode=verifyEmail
+  ConfirmPasswordReset = "/verify-email", // mode=resetPassword
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
