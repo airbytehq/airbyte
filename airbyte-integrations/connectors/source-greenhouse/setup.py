@@ -15,7 +15,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "six==1.15.0", "grnhse-api==0.1.1"],
+    install_requires=["airbyte-cdk~=0.1"],
     package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
