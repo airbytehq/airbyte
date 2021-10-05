@@ -17,7 +17,6 @@ jobs:
           use-verbose-mode: 'yes'
           check-modified-files-only: 'no'
           config-file: .github/workflows/doc-link-check.json
-          base-branch: ${{ github.ref }}
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
         if: github.ref != 'refs/heads/master'
         with:
@@ -25,4 +24,3 @@ jobs:
           use-verbose-mode: 'yes'
           check-modified-files-only: 'yes'
           config-file: .github/workflows/doc-link-check.json
-          base-branch: ${{ github.ref }}
