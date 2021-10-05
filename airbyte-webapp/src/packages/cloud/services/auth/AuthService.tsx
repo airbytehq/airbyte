@@ -46,7 +46,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   );
   const auth = useAuth();
   const userService = useGetUserService();
-  const authService = useMemo(() => new GoogleAuthService(() => auth), []);
+  const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
 
   useEffect(() => {
     auth.onAuthStateChanged(async (currentUser) => {
