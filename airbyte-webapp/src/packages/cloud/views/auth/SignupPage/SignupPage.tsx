@@ -67,7 +67,7 @@ const SignupPage: React.FC = () => {
         validateOnBlur={true}
         validateOnChange={false}
       >
-        {() => (
+        {({ values }) => (
           <Form>
             <RowFieldItem>
               <Field name="name">
@@ -210,7 +210,7 @@ const SignupPage: React.FC = () => {
             <BottomBlock>
               <>
                 <div />
-                <Button type="submit">
+                <Button type="submit" disabled={!values.security}>
                   <FormattedMessage id="login.signup" />
                 </Button>
               </>
