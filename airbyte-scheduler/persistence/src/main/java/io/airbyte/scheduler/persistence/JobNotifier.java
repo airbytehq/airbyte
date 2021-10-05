@@ -4,12 +4,10 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
@@ -44,12 +42,7 @@ public class JobNotifier {
   private final TrackingClient trackingClient;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper) {
-    this(webappUrl, configRepository, workspaceHelper, TrackingClientSingleton.get());
-  }
-
-  @VisibleForTesting
-  JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
     this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
