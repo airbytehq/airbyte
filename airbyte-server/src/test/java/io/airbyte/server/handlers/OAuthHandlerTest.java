@@ -5,8 +5,10 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.commons.json.Jsons;
@@ -29,11 +31,13 @@ class OAuthHandlerTest {
 
   ConfigRepository configRepository;
   OAuthHandler handler;
+  TrackingClient trackingClient;
 
   @BeforeEach
   public void init() {
     configRepository = Mockito.mock(ConfigRepository.class);
-    handler = new OAuthHandler(configRepository);
+    trackingClient = mock(TrackingClient.class);
+    handler = new OAuthHandler(configRepository, trackingClient);
   }
 
   @Test

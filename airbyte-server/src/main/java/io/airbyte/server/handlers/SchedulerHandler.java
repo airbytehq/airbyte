@@ -303,7 +303,7 @@ public class SchedulerHandler {
         sourceConnection.getConfiguration());
     sourceConnection.withConfiguration(sourceConfiguration);
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
-        destinationConnection.getDestinationId(),
+        destinationConnection.getDestinationDefinitionId(),
         destinationConnection.getWorkspaceId(),
         destinationConnection.getConfiguration());
     destinationConnection.withConfiguration(destinationConfiguration);

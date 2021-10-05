@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.app;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -46,7 +47,8 @@ public class JobScheduler implements Runnable {
   }
 
   public JobScheduler(final JobPersistence jobPersistence,
-                      final ConfigRepository configRepository) {
+                      final ConfigRepository configRepository,
+                      final TrackingClient trackingClient) {
     this(
         jobPersistence,
         configRepository,
@@ -54,7 +56,7 @@ public class JobScheduler implements Runnable {
         new DefaultSyncJobFactory(
             new DefaultJobCreator(jobPersistence),
             configRepository,
-            new OAuthConfigSupplier(configRepository, false)));
+            new OAuthConfigSupplier(configRepository, false, trackingClient)));
   }
 
   @Override

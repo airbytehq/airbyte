@@ -9,7 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
-import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -52,16 +52,21 @@ public class ConnectionsHandler {
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
+  private final TrackingClient trackingClient;
 
   @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator, final WorkspaceHelper workspaceHelper) {
+  ConnectionsHandler(final ConfigRepository configRepository,
+                     final Supplier<UUID> uuidGenerator,
+                     final WorkspaceHelper workspaceHelper,
+                     TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
+    this.trackingClient = trackingClient;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
-    this(configRepository, UUID::randomUUID, workspaceHelper);
+  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+    this(configRepository, UUID::randomUUID, workspaceHelper, trackingClient);
   }
 
   private void validateWorkspace(UUID sourceId, UUID destinationId, Set<UUID> operationIds) {
@@ -147,7 +152,7 @@ public class ConnectionsHandler {
     try {
       final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(standardSync.getConnectionId());
       final Builder<String, Object> metadataBuilder = generateMetadata(standardSync);
-      TrackingClientSingleton.get().track(workspaceId, "New Connection - Backend", metadataBuilder.build());
+      trackingClient.track(workspaceId, "New Connection - Backend", metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.", e);
     }

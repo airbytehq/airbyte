@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
@@ -71,6 +72,7 @@ class ConnectionsHandlerTest {
   private UUID operationId;
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
+  private TrackingClient trackingClient;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -110,7 +112,8 @@ class ConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
     workspaceHelper = mock(WorkspaceHelper.class);
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper);
+    trackingClient = mock(TrackingClient.class);
+    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);

@@ -5,6 +5,7 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -194,7 +195,7 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
-
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
     // must happen after the tracking client is initialized.
     // if no workspace exists, we create one so the user starts out with a place to add configuration.
     createWorkspaceIfNoneExists(configRepository);
@@ -205,10 +206,10 @@ public class ServerApp implements ServerRunnable {
       jobPersistence.setVersion(airbyteVersion);
     }
 
-    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
+    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
     final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
@@ -249,7 +250,8 @@ public class ServerApp implements ServerRunnable {
           seed,
           configDatabase,
           jobDatabase,
-          configs);
+          configs,
+          trackingClient);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
