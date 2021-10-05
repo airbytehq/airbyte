@@ -41,6 +41,7 @@ public class MetricSingletonTest {
       availPort = socket.getLocalPort();
     }
 
+    MetricSingleton.setToPublish();
     MetricSingleton.initializeMonitoringServiceDaemon(String.valueOf(availPort), Map.of());
   }
 

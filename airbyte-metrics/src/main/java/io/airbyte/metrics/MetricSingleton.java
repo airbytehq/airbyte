@@ -31,7 +31,7 @@ import org.slf4j.MDC;
 public class MetricSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetricSingleton.class);
-  private static final boolean PUBLISH = new EnvConfigs().getPublishMetrics();
+  private static boolean PUBLISH = new EnvConfigs().getPublishMetrics();
 
   private static final Map<String, Gauge> nameToGauge = new HashMap<>();
   private static final Map<String, Counter> nameToCounter = new HashMap<>();
@@ -190,6 +190,11 @@ public class MetricSingleton {
   public static void closeMonitoringServiceDaemon() {
     monitoringDaemon.close();
     LOGGER.info("Stopping monitoring daemon..");
+  }
+
+  @VisibleForTesting
+  public static void setToPublish() {
+    PUBLISH = true;
   }
 
 }
