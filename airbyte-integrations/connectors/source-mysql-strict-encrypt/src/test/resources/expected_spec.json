@@ -42,13 +42,6 @@
         "type": "string",
         "order": 5
       },
-      "ssl": {
-        "title": "SSL Connection",
-        "description": "Encrypt data using SSL.",
-        "type": "boolean",
-        "default": true,
-        "order": 7
-      },
       "replication_method": {
         "type": "string",
         "title": "Replication Method",
@@ -56,13 +49,6 @@
         "order": 6,
         "default": "STANDARD",
         "enum": ["STANDARD", "CDC"]
-      },
-      "ssl": {
-        "title": "SSL Connection",
-        "description": "Encrypt data using SSL.",
-        "type": "boolean",
-        "default": true,
-        "order": 7
       }
     }
   }
