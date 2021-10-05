@@ -41,20 +41,18 @@ type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
   ...props
-}) => {
-  return (
-    <>
-      <components.MenuList {...props}>{children}</components.MenuList>
-      <BottomElement>
-        <Block
-          onClick={props.selectProps.selectProps.onOpenRequestConnectorModal}
-        >
-          <FormattedMessage id="connector.requestConnectorBlock" />
-        </Block>
-      </BottomElement>
-    </>
-  );
-};
+}) => (
+  <>
+    <components.MenuList {...props}>{children}</components.MenuList>
+    <BottomElement>
+      <Block
+        onClick={props.selectProps.selectProps.onOpenRequestConnectorModal}
+      >
+        <FormattedMessage id="connector.requestConnectorBlock" />
+      </Block>
+    </BottomElement>
+  </>
+);
 
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
