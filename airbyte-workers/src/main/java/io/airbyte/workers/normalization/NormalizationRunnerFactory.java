@@ -18,6 +18,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-redshift", DefaultNormalizationRunner.DestinationType.REDSHIFT)
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .put("airbyte/destination-mysql", DefaultNormalizationRunner.DestinationType.MYSQL)
+          .put("airbyte/destination-mysql-strict-encrypt", DefaultNormalizationRunner.DestinationType.MYSQL)
           .build();
 
   public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
