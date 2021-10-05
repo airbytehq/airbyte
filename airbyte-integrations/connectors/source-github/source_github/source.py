@@ -65,6 +65,8 @@ class SourceGithub(AbstractSource):
 
     @staticmethod
     def _get_authenticator(config: Dict[str, Any]):
+        # Before we supported oauth, personal_access_token was called `access_token` and it lived at the
+        # config root. So we first check to make sure any backwards compatbility is handled.
         token = config.get("access_token")
         if not token:
             creds = config.get("credentials")

@@ -9,7 +9,7 @@
     "properties": {
       "credentials": {
         "title": "Authentication mechanism",
-        "description": "Choose either to provide the API key or the OAuth2.0 credentials",
+        "description": "Choose how to authenticate to Github",
         "type": "object",
         "oneOf": [
           {
@@ -25,7 +25,7 @@
               },
               "access_token": {
                 "type": "string",
-                "title": "Access Tokens",
+                "title": "Access Token",
                 "description": "Oauth access token",
                 "airbyte_secret": true
               }
