@@ -34,8 +34,11 @@ class UserService extends AirbyteRequestService {
     return this.fetch<User>(`web_backend/users/create`, user);
   }
 
-  public async remove(userId: string): Promise<void> {
-    return this.fetch(`${this.url}/delete`, { userId });
+  public async remove(workspaceId: string, email: string): Promise<void> {
+    return this.fetch(`web_backend/cloud_workspaces/revoke_user`, {
+      email,
+      workspaceId,
+    });
   }
 
   public async invite(
