@@ -7,6 +7,7 @@ import * as yup from "yup";
 import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
 
 const requestConnectorValidationSchema = yup.object({
@@ -51,6 +52,7 @@ export const InviteUsersModal: React.FC<{
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
   const { mutateAsync: invite } = inviteUserLogic;
+  const { registerNotification } = useNotificationService();
   const roleOptions = [
     {
       value: "admin",
@@ -78,7 +80,23 @@ export const InviteUsersModal: React.FC<{
           await invite(
             { users: values.users, workspaceId },
             {
-              onSuccess: () => props.onClose(),
+              onSuccess: () => {
+                props.onClose();
+                registerNotification({
+                  id: "modals.addUser.success",
+                  title: formatMessage({ id: "modals.addUser.success" }),
+                  isError: false,
+                });
+              },
+              onError: (err) => {
+                registerNotification({
+                  id: "modals.addUser.error",
+                  title:
+                    formatMessage({ id: "modals.addUser.error" }) +
+                    JSON.stringify(err),
+                  isError: true,
+                });
+              },
             }
           );
         }}

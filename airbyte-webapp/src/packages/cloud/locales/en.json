@@ -84,6 +84,8 @@
   "modals.addUser.button.addUser": "Add another user",
   "modals.addUser.button.cancel": "Cancel",
   "modals.addUser.button.submit": "Send invitation",
+  "modals.addUser.success": "An invitation email has been sent",
+  "modals.addUser.error": "User invitation failed: ",
   "workspaces.viewAllWorkspaces": "View all workspaces",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
