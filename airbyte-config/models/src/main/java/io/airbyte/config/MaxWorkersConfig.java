@@ -37,10 +37,11 @@ public class MaxWorkersConfig {
   @Override
   public String toString() {
     return "MaxWorkersConfig{" +
-            "maxSpecWorkers=" + maxSpecWorkers +
-            ", maxCheckWorkers=" + maxCheckWorkers +
-            ", maxDiscoverWorkers=" + maxDiscoverWorkers +
-            ", maxSyncWorkers=" + maxSyncWorkers +
-            '}';
+        "maxSpecWorkers=" + maxSpecWorkers +
+        ", maxCheckWorkers=" + maxCheckWorkers +
+        ", maxDiscoverWorkers=" + maxDiscoverWorkers +
+        ", maxSyncWorkers=" + maxSyncWorkers +
+        '}';
   }
+
 }
