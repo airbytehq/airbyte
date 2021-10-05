@@ -428,24 +428,22 @@ class JobTrackerTest {
   }
 
   private void assertCorrectMessageForStartedState(Map<String, Object> metadata) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("workspace_id", WORKSPACE_ID);
-    map.put("workspace_name", WORKSPACE_NAME);
-    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, STARTED_STATE_METADATA, map));
+    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, STARTED_STATE_METADATA, mockWorkspaceInfo()));
   }
 
   private void assertCorrectMessageForSucceededState(Map<String, Object> metadata) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("workspace_id", WORKSPACE_ID);
-    map.put("workspace_name", WORKSPACE_NAME);
-    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, SUCCEEDED_STATE_METADATA, map));
+    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, SUCCEEDED_STATE_METADATA, mockWorkspaceInfo()));
   }
 
   private void assertCorrectMessageForFailedState(Map<String, Object> metadata) {
+    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, FAILED_STATE_METADATA, mockWorkspaceInfo()));
+  }
+
+  private Map<String, Object> mockWorkspaceInfo() {
     Map<String, Object> map = new HashMap<>();
     map.put("workspace_id", WORKSPACE_ID);
     map.put("workspace_name", WORKSPACE_NAME);
-    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, FAILED_STATE_METADATA, map));
+    return map;
   }
 
 }
