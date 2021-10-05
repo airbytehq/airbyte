@@ -69,6 +69,7 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
+  private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -421,6 +422,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getGoogleApplicationCredentials() {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
+  }
+
+  @Override
+  public boolean getPublishMetrics() {
+    return getEnvOrDefault(PUBLISH_METRICS, false);
   }
 
   @Override
