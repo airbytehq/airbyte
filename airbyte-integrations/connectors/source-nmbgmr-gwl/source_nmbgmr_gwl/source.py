@@ -180,21 +180,38 @@ class SourceNmbgmrGwl(Source):
                                       'LatitudeDD': {'type': 'string'},
                                       'LongitudeDD': {'type': 'string'},
                                       'PublicRelease': {'type': 'boolean'},
-                                      'screens': {'type': 'array'},
                                       }}
 
-        streams = [AirbyteStream(name='Acoustic',
+        screens_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                          'type': 'object',
+                          'properties': {'WellID': {'type': 'string'},
+                                         'WDBID': {'type': 'number'},
+                                         'PointID': {'type': 'string'},
+                                         'counter': {'type': 'number'},
+                                         'ScreenTop': {'type': 'number'},
+                                         'ScreenBottom': {'type': 'number'},
+                                         'ScreenDescription': {'type': 'string'},
+                                         'OBJECTID': {'type': 'number'},
+                                         'GlobalID': {'type': 'string'},
+                                         }}
+
+        streams = [
+                   # AirbyteStream(name='Acoustic',
+                   #               supported_sync_modes=["full_refresh", "incremental"],
+                   #               source_defined_cursor=True,
+                   #               json_schema=gwl_schema),
+                   # AirbyteStream(name='Manual',
+                   #               supported_sync_modes=["full_refresh", "incremental"],
+                   #               source_defined_cursor=True,
+                   #               json_schema=gwl_schema),
+                   # AirbyteStream(name='Pressure',
+                   #               supported_sync_modes=["full_refresh", "incremental"],
+                   #               source_defined_cursor=True,
+                   #               json_schema=gwl_schema),
+                   AirbyteStream(name='WellScreens',
                                  supported_sync_modes=["full_refresh", "incremental"],
                                  source_defined_cursor=True,
-                                 json_schema=gwl_schema),
-                   AirbyteStream(name='Manual',
-                                 supported_sync_modes=["full_refresh", "incremental"],
-                                 source_defined_cursor=True,
-                                 json_schema=gwl_schema),
-                   AirbyteStream(name='Pressure',
-                                 supported_sync_modes=["full_refresh", "incremental"],
-                                 source_defined_cursor=True,
-                                 json_schema=gwl_schema),
+                                 json_schema=screens_schema),
                    AirbyteStream(name='SiteMetaData',
                                  supported_sync_modes=['full_refresh', 'incremental'],
                                  source_defined_cursor=True,
@@ -229,20 +246,55 @@ class SourceNmbgmrGwl(Source):
             name = stream.stream.name
             key = stream.stream.name
             logger.debug(f'****** mode {stream.sync_mode} state={state}')
-            is_incremental = stream.sync_mode == SyncMode.incremental and key in state
             if key == 'SiteMetaData':
-                data = get_sitemetadata(logger, state, config, key, is_incremental)
-            else:
-                data = get_waterlevels(logger, state, config, key, is_incremental)
+                url = sitemetadata_url(config)
+            elif key == 'WellScreens':
+                url = screens_url(config)
 
-            if data:
-                for di in data:
+            while 1:
+                url = f'{url}?objectid={state[key]}'
+                logger.info(f'fetching url={url}')
+                jobj = get_json(logger, url)
+                if jobj:
+                    state[key] = jobj[-1]['OBJECTID']
+                else:
+                    break
+
+                for di in jobj:
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(stream=name, data=di,
                                                     emitted_at=int(datetime.now().timestamp()) * 1000))
-            else:
-                logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
+
+            # is_incremental = stream.sync_mode == SyncMode.incremental and key in state
+            # if key == 'SiteMetaData':
+            #     # data = get_sitemetadata(logger, state, config, key, is_incremental)
+            #
+            # elif key == 'Screens':
+            #     url = screens_url(config)
+            #     while 1:
+            #         url = f'{url}?objectid={state[key]}'
+            #         jobj = get_json(logger, url)
+            #         if jobj:
+            #             state[key] = jobj[-1]['OBJECTID']
+            #         for di in data:
+            #             yield AirbyteMessage(
+            #                 type=Type.RECORD,
+            #                 record=AirbyteRecordMessage(stream=name, data=di,
+            #                                             emitted_at=int(datetime.now().timestamp()) * 1000))
+            #     update_state(state)
+            #     return
+            # else:
+            #     data = get_waterlevels(logger, state, config, key, is_incremental)
+            #
+            # if data:
+            #     for di in data:
+            #         yield AirbyteMessage(
+            #             type=Type.RECORD,
+            #             record=AirbyteRecordMessage(stream=name, data=di,
+            #                                         emitted_at=int(datetime.now().timestamp()) * 1000))
+            # else:
+            #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
             # data = get_data(logger, stream, state, config)
             # if data:
@@ -251,51 +303,75 @@ class SourceNmbgmrGwl(Source):
             #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
 
-def get_sitemetadata(logger, state, config, key, is_incremental):
-    url = sitemetadata_url(config)
-    if is_incremental:
-        url = f'{url}?objectid={state[key]}'
-    else:
-        url = f'{url}?objectid=0'
+# def get_screens(logger, state, config, key, is_incremental):
+#     url = screens_url(config)
+#     # if is_incremental:
+#     #     url = f'{url}?objectid={state[key]}'
+#     # else:
+#     #     url = f'{url}?objectid=0'
+#     screens = []
+#     while 1:
+#         url = f'{url}?objectid={state[key]}'
+#         jobj = get_json(logger, url)
+#         if jobj:
+#             state[key] = jobj[-1]['OBJECTID']
+#         screens.append(jobj)
+#
+#     update_state(state)
+#     return jobj
+#     # else:
+# need to emit the current state to make sure it cares forward
+# update_state(state)
+# to allow looping dont emit the state.
+# since the state is now None the next iteration the cursor will reset
+# this allows for sites to be edited
 
-    jobj = get_json(logger, url)
-    if jobj:
-        state[key] = jobj[-1]['OBJECTID']
-        update_state(state)
-        return jobj
-    else:
-        # need to emit the current state to make sure it cares forward
-        update_state(state)
+
+# def get_sitemetadata(logger, state, config, key, is_incremental):
+#     url = sitemetadata_url(config)
+#     if is_incremental:
+#         url = f'{url}?objectid={state[key]}'
+#     else:
+#         url = f'{url}?objectid=0'
+#
+#     jobj = get_json(logger, url)
+#     if jobj:
+#         state[key] = jobj[-1]['OBJECTID']
+#         update_state(state)
+#         return jobj
+#     else:
+#         # need to emit the current state to make sure it cares forward
+#         update_state(state)
 
 
-def get_waterlevels(logger, state, config, key, is_incremental):
-    cursor_key = 'OBJECTID'
-
-    url = records_url(config, key.lower())
-    if is_incremental:
-        ndata = []
-        for i in range(10):
-            nurl = f'{url}?objectid={state[key]}&count=5000'
-            jobj = get_json(logger, nurl)
-            if jobj:
-                # update state
-                state[key] = jobj[-1][cursor_key]
-                update_state(state)
-                ndata.extend(jobj)
-            else:
-                break
-        update_state(state)
-        return ndata
-    else:
-        url = f'{url}?objectid=0'
-        jobj = get_json(logger, url)
-        if jobj:
-            # update state
-            state[key] = jobj[-1][cursor_key]
-            update_state(state)
-            return jobj
-        else:
-            update_state(state)
+# def get_waterlevels(logger, state, config, key, is_incremental):
+#     cursor_key = 'OBJECTID'
+#
+#     url = records_url(config, key.lower())
+#     if is_incremental:
+#         ndata = []
+#         for i in range(10):
+#             nurl = f'{url}?objectid={state[key]}&count=5000'
+#             jobj = get_json(logger, nurl)
+#             if jobj:
+#                 # update state
+#                 state[key] = jobj[-1][cursor_key]
+#                 update_state(state)
+#                 ndata.extend(jobj)
+#             else:
+#                 break
+#         update_state(state)
+#         return ndata
+#     else:
+#         url = f'{url}?objectid=0'
+#         jobj = get_json(logger, url)
+#         if jobj:
+#             # update state
+#             state[key] = jobj[-1][cursor_key]
+#             update_state(state)
+#             return jobj
+#         else:
+#             update_state(state)
 
 
 def update_state(state):
@@ -315,6 +391,10 @@ def records_url(config, tag):
 
 def sitemetadata_url(config):
     return f'{public_url(config)}/sitemetadata'
+
+
+def screens_url(config):
+    return f'{public_url(config)}/wellscreens'
 
 
 def get_resp(logger, url):
