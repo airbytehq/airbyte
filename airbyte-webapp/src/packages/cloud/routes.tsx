@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
 import { useAsync } from "react-use";
+import { useIntercom } from "react-use-intercom";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -37,6 +38,7 @@ import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView"
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import OnboardingPage from "pages/OnboardingPage";
+import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
@@ -64,6 +66,7 @@ export enum Routes {
   Configuration = "/configuration",
   AccessManagement = "/access-management",
   Notifications = "/notifications",
+  Credits = "/credits",
 
   // Auth routes
   Signup = "/signup",
@@ -88,6 +91,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   useGetWorkspace(currentWorkspaceId);
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -158,15 +164,15 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       <Route path={Routes.Settings}>
         <SettingsPage pageConfig={pageConfig} />
       </Route>
+      <Route path={Routes.Credits}>
+        <CreditsPage />
+      </Route>
       {workspace.displaySetupWizard && (
         <Route exact path={Routes.Onboarding}>
           <OnboardingPage />
         </Route>
       )}
-      <Route exact path={Routes.Root}>
-        <SourcesPage />
-      </Route>
-      <Redirect to={Routes.Connections} />
+      <Redirect to={mainRedirect} />
     </Switch>
   );
 };
@@ -213,6 +219,17 @@ const VerifyEmailRoute: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
+
+  const { boot } = useIntercom();
+
+  useEffect(() => {
+    if (user && user.email && user.name) {
+      boot({
+        email: user.email,
+        name: user.name,
+      });
+    }
+  }, [user]);
 
   return (
     <Router>

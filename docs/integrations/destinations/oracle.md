@@ -1,20 +1,6 @@
 # Oracle
 
-## Overview
-
-The Airbyte Oracle destination allows you to sync data to Oracle.
-
-### Sync overview
-
-#### Output schema
-
-Each stream will be output into its own table in Oracle. Each table will contain 3 columns:
-
-* `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
-* `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
-* `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
-
-#### Features
+## Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
@@ -23,18 +9,27 @@ Each stream will be output into its own table in Oracle. Each table will contain
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
 | Basic Normalization | Yes | Only for raw tables, doesn't support for nested json yet |
+| SSH Tunnel Connection | Yes |  |
 
+## Output Schema
 
-## Getting started
+Each stream will be output into its own table in Oracle. Each table will contain 3 columns:
 
-### Requirements
+* `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
+* `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
+* `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
+
+## Getting Started (Airbyte Cloud)
+The Oracle connector is currently in Alpha on Airbyte Cloud. Additionally, Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
+
+## Getting Started (Airbyte Open-Source)
+
+#### Requirements
 
 To use the Oracle destination, you'll need:
 
 * An Oracle server version 18 or above
 * It's possible to use Oracle 12+ but you need to configure the table name length to 120 chars.
-
-### Setup guide
 
 #### Network Access
 
@@ -63,7 +58,7 @@ You should now have all the requirements needed to configure Oracle as a destina
 * **Password**
 * **Database**
 * 
-## Connection to Oracle via an SSH Tunnel
+## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a Oracle instance via an SSH Tunnel. The reason you might want to do this because it is not possible (or against security policy) to connect to the database directly (e.g. it does not have a public IP address).
 

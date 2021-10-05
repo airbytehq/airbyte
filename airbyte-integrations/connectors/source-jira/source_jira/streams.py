@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -9,10 +10,27 @@ from urllib.parse import parse_qs
 
 import pendulum
 import requests
+import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from vcr.cassette import Cassette
 
 API_VERSION = 3
+
+
+def request_cache() -> Cassette:
+    """
+    Builds VCR instance.
+    It deletes file everytime we create it, normally should be called only once.
+    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
+    """
+    filename = "request_cache.yml"
+    try:
+        os.remove(filename)
+    except FileNotFoundError:
+        pass
+
+    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
 class JiraStream(HttpStream, ABC):
@@ -20,8 +38,19 @@ class JiraStream(HttpStream, ABC):
     Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/
     """
 
+    cache = request_cache()
     primary_key = "id"
     parse_response_root = None
+
+    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
+    # Here's an example of dangerous behavior:
+    # cache = Cassette.use('whatever')
+    # with cache:
+    #     with cache:
+    #         pass
+    #
+    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
+    top_level_stream = True
 
     def __init__(self, domain: str, **kwargs):
         super(JiraStream, self).__init__(**kwargs)
@@ -66,13 +95,30 @@ class JiraStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        if self.top_level_stream:
+            with self.cache:
+                yield from super().read_records(**kwargs)
+        else:
+            yield from super().read_records(**kwargs)
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         records = response_json if not self.parse_response_root else response_json.get(self.parse_response_root, [])
         if isinstance(records, list):
-            yield from records
+            for record in records:
+                yield self.transform(record=record, **kwargs)
         else:
-            yield records
+            yield self.transform(record=records, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        return record
+
+
+class V1ApiJiraStream(JiraStream, ABC):
+    @property
+    def url_base(self) -> str:
+        return f"https://{self._domain}/rest/agile/1.0/"
 
 
 class IncrementalJiraStream(JiraStream, ABC):
@@ -120,6 +166,32 @@ class Avatars(JiraStream):
             yield from super().read_records(stream_slice={"avatar_type": avatar_type}, **kwargs)
 
 
+class Boards(V1ApiJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
+    """
+
+    parse_response_root = "values"
+    top_level_stream = False
+
+    def path(self, **kwargs) -> str:
+        return "board"
+
+    def request_params(self, stream_slice: Mapping[str, Any], **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["projectKeyOrId"] = stream_slice["project_id"]
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = stream_slice["project_id"]
+        return record
+
+
 class Dashboards(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get
@@ -146,6 +218,8 @@ class FilterSharing(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
     """
+
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         filter_id = stream_slice["filter_id"]
@@ -205,6 +279,7 @@ class IssueComments(JiraStream):
     """
 
     parse_response_root = "comments"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -242,6 +317,7 @@ class IssueCustomFieldContexts(JiraStream):
     """
 
     parse_response_root = "values"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         field_id = stream_slice["field_id"]
@@ -300,6 +376,7 @@ class IssuePropertyKeys(JiraStream):
     """
 
     parse_response_root = "key"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -314,6 +391,8 @@ class IssueProperties(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
+
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -332,6 +411,8 @@ class IssueRemoteLinks(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     """
+
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -396,6 +477,7 @@ class IssueVotes(JiraStream):
     """
 
     # parse_response_root = "voters"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -415,6 +497,7 @@ class IssueWatchers(JiraStream):
     """
 
     # parse_response_root = "watchers"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -432,6 +515,7 @@ class IssueWorklogs(JiraStream):
     """
 
     parse_response_root = "worklogs"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -504,6 +588,8 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
+    top_level_stream = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/avatars"
@@ -534,6 +620,7 @@ class ProjectComponents(JiraStream):
     """
 
     parse_response_root = "values"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -550,6 +637,8 @@ class ProjectEmail(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
     """
 
+    top_level_stream = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_id = stream_slice["project_id"]
         return f"project/{project_id}/email"
@@ -564,6 +653,8 @@ class ProjectPermissionSchemes(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
     """
+
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -590,6 +681,7 @@ class ProjectVersions(JiraStream):
     """
 
     parse_response_root = "values"
+    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -617,6 +709,9 @@ class ScreenTabs(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
     """
 
+    raise_on_http_errors = False
+    top_level_stream = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         return f"screens/{screen_id}/tabs"
@@ -636,6 +731,8 @@ class ScreenTabFields(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
     """
 
+    top_level_stream = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         tab_id = stream_slice["tab_id"]
@@ -646,7 +743,8 @@ class ScreenTabFields(JiraStream):
         screen_tabs_stream = ScreenTabs(authenticator=self.authenticator, domain=self._domain)
         for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
             for tab in screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
-                yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
+                if id in tab: # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
+                    yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
 
 
 class ScreenSchemes(JiraStream):
@@ -658,6 +756,25 @@ class ScreenSchemes(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "screenscheme"
+
+
+class Sprints(V1ApiJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-sprint-get
+    """
+
+    parse_response_root = "values"
+    raise_on_http_errors = False
+    top_level_stream = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        board_id = stream_slice["board_id"]
+        return f"board/{board_id}/sprint"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain)
+        for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 
 class TimeTracking(JiraStream):
