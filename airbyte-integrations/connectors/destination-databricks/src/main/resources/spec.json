@@ -9,6 +9,7 @@
     "title": "Databricks Destination Spec",
     "type": "object",
     "required": [
+      "accept_terms",
       "databricks_server_hostname",
       "databricks_http_path",
       "databricks_personal_access_token",
@@ -16,6 +17,12 @@
     ],
     "additionalProperties": false,
     "properties": {
+      "accept_terms": {
+        "title": "Agree to the Databricks JDBC Driver Terms & Conditions",
+        "type": "boolean",
+        "description": "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\">Terms & Conditions</a> to use this connector.",
+        "default": false
+      },
       "databricks_server_hostname": {
         "title": "Databricks Cluster Server Hostname",
         "type": "string",

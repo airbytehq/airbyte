@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
@@ -43,6 +44,10 @@ public class DatabricksDestinationConfig {
   }
 
   public static DatabricksDestinationConfig get(JsonNode config) {
+    Preconditions.checkArgument(
+        config.has("accept_terms") && config.get("accept_terms").asBoolean(),
+        "You must agree to the Databricks JDBC Terms & Conditions to use this connector");
+
     return new DatabricksDestinationConfig(
         config.get("databricks_server_hostname").asText(),
         config.get("databricks_http_path").asText(),
