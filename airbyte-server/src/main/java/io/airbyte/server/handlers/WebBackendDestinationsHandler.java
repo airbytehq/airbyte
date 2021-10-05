@@ -26,7 +26,7 @@ public class WebBackendDestinationsHandler {
   public DestinationRead webBackendCreateDestination(DestinationCreate destinationCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     destinationCreate.connectionConfiguration(
-        oAuthConfigSupplier.injectSourceOAuthParameters(
+        oAuthConfigSupplier.injectDestinationOAuthParameters(
             destinationCreate.getDestinationDefinitionId(),
             destinationCreate.getWorkspaceId(),
             destinationCreate.getConnectionConfiguration()));
