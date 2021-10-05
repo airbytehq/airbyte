@@ -203,13 +203,12 @@ class SourceTypeform(AbstractSource):
         try:
             form_ids = config.get("form_ids", []).copy()
             auth = TokenAuthenticator(token=config["token"])
-            # check if form valid
+            # verify if form inputted by user is valid
+            for form in TrimForms(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh):
+                if form.get("id") in form_ids:
+                    form_ids.remove(form.get("id"))
             if form_ids:
-                for form in TrimForms(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh):
-                    if form.get("id") in form_ids:
-                        form_ids.remove(form.get("id"))
-                if form_ids:
-                    return False, f"{form_ids} is not valid IDs"
+                return False, f"{form_ids} is not valid IDs"
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
