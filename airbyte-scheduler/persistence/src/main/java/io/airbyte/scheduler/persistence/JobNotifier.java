@@ -4,12 +4,10 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
