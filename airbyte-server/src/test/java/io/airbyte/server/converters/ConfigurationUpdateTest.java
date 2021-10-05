@@ -86,7 +86,7 @@ class ConfigurationUpdateTest {
 
   @Test
   void testSourceUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configRepository.getSourceConnection(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
+    when(configRepository.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
     when(configRepository.getStandardSourceDefinition(UUID2)).thenReturn(SOURCE_DEFINITION);
     when(specFetcher.execute(IMAGE_NAME)).thenReturn(CONNECTOR_SPECIFICATION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
@@ -98,7 +98,7 @@ class ConfigurationUpdateTest {
 
   @Test
   void testDestinationUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configRepository.getDestinationConnection(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
+    when(configRepository.getDestinationConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
     when(configRepository.getStandardDestinationDefinition(UUID2)).thenReturn(DESTINATION_DEFINITION);
     when(specFetcher.execute(IMAGE_NAME)).thenReturn(CONNECTOR_SPECIFICATION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);

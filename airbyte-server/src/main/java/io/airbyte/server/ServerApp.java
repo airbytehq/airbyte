@@ -5,7 +5,9 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -17,6 +19,8 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -166,7 +170,13 @@ public class ServerApp implements ServerRunnable {
             .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
     configPersistence.migrateFileConfigs(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence.withValidation());
+
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -185,7 +195,7 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
-
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
     // must happen after the tracking client is initialized.
     // if no workspace exists, we create one so the user starts out with a place to add configuration.
     createWorkspaceIfNoneExists(configRepository);
@@ -196,10 +206,10 @@ public class ServerApp implements ServerRunnable {
       jobPersistence.setVersion(airbyteVersion);
     }
 
-    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
+    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
     final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
@@ -207,6 +217,9 @@ public class ServerApp implements ServerRunnable {
         new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
+
+    // required before migration
+    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.execute(dockerImage)));
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
@@ -237,7 +250,8 @@ public class ServerApp implements ServerRunnable {
           seed,
           configDatabase,
           jobDatabase,
-          configs);
+          configs,
+          trackingClient);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);

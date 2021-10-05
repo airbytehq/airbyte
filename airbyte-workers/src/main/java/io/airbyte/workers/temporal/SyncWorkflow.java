@@ -19,6 +19,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DbtTransformationRunner;
@@ -126,16 +127,21 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    ReplicationActivityImpl(ProcessFactory processFactory,
+                            SecretsHydrator secretsHydrator,
+                            Path workspaceRoot,
+                            AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -146,9 +152,16 @@ public interface SyncWorkflow {
                                         IntegrationLauncherConfig destinationLauncherConfig,
                                         StandardSyncInput syncInput) {
 
+      final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
+      final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
+
+      final var fullSyncInput = Jsons.clone(syncInput)
+          .withSourceConfiguration(fullSourceConfig)
+          .withDestinationConfiguration(fullDestinationConfig);
+
       final Supplier<StandardSyncInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(syncInput));
-        return syncInput;
+        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
+        return fullSyncInput;
       };
 
       final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
@@ -237,16 +250,21 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    NormalizationActivityImpl(ProcessFactory processFactory,
+                              SecretsHydrator secretsHydrator,
+                              Path workspaceRoot,
+                              AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -256,9 +274,12 @@ public interface SyncWorkflow {
                           IntegrationLauncherConfig destinationLauncherConfig,
                           NormalizationInput input) {
 
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+
       final Supplier<NormalizationInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(input));
-        return input;
+        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
       };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -299,16 +320,21 @@ public interface SyncWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
 
     private final ProcessFactory processFactory;
+    private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
-      this(processFactory, workspaceRoot, new AirbyteConfigValidator());
+    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory, Path workspaceRoot, AirbyteConfigValidator validator) {
+    DbtTransformationActivityImpl(ProcessFactory processFactory,
+                                  SecretsHydrator secretsHydrator,
+                                  Path workspaceRoot,
+                                  AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
+      this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
     }
@@ -319,9 +345,12 @@ public interface SyncWorkflow {
                     ResourceRequirements resourceRequirements,
                     OperatorDbtInput input) {
 
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+
       final Supplier<OperatorDbtInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(input));
-        return input;
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
       };
 
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(

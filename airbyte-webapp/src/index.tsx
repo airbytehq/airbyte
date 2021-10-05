@@ -11,7 +11,11 @@ const App = lazy(() => import(`./App`));
 
 ReactDOM.render(
   <Suspense fallback={null}>
-    {process.env.REACT_APP_CLOUD ? <CloudApp /> : <App />}
+    {process.env.REACT_APP_CLOUD || window.CLOUD === "true" ? (
+      <CloudApp />
+    ) : (
+      <App />
+    )}
   </Suspense>,
   document.getElementById("root")
 );

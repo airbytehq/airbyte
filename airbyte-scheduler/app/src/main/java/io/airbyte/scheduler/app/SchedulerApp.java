@@ -6,6 +6,7 @@ package io.airbyte.scheduler.app;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -19,6 +20,8 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -37,7 +40,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Random;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -98,12 +101,13 @@ public class SchedulerApp {
     final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
+    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence),
+        new JobTracker(configRepository, jobPersistence, trackingClient),
         jobNotifier);
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -141,22 +145,6 @@ public class SchedulerApp {
         CLEANING_DELAY.toSeconds(),
         CLEANING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
-
-    Executors.newSingleThreadScheduledExecutor().submit(() -> {
-      MDC.setContextMap(mdc);
-      while (true) {
-        LOGGER.info("==== test metrics");
-        MetricSingleton.incrementCounter("test_davin_counter", 1, "test counter");
-        MetricSingleton.setGauge("test_davin_gauge", 1, "test gauge");
-        MetricSingleton.recordTime("test_davin_histogram", new Random().nextInt(10), "test timer");
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          LOGGER.error("===== POOP", e);
-          e.printStackTrace();
-        }
-      }
-    });
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
         scheduleJobsPool, executeJobsPool, cleanupJobsPool));
@@ -202,7 +190,6 @@ public class SchedulerApp {
 
     // Wait for the server to initialize the database and run migration
     waitForServer(configs);
-    LOGGER.info("====== blaaaaaah");
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
@@ -217,13 +204,14 @@ public class SchedulerApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,
         jobPersistence);
-    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
-
     AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
 
     TrackingClientSingleton.initialize(
@@ -232,7 +220,11 @@ public class SchedulerApp {
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
-
+    final JobNotifier jobNotifier = new JobNotifier(
+        configs.getWebappUrl(),
+        configRepository,
+        new WorkspaceHelper(configRepository, jobPersistence),
+        TrackingClientSingleton.get());
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();

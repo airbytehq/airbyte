@@ -6,7 +6,7 @@
 import setuptools
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk~=0.1.25",
     "docker~=4.4",
     "PyYAML~=5.4",
     "icdiff~=1.9",
@@ -19,6 +19,7 @@ MAIN_REQUIREMENTS = [
     "pprintpp~=0.4",
     "dpath~=2.0.1",
     "jsonschema~=3.2.0",
+    "jsonref==0.2",
 ]
 
 setuptools.setup(

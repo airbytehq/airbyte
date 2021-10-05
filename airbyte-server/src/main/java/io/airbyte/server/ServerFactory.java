@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -26,10 +27,10 @@ public interface ServerFactory {
                         ConfigRepository configRepository,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
-
                         Database configsDatabase,
                         Database jobsDatabase,
-                        Configs configs);
+                        Configs configs,
+                        TrackingClient trackingClient);
 
   class Api implements ServerFactory {
 
@@ -42,7 +43,8 @@ public interface ServerFactory {
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
                                  final Database jobsDatabase,
-                                 final Configs configs) {
+                                 final Configs configs,
+                                 final TrackingClient trackingClient) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -54,7 +56,9 @@ public interface ServerFactory {
           configs,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
-          configsDatabase, jobsDatabase);
+          configsDatabase,
+          jobsDatabase,
+          trackingClient);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

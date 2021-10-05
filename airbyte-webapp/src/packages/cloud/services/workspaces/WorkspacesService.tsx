@@ -98,9 +98,25 @@ export function useRemoveWorkspace() {
 export function useGetWorkspace(workspaceId: string) {
   const service = useGetWorkspaceService();
 
-  return useQuery(["workspace", workspaceId], () => service.get(workspaceId), {
-    suspense: true,
-  });
+  return useQuery(
+    ["cloud_workspace", workspaceId],
+    () => service.get(workspaceId),
+    {
+      suspense: true,
+    }
+  ) as any;
+}
+
+export function useGetUsage(workspaceId: string) {
+  const service = useGetWorkspaceService();
+
+  return useQuery(
+    ["cloud_workspace", workspaceId, "usage"],
+    () => service.getUsage(workspaceId),
+    {
+      suspense: true,
+    }
+  );
 }
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {

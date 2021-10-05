@@ -6,38 +6,48 @@ import logging
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping
+from typing import Any, Dict, List, Mapping, MutableMapping, Set
 
 import dpath.util
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, serialize, verify_records_schema
-from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-    def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
-        output = docker_runner.call_spec()
-        spec_messages = filter_output(output, Type.SPEC)
 
-        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+    spec_cache: ConnectorSpecification = None
+
+    @pytest.fixture(name="actual_connector_spec")
+    def actual_connector_spec_fixture(request: BaseTest, docker_runner):
+        if not request.spec_cache:
+            output = docker_runner.call_spec()
+            spec_messages = filter_output(output, Type.SPEC)
+            assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+            assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+            assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+                docker_runner.entry_point
+            ), "env should be equal to space-joined entrypoint"
+            spec = spec_messages[0].spec
+            request.spec_cache = spec
+        return request.spec_cache
+
+    def test_match_expected(
+        self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict
+    ):
+
         if connector_spec:
-            assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
-
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            docker_runner.entry_point
-        ), "env should be equal to space-joined entrypoint"
-
+            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.json file"
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
 
-        spec_message_schema = spec_messages[0].spec.connectionSpecification
+        spec_message_schema = actual_connector_spec.connectionSpecification
         validate(instance=config, schema=spec_message_schema)
 
         js_helper = JsonSchemaHelper(spec_message_schema)
@@ -55,6 +65,35 @@ class TestSpec(BaseTest):
 
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
+
+    def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
+        """
+        Check if connector has correct oauth flow parameters according to https://docs.airbyte.io/connector-development/connector-specification-reference
+        """
+        self._validate_authflow_parameters(actual_connector_spec)
+
+    @staticmethod
+    def _validate_authflow_parameters(connector_spec: ConnectorSpecification):
+        if not connector_spec.authSpecification:
+            return
+        spec_schema = connector_spec.connectionSpecification
+        oauth_spec = connector_spec.authSpecification.oauth2Specification
+        parameters: List[List[str]] = oauth_spec.oauthFlowInitParameters + oauth_spec.oauthFlowOutputParameters
+        root_object = oauth_spec.rootObject
+        if len(root_object) == 0:
+            params = {"/" + "/".join(p) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema))
+        elif len(root_object) == 1:
+            params = {"/" + "/".join([root_object[0], *p]) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema))
+        elif len(root_object) == 2:
+            params = {"/" + "/".join([f"{root_object[0]}({root_object[1]})", *p]) for p in parameters}
+            schema_path = set(get_expected_schema_structure(spec_schema, annotate_one_of=True))
+        else:
+            assert "rootObject cannot have more than 2 elements"
+
+        diff = params - schema_path
+        assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
 
 @pytest.mark.default_timeout(30)
@@ -126,10 +165,37 @@ def primary_keys_for_records(streams, records):
 @pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
     @staticmethod
-    def _validate_schema(records, configured_catalog):
+    def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+        """
+        Check object structure simmilar to one expected by schema. Sometimes
+        just running schema validation is not enough case schema could have
+        additionalProperties parameter set to true and no required fields
+        therefore any arbitrary object would pass schema validation.
+        This method is here to catch those cases by extracting all the pathes
+        from the object and compare it to pathes expected from jsonschema. If
+        there no common pathes then raise an alert.
+
+        :param records: List of airbyte record messages gathered from connector instances.
+        :param configured_catalog: SAT testcase parameters parsed from yaml file
+        """
+        schemas: Dict[str, Set] = {}
+        for stream in configured_catalog.streams:
+            schemas[stream.stream.name] = set(get_expected_schema_structure(stream.stream.json_schema))
+
+        for record in records:
+            schema_pathes = schemas.get(record.stream)
+            if not schema_pathes:
+                continue
+            record_fields = set(get_object_structure(record.data))
+            common_fields = set.intersection(record_fields, schema_pathes)
+            assert common_fields, f" Record from {record.stream} stream should have some fields mentioned by json schema, {schema_pathes}"
+
+    @staticmethod
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
+        TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
         streams_errors = verify_records_schema(records, configured_catalog)
         for stream_name, errors in streams_errors.items():

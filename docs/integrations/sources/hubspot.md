@@ -1,12 +1,21 @@
 # Hubspot
 
-## Overview
+## Features
 
-The Hubspot connector can be used to sync your Hubspot data. It supports full refresh sync for all streams and incremental sync for Email Events and Subscription Changes streams.
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
+| SSL connection | Yes |
 
-### Output schema
+## Troubleshooting 
 
-Several output streams are available from this source:
+**Issue: `414 Client Error: Request-URI Too Large for url` failing sync. [\[Workaround\]](https://discuss.airbyte.io/t/source-hubspot-failed-sync-request-uri-too-large-for-contact-stream/59)**
+
+## Supported Tables
+
+This source is capable of syncing the following tables and their data:
 
 * [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
 * [Companies](https://developers.hubspot.com/docs/api/crm/companies)
@@ -25,17 +34,21 @@ Several output streams are available from this source:
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
-### Features
+## Getting Started (Airbyte Open-Source / Airbyte Cloud)
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
-| Namespaces | No |
+#### Requirements
 
-### Performance considerations
+* Hubspot Account
+* Api credentials
+* If using Oauth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
+
+{% hint style="info" %}
+Hubspot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
+{% endhint %}
+
+This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
+
+## Rate Limiting & Performance
 
 The connector is restricted by normal Hubspot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
@@ -52,27 +65,34 @@ Example of the output message when trying to read `workflows` stream with missin
 }
 ```
 
-## Getting started
+### Required scopes
 
+If you are using Oauth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
 
-### Requirements
-
-* Hubspot Account
-* Api credentials
-
-### Setup guide
-
-{% hint style="info" %}
-Hubspot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
-
-This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
-
+| Stream | Required Scope |
+| :--- | :---- |
+| `campaigns` | `content` |
+| `companies` | `contacts` |
+| `contact_lists` | `contacts` |
+| `contacts` | `contacts` |
+| `deal_pipelines` | either the `contacts` scope (to fetch deals pipelines) or the `tickets` scope. |
+| `deals` | `contacts` |
+| `email_events` | `content` |
+| `engagements` | `contacts` |
+| `forms` | `forms` |
+| `line_items` | `e-commerce` |
+| `owners` | `contacts` |
+| `products` | `e-commerce` |
+| `quotes` | no scope required |
+| `subscription_changes` | `content` |
+| `tickets` | `tickets` |
+| `workflows` | `automation` |
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.16   | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
 | 0.1.15   | 2021-09-23 | [6374](https://github.com/airbytehq/airbyte/pull/6374) | Use correct schema for `owners` stream |
 | 0.1.14   | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693) | Include deal_to_contact association when pulling deal stream and include contact ID in contact stream |
 | 0.1.13   | 2021-09-08 | [5834](https://github.com/airbytehq/airbyte/pull/5834) | Fixed array fields without items property in schema |
