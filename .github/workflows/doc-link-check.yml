@@ -1,4 +1,6 @@
 # Perform link check on all markdown files
+# Add any custom exclusions to doc-link-check.json
+
 name: Doc Link Checker
 
 on:

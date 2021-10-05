@@ -44,6 +44,10 @@
     {
       "reason": "Test only scaffold connector",
       "pattern": "destinations/scaffold-"
+    },
+    {
+      "reason": "Returns a 403 for many valid pages",
+      "pattern": "https://mvnrepository.com/artifact/"
     }
   ],
   "retryOn429": false,

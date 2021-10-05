@@ -46,5 +46,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ### Setup guide
 
+<!-- markdown-link-check-disable -->
 Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3)
-to obtain Private API Key for your account. 
+to obtain Private API Key for your account.
+<!-- markdown-link-check-enable -->
