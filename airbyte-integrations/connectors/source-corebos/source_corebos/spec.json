@@ -4,31 +4,29 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "CoreBOS Source Spec",
     "type": "object",
-    "required": ["url","http_method","access_token","username"],
+    "required": ["url","username","access_token","query"],
     "additionalProperties": false,
     "properties": {
       "url": {
-        "description": "url for the request, including query params. must start with http:// or https://",
+        "description": "a coreBOS server instance url http:// or https://",
         "type": "string",
-        "pattern": "^http(s)?:\\/\\/.*$"
+        "pattern": "^http(s)?:\\/\\/.*$",
+        "example":"http://test.coreboscrm.com/denorm/webservice.php"
       },
-      "http_method": {
-        "description": "http method to use for the request",
-        "type": "string",
-        "enum": ["GET", "POST"]
-      },
-
       "access_token":{
           "description":"The user access token.",
-          "type":"string"
-      },
-      "body": {
-        "description": "json body to be included in the request",
-        "type": "string"
+          "type":"string",
+          "example": "aj49tFk90nGdm3Aui"
       },
       "username": {
         "description": "User name to be included in the request.",
-        "type": "string"
+        "type": "string",
+        "example": "charity"
+      },
+      "query": {
+        "description": "the SQL query to execute to retrieve data",
+        "type": "string",
+        "example": "select * from helpdesk;"
       }
     }
   }
