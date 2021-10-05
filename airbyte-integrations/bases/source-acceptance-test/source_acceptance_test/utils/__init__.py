@@ -15,5 +15,5 @@ __all__ = [
     "diff_dicts",
     "serialize",
     "verify_records_schema",
-    "remove_ignored_fields"
+    "remove_ignored_fields",
 ]

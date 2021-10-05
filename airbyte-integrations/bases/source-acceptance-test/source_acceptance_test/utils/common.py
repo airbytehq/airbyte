@@ -5,11 +5,11 @@
 
 from collections import UserDict
 from pathlib import Path
-from typing import Iterable, List, Mapping, Any
+from typing import Any, Iterable, List, Mapping
 
 import pytest
-from yaml import load
 from airbyte_cdk.models import Type
+from yaml import load
 
 try:
     from yaml import CLoader as Loader
