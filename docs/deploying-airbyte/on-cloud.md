@@ -6,7 +6,7 @@ Airbyte Cloud requires no setup and can be immediately run from your web browser
 
 ## Setup Guide
 
-#### 1. Head to https://cloud.airbyte.io, click `Sign up`, and verify your email.
+#### 1. Using the Airbyte Cloud invite link provided to you, click `Sign up`, and verify your email.
 
 #### 2. Click on the default workspace.
    
