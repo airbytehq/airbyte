@@ -7,7 +7,7 @@ import useRouter from "hooks/useRouter";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
 
-import { FirebaseMode, Routes } from "packages/cloud/routes";
+import { FirebaseActionMode, Routes } from "packages/cloud/routes";
 
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
@@ -40,7 +40,7 @@ const NewsPart = styled(Part)`
 const FirebaseActionRoute: React.FC = () => {
   const { query } = useRouter<{ mode: string }>();
 
-  if (query.mode === FirebaseMode.RESET_PASSWORD) {
+  if (query.mode === FirebaseActionMode.RESET_PASSWORD) {
     return <ResetPasswordConfirmPage />;
   }
   return <LoadingPage />;

@@ -74,14 +74,14 @@ export enum Routes {
   ResetPassword = "/reset-password",
   ConfirmVerifyEmail = "/confirm-verify-email",
 
-  // Firebase email routes
+  // Firebase action routes
   // These URLs come from Firebase emails, and all have the same
   // action URL ("/verify-email") with different "mode" parameter
   // TODO: use a better action URL in Firebase email template
-  FirebaseAction = "/verify-email", // mode=verifyEmail
+  FirebaseAction = "/verify-email",
 }
 
-export enum FirebaseMode {
+export enum FirebaseActionMode {
   VERIFY_EMAIL = "verifyEmail",
   RESET_PASSWORD = "resetPassword",
 }
