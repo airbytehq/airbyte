@@ -28,12 +28,11 @@ This Source is capable of syncing the following core Streams:
 * [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
-### Notes
+### Note on Incremental Syncs
 
-The `created` field is used to organize Incremental streams. Filtration occurs by the date the entity was created, and it is impossible to filter by the update date, since:
-  * The Stripe API allows filtering only by the `created` field for all streams.
-  * There is no such field as `updated`.
-The only alternative way at the moment is to do a Full Refresh sync and filtering client side.
+The Stripe API does not allow querying objects which were updated since the last sync. Therefore, this connector uses the `created` field to query for new data in your Stripe account.
+
+If your data is updated after creation, you can use the Loockback Window option when configuring the connector to always reload data from the past N days. This will allow you to pick up updates to the data. 
 
 ### Data type mapping
 
@@ -45,7 +44,7 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https:/
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental - Dedupe Sync | Yes |
 | SSL connection | Yes |
 | Namespaces | No |
 
@@ -72,6 +71,7 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.20   | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017) | Add lookback_window_days parameter |
 | 0.1.19   | 2021-09-27 | [6466](https://github.com/airbytehq/airbyte/pull/6466) | Use `start_date` parameter in incremental streams |
 | 0.1.18   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Fix coupons and subscriptions stream schemas by removing incorrect timestamp formatting |
 | 0.1.17   | 2021-09-14 | [6004](https://github.com/airbytehq/airbyte/pull/6004) | Add `PaymentIntents` stream |

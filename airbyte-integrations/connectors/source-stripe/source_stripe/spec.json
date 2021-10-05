@@ -22,6 +22,13 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"]
+      },
+      "lookback_window_days": {
+        "type": "integer",
+        "title": "Lookback Window (in days)",
+        "default": 0,
+        "minimum": 0,
+        "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation."
       }
     }
   }
