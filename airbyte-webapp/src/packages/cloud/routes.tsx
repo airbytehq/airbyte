@@ -171,7 +171,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       </Route>
       {workspace.displaySetupWizard && (
         <Route exact path={Routes.Onboarding}>
-          <OnboardingPage />
+          <OnboardingServiceProvider>
+            <OnboardingPage />
+          </OnboardingServiceProvider>
         </Route>
       )}
       <Redirect to={mainRedirect} />
@@ -241,9 +243,7 @@ export const Routing: React.FC = () => {
           <>
             {user && emailVerified && (
               <WorkspaceServiceProvider>
-                <OnboardingServiceProvider>
-                  <MainViewRoutes />
-                </OnboardingServiceProvider>
+                <MainViewRoutes />
               </WorkspaceServiceProvider>
             )}
             {user && !emailVerified && (
