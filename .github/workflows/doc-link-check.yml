@@ -22,5 +22,5 @@ jobs:
         if: github.ref != 'refs/heads/master'
         with:
           use-quiet-mode: 'yes'
-          check-modified-files-only: 'yes'
+#          check-modified-files-only: 'yes' todo: revert
           config-file: .github/workflows/doc-link-check.json
