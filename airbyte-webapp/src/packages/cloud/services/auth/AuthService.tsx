@@ -120,8 +120,11 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.confirmEmailVerify(code);
         emailVerified(true);
       },
-      async confirmPasswordReset(code: string, email: string): Promise<void> {
-        await authService.finishResetPassword(code, email);
+      async confirmPasswordReset(
+        code: string,
+        newPassword: string
+      ): Promise<void> {
+        await authService.finishResetPassword(code, newPassword);
       },
       async signUp(form: {
         email: string;
