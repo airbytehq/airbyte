@@ -55,12 +55,12 @@ class TplcentralStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         data = response.json()
         total = data['TotalResults']
-        pgsiz = len(data['Summaries'])
+        pgsiz_default = len(data['Summaries'])
 
         url = urlparse(response.request.url)
         qs = dict(parse_qsl(url.query))
 
-        pgsiz = int(qs.get('pgsiz', pgsiz))
+        pgsiz = int(qs.get('pgsiz', pgsiz_default))
         pgnum = int(qs.get('pgnum', 1))
 
         if pgsiz * pgnum >= total:
