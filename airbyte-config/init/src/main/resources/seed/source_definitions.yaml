@@ -548,6 +548,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
+- sourceDefinitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
+  name: Kafka
+  dockerRepository: airbyte/source-kafka
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/kafka
+  sourceType: database
 - sourceDefinitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
   name: Lever Hiring
   dockerRepository: airbyte/source-lever-hiring
