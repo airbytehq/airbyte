@@ -33,14 +33,9 @@
             },
             "contexts": {
               "type": ["null", "array"],
-              "items": [
-                {
-                  "type": ["null", "string"]
-                },
-                {
-                  "type": ["null", "string"]
-                }
-              ]
+              "items": {
+                "type": ["null", "string"]
+              }
             }
           }
         }
