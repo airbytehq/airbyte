@@ -413,5 +413,8 @@
   "credits.totalUsage": "Total usage",
 
   "demo.message.title": "This Airbyte demo is read-only",
-  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
+  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
+
+  "email.duplicate": "Email already exist",
+  "password.invalid": "Password too weak"
 }
