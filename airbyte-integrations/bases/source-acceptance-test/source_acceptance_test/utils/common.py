@@ -25,7 +25,7 @@
 
 from collections import UserDict
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Mapping, Any
 
 import pytest
 from yaml import load
@@ -80,7 +80,8 @@ def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessa
     return list(filter(lambda x: x.type == type_, records))
 
 
-def remove_ignored_fields(output, ignored_fields):
+def remove_ignored_fields(output: List[AirbyteMessage], ignored_fields: Mapping[str, List[str]]) -> List[Mapping[str, Any]]:
+    """Remove ignored fields from records in TestFullRefresh.test_sequential_reads"""
     data = []
     for message in output:
         if message.type == Type.RECORD:

@@ -33,11 +33,9 @@ class TestFullRefresh(BaseTest):
     def test_sequential_reads(self, connector_config, configured_catalog, ignored_fields: Mapping[str, List[str]], docker_runner: ConnectorRunner, detailed_logger):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
-        # records_1 = [message.record.data for message in output if message.type == Type.RECORD]
         records_1 = remove_ignored_fields(output, ignored_fields)
 
         output = docker_runner.call_read(connector_config, configured_catalog)
-        # records_2 = [message.record.data for message in output if message.type == Type.RECORD]
         records_2 = remove_ignored_fields(output, ignored_fields)
 
         output_diff = set(map(serialize, records_1)) - set(map(serialize, records_2))
