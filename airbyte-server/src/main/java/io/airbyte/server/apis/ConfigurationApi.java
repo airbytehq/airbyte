@@ -154,7 +154,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final TrackingClient trackingClient) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
+    final JobNotifier jobNotifier = new JobNotifier(
+        configs.getWebappUrl(),
+        configRepository,
+        new WorkspaceHelper(configRepository, jobPersistence),
+        trackingClient);
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,

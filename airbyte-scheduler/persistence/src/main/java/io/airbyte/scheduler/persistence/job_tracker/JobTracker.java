@@ -55,8 +55,8 @@ public class JobTracker {
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
 
-  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence) {
-    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), TrackingClientSingleton.get());
+  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient) {
+    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), trackingClient);
   }
 
   @VisibleForTesting

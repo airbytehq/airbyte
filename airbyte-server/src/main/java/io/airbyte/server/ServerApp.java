@@ -206,7 +206,7 @@ public class ServerApp implements ServerRunnable {
       jobPersistence.setVersion(airbyteVersion);
     }
 
-    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);

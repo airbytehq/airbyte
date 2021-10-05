@@ -44,12 +44,7 @@ public class JobNotifier {
   private final TrackingClient trackingClient;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper) {
-    this(webappUrl, configRepository, workspaceHelper, TrackingClientSingleton.get());
-  }
-
-  @VisibleForTesting
-  JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
     this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
