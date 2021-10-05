@@ -209,7 +209,8 @@ For a specific overlay, you can run `kubectl kustomize kube/overlays/stable` to 
 This is useful for debugging because it will show the exact resources you are defining.
 
 ### Helm Charts
-We do not currently offer Helm charts. If you are interested in this functionality please vote on the [related issue](https://github.com/airbytehq/airbyte/issues/1868).
+
+Check out the [Helm Chart Readme](https://github.com/airbytehq/airbyte/tree/master/charts/airbyte)
 
 ## Operator Guide
 

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -46,7 +26,7 @@ import javax.annotation.Nullable;
  * These are the three main helpers provided by this class:
  * {@link SecretsHelpers#splitConfig(UUID, JsonNode, ConnectorSpecification)}
  * {@link SecretsHelpers#splitAndUpdateConfig(UUID, JsonNode, JsonNode, ConnectorSpecification, ReadOnlySecretPersistence)}
- * {@link SecretsHelpers#combineConfig(JsonNode, SecretPersistence)}
+ * {@link SecretsHelpers#combineConfig(JsonNode, ReadOnlySecretPersistence)}
  *
  * Here's an overview on some terminology used in this class:
  *
@@ -119,7 +99,7 @@ public class SecretsHelpers {
    * @param secretPersistence secret storage mechanism
    * @return full config including actual secret values
    */
-  public static JsonNode combineConfig(final JsonNode partialConfig, final SecretPersistence secretPersistence) {
+  public static JsonNode combineConfig(final JsonNode partialConfig, final ReadOnlySecretPersistence secretPersistence) {
     final var config = partialConfig.deepCopy();
 
     // if the entire config is a secret coordinate object
@@ -348,7 +328,7 @@ public class SecretsHelpers {
    * @throws RuntimeException when a secret at that coordinate is not available in the persistence
    * @return a json text node containing the secret value
    */
-  private static TextNode getOrThrowSecretValueNode(final SecretPersistence secretPersistence, final SecretCoordinate coordinate) {
+  private static TextNode getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence, final SecretCoordinate coordinate) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {
