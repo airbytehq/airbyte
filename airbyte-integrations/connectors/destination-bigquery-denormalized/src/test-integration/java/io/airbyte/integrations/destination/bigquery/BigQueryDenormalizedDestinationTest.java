@@ -197,7 +197,8 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
     assertEquals(extractJsonValues(resultJson, "date_of_birth"), extractJsonValues(expectedUsersJson, "date_of_birth"));
 
-    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't expect to receive the value we sent.
+    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
+    // expect to receive the value we sent.
     assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2018-08-19T12:11:35.220"));
 
     final Schema expectedSchema = Schema.of(
@@ -205,8 +206,7 @@ class BigQueryDenormalizedDestinationTest {
         Field.of("date_of_birth", StandardSQLTypeName.DATE),
         Field.of("updated_at", StandardSQLTypeName.DATETIME),
         Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP)
-    );
+        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
   }

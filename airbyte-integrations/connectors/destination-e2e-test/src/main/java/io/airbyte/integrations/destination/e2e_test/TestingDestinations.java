@@ -26,13 +26,15 @@ public class TestingDestinations extends BaseConnector implements Destination {
 
   public enum TestDestinationType {
     LOGGING,
-    THROTTLED
+    THROTTLED,
+    SILENT
   }
 
   public TestingDestinations() {
     this(ImmutableMap.<TestDestinationType, Destination>builder()
         .put(TestDestinationType.LOGGING, new LoggingDestination())
         .put(TestDestinationType.THROTTLED, new ThrottledDestination())
+        .put(TestDestinationType.SILENT, new SilentDestination())
         .build());
   }
 

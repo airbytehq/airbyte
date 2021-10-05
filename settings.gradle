@@ -32,6 +32,7 @@ include ':airbyte-config:models' // reused by acceptance tests in connector base
 include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
 include ':airbyte-protocol:models'
+include ':airbyte-metrics'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
 include ':airbyte-secrets-migration'

@@ -10,11 +10,12 @@ dependencies {
     implementation 'io.temporal:temporal-sdk:1.0.4'
 
     implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
-    implementation project(':airbyte-api')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-metrics')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')

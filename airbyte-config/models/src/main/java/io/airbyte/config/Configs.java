@@ -107,6 +107,8 @@ public interface Configs {
 
   String getGoogleApplicationCredentials();
 
+  boolean getPublishMetrics();
+
   SecretPersistenceType getSecretPersistenceType();
 
   enum TrackingStrategy {
