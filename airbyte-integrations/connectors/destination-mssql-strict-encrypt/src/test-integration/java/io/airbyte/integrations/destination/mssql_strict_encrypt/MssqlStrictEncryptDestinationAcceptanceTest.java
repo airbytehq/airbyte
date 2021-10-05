@@ -5,58 +5,185 @@
 package io.airbyte.integrations.destination.mssql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.IOException;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import org.jooq.JSONFormat;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MSSQLServerContainer;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlStrictEncryptDestinationAcceptanceTest.class);
+    private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
-  private JsonNode configJson;
+    private static MSSQLServerContainer<?> db;
+    private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+    private JsonNode config;
 
-  @Override
-  protected String getImageName() {
-    return "airbyte/destination-mssql_strict_encrypt:dev";
-  }
+    @Override
+    protected String getImageName() {
+        return "airbyte/destination-mssql:dev";
+    }
 
-  @Override
-  protected JsonNode getConfig() {
-    // TODO: Generate the configuration JSON file to be used for running the destination during the test
-    // configJson can either be static and read from secrets/config.json directly
-    // or created in the setup method
-    return configJson;
-  }
+    @Override
+    protected boolean supportsDBT() {
+        return true;
+    }
 
-  @Override
-  protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
-    // should result in a failed connection check
-    return null;
-  }
+    private JsonNode getConfig(MSSQLServerContainer<?> db) {
+        return Jsons.jsonNode(ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("port", db.getFirstMappedPort())
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .put("schema", "testSchema")
+                .put("ssl", false)
+                .build());
+    }
 
-  @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
-      throws IOException {
-    // TODO Implement this method to retrieve records which written to the destination by the connector.
-    // Records returned from this method will be compared against records provided to the connector
-    // to verify they were written correctly
-    return null;
-  }
+    @Override
+    protected JsonNode getConfig() {
+        return config;
+    }
 
-  @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any setup actions needed before every test case
-  }
+    @Override
+    protected JsonNode getFailCheckConfig() {
+        return Jsons.jsonNode(ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("username", db.getUsername())
+                .put("password", "wrong password")
+                .put("schema", "public")
+                .put("port", db.getFirstMappedPort())
+                .put("ssl", false)
+                .build());
+    }
 
-  @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any cleanup actions needed after every test case
-  }
+    @Override
+    protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
+                                             String streamName,
+                                             String namespace,
+                                             JsonNode streamSchema)
+            throws Exception {
+        return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+                .stream()
+                .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    protected boolean implementsNamespaces() {
+        return true;
+    }
+
+    @Override
+    protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+            throws Exception {
+        String tableName = namingResolver.getIdentifier(streamName);
+        return retrieveRecordsFromTable(tableName, namespace);
+    }
+
+    @Override
+    protected List<String> resolveIdentifier(String identifier) {
+        final List<String> result = new ArrayList<>();
+        final String resolved = namingResolver.getIdentifier(identifier);
+        result.add(identifier);
+        result.add(resolved);
+        if (!resolved.startsWith("\"")) {
+            result.add(resolved.toLowerCase());
+            result.add(resolved.toUpperCase());
+        }
+        return result;
+    }
+
+    private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+        return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
+                db.getJdbcUrl()).query(
+                ctx -> {
+                    ctx.fetch(String.format("USE %s;", config.get("database")));
+                    return ctx
+                            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                            .stream()
+                            .map(r -> r.formatJSON(JSON_FORMAT))
+                            .map(Jsons::deserialize)
+                            .collect(Collectors.toList());
+                });
+    }
+
+    @BeforeAll
+    protected static void init() {
+        db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+        db.start();
+    }
+
+    private static Database getDatabase(JsonNode config) {
+        return Databases.createDatabase(
+                config.get("username").asText(),
+                config.get("password").asText(),
+                String.format("jdbc:sqlserver://%s:%s",
+                        config.get("host").asText(),
+                        config.get("port").asInt()),
+                "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+                null);
+    }
+
+    // how to interact with the mssql test container manaully.
+    // 1. exec into mssql container (not the test container container)
+    // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
+    @Override
+    protected void setup(TestDestinationEnv testEnv) throws SQLException {
+        JsonNode configWithoutDbName = getConfig(db);
+        final String dbName = Strings.addRandomSuffix("db", "_", 10);
+
+        final Database database = getDatabase(configWithoutDbName);
+        database.query(ctx -> {
+            ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+            ctx.fetch(String.format("USE %s;", dbName));
+            ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+            ctx.fetch(
+                    "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+            return null;
+        });
+
+        config = Jsons.clone(configWithoutDbName);
+        ((ObjectNode) config).put("database", dbName);
+    }
+
+    @Override
+    protected void tearDown(TestDestinationEnv testEnv) {
+    }
+
+    @AfterAll
+    static void cleanUp() {
+        db.stop();
+        db.close();
+    }
+
+//    @Test
+//    void testSpec() throws Exception {
+//        final ConnectorSpecification actual = source.spec();
+//        final ConnectorSpecification expected =
+//                SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+//
+//        assertEquals(expected, actual);
+//    }
 
 }
+
