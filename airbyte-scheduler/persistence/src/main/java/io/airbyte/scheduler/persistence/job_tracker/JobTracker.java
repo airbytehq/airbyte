@@ -20,6 +20,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -273,14 +274,17 @@ public class JobTracker {
 
   private void track(final UUID workspaceId, final Map<String, Object> metadata)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> standardTrackingMetadata = ImmutableMap.of(
-        "workspace_id", workspaceId,
-        "workspace_name", configRepository.getStandardWorkspace(workspaceId, true).getName());
-
     // unfortunate but in the case of jobs that cannot be linked to a workspace there not a sensible way
     // track it.
     if (workspaceId != null) {
-      trackingClient.track(workspaceId, MESSAGE_NAME, MoreMaps.merge(metadata, standardTrackingMetadata));
+      StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, true);
+      if (standardWorkspace != null && standardWorkspace.getName() != null) {
+        final Map<String, Object> standardTrackingMetadata = ImmutableMap.of(
+            "workspace_id", workspaceId,
+            "workspace_name", standardWorkspace.getName());
+
+        trackingClient.track(workspaceId, MESSAGE_NAME, MoreMaps.merge(metadata, standardTrackingMetadata));
+      }
     }
   }
 
