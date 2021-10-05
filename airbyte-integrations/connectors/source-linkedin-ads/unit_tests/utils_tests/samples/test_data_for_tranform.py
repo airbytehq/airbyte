@@ -106,13 +106,13 @@ output_test_data = [
         "variables": {
             "type": "com.linkedin.ads.SponsoredUpdateCreativeVariables",
             "values": [
-                {"key": "activity", "value": "urn:li:activity:1234"},
+                {"key": "activity", "value": '"urn:li:activity:1234"'},
                 {"key": "directSponsoredContent", "value": "0"},
-                {"key": "share", "value": "urn:li:share:1234"},
+                {"key": "share", "value": '"urn:li:share:1234"'},
                 {"key": "custom_num_var", "value": "1234"},
-                {"key": "custom_obj_var", "value": "{'key': 1234}"},
+                {"key": "custom_obj_var", "value": '{"key": 1234}'},
                 {"key": "custom_arr_var", "value": "[1, 2, 3, 4]"},
-                {"key": "custom_null_var", "value": "None"},
+                {"key": "custom_null_var", "value": "null"},
             ],
         },
         "created": "2021-08-21 21:27:55",

@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
-import json
 
 
 def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
@@ -295,7 +295,7 @@ def transform_variables(
         record["variables"]["values"] = []
         for key, value in params.items():
             # convert various datatypes of values into the string
-            record["variables"]["values"].append({"key": key, "value": json.dumps(value)})
+            record["variables"]["values"].append({"key": key, "value": json.dumps(value, ensure_ascii=True)})
         # Clean the nested structure
         record["variables"].pop("data")
     return record
