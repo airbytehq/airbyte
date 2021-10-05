@@ -137,7 +137,20 @@ export function useGetWorkspace(workspaceId?: string | null) {
         workspaceId: "",
         name: "",
         billingUserId: "",
+        remainingCredits: 0,
       },
+    }
+  ) as any;
+}
+
+export function useGetUsage(workspaceId: string) {
+  const service = useGetWorkspaceService();
+
+  return useQuery(
+    ["cloud_workspace", workspaceId, "usage"],
+    () => service.getUsage(workspaceId),
+    {
+      suspense: true,
     }
   );
 }
