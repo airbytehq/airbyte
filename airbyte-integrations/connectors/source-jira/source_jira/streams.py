@@ -113,12 +113,13 @@ class V1ApiJiraStream(JiraStream, ABC):
         return f"https://{self._domain}/rest/agile/1.0/"
 
 
-class IncrementalJiraStream(JiraStream, ABC):
-
+class StartDateJiraStream(JiraStream, ABC):
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
 
+
+class IncrementalJiraStream(StartDateJiraStream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -347,7 +348,7 @@ class Issues(IncrementalJiraStream):
     cursor_field = "updated"
     parse_response_root = "issues"
 
-    def __init__(self, additional_fields: List[str], **kwargs):
+    def __init__(self, additional_fields: List[str] = [], **kwargs):
         super().__init__(**kwargs)
         self._additional_fields = additional_fields
 
@@ -381,7 +382,7 @@ class Issues(IncrementalJiraStream):
         return record
 
 
-class IssueComments(JiraStream):
+class IssueComments(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
     """
@@ -394,7 +395,7 @@ class IssueComments(JiraStream):
         return f"issue/{key}/comment"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
@@ -498,7 +499,7 @@ class IssuePropertyKeys(JiraStream):
         yield from super().read_records(stream_slice={"key": issue_key}, **kwargs)
 
 
-class IssueProperties(JiraStream):
+class IssueProperties(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
@@ -511,14 +512,14 @@ class IssueProperties(JiraStream):
         return f"issue/{issue_key}/properties/{key}"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             for property_key in issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
                 yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
 
 
-class IssueRemoteLinks(JiraStream):
+class IssueRemoteLinks(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     """
@@ -530,7 +531,7 @@ class IssueRemoteLinks(JiraStream):
         return f"issue/{key}/remotelink"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
@@ -577,7 +578,7 @@ class IssueTypeScreenSchemes(JiraStream):
         return "issuetypescreenscheme"
 
 
-class IssueVotes(JiraStream):
+class IssueVotes(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
 
@@ -595,12 +596,12 @@ class IssueVotes(JiraStream):
         return f"issue/{key}/votes"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWatchers(JiraStream):
+class IssueWatchers(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
 
@@ -615,12 +616,12 @@ class IssueWatchers(JiraStream):
         return f"issue/{key}/watchers"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWorklogs(JiraStream):
+class IssueWorklogs(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
     """
@@ -633,7 +634,7 @@ class IssueWorklogs(JiraStream):
         return f"issue/{key}/worklog"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
