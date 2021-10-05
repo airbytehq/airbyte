@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.keen;
@@ -75,9 +55,9 @@ public class KeenTimestampService {
   /**
    * Tries to inject keen.timestamp field to the given message data. If the stream contains cursor
    * field, it's value is tried to be parsed to timestamp. If this procedure fails, stream is removed
-   * from timestamp-parsable stream map, so parsing is not tried for future messages in the same stream.
-   * If parsing succeeds, keen.timestamp field is put as a JSON node to the message data and whole data
-   * is returned. Otherwise, keen.timestamp is set to emittedAt value
+   * from timestamp-parsable stream map, so parsing is not tried for future messages in the same
+   * stream. If parsing succeeds, keen.timestamp field is put as a JSON node to the message data and
+   * whole data is returned. Otherwise, keen.timestamp is set to emittedAt value
    *
    * @param message AirbyteRecordMessage containing record data
    * @return Record data together with keen.timestamp field

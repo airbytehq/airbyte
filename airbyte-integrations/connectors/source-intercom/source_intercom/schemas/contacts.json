@@ -72,8 +72,7 @@
       "type": ["null", "integer"]
     },
     "updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "signed_up_at": {
       "type": ["null", "integer"]
@@ -142,7 +141,8 @@
       "type": ["null", "string"]
     },
     "android_last_seen_at": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "ios_app_name": {
       "type": ["null", "string"]

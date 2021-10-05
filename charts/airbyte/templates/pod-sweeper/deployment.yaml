@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "airbyte.fullname" . }}-pod-sweeper
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: pod-sweeper
+  template:
+    metadata:
+      labels:
+        airbyte: pod-sweeper
+      {{- if .Values.podSweeper.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.podSweeper.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podSweeper.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: airbyte-pod-sweeper
+        image: {{ include "airbyte.podSweeperImage" . }}
+        imagePullPolicy: "{{ .Values.podSweeper.image.pullPolicy }}"
+        env:
+        - name: KUBE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - mountPath: /script/sweep-pod.sh
+          subPath: sweep-pod.sh
+          name: sweep-pod-script
+        - mountPath: /.kube
+          name: kube-config
+        command: ["/bin/bash", "-c", /script/sweep-pod.sh]
+        {{- if .Values.podSweeper.resources }}
+        resources: {{- toYaml .Values.podSweeper.resources | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: kube-config
+        emptyDir: {}
+      - name: sweep-pod-script
+        configMap:
+          name: {{ include "airbyte.fullname" . }}-sweep-pod-script
+          defaultMode: 0755

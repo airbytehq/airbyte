@@ -11,7 +11,7 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "array"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "project": {

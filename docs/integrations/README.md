@@ -55,10 +55,13 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Jira](./sources/jira.md)| Certified |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
 |[Klaviyo](./sources/kustomer.md)| Alpha |
+|[LinkedIn Ads](./sources/linkedin-ads.md)| Beta |
+|[Kustomer](./sources/kustomer.md)| Alpha |
+|[Lever Hiring](./sources/lever-hiring.md)| Beta |
 |[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
-|[Marketo](./sources/marketo.md)| Certified |
+|[Marketo](./sources/marketo.md)| Beta |
 |[Microsoft SQL Server \(MSSQL\)](./sources/mssql.md)| Certified |
 |[Microsoft Dynamics AX](./sources/microsoft-dynamics-ax.md)| Beta |
 |[Microsoft Dynamics Customer Engagement](./sources/microsoft-dynamics-customer-engagement.md)| Beta |
@@ -117,6 +120,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Chargify (Keen)](./destinations/keen.md)| Alpha |
+|[Databricks](./destinations/databricks.md) | Beta |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Kafka](./destinations/kafka.md)| Alpha |

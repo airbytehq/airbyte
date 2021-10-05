@@ -21,6 +21,11 @@ type AuthContextApi = {
   isLoading: boolean;
   login: (values: { email: string; password: string }) => Promise<User | null>;
   signUp: (form: { email: string; password: string }) => Promise<User | null>;
+  updatePassword: (
+    email: string,
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
   requirePasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
   sendEmailVerification: () => Promise<void>;
@@ -94,6 +99,16 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
+      },
+      async updatePassword(
+        email: string,
+        currentPassword: string,
+        newPassword: string
+      ): Promise<void> {
+        // re-authentication may be needed before updating password
+        // https://firebase.google.com/docs/auth/web/manage-users#re-authenticate_a_user
+        await authService.reauthenticate(email, currentPassword);
+        return authService.updatePassword(newPassword);
       },
       async requirePasswordReset(email: string): Promise<void> {
         await authService.resetPassword(email);

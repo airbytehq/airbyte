@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-temporal
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.temporal.replicaCount }}
+  selector:
+    matchLabels:
+      airbyte: temporal
+  template:
+    metadata:
+      labels:
+        airbyte: temporal
+    spec:
+      {{- if .Values.temporal.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.temporal.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: airbyte-temporal
+        image: {{ include "airbyte.temporalImage" . }}
+        imagePullPolicy: {{ .Values.temporal.image.pullPolicy }}
+        env:
+        - name: AUTO_SETUP
+          value: "true"
+        - name: DB # The DB engine to use
+          value: "postgresql"
+        - name: DB_PORT
+          value: {{ include "airbyte.database.port" . | quote }}
+        - name: POSTGRES_USER
+          value: {{ include "airbyte.database.user" . }}
+        - name: POSTGRES_PWD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "airbyte.postgresql.secretName" . }}
+              key: {{ include "airbyte.database.existingsecret.key" . }}
+        - name: POSTGRES_SEEDS
+          value: {{ include "airbyte.database.host" . }}
+        - name: DYNAMIC_CONFIG_FILE_PATH
+          value: "config/dynamicconfig/development.yaml"
+
+        ports:
+        - containerPort: 7233
+        volumeMounts:
+        - name: airbyte-temporal-dynamicconfig
+          mountPath: "/etc/temporal/config/dynamicconfig/"
+      volumes:
+      - name: airbyte-temporal-dynamicconfig
+        configMap:
+          name: airbyte-temporal-dynamicconfig
+          items:
+          - key: development.yaml
+            path: development.yaml

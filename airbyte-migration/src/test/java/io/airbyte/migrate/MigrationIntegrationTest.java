@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.migrate;
@@ -144,8 +124,9 @@ class MigrationIntegrationTest {
 
   @Test
   void testInvalidInputRecord() throws IOException {
-    // attempt to input records that have foobar added. the input schema does NOT include foobar.
-    final Map<ResourceId, List<JsonNode>> invalidInputRecords = addFooBarToAllRecordsExceptMetadata(V0_14_0_TEST_RECORDS);
+    // attempt to input records that miss sourceDefinitionId in standard source definition, which is
+    // required
+    final Map<ResourceId, List<JsonNode>> invalidInputRecords = removeSourceDefinitionId(V0_14_0_TEST_RECORDS);
     writeInputArchive(inputRoot, invalidInputRecords, TEST_MIGRATIONS.get(0).getVersion());
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
 
@@ -315,6 +296,21 @@ class MigrationIntegrationTest {
               final JsonNode expectedRecord = Jsons.clone(r);
               if (!AIRBYTE_METADATA_RESOURCE_ID.equals(e.getKey())) {
                 ((ObjectNode) expectedRecord).put("foo", "bar");
+              }
+              return expectedRecord;
+            })
+            .collect(Collectors.toList())));
+  }
+
+  private static Map<ResourceId, List<JsonNode>> removeSourceDefinitionId(Map<ResourceId, List<JsonNode>> records) {
+    return records.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue()
+            .stream()
+            .map(r -> {
+              final JsonNode expectedRecord = Jsons.clone(r);
+              if (expectedRecord.has("sourceDefinitionId")) {
+                ((ObjectNode) expectedRecord).remove("sourceDefinitionId");
               }
               return expectedRecord;
             })

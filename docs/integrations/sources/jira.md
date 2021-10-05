@@ -1,12 +1,21 @@
 # Jira
 
-## Overview
+## Features
 
-The Jira source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+| Feature | Supported? |  |
+| :--- | :--- | :--- 
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Yes | Only Issues |
+| Replicate Incremental Deletes | Coming soon | |
+| SSL connection | Yes |  |
 
-### Output schema
+## Troubleshooting
 
-Several output streams are available from this source:
+#### Issue: `Normalization failing, keyError updated` [\[Discussion.\]](https://discuss.airbyte.io/t/source-jira-failing-in-normalization-step-keyerror-updated/57)
+
+## Supported Tables
+
+This source is capable of syncing the following tables and their data:
 
 * [Application roles](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get)
 * [Avatars](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get)
@@ -58,21 +67,7 @@ Several output streams are available from this source:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-### Features
-
-| Feature | Supported? |  |
-| :--- | :--- | :--- 
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Issues |
-| Replicate Incremental Deletes | Coming soon | |
-| SSL connection | Yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
-
-The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
+## Getting Started (Airbyte Open-Source / Airbyte Cloud)
 
 ### Requirements
 
@@ -80,9 +75,11 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 * Jira Email
 * Jira Domain
 
-### Setup guide
-
 Please follow the [Jira confluence for generating an API token](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+
+## Rate Limiting & Performance
+
+The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## CHANGELOG
 

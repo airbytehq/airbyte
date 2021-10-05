@@ -1,14 +1,19 @@
 # Postgres
 
-## Overview
+## Features
 
-The Airbyte Postgres destination allows you to sync data to Postgres.
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
+| Namespaces | Yes |  |
+
+## Overview
 
 This Postgres destination is based on the [Singer Postgres Target](https://github.com/datamill-co/target-postgres).
 
-### Sync overview
-
-#### Output schema
+#### Output Schema
 
 Each stream will be output into its own table in Postgres. Each table will contain 3 columns:
 
@@ -16,25 +21,18 @@ Each stream will be output into its own table in Postgres. Each table will conta
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in Postgres is `JSONB`.
 
-#### Features
+## Getting Started (Airbyte Cloud)
+Airbyte Cloud only supports connecting to your Postgres instance with SSL or TLS encryption. TLS is used by default. Other than that, you can proceed with the open-source instructions below.
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | Yes |  |
+## Getting Started (Airbyte Open-Source)
 
-## Getting started
-
-### Requirements
+#### Requirements
 
 To use the Postgres destination, you'll need:
 
 * A Postgres server version 9.4 or above
 
-### Setup guide
-
-#### Network Access
+#### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
 
@@ -46,19 +44,18 @@ You need a Postgres user that can create tables and write rows. We highly recomm
 
 You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
 
-### Setup the Postgres destination in Airbyte
-
+### Setup the Postgres Destination in Airbyte
 You should now have all the requirements needed to configure Postgres as a destination in the UI. You'll need the following information to configure the Postgres destination:
 
 * **Host**
 * **Port**
 * **Username**
 * **Password**
-* **Schema**
+* **Default Schema Name**
 * **Database**
-  * This database needs to exist within the schema provided.
+* This database needs to exist within the schema provided.
 
-## Notes about Postgres Naming Conventions
+## Naming Conventions
 
 From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
