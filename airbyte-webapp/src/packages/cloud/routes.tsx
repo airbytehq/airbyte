@@ -38,6 +38,7 @@ import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView"
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import OnboardingPage from "pages/OnboardingPage";
+import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
@@ -65,14 +66,24 @@ export enum Routes {
   Configuration = "/configuration",
   AccessManagement = "/access-management",
   Notifications = "/notifications",
+  Credits = "/credits",
 
   // Auth routes
   Signup = "/signup",
   Login = "/login",
   ResetPassword = "/reset-password",
-  ConfirmPasswordReset = "/confirm-password-reset",
-  VerifyEmail = "/verify-email",
   ConfirmVerifyEmail = "/confirm-verify-email",
+
+  // Firebase action routes
+  // These URLs come from Firebase emails, and all have the same
+  // action URL ("/verify-email") with different "mode" parameter
+  // TODO: use a better action URL in Firebase email template
+  FirebaseAction = "/verify-email",
+}
+
+export enum FirebaseActionMode {
+  VERIFY_EMAIL = "verifyEmail",
+  RESET_PASSWORD = "resetPassword",
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
@@ -81,6 +92,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   useGetWorkspace(currentWorkspaceId);
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -151,15 +165,15 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       <Route path={Routes.Settings}>
         <SettingsPage pageConfig={pageConfig} />
       </Route>
+      <Route path={Routes.Credits}>
+        <CreditsPage />
+      </Route>
       {workspace.displaySetupWizard && (
         <Route exact path={Routes.Onboarding}>
           <OnboardingPage />
         </Route>
       )}
-      <Route exact path={Routes.Root}>
-        <SourcesPage />
-      </Route>
-      <Redirect to={Routes.Connections} />
+      <Redirect to={mainRedirect} />
     </Switch>
   );
 };
@@ -195,7 +209,7 @@ const MainViewRoutes = () => {
   );
 };
 
-const VerifyEmailRoute: React.FC = () => {
+const FirebaseActionRoute: React.FC = () => {
   const { query } = useRouter<{ oobCode: string }>();
   const { verifyEmail } = useAuthService();
 
@@ -231,8 +245,8 @@ export const Routing: React.FC = () => {
             )}
             {user && !emailVerified && (
               <Switch>
-                <Route path={Routes.VerifyEmail}>
-                  <VerifyEmailRoute />
+                <Route path={Routes.FirebaseAction}>
+                  <FirebaseActionRoute />
                 </Route>
                 <Route path={Routes.ConfirmVerifyEmail}>
                   <ConfirmEmailPage />

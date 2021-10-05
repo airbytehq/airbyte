@@ -48,4 +48,6 @@ export const theme = {
   codeFont: "Courier Prime, Arial, sans-serif",
 };
 
+export const barChartColors = ["#E8E8ED", "#AFAFC1"];
+
 export type Theme = typeof theme;
