@@ -44,6 +44,7 @@ import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
 import useWorkspace from "../../hooks/services/useWorkspace";
 import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -240,7 +241,9 @@ export const Routing: React.FC = () => {
           <>
             {user && emailVerified && (
               <WorkspaceServiceProvider>
-                <MainViewRoutes />
+                <OnboardingServiceProvider>
+                  <MainViewRoutes />
+                </OnboardingServiceProvider>
               </WorkspaceServiceProvider>
             )}
             {user && !emailVerified && (
