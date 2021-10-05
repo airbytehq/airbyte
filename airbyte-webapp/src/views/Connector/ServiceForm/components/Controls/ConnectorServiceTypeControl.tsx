@@ -86,7 +86,7 @@ const ConnectorServiceTypeControl: React.FC<{
   // TODO End hack
   const blacklistedOauthConnectors =
     // I would prefer to use windowConfigProvider.cloud but that function is async
-    window.CLOUD === "true"
+    process.env.REACT_APP_CLOUD || window.CLOUD === "true"
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
