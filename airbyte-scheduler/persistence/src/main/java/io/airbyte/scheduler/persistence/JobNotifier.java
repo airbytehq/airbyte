@@ -14,13 +14,10 @@ import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -104,11 +101,11 @@ public class JobNotifier {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
           }
-        } catch (InterruptedException | IOException e) {
+        } catch (Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
         }
       }
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+    } catch (Exception e) {
       LOGGER.error("Unable to read configuration:", e);
     }
   }
