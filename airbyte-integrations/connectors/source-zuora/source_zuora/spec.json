@@ -27,7 +27,9 @@
           200,
           364
         ],
-        "default": 90
+        "default": 90,
+        "minimum": 30,
+        "maximum": 364
       },
       "client_id": {
         "type": "string",
