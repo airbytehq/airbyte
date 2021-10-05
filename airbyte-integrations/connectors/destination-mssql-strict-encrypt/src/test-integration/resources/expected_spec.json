@@ -61,20 +61,6 @@
         "order": 6,
         "oneOf": [
           {
-            "title": "Unencrypted",
-            "additionalProperties": false,
-            "description": "Data transfer will not be encrypted.",
-            "required": ["ssl_method"],
-            "type": "object",
-            "properties": {
-              "ssl_method": {
-                "type": "string",
-                "enum": ["unencrypted"],
-                "default": "unencrypted"
-              }
-            }
-          },
-          {
             "title": "Encrypted (trust server certificate)",
             "additionalProperties": false,
             "description": "Use the cert provided by the server without verification.  (For testing purposes only!)",
