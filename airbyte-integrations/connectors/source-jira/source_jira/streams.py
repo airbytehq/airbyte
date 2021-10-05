@@ -743,7 +743,7 @@ class ScreenTabFields(JiraStream):
         screen_tabs_stream = ScreenTabs(authenticator=self.authenticator, domain=self._domain)
         for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
             for tab in screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
-                if id in tab: # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
+                if id in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
                     yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
 
 

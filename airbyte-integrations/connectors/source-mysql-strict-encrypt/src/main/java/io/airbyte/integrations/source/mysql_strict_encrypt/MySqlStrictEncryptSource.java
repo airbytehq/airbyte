@@ -15,9 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Secure-only version of MySQL source that can be used in the Airbyte cloud.
- * This connector inherently prevent certain insecure connections such as connecting to
- * a database over the public internet without encryption.
+ * Secure-only version of MySQL source that can be used in the Airbyte cloud. This connector
+ * inherently prevent certain insecure connections such as connecting to a database over the public
+ * internet without encryption.
  */
 public class MySqlStrictEncryptSource extends SpecModifyingSource implements Source {
 
