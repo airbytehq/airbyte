@@ -6,7 +6,9 @@ import json
 from typing import Any, Dict, Mapping
 
 import pendulum
+from airbyte_cdk import AirbyteLogger
 from source_zuora.source import (
+    SourceZuora,
     ZuoraDescribeObject,
     ZuoraGetJobResult,
     ZuoraJobStatusCheck,
@@ -16,6 +18,7 @@ from source_zuora.source import (
 )
 from source_zuora.zuora_auth import ZuoraAuthenticator
 from source_zuora.zuora_endpoint import get_url_base
+from source_zuora.zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
 def get_config(config_path: str) -> Mapping[str, Any]:
@@ -92,12 +95,32 @@ class TestZuora:
         test_date_slice = {"start_date": start_date, "end_date": end_date}
         return test_date_slice
 
+    def test_zuora_connection(self):
+        """
+        Test checks the connection to the Zuora API.
+        """
+        connection = SourceZuora.check_connection(self, logger=AirbyteLogger, config=self.config)
+        assert connection == (True, None)
+
     def test_list_all_zuora_objects(self):
         """
         Test retrieves all the objects (streams) available from Zuora Account and checks if test_stream is in the list.
         """
         zuora_objects_list = ZuoraListObjects(self.config).read_records(sync_mode=None)
         assert self.test_stream in zuora_objects_list
+
+    def test_excluded_streams_are_not_in_the_list(self):
+        """
+        Test retrieves all the objects (streams) available from Zuora Account and checks if excluded streams are not in the list.
+        """
+        zuora_streams_list = SourceZuora.streams(self, config=self.config)
+        # extract stream names from auto-generated stream class
+        generated_stream_class_names = []
+        for stream in zuora_streams_list:
+            generated_stream_class_names.append(stream.__class__.__name__)
+        # check if excluded streams are not in the final list of stream classes
+        for excluded_stream in ZUORA_EXCLUDED_STREAMS:
+            assert False if excluded_stream in generated_stream_class_names else True
 
     def test_get_json_schema(self):
         """

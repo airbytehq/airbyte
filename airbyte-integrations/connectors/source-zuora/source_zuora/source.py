@@ -23,6 +23,7 @@ from .zuora_errors import (
     ZOQLQueryFieldCannotResolveAltCursor,
     ZOQLQueryFieldCannotResolveCursor,
 )
+from .zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
 class ZuoraStream(HttpStream, ABC):
@@ -515,6 +516,7 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run by building stream classes dynamically.
         """
+
         # Define the endpoint from user's config
         url_base = get_url_base(config["tenant_endpoint"])
 
@@ -535,10 +537,10 @@ class SourceZuora(AbstractSource):
 
         streams: List[ZuoraStream] = []
         for stream_name in zuora_stream_names:
-            # construct ZuoraReadStreams sub-class for each stream_name
-            stream_class = type(stream_name, (ZuoraObjectsBase,), {})
-            # instancetiate a stream with config
-            stream_instance = stream_class(config)
-            streams.append(stream_instance)
-
+            if stream_name not in ZUORA_EXCLUDED_STREAMS:
+                # construct ZuoraReadStreams sub-class for each stream_name
+                stream_class = type(stream_name, (ZuoraObjectsBase,), {})
+                # instancetiate a stream with config
+                stream_instance = stream_class(config)
+                streams.append(stream_instance)
         return streams
