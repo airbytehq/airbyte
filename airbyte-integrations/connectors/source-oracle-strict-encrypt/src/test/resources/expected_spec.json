@@ -1,0 +1,56 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Oracle Source Spec",
+    "type": "object",
+    "required": [
+      "host",
+      "port",
+      "sid",
+      "username",
+      "encryption"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string"
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the database.\nOracle Corporations recommends the following port numbers:\n1521 - Default listening port for client connections to the listener. \n2484 - Recommended and officially registered listening port for client connections to the listener using TCP/IP with SSL",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 1521
+      },
+      "sid": {
+        "title": "SID (Oracle System Identifier)",
+        "type": "string"
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "List of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "uniqueItems": true
+      }
+    }
+  }
+}

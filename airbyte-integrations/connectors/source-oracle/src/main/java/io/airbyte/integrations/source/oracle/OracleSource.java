@@ -29,7 +29,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
-  static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
   private List<String> schemas;
 
@@ -42,6 +42,10 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   public OracleSource() {
     super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
+  }
+
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new OracleSource(), List.of("host"), List.of("port"));
   }
 
   @Override
@@ -82,27 +86,33 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   private Protocol obtainConnectionProtocol(JsonNode encryption, List<String> additionalParameters) {
-    String encryptionMethod = encryption.get("encryption_method").asText();
-    switch (encryptionMethod) {
-      case "unencrypted" -> {
-        return Protocol.TCP;
-      }
-      case "client_nne" -> {
-        String algorithm = encryption.get("encryption_algorithm").asText();
-        additionalParameters.add("oracle.net.encryption_client=REQUIRED");
-        additionalParameters.add("oracle.net.encryption_types_client=( "+algorithm+" )");
-        return Protocol.TCP;
-      }
-      case "encrypted_verify_certificate" -> {
-        try {
-          convertAndImportCertificate(encryption.get("ssl_certificate").asText());
-        } catch (IOException | InterruptedException e) {
-          throw new RuntimeException("Failed to import certificate into Java Keystore");
+    if (encryption == null) {
+      additionalParameters.add("oracle.net.encryption_client=REQUIRED");
+      additionalParameters.add("oracle.net.encryption_types_client=( 3DES168 )");
+      return Protocol.TCP;
+    } else {
+      String encryptionMethod = encryption.get("encryption_method").asText();
+      switch (encryptionMethod) {
+        case "unencrypted" -> {
+          return Protocol.TCP;
         }
-        additionalParameters.add("javax.net.ssl.trustStore="+KEY_STORE_FILE_PATH);
-        additionalParameters.add("javax.net.ssl.trustStoreType=JKS");
-        additionalParameters.add("javax.net.ssl.trustStorePassword="+KEY_STORE_PASS);
-        return Protocol.TCPS;
+        case "client_nne" -> {
+          String algorithm = encryption.get("encryption_algorithm").asText();
+          additionalParameters.add("oracle.net.encryption_client=REQUIRED");
+          additionalParameters.add("oracle.net.encryption_types_client=( " + algorithm + " )");
+          return Protocol.TCP;
+        }
+        case "encrypted_verify_certificate" -> {
+          try {
+            convertAndImportCertificate(encryption.get("ssl_certificate").asText());
+          } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Failed to import certificate into Java Keystore");
+          }
+          additionalParameters.add("javax.net.ssl.trustStore=" + KEY_STORE_FILE_PATH);
+          additionalParameters.add("javax.net.ssl.trustStoreType=JKS");
+          additionalParameters.add("javax.net.ssl.trustStorePassword=" + KEY_STORE_PASS);
+          return Protocol.TCPS;
+        }
       }
     }
     throw new RuntimeException("Failed to obtain connection protocol from config"+encryption.asText());
@@ -151,7 +161,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new OracleSource(), List.of("host"), List.of("port"));
+    final Source source = OracleSource.sshWrappedSource();
     LOGGER.info("starting source: {}", OracleSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", OracleSource.class);
