@@ -44,6 +44,7 @@ import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
 import useWorkspace from "../../hooks/services/useWorkspace";
 import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -170,7 +171,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       </Route>
       {workspace.displaySetupWizard && (
         <Route exact path={Routes.Onboarding}>
-          <OnboardingPage />
+          <OnboardingServiceProvider>
+            <OnboardingPage />
+          </OnboardingServiceProvider>
         </Route>
       )}
       <Redirect to={mainRedirect} />
