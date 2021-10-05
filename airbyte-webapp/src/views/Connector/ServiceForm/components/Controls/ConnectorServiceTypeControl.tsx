@@ -59,6 +59,7 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
         "d8313939-3782-41b0-be29-b3ca20d8dd3a",
         "ec4b9503-13cb-48ab-a4ab-6ade4be46567"
     ]
+    console.log("HIIIIIIIIII");
     console.log(blacklistedOauthConnectors);
     console.log(children);
     return (
