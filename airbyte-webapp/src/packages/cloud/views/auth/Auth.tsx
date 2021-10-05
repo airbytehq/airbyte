@@ -37,7 +37,7 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
-const FirebaseEmailRoute: React.FC = () => {
+const FirebaseActionRoute: React.FC = () => {
   const { query } = useRouter<{ mode: string }>();
 
   if (query.mode === FirebaseMode.RESET_PASSWORD) {
@@ -66,8 +66,8 @@ const Auth: React.FC = () => {
                   <Route path={Routes.ResetPassword}>
                     <ResetPasswordPage />
                   </Route>
-                  <Route path={Routes.VerifyEmail}>
-                    <FirebaseEmailRoute />
+                  <Route path={Routes.FirebaseAction}>
+                    <FirebaseActionRoute />
                   </Route>
                   <Redirect to={Routes.Login} />
                 </Switch>

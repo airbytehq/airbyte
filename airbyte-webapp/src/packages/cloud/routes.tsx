@@ -78,7 +78,7 @@ export enum Routes {
   // These URLs come from Firebase emails, and all have the same
   // action URL ("/verify-email") with different "mode" parameter
   // TODO: use a better action URL in Firebase email template
-  VerifyEmail = "/verify-email", // mode=verifyEmail
+  FirebaseAction = "/verify-email", // mode=verifyEmail
 }
 
 export enum FirebaseMode {
@@ -209,7 +209,7 @@ const MainViewRoutes = () => {
   );
 };
 
-const VerifyEmailRoute: React.FC = () => {
+const FirebaseActionRoute: React.FC = () => {
   const { query } = useRouter<{ oobCode: string }>();
   const { verifyEmail } = useAuthService();
 
@@ -245,8 +245,8 @@ export const Routing: React.FC = () => {
             )}
             {user && !emailVerified && (
               <Switch>
-                <Route path={Routes.VerifyEmail}>
-                  <VerifyEmailRoute />
+                <Route path={Routes.FirebaseAction}>
+                  <FirebaseActionRoute />
                 </Route>
                 <Route path={Routes.ConfirmVerifyEmail}>
                   <ConfirmEmailPage />
