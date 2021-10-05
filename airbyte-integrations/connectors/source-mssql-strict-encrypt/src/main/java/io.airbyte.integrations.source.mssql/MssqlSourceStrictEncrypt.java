@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mssql.secure;
+package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
@@ -14,11 +14,11 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MssqlSecureSource extends SpecModifyingSource implements Source {
+public class MssqlSourceStrictEncrypt extends SpecModifyingSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSecureSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceStrictEncrypt.class);
 
-  public MssqlSecureSource() {
+  public MssqlSourceStrictEncrypt() {
     super(MssqlSource.sshWrappedSource());
   }
 
@@ -30,10 +30,10 @@ public class MssqlSecureSource extends SpecModifyingSource implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new MssqlSecureSource();
-    LOGGER.info("starting source: {}", MssqlSecureSource.class);
+    final Source source = new MssqlSourceStrictEncrypt();
+    LOGGER.info("starting source: {}", MssqlSourceStrictEncrypt.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", MssqlSecureSource.class);
+    LOGGER.info("completed source: {}", MssqlSourceStrictEncrypt.class);
   }
 
 }

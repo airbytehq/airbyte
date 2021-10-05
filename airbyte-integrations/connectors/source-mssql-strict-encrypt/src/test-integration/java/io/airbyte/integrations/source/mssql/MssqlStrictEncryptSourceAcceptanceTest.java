@@ -27,7 +27,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class MssqlSecureSourceAcceptanceTest extends SourceAcceptanceTest {
+public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String SCHEMA_NAME = "dbo";
   protected static final String STREAM_NAME = "id_and_name";
@@ -86,7 +86,7 @@ public class MssqlSecureSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mssql-secure:dev";
+    return "airbyte/source-mssql-strict-encrypt:dev";
   }
 
   @Override

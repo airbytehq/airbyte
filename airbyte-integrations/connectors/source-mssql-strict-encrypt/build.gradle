@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mssql.secure.MssqlSecureSource'
+    mainClass = 'io.airbyte.integrations.source.mssql.MssqlSourceStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
@@ -24,7 +24,7 @@ dependencies {
     testImplementation "org.testcontainers:mssqlserver:1.15.1"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mssql-secure')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mssql-strict-encrypt')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)

@@ -18,7 +18,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.mssql.secure.MssqlSecureSource;
+import io.airbyte.integrations.source.mssql.MssqlSourceStrictEncrypt;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterAll;
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MssqlSecureJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static MSSQLServerContainer<?> dbContainer;
   private static JdbcDatabase database;
@@ -99,7 +99,7 @@ public class MssqlSecureJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
 
   @Override
   public Source getSource() {
-    return new MssqlSecureSource();
+    return new MssqlSourceStrictEncrypt();
   }
 
   @Test
