@@ -52,15 +52,20 @@ class TplcentralStream(HttpStream, ABC):
         self.facility_id = config.get('facility_id', None)
         self.start_date = config.get('start_date', None)
 
+    @property
+    def page_size(self):
+        None
+
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         data = response.json()
         total = data['TotalResults']
-        pgsiz_default = len(data['Summaries'])
+
+        pgsiz = self.page_size or len(data['Summaries'])
 
         url = urlparse(response.request.url)
         qs = dict(parse_qsl(url.query))
 
-        pgsiz = int(qs.get('pgsiz', pgsiz_default))
+        pgsiz = int(qs.get('pgsiz', pgsiz))
         pgnum = int(qs.get('pgnum', 1))
 
         if pgsiz * pgnum >= total:
@@ -82,6 +87,7 @@ class TplcentralStream(HttpStream, ABC):
 
 class StockSummaries(TplcentralStream):
     primary_key = ["facility_id", ["item_identifier", "id"]]
+    page_size = 500
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
