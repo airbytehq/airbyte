@@ -426,7 +426,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean getPublishMetrics() {
-    return getEnvOrDefault(PUBLISH_METRICS, true);
+    return getEnvOrDefault(PUBLISH_METRICS, false);
   }
 
   @Override
