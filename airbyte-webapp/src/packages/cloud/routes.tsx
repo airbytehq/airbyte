@@ -77,7 +77,8 @@ export enum Routes {
   // Firebase email routes
   // These URLs come from Firebase emails, and all have the same
   // action URL ("/verify-email") with different "mode" parameter
-  // TODO: rename this route and match on the mode parameter
+  // TODO: use a better action URL in Firebase email template,
+  // update this route and match on the "mode" parameter.
   // Currently VerifyEmail and ConfirmPasswordReset are called
   // in different route branches, which is why they work even though
   // the path are the same.
