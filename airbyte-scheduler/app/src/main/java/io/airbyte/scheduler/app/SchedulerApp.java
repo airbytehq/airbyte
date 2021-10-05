@@ -1,31 +1,12 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -39,6 +20,8 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -56,11 +39,13 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -76,6 +61,8 @@ import org.slf4j.MDC;
  * {@link #SUBMITTER_NUM_THREADS} variable.
  */
 public class SchedulerApp {
+
+  public static AtomicInteger PENDING_JOBS = new AtomicInteger();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
@@ -108,15 +95,18 @@ public class SchedulerApp {
 
   public void start() throws IOException {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(SUBMITTER_NUM_THREADS, THREAD_FACTORY);
-    final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
+    final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
+    final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
+    final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
+    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence),
+        new JobTracker(configRepository, jobPersistence, trackingClient),
         jobNotifier);
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -125,7 +115,7 @@ public class SchedulerApp {
     // anymore.
     cleanupZombies(jobPersistence, jobNotifier);
 
-    scheduledPool.scheduleWithFixedDelay(
+    scheduleJobsPool.scheduleWithFixedDelay(
         () -> {
           MDC.setContextMap(mdc);
           jobRetrier.run();
@@ -136,7 +126,16 @@ public class SchedulerApp {
         SCHEDULING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
 
-    scheduledPool.scheduleWithFixedDelay(
+    executeJobsPool.scheduleWithFixedDelay(
+        () -> {
+          MDC.setContextMap(mdc);
+          jobSubmitter.run();
+        },
+        0L,
+        SCHEDULING_DELAY.toSeconds(),
+        TimeUnit.SECONDS);
+
+    cleanupJobsPool.scheduleWithFixedDelay(
         () -> {
           MDC.setContextMap(mdc);
           jobCleaner.run();
@@ -146,7 +145,8 @@ public class SchedulerApp {
         CLEANING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
 
-    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
+    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
+        scheduleJobsPool, executeJobsPool, cleanupJobsPool));
   }
 
   private void cleanupZombies(JobPersistence jobPersistence, JobNotifier jobNotifier) throws IOException {
@@ -204,13 +204,14 @@ public class SchedulerApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,
         jobPersistence);
-    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
-
     AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
 
     TrackingClientSingleton.initialize(
@@ -219,7 +220,11 @@ public class SchedulerApp {
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
-
+    final JobNotifier jobNotifier = new JobNotifier(
+        configs.getWebappUrl(),
+        configRepository,
+        new WorkspaceHelper(configRepository, jobPersistence),
+        TrackingClientSingleton.get());
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     LOGGER.info("Launching scheduler...");

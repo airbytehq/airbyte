@@ -1,30 +1,11 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -66,7 +47,8 @@ public class JobScheduler implements Runnable {
   }
 
   public JobScheduler(final JobPersistence jobPersistence,
-                      final ConfigRepository configRepository) {
+                      final ConfigRepository configRepository,
+                      final TrackingClient trackingClient) {
     this(
         jobPersistence,
         configRepository,
@@ -74,7 +56,7 @@ public class JobScheduler implements Runnable {
         new DefaultSyncJobFactory(
             new DefaultJobCreator(jobPersistence),
             configRepository,
-            new OAuthConfigSupplier(configRepository, false)));
+            new OAuthConfigSupplier(configRepository, false, trackingClient)));
   }
 
   @Override
@@ -92,7 +74,11 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     int jobsScheduled = 0;
+    var start = System.currentTimeMillis();
     final List<StandardSync> activeConnections = getAllActiveConnections();
+    var queryEnd = System.currentTimeMillis();
+    LOGGER.debug("Total active connections: {}", activeConnections.size());
+    LOGGER.debug("Time to retrieve all connections: {} ms", queryEnd - start);
 
     for (StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
@@ -100,8 +86,11 @@ public class JobScheduler implements Runnable {
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
         jobsScheduled++;
+        SchedulerApp.PENDING_JOBS.getAndIncrement();
       }
     }
+    var end = System.currentTimeMillis();
+    LOGGER.debug("Time taken to schedule jobs: {} ms", end - start);
 
     if (jobsScheduled > 0) {
       LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}", activeConnections.size(), jobsScheduled);

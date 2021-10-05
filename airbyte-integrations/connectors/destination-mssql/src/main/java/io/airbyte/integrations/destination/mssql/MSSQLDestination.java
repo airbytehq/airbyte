@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -29,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.File;
 import java.util.ArrayList;
@@ -42,6 +23,8 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
@@ -109,7 +92,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   public static void main(String[] args) throws Exception {
-    final Destination destination = new MSSQLDestination();
+    final Destination destination = new SshWrappedDestination(new MSSQLDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", MSSQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MSSQLDestination.class);

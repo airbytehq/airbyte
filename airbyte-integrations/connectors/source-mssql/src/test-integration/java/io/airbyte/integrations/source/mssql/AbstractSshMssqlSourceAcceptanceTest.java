@@ -1,34 +1,18 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -39,28 +23,91 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.containers.Network;
 
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
+  private String dbName;
+  private MSSQLServerContainer<?> db;
+  private final SshBastionContainer bastion = new SshBastionContainer();
+  private static JsonNode config;
 
-  private JsonNode config;
-
-  public abstract Path getConfigFilePath();
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
+    startTestContainers();
+    config = bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db));
+    populateDatabaseTestData();
   }
+
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(JdbcDatabaseContainer<?> db) {
+    dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    return ImmutableMap.builder()
+        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+            .getNetworks()
+            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
+            .getIpAddress()))
+        .put("username", db.getUsername())
+        .put("password", db.getPassword())
+        .put("port", db.getExposedPorts().get(0))
+        .put("database", dbName);
+  }
+
+  private static Database getDatabaseFromConfig(final JsonNode config) {
+    return Databases.createDatabase(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:sqlserver://%s:%s;",
+            config.get("host").asText(),
+            config.get("port").asInt()),
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        null);
+  }
+
+  private void startTestContainers() {
+    bastion.initAndStartBastion();
+    initAndStartJdbcContainer();
+  }
+
+  private void initAndStartJdbcContainer() {
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
+        .withNetwork(bastion.getNetWork())
+        .acceptLicense();
+    db.start();
+  }
+
+  private void populateDatabaseTestData() throws Exception {
+    SshTunnel.sshWrap(
+        getConfig(),
+        List.of("host"),
+        List.of("port"),
+        mangledConfig -> {
+          getDatabaseFromConfig(mangledConfig).query(ctx -> {
+            ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+            ctx.fetch(String.format("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
+            ctx.fetch(String.format("USE %s;", dbName));
+            ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+            ctx.fetch(
+                "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+            return null;
+          });
+        });
+  }
+
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-
+    bastion.stopAndCloseContainers(db);
   }
 
   @Override

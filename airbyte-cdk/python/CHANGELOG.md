@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.25
+Modified `OAuth2Specification` model, added new fields: `rootObject` and `oauthFlowOutputParameters`
+
 ## 0.1.24
 Added Transform class to use for mutating record value types so they adhere to jsonschema definition.
 
