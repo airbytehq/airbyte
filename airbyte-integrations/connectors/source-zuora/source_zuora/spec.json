@@ -4,8 +4,12 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zuora Connector Configuration",
     "type": "object",
-    "required": ["start_date", "client_id", "client_secret"],
-    "additionalProperties": false,
+    "required": [
+      "start_date",
+      "client_id",
+      "client_secret",
+      "tenant_endpoint"
+    ],
     "properties": {
       "start_date": {
         "type": "string",
@@ -15,8 +19,17 @@
       "window_in_days": {
         "type": "integer",
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
-        "examples": [30, 60, 90, 120, 200, 364],
-        "default": 90
+        "examples": [
+          30,
+          60,
+          90,
+          120,
+          200,
+          364
+        ],
+        "default": 90,
+        "minimum": 30,
+        "maximum": 364
       },
       "client_id": {
         "type": "string",
@@ -28,10 +41,40 @@
         "description": "Client Secret",
         "airbyte_secret": true
       },
-      "is_sandbox": {
-        "type": "boolean",
-        "description": "Defines whether use the SANDBOX or PRODUCTION environment.",
-        "default": false
+      "tenant_endpoint": {
+        "title": "Tenant Endpoint Location",
+        "type": "string",
+        "description": "Please choose the right endpoint where your Tenant is located. More info by this <a href=\"https://www.zuora.com/developer/api-reference/#section/Introduction/Access-to-the-API\">Link</a>",
+        "enum": [
+          "US Production",
+          "US Cloud Production",
+          "US API Sandbox",
+          "US Cloud API Sandbox",
+          "US Central Sandbox",
+          "US Performance Test",
+          "EU Production",
+          "EU API Sandbox",
+          "EU Central Sandbox"
+        ]
+      }
+    },
+    "authSpecification": {
+      "auth_type": "oauth2.0",
+      "oauth2Specification": {
+        "rootObject": [],
+        "oauthFlowInitParameters": [
+          [
+            "client_id"
+          ],
+          [
+            "client_secret"
+          ]
+        ],
+        "oauthFlowOutputParameters": [
+          [
+            "access_token"
+          ]
+        ]
       }
     }
   }
