@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -114,8 +113,8 @@ class MySqlTest {
   })
   void testSmallIntTypes(String type) throws Exception {
     database.query(ctx -> {
-      ctx.fetch(String.format("CREATE TABLE %s(id %s)", JdbcUtils.getFullyQualifiedTableName(null, TABLE_NAME), type));
-      ctx.fetch(String.format("INSERT INTO %s(id) VALUES (10)", JdbcUtils.getFullyQualifiedTableName(null, TABLE_NAME)));
+      ctx.fetch(String.format("CREATE TABLE %s(id %s)", TABLE_NAME, type));
+      ctx.fetch(String.format("INSERT INTO %s(id) VALUES (10)", TABLE_NAME));
       return null;
     });
 
