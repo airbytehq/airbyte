@@ -13,3 +13,7 @@ An example might be `SELECT * FROM <sobject.name> WHERE SystemModstamp > 2122-01
 In addition there are two types of APIs exposed by Salesforce:
   * **[REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_queryall.htm)**: completely synchronous
   * **[BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/queries.htm)**: has larger rate limit allowance (150k objects per day on the standard plan) but is asynchronous and therefore follows a request-poll-wait pattern.
+  
+See the links below for information about specific streams and some nuances about the connector:
+- [information about streams](https://docs.google.com/spreadsheets/d/1s-MAwI5d3eBlBOD8II_sZM7pw5FmZtAJsx1KJjVRFNU/edit#gid=1796337932) (`Salesforce` tab)
+- [nuances about the connector](https://docs.airbyte.io/integrations/sources/salesforce)

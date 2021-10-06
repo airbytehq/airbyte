@@ -42,3 +42,5 @@ Connector uses caching for these streams:
 * Account
 * Campaign
 * AdGroup
+
+See [this](https://docs.airbyte.io/integrations/sources/bing-ads) link for the nuances about the connector.
