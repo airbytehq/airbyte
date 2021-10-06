@@ -179,6 +179,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKER_POD_NODE_SELECTORS
+            - name: JOB_IMAGE_PULL_POLICY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: JOB_IMAGE_PULL_POLICY
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

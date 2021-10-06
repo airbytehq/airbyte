@@ -5,6 +5,7 @@
 package io.airbyte.workers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
@@ -28,19 +29,22 @@ import org.slf4j.LoggerFactory;
 // TODO:(Issue-4824): Figure out how to log Docker process information.
 public class WorkerUtils {
 
-  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = initWorkerPodTolerations();
-  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = initWorkerPodNodeSelectors();
-  public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
-  public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = new EnvConfigs().getJobsImagePullSecret();
-
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
+  private static final Configs CONFIGS = new EnvConfigs();
+
+  public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
+  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = CONFIGS.getWorkerPodTolerations();
+  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
+  public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
+  public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
+
 
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
     if (process == null) {
       return;
     }
 
-    if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+    if (CONFIGS.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
       LOGGER.debug("Gently closing process {}", process.info().commandLine().get());
     }
 
@@ -96,7 +100,7 @@ public class WorkerUtils {
                                        final BiConsumer<Process, Duration> forceShutdown) {
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
-        if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+        if (CONFIGS.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
           LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
         }
 
@@ -108,7 +112,7 @@ public class WorkerUtils {
 
     if (process.isAlive()) {
       try {
-        if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+        if (CONFIGS.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
           LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
         }
 
@@ -120,7 +124,7 @@ public class WorkerUtils {
 
     // if we were unable to exist gracefully, force shutdown...
     if (process.isAlive()) {
-      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+      if (CONFIGS.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
         LOGGER.debug("Force shutdown process {}..", process.info().commandLine().get());
       }
 
@@ -211,23 +215,12 @@ public class WorkerUtils {
         .resolve(String.valueOf(attemptId));
   }
 
-  private static List<WorkerPodToleration> initWorkerPodTolerations() {
-    final EnvConfigs configs = new EnvConfigs();
-    return configs.getWorkerPodTolerations();
-  }
-
-  private static Map<String, String> initWorkerPodNodeSelectors() {
-    final EnvConfigs configs = new EnvConfigs();
-    return configs.getWorkerNodeSelectors();
-  }
-
   private static ResourceRequirements initResourceRequirements() {
-    final EnvConfigs configs = new EnvConfigs();
     return new ResourceRequirements()
-        .withCpuRequest(configs.getCpuRequest())
-        .withCpuLimit(configs.getCpuLimit())
-        .withMemoryRequest(configs.getMemoryRequest())
-        .withMemoryLimit(configs.getMemoryLimit());
+        .withCpuRequest(CONFIGS.getCpuRequest())
+        .withCpuLimit(CONFIGS.getCpuLimit())
+        .withMemoryRequest(CONFIGS.getMemoryRequest())
+        .withMemoryLimit(CONFIGS.getMemoryLimit());
   }
 
 }

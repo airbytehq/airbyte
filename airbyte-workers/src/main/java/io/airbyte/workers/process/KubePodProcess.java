@@ -153,6 +153,7 @@ public class KubePodProcess extends Process {
   }
 
   private static Container getMain(String image,
+                                   String imagePullPolicy,
                                    boolean usesStdin,
                                    String entrypointOverride,
                                    List<VolumeMount> mainVolumeMounts,
@@ -177,6 +178,7 @@ public class KubePodProcess extends Process {
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
         .withImage(image)
+        .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts);
@@ -246,6 +248,7 @@ public class KubePodProcess extends Process {
                         String podName,
                         String namespace,
                         String image,
+                        String imagePullPolicy,
                         int stdoutLocalPort,
                         int stderrLocalPort,
                         String kubeHeartbeatUrl,
@@ -309,6 +312,7 @@ public class KubePodProcess extends Process {
     Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
     Container main = getMain(
         image,
+        imagePullPolicy,
         usesStdin,
         entrypointOverride,
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
