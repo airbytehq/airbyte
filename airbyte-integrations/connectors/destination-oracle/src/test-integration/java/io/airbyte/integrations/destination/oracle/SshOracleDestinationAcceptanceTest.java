@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.OracleContainer;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -135,7 +134,10 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void initAndStartJdbcContainer() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    db = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid()
         .withNetwork(sshBastionContainer.getNetWork());
     db.start();
   }
