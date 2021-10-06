@@ -5,6 +5,7 @@ The CDK offers base classes that greatly simplify writing HTTP API-based connect
 * Authentication \(basic auth, Oauth2, or any custom auth method\)
 * Pagination
 * Handling rate limiting with static or dynamic backoff timing
+* Caching
 
 All these features have sane off-the-shelf defaults but are completely customizable depending on your use case. They can also be combined with other stream features described in the [full refresh streams](full-refresh-stream.md) and [incremental streams](incremental-stream.md) sections.
 
@@ -48,3 +49,15 @@ Note that Airbyte will always attempt to make as many requests as possible and o
 
 When implementing [stream slicing](incremental-stream.md#streamstream_slices) in an `HTTPStream` each Slice is equivalent to a HTTP request; the stream will make one request per element returned by the `stream_slices` function. The current slice being read is passed into every other method in `HttpStream` e.g: `request_params`, `request_headers`, `path`, etc.. to be injected into a request. This allows you to dynamically determine the output of the `request_params`, `path`, and other functions to read the input slice and return the appropriate value.
 
+## Caching
+When we are dealing with streams that depend on the results of another stream, we can use `caching` to write the data of the parent stream to a file in order to use this data when the child stream synchronizes, rather than performing a full HTTP request again.
+
+The caching mechanism works as follows. If the request is made for the first time, then caching will work in write mode (all requests made by the read_records method will be written to the cache file). With repeated requests, caching will work in read mode (at this stage, new requests are not sent again, it is checked whether the required request is contained in the cache file, and if so, the data from this file is returned). For more details about caching mechanism follow this [link](https://vcrpy.readthedocs.io/en/latest/).
+
+Caching can be enabled by overriding the `use_cache` property of the `HttpStream` class to return `True`.
+
+The caching mechanism is related to parent streams. For child streams, there is an `HttpSubStream` class that inherits from `HttpStream` and overrides the `stream_slices` method that returns a generator of all parent entries.
+
+To use caching in the parent / child relationship the following steps must be performed:
+1. Turn on parent stream caching by overriding `use_cache` property.
+2. Inherit child stream class from `HtttpSubStream` class.
