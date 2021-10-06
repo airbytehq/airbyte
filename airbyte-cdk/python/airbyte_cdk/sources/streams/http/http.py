@@ -34,11 +34,10 @@ class HttpStream(Stream, ABC):
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
 
-        self._authenticator = NoAuth()
+        self._authenticator = authenticator or NoAuth()
+
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
-        elif authenticator:
-            self._authenticator = authenticator
 
         if self.use_cache:
             self.cache_file = self.request_cache()
