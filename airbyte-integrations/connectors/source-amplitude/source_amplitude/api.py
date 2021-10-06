@@ -141,8 +141,11 @@ class Events(IncrementalAmplitudeStream):
         try:
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as error:
-            self.logger.info(f"Error during syncing {self.name} stream - {error}")
-            yield []
+            if error.response.status_code == 404:
+                self.logger.warn(f"Error during syncing {self.name} stream - {error}")
+                return []
+            else:
+                raise requests.exceptions.HTTPError(error)
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
