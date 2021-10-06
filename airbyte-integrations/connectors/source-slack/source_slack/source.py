@@ -285,11 +285,16 @@ class JoinChannelsStream(HttpStream):
 
 class SourceSlack(AbstractSource):
     def _get_authenticator(self, config: Mapping[str, Any]):
+        # Added to maintain backward compatibility with previous versions
+        if "api_token" in config:
+            return TokenAuthenticator(config["api_token"])
+
         credentials = config.get("credentials")
         credentials_title = credentials.get("option_title")
         if credentials_title == "Default OAuth2.0 authorization":
             # We can get `refresh_token` only if the token rotation function is enabled for the Slack Application.
             # If it is disabled, then we use the generated `access_token`, which acts without expiration.
+            # https://api.slack.com/authentication/rotation
             if credentials.get("refresh_token", "").strip():
                 return Oauth2Authenticator(
                     token_refresh_endpoint="https://slack.com/api/oauth.v2.access",
@@ -301,7 +306,7 @@ class SourceSlack(AbstractSource):
         elif credentials_title == "API Token Credentials":
             return TokenAuthenticator(credentials["api_token"])
         else:
-            raise Exception("No supported `option_title` specified. See spec.json for references")
+            raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:

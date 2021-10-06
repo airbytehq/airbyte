@@ -49,8 +49,9 @@ The Slack connector should not run into Slack API limitations under normal usage
 #### Using OAuth2.0 authenticator
 * Client ID - issued when you created your app
 * Client Secret - issued when you created your app
+* Refresh Token - a special kind of token used to obtain a renewed access token
 
-You can get more detailed information about this type of authentication by reading [Slack's documentation about OAuth2.0](https://api.slack.com/legacy/oauth).
+You can get more detailed information about this type of authentication by reading [Slack's documentation about OAuth2.0](https://api.slack.com/authentication/oauth-v2).
 
 #### Using API Token
 * Slack API Token 
