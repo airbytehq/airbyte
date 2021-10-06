@@ -450,6 +450,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     @staticmethod
     def get_authenticator(config):
+        # backwards compatibility, credentials_json used to be in the top level of the connector
         if config.get("credentials_json"):
             return GoogleAnalyticsServiceOauth2Authenticator(config)
 

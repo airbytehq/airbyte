@@ -92,6 +92,7 @@ def test_check_connection_oauth(jwt_encode_mock, mocker, mock_metrics_dimensions
     source = SourceGoogleAnalyticsV4()
     assert source.check_connection(MagicMock(), test_config) == (True, None)
     jwt_encode_mock.encode.assert_not_called()
+    assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
     assert "client_id_val" in unquote(mock_auth_call.last_request.body)
     assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
     assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
