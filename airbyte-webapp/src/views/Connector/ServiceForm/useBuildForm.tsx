@@ -11,7 +11,7 @@ import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { buildPathInitialState } from "core/form/uiWidget";
 import { ServiceFormValues } from "./types";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
-import { useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 
 function useBuildInitialSchema(
@@ -21,7 +21,7 @@ function useBuildInitialSchema(
 
   return useMemo(() => {
     if (
-      hasFeature("ALLOW_OAUTH_CONNECTOR") &&
+      hasFeature(FeatureItem.AllowOAuthConnector) &&
       connectorSpecification?.authSpecification
     ) {
       const spec = connectorSpecification.authSpecification.oauth2Specification;
@@ -143,13 +143,13 @@ const usePatchFormik = (): void => {
   /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
      Problem described here https://github.com/formium/formik/issues/445
      The problem is next:
-     
+
      When we touch the field, it would be set as touched field correctly.
      If validation fails on submit - Formik detects touched object mapping based
      either on initialValues passed to Formik or on current value set.
-     So in case of creation, if we touch an input, don't change value and 
-     press submit - our touched map will be cleared. 
-     
+     So in case of creation, if we touch an input, don't change value and
+     press submit - our touched map will be cleared.
+
      This hack just touches all fields on submit.
    */
   useEffect(() => {

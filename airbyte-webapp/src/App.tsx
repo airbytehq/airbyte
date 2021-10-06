@@ -16,7 +16,7 @@ import {
   useCurrentWorkspace,
   usePickFirstWorkspace,
 } from "hooks/services/useWorkspace";
-import { Feature, FeatureService } from "hooks/services/Feature";
+import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { ServicesProvider } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
@@ -36,10 +36,13 @@ function useCustomerIdProvider() {
 
 const Features: Feature[] = [
   {
-    id: "ALLOW_UPLOAD_CUSTOM_IMAGE",
+    id: FeatureItem.AllowUploadCustomImage,
   },
   {
-    id: "ALLOW_CUSTOM_DBT",
+    id: FeatureItem.AllowCustomDBT,
+  },
+  {
+    id: FeatureItem.AllowUpdateConnectors,
   },
 ];
 
