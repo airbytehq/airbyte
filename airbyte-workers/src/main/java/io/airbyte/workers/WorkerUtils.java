@@ -36,7 +36,7 @@ public class WorkerUtils {
   public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = CONFIGS.getWorkerPodTolerations();
   public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
-  public static final String DEFAULT_WORKER_IMAGE_PULL_POLICY = CONFIGS.getWorkerImagePullPolicy();
+  public static final String DEFAULT_POD_IMAGE_PULL_POLICY = CONFIGS.getPodImagePullPolicy();
 
 
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {

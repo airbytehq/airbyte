@@ -118,7 +118,7 @@ public class KubeProcessFactory implements ProcessFactory {
           podName,
           namespace,
           imageName,
-          WorkerUtils.DEFAULT_WORKER_IMAGE_PULL_POLICY,
+          WorkerUtils.DEFAULT_POD_IMAGE_PULL_POLICY,
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
