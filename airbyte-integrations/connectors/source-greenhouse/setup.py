@@ -7,8 +7,8 @@ from setuptools import find_packages, setup
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
 ]
+
 setup(
     name="source_greenhouse",
     description="Source implementation for Greenhouse.",
