@@ -44,6 +44,10 @@
             "type":"string",
             "description":"unit type used in measurement"
 
+        },
+        "data_quality": {
+            "type":"string",
+            "description": "code for quality of data"
         }
  
     },

@@ -157,7 +157,7 @@ class SourceOnerainApi(Source):
                 "site_id": get_spec_def_obj('site_id'),
                 "location":{"desription":"descriptive site location","type":"string"},
                 "owner":{"desription":"site owner","type":"string"},
-                "system_id":{"description":"system id?", "type":"number"},
+                "system_id":{"description":"system id?", "type":"integer"},
                 "client_id":{"description":"???","type":"string"},
                 "latitude_dec":{"description":"decimal latitude","type":"number"},
                 "longitude_dec":{"description":"decimal longitude","type":"number"},
@@ -203,8 +203,8 @@ class SourceOnerainApi(Source):
                 "value_min":{"description":"", "type":"number"},
                 "delta_pos":{"description":"", "type":"number"},
                 "delta_neg":{"description":"", "type":"number"},
-                "rate_pos":{"description":"", "type":"number"},
-                "rate_neg":{"description":"", "type":"number"},
+                "rate_pos":{"description":"", "type":"integer"},
+                "rate_neg":{"description":"", "type":"integer"},
                 "time_max":{"description":"", "type":"integer"},
                 "time_min":{"description":"", "type":"integer"},
                 "slope":{"description":"", "type":"number"},
@@ -244,6 +244,7 @@ class SourceOnerainApi(Source):
                     "description":"data value",
                  
                 },
+                "data_quality": get_spec_def_obj('data_quality'),
                 "raw_value": {
                     "type":"number",
                     "description":"raw data value",
@@ -460,7 +461,8 @@ def get_sensor_metadata(req_url,logger,state,config,key,is_incremental):
             data['last_value_received'] = float(row['last_value_received'])
             data['last_raw_value'] = float(row['last_raw_value'])
             data['last_raw_value_received'] = float(row['last_raw_value_received'])
-            #data['change_time'] = row['change_time']
+            if 'change_time' in row: # not always populated
+                data['change_time'] = row['change_time']
             data['normal'] = int(row['normal'])
             data['active'] = int(row['active'])
             data['valid'] = int(row['valid'])
@@ -481,6 +483,8 @@ def get_sensor_metadata(req_url,logger,state,config,key,is_incremental):
             data['conversion'] = row['conversion']
             data['usage'] = row['usage']
             data['protocol'] = int(row['protocol'])
+            data['rate_neg'] = int(row['rate_neg'])
+            data['rate_pos'] = int(row['rate_pos'])
 
             yield data 
 
@@ -550,6 +554,7 @@ def call_sensor_data_api(logger,state,config,stream_name,override_query_params,i
             data['data_value'] = float(row['data_value'])
             data['raw_value'] = float(row['raw_value'])
             data['units'] = row['units']
+            data['data_quality'] = row['data_quality']
 
             yield data 
 
