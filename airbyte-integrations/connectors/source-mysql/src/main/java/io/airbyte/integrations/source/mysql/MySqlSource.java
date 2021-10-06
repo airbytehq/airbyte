@@ -175,6 +175,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbcUrl.append("?useCursorFetch=true");
+    jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }

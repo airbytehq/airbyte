@@ -87,8 +87,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         config.get("port").asText(),
         config.get("database").asText()));
 
+    jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
     if (!additionalParameters.isEmpty()) {
-      jdbcUrl.append("?");
+      jdbcUrl.append("&");
       additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 

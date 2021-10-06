@@ -60,7 +60,8 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             config.get("port").asText(),
             config.get("database").asText()),
         "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+        SQLDialect.MYSQL,
+        "zeroDateTimeBehavior=convertToNull");
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -208,6 +209,14 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'2005-10-10 23:22:21'")
             .addExpectedValues(null, "2005-10-10T23:22:21Z")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamp")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
+            .addExpectedValues(null, null, null, null)
             .build());
 
     addDataTypeTestData(

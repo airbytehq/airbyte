@@ -20,8 +20,8 @@ If you can't find the data type you are looking for or have any problems feel fr
 | `bigint` | number |  |
 | `binary` | string |  |
 | `blob` | string |  |
-| `date` | string | MySql JDBC driver has limitation. ZERO-DATE value is forbidden. |
-| `datetime` | string | MySql JDBC driver has limitation. ZERO-DATE value is forbidden. |
+| `date` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
+| `datetime` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
 | `decimal` | number |  |
 | `decimal(19, 2)` | number |  |
 | `double` | number |  |
@@ -42,7 +42,7 @@ If you can't find the data type you are looking for or have any problems feel fr
 | `tinyint` | number |  |
 | `text` | string |  |
 | `time` | string | MySql JDBC driver has limitation. Value should be in range between 00:00:00 and 23:59:59. |
-| `timestamp` | string | MySql JDBC driver has limitation. ZERO-DATE value is forbidden. |
+| `timestamp` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
 | `tinytext` | string |  |
 | `varbinary(256)` | string |  |
 | `varchar` | string |  |
