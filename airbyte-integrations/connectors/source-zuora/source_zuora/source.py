@@ -200,8 +200,8 @@ class ZuoraObjectsBase(ZuoraBase):
         else:
             # When there is no cursor available in the stream, we do Full-Refresh only.
             stream.supported_sync_modes = [SyncMode.full_refresh]
-            stream.source_defined_cursor = True # default CDK for full-refresh
-            stream.default_cursor_field = [] # default CDK for full-refresh
+            stream.source_defined_cursor = True  # default CDK for full-refresh
+            stream.default_cursor_field = []  # default CDK for full-refresh
         return stream
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
