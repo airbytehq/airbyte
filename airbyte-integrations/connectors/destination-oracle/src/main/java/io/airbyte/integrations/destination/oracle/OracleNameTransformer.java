@@ -41,7 +41,7 @@ public class OracleNameTransformer extends ExtendedNameTransformer {
     }
     // prior to Oracle version 12.2, identifiers are not allowed to exceed 30 characters in length.
     // However, from version 12.2 they can be up to 128 bytes long. (Note: bytes, not characters).
-    return maxStringLength(result, 30);
+    return maxStringLength(result, 128);
   }
 
 }
