@@ -5,6 +5,7 @@
 import re
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from urllib import parse
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -31,7 +32,9 @@ class GreenhouseStream(HttpStream, ABC):
         # parsing response header is the recommended pagination method https://developers.greenhouse.io/harvest.html#pagination
         next_page_search = re.search(f'<({re.escape(self.url_base)}.+)>; rel="next"', response.headers.get("link", ""))
         if next_page_search:
-            return {"next_page_url": next_page_search.group(1)}
+            parsed_link = parse.urlparse(next_page_search.group(1))
+            query_params = dict(parse.parse_qsl(parsed_link.query))
+            return query_params
 
     def request_params(
         self,
@@ -39,9 +42,10 @@ class GreenhouseStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        params = {"per_page": self.page_size}
         if next_page_token:
-            return next_page_token["next_page_url"]
-        return {"per_page": self.page_size}
+            params.update(next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """

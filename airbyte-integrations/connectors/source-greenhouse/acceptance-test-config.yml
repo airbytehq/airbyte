@@ -29,6 +29,8 @@ tests:
           "demographics_questions",
           "interviews",
           "rejection_reasons",
+          "jobs.openings",
+          "jobs.stages"
         ]
       # applications stream attachments.url field may have different values as it is AWS signed url
       expect_records:
