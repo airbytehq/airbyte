@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.databricks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,6 +31,12 @@ class DatabricksDestinationConfigTest {
         .put("databricks_personal_access_token", "pak")
         .set("data_source", dataSourceConfig);
 
+    assertThrows(IllegalArgumentException.class, () -> DatabricksDestinationConfig.get(databricksConfig));
+
+    databricksConfig.put("accept_terms", false);
+    assertThrows(IllegalArgumentException.class, () -> DatabricksDestinationConfig.get(databricksConfig));
+
+    databricksConfig.put("accept_terms", true);
     DatabricksDestinationConfig config1 = DatabricksDestinationConfig.get(databricksConfig);
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABRICKS_PORT, config1.getDatabricksPort());
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABASE_SCHEMA, config1.getDatabaseSchema());
