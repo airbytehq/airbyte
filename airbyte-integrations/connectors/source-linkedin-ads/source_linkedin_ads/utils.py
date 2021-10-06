@@ -215,18 +215,19 @@ def transform_targeting_criteria(
             [
                 {"type": "some_key", "values": "some_values"},
                 ...,
-                {"type": "some_other_key", "values": "some_othre_values"}
+                {"type": "some_other_key", "values": "some_other_values"}
             ]
         """
 
         for key, value in nested_dict.items():
             values = []
             if isinstance(value, List):
-                if isinstance(value[0], str):
-                    values = value
-                elif isinstance(value[0], Dict):
-                    for v in value:
-                        values.append(v)
+                if len(value) > 0:
+                    if isinstance(value[0], str):
+                        values = value
+                    elif isinstance(value[0], Dict):
+                        for v in value:
+                            values.append(v)
             elif isinstance(value, Dict):
                 values.append(value)
             yield {"type": key, "values": values}

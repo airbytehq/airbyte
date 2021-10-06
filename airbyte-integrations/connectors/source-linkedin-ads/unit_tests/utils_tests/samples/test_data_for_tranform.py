@@ -23,6 +23,8 @@ input_test_data = [
                     },
                     {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
                     {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                    {"or": {"empty_dict_with_empty_list": []}}, # dict is present, but list is empty
+                    {"or": {}}, # empty dict
                 ]
             },
             "exclude": {
@@ -35,6 +37,7 @@ input_test_data = [
                         "facet_test3",
                         "facet_test4",
                     ],
+                    "empty_list": []
                 }
             },
         },
@@ -88,6 +91,10 @@ output_test_data = [
                         "type": "urn:li:adTargetingFacet:interfaceLocales",
                         "values": ["urn:li:locale:en_US"],
                     },
+                    {
+                        "type": "empty_dict_with_empty_list",
+                        "values": [],
+                    },
                 ]
             },
             "exclude": {
@@ -99,6 +106,10 @@ output_test_data = [
                     {
                         "type": "urn:li:adTargetingFacet:facet_Key2",
                         "values": ["facet_test3", "facet_test4"],
+                    },
+                    {
+                        "type": "empty_list",
+                        "values": [],
                     },
                 ]
             },
