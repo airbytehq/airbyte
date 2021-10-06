@@ -44,8 +44,8 @@ class SourceStripe(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
-        args = {"authenticator": authenticator, "account_id": config["account_id"]}
-        incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days"), "start_date": config["start_date"]}
+        args = {"authenticator": authenticator, "account_id": config["account_id"], "start_date": config["start_date"]}
+        incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
             BalanceTransactions(**incremental_args),
             BankAccounts(**args),
