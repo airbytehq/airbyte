@@ -13,8 +13,11 @@ import CreateConnector from "./CreateConnector";
 import HeadTitle from "components/HeadTitle";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
-import { WithFeature } from "hooks/services/Feature";
-import { IS_CLOUD } from "core/envService";
+import {
+  FeatureItem,
+  useFeatureService,
+  WithFeature,
+} from "hooks/services/Feature";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";
@@ -43,6 +46,8 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   onUpdate,
   connectorsDefinitions,
 }) => {
+  const { hasFeature } = useFeatureService();
+
   const columns = React.useMemo(
     () => [
       {
@@ -73,7 +78,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerImageTag",
         customWidth: 10,
       },
-      ...(!IS_CLOUD()
+      ...(hasFeature(FeatureItem.AllowUpdateConnectors)
         ? [
             {
               Header: (
@@ -103,17 +108,18 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <div>
-        <WithFeature featureId={"ALLOW_UPLOAD_CUSTOM_IMAGE"}>
+        <WithFeature featureId={FeatureItem.AllowUploadCustomImage}>
           <CreateConnector type={type} />
         </WithFeature>
-        {(hasNewConnectorVersion || isUpdateSuccess) && !IS_CLOUD() && (
-          <UpgradeAllButton
-            isLoading={loading}
-            hasError={!!error && !loading}
-            hasSuccess={isUpdateSuccess}
-            onUpdate={onUpdate}
-          />
-        )}
+        {(hasNewConnectorVersion || isUpdateSuccess) &&
+          hasFeature(FeatureItem.AllowUpdateConnectors) && (
+            <UpgradeAllButton
+              isLoading={loading}
+              hasError={!!error && !loading}
+              hasSuccess={isUpdateSuccess}
+              onUpdate={onUpdate}
+            />
+          )}
       </div>
     );
 
