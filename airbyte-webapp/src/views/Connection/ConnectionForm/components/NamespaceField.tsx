@@ -19,6 +19,9 @@ const NamespaceConfigurationLabel = styled(ControlLabels)`
 const NamespaceFormatLabel = styled(ControlLabels)`
   margin-left: 21px;
   flex: 5 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 const Row = styled.div`
