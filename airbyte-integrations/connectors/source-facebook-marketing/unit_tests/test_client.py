@@ -91,7 +91,7 @@ class TestBackoff:
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/", [{"status_code": 200}])
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
 
-        stream = Campaigns(api=api, start_date=datetime.now(), end_date=datetime.now(), include_deleted=False)
+        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False)
         try:
             records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
             assert records
