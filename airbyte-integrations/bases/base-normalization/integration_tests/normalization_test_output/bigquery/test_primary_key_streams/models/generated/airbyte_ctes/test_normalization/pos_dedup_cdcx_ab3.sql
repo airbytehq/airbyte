@@ -8,8 +8,8 @@ select
         '_ab_cdc_updated_at',
         '_ab_cdc_deleted_at',
         '_ab_cdc_log_pos',
-    ]) }} as _airbyte_dedup_cdc_excluded_pos_hashid,
+    ]) }} as _airbyte_pos_dedup_cdcx_hashid,
     tmp.*
-from {{ ref('dedup_cdc_excluded_pos_ab2') }} tmp
--- dedup_cdc_excluded_pos
+from {{ ref('pos_dedup_cdcx_ab2') }} tmp
+-- pos_dedup_cdcx
 

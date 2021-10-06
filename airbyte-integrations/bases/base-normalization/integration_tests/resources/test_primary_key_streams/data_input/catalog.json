@@ -359,7 +359,7 @@
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defcdc_active_row_patternined_cursor": true,
+        "source_defined_cursor": true,
         "default_cursor_field": []
       },
       "sync_mode": "incremental",
@@ -369,7 +369,7 @@
     },
     {
       "stream": {
-        "name": "dedup_cdc_excluded_pos",
+        "name": "pos_dedup_cdcx",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
@@ -394,7 +394,7 @@
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defcdc_active_row_patternined_cursor": true,
+        "source_defined_cursor": true,
         "default_cursor_field": []
       },
       "sync_mode": "incremental",

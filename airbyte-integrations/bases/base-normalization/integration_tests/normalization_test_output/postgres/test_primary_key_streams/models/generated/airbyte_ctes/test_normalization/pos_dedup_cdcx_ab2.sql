@@ -8,6 +8,6 @@ select
     cast(_ab_cdc_deleted_at as {{ dbt_utils.type_float() }}) as _ab_cdc_deleted_at,
     cast(_ab_cdc_log_pos as {{ dbt_utils.type_float() }}) as _ab_cdc_log_pos,
     _airbyte_emitted_at
-from {{ ref('dedup_cdc_excluded_pos_ab1') }}
--- dedup_cdc_excluded_pos
+from {{ ref('pos_dedup_cdcx_ab1') }}
+-- pos_dedup_cdcx
 

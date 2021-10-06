@@ -17,8 +17,8 @@ select
     order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc, _ab_cdc_log_pos desc
   ) is null and _ab_cdc_deleted_at is null  then 1 else 0 end as _airbyte_active_row,
   _airbyte_emitted_at,
-  _airbyte_dedup_cdc_excluded_pos_hashid
-from {{ ref('dedup_cdc_excluded_pos_ab4') }}
--- dedup_cdc_excluded_pos from {{ source('test_normalization', '_airbyte_raw_dedup_cdc_excluded_pos') }}
+  _airbyte_pos_dedup_cdcx_hashid
+from {{ ref('pos_dedup_cdcx_ab4') }}
+-- pos_dedup_cdcx from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
 where _airbyte_row_num = 1
 
