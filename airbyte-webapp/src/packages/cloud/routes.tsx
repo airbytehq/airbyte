@@ -44,6 +44,7 @@ import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
 import useWorkspace from "../../hooks/services/useWorkspace";
 import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -72,9 +73,18 @@ export enum Routes {
   Signup = "/signup",
   Login = "/login",
   ResetPassword = "/reset-password",
-  ConfirmPasswordReset = "/confirm-password-reset",
-  VerifyEmail = "/verify-email",
   ConfirmVerifyEmail = "/confirm-verify-email",
+
+  // Firebase action routes
+  // These URLs come from Firebase emails, and all have the same
+  // action URL ("/verify-email") with different "mode" parameter
+  // TODO: use a better action URL in Firebase email template
+  FirebaseAction = "/verify-email",
+}
+
+export enum FirebaseActionMode {
+  VERIFY_EMAIL = "verifyEmail",
+  RESET_PASSWORD = "resetPassword",
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
@@ -161,7 +171,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       </Route>
       {workspace.displaySetupWizard && (
         <Route exact path={Routes.Onboarding}>
-          <OnboardingPage />
+          <OnboardingServiceProvider>
+            <OnboardingPage />
+          </OnboardingServiceProvider>
         </Route>
       )}
       <Redirect to={mainRedirect} />
@@ -200,7 +212,7 @@ const MainViewRoutes = () => {
   );
 };
 
-const VerifyEmailRoute: React.FC = () => {
+const FirebaseActionRoute: React.FC = () => {
   const { query } = useRouter<{ oobCode: string }>();
   const { verifyEmail } = useAuthService();
 
@@ -236,8 +248,8 @@ export const Routing: React.FC = () => {
             )}
             {user && !emailVerified && (
               <Switch>
-                <Route path={Routes.VerifyEmail}>
-                  <VerifyEmailRoute />
+                <Route path={Routes.FirebaseAction}>
+                  <FirebaseActionRoute />
                 </Route>
                 <Route path={Routes.ConfirmVerifyEmail}>
                   <ConfirmEmailPage />

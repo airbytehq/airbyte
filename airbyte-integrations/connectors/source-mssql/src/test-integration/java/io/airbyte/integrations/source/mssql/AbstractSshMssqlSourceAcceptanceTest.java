@@ -104,7 +104,6 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         });
   }
 
-
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
