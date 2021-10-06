@@ -8,24 +8,28 @@ import {
 } from "pages/SettingsPage/pages/SettingsComponents";
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import { LabeledInput } from "components/LabeledInput";
+import { LoadingButton } from "components";
+import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
 
-export const PasswordSection: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+import { usePassword } from "./hooks";
+import { FormValues } from "./typings";
+
+const PasswordSection: React.FC = () => {
+  const { formatMessage } = useIntl();
+  const { successMessage, errorMessage, changePassword } = usePassword();
 
   return (
     <SettingsCard>
       <Content>
-        <Formik
+        <Formik<FormValues>
           initialValues={{
-            currentPassword: "********",
-            repeatPassword: "",
-            password: "",
+            currentPassword: "",
+            newPassword: "",
+            passwordConfirmation: "",
           }}
-          onSubmit={() => {
-            throw new Error("Not implemented");
-          }}
+          onSubmit={changePassword}
         >
-          {() => (
+          {({ isSubmitting, values }) => (
             <Form>
               <FieldItem>
                 <Field name="currentPassword">
@@ -35,10 +39,8 @@ export const PasswordSection: React.FC = () => {
                       label={
                         <FormattedMessage id="settings.accountSettings.currentPassword" />
                       }
-                      disabled={true}
-                      placeholder={formatMessage({
-                        id: "login.password.placeholder",
-                      })}
+                      disabled={isSubmitting}
+                      required={true}
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={
@@ -51,17 +53,17 @@ export const PasswordSection: React.FC = () => {
                 </Field>
               </FieldItem>
               <FieldItem>
-                <Field name="password">
+                <Field name="newPassword">
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       label={
-                        <FormattedMessage id="settings.accountSettings.password" />
+                        <FormattedMessage id="settings.accountSettings.newPassword" />
                       }
-                      disabled={true}
-                      placeholder={formatMessage({
-                        id: "login.password.placeholder",
-                      })}
+                      disabled={
+                        isSubmitting || values.currentPassword.length === 0
+                      }
+                      required={true}
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={
@@ -74,17 +76,17 @@ export const PasswordSection: React.FC = () => {
                 </Field>
               </FieldItem>
               <FieldItem>
-                <Field name="repeatPassword">
+                <Field name="passwordConfirmation">
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       label={
-                        <FormattedMessage id="settings.accountSettings.repeatPassword" />
+                        <FormattedMessage id="settings.accountSettings.newPasswordConfirmation" />
                       }
-                      disabled={true}
-                      placeholder={formatMessage({
-                        id: "login.password.placeholder",
-                      })}
+                      disabled={
+                        isSubmitting || values.currentPassword.length === 0
+                      }
+                      required={true}
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={
@@ -96,6 +98,14 @@ export const PasswordSection: React.FC = () => {
                   )}
                 </Field>
               </FieldItem>
+              <LoadingButton type="submit" isLoading={isSubmitting}>
+                <FormattedMessage id="settings.accountSettings.updatePassword" />
+              </LoadingButton>
+              <FeedbackBlock
+                errorMessage={errorMessage}
+                successMessage={successMessage}
+                isLoading={isSubmitting}
+              />
             </Form>
           )}
         </Formik>
@@ -103,3 +113,5 @@ export const PasswordSection: React.FC = () => {
     </SettingsCard>
   );
 };
+
+export default PasswordSection;

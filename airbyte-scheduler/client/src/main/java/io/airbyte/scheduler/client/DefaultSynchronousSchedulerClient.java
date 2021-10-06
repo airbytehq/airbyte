@@ -61,7 +61,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
                                                                                                 final String dockerImage)
       throws IOException {
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
-        destination.getDestinationId(),
+        destination.getDestinationDefinitionId(),
         destination.getWorkspaceId(),
         destination.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()

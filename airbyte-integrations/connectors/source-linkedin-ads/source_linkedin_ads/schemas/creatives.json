@@ -50,24 +50,7 @@
                 "type": ["null", "string"]
               },
               "value": {
-                "anyOf": [
-                  {
-                    "type": ["null", "string"]
-                  },
-                  {
-                    "type": ["null", "boolean"]
-                  },
-                  {
-                    "type": ["null", "number"]
-                  },
-                  {
-                    "type": ["null", "integer"]
-                  },
-                  {
-                    "type": ["null", "object"],
-                    "additionalProperties": true
-                  }
-                ]
+                  "type": ["null", "string"]
               }
             }
           }
