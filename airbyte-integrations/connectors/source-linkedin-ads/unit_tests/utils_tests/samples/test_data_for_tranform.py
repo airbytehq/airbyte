@@ -23,6 +23,8 @@ input_test_data = [
                     },
                     {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
                     {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                    {"or": {"empty_dict_with_empty_list": []}}, # dict is present, but list is empty
+                    {"or": {}}, # empty dict
                 ]
             },
             "exclude": {
@@ -35,6 +37,7 @@ input_test_data = [
                         "facet_test3",
                         "facet_test4",
                     ],
+                    "empty_list": []
                 }
             },
         },
@@ -52,6 +55,10 @@ input_test_data = [
                     "activity": "urn:li:activity:1234",
                     "directSponsoredContent": 0,
                     "share": "urn:li:share:1234",
+                    "custom_num_var": 1234,
+                    "custom_obj_var": {"key": 1234},
+                    "custom_arr_var": [1, 2, 3, 4],
+                    "custom_null_var": None,
                 }
             }
         },
@@ -84,6 +91,10 @@ output_test_data = [
                         "type": "urn:li:adTargetingFacet:interfaceLocales",
                         "values": ["urn:li:locale:en_US"],
                     },
+                    {
+                        "type": "empty_dict_with_empty_list",
+                        "values": [],
+                    },
                 ]
             },
             "exclude": {
@@ -96,15 +107,23 @@ output_test_data = [
                         "type": "urn:li:adTargetingFacet:facet_Key2",
                         "values": ["facet_test3", "facet_test4"],
                     },
+                    {
+                        "type": "empty_list",
+                        "values": [],
+                    },
                 ]
             },
         },
         "variables": {
             "type": "com.linkedin.ads.SponsoredUpdateCreativeVariables",
             "values": [
-                {"key": "activity", "value": "urn:li:activity:1234"},
-                {"key": "directSponsoredContent", "value": 0},
-                {"key": "share", "value": "urn:li:share:1234"},
+                {"key": "activity", "value": '"urn:li:activity:1234"'},
+                {"key": "directSponsoredContent", "value": "0"},
+                {"key": "share", "value": '"urn:li:share:1234"'},
+                {"key": "custom_num_var", "value": "1234"},
+                {"key": "custom_obj_var", "value": '{"key": 1234}'},
+                {"key": "custom_arr_var", "value": "[1, 2, 3, 4]"},
+                {"key": "custom_null_var", "value": "null"},
             ],
         },
         "created": "2021-08-21 21:27:55",

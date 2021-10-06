@@ -132,4 +132,5 @@ The complete set of prmissions is:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :--------    | :------ |
+| 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for  `Campaigns/targetingCriteria` transformation, coerced  `Creatives/variables/values` to string by default |
 | 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte |
