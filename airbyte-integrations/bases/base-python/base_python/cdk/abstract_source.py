@@ -45,7 +45,7 @@ class AbstractSource(Source, ABC):
     def streams(self, config: Mapping[str, Any], state: Mapping[str, Any] = None) -> List[Stream]:
         """
         :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
-        :param state: The state of the source at the start of a sync. Streams that rely on the output of other incremental streams can utilize
+        :param state: The state of the source at the start of a sync. Streams that rely on the output of other incremental streams and use utilize
         the state to run those incremental streams in incremental mode.
         :return: A list of the streams in this source connector.
         """
