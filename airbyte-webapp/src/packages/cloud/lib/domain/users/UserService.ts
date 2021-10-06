@@ -23,6 +23,12 @@ class UserService extends AirbyteRequestService {
     });
   }
 
+  public async changeEmail(email: string): Promise<void> {
+    return this.fetch<void>(`${this.url}/update`, {
+      email,
+    });
+  }
+
   public async create(user: {
     authUserId: string;
     authProvider: string;
