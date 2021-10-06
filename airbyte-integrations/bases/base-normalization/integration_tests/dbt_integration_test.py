@@ -119,6 +119,7 @@ class DbtIntegrationTest(object):
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
         print(f"....Waiting for MySql DB to start...10 sec")
+        print(f"....Waiting for MySql DB to start...10 sec")
         time.sleep(10)
 
         if not os.path.exists("../secrets"):
