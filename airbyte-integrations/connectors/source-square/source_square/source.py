@@ -12,7 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from source_square.utils import separate_items_by_count
 
 
@@ -358,16 +358,73 @@ class Orders(SquareStreamPageJson):
             yield {"location_ids": location}
 
 
+class Oauth2AuthenticatorSquare(Oauth2Authenticator):
+
+    def refresh_access_token(self):
+        """Handle differences in expiration attr:
+            from API: "expires_at": "2021-11-05T14:26:57Z"
+            expected: "expires_in": number of seconds
+        """
+        token, expires_at = super().refresh_access_token()
+        expires_in = pendulum.parse(expires_at) - pendulum.now()
+        return token, expires_in.seconds
+
+
 class SourceSquare(AbstractSource):
-    api_version = "2021-06-16"  # Latest Stable Release
+    api_version = "2021-09-15"  # Latest Stable Release
+
+    @staticmethod
+    def get_auth(config):
+
+        authorization = config.get("authorization", {})
+        auth_type = authorization.get("auth_type")
+        if auth_type == "Oauth":
+            scopes = [
+                "CUSTOMERS_READ",
+                "EMPLOYEES_READ",
+                "ITEMS_READ",
+                "MERCHANT_PROFILE_READ",
+                "ORDERS_READ",
+                "PAYMENTS_READ",
+                "TIMECARDS_READ",
+                # OAuth Permissions:
+                # https://developer.squareup.com/docs/oauth-api/square-permissions
+                # https://developer.squareup.com/reference/square/enums/OAuthPermission
+                # "DISPUTES_READ",
+                # "GIFTCARDS_READ",
+                # "INVENTORY_READ",
+                # "INVOICES_READ",
+                # "TIMECARDS_SETTINGS_READ",
+                # "LOYALTY_READ",
+                # "ONLINE_STORE_SITE_READ",
+                # "ONLINE_STORE_SNIPPETS_READ",
+                # "SUBSCRIPTIONS_READ",
+            ]
+
+            auth = Oauth2AuthenticatorSquare(
+                token_refresh_endpoint="https://connect.squareup.com/oauth2/token",
+                client_secret=authorization.get("client_secret"),
+                client_id=authorization.get("client_id"),
+                refresh_token=authorization.get("refresh_token"),
+                scopes=scopes,
+                expires_in_name="expires_at",
+            )
+        elif auth_type == "Apikey":
+            auth = TokenAuthenticator(token=authorization.get("api_key"))
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
+
+        return auth
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
 
         headers = {
             "Square-Version": self.api_version,
-            "Authorization": "Bearer {}".format(config["api_key"]),
             "Content-Type": "application/json",
         }
+        auth = self.get_auth(config)
+        headers.update(auth.get_auth_header())
+
         url = "https://connect.squareup{}.com/v2/catalog/info".format("sandbox" if config["is_sandbox"] else "")
 
         try:
@@ -383,9 +440,8 @@ class SourceSquare(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        auth = TokenAuthenticator(token=config["api_key"])
         args = {
-            "authenticator": auth,
+            "authenticator": self.get_auth(config),
             "is_sandbox": config["is_sandbox"],
             "api_version": self.api_version,
             "start_date": config["start_date"],
