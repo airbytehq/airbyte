@@ -12,6 +12,7 @@ import {
   useGetWorkspace,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
+import useConfirmationModal from "hooks/useConfirmationModal";
 
 const Header = styled.div`
   display: flex;
@@ -41,6 +42,23 @@ export const WorkspaceSettingsView: React.FC = () => {
     currentWorkspaceId,
   } = useWorkspaceService();
   const { data: workspace, isLoading } = useGetWorkspace(currentWorkspaceId);
+
+  const deleteWorkspace = () =>
+    removeWorkspace.mutateAsync(workspace.workspaceId);
+
+  const { renderModal, onOpen } = useConfirmationModal({
+    title: (
+      <FormattedMessage id="workspaces.workspaceSettings.deleteWorkspace" />
+    ),
+    text: (
+      <FormattedMessage
+        id="workspaces.workspaceSettings.deleteWorkspaceText"
+        values={{ name: workspace.name }}
+      />
+    ),
+    submitButtonText: <FormattedMessage id="form.delete" />,
+    onSubmit: deleteWorkspace,
+  });
 
   return (
     <>
@@ -117,15 +135,14 @@ export const WorkspaceSettingsView: React.FC = () => {
                 <LoadingButton
                   isLoading={removeWorkspace.isLoading}
                   danger
-                  onClick={() =>
-                    removeWorkspace.mutateAsync(workspace.workspaceId)
-                  }
+                  onClick={onOpen}
                 >
                   <FormattedMessage id="settings.generalSettings.deleteText" />
                 </LoadingButton>
               </Header>
             }
           />
+          {renderModal()}
         </>
       )}
     </>
