@@ -67,7 +67,7 @@ public interface Configs {
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
-  String getPodImagePullPolicy();
+  String getJobImagePullPolicy();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
 
