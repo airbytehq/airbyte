@@ -119,7 +119,7 @@ class BigQueryDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    final String datasetId = Strings.addRandomSuffix("111airbyte_tests", "_", 8);
     final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
@@ -263,7 +263,7 @@ class BigQueryDestinationTest {
 
   private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
     final QueryJobConfiguration queryConfig = QueryJobConfiguration
-        .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES;", dataset.getDatasetId().getDataset()))
+        .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES`;", dataset.getDatasetId().getDataset()))
         .setUseLegacySql(false)
         .build();
 
@@ -284,7 +284,7 @@ class BigQueryDestinationTest {
 
   private List<JsonNode> retrieveRecords(String tableName) throws Exception {
     QueryJobConfiguration queryConfig =
-        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
+        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM `%s.%s`;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
     BigQueryUtils.executeQuery(bigquery, queryConfig);
