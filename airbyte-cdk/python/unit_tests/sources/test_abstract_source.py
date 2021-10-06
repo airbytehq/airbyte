@@ -22,7 +22,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources import AbstractSource, source
 from airbyte_cdk.sources.streams import Stream
 
 
@@ -30,6 +30,7 @@ class MockSource(AbstractSource):
     def __init__(self, check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None, streams: List[Stream] = None):
         self._streams = streams
         self.check_lambda = check_lambda
+        self._source_state = None
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
@@ -39,6 +40,8 @@ class MockSource(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not self._streams:
             raise Exception("Stream is not set")
+        if AbstractSource.CONFIG_STATE_KEY in config:
+            self._source_state = config[AbstractSource.CONFIG_STATE_KEY]
         return self._streams
 
 
@@ -346,3 +349,21 @@ def test_valid_incremental_read_with_slices_and_interval(mocker, logger):
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
     assert expected == messages
+
+
+def test_valid_incremental_read_with_given_state(mocker, logger):
+    """Tests that an incremental read with a given state passes that state to its streams."""
+    stream_output = [{"k1": "v1"}]
+    stream_state = {"cursor": "value"}
+    source_state = {"s1": stream_state}
+    s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": stream_state}, stream_output)], name="s1")
+    mocker.patch.object(MockStream, "get_updated_state", return_value=stream_state)
+    mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1])
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental)])
+
+    list(src.read(logger, {}, catalog, source_state))
+
+    assert src._source_state == source_state

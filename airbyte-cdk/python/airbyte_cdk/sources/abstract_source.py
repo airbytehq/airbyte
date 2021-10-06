@@ -7,7 +7,7 @@ import copy
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, ClassVar, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -56,6 +56,13 @@ class AbstractSource(Source, ABC):
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, AirbyteStream] = {}
 
+    """"
+    Config key that contains the source state at the start of the sync. Streams
+    that rely on the output of other incremental streams can utilize the state
+    to run those incremental streams in incremental mode.
+    """
+    CONFIG_STATE_KEY: ClassVar[str] = "_source_state"
+
     @property
     def name(self) -> str:
         """Source name"""
@@ -84,6 +91,7 @@ class AbstractSource(Source, ABC):
         connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
+        config[AbstractSource.CONFIG_STATE_KEY] = copy.deepcopy(connector_state or {})
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
