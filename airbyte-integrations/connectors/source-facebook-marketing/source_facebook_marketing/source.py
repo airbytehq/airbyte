@@ -3,12 +3,7 @@
 #
 
 from datetime import datetime
-<<<<<<< HEAD
 from typing import Any, List, Mapping, Optional, Tuple, Type
-=======
-import pendulum
-from typing import Any, List, Mapping, Tuple, Type
->>>>>>> master
 
 import pendulum
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
@@ -48,7 +43,6 @@ class ConnectorConfig(BaseModel):
         examples=["2017-01-25T00:00:00Z"],
     )
 
-<<<<<<< HEAD
     end_date: Optional[datetime] = Field(
         description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
@@ -56,16 +50,6 @@ class ConnectorConfig(BaseModel):
         default_factory=pendulum.now,
     )
 
-=======
-    end_date: datetime = Field(
-        default=pendulum.now(),
-        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data. ",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-26T00:00:00Z"],
-    )
-
-
->>>>>>> master
     include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
 
     insights_lookback_window: int = Field(
