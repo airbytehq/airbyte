@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.mysql.MySQLDestination'
+    mainClass = 'io.airbyte.integrations.destination.mysql.MySQLDestinationStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
