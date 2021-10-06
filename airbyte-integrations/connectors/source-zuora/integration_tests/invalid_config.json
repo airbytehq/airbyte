@@ -1,6 +1,6 @@
 {
   "start_date": "2020-01-01",
-  "window_in_days": 0,
+  "window_in_days": 30,
   "client_id": "some_client_id",
   "client_secret": "some_client_secret",
   "tenant_endpoint": "US Cloud API Sandbox"
