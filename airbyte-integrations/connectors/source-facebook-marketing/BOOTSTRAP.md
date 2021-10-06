@@ -10,7 +10,7 @@ There are roughly two kinds of queries we’d be interested in making to Faceboo
 
 In general when querying the FB API for insights there are a few things to keep in mind:
 - You can input [parameters](https://developers.facebook.com/docs/marketing-api/insights/parameters) to control which response you get e.g: you can get statistics at the level of an ad, ad group, campaign, or ad account
-- An important parameter you can configure is [fields](https://developers.facebook.com/docs/marketing-api/insights/fields), which controls which information is included in the response. For example, if you include “campaign.title” as a field, you will receive the title of that campaign in the response. When fields is not specified, many endpoints return a minimal set of fields, so make sure to update the
+- An important parameter you can configure is [fields](https://developers.facebook.com/docs/marketing-api/insights/fields), which controls which information is included in the response. For example, if you include “campaign.title” as a field, you will receive the title of that campaign in the response. When fields is not specified, many endpoints return a minimal set of fields.
 - Data can be segmented using [breakdowns](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) i.e: you can either get the number of impressions for a campaign as a single number or you can get it broken down by device, gender, or country of the person viewing the advertisement. Make sure to read the provided link about breakdowns in its entirety to understand 
 
 Also make sure to read [this overview of insights](https://developers.facebook.com/docs/marketing-api/insights) in its entirety to have a strong understanding of this important aspect of the API. 

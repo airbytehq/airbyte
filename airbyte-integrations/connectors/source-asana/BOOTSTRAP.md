@@ -1,6 +1,6 @@
 # Asana
 
-Asana is a project managing platform designed to organize and manage teams and their work.
+Asana is a project management platform designed to organize and manage teams and their work.
 This connector adds ability to fetch projects, tasks, teams etc over REST API.
 Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
