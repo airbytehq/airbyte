@@ -2,9 +2,28 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import os
+import sys
 
 from airbyte_protocol import ConnectorSpecification
 from base_python.logger import AirbyteLogger
+
+# some integration tests doesn't setup dependences from
+# requirements.txt file and Python can return a exception.
+# Thus we should to import this parent module manually
+try:
+    import source_file.source
+except ModuleNotFoundError:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_source_local = os.path.join(current_dir, "../../source-file")
+    if os.path.isdir(parent_source_local):
+        sys.path.append(parent_source_local)
+    else:
+        raise RuntimeError("not found parent source folder")
+    import source_file.source
+
+#  import original classes of the native Source File
 from source_file import SourceFile as ParentSourceFile
 from source_file.client import Client
 from source_file.client import URLFile as ParentURLFile
@@ -39,12 +58,22 @@ class SourceFileSecure(ParentSourceFile):
 
     def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
         """Tries to find and remove a spec data about local storage settings"""
-        spec = super().spec(logger=logger)
+
+        parent_code_dir = os.path.dirname(source_file.source.__file__)
+        parent_spec_file = os.path.join(parent_code_dir, "spec.json")
+        with open(parent_spec_file, "r") as f:
+            spec = ConnectorSpecification.parse_obj(json.load(f))
+
+        # correction of  the "storage" property to const type
+        for provider in spec.connectionSpecification["properties"]["provider"]["oneOf"]:
+            storage = provider["properties"]["storage"]
+
+            if "enum" in storage:
+                storage.pop("enum")
+                storage["const"] = storage.pop("default")
+
         for i in range(len(spec.connectionSpecification["properties"]["provider"]["oneOf"])):
             provider = spec.connectionSpecification["properties"]["provider"]["oneOf"][i]
-            if (
-                LOCAL_STORAGE_NAME in provider["properties"]["storage"]["enum"]
-                or provider["properties"]["storage"]["default"] == provider["properties"]["storage"]
-            ):
+            if provider["properties"]["storage"]["const"] == LOCAL_STORAGE_NAME:
                 spec.connectionSpecification["properties"]["provider"]["oneOf"].pop(i)
         return spec

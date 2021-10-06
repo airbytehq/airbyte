@@ -80,7 +80,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 
 ### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-file-secure:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
+1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s ../source-file/integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management

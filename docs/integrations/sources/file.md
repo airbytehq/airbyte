@@ -21,7 +21,7 @@ This source produces a single table for the target file as it replicates only on
 | Amazon Web Services S3 | Yes |
 | SFTP | Yes |
 | SSH / SCP | Yes |
-| local filesystem | Experimental |
+| local filesystem | Inaccessible for Airbyte Cloud |
 
 ### File / Stream Compression
 
@@ -136,3 +136,9 @@ In order to read large files from a remote location, this connector uses the [sm
 | 0.1.7   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331) | Refactor Python base connector |
 | 0.1.6   | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249) | Handle NaN values |
 | 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+
+## CHANGELOG source-file-secure (for Airbyte Cloud only )
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 06.10.2021 | [#6768](https://github.com/airbytehq/airbyte/pull/6768) | source-file-secure (for Airbyte Cloud only ) |
