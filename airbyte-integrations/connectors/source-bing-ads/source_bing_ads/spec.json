@@ -81,6 +81,11 @@
         "description": "Developer token associated with user.",
         "airbyte_secret": true
       },
+      "access_token": {
+        "type": "string",
+        "description": "Access token generated using developer_token, client_id, and client_secret.",
+        "airbyte_secret": true
+      },
       "refresh_token": {
         "type": "string",
         "description": "The long-lived Refresh token received via grant_type=refresh_token request.",
@@ -120,6 +125,14 @@
         "description": "The report data will be aggregated by each month.",
         "default": false
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"], ["developer_token"], ["user_id"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }
