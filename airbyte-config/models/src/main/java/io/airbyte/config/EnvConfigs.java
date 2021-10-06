@@ -48,6 +48,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
+  public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
   public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
@@ -69,12 +70,14 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
+  private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
+  private static final String DEFAULT_JOB_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
@@ -277,6 +280,11 @@ public class EnvConfigs implements Configs {
     }
   }
 
+  @Override
+  public String getJobImagePullPolicy() {
+    return getEnvOrDefault(JOB_IMAGE_PULL_POLICY, DEFAULT_JOB_IMAGE_PULL_POLICY);
+  }
+
   /**
    * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
    * a string that represents one or more tolerations.
@@ -421,6 +429,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getGoogleApplicationCredentials() {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
+  }
+
+  @Override
+  public boolean getPublishMetrics() {
+    return getEnvOrDefault(PUBLISH_METRICS, false);
   }
 
   @Override

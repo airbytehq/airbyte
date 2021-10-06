@@ -11,6 +11,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
+  updateEmail,
 } from "firebase/auth";
 
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -36,6 +37,8 @@ interface AuthService {
   finishResetPassword(code: string, newPassword: string): Promise<void>;
 
   sendEmailVerifiedLink(): Promise<void>;
+
+  updateEmail(email: string, password: string): Promise<void>;
 }
 
 export class GoogleAuthService implements AuthService {
@@ -103,6 +106,18 @@ export class GoogleAuthService implements AuthService {
     return updatePassword(this.auth.currentUser, newPassword).catch((err) => {
       throw err;
     });
+  }
+
+  async updateEmail(email: string, password: string): Promise<void> {
+    const user = await this.getCurrentUser();
+
+    if (user) {
+      await this.reauthenticate(email, password);
+
+      return updateEmail(user, email);
+    }
+
+    return Promise.resolve();
   }
 
   async resetPassword(email: string): Promise<void> {

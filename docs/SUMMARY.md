@@ -8,6 +8,7 @@
   * [Set up a Connection](quickstart/set-up-a-connection.md)
 * [Deploying Airbyte](deploying-airbyte/README.md)
   * [Local Deployment](deploying-airbyte/local-deployment.md)
+  * [On Airbyte Cloud](deploying-airbyte/on-cloud.md)  
   * [On AWS \(EC2\)](deploying-airbyte/on-aws-ec2.md)
   * [On AWS ECS \(Coming Soon\)](deploying-airbyte/on-aws-ecs.md)
   * [On Azure\(VM\)](deploying-airbyte/on-azure-vm-cloud-shell.md)
