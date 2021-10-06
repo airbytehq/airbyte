@@ -387,6 +387,7 @@
   "settings.securityUpdates": "Security updates (recommended)",
   "settings.newsletter": "Newsletter with feature updates.",
   "settings.account": "Account",
+  "settings.accountSettings.updateEmailSuccess": "Email updated",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
