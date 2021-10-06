@@ -133,7 +133,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
                 ctx -> ctx
                     .fetch(String.format("USE %s;"
                         + "SELECT * FROM %s.%s ORDER BY %s ASC;",
-                        database, schema, tableName.toLowerCase(), JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                        database, schema, tableName.toLowerCase(),
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()
                     .map(r -> r.formatJSON(JSON_FORMAT))
                     .map(Jsons::deserialize)
