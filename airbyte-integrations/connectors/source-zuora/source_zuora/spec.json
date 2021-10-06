@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zuora Connector Configuration",
     "type": "object",
-    "required": [
-      "start_date",
-      "client_id",
-      "client_secret",
-      "tenant_endpoint"
-    ],
+    "required": ["start_date", "client_id", "client_secret", "tenant_endpoint"],
     "properties": {
       "start_date": {
         "type": "string",
@@ -19,14 +14,7 @@
       "window_in_days": {
         "type": "integer",
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
-        "examples": [
-          30,
-          60,
-          90,
-          120,
-          200,
-          364
-        ],
+        "examples": [30, 60, 90, 120, 200, 364],
         "default": 90,
         "minimum": 30,
         "maximum": 364
@@ -62,19 +50,8 @@
       "auth_type": "oauth2.0",
       "oauth2Specification": {
         "rootObject": [],
-        "oauthFlowInitParameters": [
-          [
-            "client_id"
-          ],
-          [
-            "client_secret"
-          ]
-        ],
-        "oauthFlowOutputParameters": [
-          [
-            "access_token"
-          ]
-        ]
+        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+        "oauthFlowOutputParameters": [["access_token"]]
       }
     }
   }
