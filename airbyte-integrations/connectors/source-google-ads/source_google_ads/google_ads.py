@@ -81,7 +81,6 @@ class GoogleAds:
         query_template = f"SELECT {fields} FROM {from_category} "
 
         if cursor_field:
-            # Fix issue 5411: Make date_start and date_end inclusive.
             end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
             query_template += (
                 f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"

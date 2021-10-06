@@ -13,7 +13,7 @@ from .google_ads import GoogleAds
 
 
 def chunk_date_range(
-    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "months", buffer_days: int = None
+    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "months", days_of_data_storage: int = None
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
@@ -25,8 +25,8 @@ def chunk_date_range(
     start_date = pendulum.parse(start_date)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
-    if buffer_days:
-        start_date = max(start_date, pendulum.now().subtract(days=buffer_days - conversion_window))
+    if days_of_data_storage:
+        start_date = max(start_date, pendulum.now().subtract(days=days_of_data_storage - conversion_window))
 
     # As in to return some state when state in abnormal
     if start_date > end_date:
@@ -61,7 +61,7 @@ class GoogleAdsStream(Stream, ABC):
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
-    buffer_days = None
+    days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
     time_unit = "months"
@@ -80,7 +80,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             conversion_window=self.conversion_window_days,
             field=self.cursor_field,
             time_unit=self.time_unit,
-            buffer_days=self.buffer_days,
+            days_of_data_storage=self.days_of_data_storage,
         )
 
     @staticmethod
@@ -201,4 +201,4 @@ class ClickView(IncrementalGoogleAdsStream):
     """
 
     time_unit = "days"
-    buffer_days = 90
+    days_of_data_storage = 90

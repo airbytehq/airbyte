@@ -26,6 +26,7 @@ This source is capable of syncing the following streams:
 * [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 * [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 
+**Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
 ### Features
 
@@ -84,12 +85,6 @@ If for any reason the request gets denied, let us know and we will be able to un
 ## Understanding Google Ads Query Language
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
-
-## Understanding Click View Stream Date Range 
-
-Queries including ClickView must have a filter limiting the results to one day and can be requested for dates back to 90 days before the time of the request.
-(https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
-
 
 ## CHANGELOG
 
