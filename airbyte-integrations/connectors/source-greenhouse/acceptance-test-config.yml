@@ -30,18 +30,12 @@ tests:
           "interviews",
           "rejection_reasons",
           "jobs.openings",
-          "jobs.stages"
+          "jobs.stages",
         ]
-      # applications stream attachments.url field may have different values as it is AWS signed url
-      expect_records:
-        path: "integration_tests/expected_records.txt"
-        extra_records: no
-        extra_fields: yes
-        exact_order: yes
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_no_applications.json"
+      configured_catalog_path: "integration_tests/configured_catalog_const_records.json"
     - config_path: "secrets/config_users_only.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
