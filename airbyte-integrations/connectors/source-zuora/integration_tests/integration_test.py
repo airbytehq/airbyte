@@ -6,7 +6,9 @@ import json
 from typing import Any, Dict, Mapping
 
 import pendulum
+from airbyte_cdk import AirbyteLogger
 from source_zuora.source import (
+    SourceZuora,
     ZuoraDescribeObject,
     ZuoraGetJobResult,
     ZuoraJobStatusCheck,
@@ -15,14 +17,8 @@ from source_zuora.source import (
     ZuoraSubmitJob,
 )
 from source_zuora.zuora_auth import ZuoraAuthenticator
-
-
-# Method to get url_base from config input
-def get_url_base(is_sandbox: bool = False) -> str:
-    url_base = "https://rest.zuora.com"
-    if is_sandbox:
-        url_base = "https://rest.apisandbox.zuora.com"
-    return url_base
+from source_zuora.zuora_endpoint import get_url_base
+from source_zuora.zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
 def get_config(config_path: str) -> Mapping[str, Any]:
@@ -37,7 +33,7 @@ def client(config: Dict):
     """
     Create client by extending config dict with authenticator and url_base
     """
-    url_base = get_url_base(config["is_sandbox"])
+    url_base = get_url_base(config["tenant_endpoint"])
     authenticator = ZuoraAuthenticator(
         token_refresh_endpoint=f"{url_base}/oauth/token",
         client_id=config["client_id"],
@@ -99,12 +95,32 @@ class TestZuora:
         test_date_slice = {"start_date": start_date, "end_date": end_date}
         return test_date_slice
 
+    def test_zuora_connection(self):
+        """
+        Test checks the connection to the Zuora API.
+        """
+        connection = SourceZuora.check_connection(self, logger=AirbyteLogger, config=self.config)
+        assert connection == (True, None)
+
     def test_list_all_zuora_objects(self):
         """
         Test retrieves all the objects (streams) available from Zuora Account and checks if test_stream is in the list.
         """
         zuora_objects_list = ZuoraListObjects(self.config).read_records(sync_mode=None)
         assert self.test_stream in zuora_objects_list
+
+    def test_excluded_streams_are_not_in_the_list(self):
+        """
+        Test retrieves all the objects (streams) available from Zuora Account and checks if excluded streams are not in the list.
+        """
+        zuora_streams_list = SourceZuora.streams(self, config=self.config)
+        # extract stream names from auto-generated stream class
+        generated_stream_class_names = []
+        for stream in zuora_streams_list:
+            generated_stream_class_names.append(stream.__class__.__name__)
+        # check if excluded streams are not in the final list of stream classes
+        for excluded_stream in ZUORA_EXCLUDED_STREAMS:
+            assert False if excluded_stream in generated_stream_class_names else True
 
     def test_get_json_schema(self):
         """
@@ -129,15 +145,33 @@ class TestZuora:
 
         # Making example query using input
         example_query = f"""
-            select * from {self.test_stream} where
+            select *
+            from {self.test_stream} where
             {self.test_cursor_field} >= TIMESTAMP '{test_date_slice.get("start_date")}' and
             {self.test_cursor_field} <= TIMESTAMP '{test_date_slice.get("end_date")}'
+            order by {self.test_cursor_field} asc
             """
 
         # Making test query using query() method
         test_query = ZuoraObjectsBase.query(
             self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice
         )
+
+        # If the query is correctly build using connector class return True
+        assert example_query == test_query
+
+    def test_query_full_object(self):
+        """
+        The ZuoraObjectsBase.query() works with streams that doesn't support any of the cursor available,
+        such as `UpdatedDate` or `CreatedDate`. In this case, we cannot filter the object by date,
+        so we pull the whole object.
+        """
+
+        # Making example query using input
+        example_query = f"""select * from {self.test_stream}"""
+
+        # Making test query using query() method
+        test_query = ZuoraObjectsBase.query(self, stream_name=self.test_stream, full_object=True)
 
         # If the query is correctly build using connector class return True
         assert example_query == test_query

@@ -28,6 +28,9 @@ For details refer to the [Availability of Data Source Objects](https://knowledge
 | Integration Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
 | `decimal(22,9)` | `number` | float number |
+| `decimal` | `number` | float number |
+| `float` | `number` | float number |
+| `double` | `number` | float number |
 | `integer` | `number` |  |
 | `int` | `number` |  |
 | `bigint` | `number` |  |
@@ -64,8 +67,28 @@ Any other data type not listed in the table above will be treated as `string`.
 ## Supported Environments for Zuora
 | Environment | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Production | Yes | Default setting for the connector|
-| Sandbox | Yes | Enable the `is_sandbox` toggle inside connector settings |
+| Production | Yes | Select from exising options while setup|
+| Sandbox | Yes | Select from exising options while setup |
+
+## List of Supported Environments for Zuora
+### Production
+| Environment | Endpoint |
+| :--- | :--- |
+| US Production | https://rest.zuora.com |
+| US Cloud Production | https://rest.na.zuora.com |
+| EU Production | https://rest.eu.zuora.com |
+### Sandbox
+| Environment | Endpoint |
+| :--- | :--- |
+| US API Sandbox | https://rest.apisandbox.zuora.com |
+| US Cloud API Sandbox | https://rest.sandbox.na.zuora.com |
+| US Central Sandbox | https://rest.test.zuora.com |
+| EU API Sandbox | https://rest.sandbox.eu.zuora.com |
+| EU Central Sandbox | https://rest.test.eu.zuora.com |
+### Other
+| Environment | Endpoint |
+| :--- | :--- |
+| US Performance Test | https://rest.pt1.zuora.com |
 
 For more information about available environments, please visit [this page](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/D_Zuora_Environments)
 
@@ -105,5 +128,6 @@ For more information visit [Create an API User page](https://knowledgecenter.zuo
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :--------    | :------ |
+| :------ | :------
+| 0.1.1   | 2021-10-01 | [6575](https://github.com/airbytehq/airbyte/pull/6575) | Added OAuth support for Airbyte Cloud |
 | 0.1.0   | 2021-08-01 | [4661](https://github.com/airbytehq/airbyte/pull/4661) | Initial release of Native Zuora connector for Airbyte |
