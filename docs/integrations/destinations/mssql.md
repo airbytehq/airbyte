@@ -79,6 +79,7 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
 3. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel (see below for more information on generating this key).
