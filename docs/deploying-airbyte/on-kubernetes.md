@@ -179,7 +179,6 @@ and safer to maintain than Postgres on your cluster.
 As we improve our Kubernetes offering, we would like to point out some common pain points. We are working on improving these. Please let us know if
 there are any other issues blocking your adoption of Airbyte or if you would like to contribute fixes to address any of these issues.
 
-* The server and scheduler deployments must run on the same node. ([#4232](https://github.com/airbytehq/airbyte/issues/4232))
 * Some UI operations have higher latency on Kubernetes than Docker-Compose. ([#4233](https://github.com/airbytehq/airbyte/issues/4233))
 * Logging to Azure Storage is not supported. ([#4200](https://github.com/airbytehq/airbyte/issues/4200))
 * Large log files might take a while to load. ([#4201](https://github.com/airbytehq/airbyte/issues/4201))
