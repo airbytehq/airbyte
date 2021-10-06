@@ -23,8 +23,8 @@ input_test_data = [
                     },
                     {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
                     {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
-                    {"or": {"empty_dict_with_empty_list": []}}, # dict is present, but list is empty
-                    {"or": {}}, # empty dict
+                    {"or": {"empty_dict_with_empty_list": []}},  # dict is present, but list is empty
+                    {"or": {}},  # empty dict
                 ]
             },
             "exclude": {
@@ -37,7 +37,7 @@ input_test_data = [
                         "facet_test3",
                         "facet_test4",
                     ],
-                    "empty_list": []
+                    "empty_list": [],
                 }
             },
         },
