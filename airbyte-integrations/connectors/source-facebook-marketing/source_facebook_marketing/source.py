@@ -3,6 +3,7 @@
 #
 
 from datetime import datetime
+import pendulum
 from typing import Any, List, Mapping, Tuple, Type
 
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
@@ -41,6 +42,14 @@ class ConnectorConfig(BaseModel):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
     )
+
+    end_date: datetime = Field(
+        default=pendulum.now(),
+        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data. ",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-26T00:00:00Z"],
+    )
+
 
     include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
 
@@ -90,15 +99,15 @@ class SourceFacebookMarketing(AbstractSource):
         insights_args = dict(
             api=api,
             start_date=config.start_date,
+            end_date=config.end_date,
             buffer_days=config.insights_lookback_window,
             days_per_job=config.insights_days_per_job,
         )
 
         return [
-            Campaigns(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
-            AdSets(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
-            Ads(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
-            AdCreatives(api=api),
+            Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted), 
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
             AdsInsightsCountry(**insights_args),

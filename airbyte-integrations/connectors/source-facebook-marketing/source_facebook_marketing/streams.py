@@ -143,9 +143,10 @@ class FBMarketingStream(Stream, ABC):
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
 
-    def __init__(self, start_date: datetime, **kwargs):
+    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date)
+        self._end_date = pendulum.instance(end_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -427,7 +428,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = pendulum.parse(state_value) - self.lookback_window
         else:
             start_date = self._start_date
-        end_date = pendulum.now()
+        end_date = self._end_date
         start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
 
         for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):
