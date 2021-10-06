@@ -15,7 +15,7 @@ import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { Feature, FeatureService } from "hooks/services/Feature";
+import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
 
@@ -46,7 +46,7 @@ const StoreProvider: React.FC = ({ children }) => (
 
 const Features: Feature[] = [
   {
-    id: "ALLOW_OAUTH_CONNECTOR",
+    id: FeatureItem.AllowOAuthConnector,
   },
 ];
 
