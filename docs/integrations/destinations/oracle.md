@@ -8,19 +8,21 @@
 | Incremental - Append Sync | Yes |  |
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
-| Basic Normalization | Yes | Only for raw tables, doesn't support for nested json yet |
+| Basic Normalization | Yes | Doesn't support for nested json yet |
 | SSH Tunnel Connection | Yes |  |
 
 ## Output Schema
 
-Each stream will be output into its own table in Oracle. Each table will contain 3 columns:
+By default, each stream will be output into its own table in Oracle. Each table will contain 3 columns:
 
 * `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
 * `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
 * `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
 
+Enabling normalization will also create normalized, strongly typed tables. 
+
 ## Getting Started (Airbyte Cloud)
-The Oracle connector is currently in Alpha on Airbyte Cloud. Additionally, Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
+The Oracle connector is currently in Alpha on Airbyte Cloud. Only TLS encrypted connections to your DB can be made from Airbyte Cloud. Other than that, follow the open-source instructions below.
 
 ## Getting Started (Airbyte Open-Source)
 
