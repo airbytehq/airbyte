@@ -81,6 +81,6 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-10-06 | [](https://github.com/airbytehq/airbyte/pull/) | Update OAuth Spec File |
+| 0.1.2   | 2021-10-06 | [6831](https://github.com/airbytehq/airbyte/pull/6831) | Update OAuth Spec File |
 | 0.1.1   | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750) | Added reporting streams |
 | 0.1.0   | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911) | Initial release supported core streams (Accounts, Campaigns, Ads, AdGroups) |
