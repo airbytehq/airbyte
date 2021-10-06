@@ -1,11 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSlack } from "@fortawesome/free-brands-svg-icons";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { Routes } from "pages/routes";
+import { Routes } from "packages/cloud/routes";
 import { useConfig } from "config";
 
 import useConnector from "hooks/services/useConnector";
@@ -20,6 +18,7 @@ import DocsIcon from "views/layout/SideBar/components/DocsIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
+import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 
 const Bar = styled.nav`
   width: 100px;
@@ -82,11 +81,6 @@ const Text = styled.div`
   margin-top: 7px;
 `;
 
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
-
 const Notification = styled(Indicator)`
   position: absolute;
   top: 11px;
@@ -115,11 +109,18 @@ const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
   const config = useConfig();
   const { workspace } = useWorkspace();
+  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
 
   return (
     <Bar>
       <div>
-        <Link to={Routes.Root}>
+        <Link
+          to={
+            workspace.displaySetupWizard
+              ? Routes.Onboarding
+              : Routes.Connections
+          }
+        >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
@@ -147,15 +148,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem
-              to={Routes.Root}
-              exact
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname === Routes.Root ||
-                location.pathname.startsWith(Routes.Source)
-              }
-            >
+            <MenuItem to={Routes.Source} activeClassName="active">
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -174,13 +167,15 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore slack icon fails here*/}
-            <HelpIcon icon={faSlack} />
+          <MenuItem to={Routes.Credits} activeClassName="active">
+            <SettingsIcon />
             <Text>
-              <FormattedMessage id="sidebar.slack" />
+              <FormattedMessage id="credits.credits" />
+              <div>
+                <FormattedNumber value={cloudWorkspace.remainingCredits} />
+              </div>
             </Text>
-          </MenuLinkItem>
+          </MenuItem>
         </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">

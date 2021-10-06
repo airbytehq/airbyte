@@ -1,29 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -46,10 +27,10 @@ public interface ServerFactory {
                         ConfigRepository configRepository,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
-
                         Database configsDatabase,
                         Database jobsDatabase,
-                        Configs configs);
+                        Configs configs,
+                        TrackingClient trackingClient);
 
   class Api implements ServerFactory {
 
@@ -62,7 +43,8 @@ public interface ServerFactory {
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
                                  final Database jobsDatabase,
-                                 final Configs configs) {
+                                 final Configs configs,
+                                 final TrackingClient trackingClient) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -74,7 +56,9 @@ public interface ServerFactory {
           configs,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
-          configsDatabase, jobsDatabase);
+          configsDatabase,
+          jobsDatabase,
+          trackingClient);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

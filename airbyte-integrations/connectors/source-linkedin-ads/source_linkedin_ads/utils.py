@@ -1,27 +1,8 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
@@ -225,42 +206,53 @@ def transform_targeting_criteria(
             }
 
     """
+
+    def unnest_dict(nested_dict: Dict) -> Iterable[Dict]:
+        """
+        Unnest the nested dict to simplify the normalization
+
+        EXAMPLE OUTPUT:
+            [
+                {"type": "some_key", "values": "some_values"},
+                ...,
+                {"type": "some_other_key", "values": "some_other_values"}
+            ]
+        """
+
+        for key, value in nested_dict.items():
+            values = []
+            if isinstance(value, List):
+                if len(value) > 0:
+                    if isinstance(value[0], str):
+                        values = value
+                    elif isinstance(value[0], Dict):
+                        for v in value:
+                            values.append(v)
+            elif isinstance(value, Dict):
+                values.append(value)
+            yield {"type": key, "values": values}
+
+    # get the target dict from record
     targeting_criteria = record.get(dict_key)
+
     # transform `include`
     if "include" in targeting_criteria:
         and_list = targeting_criteria.get("include").get("and")
-        for id, and_criteria in enumerate(and_list):
-            or_dict = and_criteria.get("or")
-            for key, value in or_dict.items():
-                values = []
-                if isinstance(value, list):
-                    if isinstance(value[0], str):
-                        values = value
-                    elif isinstance(value[0], dict):
-                        for v in value:
-                            values.append(v)
-                elif isinstance(key, dict):
-                    values.append(key)
-                # Replace the 'or' with {type:value}
-                record["targetingCriteria"]["include"]["and"][id]["type"] = key
-                record["targetingCriteria"]["include"]["and"][id]["values"] = values
-                record["targetingCriteria"]["include"]["and"][id].pop("or")
+        updated_include = {"and": []}
+        for k in and_list:
+            or_dict = k.get("or")
+            for j in unnest_dict(or_dict):
+                updated_include["and"].append(j)
+        # Replace the original 'and' with updated_include
+        record["targetingCriteria"]["include"] = updated_include
 
     # transform `exclude` if present
     if "exclude" in targeting_criteria:
         or_dict = targeting_criteria.get("exclude").get("or")
         updated_exclude = {"or": []}
-        for key, value in or_dict.items():
-            values = []
-            if isinstance(value, list):
-                if isinstance(value[0], str):
-                    values = value
-                elif isinstance(value[0], dict):
-                    for v in value:
-                        value.append(v)
-            elif isinstance(value, dict):
-                value.append(value)
-            updated_exclude["or"].append({"type": key, "values": values})
+        for k in unnest_dict(or_dict):
+            updated_exclude["or"].append(k)
+        # Replace the original 'or' with updated_exclude
         record["targetingCriteria"]["exclude"] = updated_exclude
 
     return record
@@ -302,8 +294,9 @@ def transform_variables(
     for key, params in variables.items():
         record["variables"]["type"] = key
         record["variables"]["values"] = []
-        for key, param in params.items():
-            record["variables"]["values"].append({"key": key, "value": param})
+        for key, value in params.items():
+            # convert various datatypes of values into the string
+            record["variables"]["values"].append({"key": key, "value": json.dumps(value, ensure_ascii=True)})
         # Clean the nested structure
         record["variables"].pop("data")
     return record

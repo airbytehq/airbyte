@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -28,11 +8,10 @@ import static com.mongodb.client.model.Projections.excludeId;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -44,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.joda.time.LocalDateTime;
@@ -165,8 +142,8 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
 
   private static void copyTable(MongoDatabase mongoDatabase, String collectionName, String tmpCollectionName) {
 
-    var tempCollection = getOrCreateNewMongodbCollection(mongoDatabase, tmpCollectionName);
-    var collection = getOrCreateNewMongodbCollection(mongoDatabase, collectionName);
+    var tempCollection = mongoDatabase.getOrCreateNewCollection(tmpCollectionName);
+    var collection = mongoDatabase.getOrCreateNewCollection(collectionName);
     List<Document> documents = new ArrayList<>();
     try (MongoCursor<Document> cursor = tempCollection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
@@ -176,16 +153,6 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     if (!documents.isEmpty()) {
       collection.insertMany(documents);
     }
-  }
-
-  private static MongoCollection<Document> getOrCreateNewMongodbCollection(MongoDatabase database, String collectionName) {
-    var collectionNames = StreamSupport
-        .stream(database.listCollectionNames().spliterator(), false)
-        .collect(Collectors.toSet());
-    if (!collectionNames.contains(collectionName)) {
-      database.createCollection(collectionName);
-    }
-    return database.getCollection(collectionName);
   }
 
 }

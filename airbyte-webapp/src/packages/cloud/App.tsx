@@ -3,6 +3,7 @@ import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { IntercomProvider } from "react-use-intercom";
 
 import en from "locales/en.json";
 import cloudLocales from "packages/cloud/locales/en.json";
@@ -14,11 +15,13 @@ import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { FeatureService } from "hooks/services/Feature";
+import { Feature, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
+
+const INTERCOM_APP_ID = process.env.REACT_APP_INTERCOM_APP_ID || "";
 
 const I18NProvider: React.FC = ({ children }) => (
   <IntlProvider locale="en" messages={messages}>
@@ -41,30 +44,40 @@ const StoreProvider: React.FC = ({ children }) => (
   </CacheProvider>
 );
 
-const App: React.FC = () => (
-  <React.StrictMode>
-    <StyleProvider>
-      <I18NProvider>
-        <StoreProvider>
-          <Suspense fallback={<LoadingPage />}>
-            <ApiErrorBoundary>
-              <NotificationServiceProvider>
-                <FeatureService>
-                  <AppServicesProvider>
-                    <AuthenticationProvider>
-                      <AnalyticsInitializer>
-                        <Routing />
-                      </AnalyticsInitializer>
-                    </AuthenticationProvider>
-                  </AppServicesProvider>
-                </FeatureService>
-              </NotificationServiceProvider>
-            </ApiErrorBoundary>
-          </Suspense>
-        </StoreProvider>
-      </I18NProvider>
-    </StyleProvider>
-  </React.StrictMode>
-);
+const Features: Feature[] = [
+  {
+    id: "ALLOW_OAUTH_CONNECTOR",
+  },
+];
+
+const App: React.FC = () => {
+  return (
+    <React.StrictMode>
+      <StyleProvider>
+        <I18NProvider>
+          <StoreProvider>
+            <Suspense fallback={<LoadingPage />}>
+              <ApiErrorBoundary>
+                <NotificationServiceProvider>
+                  <FeatureService features={Features}>
+                    <AppServicesProvider>
+                      <AuthenticationProvider>
+                        <IntercomProvider appId={INTERCOM_APP_ID}>
+                          <AnalyticsInitializer>
+                            <Routing />
+                          </AnalyticsInitializer>
+                        </IntercomProvider>
+                      </AuthenticationProvider>
+                    </AppServicesProvider>
+                  </FeatureService>
+                </NotificationServiceProvider>
+              </ApiErrorBoundary>
+            </Suspense>
+          </StoreProvider>
+        </I18NProvider>
+      </StyleProvider>
+    </React.StrictMode>
+  );
+};
 
 export default React.memo(App);
