@@ -38,7 +38,6 @@ public class WorkerUtils {
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
   public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
 
-
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
     if (process == null) {
       return;
