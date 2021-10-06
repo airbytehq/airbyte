@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "assignee": {
+      "properties": {
+        "accountId": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "avatarUrls": {
+          "properties": {
+            "16x16": {
+              "type": "string"
+            },
+            "24x24": {
+              "type": "string"
+            },
+            "32x32": {
+              "type": "string"
+            },
+            "48x48": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "assigneeType": {
+      "type": "string"
+    },
+    "componentBean": {
+      "properties": {
+        "assignee": {
+          "properties": {
+            "accountId": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "avatarUrls": {
+              "properties": {
+                "16x16": {
+                  "type": "string"
+                },
+                "24x24": {
+                  "type": "string"
+                },
+                "32x32": {
+                  "type": "string"
+                },
+                "48x48": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "self": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "assigneeType": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "isAssigneeTypeValid": {
+          "type": "boolean"
+        },
+        "lead": {
+          "properties": {
+            "accountId": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "avatarUrls": {
+              "properties": {
+                "16x16": {
+                  "type": "string"
+                },
+                "24x24": {
+                  "type": "string"
+                },
+                "32x32": {
+                  "type": "string"
+                },
+                "48x48": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "self": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "project": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "integer"
+        },
+        "realAssignee": {
+          "properties": {
+            "accountId": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "avatarUrls": {
+              "properties": {
+                "16x16": {
+                  "type": "string"
+                },
+                "24x24": {
+                  "type": "string"
+                },
+                "32x32": {
+                  "type": "string"
+                },
+                "48x48": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "self": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "realAssigneeType": {
+          "type": "string"
+        },
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "description": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isAssigneeTypeValid": {
+      "type": "boolean"
+    },
+    "issueCount": {
+      "type": "integer"
+    },
+    "lead": {
+      "properties": {
+        "accountId": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "avatarUrls": {
+          "properties": {
+            "16x16": {
+              "type": "string"
+            },
+            "24x24": {
+              "type": "string"
+            },
+            "32x32": {
+              "type": "string"
+            },
+            "48x48": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "name": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "projectId": {
+      "type": "integer"
+    },
+    "realAssignee": {
+      "properties": {
+        "accountId": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "avatarUrls": {
+          "properties": {
+            "16x16": {
+              "type": "string"
+            },
+            "24x24": {
+              "type": "string"
+            },
+            "32x32": {
+              "type": "string"
+            },
+            "48x48": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "realAssigneeType": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

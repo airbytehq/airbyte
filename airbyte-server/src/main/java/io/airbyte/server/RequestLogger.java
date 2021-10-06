@@ -83,6 +83,8 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     String remoteAddr = servletRequest.getRemoteAddr();
     String method = servletRequest.getMethod();
     String url = servletRequest.getRequestURI();
+    boolean isContentTypeGzip =
+        servletRequest.getHeader("Content-Type") != null && servletRequest.getHeader("Content-Type").toLowerCase().contains("application/x-gzip");
     int status = responseContext.getStatus();
 
     StringBuilder logBuilder = new StringBuilder()
@@ -95,7 +97,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
         .append(" ")
         .append(url);
 
-    if (method.equals("POST") && requestBody != null && !requestBody.equals("")) {
+    if (method.equals("POST") && requestBody != null && !requestBody.equals("") && !isContentTypeGzip) {
       logBuilder
           .append(" - ")
           .append(redactSensitiveInfo(requestBody));

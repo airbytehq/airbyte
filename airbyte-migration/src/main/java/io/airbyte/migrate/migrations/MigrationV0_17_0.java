@@ -88,7 +88,6 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
       "airbyte/source-facebook-marketing",
       "airbyte/source-hubspot-singer",
       "airbyte/source-shopify-singer",
-      "airbyte/source-http-request",
       "airbyte/source-redshift",
       "airbyte/source-twilio-singer",
       "airbyte/source-freshdesk",

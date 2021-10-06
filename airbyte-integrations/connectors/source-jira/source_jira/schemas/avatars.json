@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "isDeletable": {
+      "type": "boolean"
+    },
+    "isSelected": {
+      "type": "boolean"
+    },
+    "isSystemAvatar": {
+      "type": "boolean"
+    },
+    "urls": {
+      "properties": {
+        "16x16": {
+          "type": "string"
+        },
+        "24x24": {
+          "type": "string"
+        },
+        "32x32": {
+          "type": "string"
+        },
+        "48x48": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

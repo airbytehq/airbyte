@@ -35,10 +35,11 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.io.IOs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.models.Attempt;
@@ -99,7 +100,8 @@ public class JobConverter {
 
   public static LogRead getLogRead(Path logPath) {
     try {
-      return new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, logPath));
+      var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), logPath);
+      return new LogRead().logLines(logs);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

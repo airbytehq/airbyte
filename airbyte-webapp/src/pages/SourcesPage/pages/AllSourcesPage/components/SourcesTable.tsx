@@ -6,9 +6,10 @@ import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
 import { Source } from "core/resources/Source";
 import ConnectionResource from "core/resources/Connection";
-import config from "config";
 import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type IProps = {
   sources: Source[];
@@ -16,12 +17,24 @@ type IProps = {
 
 const SourcesTable: React.FC<IProps> = ({ sources }) => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
-  const data = getEntityTableData(sources, connections, "source");
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
+    }
+  );
+
+  const data = getEntityTableData(
+    sources,
+    connections,
+    sourceDefinitions,
+    "source"
+  );
 
   const clickRow = (source: EntityTableDataItem) =>
     push(`${Routes.Source}/${source.entityId}`);

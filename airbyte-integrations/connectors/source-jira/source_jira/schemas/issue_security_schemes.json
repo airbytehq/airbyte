@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "defaultSecurityLevelId": {
+      "type": "integer"
+    },
+    "description": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

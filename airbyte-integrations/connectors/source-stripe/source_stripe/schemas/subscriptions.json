@@ -6,35 +6,45 @@
       "properties": {}
     },
     "canceled_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "livemode": {
       "type": ["null", "boolean"]
     },
     "start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "items": {
-      "items": {
-        "type": ["null", "string"]
-      },
-      "type": ["null", "array"]
+      "type": ["null", "object"],
+      "properties": {
+        "object": {
+          "type": ["null", "string"]
+        },
+        "data": {
+          "type": ["null", "array"]
+        },
+        "has_more": {
+          "type": ["null", "boolean"]
+        },
+        "total_count": {
+          "type": ["null", "number"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "id": {
       "type": ["null", "string"]
     },
     "trial_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "application_fee_percent": {
       "type": ["null", "number"]
     },
     "billing_cycle_anchor": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "cancel_at_period_end": {
       "type": ["null", "boolean"]
@@ -46,8 +56,7 @@
       "type": ["null", "object"],
       "properties": {
         "end": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -63,20 +72,20 @@
               "type": ["null", "boolean"]
             },
             "amount_off": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "redeem_by": {
               "type": ["null", "string"],
               "format": "date-time"
             },
             "duration_in_months": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "percent_off_precise": {
               "type": ["null", "number"]
             },
             "max_redemptions": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "currency": {
               "type": ["null", "string"]
@@ -85,7 +94,7 @@
               "type": ["null", "string"]
             },
             "times_redeemed": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "id": {
               "type": ["null", "string"]
@@ -97,20 +106,18 @@
               "type": ["null", "string"]
             },
             "percent_off": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             }
           }
         },
         "customer": {
           "type": ["null", "string"]
         },
-        "start": {
-          "type": ["null", "string"],
-          "format": "date-time"
+        "start_date": {
+          "type": ["null", "integer"]
         },
         "object": {
           "type": ["null", "string"]
@@ -121,8 +128,7 @@
       }
     },
     "current_period_end": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "plan": {
       "type": ["null", "object"],
@@ -170,8 +176,7 @@
           }
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "nickname": {
           "type": ["null", "string"]
@@ -224,30 +229,22 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "ended_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "customer": {
       "type": ["null", "string"]
     },
     "current_period_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "trial_end": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "object": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

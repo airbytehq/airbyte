@@ -21,7 +21,7 @@ If you want to understand the difference between Airbyte and Singer, you might b
 * Airbyte’s connectors are **usable out of the box through a UI and API**, with monitoring, scheduling and orchestration. Airbyte was built on the premise that a user, whatever their background, should be able to move data in 2 minutes. Data engineers might want to use raw data and their own transformation processes, or to use Airbyte’s API to include data integration in their workflows. On the other hand, analysts and data scientists might want to use normalized consolidated data in their database or data warehouses. Airbyte supports all these use cases.  
 * **One platform, one project with standards:** This will help consolidate the developments behind one single project, some standardization and specific data protocol that can benefit all teams and specific cases. 
 * **Connectors can be built in the language of your choice,** as Airbyte runs them as Docker containers.
-* **Airbyte integrates with your data stack and your needs:** Airflow, Kubernetes, DBT, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use DBT to do more complicated things.
+* **Airbyte integrates with your data stack and your needs:** Airflow, Kubernetes, dbt, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use dbt to do more complicated things.
 * **A full commitment to the open-source MIT project** with the promise not to hide some connectors behind paid walls.
 
 Note that Airbyte’s data protocol is compatible with Singer’s. So it is easy to migrate a Singer tap onto Airbyte.

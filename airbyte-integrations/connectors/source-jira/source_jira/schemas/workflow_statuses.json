@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "iconUrl": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    },
+    "statusCategory": {
+      "properties": {
+        "colorName": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "untranslatedName": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -1,11 +1,10 @@
 import { useFetcher } from "rest-hooks";
 
-import config from "config";
-import FrequencyConfig from "data/FrequencyConfig.json";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import useConnection from "components/hooks/services/useConnectionHook";
 import { Status } from "./types";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;
@@ -13,6 +12,7 @@ const useSyncActions = (): {
 } => {
   const { updateConnection } = useConnection();
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
+  const analyticsService = useAnalytics();
 
   const changeStatus = async (connection: Connection) => {
     await updateConnection({
@@ -20,6 +20,9 @@ const useSyncActions = (): {
       syncCatalog: connection.syncCatalog,
       prefix: connection.prefix,
       schedule: connection.schedule || null,
+      namespaceDefinition: connection.namespaceDefinition,
+      namespaceFormat: connection.namespaceFormat,
+      operations: connection.operations,
       status:
         connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });
@@ -29,8 +32,7 @@ const useSyncActions = (): {
         JSON.stringify(item.config) === JSON.stringify(connection.schedule)
     );
 
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+    analyticsService.track("Source - Action", {
       action:
         connection.status === "active"
           ? "Disable connection"
@@ -45,8 +47,7 @@ const useSyncActions = (): {
   };
 
   const syncManualConnection = async (connection: Connection) => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+    analyticsService.track("Source - Action", {
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,

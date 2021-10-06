@@ -110,11 +110,15 @@ public class TemporalClient {
         .withDockerImage(config.getDestinationDockerImage());
 
     final StandardSyncInput input = new StandardSyncInput()
+        .withNamespaceDefinition(config.getNamespaceDefinition())
+        .withNamespaceFormat(config.getNamespaceFormat())
         .withPrefix(config.getPrefix())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withOperationSequence(config.getOperationSequence())
         .withCatalog(config.getConfiguredAirbyteCatalog())
-        .withState(config.getState());
+        .withState(config.getState())
+        .withResourceRequirements(config.getResourceRequirements());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(

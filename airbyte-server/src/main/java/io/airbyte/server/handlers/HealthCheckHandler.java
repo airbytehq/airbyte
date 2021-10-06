@@ -26,7 +26,6 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,8 @@ public class HealthCheckHandler {
   public HealthCheckRead health() {
     boolean databaseHealth = false;
     try {
-      databaseHealth = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true) != null;
+      configRepository.listStandardWorkspaces(true);
+      databaseHealth = true;
     } catch (Exception e) {
       LOGGER.error("database health check failed.");
     }

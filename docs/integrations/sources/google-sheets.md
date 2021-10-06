@@ -10,7 +10,7 @@ Each sheet in the selected spreadsheet will be output as a separate stream. Each
 
 Airbyte only supports replicating Grid sheets. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
 
-**Note: Sheet names and column headers must contain only alphanumeric characters or `_`, as specified in the** [**Airbyte Protocol**](../../architecture/airbyte-specification.md). If your sheet or column header is named e.g: "the data", you'll need to change it to "the\_data" for it to be synced by Airbyte. This restriction does not apply to non-header cell values: those can contain any unicode characters. This limitation is temporary and future versions of Airbyte will support more permissive naming patterns.
+**Note: Sheet names and column headers must contain only alphanumeric characters or `_`, as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-specification.md). If your sheet or column header is named e.g: "the data", you'll need to change it to "the\_data" for it to be synced by Airbyte. This restriction does not apply to non-header cell values: those can contain any unicode characters. This limitation is temporary and future versions of Airbyte will support more permissive naming patterns.
 
 ### Data type mapping
 
@@ -26,6 +26,7 @@ This section should contain a table with the following format:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Coming soon |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 
@@ -83,3 +84,16 @@ The Airbyte UI will ask for two things:
 1. The spreadsheet ID
 2. The content of the credentials JSON you created in the "Create a Service Account and Service Account Key" step above. This should be as simple as opening the file and copy-pasting all its contents into this field in the Airbyte UI. 
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.3   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
+| 0.2.2   | 2021-04-20 | [2994](https://github.com/airbytehq/airbyte/pull/2994) | Formatting spec |
+| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.7   | 2021-01-21 | [1762](https://github.com/airbytehq/airbyte/pull/1762) | Fix issue large spreadsheet |
+| 0.1.6   | 2021-01-27 | [1668](https://github.com/airbytehq/airbyte/pull/1668) | Adopt connector best practices |
+| 0.1.5   | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438) | Implement backoff |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |

@@ -31,13 +31,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,7 +65,7 @@ public class TestDefaultJdbcDatabase {
 
   @BeforeEach
   void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     config = getConfig(PSQL_DB, dbName);
 

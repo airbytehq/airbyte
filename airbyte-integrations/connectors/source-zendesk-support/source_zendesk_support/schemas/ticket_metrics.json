@@ -1,0 +1,151 @@
+{
+  "properties": {
+    "metric": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "time": {
+      "type": ["null", "string"]
+    },
+    "instance_id": {
+      "type": ["null", "integer"]
+    },
+    "ticket_id": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "agent_wait_time_in_minutes": {
+      "type": ["null", "object"],
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "assignee_stations": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "first_resolution_time_in_minutes": {
+      "type": ["null", "object"],
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "full_resolution_time_in_minutes": {
+      "type": ["null", "object"],
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "group_stations": {
+      "type": ["null", "integer"]
+    },
+    "latest_comment_added_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "on_hold_time_in_minutes": {
+      "type": ["null", "object"],
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "reopens": {
+      "type": ["null", "integer"]
+    },
+    "replies": {
+      "type": ["null", "integer"]
+    },
+    "reply_time_in_minutes": {
+      "type": ["null", "object"],
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "requester_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "requester_wait_time_in_minutes": {
+      "type": ["null", "object"],
+      "properties": {
+        "calendar": {
+          "type": ["null", "integer"]
+        },
+        "business": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "status_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "initially_assigned_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "assigned_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "solved_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "assignee_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  },
+  "type": ["null", "object"]
+}

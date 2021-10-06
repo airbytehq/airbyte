@@ -44,6 +44,16 @@
         "type": "string",
         "enum": ["BULK", "REST"],
         "default": "BULK"
+      },
+      "quota_percent_per_run": {
+        "description": "determines the maximum allowed API quota percentage the connector is allowed to consume per sync job",
+        "type": ["number", null],
+        "title": "Maximum allowed API quota percentage percent per sync job"
+      },
+      "quota_percent_total": {
+        "description": "Determines the maximum allowed API quota percentage the connector is allowed to consume at any time",
+        "type": ["number", "null"],
+        "title": "Maximum allowed API quota percentage at any time"
       }
     }
   }

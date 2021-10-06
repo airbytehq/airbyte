@@ -173,33 +173,9 @@ class MigrationIntegrationTest {
   }
 
   @Test
-  void testMissingRecordResource() throws IOException {
+  void testSchemaContainsTypeNotPresentInData() throws IOException {
     final Set<String> configResourcesMissingWorkspace = Enums.valuesAsStrings(ConfigKeys.class);
     configResourcesMissingWorkspace.remove(MigrationV0_14_0.ConfigKeys.STANDARD_WORKSPACE.name());
-    writeInputs(
-        ResourceType.CONFIG,
-        configResourcesMissingWorkspace,
-        inputRoot.resolve(ResourceType.CONFIG.getDirectoryName()),
-        V0_14_0_TEST_RECORDS);
-    writeInputs(
-        ResourceType.CONFIG,
-        Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
-        inputRoot.resolve(ResourceType.JOB.getDirectoryName()),
-        V0_14_0_TEST_RECORDS);
-    IOs.writeFile(inputRoot, Migrate.VERSION_FILE_NAME, TEST_MIGRATIONS.get(0).getVersion());
-
-    final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
-
-    final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
-    final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, targetVersion);
-
-    assertThrows(IllegalArgumentException.class, () -> migrate.run(config));
-  }
-
-  @Test
-  void testMissingSchemaResource() throws IOException {
-    final Set<String> configResourcesMissingWorkspace = Enums.valuesAsStrings(ConfigKeys.class);
-    configResourcesMissingWorkspace.add("FAKE");
     writeInputs(
         ResourceType.CONFIG,
         configResourcesMissingWorkspace,
@@ -210,6 +186,38 @@ class MigrationIntegrationTest {
         Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
         inputRoot.resolve(ResourceType.JOB.getDirectoryName()),
         V0_14_0_TEST_RECORDS);
+    IOs.writeFile(inputRoot, Migrate.VERSION_FILE_NAME, TEST_MIGRATIONS.get(0).getVersion());
+
+    final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
+
+    final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
+    final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, targetVersion);
+
+    migrate.run(config);
+    final Map<ResourceId, List<JsonNode>> expectedRecords = addFooBarToAllRecordsExceptMetadata(V0_14_0_TEST_RECORDS);
+    assertExpectedOutputVersion(outputRoot, targetVersion);
+    assertRecordsInOutput(expectedRecords, 1);
+  }
+
+  @Test
+  void testRecordNotInSchema() throws IOException {
+    final Set<String> configResourceWithExtraResource = Enums.valuesAsStrings(ConfigKeys.class);
+    configResourceWithExtraResource.add("FAKE");
+    final Map<ResourceId, List<JsonNode>> mapWithFakeRecord = ImmutableMap.<ResourceId, List<JsonNode>>builder()
+        .putAll(V0_14_0_TEST_RECORDS)
+        .put(ResourceId.fromConstantCase(ResourceType.CONFIG, "FAKE"), List.of(Jsons.emptyObject()))
+        .build();
+
+    writeInputs(
+        ResourceType.CONFIG,
+        configResourceWithExtraResource,
+        inputRoot.resolve(ResourceType.CONFIG.getDirectoryName()),
+        mapWithFakeRecord);
+    writeInputs(
+        ResourceType.JOB,
+        Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
+        inputRoot.resolve(ResourceType.JOB.getDirectoryName()),
+        mapWithFakeRecord);
     IOs.writeFile(inputRoot, Migrate.VERSION_FILE_NAME, TEST_MIGRATIONS.get(0).getVersion());
 
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();

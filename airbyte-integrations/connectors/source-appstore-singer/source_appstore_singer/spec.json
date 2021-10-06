@@ -14,7 +14,8 @@
       "private_key": {
         "type": "string",
         "description": "Private_key is the contents of the <a href=\"https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api\">key file</a> you use to connect to appstore's API.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "multiline": true
       },
       "issuer_id": {
         "type": "string",

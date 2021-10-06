@@ -32,10 +32,13 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ConfigRepositoryTest {
+
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
 
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
@@ -48,24 +51,23 @@ class ConfigRepositoryTest {
 
   @Test
   void testWorkspaceWithNullTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(PersistenceConstants.DEFAULT_WORKSPACE_ID));
+    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID));
   }
 
   @Test
   void testWorkspaceWithFalseTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(PersistenceConstants.DEFAULT_WORKSPACE_ID).withTombstone(false));
+    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false));
   }
 
   @Test
   void testWorkspaceWithTrueTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(PersistenceConstants.DEFAULT_WORKSPACE_ID).withTombstone(true));
+    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(true));
   }
 
   void assertReturnsWorkspace(StandardWorkspace workspace) throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, PersistenceConstants.DEFAULT_WORKSPACE_ID.toString(), StandardWorkspace.class))
-        .thenReturn(workspace);
+    when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class)).thenReturn(workspace);
 
-    assertEquals(workspace, configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true));
+    assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
   }
 
 }

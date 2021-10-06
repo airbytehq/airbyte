@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "description_html": {
+      "type": ["null", "string"]
+    },
+    "text_color": {
+      "type": ["null", "string"]
+    },
+    "subscribed": {
+      "type": ["null", "boolean"]
+    },
+    "priority": {
+      "type": ["null", "integer"]
+    },
+    "is_project_label": {
+      "type": ["null", "boolean"]
+    },
+    "open_issues_count": {
+      "type": ["null", "integer"]
+    },
+    "closed_issues_count": {
+      "type": ["null", "integer"]
+    },
+    "open_merge_requests_count": {
+      "type": ["null", "integer"]
+    }
+  }
+}

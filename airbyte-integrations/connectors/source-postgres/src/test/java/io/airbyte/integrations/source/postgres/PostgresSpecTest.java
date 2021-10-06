@@ -52,7 +52,8 @@ public class PostgresSpecTest {
       + "\"database\" : \"postgres_db\",  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
-      + "\"replication_method\" : {    \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
+      + "\"ssl\" : true, "
+      + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
       + "}";
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
@@ -99,6 +100,7 @@ public class PostgresSpecTest {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     ((ObjectNode) config.get("replication_method")).remove("replication_slot");
     ((ObjectNode) config.get("replication_method")).remove("publication");
+    ((ObjectNode) config.get("replication_method")).put("method", "Standard");
     assertTrue(validator.test(schema, config));
 
     final JsonNode configReplicationMethodNotSet = Jsons.deserialize(CONFIGURATION);

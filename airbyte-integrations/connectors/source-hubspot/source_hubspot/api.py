@@ -1,32 +1,33 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import partial
+from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -38,6 +39,34 @@ from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, Hubsp
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
+
+VALID_JSON_SCHEMA_TYPES = {
+    "string",
+    "integer",
+    "number",
+    "boolean",
+    "object",
+    "array",
+}
+
+KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
+    "bool": ("boolean", None),
+    "enumeration": ("string", None),
+    "date": ("string", "date-time"),
+    "date-time": ("string", "date-time"),
+    "datetime": ("string", "date-time"),
+    "json": ("string", None),
+    "phone_number": ("string", None),
+}
+
+CUSTOM_FIELD_VALUE_TYPE_CAST = {
+    bool: "boolean",
+    str: "string",
+    float: "number",
+    int: "integer",
+}
+
+CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED = {v: k for k, v in CUSTOM_FIELD_VALUE_TYPE_CAST.items()}
 
 
 def retry_connection_handler(**kwargs):
@@ -68,8 +97,9 @@ def retry_after_handler(**kwargs):
 
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, HubspotRateLimited) and exc.response.headers.get("Retry-After"):
-            retry_after = int(exc.response.headers["Retry-After"])
+        if isinstance(exc, HubspotRateLimited):
+            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
@@ -119,7 +149,7 @@ class API:
         self._credentials["access_token"] = auth["access_token"]
         self._credentials["refresh_token"] = auth["refresh_token"]
         self._credentials["token_expires"] = datetime.utcnow() + timedelta(seconds=auth["expires_in"] - 600)
-        logger.info("Token refreshed. Expires at %s", self._credentials["token_expires"])
+        logger.info(f"Token refreshed. Expires at {self._credentials['token_expires']}")
 
     @property
     def api_key(self) -> Optional[str]:
@@ -228,9 +258,55 @@ class Stream(ABC):
                         record["properties"].pop(key)
             yield record
 
+    @staticmethod
+    def _cast_value(declared_field_types: List, field_name: str, field_value):
+
+        if field_value is None and "null" in declared_field_types:
+            return field_value
+
+        actual_field_type = type(field_value)
+        actual_field_type_name = CUSTOM_FIELD_VALUE_TYPE_CAST.get(actual_field_type)
+        if actual_field_type_name in declared_field_types:
+            return field_value
+
+        target_type_name = next(filter(lambda t: t != "null", declared_field_types))
+        target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
+
+        if target_type_name == "number":
+            if field_name.endswith("_id"):
+                # do not cast numeric IDs into float, use integer instead
+                target_type = int
+
+        try:
+            casted_value = target_type(field_value)
+        except ValueError:
+            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            return field_value
+
+        return casted_value
+
+    def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+
+        if self.entity not in {"contact", "engagement", "product", "quote", "ticket", "company", "deal", "line_item"}:
+            return record
+
+        if not record.get("properties"):
+            return record
+
+        properties = properties or self.properties
+
+        for field_name, field_value in record["properties"].items():
+            declared_field_types = properties[field_name].get("type") or []
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            record["properties"][field_name] = self._cast_value(declared_field_types, field_name, field_value)
+
+        return record
+
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
+            record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             yield record
@@ -291,7 +367,31 @@ class Stream(ABC):
 
         yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
 
+    @staticmethod
+    def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
+
+        if field_type in VALID_JSON_SCHEMA_TYPES:
+            return {
+                "type": ["null", field_type],
+            }
+
+        converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
+
+        if not converted_type:
+            converted_type = "string"
+            logger.warn(f"Unsupported type {field_type} found")
+
+        field_props = {
+            "type": ["null", converted_type or field_type],
+        }
+
+        if field_format:
+            field_props["format"] = field_format
+
+        return field_props
+
     @property
+    @lru_cache()
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
@@ -300,10 +400,7 @@ class Stream(ABC):
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
-            field_type = row["type"]
-            if field_type in ["enumeration", "date", "date-time"]:
-                field_type = "string"
-            props[row["name"]] = {"type": field_type}
+            props[row["name"]] = self._get_field_props(row["type"])
 
         return props
 
@@ -457,6 +554,48 @@ class ContactListStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+
+
+class DealStageHistoryStream(Stream):
+    """Deal stage history, API v1
+    Deal stage history is exposed by the v1 API, but not the v3 API.
+    The v1 endpoint requires the contacts scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
+    """
+
+    url = "/deals/v1/deal/paged"
+    more_key = "hasMore"
+    data_field = "deals"
+    updated_at_field = "timestamp"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            dealstage = record.get("properties", {}).get("dealstage", {})
+            updated_at = dealstage.get(self.updated_at_field)
+            if updated_at:
+                yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
+
+    def list(self, fields) -> Iterable:
+        params = {"propertiesWithHistory": "dealstage"}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+
+class DealStream(CRMObjectStream):
+    """Deals, API v3"""
+
+    def __init__(self, **kwargs):
+        super().__init__(entity="deal", **kwargs)
+        self._stage_history = DealStageHistoryStream(**kwargs)
+
+    def list(self, fields) -> Iterable:
+        history_by_id = {}
+        for record in self._stage_history.list(fields):
+            if all(field in record for field in ("id", "dealstage")):
+                history_by_id[record["id"]] = record["dealstage"]
+        for record in super().list(fields):
+            if record.get("id") and int(record["id"]) in history_by_id:
+                record["dealstage"] = history_by_id[int(record["id"])]
+            yield record
 
 
 class DealPipelineStream(Stream):

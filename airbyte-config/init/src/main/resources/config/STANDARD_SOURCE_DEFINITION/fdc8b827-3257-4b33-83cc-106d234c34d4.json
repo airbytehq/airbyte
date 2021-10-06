@@ -1,7 +1,8 @@
 {
   "sourceDefinitionId": "fdc8b827-3257-4b33-83cc-106d234c34d4",
-  "name": "Google Adwords",
+  "name": "Google Adwords (Deprecated)",
   "dockerRepository": "airbyte/source-google-adwords-singer",
-  "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-google-adwords"
+  "dockerImageTag": "0.2.6",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-adwords",
+  "icon": "google-adwords.svg"
 }

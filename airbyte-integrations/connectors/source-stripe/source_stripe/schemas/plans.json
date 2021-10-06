@@ -28,8 +28,7 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "statement_description": {
       "type": ["null", "string"]
@@ -82,10 +81,6 @@
     "metadata": {
       "type": ["null", "object"],
       "properties": {}
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

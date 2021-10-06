@@ -32,6 +32,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Full Refresh Sync | Yes |
 | Incremental Sync | Yes |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

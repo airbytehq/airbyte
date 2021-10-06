@@ -48,10 +48,25 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: PAPERCUPS_STORYTIME
+            - name: FULLSTORY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: FULLSTORY
+            - name: OPENREPLAY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: OPENREPLAY
             - name: IS_DEMO
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
                   key: IS_DEMO
+            - name: INTERNAL_API_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: INTERNAL_API_HOST
           ports:
             - containerPort: 80

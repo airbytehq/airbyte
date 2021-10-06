@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_nmbgmr_pressure_gwl
+!setup.py
+!secrets

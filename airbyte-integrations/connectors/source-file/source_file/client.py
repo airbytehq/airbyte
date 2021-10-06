@@ -1,30 +1,31 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import json
 import traceback
-from typing import Iterable, List
+from typing import Iterable
 from urllib.parse import urlparse
 
 import google
@@ -32,6 +33,7 @@ import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_protocol import AirbyteStream
+from azure.storage.blob import BlobServiceClient
 from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -108,6 +110,8 @@ class URLFile:
             return self._open_gcs_url(binary=binary)
         elif storage == "s3://":
             return self._open_aws_url(binary=binary)
+        elif storage == "azure://":
+            return self._open_azblob_url(binary=binary)
         elif storage == "webhdfs://":
             host = self._provider["host"]
             port = self._provider["port"]
@@ -115,7 +119,13 @@ class URLFile:
         elif storage in ("ssh://", "scp://", "sftp://"):
             user = self._provider["user"]
             host = self._provider["host"]
-            port = self._provider.get("port", 22)
+            # TODO: Remove int casting when https://github.com/airbytehq/airbyte/issues/4952 is addressed
+            # TODO: The "port" field in spec.json must also be changed
+            _port_value = self._provider.get("port", 22)
+            try:
+                port = int(_port_value)
+            except ValueError as err:
+                raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
             transport_params = {"connect_kwargs": {"look_for_keys": False}}
             if "password" in self._provider:
@@ -148,6 +158,8 @@ class URLFile:
             return "gs://"
         elif storage_name == "S3":
             return "s3://"
+        elif storage_name == "AZBLOB":
+            return "azure://"
         elif storage_name == "HTTPS":
             return "https://"
         elif storage_name == "SSH" or storage_name == "SCP":
@@ -203,6 +215,24 @@ class URLFile:
             result = smart_open.open(self.full_url, transport_params=params, mode=mode)
         return result
 
+    def _open_azblob_url(self, binary):
+        mode = "rb" if binary else "r"
+        storage_account = self._provider.get("storage_account")
+        storage_acc_url = f"https://{storage_account}.blob.core.windows.net"
+        sas_token = self._provider.get("sas_token", None)
+        shared_key = self._provider.get("shared_key", None)
+        # if both keys are provided, shared_key is preferred as has permissions on entire storage account
+        credential = shared_key or sas_token
+
+        if credential:
+            client = BlobServiceClient(account_url=storage_acc_url, credential=credential)
+        else:
+            # assuming anonymous public read access given no credential
+            client = BlobServiceClient(account_url=storage_acc_url)
+
+        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
+        return result
+
 
 class Client:
     """Class that manages reading and parsing data from streams"""
@@ -256,7 +286,7 @@ class Client:
                 result = [result]
         return result
 
-    def load_dataframes(self, fp, skip_data=False) -> List:
+    def load_dataframes(self, fp, skip_data=False) -> Iterable:
         """load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
@@ -286,11 +316,15 @@ class Client:
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
-        if skip_data and self._reader_format == "csv":
-            reader_options["nrows"] = 0
-            reader_options["index_col"] = 0
+        if self._reader_format == "csv":
+            reader_options["chunksize"] = 10000
+            if skip_data:
+                reader_options["nrows"] = 0
+                reader_options["index_col"] = 0
 
-        return [reader(fp, **reader_options)]
+            yield from reader(fp, **reader_options)
+        else:
+            yield reader(fp, **reader_options)
 
     @staticmethod
     def dtype_to_json_type(dtype) -> str:
@@ -322,8 +356,9 @@ class Client:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
             else:
+                fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
-                    columns = set(fields).intersection(set(df.columns)) if fields else df.columns
+                    columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.replace(np.nan, "NaN", regex=True)
                     yield from df[columns].to_dict(orient="records")
 

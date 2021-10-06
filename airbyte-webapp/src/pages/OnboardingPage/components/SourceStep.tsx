@@ -1,31 +1,28 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ConnectionConfiguration } from "core/domain/connection";
+import { JobInfo } from "core/resources/Scheduler";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import { Source } from "core/resources/Source";
+import ServiceForm from "views/Connector/ServiceForm";
+import { JobsLogItem } from "components/JobItem";
 
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
 
-import usePrepareDropdownLists from "./usePrepareDropdownLists";
-
-import { IDataItem } from "components/DropDown/components/ListItem";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { JobInfo } from "core/resources/Scheduler";
-import { JobsLogItem } from "components/JobItem";
 import SkipOnboardingButton from "./SkipOnboardingButton";
-import { ConnectionConfiguration } from "core/domain/connection";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type IProps = {
-  source?: Source;
   onSubmit: (values: {
     name: string;
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  dropDownData: IDataItem[];
+  availableServices: SourceDefinition[];
   hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
   jobInfo?: JobInfo;
@@ -34,27 +31,26 @@ type IProps = {
 
 const SourceStep: React.FC<IProps> = ({
   onSubmit,
-  dropDownData,
+  availableServices,
   hasSuccess,
   error,
-  source,
   jobInfo,
   afterSelectConnector,
 }) => {
-  const [sourceDefinitionId, setSourceDefinitionId] = useState(
-    source?.sourceDefinitionId || ""
-  );
+  const [sourceDefinitionId, setSourceDefinitionId] = useState("");
+  const analyticsService = useAnalytics();
+
   const {
     sourceDefinitionSpecification,
     isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
 
-  const { getSourceDefinitionById } = usePrepareDropdownLists();
+  const onServiceSelect = (sourceId: string) => {
+    const sourceDefinition = availableServices.find(
+      (s) => s.sourceDefinitionId === sourceId
+    );
 
-  const onDropDownSelect = (sourceId: string) => {
-    const sourceDefinition = getSourceDefinitionById(sourceId);
-
-    AnalyticsService.track("New Source - Action", {
+    analyticsService.track("New Source - Action", {
       action: "Select a connector",
       connector_source: sourceDefinition?.name,
       connector_source_id: sourceDefinition?.sourceDefinitionId,
@@ -82,16 +78,15 @@ const SourceStep: React.FC<IProps> = ({
           <SkipOnboardingButton step="source connection" />
         }
         allowChangeConnector
-        onDropDownSelect={onDropDownSelect}
+        onServiceSelect={onServiceSelect}
         onSubmit={onSubmitForm}
         formType="source"
-        dropDownData={dropDownData}
+        availableServices={availableServices}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
         documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         isLoading={isLoading}
-        formValues={source}
       />
       <JobsLogItem jobInfo={jobInfo} />
     </ContentCard>

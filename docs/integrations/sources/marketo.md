@@ -25,6 +25,7 @@ This connector can be used to sync the following tables from Marketo:
 | `int`, `long` | `number` |  |
 | `object` | `object` |  |
 | `string` | `string` | \`\` |
+| Namespaces | No |  |
 
 ### Features
 
@@ -86,3 +87,8 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 \*\*\*\*
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.2.3` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |

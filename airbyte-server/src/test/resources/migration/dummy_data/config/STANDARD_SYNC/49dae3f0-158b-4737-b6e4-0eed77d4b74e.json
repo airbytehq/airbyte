@@ -1,0 +1,45 @@
+{
+  "prefix": "",
+  "sourceId": "28ffee2b-372a-4f72-9b95-8ed56a8b99c5",
+  "destinationId": "5434615d-a3b7-4351-bc6b-a9a695555a30",
+  "connectionId": "49dae3f0-158b-4737-b6e4-0eed77d4b74e",
+  "name": "default",
+  "catalog": {
+    "streams": [
+      {
+        "stream": {
+          "name": "localhost_test.new_table",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "number" },
+              "val": { "type": "string" }
+            }
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "default_cursor_field": []
+        },
+        "sync_mode": "full_refresh",
+        "cursor_field": []
+      },
+      {
+        "stream": {
+          "name": "localhost_test.test_table",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "number" },
+              "val": { "type": "string" },
+              "updated_at": { "type": "string" }
+            }
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "default_cursor_field": []
+        },
+        "sync_mode": "incremental",
+        "cursor_field": ["updated_at"]
+      }
+    ]
+  },
+  "status": "active"
+}

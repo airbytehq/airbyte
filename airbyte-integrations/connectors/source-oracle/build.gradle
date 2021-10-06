@@ -17,6 +17,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
+    implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 

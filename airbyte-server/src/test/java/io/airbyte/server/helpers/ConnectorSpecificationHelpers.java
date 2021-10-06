@@ -42,7 +42,9 @@ public class ConnectorSpecificationHelpers {
     try {
       return new ConnectorSpecification()
           .withDocumentationUrl(new URI("https://airbyte.io"))
-          .withConnectionSpecification(Jsons.deserialize(Files.readString(path)));
+          .withConnectionSpecification(Jsons.deserialize(Files.readString(path)))
+          .withSupportsDBT(false)
+          .withSupportsNormalization(false);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }

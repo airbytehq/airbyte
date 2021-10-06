@@ -3,14 +3,16 @@ import styled from "styled-components";
 
 import Step from "./components/Step";
 
+export type StepMenuItem = {
+  id: string;
+  name: string | React.ReactNode;
+  status?: string;
+  onSelect?: () => void;
+};
+
 type IProps = {
   lightMode?: boolean;
-  data: Array<{
-    id: string;
-    name: string | React.ReactNode;
-    status?: string;
-    onSelect?: () => void;
-  }>;
+  data: StepMenuItem[];
   activeStep?: string;
   onSelect?: (id: string) => void;
 };

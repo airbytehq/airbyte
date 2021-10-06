@@ -1,7 +1,7 @@
 import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import Status from "core/statuses";
-import { NetworkError } from "core/request/NetworkError";
+import { CommonRequestError } from "core/request/CommonRequestError";
 import { ConnectionSpecification } from "core/domain/connection";
 import { Logs, JobItem } from "core/resources/Job";
 
@@ -55,11 +55,10 @@ export default class SchedulerResource
             status: result.status,
           };
 
-          const e = new NetworkError(result);
+          const e = new CommonRequestError(result, result.message || "");
           // Generate error with failed status and received logs
-          e.status = 400;
+          e._status = 400;
           e.response = jobInfo;
-          e.message = result.message || "";
 
           throw e;
         }
@@ -97,11 +96,10 @@ export default class SchedulerResource
             status: result.status,
           };
 
-          const e = new NetworkError(result);
+          const e = new CommonRequestError(result, result.message || "");
           // Generate error with failed status and received logs
-          e.status = 400;
+          e._status = 400;
           e.response = jobInfo;
-          e.message = result.message || "";
 
           throw e;
         }

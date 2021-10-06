@@ -136,7 +136,8 @@ public class Migrate {
                   try {
                     jsonSchemaValidator.ensure(migration.getInputSchema().get(entry.getKey()), r);
                   } catch (JsonValidationException e) {
-                    throw new IllegalArgumentException("Input data schema does not match declared input schema.", e);
+                    throw new IllegalArgumentException(
+                        String.format("Input data schema does not match declared input schema %s.", entry.getKey().getName()), e);
                   }
                 })));
 
@@ -160,10 +161,15 @@ public class Migrate {
         createInputStreamsForResourceType(migrationInputRoot, ResourceType.CONFIG),
         createInputStreamsForResourceType(migrationInputRoot, ResourceType.JOB));
 
-    try {
-      MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Input record resources do not match declared schema resources", e);
+    System.out.println("\n\nschema = \n" + migration.getInputSchema().keySet().stream().map(ResourceId::getName).collect(Collectors.joining("\n")));
+    System.out.println("\n\nrecords = \n" + resourceIdToInputStreams.keySet().stream().map(ResourceId::getName).collect(Collectors.joining("\n")));
+    if (!migration.getInputSchema().keySet().containsAll(resourceIdToInputStreams.keySet())) {
+      try {
+        // we know something is wrong. check equality to get a full log message of the total difference.
+        MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Input records contain resource not declared in schema resources", e);
+      }
     }
     return resourceIdToInputStreams;
   }

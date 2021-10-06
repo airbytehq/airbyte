@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "clauseNames": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "custom": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "navigable": {
+      "type": "boolean"
+    },
+    "orderable": {
+      "type": "boolean"
+    },
+    "schema": {
+      "properties": {
+        "custom": {
+          "type": "string"
+        },
+        "customId": {
+          "type": "integer"
+        },
+        "items": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "searchable": {
+      "type": "boolean"
+    },
+    "untranslatedName": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

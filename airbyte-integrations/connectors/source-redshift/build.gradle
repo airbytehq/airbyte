@@ -17,6 +17,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
+    implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
 

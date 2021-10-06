@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -126,6 +127,14 @@ public class Job {
 
   public Optional<JobOutput> getSuccessOutput() {
     return getSuccessfulAttempt().flatMap(Attempt::getOutput);
+  }
+
+  public Optional<Attempt> getLastAttemptWithOutput() {
+    return getAttempts()
+        .stream()
+        .sorted(Comparator.comparing(Attempt::getCreatedAtInSecond).reversed())
+        .filter(a -> a.getOutput().isPresent() && a.getOutput().get().getSync() != null && a.getOutput().get().getSync().getState() != null)
+        .findFirst();
   }
 
   public boolean hasRunningAttempt() {

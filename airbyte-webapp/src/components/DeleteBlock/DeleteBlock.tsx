@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
-import Button from "components/Button";
+import { Button } from "components";
 import DeleteModal from "./components/DeleteModal";
 
 type IProps = {

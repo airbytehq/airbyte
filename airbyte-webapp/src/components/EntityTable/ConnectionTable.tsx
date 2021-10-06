@@ -107,6 +107,7 @@ const ConnectionTable: React.FC<IProps> = ({
             enabled={row.original.enabled}
             status={row.original.lastSyncStatus}
             icon={entity === "connection"}
+            img={row.original.entityIcon}
           />
         ),
       },
@@ -127,7 +128,11 @@ const ConnectionTable: React.FC<IProps> = ({
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <ConnectorCell value={cell.value} enabled={row.original.enabled} />
+          <ConnectorCell
+            value={cell.value}
+            enabled={row.original.enabled}
+            img={row.original.connectorIcon}
+          />
         ),
       },
 

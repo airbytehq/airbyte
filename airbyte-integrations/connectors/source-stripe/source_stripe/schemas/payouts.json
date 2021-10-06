@@ -20,8 +20,7 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "amount_reversed": {
       "type": ["null", "integer"]
@@ -118,18 +117,13 @@
       "type": ["null", "string"]
     },
     "arrival_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "description": {
       "type": ["null", "string"]
     },
     "source_transaction": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   },
   "type": ["null", "object"]

@@ -6,7 +6,9 @@ labels: type/enhancement, area/documentation
 assignees: ''
 
 ---
+### Tell us about the documentation you'd like us to add or update.
+It can be as pedantic as a typo or as titanic as an entire tutorial request.
 
-## Tell us about the documentation you'd like us to add or update
 
-## Are there any related areas of documentation that currently exist? Could you point to them? 
+### If applicable, add links to the relevant docs that should be updated
+- [Link to relevant docs page](https://docs.airbyte.io)

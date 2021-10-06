@@ -1,0 +1,268 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "gid": {
+      "type": ["null", "string"]
+    },
+    "resource_type": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "current_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "author": {
+          "type": ["null", "object"],
+          "properties": {
+            "gid": {
+              "type": ["null", "string"]
+            },
+            "resource_type": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "color": {
+          "type": ["null", "string"]
+        },
+        "html_text": {
+          "type": ["null", "string"]
+        },
+        "modified_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "text": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": ["null", "object"],
+          "properties": {
+            "gid": {
+              "type": ["null", "string"]
+            },
+            "resource_type": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "custom_field_settings": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "default_view": {
+      "type": ["null", "string"]
+    },
+    "due_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "due_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "html_notes": {
+      "type": ["null", "string"]
+    },
+    "is_template": {
+      "type": ["null", "boolean"]
+    },
+    "members": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "modified_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "public": {
+      "type": ["null", "boolean"]
+    },
+    "start_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "workspace": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "display_value": {
+            "type": ["null", "string"]
+          },
+          "enabled": {
+            "type": ["null", "boolean"]
+          },
+          "enum_options": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "gid": {
+                  "type": ["null", "string"]
+                },
+                "resource_type": {
+                  "type": ["null", "string"]
+                },
+                "color": {
+                  "type": ["null", "string"]
+                },
+                "enabled": {
+                  "type": ["null", "boolean"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "number_value": {
+            "type": ["null", "number"]
+          },
+          "resource_subtype": {
+            "type": ["null", "string"]
+          },
+          "text_value": {
+            "type": ["null", "boolean"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "followers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": {
+            "type": ["null", "string"]
+          },
+          "resource_type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "icon": {
+      "type": ["null", "string"]
+    },
+    "owner": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "permalink_url": {
+      "type": ["null", "string"]
+    },
+    "team": {
+      "type": ["null", "object"],
+      "properties": {
+        "gid": {
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

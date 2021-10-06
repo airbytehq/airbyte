@@ -24,116 +24,88 @@
 
 package io.airbyte.server;
 
+import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.helpers.LogHelpers;
-import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DefaultConfigPersistence;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.handlers.ArchiveHandler;
+import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-public class ServerApp {
+public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private static final int PORT = 8001;
+  /**
+   * We can't support automatic migration for kube before this version because we had a bug in kube
+   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
+   * wouldn't run
+   */
+  private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
+  private final String airbyteVersion;
+  private final Set<Class<?>> customComponentClasses;
+  private final Set<Object> customComponents;
 
-  private final ConfigRepository configRepository;
-  private final JobPersistence jobPersistence;
-  private final Configs configs;
-
-  public ServerApp(final ConfigRepository configRepository,
-                   final JobPersistence jobPersistence,
-                   final Configs configs) {
-    this.configRepository = configRepository;
-    this.jobPersistence = jobPersistence;
-    this.configs = configs;
+  public ServerApp(final String airbyteVersion,
+                   final Set<Class<?>> customComponentClasses,
+                   final Set<Object> customComponents) {
+    this.airbyteVersion = airbyteVersion;
+    this.customComponentClasses = customComponentClasses;
+    this.customComponents = customComponents;
   }
 
+  @Override
   public void start() throws Exception {
-    TrackingClientSingleton.get().identify();
+    final Server server = new Server(PORT);
 
-    Server server = new Server(8001);
+    final ServletContextHandler handler = new ServletContextHandler();
 
-    ServletContextHandler handler = new ServletContextHandler();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-    ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
-    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-
-    ConfigurationApiFactory
-        .setSynchronousSchedulerClient(new SpecCachingSynchronousSchedulerClient(new DefaultSynchronousSchedulerClient(temporalClient, jobTracker)));
-    ConfigurationApiFactory.setTemporalService(temporalService);
-    ConfigurationApiFactory.setConfigRepository(configRepository);
-    ConfigurationApiFactory.setJobPersistence(jobPersistence);
-    ConfigurationApiFactory.setConfigs(configs);
-    ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
-    ConfigurationApiFactory.setMdc(mdc);
-
-    ResourceConfig rc =
+    final ResourceConfig rc =
         new ResourceConfig()
-            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
-            // cors
-            .register(new CorsFilter())
-            // request logging
             .register(new RequestLogger(mdc))
-            // api
-            .register(ConfigurationApi.class)
-            .register(
-                new AbstractBinder() {
-
-                  @Override
-                  public void configure() {
-                    bindFactory(ConfigurationApiFactory.class)
-                        .to(ConfigurationApi.class)
-                        .in(RequestScoped.class);
-                  }
-
-                })
-            // exception handling
             .register(InvalidInputExceptionMapper.class)
             .register(InvalidJsonExceptionMapper.class)
             .register(InvalidJsonInputExceptionMapper.class)
@@ -144,6 +116,10 @@ public class ServerApp {
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class);
 
+    // inject custom server functionality
+    customComponentClasses.forEach(rc::register);
+    customComponents.forEach(rc::register);
+
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
     handler.addServlet(configServlet, "/api/*");
@@ -152,68 +128,153 @@ public class ServerApp {
 
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
-    LOGGER.info(banner + String.format("Version: %s\n", configs.getAirbyteVersion()));
+    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion));
     server.join();
   }
 
-  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
-    final StandardWorkspace workspace;
-    try {
-      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
-
-      if (workspace.getCustomerId() == null) {
-        final UUID customerId = UUID.randomUUID();
-        LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
-        workspace.setCustomerId(customerId);
-
-        configRepository.writeStandardWorkspace(workspace);
-      }
-    } catch (ConfigNotFoundException e) {
-      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
-    } catch (JsonValidationException | IOException e) {
-      throw new RuntimeException(e);
+  private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
+    final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
+    if (deploymentOptional.isPresent()) {
+      LOGGER.info("running deployment: {}", deploymentOptional.get());
+    } else {
+      final UUID deploymentId = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId);
+      LOGGER.info("created deployment: {}", deploymentId);
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  private static void createWorkspaceIfNoneExists(final ConfigRepository configRepository) throws JsonValidationException, IOException {
+    if (!configRepository.listStandardWorkspaces(true).isEmpty()) {
+      LOGGER.info("workspace already exists for the deployment.");
+      return;
+    }
+
+    final UUID workspaceId = UUID.randomUUID();
+    final StandardWorkspace workspace = new StandardWorkspace()
+        .withWorkspaceId(workspaceId)
+        .withCustomerId(UUID.randomUUID())
+        .withName(workspaceId.toString())
+        .withSlug(workspaceId.toString())
+        .withInitialSetupComplete(false)
+        .withDisplaySetupWizard(true)
+        .withTombstone(false);
+    configRepository.writeStandardWorkspace(workspace);
+    TrackingClientSingleton.get().identify(workspaceId);
+  }
+
+  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getServerLogsRoot(configs).toString());
-
-    final Path configRoot = configs.getConfigRoot();
-    LOGGER.info("configRoot = " + configRoot);
+    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
     LOGGER.info("Creating config repository...");
-    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getAndInitializeDbPersistence(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
-    // hack: upon installation we need to assign a random customerId so that when
-    // tracking we can associate all action with the correct anonymous id.
-    setCustomerIdIfNotSet(configRepository);
+    LOGGER.info("Creating Scheduler persistence...");
+    final Database jobDatabase = new JobsDatabaseInstance(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl())
+            .getAndInitialize();
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
+    createDeploymentIfNoneExists(jobPersistence);
+
+    // must happen after deployment id is set
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
+        new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
 
-    LOGGER.info("Creating Scheduler persistence...");
-    final Database database = Databases.createPostgresDatabase(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
+    // must happen after the tracking client is initialized.
+    // if no workspace exists, we create one so the user starts out with a place to add configuration.
+    createWorkspaceIfNoneExists(configRepository);
 
     final String airbyteVersion = configs.getAirbyteVersion();
-    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isEmpty()) {
+    if (jobPersistence.getVersion().isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
-    } else {
-      AirbyteVersion.assertIsCompatible(airbyteVersion, airbyteDatabaseVersion.get());
     }
 
-    LOGGER.info("Starting server...");
-    new ServerApp(configRepository, jobPersistence, configs).start();
+    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+      boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      boolean versionSupportsAutoMigrate =
+          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
+      if (!isKubernetes || versionSupportsAutoMigrate) {
+        runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
+        // After migration, upgrade the DB version
+        airbyteDatabaseVersion = jobPersistence.getVersion();
+      } else {
+        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.getVersion());
+      }
+    }
+
+    if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+      LOGGER.info("Starting server...");
+
+      final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
+      final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
+      final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+      final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
+      final DefaultSynchronousSchedulerClient syncSchedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
+      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
+
+      return apiFactory.create(
+          schedulerJobClient,
+          cachingSchedulerClient,
+          temporalService,
+          configRepository,
+          jobPersistence,
+          configs);
+    } else {
+      LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
+      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
+    }
+  }
+
+  public static void main(String[] args) throws Exception {
+    getServer(new ServerFactory.Api()).start();
+  }
+
+  /**
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
+   * no other operation is allowed
+   */
+  private static void runAutomaticMigration(ConfigRepository configRepository,
+                                            JobPersistence jobPersistence,
+                                            String airbyteVersion,
+                                            String airbyteDatabaseVersion) {
+    LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
+    LOGGER.info("Last seeds dir: {}", ArchiveHandler.SEEDS_PATH);
+    try (final RunMigration runMigration = new RunMigration(
+        jobPersistence,
+        configRepository,
+        airbyteVersion,
+        ArchiveHandler.SEEDS_PATH)) {
+      runMigration.run();
+    } catch (Exception e) {
+      LOGGER.error("Automatic Migration failed ", e);
+    }
+  }
+
+  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+    if (bothVersionsCompatible) {
+      return false;
+    }
+
+    AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
+    AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
+
+    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
+      return true;
+    }
+
+    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
 }

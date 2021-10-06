@@ -90,7 +90,7 @@
           }
         },
         "amount": {
-          "type": "integer"
+          "type": "number"
         }
       }
     },
@@ -119,13 +119,13 @@
       "type": "string"
     },
     "remaining_billing_cycles": {
-      "type": "integer"
+      "type": "number"
     },
     "total_billing_cycles": {
-      "type": "integer"
+      "type": "number"
     },
     "renewal_billing_cycles": {
-      "type": "integer"
+      "type": "number"
     },
     "auto_renew": {
       "type": "boolean"
@@ -134,7 +134,7 @@
       "type": "string"
     },
     "remaining_pause_cycles": {
-      "type": "integer"
+      "type": "number"
     },
     "currency": {
       "type": "string"
@@ -143,19 +143,19 @@
       "type": "string"
     },
     "unit_amount": {
-      "type": "integer"
+      "type": "number"
     },
     "quantity": {
-      "type": "integer"
+      "type": "number"
     },
     "add_ons": {
       "type": "array"
     },
     "add_ons_total": {
-      "type": "integer"
+      "type": "number"
     },
     "subtotal": {
-      "type": "integer"
+      "type": "number"
     },
     "collection_method": {
       "type": "string"
@@ -164,16 +164,16 @@
       "type": "string"
     },
     "net_terms": {
-      "type": "integer"
+      "type": "number"
     },
     "terms_and_conditions": {
-      "type": "integer"
+      "type": "string"
     },
     "customer_notes": {
-      "type": "integer"
+      "type": "string"
     },
     "expiration_reason": {
-      "type": "integer"
+      "type": "string"
     },
     "custom_fields": {
       "type": "array"

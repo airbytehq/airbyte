@@ -38,17 +38,25 @@ import java.util.UUID;
 public class SourceHelpers {
 
   public static SourceConnection generateSource(UUID sourceDefinitionId) throws IOException {
-    return generateSource(sourceDefinitionId, false);
+    return generateSource(sourceDefinitionId, "my default source name", false);
+  }
+
+  public static SourceConnection generateSource(UUID sourceDefinitionId, String name) throws IOException {
+    return generateSource(sourceDefinitionId, name, false);
   }
 
   public static SourceConnection generateSource(UUID sourceDefinitionId, boolean tombstone) throws IOException {
+    return generateSource(sourceDefinitionId, "my default source name", tombstone);
+  }
+
+  public static SourceConnection generateSource(UUID sourceDefinitionId, String name, boolean tombstone) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
 
     final JsonNode implementationJson = getTestImplementationJson();
 
     return new SourceConnection()
-        .withName("my postgres db")
+        .withName(name)
         .withWorkspaceId(workspaceId)
         .withSourceDefinitionId(sourceDefinitionId)
         .withSourceId(sourceId)

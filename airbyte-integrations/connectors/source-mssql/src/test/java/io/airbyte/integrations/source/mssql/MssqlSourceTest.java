@@ -31,16 +31,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +50,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 class MssqlSourceTest {
 
   private static final String DB_NAME = "dbo";
-  private static final String STREAM_NAME = DB_NAME + ".id_and_name";
+  private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       DB_NAME,
@@ -77,7 +77,7 @@ class MssqlSourceTest {
   @BeforeEach
   void setup() throws SQLException {
     configWithoutDbName = getConfig(db);
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {
@@ -125,7 +125,7 @@ class MssqlSourceTest {
         .build());
   }
 
-  private static Database getDatabase(JsonNode config) {
+  public static Database getDatabase(JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(

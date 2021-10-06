@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "required": ["value"],
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "The key of the transition property. Also known as the name of the transition property.",
+      "readOnly": true
+    },
+    "value": {
+      "type": "string",
+      "description": "The value of the transition property."
+    },
+    "id": {
+      "type": "string",
+      "description": "The ID of the transition property.",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about the server Jira is running on."
+}

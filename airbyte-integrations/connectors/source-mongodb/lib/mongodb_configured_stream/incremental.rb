@@ -71,15 +71,13 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
   private
 
   def determine_cursor_field_type
-    explorer = MongodbTypesExplorer.new(collection: @client[stream_name], field: cursor_field) do |type|
+    MongodbTypesExplorer.run(collection: @client[stream_name], field: cursor_field) do |type|
       if DATETIME_TYPES.include?(type)
         CURSOR_TYPES[:datetime]
       else
         CURSOR_TYPES[:integer]
       end
     end
-
-    explorer.field_type
   end
 
   def convert_cursor(value)

@@ -283,8 +283,7 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "address_state": {
           "type": ["null", "string"]
@@ -367,8 +366,7 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "order": {
       "type": ["null", "string"]
@@ -414,8 +412,24 @@
       "type": ["null", "string"]
     },
     "refunds": {
-      "type": ["null", "array"],
-      "items": {}
+      "type": ["null", "object"],
+      "properties": {
+        "object": {
+          "type": ["null", "string"]
+        },
+        "data": {
+          "type": ["null", "array"]
+        },
+        "has_more": {
+          "type": ["null", "boolean"]
+        },
+        "total_count": {
+          "type": ["null", "number"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "application_fee": {
       "type": ["null", "string"]
@@ -1044,10 +1058,6 @@
     },
     "description": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

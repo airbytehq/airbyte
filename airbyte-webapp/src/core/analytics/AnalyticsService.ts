@@ -1,32 +1,31 @@
-import config from "config";
 import { SegmentAnalytics } from "./types";
 
 export class AnalyticsService {
-  private static getAnalytics = (): SegmentAnalytics | undefined =>
+  constructor(private userId?: string, private version?: string) {}
+
+  private getSegmentAnalytics = (): SegmentAnalytics | undefined =>
     window.analytics;
 
-  static alias = (newId: string): void =>
-    AnalyticsService.getAnalytics()?.alias?.(newId);
+  alias = (newId: string): void => this.getSegmentAnalytics()?.alias?.(newId);
 
-  static page = (name: string): void =>
-    AnalyticsService.getAnalytics()?.page?.(name);
+  page = (name: string): void => this.getSegmentAnalytics()?.page?.(name);
 
-  static reset = (): void => AnalyticsService.getAnalytics()?.reset?.();
+  reset = (): void => this.getSegmentAnalytics()?.reset?.();
 
-  static track = (name: string, properties: Record<string, unknown>): void =>
-    AnalyticsService.getAnalytics()?.track?.(name, {
-      user_id: config.ui.workspaceId,
+  track = (name: string, properties: Record<string, unknown>): void =>
+    this.getSegmentAnalytics()?.track?.(name, {
+      user_id: this.userId,
       ...properties,
-      airbyte_version: config.version,
+      airbyte_version: this.version,
+      environment: this.version === "dev" ? "dev" : "prod",
     });
 
-  static identify = (
-    userId: string,
-    traits: Record<string, unknown> = {}
-  ): void => AnalyticsService.getAnalytics()?.identify?.(userId, traits);
+  identify = (userId: string, traits: Record<string, unknown> = {}): void => {
+    this.getSegmentAnalytics()?.identify?.(userId, traits);
+  };
 
-  static group = (
+  group = (
     organisationId: string,
     traits: Record<string, unknown> = {}
-  ): void => AnalyticsService.getAnalytics()?.group?.(organisationId, traits);
+  ): void => this.getSegmentAnalytics()?.group?.(organisationId, traits);
 }

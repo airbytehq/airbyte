@@ -26,7 +26,8 @@ package io.airbyte.analytics;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.UUID;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,32 +35,32 @@ public class LoggingTrackingClient implements TrackingClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
 
-  private final Supplier<TrackingIdentity> identitySupplier;
+  private final Function<UUID, TrackingIdentity> identityFetcher;
 
-  public LoggingTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this.identitySupplier = identitySupplier;
+  public LoggingTrackingClient(Function<UUID, TrackingIdentity> identityFetcher) {
+    this.identityFetcher = identityFetcher;
   }
 
   @Override
-  public void identify() {
-    LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
+  public void identify(UUID workspaceId) {
+    LOGGER.info("identify. userId: {}", identityFetcher.apply(workspaceId).getCustomerId());
   }
 
   @Override
-  public void alias(String previousCustomerId) {
-    LOGGER.info("merge. userId: {} previousUserId: {}", identitySupplier.get().getCustomerId(), previousCustomerId);
+  public void alias(UUID workspaceId, String previousCustomerId) {
+    LOGGER.info("merge. userId: {} previousUserId: {}", identityFetcher.apply(workspaceId).getCustomerId(), previousCustomerId);
   }
 
   @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
+  public void track(UUID workspaceId, String action) {
+    track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(String action, Map<String, Object> metadata) {
+  public void track(UUID workspaceId, String action, Map<String, Object> metadata) {
     LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
-        identitySupplier.get().getAirbyteVersion(),
-        identitySupplier.get().getCustomerId(),
+        identityFetcher.apply(workspaceId).getAirbyteVersion(),
+        identityFetcher.apply(workspaceId).getCustomerId(),
         action,
         metadata);
   }

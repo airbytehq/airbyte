@@ -33,10 +33,6 @@ public class WorkerConstants {
   public static final String DESTINATION_CATALOG_JSON_FILENAME = "destination_catalog.json";
   public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
 
-  public static final String LOG_FILENAME = "logs.log";
-
-  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
-
   public static final String RESET_JOB_SOURCE_DOCKER_IMAGE_STUB = "airbyte_empty";
 
 }

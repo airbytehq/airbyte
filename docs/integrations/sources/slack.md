@@ -4,7 +4,7 @@
 
 This source can sync data for the [Slack API](https://api.slack.com/). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-slack).
+This Source Connector is based on a [Singer Tap](https://github.com/airbytehq/tap-slack).
 
 ### Output schema
 
@@ -34,6 +34,7 @@ This Source is capable of syncing the following core Streams:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 
@@ -96,3 +97,10 @@ You can no longer create "Legacy" API Keys, but if you already have one, you can
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fixed reading threads issue |
+| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float_ts primary key |
+| 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978) | Release Slack CDK Connector |

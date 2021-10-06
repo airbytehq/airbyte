@@ -1,0 +1,46 @@
+{
+  "title": "Get Merchant Listings Reports",
+  "description": "Get Merchant Listings All Data Reports",
+  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "reportType": {
+      "type": ["null", "string"]
+    },
+    "processingEndTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processingStatus": {
+      "type": ["null", "string"]
+    },
+    "marketplaceIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "reportDocumentId": {
+      "type": ["null", "string"]
+    },
+    "reportId": {
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processingStartTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dataStartTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

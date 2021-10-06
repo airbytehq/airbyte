@@ -9,8 +9,8 @@ import SkipOnboardingButton from "./SkipOnboardingButton";
 
 type IProps = {
   errorStatus?: number;
-  source?: Source;
-  destination?: Destination;
+  source: Source;
+  destination: Destination;
 };
 
 const ConnectionStep: React.FC<IProps> = ({ source, destination }) => {

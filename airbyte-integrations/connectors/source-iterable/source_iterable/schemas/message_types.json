@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "channelId": {
+      "type": ["null", "number"]
+    }
+  },
+  "type": ["null", "object"]
+}

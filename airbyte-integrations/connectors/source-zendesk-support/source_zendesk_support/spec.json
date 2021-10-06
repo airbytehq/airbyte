@@ -1,0 +1,46 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-support",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Source Zendesk Support Spec",
+    "type": "object",
+    "required": ["start_date", "subdomain", "auth_method"],
+    "additionalProperties": false,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "description": "The date from which you'd like to replicate data for Zendesk Support API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "examples": ["2020-10-15T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "subdomain": {
+        "type": "string",
+        "description": "The subdomain for your Zendesk Support"
+      },
+      "auth_method": {
+        "title": "ZenDesk Authorization Method",
+        "type": "object",
+        "description": "Zendesk service provides 2 auth method: API token and oAuth2. Now only the first one is available. Another one will be added in the future",
+        "oneOf": [
+          {
+            "title": "API Token",
+            "type": "object",
+            "required": ["email", "api_token"],
+            "additionalProperties": false,
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "The user email for your Zendesk account"
+              },
+              "api_token": {
+                "type": "string",
+                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

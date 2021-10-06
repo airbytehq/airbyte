@@ -7,6 +7,8 @@ import ImageBlock from "components/ImageBlock";
 import { Header, Row, Cell } from "components/SimpleTableComponents";
 import EnabledControl from "./EnabledControl";
 import { Connection } from "core/resources/Connection";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { SourceDefinition } from "core/resources/SourceDefinition";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -32,9 +34,16 @@ const EnabledCell = styled(Cell)`
 type IProps = {
   connection: Connection;
   frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
 };
 
-const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
+const StatusMainInfo: React.FC<IProps> = ({
+  connection,
+  frequencyText,
+  destinationDefinition,
+  sourceDefinition,
+}) => {
   return (
     <MainInfo>
       <Header>
@@ -51,11 +60,11 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
       </Header>
       <Row>
         <SourceCell flex={2}>
-          <Img />
+          <Img img={sourceDefinition?.icon} />
           {connection.source?.sourceName}
         </SourceCell>
         <SourceCell flex={2}>
-          <Img />
+          <Img img={destinationDefinition?.icon} />
           {connection.destination?.destinationName}
         </SourceCell>
         <Cell>{frequencyText}</Cell>

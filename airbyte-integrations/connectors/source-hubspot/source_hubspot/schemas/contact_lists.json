@@ -18,12 +18,10 @@
           "type": ["null", "string"]
         },
         "lastProcessingStateChangeAt": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "lastSizeChangeAt": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": "integer"
         }
       }
     },

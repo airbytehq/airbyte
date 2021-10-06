@@ -1,6 +1,15 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import styled from "styled-components";
-import { ColumnInstance, useTable, Column, Cell } from "react-table";
+import {
+  Cell,
+  Column,
+  ColumnInstance,
+  SortingRule,
+  useSortBy,
+  useTable,
+} from "react-table";
+
+import { Card } from "components";
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
@@ -18,14 +27,10 @@ type IThProps = {
   customWidth?: number;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
-const TableView = styled.table`
+const TableView = styled(Card).attrs({ as: "table" })`
   border-spacing: 0;
   width: 100%;
   overflow: hidden;
-  background: ${({ theme }) => theme.whiteColor};
-  border: 1px solid ${({ theme }) => theme.greyColor20};
-  box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
-  border-radius: 8px;
   max-width: 100%;
 `;
 
@@ -81,6 +86,8 @@ type IProps = {
   data: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClickRow?: (data: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sortBy?: Array<SortingRule<any>>;
 };
 
 const Table: React.FC<IProps> = ({
@@ -88,17 +95,32 @@ const Table: React.FC<IProps> = ({
   data,
   onClickRow,
   erroredRows,
+  sortBy,
 }) => {
+  const [plugins, config] = useMemo(() => {
+    const pl = [];
+    const plConfig: Record<string, unknown> = {};
+
+    if (sortBy) {
+      pl.push(useSortBy);
+      plConfig.initialState = { sortBy };
+    }
+    return [pl, plConfig];
+  }, [sortBy]);
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({
-    columns,
-    data,
-  });
+  } = useTable(
+    {
+      ...config,
+      columns,
+      data,
+    },
+    ...plugins
+  );
 
   return (
     <TableView {...getTableProps()}>
@@ -126,31 +148,29 @@ const Table: React.FC<IProps> = ({
         {rows.map((row) => {
           prepareRow(row);
           return (
-            <>
-              <Tr
-                {...row.getRowProps()}
-                key={`table-row-${row.id}`}
-                hasClick={!!onClickRow}
-                onClick={() => onClickRow?.(row.original)}
-                erroredRows={erroredRows && !!row.original.error}
-              >
-                {
-                  // @ts-ignore needs to address proper types for table
-                  row.cells.map((cell: ICellProps, key) => {
-                    return (
-                      <Td
-                        {...cell.getCellProps()}
-                        collapse={cell.column.collapse}
-                        customWidth={cell.column.customWidth}
-                        key={`table-cell-${row.id}-${key}`}
-                      >
-                        {cell.render("Cell")}
-                      </Td>
-                    );
-                  })
-                }
-              </Tr>
-            </>
+            <Tr
+              {...row.getRowProps()}
+              key={`table-row-${row.id}`}
+              hasClick={!!onClickRow}
+              onClick={() => onClickRow?.(row.original)}
+              erroredRows={erroredRows && !!row.original.error}
+            >
+              {
+                // @ts-ignore needs to address proper types for table
+                row.cells.map((cell: ICellProps, key) => {
+                  return (
+                    <Td
+                      {...cell.getCellProps()}
+                      collapse={cell.column.collapse}
+                      customWidth={cell.column.customWidth}
+                      key={`table-cell-${row.id}-${key}`}
+                    >
+                      {cell.render("Cell")}
+                    </Td>
+                  );
+                })
+              }
+            </Tr>
           );
         })}
       </tbody>

@@ -1,35 +1,53 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import json
 import os
 
+import pytest
 from normalization.transform_catalog.transform import extract_schema
 from normalization.transform_config.transform import DestinationType, TransformConfig
 
 
 class TestTransformConfig:
+    """
+    This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
+    """
+
+    @pytest.fixture(scope="class", autouse=True)
+    def before_all_tests(self, request):
+        # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+        # or from the base-normalization folder (through pycharm)
+        unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
+        if os.path.exists(unit_tests_dir):
+            os.chdir(unit_tests_dir)
+        else:
+            os.chdir(request.fspath.dirname)
+        yield
+        os.chdir(request.config.invocation_dir)
+
     def test_transform_bigquery(self):
         input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
 
@@ -80,7 +98,7 @@ class TestTransformConfig:
 
     def test_transform_snowflake(self):
         input = {
-            "host": "123abc.us-east-7.aws.snowflakecomputing.com",
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
             "role": "AIRBYTE_ROLE",
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",
@@ -106,6 +124,32 @@ class TestTransformConfig:
 
         assert expected == actual
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
+    def test_transform_mysql(self):
+        input = {
+            "type": "mysql5",
+            "host": "airbyte.io",
+            "port": 5432,
+            "database": "my_db",
+            "schema": "public",
+            "username": "a user",
+            "password": "password1234",
+        }
+
+        actual = TransformConfig().transform_mysql(input)
+        expected = {
+            "type": "mysql5",
+            "server": "airbyte.io",
+            "port": 5432,
+            "schema": "my_db",
+            "database": "my_db",
+            "username": "a user",
+            "password": "password1234",
+        }
+
+        assert expected == actual
+        # DBT schema is equivalent to MySQL database
+        assert extract_schema(actual) == "my_db"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):

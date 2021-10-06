@@ -24,7 +24,7 @@ const Overlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 5;
+  z-index: 10;
 `;
 
 const Modal: React.FC<IProps> = ({ children, title, onClose }) => {

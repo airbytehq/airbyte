@@ -25,15 +25,16 @@
 package io.airbyte.analytics;
 
 import java.util.Map;
+import java.util.UUID;
 
 public interface TrackingClient {
 
-  void identify();
+  void identify(UUID workspaceId);
 
-  void alias(String previousCustomerId);
+  void alias(UUID workspaceId, String previousCustomerId);
 
-  void track(String action);
+  void track(UUID workspaceId, String action);
 
-  void track(String action, Map<String, Object> metadata);
+  void track(UUID workspaceId, String action, Map<String, Object> metadata);
 
 }

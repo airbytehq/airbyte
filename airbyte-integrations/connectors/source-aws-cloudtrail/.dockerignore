@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_aws_cloudtrail
+!setup.py
+!secrets

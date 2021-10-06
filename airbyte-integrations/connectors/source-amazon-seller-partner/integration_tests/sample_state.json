@@ -1,0 +1,14 @@
+{
+  "Orders": {
+    "LastUpdateDate": "2021-07-01T00:00:00Z"
+  },
+  "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL": {
+    "createdTime": "2021-07-01T00:00:00Z"
+  },
+  "GET_MERCHANT_LISTINGS_ALL_DATA": {
+    "createdTime": "2021-07-01T00:00:00Z"
+  },
+  "GET_FBA_INVENTORY_AGED_DATA": {
+    "createdTime": "2021-07-01T00:00:00Z"
+  }
+}

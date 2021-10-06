@@ -1,0 +1,58 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "team_members",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "is_owner": {
+              "type": ["null", "boolean"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "given_name": {
+              "type": ["null", "string"]
+            },
+            "family_name": {
+              "type": ["null", "string"]
+            },
+            "email_address": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "assigned_locations": {
+              "type": ["null", "object"],
+              "properties": {
+                "assignment_type": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "reference_id": {
+              "type": ["null", "string"]
+            },
+            "phone_number": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

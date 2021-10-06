@@ -52,7 +52,7 @@ definitions:
       - emitted_at
     properties:
       stream:
-        description: "the name of the stream for this record"
+        description: "the name of this record's stream"
         type: string
       data:
         description: "the record data"
@@ -61,6 +61,9 @@ definitions:
       emitted_at:
         description: "when the data was emitted from the source. epoch in millisecond."
         type: integer
+      namespace:
+        description: "the namespace of this record's stream"
+        type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true
@@ -233,6 +236,15 @@ definitions:
         description: If the connector supports incremental mode or not.
         type: boolean
       # Destination Connectors Properties
+      # Normalization is currently implemented using dbt so it requires `supportsDBT` to be true for this to be true.
+      supportsNormalization:
+        description: If the connector supports normalization or not.
+        type: boolean
+        default: false
+      supportsDBT:
+        description: If the connector supports DBT or not.
+        type: boolean
+        default: false
       supported_destination_sync_modes:
         description: List of destination sync modes supported by the connector
         type: array

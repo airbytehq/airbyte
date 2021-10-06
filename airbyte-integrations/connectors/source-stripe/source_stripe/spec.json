@@ -15,7 +15,6 @@
       },
       "account_id": {
         "type": "string",
-        "pattern": "^acct_[a-zA-Z0-9]+$",
         "description": "Your Stripe account ID (starts with 'acct_', find yours <a href=\"https://dashboard.stripe.com/settings/account\">here</a>)."
       },
       "start_date": {

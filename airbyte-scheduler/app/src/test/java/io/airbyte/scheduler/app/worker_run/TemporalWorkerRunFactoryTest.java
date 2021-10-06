@@ -36,6 +36,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.Job;
@@ -45,6 +46,7 @@ import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -89,11 +91,13 @@ class TemporalWorkerRunFactoryTest {
     final JobResetConnectionConfig resetConfig = new JobResetConnectionConfig()
         .withDestinationDockerImage("airbyte/fusion_reactor")
         .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("a", 1)))
+        .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
         .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
     final JobSyncConfig syncConfig = new JobSyncConfig()
         .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
         .withDestinationDockerImage(resetConfig.getDestinationDockerImage())
         .withDestinationConfiguration(resetConfig.getDestinationConfiguration())
+        .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
         .withSourceConfiguration(Jsons.emptyObject())
         .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog());
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);

@@ -36,6 +36,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,10 +66,11 @@ class DefaultSchedulerJobClientTest {
     final DestinationConnection destination = mock(DestinationConnection.class);
     final StandardSync standardSync = mock(StandardSync.class);
     final String destinationDockerImage = "airbyte/spaceport";
-    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
+    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage, List.of()))
+        .thenReturn(Optional.of(JOB_ID));
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
-    assertEquals(job, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage));
+    assertEquals(job, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage, List.of()));
   }
 
   @Test
@@ -79,14 +81,14 @@ class DefaultSchedulerJobClientTest {
     final UUID connectionUuid = UUID.randomUUID();
     when(standardSync.getConnectionId()).thenReturn(connectionUuid);
     final String destinationDockerImage = "airbyte/spaceport";
-    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage)).thenReturn(Optional.empty());
+    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage, List.of())).thenReturn(Optional.empty());
 
     final Job currentJob = mock(Job.class);
     when(currentJob.getId()).thenReturn(42L);
     when(jobPersistence.getLastReplicationJob(connectionUuid)).thenReturn(Optional.of(currentJob));
     when(jobPersistence.getJob(42L)).thenReturn(currentJob);
 
-    assertEquals(currentJob, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage));
+    assertEquals(currentJob, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage, List.of()));
   }
 
   @Test
@@ -94,10 +96,10 @@ class DefaultSchedulerJobClientTest {
     final DestinationConnection destination = mock(DestinationConnection.class);
     final StandardSync standardSync = mock(StandardSync.class);
     final String destinationDockerImage = "airbyte/spaceport";
-    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
+    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage, List.of())).thenReturn(Optional.of(JOB_ID));
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
-    assertEquals(job, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
+    assertEquals(job, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage, List.of()));
   }
 
   @Test
@@ -107,14 +109,14 @@ class DefaultSchedulerJobClientTest {
     final UUID connectionUuid = UUID.randomUUID();
     when(standardSync.getConnectionId()).thenReturn(connectionUuid);
     final String destinationDockerImage = "airbyte/spaceport";
-    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(Optional.empty());
+    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage, List.of())).thenReturn(Optional.empty());
 
     final Job currentJob = mock(Job.class);
     when(currentJob.getId()).thenReturn(42L);
     when(jobPersistence.getLastReplicationJob(connectionUuid)).thenReturn(Optional.of(currentJob));
     when(jobPersistence.getJob(42L)).thenReturn(currentJob);
 
-    assertEquals(currentJob, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
+    assertEquals(currentJob, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage, List.of()));
   }
 
 }

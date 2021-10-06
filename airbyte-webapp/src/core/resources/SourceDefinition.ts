@@ -1,4 +1,5 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import { sourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import BaseResource from "./BaseResource";
 
 export interface SourceDefinition {
@@ -8,6 +9,7 @@ export interface SourceDefinition {
   dockerImageTag: string;
   latestDockerImageTag: string;
   documentationUrl: string;
+  icon: string;
 }
 
 export default class SourceDefinitionResource
@@ -19,6 +21,7 @@ export default class SourceDefinitionResource
   readonly dockerImageTag: string = "";
   readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
+  readonly icon: string = "";
 
   pk(): string {
     return this.sourceDefinitionId?.toString();
@@ -34,16 +37,10 @@ export default class SourceDefinitionResource
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<{ sourceDefinitions: SourceDefinition[] }> => {
-        const definition = await this.fetch(
-          "post",
-          `${this.url(params)}/list`,
-          params
-        );
-        const latestDefinition = await this.fetch(
-          "post",
-          `${this.url(params)}/list_latest`,
-          params
-        );
+        const [definition, latestDefinition] = await Promise.all([
+          this.fetch("post", `${this.url(params)}/list`, params),
+          this.fetch("post", `${this.url(params)}/list_latest`, params),
+        ]);
 
         const result: SourceDefinition[] = definition.sourceDefinitions.map(
           (source: SourceDefinition) => {
@@ -79,6 +76,12 @@ export default class SourceDefinitionResource
   ): MutateShape<SchemaDetail<SourceDefinition>> {
     return {
       ...super.partialUpdateShape(),
+      fetch(
+        _: Readonly<Record<string, unknown>>,
+        body: SourceDefinition
+      ): Promise<SourceDefinition> {
+        return sourceDefinitionService.update(body);
+      },
       schema: this,
     };
   }

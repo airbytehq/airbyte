@@ -18,3 +18,11 @@ jobs:
         with:
           project: "https://github.com/airbytehq/airbyte/projects/1"
           column_name: "Backlog"
+      - name: Assign documentation issues to the Documentation Roadmap project
+        uses: srggrs/assign-one-project-github-action@1.2.0
+        if: |
+          contains(github.event.issue.labels.*.name, 'area/documentation') ||
+          contains(github.event.pull_request.labels.*.name, 'area/documentation')
+        with:
+          project: "https://github.com/airbytehq/airbyte/projects/4"
+          column_name: "Needs Triage"

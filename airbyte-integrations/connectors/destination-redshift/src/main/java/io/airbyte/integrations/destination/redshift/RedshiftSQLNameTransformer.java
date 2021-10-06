@@ -29,7 +29,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 public class RedshiftSQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String convertStreamName(String input) {
+  public String convertStreamName(String input) {
     return super.convertStreamName(input).toLowerCase();
   }
 

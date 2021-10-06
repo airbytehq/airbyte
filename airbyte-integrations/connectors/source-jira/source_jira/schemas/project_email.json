@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "emailAddress": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

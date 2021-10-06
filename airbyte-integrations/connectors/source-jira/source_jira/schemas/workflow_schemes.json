@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "defaultWorkflow": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "issueTypeMappings": {
+      "type": "object"
+    },
+    "name": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

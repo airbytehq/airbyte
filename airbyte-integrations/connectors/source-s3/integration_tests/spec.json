@@ -1,0 +1,150 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/s3",
+  "changelogUrl": "https://docs.airbyte.io/integrations/sources/s3",
+  "connectionSpecification": {
+    "title": "S3 Source Spec",
+    "type": "object",
+    "properties": {
+      "dataset": {
+        "title": "Dataset",
+        "description": "This source creates one table per connection, this field is the name of that table. This should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.",
+        "pattern": "^([A-Za-z0-9-_]+)$",
+        "type": "string"
+      },
+      "path_pattern": {
+        "title": "Path Pattern",
+        "description": "Add at least 1 pattern here to match filepaths against. Use | to separate multiple patterns. Airbyte uses these patterns to determine which files to pick up from the provider storage. See <a href=\"https://facelessuser.github.io/wcmatch/glob/\" target=\"_blank\">wcmatch.glob</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). Use pattern <strong>**</strong> to pick up all files.",
+        "examples": [
+          "**",
+          "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"
+        ],
+        "type": "string"
+      },
+      "schema": {
+        "title": "Schema",
+        "description": "Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ \"column\" : \"type\" }</strong>, where types are valid <a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.",
+        "default": "{}",
+        "examples": [
+          "{\"column_1\": \"number\", \"column_2\": \"string\", \"column_3\": \"array\", \"column_4\": \"object\", \"column_5\": \"boolean\"}"
+        ],
+        "type": "string"
+      },
+      "format": {
+        "title": "Format",
+        "default": "csv",
+        "oneOf": [
+          {
+            "title": "csv",
+            "type": "object",
+            "properties": {
+              "filetype": {
+                "title": "CsvFiletype",
+                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
+                "enum": ["csv"],
+                "type": "string"
+              },
+              "delimiter": {
+                "title": "Delimiter",
+                "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+                "default": ",",
+                "minLength": 1,
+                "type": "string"
+              },
+              "quote_char": {
+                "title": "Quote Char",
+                "description": "The character used optionally for quoting CSV values. To disallow quoting, make this field blank.",
+                "default": "\"",
+                "type": "string"
+              },
+              "escape_char": {
+                "title": "Escape Char",
+                "description": "The character used optionally for escaping special characters. To disallow escaping, leave this field blank.",
+                "type": "string"
+              },
+              "encoding": {
+                "title": "Encoding",
+                "description": "The character encoding of the CSV data. Leave blank to default to <strong>UTF-8</strong>. See <a href=\"https://docs.python.org/3/library/codecs.html#standard-encodings\" target=\"_blank\">list of python encodings</a> for allowable options.",
+                "type": "string"
+              },
+              "double_quote": {
+                "title": "Double Quote",
+                "description": "Whether two quotes in a quoted CSV value denote a single quote in the data.",
+                "default": true,
+                "type": "boolean"
+              },
+              "newlines_in_values": {
+                "title": "Newlines In Values",
+                "description": "Whether newline characters are allowed in CSV values. Turning this on may affect performance. Leave blank to default to False.",
+                "default": false,
+                "type": "boolean"
+              },
+              "block_size": {
+                "title": "Block Size",
+                "description": "The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
+                "default": 10000,
+                "type": "integer"
+              },
+              "additional_reader_options": {
+                "title": "Additional Reader Options",
+                "description": "Optionally add a valid JSON string here to provide additional options to the csv reader. Mappings must correspond to options <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions\" target=\"_blank\">detailed here</a>. 'column_types' is used internally to handle schema so overriding that would likely cause problems.",
+                "default": "{}",
+                "examples": [
+                  "{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"]}"
+                ],
+                "type": "string"
+              }
+            },
+            "required": ["filetype"]
+          },
+          {
+            "title": "Coming Soon...",
+            "type": "object",
+            "properties": {
+              "filetype": {
+                "title": "ParquetFiletype",
+                "description": "An enumeration.",
+                "enum": ["parquet"],
+                "type": "string"
+              }
+            },
+            "required": ["filetype"]
+          }
+        ],
+        "type": "object"
+      },
+      "provider": {
+        "title": "S3: Amazon Web Services",
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "title": "Bucket",
+            "description": "Name of the S3 bucket where the file(s) exist.",
+            "type": "string"
+          },
+          "aws_access_key_id": {
+            "title": "Aws Access Key Id",
+            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "aws_secret_access_key": {
+            "title": "Aws Secret Access Key",
+            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "path_prefix": {
+            "title": "Path Prefix",
+            "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": ["bucket"]
+      }
+    },
+    "required": ["dataset", "path_pattern", "provider"]
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}

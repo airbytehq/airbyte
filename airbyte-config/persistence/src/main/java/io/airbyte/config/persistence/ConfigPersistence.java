@@ -24,17 +24,26 @@
 
 package io.airbyte.config.persistence;
 
-import io.airbyte.config.ConfigSchema;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public interface ConfigPersistence {
 
-  <T> T getConfig(ConfigSchema configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
+  <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
 
-  <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException;
+  <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
 
-  <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException;
+  <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException;
+
+  void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
+
+  <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException;
+
+  Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
 }

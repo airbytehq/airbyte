@@ -1,4 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
+import { destinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
+
 import BaseResource from "./BaseResource";
 
 export interface DestinationDefinition {
@@ -8,6 +11,7 @@ export interface DestinationDefinition {
   dockerImageTag: string;
   latestDockerImageTag: string;
   documentationUrl: string;
+  icon: string;
 }
 
 export default class DestinationDefinitionResource
@@ -19,6 +23,7 @@ export default class DestinationDefinitionResource
   readonly dockerImageTag: string = "";
   readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
+  readonly icon: string = "";
 
   pk(): string {
     return this.destinationDefinitionId?.toString();
@@ -82,6 +87,12 @@ export default class DestinationDefinitionResource
   ): MutateShape<SchemaDetail<DestinationDefinition>> {
     return {
       ...super.partialUpdateShape(),
+      fetch(
+        _: Readonly<Record<string, unknown>>,
+        body: DestinationDefinition
+      ): Promise<DestinationDefinition> {
+        return destinationDefinitionService.update(body);
+      },
       schema: this,
     };
   }

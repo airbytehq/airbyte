@@ -33,12 +33,14 @@ Several output streams are available from this source:
 | Incremental Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 
 The connector is restricted by normal Hubspot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
 ## Getting started
+
 
 ### Requirements
 
@@ -47,5 +49,16 @@ The connector is restricted by normal Hubspot [rate limitations](https://legacyd
 
 ### Setup guide
 
+{% hint style="info" %}
+Hubspot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
+{% endhint %}
+
 This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.8   | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250) | Fix issue with printing exceptions |
+| 0.1.7   | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema |

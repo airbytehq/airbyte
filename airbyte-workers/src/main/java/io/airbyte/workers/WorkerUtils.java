@@ -24,21 +24,28 @@
 
 package io.airbyte.workers;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
+// TODO:(Issue-4824): Figure out how to log Docker process information.
 public class WorkerUtils {
+
+  public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
@@ -47,27 +54,106 @@ public class WorkerUtils {
       return;
     }
 
+    if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+      LOGGER.debug("Gently closing process {}", process.info().commandLine().get());
+    }
+
     try {
-      process.waitFor(timeout, timeUnit);
+      if (process.isAlive()) {
+        process.waitFor(timeout, timeUnit);
+      }
     } catch (InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
+
     if (process.isAlive()) {
-      LOGGER.warn("Process is taking too long to finish. Killing it");
-      process.destroy();
-      try {
-        process.waitFor(1, TimeUnit.MINUTES);
-      } catch (InterruptedException e) {
-        LOGGER.error("Exception while while killing the process", e);
-      }
-      if (process.isAlive()) {
-        LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
-      }
+      forceShutdown(process, Duration.of(1, ChronoUnit.MINUTES));
     }
   }
 
-  public static void closeProcess(Process process) {
-    closeProcess(process, 1, TimeUnit.MINUTES);
+  /**
+   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to continue.
+   * This method checks the heartbeat once every minute. Once there is no heartbeat detected, if the
+   * process has ended, then the method returns. If the process is still running it is given a grace
+   * period of the timeout arguments passed into the method. Once those expire the process is killed
+   * forcibly. If the process cannot be killed, this method will log that this is the case, but then
+   * returns.
+   *
+   * @param process - process to monitor.
+   * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
+   * @param checkHeartbeatDuration - grace period to give the process to die after its heart stops
+   *        beating.
+   * @param checkHeartbeatDuration - frequency with which the heartbeat of the process is checked.
+   * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
+   *        forcibly.
+   */
+  public static void gentleCloseWithHeartbeat(final Process process,
+                                              final HeartbeatMonitor heartbeatMonitor,
+                                              Duration gracefulShutdownDuration,
+                                              Duration checkHeartbeatDuration,
+                                              Duration forcedShutdownDuration) {
+    gentleCloseWithHeartbeat(
+        process,
+        heartbeatMonitor,
+        gracefulShutdownDuration,
+        checkHeartbeatDuration,
+        forcedShutdownDuration,
+        WorkerUtils::forceShutdown);
+  }
+
+  @VisibleForTesting
+  static void gentleCloseWithHeartbeat(final Process process,
+                                       final HeartbeatMonitor heartbeatMonitor,
+                                       final Duration gracefulShutdownDuration,
+                                       final Duration checkHeartbeatDuration,
+                                       final Duration forcedShutdownDuration,
+                                       final BiConsumer<Process, Duration> forceShutdown) {
+    while (process.isAlive() && heartbeatMonitor.isBeating()) {
+      try {
+        if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+          LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
+        }
+
+        process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception while waiting for process to finish", e);
+      }
+    }
+
+    if (process.isAlive()) {
+      try {
+        if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+          LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
+        }
+
+        process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
+      }
+    }
+
+    // if we were unable to exist gracefully, force shutdown...
+    if (process.isAlive()) {
+      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+        LOGGER.debug("Force shutdown process {}..", process.info().commandLine().get());
+      }
+
+      forceShutdown.accept(process, forcedShutdownDuration);
+    }
+  }
+
+  @VisibleForTesting
+  static void forceShutdown(Process process, Duration lastChanceDuration) {
+    LOGGER.warn("Process is taking too long to finish. Killing it");
+    process.destroy();
+    try {
+      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      LOGGER.error("Exception while while killing the process", e);
+    }
+    if (process.isAlive()) {
+      LOGGER.error("Couldn't kill the process. You might have a zombie process.");
+    }
   }
 
   public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
@@ -98,22 +184,22 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of
    * StandardSyncInput.
    */
-  public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
-    return new StandardTapConfig()
+  public static WorkerSourceConfig syncToWorkerSourceConfig(StandardSyncInput sync) {
+    return new WorkerSourceConfig()
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
-   * StandardSyncInput.
+   * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
+   * subset of StandardSyncInput.
    */
-  public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
-    return new StandardTargetConfig()
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(StandardSyncInput sync) {
+    return new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
@@ -121,16 +207,12 @@ public class WorkerUtils {
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
   // once we are fully on temporal.
-  public static Path getJobRoot(Path workspaceRoot, IntegrationLauncherConfig launcherConfig) {
-    return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
-  }
-
   public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
     return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
   }
 
   public static Path getLogPath(Path jobRoot) {
-    return jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
@@ -143,16 +225,13 @@ public class WorkerUtils {
         .resolve(String.valueOf(attemptId));
   }
 
-  public static void setJobMdc(Path jobRoot, String jobId) {
-    MDC.put("job_id", jobId);
-    MDC.put("job_root", jobRoot.toString());
-    MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
-  }
-
-  // todo (cgardens) can we get this down to just passing pbf and docker image and not job id and
-  // attempt
-  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessBuilderFactory pbf) {
-    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), pbf);
+  private static ResourceRequirements initResourceRequirements() {
+    final EnvConfigs configs = new EnvConfigs();
+    return new ResourceRequirements()
+        .withCpuRequest(configs.getCpuRequest())
+        .withCpuLimit(configs.getCpuLimit())
+        .withMemoryRequest(configs.getMemoryRequest())
+        .withMemoryLimit(configs.getMemoryLimit());
   }
 
 }

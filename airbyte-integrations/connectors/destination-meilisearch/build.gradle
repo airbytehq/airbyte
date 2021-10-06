@@ -12,7 +12,6 @@ dependencies {
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
     implementation 'com.meilisearch.sdk:meilisearch-java:0.2.0'
 

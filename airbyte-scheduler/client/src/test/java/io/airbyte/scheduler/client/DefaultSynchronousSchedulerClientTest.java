@@ -69,6 +69,7 @@ class DefaultSynchronousSchedulerClientTest {
 
   private static final Path LOG_PATH = Path.of("/tmp");
   private static final String DOCKER_IMAGE = "foo/bar";
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
   private static final JsonNode CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
@@ -113,7 +114,8 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
-      final SynchronousResponse<String> response = schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId);
+      final SynchronousResponse<String> response = schedulerClient
+          .execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
@@ -123,8 +125,8 @@ class DefaultSynchronousSchedulerClientTest {
       assertTrue(response.getMetadata().isSucceeded());
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.SUCCEEDED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
     }
 
     @SuppressWarnings("unchecked")
@@ -135,7 +137,8 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
-      final SynchronousResponse<String> response = schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId);
+      final SynchronousResponse<String> response = schedulerClient
+          .execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId, WORKSPACE_ID);
 
       assertNotNull(response);
       assertNull(response.getOutput());
@@ -145,8 +148,8 @@ class DefaultSynchronousSchedulerClientTest {
       assertFalse(response.getMetadata().isSucceeded());
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.FAILED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.FAILED));
     }
 
     @SuppressWarnings("unchecked")
@@ -157,10 +160,12 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
       when(function.apply(any(UUID.class))).thenThrow(new RuntimeException());
 
-      assertThrows(RuntimeException.class, () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId));
+      assertThrows(
+          RuntimeException.class,
+          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId, WORKSPACE_ID));
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.FAILED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(WORKSPACE_ID), eq(JobState.FAILED));
     }
 
   }

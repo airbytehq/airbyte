@@ -31,9 +31,10 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import io.temporal.activity.ActivityInterface;
@@ -83,11 +84,11 @@ public interface DiscoverCatalogWorkflow {
 
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
-    private final ProcessBuilderFactory pbf;
+    private final ProcessFactory processFactory;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
-      this.pbf = pbf;
+    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+      this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
     }
 
@@ -110,9 +111,8 @@ public interface DiscoverCatalogWorkflow {
       return () -> {
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
-                pbf);
+                processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-
         return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
       };
     }

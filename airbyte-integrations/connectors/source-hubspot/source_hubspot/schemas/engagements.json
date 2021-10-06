@@ -24,8 +24,7 @@
       "type": "string"
     },
     "timestamp": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "associations": {
       "type": ["null", "object"],

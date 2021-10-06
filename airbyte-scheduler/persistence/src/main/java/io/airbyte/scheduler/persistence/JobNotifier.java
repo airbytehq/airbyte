@@ -24,15 +24,22 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.analytics.TrackingClient;
+import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Duration;
@@ -48,16 +55,27 @@ public class JobNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
+  public static final String FAILURE_NOTIFICATION = "Failure Notification";
+
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
+  private final TrackingClient trackingClient;
+  private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(String webappUrl, ConfigRepository configRepository) {
+  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper) {
+    this(webappUrl, configRepository, workspaceHelper, TrackingClientSingleton.get());
+  }
+
+  @VisibleForTesting
+  JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+    this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
     } else {
       this.connectionPageUrl = String.format("%s/connections/", webappUrl);
     }
     this.configRepository = configRepository;
+    this.trackingClient = trackingClient;
   }
 
   public void failJob(final String reason, final Job job) {
@@ -79,12 +97,29 @@ public class JobNotifier {
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
       final String jobDescription =
           String.format("sync started on %s, running for%s, as the %s.", formatter.format(jobStartedDate), durationString, reason);
-      final String logUrl = connectionPageUrl + connectionId.toString();
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
-
+      final String logUrl = connectionPageUrl + connectionId;
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
+      final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+      final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
       for (Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
+          final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
+          notificationMetadata.put("connection_id", connectionId);
+          if (notification.getNotificationType().equals(NotificationType.SLACK) &&
+              notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
+            // flag as slack if the webhook URL is also pointing to slack
+            notificationMetadata.put("notification_type", NotificationType.SLACK);
+          } else {
+            // Slack Notification type could be "hacked" and re-used for custom webhooks
+            notificationMetadata.put("notification_type", "N/A");
+          }
+          trackingClient.track(
+              workspaceId,
+              FAILURE_NOTIFICATION,
+              MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
           if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
             LOGGER.warn("Failed to successfully notify: {}", notification);
           }

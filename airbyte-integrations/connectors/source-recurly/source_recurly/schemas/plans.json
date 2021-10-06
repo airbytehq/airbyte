@@ -24,19 +24,19 @@
       "type": "string"
     },
     "interval_length": {
-      "type": "integer"
+      "type": "number"
     },
     "trial_unit": {
-      "type": "integer"
+      "type": "string"
     },
     "trial_length": {
-      "type": "integer"
+      "type": "number"
     },
     "trial_requires_billing_info": {
       "type": "boolean"
     },
     "total_billing_cycles": {
-      "type": "integer"
+      "type": "number"
     },
     "auto_renew": {
       "type": "boolean"
@@ -54,10 +54,10 @@
       "type": "string"
     },
     "avalara_transaction_type": {
-      "type": "integer"
+      "type": "number"
     },
     "avalara_service_type": {
-      "type": "integer"
+      "type": "number"
     },
     "tax_code": {
       "type": "string"

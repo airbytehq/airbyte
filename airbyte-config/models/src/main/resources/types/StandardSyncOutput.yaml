@@ -8,8 +8,11 @@ additionalProperties: false
 required:
   - standardSyncSummary
   - state
+  - output_catalog
 properties:
   standardSyncSummary:
     "$ref": StandardSyncSummary.yaml
   state:
     "$ref": State.yaml
+  output_catalog:
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
