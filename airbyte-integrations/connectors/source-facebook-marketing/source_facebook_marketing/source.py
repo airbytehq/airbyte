@@ -44,7 +44,7 @@ class ConnectorConfig(BaseModel):
     )
 
     end_date: Optional[datetime] = Field(
-        description="The end date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated.",
+        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
         default_factory=pendulum.now,
@@ -95,7 +95,6 @@ class SourceFacebookMarketing(AbstractSource):
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         api = API(account_id=config.account_id, access_token=config.access_token)
-        print(config.end_date)
 
         insights_args = dict(
             api=api,
