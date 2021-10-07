@@ -9,7 +9,7 @@ For information about how to use this connector within Airbyte, see [User Docume
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-mongodb-v2:build
+./gradlew :airbyte-integrations:connectors:source-mongodb-strict-encrypt:build
 ```
 
 ### Locally running the connector docker image
