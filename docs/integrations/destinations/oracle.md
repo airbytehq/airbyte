@@ -8,19 +8,21 @@
 | Incremental - Append Sync | Yes |  |
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
-| Basic Normalization | Yes | Only for raw tables, doesn't support for nested json yet |
+| Basic Normalization | Yes | Doesn't support for nested json yet |
 | SSH Tunnel Connection | Yes |  |
 
 ## Output Schema
 
-Each stream will be output into its own table in Oracle. Each table will contain 3 columns:
+By default, each stream will be output into its own table in Oracle. Each table will contain 3 columns:
 
 * `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
 * `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
 * `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
 
+Enabling normalization will also create normalized, strongly typed tables. 
+
 ## Getting Started (Airbyte Cloud)
-The Oracle connector is currently in Alpha on Airbyte Cloud. Additionally, Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
+The Oracle connector is currently in Alpha on Airbyte Cloud. Only TLS encrypted connections to your DB can be made from Airbyte Cloud. Other than that, follow the open-source instructions below.
 
 ## Getting Started (Airbyte Open-Source)
 
@@ -65,6 +67,7 @@ Airbyte has the ability to connect to a Oracle instance via an SSH Tunnel. The r
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (a.k.a. a bastion sever) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
     1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel (see below for more information on generating this key).
@@ -78,6 +81,7 @@ Using this feature requires additional configuration, when creating the source. 
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.9 | 2021-10-06 | [#6611](https://github.com/airbytehq/airbyte/pull/6611)| 🐛 Destination Oracle: maxStringLength should be 128|
 | 0.1.8 | 2021-09-28 | [#6370](https://github.com/airbytehq/airbyte/pull/6370)| Add SSH Support for Oracle Destination |
 | 0.1.7 | 2021-08-30 | [#5746](https://github.com/airbytehq/airbyte/pull/5746) | Use default column name for raw tables |
 | 0.1.6 | 2021-08-23 | [#5542](https://github.com/airbytehq/airbyte/pull/5542) | Remove support for Oracle 11g to allow normalization |

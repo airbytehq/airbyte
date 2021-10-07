@@ -53,6 +53,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       "requireSSL=true",
       "verifyServerCertificate=false");
 
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
+  }
+
   public MySqlSource() {
     super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
   }
@@ -178,7 +182,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
     }
 
@@ -236,7 +241,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
+    final Source source = MySqlSource.sshWrappedSource();
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);

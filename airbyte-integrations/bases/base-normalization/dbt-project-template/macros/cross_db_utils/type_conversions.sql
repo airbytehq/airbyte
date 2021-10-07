@@ -29,6 +29,10 @@
     cast({{ array_column }} as varchar2(4000))
 {%- endmacro %}
 
+{% macro sqlserver__array_to_string(array_column) -%}
+    cast({{ array_column }} as {{dbt_utils.type_string()}})
+{%- endmacro %}
+
 {# cast_to_boolean -------------------------------------------------     #}
 {% macro cast_to_boolean(field) -%}
     {{ adapter.dispatch('cast_to_boolean')(field) }}
@@ -46,4 +50,9 @@
 {# -- Redshift does not support converting string directly to boolean, it must go through int first #}
 {% macro redshift__cast_to_boolean(field) -%}
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)
+{%- endmacro %}
+
+{# -- MS SQL Server does not support converting string directly to boolean, it must be casted as bit #}
+{% macro sqlserver__cast_to_boolean(field) -%}
+    cast({{ field }} as bit)
 {%- endmacro %}

@@ -28,12 +28,28 @@ Each stream will be output into its own table in SQL Server. Each table will con
 ## Getting Started (Airbyte Cloud)
 Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes | |
+| Namespaces | Yes |  |
+
 ## Getting Started (Airbyte Open-Source)
 
 ### Requirements
 
 To use the SQL Server destination, you'll need:
 
+MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
+
+### Normalization Requirements
+
+To sync **with** normalization you'll need to use MS SQL Server of the following versions:
+`SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`.
+The work of normalization on `SQL Server 2012` and bellow are not guaranteed.
+
+### Setup guide
 * MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
 
 #### Network Access
@@ -79,6 +95,7 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
 3. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel (see below for more information on generating this key).
