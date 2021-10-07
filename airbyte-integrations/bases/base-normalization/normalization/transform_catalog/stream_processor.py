@@ -423,19 +423,20 @@ from {{ from_table }}
             if self.destination_type == DestinationType.MSSQL:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_timestamp_with_timezone()")
-                return f"try_parse({column_name} as {sql_type}) as {column_name}"
+                return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
-            if self.destination_type == DestinationType.MSSQL:
-                # in case of date, we don't need to use [cast] function, use try_parse instead.
-                sql_type = jinja_call("type_date()")
-                return f"try_parse({column_name} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.MYSQL:
                 # MySQL does not support [cast] and [nullif] functions together
                 return self.generate_mysql_date_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
+            if self.destination_type == DestinationType.MSSQL:
+                # in case of date, we don't need to use [cast] function, use try_parse instead.
+                sql_type = jinja_call("type_date()")
+                return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
+            # in all other cases
             sql_type = jinja_call("type_date()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
