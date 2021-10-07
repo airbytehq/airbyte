@@ -49,6 +49,10 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
         return
     if integration_type == DestinationType.ORACLE:
         column_count = 998
+    if integration_type == DestinationType.MSSQL:
+        # In MS SQL Server, the max number of columns / table = 1024,
+        # We should leave the space for the '_airbyte_emitted_at' column. So 1022 is the max what could be inserted.
+        column_count = 1022
     run_test(integration_type, column_count)
 
 
@@ -56,19 +60,12 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     "integration_type, column_count, expected_exception_message",
     [
         ("Postgres", 1665, "target lists can have at most 1664 entries"),
-        (
-            "BigQuery",
-            2500,
-            "The view is too large.",
-        ),
-        (
-            "Snowflake",
-            2000,
-            "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
-        ),
+        ("BigQuery", 2500, "The view is too large."),
+        ("Snowflake", 2000, "Operation failed because soft limit on objects of type 'Column' per table was exceeded."),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
         ("MySQL", 250, "Row size too large"),
         ("Oracle", 1001, "ORA-01792: maximum number of columns in a table or view is 1000"),
+        ("MSSQL", 1025, "exceeds the maximum of 1024 columns."),
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):

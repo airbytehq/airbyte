@@ -14,3 +14,13 @@
 {% macro postgres__concat(fields) %}
     {{ dbt_utils.alternative_concat(fields) }}
 {% endmacro %}
+
+{% macro sqlserver__concat(fields) -%}
+    {#-- CONCAT() in SQL SERVER accepts from 2 to 254 arguments, we use batches for the main concat, to overcome the limit. --#}
+    {% set concat_chunks = [] %}
+    {% for chunk in fields|batch(253) -%}
+        {% set _ = concat_chunks.append( "concat(" ~ chunk|join(', ') ~ ",'')" ) %}
+    {% endfor %}
+
+    concat({{ concat_chunks|join(', ') }}, '')
+{%- endmacro %}

@@ -88,6 +88,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-redshift'
     include ':airbyte-integrations:connectors:destination-snowflake'
     include ':airbyte-integrations:connectors:destination-oracle'
+    include ':airbyte-integrations:connectors:destination-mssql'
 
     //Needed by destination-bugquery
     include ':airbyte-integrations:connectors:destination-s3'

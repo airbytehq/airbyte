@@ -44,6 +44,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
 
 }
 

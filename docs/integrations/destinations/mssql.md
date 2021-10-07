@@ -28,12 +28,28 @@ Each stream will be output into its own table in SQL Server. Each table will con
 ## Getting Started (Airbyte Cloud)
 Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes | |
+| Namespaces | Yes |  |
+
 ## Getting Started (Airbyte Open-Source)
 
 ### Requirements
 
 To use the SQL Server destination, you'll need:
 
+MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
+
+### Normalization Requirements
+
+To sync **with** normalization you'll need to use MS SQL Server of the following versions:
+`SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`.
+The work of normalization on `SQL Server 2012` and bellow are not guaranteed.
+
+### Setup guide
 * MS SQL Server: `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, or `PDW 2008R2 AU34`.
 
 #### Network Access
