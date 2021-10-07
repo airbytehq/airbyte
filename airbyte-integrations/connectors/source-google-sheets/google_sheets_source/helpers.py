@@ -31,9 +31,10 @@ class Helpers(object):
 
     @staticmethod
     def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES):
-        if credentials.get("auth_type") == "Service":
+        auth_type = credentials.pop("auth_type")
+        if auth_type == "Service":
             return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
-        elif credentials.pop("auth_type") == "Client":
+        elif auth_type == "Client":
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
     @staticmethod
