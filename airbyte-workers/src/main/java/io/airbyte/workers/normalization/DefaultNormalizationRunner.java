@@ -28,7 +28,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.49";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.50";
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
@@ -40,7 +40,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     POSTGRES,
     REDSHIFT,
     SNOWFLAKE,
-    MYSQL
+    MYSQL,
+    MSSQL
   }
 
   public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory) {
