@@ -11,19 +11,19 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .zuora_auth import ZuoraAuthenticator
-from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFailed, ZOQLQueryFieldCannotResolve
-
-
-def get_url_base(is_sandbox: bool = False) -> str:
-    url_base = "https://rest.zuora.com"
-    if is_sandbox:
-        url_base = "https://rest.apisandbox.zuora.com"
-    return url_base
+from .zuora_endpoint import get_url_base
+from .zuora_errors import (
+    ZOQLQueryCannotProcessObject,
+    ZOQLQueryFailed,
+    ZOQLQueryFieldCannotResolveAltCursor,
+    ZOQLQueryFieldCannotResolveCursor,
+)
+from .zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
 class ZuoraStream(HttpStream, ABC):
@@ -34,6 +34,7 @@ class ZuoraStream(HttpStream, ABC):
     # Define primary key
     primary_key = "id"
 
+    # Define possible cursor_fields
     cursor_field = "updateddate"
     alt_cursor_field = "createddate"
 
@@ -80,7 +81,7 @@ class ZuoraBase(ZuoraStream):
         """
         return stream_slice if stream_slice else {}
 
-    def get_zuora_data(self, date_slice: Dict, config: Dict) -> Iterable[Mapping[str, Any]]:
+    def get_zuora_data(self, date_slice: Dict, config: Dict, full_object: bool = False) -> Iterable[Mapping[str, Any]]:
         """
         This is the wrapper for 'Submit > Check > Get' operation.
 
@@ -93,12 +94,17 @@ class ZuoraBase(ZuoraStream):
             for more information see: ZuoraJobStatusCheck
         :: ZuoraGetJobResult - reads the 'dataFile' URL and outputs the data records for completed job
             for more information see: ZuoraGetJobResult
+        :: full_object - boolean, indicates whether to fetch the whole object without any filtering, default `False`
 
         """
+        if full_object:
+            # If the cursor is not available, we fetch whole object
+            job_query = self.query(stream_name=self.name, full_object=True)
+        else:
+            # Default prepared job with Cursor
+            job_query = self.query(stream_name=self.name, cursor_field=self.cursor_field, date_slice=date_slice)
 
-        job_id: List[str] = ZuoraSubmitJob(
-            self.query(stream_name=self.name, cursor_field=self.cursor_field, date_slice=date_slice), config
-        ).read_records(sync_mode=None)
+        job_id: List[str] = ZuoraSubmitJob(job_query, config).read_records(sync_mode=None)
         job_data_url: List = ZuoraJobStatusCheck(list(job_id)[0], config).read_records(sync_mode=None)
         yield from ZuoraGetJobResult(list(job_data_url)[0]).read_records(sync_mode=None)
 
@@ -107,18 +113,34 @@ class ZuoraBase(ZuoraStream):
         Override for _send_request CDK method to send HTTP request to the Zuora API
         """
         try:
+            # try to fetch with default cursor_field = UpdatedDate
             yield from self.get_zuora_data(date_slice=request_kwargs, config=self._config)
-        except ZOQLQueryFieldCannotResolve:
+        except ZOQLQueryCannotProcessObject:
+            # do nothing if we cannot resolve the object
+            pass
+        except ZOQLQueryFieldCannotResolveCursor:
             """
             The default cursor_field is "updateddate" sometimes it's not supported by certain streams.
             We need to swith the default cursor field to alternative one, and retry again the whole operation, submit the new job to the server.
             We also need to save the state in the end of the sync.
             So this switch is needed as fast and easy way of resolving the cursor_field for streams that support only the "createddate"
             """
-            self.cursor_field = self.alt_cursor_field  # cursor_field switch
-            yield from self.get_zuora_data(date_slice=request_kwargs, config=self._config)  # retry the whole operation
-        except ZOQLQueryCannotProcessObject:
-            pass
+            # cursor_field switch to alternative = CreatedDate
+            self.cursor_field = self.alt_cursor_field
+            try:
+                """
+                The alternative cursor_field is "createddate", it could be also not available for some custom objects.
+                In this case, we fetch the whole object without any filtering.
+                """
+                # retry the whole operation with alternative cursor
+                yield from self.get_zuora_data(date_slice=request_kwargs, config=self._config)
+            except ZOQLQueryFieldCannotResolveAltCursor:
+                # if we fail to use the alternative cursor - fetch the whole object
+                # retry the whole operation
+                yield from self.get_zuora_data(date_slice=request_kwargs, config=self._config, full_object=True)
+            except ZOQLQueryCannotProcessObject:
+                # do nothing if we cannot resolve the object
+                pass
 
     def parse_response(self, response: requests.Response, **kwargs) -> str:
         yield from response
@@ -139,23 +161,31 @@ class ZuoraObjectsBase(ZuoraBase):
         """
         Custom method.
         Returns the formated datetime string in a way Zuora API endpoint recognises it as timestamp.
-        :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S %Z"
+        :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S.%f %Z"
         """
-        return date.strftime("%Y-%m-%d %H:%M:%S %Z")
+        return date.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
     def get_cursor_from_schema(self, schema: Dict) -> str:
         """
         Get the cursor_field from the stream's schema rather that take it from the class attribute
         If the stream doesn't support 'updateddate', then we use 'createddate'.
+        If the stream doesn't support 'createddate', then stream is `full_refresh` only.
         """
-        return self.cursor_field if self.cursor_field in schema else self.alt_cursor_field
+        if self.cursor_field in schema:
+            # when UpdatedDate is availalbe
+            return self.cursor_field
+        elif self.alt_cursor_field in schema:
+            # when CreatedDate is availalbe
+            return self.alt_cursor_field
+        else:
+            return None
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         Override get_json_schema CDK method to retrieve the schema information for Zuora Object dynamicaly.
         """
         schema = list(ZuoraDescribeObject(self.name, config=self._config).read_records(sync_mode=None))
-        return {"properties": {key: d[key] for d in schema for key in d}}
+        return {"type": "object", "properties": {key: d[key] for d in schema for key in d}}
 
     def as_airbyte_stream(self) -> AirbyteStream:
         """
@@ -164,23 +194,36 @@ class ZuoraObjectsBase(ZuoraBase):
         :: But we still need the default class attribute 'cursor_field' in order to CDK read_records works properly.
         """
         stream = super().as_airbyte_stream()
-        stream.default_cursor_field = [self.get_cursor_from_schema(stream.json_schema["properties"])]
+        stream_cursor = self.get_cursor_from_schema(stream.json_schema["properties"])
+        if stream_cursor:
+            stream.default_cursor_field = [stream_cursor]
+        else:
+            # When there is no cursor available in the stream, we do Full-Refresh only.
+            stream.supported_sync_modes = [SyncMode.full_refresh]
+            stream.source_defined_cursor = True  # default CDK for full-refresh
+            stream.default_cursor_field = []  # default CDK for full-refresh
         return stream
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Update the state value, default CDK method.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+        updated_state = max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))
+        return {self.cursor_field: updated_state} if updated_state else {}
 
-    def query(self, stream_name: str, cursor_field: str, date_slice: Dict) -> str:
+    def query(self, stream_name: str, cursor_field: str = None, date_slice: Dict = None, full_object: bool = False) -> str:
         """
         Custom method. Returns the SQL-like query in a way Zuora API endpoint accepts the jobs.
         """
+        if full_object:
+            return f"""select * from {stream_name}"""
+
         return f"""
-            select * from {stream_name} where
+            select *
+            from {stream_name} where
             {cursor_field} >= TIMESTAMP '{date_slice.get('start_date')}' and
             {cursor_field} <= TIMESTAMP '{date_slice.get('end_date')}'
+            order by {cursor_field} asc
             """
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -198,7 +241,8 @@ class ZuoraObjectsBase(ZuoraBase):
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field)))
+            state = stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field))
+            start_date = pendulum.parse(state) if state else self.start_date
 
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, end_date)
@@ -255,10 +299,13 @@ class ZuoraDescribeObject(ZuoraBase):
 
         type_mapping = {
             "decimal(22,9)": type_number,
+            "decimal": type_number,
             "integer": type_number,
             "int": type_number,
             "bigint": type_number,
             "smallint": type_number,
+            "double": type_number,
+            "float": type_number,
             "timestamp": type_number,
             "date": type_string,
             "datetime": type_string,
@@ -375,6 +422,7 @@ class ZuoraJobStatusCheck(ZuoraStream):
         errors = ["failed", "canceled", "aborted"]
         # Error msg: the cursor_field cannot be resolved
         cursor_error = f"Column '{self.cursor_field}' cannot be resolved"
+        alt_cursor_error = f"Column '{self.alt_cursor_field}' cannot be resolved"
         # Error msg: cannot process object
         obj_read_error = "failed to process object"
 
@@ -387,13 +435,16 @@ class ZuoraJobStatusCheck(ZuoraStream):
             the server will output the error with the corresponding message for the user in the output,
             by raising `ZOQLQueryFailed` exception.
             """
+
             response: requests.Response = self._session.send(request, **request_kwargs)
             job_check = response.json()
             status = job_check["data"]["queryStatus"]
             if status in errors and cursor_error in job_check["data"]["errorMessage"]:
-                raise ZOQLQueryFieldCannotResolve
+                raise ZOQLQueryFieldCannotResolveCursor
             elif status in errors and obj_read_error in job_check["data"]["errorMessage"]:
                 raise ZOQLQueryCannotProcessObject
+            elif status in errors and alt_cursor_error in job_check["data"]["errorMessage"]:
+                raise ZOQLQueryFieldCannotResolveAltCursor
             elif status in errors:
                 raise ZOQLQueryFailed(response)
         return response
@@ -449,7 +500,7 @@ class SourceZuora(AbstractSource):
         """
 
         # Define the endpoint from user's config
-        url_base = get_url_base(config["is_sandbox"])
+        url_base = get_url_base(config["tenant_endpoint"])
         try:
             ZuoraAuthenticator(
                 token_refresh_endpoint=f"{url_base}/oauth/token",
@@ -466,8 +517,9 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run by building stream classes dynamically.
         """
+
         # Define the endpoint from user's config
-        url_base = get_url_base(config["is_sandbox"])
+        url_base = get_url_base(config["tenant_endpoint"])
 
         # Get Authotization Header with Access Token
         authenticator = ZuoraAuthenticator(
@@ -481,15 +533,15 @@ class SourceZuora(AbstractSource):
         config["url_base"] = url_base
 
         # List available objects (streams) names from Zuora
-        # zuora_stream_names = ["account", "invoicehistory", "ratedusage"]
+        # Example: zuora_stream_names = ["account", "country", "user"]
         zuora_stream_names = ZuoraListObjects(config).read_records(sync_mode=None)
 
         streams: List[ZuoraStream] = []
         for stream_name in zuora_stream_names:
-            # construct ZuoraReadStreams sub-class for each stream_name
-            stream_class = type(stream_name, (ZuoraObjectsBase,), {"cursor_field": "updateddate"})
-            # instancetiate a stream with config
-            stream_instance = stream_class(config)
-            streams.append(stream_instance)
-
+            if stream_name not in ZUORA_EXCLUDED_STREAMS:
+                # construct ZuoraReadStreams sub-class for each stream_name
+                stream_class = type(stream_name, (ZuoraObjectsBase,), {})
+                # instancetiate a stream with config
+                stream_instance = stream_class(config)
+                streams.append(stream_instance)
         return streams

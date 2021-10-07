@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     }
 
     final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-    LOGGER.info("Normalization executed in {}.", duration.toMinutesPart());
+    final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+    LOGGER.info("Normalization executed in {}.", durationDescription);
 
     return null;
   }
