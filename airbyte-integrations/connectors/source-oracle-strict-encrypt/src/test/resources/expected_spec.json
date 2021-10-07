@@ -8,8 +8,7 @@
       "host",
       "port",
       "sid",
-      "username",
-      "encryption"
+      "username"
     ],
     "additionalProperties": false,
     "properties": {

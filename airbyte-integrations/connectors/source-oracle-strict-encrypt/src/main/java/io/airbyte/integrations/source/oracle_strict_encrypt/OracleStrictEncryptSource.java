@@ -18,9 +18,6 @@ public class OracleStrictEncryptSource extends SpecModifyingSource implements So
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptSource.class);
 
-  public static final String ENCRYPTION_PARAMETERS = "\"encryption_method\"=\"client_nne\", " +
-          "\"encryption_algorithm\"=\"3DES168\"";
-
   OracleStrictEncryptSource() {
     super(OracleSource.sshWrappedSource());
   }
@@ -29,7 +26,6 @@ public class OracleStrictEncryptSource extends SpecModifyingSource implements So
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
-    //((ObjectNode) spec.getConnectionSpecification().get("properties")).put("encryption", ENCRYPTION_PARAMETERS);
     return spec;
   }
 
