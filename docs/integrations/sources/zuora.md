@@ -72,6 +72,7 @@ Any other data type not listed in the table above will be treated as `string`.
 
 ## List of Supported Environments for Zuora
 ### Production
+<!-- markdown-link-check-disable -->
 | Environment | Endpoint |
 | :--- | :--- |
 | US Production | https://rest.zuora.com |
@@ -85,6 +86,7 @@ Any other data type not listed in the table above will be treated as `string`.
 | US Central Sandbox | https://rest.test.zuora.com |
 | EU API Sandbox | https://rest.sandbox.eu.zuora.com |
 | EU Central Sandbox | https://rest.test.eu.zuora.com |
+<!-- markdown-link-check-enable -->
 ### Other
 | Environment | Endpoint |
 | :--- | :--- |
