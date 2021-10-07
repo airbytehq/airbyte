@@ -1,0 +1,32 @@
+{
+  "type": ["null", "array"],
+  "items": {
+    "type": ["null", "object"],
+    "properties": {
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "rate_code": {
+        "type": ["null", "string"]
+      },
+      "rate_id": {
+        "type": ["null", "string"]
+      },
+      "label": {
+        "type": ["null", "string"]
+      },
+      "compound": {
+        "type": ["null", "boolean"]
+      },
+      "tax_total": {
+        "type": ["null", "string"]
+      },
+      "shipping_tax_total": {
+        "type": ["null", "string"]
+      },
+      "meta_data": {
+        "$ref": "meta_data.json"
+      }
+    }
+  }
+}
