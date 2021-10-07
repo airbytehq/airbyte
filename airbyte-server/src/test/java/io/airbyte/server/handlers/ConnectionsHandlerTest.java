@@ -21,12 +21,16 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.NamespaceDefinitionType;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
@@ -89,7 +93,8 @@ class ConnectionsHandlerTest {
         .withWorkspaceId(workspaceId);
     destination = new DestinationConnection()
         .withDestinationId(destinationId)
-        .withWorkspaceId(workspaceId);
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
     standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
@@ -344,6 +349,84 @@ class ConnectionsHandlerTest {
     assertEquals(
         ConnectionHelpers.generateExpectedConnectionRead(standardSync),
         actualConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+      .withName("source-test")
+      .withSourceDefinitionId(UUID.randomUUID());
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+      .withName("destination-test")
+      .withDestinationDefinitionId(UUID.randomUUID());
+
+    when(configRepository.listStandardSyncs())
+      .thenReturn(Lists.newArrayList(standardSync));
+    when(configRepository.getSourceConnection(source.getSourceId()))
+      .thenReturn(source);
+    when(configRepository.getDestinationConnection(destination.getDestinationId()))
+      .thenReturn(destination);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+      .thenReturn(standardSync);
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+      .thenReturn(sourceDefinition);
+    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
+      .thenReturn(destinationDefinition);
+
+    final ConnectionSearch connectionSearch = new ConnectionSearch();
+    ConnectionReadList actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead, actualConnectionReadList.getConnections().get(0));
+
+    final SourceSearch sourceSearch = new SourceSearch().sourceId(UUID.randomUUID());
+    connectionSearch.setSource(sourceSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    sourceSearch.sourceId(connectionRead.getSourceId());
+    connectionSearch.setSource(sourceSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+
+    final DestinationSearch destinationSearch = new DestinationSearch();
+    connectionSearch.setDestination(destinationSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+
+    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "not-found")));
+    connectionSearch.setDestination(destinationSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
+    connectionSearch.setDestination(destinationSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.name("non-existent");
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.name(connectionRead.getName());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.namespaceDefinition(connectionRead.getNamespaceDefinition());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.status(ConnectionStatus.INACTIVE);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.status(ConnectionStatus.ACTIVE);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
   }
 
   @Test
