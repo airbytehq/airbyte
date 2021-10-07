@@ -45,7 +45,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-mssql:dev";
+    return "airbyte/destination-mssql-strict-encrypt:dev";
   }
 
   @Override
