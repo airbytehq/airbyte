@@ -46,12 +46,15 @@ models:
       airbyte_ctes:
         +tags: airbyte_internal_cte
         +materialized: ephemeral
-      airbyte_views:
-        +tags: airbyte_internal_views
-        +materialized: view
+      airbyte_incremental:
+        +tags: incremental_tables
+        +materialized: incremental
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table
+      airbyte_views:
+        +tags: airbyte_internal_views
+        +materialized: view
     +materialized: table
 
 vars:
