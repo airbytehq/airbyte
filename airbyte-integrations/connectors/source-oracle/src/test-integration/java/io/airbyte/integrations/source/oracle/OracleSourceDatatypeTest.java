@@ -44,9 +44,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("TEST"))
-            .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-                    .put("encryption_method", "unencrypted")
-                    .build()))
         .build());
 
     Database database = Databases.createOracleDatabase(config.get("username").asText(),

@@ -23,8 +23,6 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
-import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -47,9 +45,9 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
-            .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-                    .put("encryption_method", "unencrypted")
-                    .build()))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),

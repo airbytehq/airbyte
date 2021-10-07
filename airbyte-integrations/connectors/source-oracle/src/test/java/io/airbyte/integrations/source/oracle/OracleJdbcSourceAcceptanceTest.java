@@ -75,9 +75,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
         .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-            .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-                    .put("encryption_method", "unencrypted")
-                    .build()))
         .build());
 
     // Because Oracle doesn't let me create database easily I need to clean up
