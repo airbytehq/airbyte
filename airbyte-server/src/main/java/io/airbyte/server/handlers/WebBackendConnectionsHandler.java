@@ -362,17 +362,17 @@ public class WebBackendConnectionsHandler {
   @VisibleForTesting
   protected static ConnectionSearch toConnectionSearch(WebBackendConnectionSearch webBackendConnectionSearch) {
     return new ConnectionSearch()
-      .name(webBackendConnectionSearch.getName())
-      .connectionId(webBackendConnectionSearch.getConnectionId())
-      .source(webBackendConnectionSearch.getSource())
-      .sourceId(webBackendConnectionSearch.getSourceId())
-      .destination(webBackendConnectionSearch.getDestination())
-      .destinationId(webBackendConnectionSearch.getDestinationId())
-      .namespaceDefinition(webBackendConnectionSearch.getNamespaceDefinition())
-      .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
-      .prefix(webBackendConnectionSearch.getPrefix())
-      .schedule(webBackendConnectionSearch.getSchedule())
-      .status(webBackendConnectionSearch.getStatus());
+        .name(webBackendConnectionSearch.getName())
+        .connectionId(webBackendConnectionSearch.getConnectionId())
+        .source(webBackendConnectionSearch.getSource())
+        .sourceId(webBackendConnectionSearch.getSourceId())
+        .destination(webBackendConnectionSearch.getDestination())
+        .destinationId(webBackendConnectionSearch.getDestinationId())
+        .namespaceDefinition(webBackendConnectionSearch.getNamespaceDefinition())
+        .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
+        .prefix(webBackendConnectionSearch.getPrefix())
+        .schedule(webBackendConnectionSearch.getSchedule())
+        .status(webBackendConnectionSearch.getStatus());
   }
 
 }

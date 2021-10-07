@@ -264,12 +264,12 @@ public class ConnectionsHandler {
   }
 
   public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody)
-    throws JsonValidationException, IOException, ConfigNotFoundException {
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionIdRequestBody.getConnectionId());
   }
 
   public ConnectionReadList searchConnections(ConnectionSearch connectionSearch)
-    throws JsonValidationException, IOException, ConfigNotFoundException {
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> reads = Lists.newArrayList();
     for (StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
@@ -284,24 +284,24 @@ public class ConnectionsHandler {
   }
 
   public boolean matchSearch(ConnectionSearch connectionSearch, ConnectionRead connectionRead)
-    throws JsonValidationException, ConfigNotFoundException, IOException {
+      throws JsonValidationException, ConfigNotFoundException, IOException {
 
     final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionRead.getSourceId());
     final StandardSourceDefinition sourceDefinition =
-      configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+        configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     SourceRead sourceRead = SourceHandler.toSourceRead(sourceConnection, sourceDefinition);
 
     final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionRead.getDestinationId());
     final StandardDestinationDefinition destinationDefinition =
-      configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     DestinationRead destinationRead = DestinationHandler.toDestinationRead(destinationConnection, destinationDefinition);
 
     final ConnectionMatcher connectionMatcher = new ConnectionMatcher(connectionSearch);
     final ConnectionRead connectionReadFromSearch = connectionMatcher.match(connectionRead);
 
     return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
-      matchSearch(connectionSearch.getSource(), sourceRead) &&
-      matchSearch(connectionSearch.getDestination(), destinationRead);
+        matchSearch(connectionSearch.getSource(), sourceRead) &&
+        matchSearch(connectionSearch.getDestination(), destinationRead);
   }
 
   public boolean matchSearch(SourceSearch sourceSearch, SourceRead sourceRead) {

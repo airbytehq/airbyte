@@ -187,7 +187,7 @@ public class DestinationHandler {
   }
 
   public DestinationReadList searchDestinations(DestinationSearch destinationSearch)
-    throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
     for (DestinationConnection dci : configRepository.listDestinationConnection()) {
@@ -251,7 +251,7 @@ public class DestinationHandler {
   }
 
   protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
-                                            final StandardDestinationDefinition standardDestinationDefinition) {
+                                                     final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationId(destinationConnection.getDestinationId())

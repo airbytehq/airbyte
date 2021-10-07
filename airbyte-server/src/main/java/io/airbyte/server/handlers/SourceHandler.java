@@ -147,7 +147,7 @@ public class SourceHandler {
   }
 
   public SourceReadList searchSources(SourceSearch sourceSearch)
-    throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<SourceRead> reads = Lists.newArrayList();
 
     for (SourceConnection sci : configRepository.listSourceConnection()) {
@@ -268,7 +268,7 @@ public class SourceHandler {
   }
 
   protected static SourceRead toSourceRead(final SourceConnection sourceConnection,
-                                  final StandardSourceDefinition standardSourceDefinition) {
+                                           final StandardSourceDefinition standardSourceDefinition) {
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .sourceName(standardSourceDefinition.getName())

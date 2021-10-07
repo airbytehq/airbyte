@@ -279,27 +279,27 @@ class DestinationHandlerTest {
   @Test
   void testSearchDestinations() throws JsonValidationException, ConfigNotFoundException, IOException {
     DestinationRead expectedDestinationRead = new DestinationRead()
-      .name(destinationConnection.getName())
-      .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-      .workspaceId(destinationConnection.getWorkspaceId())
-      .destinationId(destinationConnection.getDestinationId())
-      .connectionConfiguration(destinationConnection.getConfiguration())
-      .destinationName(standardDestinationDefinition.getName());
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
+        .connectionConfiguration(destinationConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
     when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
-      .thenReturn(standardDestinationDefinition);
+        .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-      .thenReturn(destinationConnection.getConfiguration());
+        .thenReturn(destinationConnection.getConfiguration());
 
     when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(true);
     DestinationReadList actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
     assertEquals(1, actualDestinationRead.getDestinations().size());
     assertEquals(expectedDestinationRead, actualDestinationRead.getDestinations().get(0));
     verify(secretsProcessor)
-      .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+        .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
 
     when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(false);
     actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());

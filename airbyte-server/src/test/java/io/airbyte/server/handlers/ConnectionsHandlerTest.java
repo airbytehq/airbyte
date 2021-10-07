@@ -355,24 +355,24 @@ class ConnectionsHandlerTest {
   void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-      .withName("source-test")
-      .withSourceDefinitionId(UUID.randomUUID());
+        .withName("source-test")
+        .withSourceDefinitionId(UUID.randomUUID());
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-      .withName("destination-test")
-      .withDestinationDefinitionId(UUID.randomUUID());
+        .withName("destination-test")
+        .withDestinationDefinitionId(UUID.randomUUID());
 
     when(configRepository.listStandardSyncs())
-      .thenReturn(Lists.newArrayList(standardSync));
+        .thenReturn(Lists.newArrayList(standardSync));
     when(configRepository.getSourceConnection(source.getSourceId()))
-      .thenReturn(source);
+        .thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId()))
-      .thenReturn(destination);
+        .thenReturn(destination);
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
-      .thenReturn(standardSync);
+        .thenReturn(standardSync);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-      .thenReturn(sourceDefinition);
+        .thenReturn(sourceDefinition);
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-      .thenReturn(destinationDefinition);
+        .thenReturn(destinationDefinition);
 
     final ConnectionSearch connectionSearch = new ConnectionSearch();
     ConnectionReadList actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);

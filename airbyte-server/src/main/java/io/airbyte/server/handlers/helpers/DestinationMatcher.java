@@ -26,11 +26,11 @@ public class DestinationMatcher implements Matchable<DestinationRead> {
     final DestinationRead fromSearch = new DestinationRead();
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
     fromSearch.destinationDefinitionId(search.getDestinationDefinitionId() == null ? query.getDestinationDefinitionId()
-      : search.getDestinationDefinitionId());
+        : search.getDestinationDefinitionId());
     fromSearch
-      .destinationId(search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId());
+        .destinationId(search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId());
     fromSearch.destinationName(
-      Strings.isBlank(search.getDestinationName()) ? query.getDestinationName() : search.getDestinationName());
+        Strings.isBlank(search.getDestinationName()) ? query.getDestinationName() : search.getDestinationName());
     fromSearch.workspaceId(search.getWorkspaceId() == null ? query.getWorkspaceId() : search.getWorkspaceId());
     if (search.getConnectionConfiguration() == null) {
       fromSearch.connectionConfiguration(query.getConnectionConfiguration());
@@ -39,14 +39,15 @@ public class DestinationMatcher implements Matchable<DestinationRead> {
     } else {
       JsonNode connectionConfiguration = search.getConnectionConfiguration();
       query.getConnectionConfiguration().fieldNames()
-        .forEachRemaining(field -> {
-          if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-            ((ObjectNode) connectionConfiguration).set(field, query.getConnectionConfiguration().get(field));
-          }
-        });
+          .forEachRemaining(field -> {
+            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
+              ((ObjectNode) connectionConfiguration).set(field, query.getConnectionConfiguration().get(field));
+            }
+          });
       fromSearch.connectionConfiguration(connectionConfiguration);
     }
 
     return fromSearch;
   }
+
 }

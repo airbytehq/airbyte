@@ -36,14 +36,15 @@ public class SourceMatcher implements Matchable<SourceRead> {
     } else {
       JsonNode connectionConfiguration = search.getConnectionConfiguration();
       query.getConnectionConfiguration().fieldNames()
-        .forEachRemaining(field -> {
-          if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-            ((ObjectNode) connectionConfiguration).set(field, query.getConnectionConfiguration().get(field));
-          }
-        });
+          .forEachRemaining(field -> {
+            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
+              ((ObjectNode) connectionConfiguration).set(field, query.getConnectionConfiguration().get(field));
+            }
+          });
       fromSearch.connectionConfiguration(connectionConfiguration);
     }
 
     return fromSearch;
   }
+
 }

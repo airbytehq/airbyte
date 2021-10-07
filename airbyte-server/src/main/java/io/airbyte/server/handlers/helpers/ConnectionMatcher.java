@@ -26,10 +26,10 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
     fromSearch.destinationId(search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId());
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
     fromSearch.namespaceFormat(Strings.isBlank(search.getNamespaceFormat()) || search.getNamespaceFormat().equals("null")
-      ? query.getNamespaceFormat()
-      : search.getNamespaceFormat());
+        ? query.getNamespaceFormat()
+        : search.getNamespaceFormat());
     fromSearch.namespaceDefinition(
-      search.getNamespaceDefinition() == null ? query.getNamespaceDefinition() : search.getNamespaceDefinition());
+        search.getNamespaceDefinition() == null ? query.getNamespaceDefinition() : search.getNamespaceDefinition());
     fromSearch.prefix(Strings.isBlank(search.getPrefix()) ? query.getPrefix() : search.getPrefix());
     fromSearch.schedule(search.getSchedule() == null ? query.getSchedule() : search.getSchedule());
     fromSearch.sourceId(search.getSourceId() == null ? query.getSourceId() : search.getSourceId());
@@ -42,4 +42,5 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
 
     return fromSearch;
   }
+
 }
