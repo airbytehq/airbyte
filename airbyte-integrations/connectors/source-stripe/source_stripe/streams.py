@@ -17,13 +17,10 @@ class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
 
-    def __init__(self, start_date: str, account_id: str, **kwargs):
+    def __init__(self, start_date: int, account_id: str, **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
-        # `start_date` is here and not in `IncrementalStripeStream.__init__()` because few full_refresh streams
-        # (CustomerBalanceTransactions, InvoiceLineItems, SubscriptionItems, BankAccounts) have incremental parent
-        # streams which require `start_date`.
-        self.start_date = pendulum.parse(start_date).int_timestamp if not isinstance(start_date, int) else start_date
+        self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
