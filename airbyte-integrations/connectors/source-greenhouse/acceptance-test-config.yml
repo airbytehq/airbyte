@@ -23,7 +23,7 @@ tests:
           "applications_interviews",
           "demographics_answer_options",
           "demographics_answers",
-          "demographics_answers.answer_options",
+          "demographics_answers_answer_options",
           "demographics_question_sets",
           "demographics_question_sets_questions",
           "demographics_questions",
