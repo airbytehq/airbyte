@@ -44,11 +44,6 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     return true;
   }
 
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -56,7 +51,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .put("port", db.getFirstMappedPort())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("schema", "test_schema")
+        .put("schema", "testSchema")
         .put("ssl_method", Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
         .build());
   }

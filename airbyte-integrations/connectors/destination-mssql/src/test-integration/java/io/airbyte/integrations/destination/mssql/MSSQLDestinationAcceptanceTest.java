@@ -43,18 +43,13 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return true;
   }
 
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("schema", "test_schema")
+        .put("schema", "testSchema")
         .build());
   }
 
