@@ -4,13 +4,16 @@
 
 import json
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, MutableMapping
+from jsonschema import RefResolver
 
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
+from airbyte_cdk.models import AirbyteConnectionStatus, AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification, Status
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
@@ -32,11 +35,11 @@ class InsightConfig(BaseModel):
 
     name: str = Field(description="The name value of insight")
 
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter")
+    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
 
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns")
+    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
 
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns")
+    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
 
 
 class ConnectorConfig(BaseModel):
@@ -72,10 +75,7 @@ class ConnectorConfig(BaseModel):
         maximum=30,
     )
     insights: Optional[List[InsightConfig]] = Field(
-        description="A defined list wich contains insights entries, each entry must have a name and can contain these entries(fields, breakdowns or action_breakdowns)",
-        examples=[
-            '[{"name": "AdsInsights","fields": ["account_id","account_name","ad_id","ad_name","adset_id","adset_name","campaign_id","campaign_name","date_start","impressions","spend"],"breakdowns": [],"action_breakdowns": []}]'
-        ],
+        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
     )
 
 
@@ -130,6 +130,20 @@ class SourceFacebookMarketing(AbstractSource):
 
         return self._update_insights_streams(insights=config.insights, args=insights_args, streams=streams)
 
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        try:
+            check_succeeded, error = self.check_connection(logger, config)
+            if not check_succeeded:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
+        except Exception as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
+
+        self._check_insights_entries(config.get('insights', []))
+
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
@@ -140,12 +154,12 @@ class SourceFacebookMarketing(AbstractSource):
             changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
-            connectionSpecification=ConnectorConfig.schema(),
+            connectionSpecification=expand_local_ref(ConnectorConfig.schema()),
             authSpecification=AuthSpecification(
                 auth_type="oauth2.0",
                 oauth2Specification=OAuth2Specification(
                     rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
-                ),
+                )
             ),
         )
 
@@ -160,16 +174,53 @@ class SourceFacebookMarketing(AbstractSource):
         insights_custom_streams = list()
 
         for insight in insights:
-            args["name"] = insight.name
-            args["fields"] = insight.fields
-            args["breakdowns"] = insight.breakdowns
-            args["action_breakdowns"] = insight.action_breakdowns
+            args["name"] = f"Custom{insight.name}"
+            args["fields"] = list(set(insight.fields))
+            args["breakdowns"] = list(set(insight.breakdowns))
+            args["action_breakdowns"] = list(set(insight.action_breakdowns))
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 
-        new_streams = list()
-        for stream in streams:
-            if stream.name not in [e.name for e in insights_custom_streams]:
-                new_streams.append(stream)
+        return streams + insights_custom_streams
 
-        return new_streams + insights_custom_streams
+    def _check_insights_entries(self, insights):
+
+        default_fields = list(ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys())
+        default_breakdowns = list(ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys())
+        default_actions_breakdowns = [e for e in default_breakdowns if 'action_' in e]
+
+        for insight in insights:
+            if insight.get('fields') and not self._check_values(default_fields, insight.get('fields')):
+                message = f"For {insight.get('name')} that field are not espected in fields"
+                raise Exception("Config validation error: " + message) from None
+            if insight.get('breakdowns') and not self._check_values(default_breakdowns, insight.get('breakdowns')):
+                message = f"For {insight.get('name')} that breakdown are not espected in breakdowns"
+                raise Exception("Config validation error: " + message) from None
+            if insight.get('action_breakdowns') and not self._check_values(default_actions_breakdowns, insight.get('action_breakdowns')):
+                message = f"For {insight.get('name')} that action_breakdowns are not espected in action_breakdowns"
+                raise Exception("Config validation error: " + message) from None
+
+        return True
+
+    def _check_values(self, default_value: List[str], custom_value: List[str]) -> bool:
+        for e in custom_value:
+            if e not in default_value:
+                logger.error(f"{e} does not appers in {default_value}")
+                return False
+        return True
+
+
+def expand_local_ref(schema, resolver=None, **kwargs):
+    resolver = resolver or RefResolver("", schema)
+    if isinstance(schema, MutableMapping):
+        if "$ref" in schema:
+            ref_url = schema.pop("$ref")
+            url, resolved_schema = resolver.resolve(ref_url)
+            schema.update(resolved_schema)
+        for key, value in schema.items():
+            schema[key] = expand_local_ref(value, resolver=resolver)
+        return schema
+    elif isinstance(schema, List):
+        return [expand_local_ref(item, resolver=resolver) for item in schema]
+
+    return schema
