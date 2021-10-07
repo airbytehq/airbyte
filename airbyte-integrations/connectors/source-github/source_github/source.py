@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -84,7 +64,13 @@ class SourceGithub(AbstractSource):
         return list(set(repositories_list))
 
     @staticmethod
-    def _get_authenticator(token: str):
+    def _get_authenticator(config: Dict[str, Any]):
+        # Before we supported oauth, personal_access_token was called `access_token` and it lived at the
+        # config root. So we first check to make sure any backwards compatbility is handled.
+        token = config.get("access_token")
+        if not token:
+            creds = config.get("credentials")
+            token = creds.get("access_token") or creds.get("personal_access_token")
         tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
@@ -127,7 +113,7 @@ class SourceGithub(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            authenticator = self._get_authenticator(config["access_token"])
+            authenticator = self._get_authenticator(config)
             repositories = self._generate_repositories(config=config, authenticator=authenticator)
 
             repository_stats_stream = RepositoryStats(
@@ -141,7 +127,7 @@ class SourceGithub(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self._get_authenticator(config["access_token"])
+        authenticator = self._get_authenticator(config)
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
         organizations = list({org.split("/")[0] for org in repositories})
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}

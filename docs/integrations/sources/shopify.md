@@ -8,6 +8,10 @@ This source can sync data for the [Shopify API](https://help.shopify.com/en/api/
 
 This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
+## Troubleshooting
+
+Check out common troubleshooting issues for the BigQuery destination connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
+
 ### Output schema
 
 This Source is capable of syncing the following core Streams:

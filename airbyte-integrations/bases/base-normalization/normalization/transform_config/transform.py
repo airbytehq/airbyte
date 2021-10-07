@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -172,7 +152,8 @@ class TransformConfig:
             dbt_config["keyfile_json"] = json.loads(config["credentials_json"])
         else:
             dbt_config["method"] = "oauth"
-
+        if "dataset_location" in config:
+            dbt_config["location"] = config["dataset_location"]
         return dbt_config
 
     @staticmethod
@@ -193,6 +174,10 @@ class TransformConfig:
             "schema": config["schema"],
             "threads": 32,
         }
+
+        # if unset, we assume true.
+        if config.get("ssl", True):
+            config["sslmode"] = "require"
 
         return dbt_config
 
@@ -237,6 +222,10 @@ class TransformConfig:
     @staticmethod
     def transform_mysql(config: Dict[str, Any]):
         print("transform_mysql")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://github.com/dbeatty10/dbt-mysql#configuring-your-profile
         dbt_config = {
             # MySQL 8.x - type: mysql
