@@ -21,6 +21,7 @@ class DestinationType(Enum):
     snowflake = "snowflake"
     mysql = "mysql"
     oracle = "oracle"
+    mssql = "mssql"
 
 
 class TransformConfig:
@@ -80,6 +81,7 @@ class TransformConfig:
             DestinationType.snowflake.value: self.transform_snowflake,
             DestinationType.mysql.value: self.transform_mysql,
             DestinationType.oracle.value: self.transform_oracle,
+            DestinationType.mssql.value: self.transform_mssql,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -254,6 +256,25 @@ class TransformConfig:
             "dbname": config["sid"],
             "schema": config["schema"],
             "threads": 4,
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_mssql(config: Dict[str, Any]):
+        print("transform_mssql")
+        # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
+        dbt_config = {
+            "type": "sqlserver",
+            "driver": "ODBC Driver 17 for SQL Server",
+            "server": config["host"],
+            "port": config["port"],
+            "schema": config["schema"],
+            "database": config["database"],
+            "user": config["username"],
+            "password": config["password"],
+            "threads": 32,
+            # "authentication": "sql",
+            # "trusted_connection": True,
         }
         return dbt_config
 
