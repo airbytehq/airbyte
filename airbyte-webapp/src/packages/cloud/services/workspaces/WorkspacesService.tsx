@@ -13,6 +13,13 @@ type Context = {
   currentWorkspaceId?: string | null;
   selectWorkspace: (workspaceId: string | null) => void;
   createWorkspace: (name: string) => Promise<CloudWorkspace>;
+  updateWorkspace: {
+    mutateAsync: (payload: {
+      workspaceId: string;
+      name: string;
+    }) => Promise<CloudWorkspace>;
+    isLoading: boolean;
+  };
   removeWorkspace: {
     mutateAsync: (workspaceId: string) => Promise<void>;
     isLoading: boolean;
@@ -65,16 +72,39 @@ export function useUpdateWorkspace() {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async (workspaceId: string) => service.update(workspaceId, { name: "" }),
+    async (payload: { workspaceId: string; name: string }) =>
+      service.update(payload.workspaceId, { name: payload.name }),
     {
       onSuccess: (result) => {
-        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => [
-          ...(old ?? []),
-          result,
-        ]);
+        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => {
+          const list = old ?? [];
+          if (list.length === 0) {
+            return [result];
+          }
+
+          const index = list.findIndex(
+            (item) => item.workspaceId === result.workspaceId
+          );
+
+          if (index === -1) {
+            return list;
+          }
+
+          return [...list.slice(0, index), result, ...list.slice(index + 1)];
+        });
+
+        queryClient.setQueryData<CloudWorkspace>(
+          ["workspace", result.workspaceId],
+          (old) => {
+            return {
+              ...old,
+              ...result,
+            };
+          }
+        );
       },
     }
-  ).mutateAsync;
+  );
 }
 
 export function useRemoveWorkspace() {
@@ -95,14 +125,20 @@ export function useRemoveWorkspace() {
   );
 }
 
-export function useGetWorkspace(workspaceId: string) {
+export function useGetWorkspace(workspaceId?: string | null) {
   const service = useGetWorkspaceService();
 
-  return useQuery(
-    ["cloud_workspace", workspaceId],
+  return useQuery<CloudWorkspace>(
+    ["workspace", workspaceId],
     () => service.get(workspaceId),
     {
       suspense: true,
+      initialData: {
+        workspaceId: "",
+        name: "",
+        billingUserId: "",
+        remainingCredits: 0,
+      },
     }
   ) as any;
 }
@@ -124,8 +160,10 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
     string | null
   >(`${user.userId}/workspaceId`, null);
+
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
+  const updateWorkspace = useUpdateWorkspace();
 
   const queryClient = useQueryClient();
   const resetCache = useResetter();
@@ -139,13 +177,20 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
           userId: user.userId,
         }),
       removeWorkspace,
+      updateWorkspace,
       selectWorkspace: async (workspaceId) => {
         setCurrentWorkspaceId(workspaceId);
         await queryClient.resetQueries();
         resetCache();
       },
     }),
-    [currentWorkspaceId, user, createWorkspace, removeWorkspace]
+    [
+      currentWorkspaceId,
+      user,
+      createWorkspace,
+      removeWorkspace,
+      updateWorkspace,
+    ]
   );
 
   return (
