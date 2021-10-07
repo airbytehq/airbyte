@@ -139,7 +139,6 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
             return {self.cursor_field: str(latest_record_date)}
 
 
-
 class ApplicationRoles(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-key-get
@@ -245,7 +244,7 @@ class Epics(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -281,7 +280,7 @@ class EpicIssues(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         epic_id = stream_slice["epic_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -355,7 +354,7 @@ class Issues(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -368,14 +367,31 @@ class Issues(IncrementalJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
         field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
-        fields = ["attachment", "issuelinks", "security", "issuetype", "updated"]
+        fields = [
+            "assignee",
+            "attachment",
+            "created",
+            "creator",
+            "description",
+            "issuelinks",
+            "issuetype",
+            "labels",
+            "parent",
+            "priority",
+            "project",
+            "security",
+            "status",
+            "subtasks",
+            "summary",
+            "updated",
+        ]
         additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
         for name in additional_field_names + self._additional_fields:
             if name in field_ids_by_name:
                 fields.append(field_ids_by_name[name])
         projects_stream = Projects(**stream_args)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"], "fields": fields}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"], "fields": list(set(fields))}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
@@ -907,7 +923,7 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         sprint_id = stream_slice["sprint_id"]
         return f"sprint/{sprint_id}/issue"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any]=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = stream_slice["fields"]

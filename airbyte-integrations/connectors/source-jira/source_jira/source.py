@@ -15,11 +15,11 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import (
     ApplicationRoles,
     Avatars,
-    Boards,
     BoardIssues,
+    Boards,
     Dashboards,
-    Epics,
     EpicIssues,
+    Epics,
     Filters,
     FilterSharing,
     Groups,
