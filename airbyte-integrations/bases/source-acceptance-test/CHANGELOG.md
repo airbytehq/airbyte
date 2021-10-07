@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.23
+Fix incorrect auth init flow check defect.
+
+## 0.1.22
+Fix checking schemas with root $ref keyword
+
+## 0.1.21
+Fix rootObject oauth init parameter check
+
+## 0.1.20
+Add oauth init flow parameter verification for spec.
+
+## 0.1.19
+Assert a non-empty overlap between the fields present in the record and the declared json schema.
+
 ## 0.1.18
 Fix checking date-time format againt nullable field.
 

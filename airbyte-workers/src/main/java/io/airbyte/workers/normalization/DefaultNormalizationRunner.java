@@ -28,7 +28,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.47";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.50";
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
@@ -40,7 +40,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     POSTGRES,
     REDSHIFT,
     SNOWFLAKE,
-    MYSQL
+    MYSQL,
+    MSSQL
   }
 
   public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory) {
@@ -103,6 +104,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                              final String... args)
       throws Exception {
     try {
+      LOGGER.info("Running with normalization version: {}", NORMALIZATION_IMAGE_NAME);
       process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements,
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
 

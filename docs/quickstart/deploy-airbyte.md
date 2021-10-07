@@ -2,11 +2,7 @@
 
 Deploying Airbyte just takes two steps.
 
-1. Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). 
-
-{% hint style="info" %}
-Note: There is a known issue with docker-compose 1.27.3. If you are using that version, please upgrade to 1.27.4.
-{% endhint %}
+1. Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
 
 2. Run the following commands in your terminal:
 
@@ -17,6 +13,8 @@ docker-compose up
 ```
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)!
+
+Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
 
 ## FAQ
 
