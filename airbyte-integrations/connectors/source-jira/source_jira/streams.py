@@ -264,42 +264,6 @@ class Epics(IncrementalJiraStream):
         return record
 
 
-class EpicIssues(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
-    """
-
-    cursor_field = "updated"
-    parse_response_root = "issues"
-    use_request_cache = False
-
-    def __init__(self, start_date: str = "", **kwargs):
-        super().__init__(**kwargs)
-        self._start_date = start_date
-
-    def path(self, **kwargs) -> str:
-        return "search"
-
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
-        epic_id = stream_slice["epic_id"]
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["fields"] = ["key", "updated"]
-        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
-        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"parent = {epic_id} or 'Epic Link' = {epic_id} and updated > '{issues_state_row}'"
-        return params
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        epics_stream = Epics(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
-        for epic in epics_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"epic_id": epic["id"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["epicId"] = stream_slice["epic_id"]
-        return record
-
-
 class Filters(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
