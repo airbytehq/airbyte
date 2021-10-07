@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
 import java.io.IOException;
@@ -30,7 +31,7 @@ class WorkerRunTest {
   @Test
   void test() throws Exception {
     final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> supplier = mock(CheckedSupplier.class);
-    new WorkerRun(path, supplier).call();
+    new WorkerRun(path, supplier, new EnvConfigs().getAirbyteVersionOrWarning()).call();
 
     assertTrue(Files.exists(path));
     verify(supplier).get();

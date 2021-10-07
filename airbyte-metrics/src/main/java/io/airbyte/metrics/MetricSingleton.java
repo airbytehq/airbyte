@@ -19,19 +19,18 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * Use the prometheus library to publish prometheus metrics to a specified port. These metrics can
- * be consumed by any agent understanding the OpenMetrics format.
- *
- * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. Within
- * Airbyte Cloud, the metrics are consumed by a Datadog agent and transformed into Datadog metrics
- * as per https://docs.datadoghq.com/integrations/guide/prometheus-metrics/.
- *
+ * Use the prometheus library to publish prometheus metrics to a specified port. These metrics can be consumed by any agent understanding the
+ * OpenMetrics format.
+ * <p>
+ * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. Within Airbyte Cloud, the metrics are consumed by a Datadog
+ * agent and transformed into Datadog metrics as per https://docs.datadoghq.com/integrations/guide/prometheus-metrics/.
+ * <p>
  * Open source users are free to turn this on and consume the same metrics.
  */
 public class MetricSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetricSingleton.class);
-  private static boolean PUBLISH = new EnvConfigs().getPublishMetrics();
+  private static boolean PUBLISH;
 
   private static final Map<String, Gauge> nameToGauge = new HashMap<>();
   private static final Map<String, Counter> nameToCounter = new HashMap<>();
@@ -41,11 +40,12 @@ public class MetricSingleton {
 
   // Gauge. See
   // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=gauge#monotonic-count.
+
   /**
    * Track value at a given timestamp.
    *
    * @param name of gauge
-   * @param val to set
+   * @param val  to set
    */
   public static void setGauge(String name, double val, String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
@@ -61,7 +61,7 @@ public class MetricSingleton {
    * Increment value.
    *
    * @param name of gauge
-   * @param val to increment
+   * @param val  to increment
    */
   public static void incrementGauge(String name, double val, String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
@@ -81,7 +81,7 @@ public class MetricSingleton {
    * Decrement value.
    *
    * @param name of gauge
-   * @param val to decrement
+   * @param val  to decrement
    */
   public static void decrementGauge(String name, double val, String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
@@ -95,11 +95,12 @@ public class MetricSingleton {
 
   // Counter - Monotonically Increasing. See
   // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=count#monotonic-count.
+
   /**
    * Increment a monotoically increasing counter.
    *
    * @param name of counter
-   * @param amt to increment
+   * @param amt  to increment
    */
   public static void incrementCounter(String name, double amt, String description) {
     validateNameAndCheckDescriptionExists(name, description, () -> ifPublish(() -> {
@@ -114,10 +115,11 @@ public class MetricSingleton {
 
   // Histogram. See
   // https://docs.datadoghq.com/metrics/agent_metrics_submission/?tab=histogram#monotonic-count.
+
   /**
    * Time code execution.
    *
-   * @param name of histogram
+   * @param name     of histogram
    * @param runnable to time
    * @return duration of code execution.
    */
@@ -168,11 +170,13 @@ public class MetricSingleton {
   }
 
   /**
-   * Stand up a separate thread to publish metrics to the specified port.
+   * Stand up a separate thread to publish metrics to the specified port.  This method (in lieu of a constructor) must be called ahead of recording
+   * time, in order to initialize the PUBLISH configuration as true/false.
    *
    * @param monitorPort to publish metrics to
    */
-  public static void initializeMonitoringServiceDaemon(String monitorPort, Map<String, String> mdc) {
+  public static void initializeMonitoringServiceDaemon(String monitorPort, Map<String, String> mdc, boolean publish) {
+    PUBLISH = publish;
     ifPublish(() -> {
       try {
         MDC.setContextMap(mdc);
@@ -190,11 +194,6 @@ public class MetricSingleton {
   public static void closeMonitoringServiceDaemon() {
     monitoringDaemon.close();
     LOGGER.info("Stopping monitoring daemon..");
-  }
-
-  @VisibleForTesting
-  public static void setToPublish() {
-    PUBLISH = true;
   }
 
 }

@@ -22,15 +22,18 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   private final String jobId;
   private final int attempt;
   private final NormalizationRunner normalizationRunner;
+  private final WorkerEnvironment workerEnvironment;
 
   private final AtomicBoolean cancelled;
 
   public DefaultNormalizationWorker(final String jobId,
                                     final int attempt,
-                                    final NormalizationRunner normalizationRunner) {
+                                    final NormalizationRunner normalizationRunner,
+                                    final WorkerEnvironment workerEnvironment) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.normalizationRunner = normalizationRunner;
+    this.workerEnvironment = workerEnvironment;
 
     this.cancelled = new AtomicBoolean(false);
   }
@@ -45,7 +48,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
       Path normalizationRoot = null;
       // There are no shared volumes on Kube; only create this for Docker.
-      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+      if (workerEnvironment.equals(WorkerEnvironment.DOCKER)) {
         normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
       }
 

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -36,7 +37,7 @@ class JobRetrierTest {
     jobNotifier = mock(JobNotifier.class);
     persistence = mock(JobPersistence.class);
 
-    jobRetrier = new JobRetrier(persistence, () -> NOW, jobNotifier);
+    jobRetrier = new JobRetrier(persistence, () -> NOW, jobNotifier, 3);
     incompleteSyncJob = mock(Job.class);
     when(incompleteSyncJob.getId()).thenReturn(12L);
     when(incompleteSyncJob.getStatus()).thenReturn(JobStatus.INCOMPLETE);
