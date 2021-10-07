@@ -13,7 +13,6 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "PAT Credentials",
             "title": "Authenticate with Personal Access Token",
             "required": ["personal_access_token"],
             "properties": {
@@ -46,7 +45,7 @@
                 "type": "string",
                 "title": "",
                 "description": "",
-                "airbyte_secret": false
+                "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",

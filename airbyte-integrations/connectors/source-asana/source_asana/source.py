@@ -28,7 +28,7 @@ class SourceAsana(AbstractSource):
     def _get_authenticator(config: dict) -> Union[TokenAuthenticator, AsanaOauth2Authenticator]:
         if "access_token" in config:
             # Before Oauth we had Person Access Token stored under "access_token"
-            # config filed, this code here is for backward compatability
+            # config field, this code here is for backward compatibility
             return TokenAuthenticator(token=config["access_token"])
         creds = config.get("credentials")
         if "personal_access_token" in creds:
