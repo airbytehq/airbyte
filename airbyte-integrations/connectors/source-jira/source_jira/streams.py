@@ -919,7 +919,7 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
         field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
-        fields = ["key", "updated"]
+        fields = ["key", "status", "updated"]
         for name in ["Story Points", "Story point estimate"]:
             if name in field_ids_by_name:
                 fields.append(field_ids_by_name[name])
