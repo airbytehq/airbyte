@@ -16,4 +16,3 @@ def test_source_wrong_credentials():
     }
     status, error = source.check_connection(logger=AirbyteLogger(), config=config)
     assert not status
-

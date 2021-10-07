@@ -359,11 +359,10 @@ class Orders(SquareStreamPageJson):
 
 
 class Oauth2AuthenticatorSquare(Oauth2Authenticator):
-
     def refresh_access_token(self):
         """Handle differences in expiration attr:
-            from API: "expires_at": "2021-11-05T14:26:57Z"
-            expected: "expires_in": number of seconds
+        from API: "expires_at": "2021-11-05T14:26:57Z"
+        expected: "expires_in": number of seconds
         """
         token, expires_at = super().refresh_access_token()
         expires_in = pendulum.parse(expires_at) - pendulum.now()
