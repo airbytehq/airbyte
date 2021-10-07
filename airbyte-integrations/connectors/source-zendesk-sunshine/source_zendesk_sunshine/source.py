@@ -7,13 +7,61 @@ import base64
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, HttpAuthenticator
+
+from .common import get_base_api_url, get_base_url
 
 from .streams import Limits, ObjectRecords, ObjectTypePolicies, ObjectTypes, RelationshipRecords, RelationshipTypes
+
+
+class OauthAuthenticator(HttpAuthenticator):
+    def __init__(self, config: Mapping[str, str], **kwargs):
+        self.auth_method = "Bearer"
+        self.auth_header = "Authorization"
+        oauth_credentials = config["authentication"]["oauth_credentials"]
+        self.authorization_code = oauth_credentials.get("authorization_code")
+        self._access_token = oauth_credentials.get("access_token")
+        self.client_id = oauth_credentials["client_id"]
+        self.client_secret = oauth_credentials["client_secret"]
+        self.base_url = get_base_url(subdomain=config["subdomain"])
+        self.redirect_uri = "http://localhost"
+        super().__init__(**kwargs)
+
+    @property
+    def request_token_url(self):
+        return f"{self.base_url}oauth/tokens"
+
+    @property
+    def access_token(self) -> str:
+        if not self._access_token:
+            res = requests.post(self.request_token_url, data={
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "code": self.authorization_code,
+                "grant_type": "authorization_code",
+                "redirect_uri": self.redirect_uri
+            })
+            data = res.json()
+            print(data)
+            res.raise_for_status()
+
+            self._access_token = data["access_token"]
+            # TODO: access token needs to be persisted somehow.
+            print(self._access_token)
+            return self._access_token
+
+
+        else:
+            return self._access_token
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {self.auth_header: f"{self.auth_method} {self.access_token}"}
 
 
 class Base64HttpAuthenticator(TokenAuthenticator):
@@ -27,13 +75,29 @@ class SourceZendeskSunshine(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             pendulum.parse(config["start_date"], strict=True)
-            authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
-            stream = Limits(authenticator=authenticator, subdomain=config["subdomain"], start_date=pendulum.parse(config["start_date"]))
+            authenticator = self.get_authenticator(config)
+            stream = Limits(authenticator=authenticator, subdomain=config["subdomain"],
+                            start_date=pendulum.parse(config["start_date"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
         except Exception as e:
             return False, repr(e)
+
+    def get_authenticator(self, config):
+        if auth := config.get("authentication"):
+            if api_token := auth.get("api_token"):
+                authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', api_token))
+            elif oauth_credentials := auth.get("oauth_credentials"):
+                authorization_code = oauth_credentials["authorization_code"]
+                client_id = oauth_credentials["client_id"]
+                client_secret = oauth_credentials["client_secret"]
+                authenticator = OauthAuthenticator(config)
+
+        else:
+            # Legacy spec support for backward compatibility
+            authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+        return authenticator
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -47,7 +111,7 @@ class SourceZendeskSunshine(AbstractSource):
         After this time is passed we have no data. It will require permanent population, to pass
         the test criteria `stream should contain at least 1 record)
         """
-        authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+        authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "subdomain": config["subdomain"], "start_date": config["start_date"]}
         return [
             ObjectTypes(**args),
