@@ -27,7 +27,7 @@ select
     cast(CURRENCY as 
     varchar
 ) as CURRENCY,
-    cast(nullif(DATE, '') as
+    cast(nullif(DATE, '') as 
     date
 ) as DATE,
     case
