@@ -145,7 +145,7 @@ class Events(IncrementalAmplitudeStream):
                 self.logger.warn(f"Error during syncing {self.name} stream - {error}")
                 return []
             else:
-                raise requests.exceptions.HTTPError(error)
+                raise
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
