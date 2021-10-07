@@ -6,7 +6,7 @@
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
-            "id":  {
+            "id": {
               "type": ["null", "integer"]
             },
             "date_created": {
@@ -117,9 +117,9 @@
               "type": ["null", "string"]
             },
             "meta_data": {
-              "type": ["null","array"],
+              "type": ["null", "array"],
               "items": {
-                "type": ["null","object"],
+                "type": ["null", "object"],
                 "properties": {
                   "id": {
                     "type": ["null", "integer"]
@@ -149,7 +149,7 @@
                 },
                 "collection": {
                   "type": ["null", "array"],
-                  "items" : {
+                  "items": {
                     "type": ["null", "object"],
                     "properties": {
                       "href": {
@@ -351,9 +351,9 @@
               "type": ["null", "string"]
             },
             "meta_data": {
-              "type": ["null","array"],
+              "type": ["null", "array"],
               "items": {
-                "type": ["null","object"],
+                "type": ["null", "object"],
                 "properties": {
                   "id": {
                     "type": ["null", "integer"]
@@ -402,7 +402,7 @@
                   "total_tax": {
                     "type": ["null", "string"]
                   },
-                  "taxes":{
+                  "taxes": {
                     "type": ["null", "array"],
                     "items": {
                       "type": ["null", "object"],
@@ -429,9 +429,9 @@
                           "type": ["null", "string"]
                         },
                         "meta_data": {
-                          "type": ["null","array"],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": ["null","object"],
+                            "type": ["null", "object"],
                             "properties": {
                               "id": {
                                 "type": ["null", "integer"]
@@ -449,9 +449,9 @@
                     }
                   },
                   "meta_data": {
-                    "type": ["null","array"],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": ["null","object"],
+                      "type": ["null", "object"],
                       "properties": {
                         "id": {
                           "type": ["null", "integer"]
@@ -501,9 +501,9 @@
                     "type": ["null", "string"]
                   },
                   "meta_data": {
-                    "type": ["null","array"],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": ["null","object"],
+                      "type": ["null", "object"],
                       "properties": {
                         "id": {
                           "type": ["null", "integer"]
@@ -567,9 +567,9 @@
                           "type": ["null", "string"]
                         },
                         "meta_data": {
-                          "type": ["null","array"],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": ["null","object"],
+                            "type": ["null", "object"],
                             "properties": {
                               "id": {
                                 "type": ["null", "integer"]
@@ -587,9 +587,9 @@
                     }
                   },
                   "meta_data": {
-                    "type": ["null","array"],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": ["null","object"],
+                      "type": ["null", "object"],
                       "properties": {
                         "id": {
                           "type": ["null", "integer"]
@@ -656,9 +656,9 @@
                           "type": ["null", "string"]
                         },
                         "meta_data": {
-                          "type": ["null","array"],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": ["null","object"],
+                            "type": ["null", "object"],
                             "properties": {
                               "id": {
                                 "type": ["null", "integer"]
@@ -676,9 +676,9 @@
                     }
                   },
                   "meta_data": {
-                    "type": ["null","array"],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": ["null","object"],
+                      "type": ["null", "object"],
                       "properties": {
                         "id": {
                           "type": ["null", "integer"]
@@ -713,9 +713,9 @@
                     "type": ["null", "string"]
                   },
                   "meta_data": {
-                    "type": ["null","array"],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": ["null","object"],
+                      "type": ["null", "object"],
                       "properties": {
                         "id": {
                           "type": ["null", "integer"]
@@ -768,7 +768,7 @@
                 },
                 "collection": {
                   "type": ["null", "array"],
-                  "items" : {
+                  "items": {
                     "type": ["null", "object"],
                     "properties": {
                       "href": {
@@ -878,9 +878,9 @@
               "type": ["null", "array"]
             },
             "meta_data": {
-              "type": ["null","array"],
+              "type": ["null", "array"],
               "items": {
-                "type": ["null","object"],
+                "type": ["null", "object"],
                 "properties": {
                   "id": {
                     "type": ["null", "integer"]
@@ -910,7 +910,7 @@
                 },
                 "collection": {
                   "type": ["null", "array"],
-                  "items" : {
+                  "items": {
                     "type": ["null", "object"],
                     "properties": {
                       "href": {

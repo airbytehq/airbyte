@@ -14,7 +14,7 @@
     },
     "collection": {
       "type": ["null", "array"],
-      "items" : {
+      "items": {
         "type": ["null", "object"],
         "properties": {
           "href": {

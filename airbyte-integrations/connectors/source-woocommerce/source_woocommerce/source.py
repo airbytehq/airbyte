@@ -1,30 +1,10 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
-from base64 import b64encode
 from abc import ABC
+from base64 import b64encode
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
@@ -76,11 +56,12 @@ class WoocommerceStream(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
         else:
-            params.update({"orderby":self.order_field,"order":"asc"})
+            params.update({"orderby": self.order_field, "order": "asc"})
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
+
 
 class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     # Getting page size as 'limit' from parrent class
@@ -118,8 +99,8 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
         else:
             yield from records_slice
 
-class NonFilteredStream(IncrementalWoocommerceStream):
 
+class NonFilteredStream(IncrementalWoocommerceStream):
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
 
@@ -128,11 +109,11 @@ class NonFilteredStream(IncrementalWoocommerceStream):
         return params
 
     def read_records(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-        ) -> Iterable[Mapping[str, Any]]:
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
 
-            slice = super().read_records(sync_mode = SyncMode.full_refresh, stream_slice = stream_slice,stream_state = stream_state)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class Coupons(IncrementalWoocommerceStream):
@@ -150,7 +131,6 @@ class Orders(IncrementalWoocommerceStream):
 
 # Source
 class SourceWoocommerce(AbstractSource):
-
     def _convert_auth_to_token(self, username: str, password: str) -> str:
         username = username.encode("latin1")
         password = password.encode("latin1")
@@ -161,13 +141,13 @@ class SourceWoocommerce(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        shop = config['shop']
+        shop = config["shop"]
         headers = {"Accept": "application/json"}
-        url =  f"https://{shop}.com/wp-json/wc/v3/"
+        url = f"https://{shop}.com/wp-json/wc/v3/"
 
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")
-            headers = dict(Accept = "application/json", **auth.get_auth_header())
+            headers = dict(Accept="application/json", **auth.get_auth_header())
             session = requests.get(url, headers=headers)
             session.raise_for_status()
             return True, None
@@ -176,11 +156,15 @@ class SourceWoocommerce(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        auth = auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")  # Oauth2Authenticator is also available if you need oauth support
-        args = {"authenticator": auth, "shop": config["shop"], "start_date": config["start_date"], "api_key": config["api_key"], "api_secret": config["api_secret"]}
+        auth = auth = TokenAuthenticator(
+            token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic"
+        )  # Oauth2Authenticator is also available if you need oauth support
+        args = {
+            "authenticator": auth,
+            "shop": config["shop"],
+            "start_date": config["start_date"],
+            "api_key": config["api_key"],
+            "api_secret": config["api_secret"],
+        }
 
-        return [
-                    Customers(**args),
-                    Coupons(**args),
-                    Orders(**args)
-                ]
+        return [Customers(**args), Coupons(**args), Orders(**args)]
