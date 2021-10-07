@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
+import static org.junit.Assert.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,11 +14,17 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcSource;
 import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.oracle.OracleSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,16 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-
 class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
@@ -44,7 +42,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   @BeforeAll
   static void init() {
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-            .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
+        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
     ORACLE_DB.start();
   }
 
@@ -72,17 +70,17 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     ID_VALUE_5 = new BigDecimal(5);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", ORACLE_DB.getHost())
-            .put("port", ORACLE_DB.getFirstMappedPort())
-            .put("sid", ORACLE_DB.getSid())
-            .put("username", ORACLE_DB.getUsername())
-            .put("password", ORACLE_DB.getPassword())
-            .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-            .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-                    .put("encryption_method", "client_nne")
-                    .put("encryption_algorithm", "3DES168")
-                    .build()))
-            .build());
+        .put("host", ORACLE_DB.getHost())
+        .put("port", ORACLE_DB.getFirstMappedPort())
+        .put("sid", ORACLE_DB.getSid())
+        .put("username", ORACLE_DB.getUsername())
+        .put("password", ORACLE_DB.getPassword())
+        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "client_nne")
+            .put("encryption_algorithm", "3DES168")
+            .build()))
+        .build());
 
     // Because Oracle doesn't let me create database easily I need to clean up
     cleanUpTables();
@@ -97,24 +95,24 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     // sleep for 1000
     executeOracleStatement(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME)));
     executeOracleStatement(
-            String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
+        String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
     executeOracleStatement(
-            String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
+        String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
     Thread.sleep(1000);
   }
 
   void cleanUpTables() throws SQLException {
     final Connection conn = DriverManager.getConnection(
-            ORACLE_DB.getJdbcUrl(),
-            ORACLE_DB.getUsername(),
-            ORACLE_DB.getPassword());
+        ORACLE_DB.getJdbcUrl(),
+        ORACLE_DB.getUsername(),
+        ORACLE_DB.getPassword());
     for (final String schemaName : TEST_SCHEMAS) {
       final ResultSet resultSet =
-              conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
         final String tableNameProcessed = tableName.contains(" ") ? SourceJdbcUtils
-                .enquoteIdentifier(conn, tableName) : tableName;
+            .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
     }
@@ -160,18 +158,18 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     if (supportsSchemas()) {
       for (final String schemaName : TEST_SCHEMAS) {
         executeOracleStatement(
-                String.format(
-                        "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
-                        schemaName));
+            String.format(
+                "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
+                schemaName));
       }
     }
   }
 
   public void executeOracleStatement(final String query) throws SQLException {
     final Connection conn = DriverManager.getConnection(
-            ORACLE_DB.getJdbcUrl(),
-            ORACLE_DB.getUsername(),
-            ORACLE_DB.getPassword());
+        ORACLE_DB.getJdbcUrl(),
+        ORACLE_DB.getUsername(),
+        ORACLE_DB.getPassword());
     try (final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
@@ -225,7 +223,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected =
-            SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
 

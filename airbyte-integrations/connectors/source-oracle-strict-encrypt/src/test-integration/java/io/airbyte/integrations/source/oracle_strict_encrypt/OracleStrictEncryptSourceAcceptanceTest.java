@@ -21,11 +21,10 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import org.testcontainers.containers.OracleContainer;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.testcontainers.containers.OracleContainer;
 
 public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -41,23 +40,23 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", container.getHost())
-            .put("port", container.getFirstMappedPort())
-            .put("sid", container.getSid())
-            .put("username", container.getUsername())
-            .put("password", container.getPassword())
-            .put("schemas", List.of("JDBC_SPACE"))
-            .build());
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("sid", container.getSid())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("schemas", List.of("JDBC_SPACE"))
+        .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("sid").asText()),
-            "oracle.jdbc.driver.OracleDriver",
-            "oracle.net.encryption_client=REQUIRED;" +
-                    "oracle.net.encryption_types_client=( 3DES168 )");
+        config.get("password").asText(),
+        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
+        "oracle.jdbc.driver.OracleDriver",
+        "oracle.net.encryption_client=REQUIRED;" +
+            "oracle.net.encryption_types_client=( 3DES168 )");
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -97,23 +96,23 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("ID"))
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    STREAM_NAME,
-                                    Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                                    Field.of("NAME", JsonSchemaPrimitive.STRING),
-                                    Field.of("POWER", JsonSchemaPrimitive.NUMBER))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("ID"))
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    STREAM_NAME2,
-                                    Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                                    Field.of("NAME", JsonSchemaPrimitive.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("ID"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME,
+                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                Field.of("NAME", JsonSchemaPrimitive.STRING),
+                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("ID"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME2,
+                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
