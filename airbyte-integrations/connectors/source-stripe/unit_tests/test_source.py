@@ -22,6 +22,6 @@ SECONDS_IN_DAY = 24 * 60 * 60
     ],
 )
 def test_lookback_window(lookback_window_days, current_state, expected, message):
-    inv_stream = Invoices(account_id=213, start_date="2020", lookback_window_days=lookback_window_days)
+    inv_stream = Invoices(account_id=213, start_date=1577836800, lookback_window_days=lookback_window_days)
     inv_stream.cursor_field = "created"
     assert inv_stream.get_start_timestamp({"created": current_state}) == expected, message
