@@ -123,7 +123,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
     Process pr = run.exec(cmd);
-    if (!pr.waitFor(10, TimeUnit.SECONDS)) {
+    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     } ;
