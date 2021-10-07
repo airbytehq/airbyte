@@ -37,6 +37,11 @@
         "type": "string",
         "description": "Comma-separated list of additional fields to include in replicating issues",
         "examples": ["Field A, Field B"]
+      },
+      "expand_issue_changelog": {
+        "type": "boolean",
+        "description": "Expand the changelog when replicating issues",
+        "default": false
       }
     }
   }

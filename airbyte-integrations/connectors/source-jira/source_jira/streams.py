@@ -347,9 +347,10 @@ class Issues(IncrementalJiraStream):
     cursor_field = "updated"
     parse_response_root = "issues"
 
-    def __init__(self, additional_fields: List[str] = [], **kwargs):
+    def __init__(self, additional_fields: List[str] = [], expand_changelog: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._additional_fields = additional_fields
+        self._expand_changelog = expand_changelog
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -362,6 +363,8 @@ class Issues(IncrementalJiraStream):
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
         params["jql"] = f"project = '{project_id}' and updated > '{issues_state_row}'"
+        if self._expand_changelog:
+            params["expand"] = "changelog"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
