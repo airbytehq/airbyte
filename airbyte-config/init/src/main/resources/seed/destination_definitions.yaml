@@ -22,7 +22,7 @@
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   name: BigQuery
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   name: BigQuery (denormalized typed struct)
@@ -73,7 +73,7 @@
 - destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   name: Oracle (Alpha)
   dockerRepository: airbyte/destination-oracle
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
 - destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   name: Kafka
