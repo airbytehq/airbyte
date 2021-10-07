@@ -187,7 +187,7 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
         if "oneOf" in subschema or "anyOf" in subschema:
             if annotate_one_of:
                 return [
-                    _scan_schema({"type": "object", **s}, path + "(0)")
+                    _scan_schema({"type": "object", **s}, path + f"({num})")
                     for num, s in enumerate(subschema.get("oneOf") or subschema.get("anyOf"))
                 ]
             return [_scan_schema({"type": "object", **s}, path) for s in subschema.get("oneOf") or subschema.get("anyOf")]
