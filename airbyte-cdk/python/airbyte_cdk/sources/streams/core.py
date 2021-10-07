@@ -47,7 +47,7 @@ class Stream(ABC):
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self):
-        return logging.getLogger(f'streams.{self.name}')
+        return logging.getLogger(f"streams.{self.name}")
 
     @property
     def name(self) -> str:

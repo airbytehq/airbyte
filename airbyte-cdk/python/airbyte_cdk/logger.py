@@ -24,7 +24,6 @@
 
 import logging
 import logging.config
-import sys
 import traceback
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
@@ -32,25 +31,22 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 TRACE_LEVEL_NUM = 5
 
 LOGGING_CONFIG = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "airbyte": {
-                "()": "airbyte_cdk.logger.AirbyteLogFormatter",
-                "format": "%(message)s"
-            },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "airbyte": {"()": "airbyte_cdk.logger.AirbyteLogFormatter", "format": "%(message)s"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "formatter": "airbyte",
         },
-        "handlers": {
-            "console": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-                "formatter": "airbyte",
-            },
-        },
-        "root": {
-            "handlers": ["console"],
-        }
-    }
+    },
+    "root": {
+        "handlers": ["console"],
+    },
+}
 
 
 def init_logger(name: str):

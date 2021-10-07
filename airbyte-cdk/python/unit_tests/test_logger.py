@@ -27,7 +27,7 @@ import json
 from typing import Dict
 
 import pytest
-from airbyte_cdk.logger import init_logger, AirbyteLogFormatter
+from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 
 
 @pytest.fixture(scope="session")
@@ -93,4 +93,3 @@ def test_fatal(logger, caplog):
     record = caplog.records[0]
     assert record.levelname == "CRITICAL"
     assert record.message == "Test fatal 1"
-
