@@ -148,7 +148,7 @@
     },
     {
       "stream": {
-        "name": "applications.demographics_answers",
+        "name": "applications_demographics_answers",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -157,7 +157,7 @@
     },
     {
       "stream": {
-        "name": "demographics_question_sets.questions",
+        "name": "demographics_question_sets_questions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -166,7 +166,7 @@
     },
     {
       "stream": {
-        "name": "demographics_answers.answer_options",
+        "name": "demographics_answers_answer_options",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -184,7 +184,7 @@
     },
     {
       "stream": {
-        "name": "applications.interviews",
+        "name": "applications_interviews",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -211,7 +211,7 @@
     },
     {
       "stream": {
-        "name": "jobs.openings",
+        "name": "jobs_openings",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -229,7 +229,7 @@
     },
     {
       "stream": {
-        "name": "jobs.stages",
+        "name": "jobs_stages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

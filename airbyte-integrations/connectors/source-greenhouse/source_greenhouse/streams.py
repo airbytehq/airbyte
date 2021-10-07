@@ -2,9 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import re
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type
 from urllib import parse
 
 import requests
@@ -17,31 +16,17 @@ class GreenhouseStream(HttpStream, ABC):
     page_size = 100
     primary_key = "id"
 
-    @property
-    def data_field(self) -> str:
-        """
-        :return: Default field name to get data from response
-        """
-
-        return self.name
-
     def path(self, **kwargs) -> str:
-        return self.name
+        # wrap to str() to pass mypy pre-commit validation
+        return str(self.name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # parsing response header is the recommended pagination method https://developers.greenhouse.io/harvest.html#pagination
-        next_page_search = re.search(f'<({re.escape(self.url_base)}.+)>; rel="next"', response.headers.get("link", ""))
-        if next_page_search:
-            parsed_link = parse.urlparse(next_page_search.group(1))
-            query_params = dict(parse.parse_qsl(parsed_link.query))
-            return query_params
+        # parsing response header links is the recommended pagination method https://developers.greenhouse.io/harvest.html#pagination
+        parsed_link = parse.urlparse(response.links.get("next", {}).get("url", ""))
+        query_params = dict(parse.parse_qsl(parsed_link.query))
+        return query_params
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"per_page": self.page_size}
         if next_page_token:
             params.update(next_page_token)
@@ -65,17 +50,18 @@ class GreenhouseSubStream(GreenhouseStream):
 
     @property
     @abstractmethod
-    def parent_stream(self) -> GreenhouseStream:
+    def parent_stream(self) -> Type[GreenhouseStream]:
         """
         :return: parent stream class
         """
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         items = self.parent_stream(authenticator=self._session.auth)
         for item in items.read_records(sync_mode=SyncMode.full_refresh):
             yield {"parent_id": item["id"]}
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        stream_slice = stream_slice or {}
         return self.path_template.format(parent_id=stream_slice["parent_id"])
 
 
@@ -90,8 +76,6 @@ class ApplicationsDemographicsAnswers(GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answers
     """
 
-    name = "applications.demographics_answers"
-
     def path(self, **kwargs) -> str:
         return "demographics/answers"
 
@@ -101,7 +85,6 @@ class ApplicationsInterviews(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application
     """
 
-    name = "applications.interviews"
     parent_stream = Applications
     path_template = "applications/{parent_id}/scheduled_interviews"
 
@@ -162,7 +145,6 @@ class DemographicsAnswersAnswerOptions(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question
     """
 
-    name = "demographics_answers.answer_options"
     parent_stream = DemographicsQuestions
     path_template = "demographics/questions/{parent_id}/answer_options"
 
@@ -181,7 +163,6 @@ class DemographicsQuestionSetsQuestions(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set
     """
 
-    name = "demographics_question_sets.questions"
     parent_stream = DemographicsQuestionSets
     path_template = "demographics/question_sets/{parent_id}/questions"
 
@@ -224,7 +205,6 @@ class JobsOpenings(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-job-openings
     """
 
-    name = "jobs.openings"
     parent_stream = DemographicsQuestionSets
     path_template = "jobs/{parent_id}/openings"
 
@@ -234,7 +214,6 @@ class JobsStages(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job
     """
 
-    name = "jobs.stages"
     parent_stream = DemographicsQuestionSets
     path_template = "jobs/{parent_id}/stages"
 
