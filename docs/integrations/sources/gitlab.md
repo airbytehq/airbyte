@@ -53,9 +53,9 @@ Log into Gitlab and then generate a [personal access token](https://docs.gitlab.
 
 Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | Initial Release |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | Initial Release |
+

@@ -78,11 +78,10 @@ Your `READ_ONLY_USER` should now be ready for use with Airbyte.
 
 ### TLS/SSL on a Connection
 
-It is recommended to use encrypted connection.
-Connection with TLS/SSL security protocol for MongoDb Atlas Cluster and Replica Set instances is enabled by default.
-To enable TSL/SSL connection with Standalone MongoDb instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
+It is recommended to use encrypted connection. Connection with TLS/SSL security protocol for MongoDb Atlas Cluster and Replica Set instances is enabled by default. To enable TSL/SSL connection with Standalone MongoDb instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 
 ### Сonfiguration Parameters
+
 * Database: database name
 * Authentication Source: specifies the database that the supplied credentials should be validated against. Defaults to `admin`.
 * User: username to use when connecting
@@ -100,7 +99,9 @@ To enable TSL/SSL connection with Standalone MongoDb instance, please refer to [
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
 ## Changelog
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364) | Source MongoDb: added support via TLS/SSL |
-| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530) | New source: MongoDb ported to java |
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364) | Source MongoDb: added support via TLS/SSL |
+| 0.1.0 | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530) | New source: MongoDb ported to java |
+
