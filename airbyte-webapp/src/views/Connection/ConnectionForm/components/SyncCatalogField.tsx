@@ -96,16 +96,16 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       (_: SyncSchemaStream) => true,
       searchString
         ? (stream: SyncSchemaStream) =>
-            stream.stream.name
-              .toLowerCase()
-              .includes(searchString.toLowerCase())
+          stream.stream.name
+            .toLowerCase()
+            .includes(searchString.toLowerCase())
         : null,
       filterMode !== SyncCatalogFilters.All
         ? (stream: SyncSchemaStream) =>
-            (filterMode === SyncCatalogFilters.Selected &&
-              stream.config.selected) ||
-            (filterMode === SyncCatalogFilters.NotSelected &&
-              !stream.config.selected)
+          (filterMode === SyncCatalogFilters.Selected &&
+            stream.config.selected) ||
+          (filterMode === SyncCatalogFilters.NotSelected &&
+            !stream.config.selected)
         : null,
     ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
 
@@ -170,10 +170,10 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           <SelectAll>
             <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
           </SelectAll>
-          <FormattedMessage id="form.sourceNamespace" />
+          <FormattedMessage id="form.sourceStreamName" />
         </NamespaceTitleCell>
         <Cell lighter>
-          <FormattedMessage id="form.sourceStreamName" />
+          <FormattedMessage id="form.sourceNamespace" />
         </Cell>
         <Cell lighter>
           <FormattedMessage id="form.destinationNamespace" />
