@@ -62,7 +62,8 @@ class TiktokStream(HttpStream, ABC):
         """
         data = response.json()
         if data["code"]:
-            raise TiktokException(data["message"])
+            raise TiktokException("AAAA %s => %s" %
+                                  (data["message"], self._config))
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
@@ -109,10 +110,10 @@ class ListAdvertiserIdsStream(TiktokStream):
 
     primary_key = "advertiser_id"
 
-    def __init__(self, advertiser_id: int, app_id: int, secret: str, access_token: str):
+    def __init__(self, advertiser_id: int, app_id: int, secret: str, access_token: str, config):
         super().__init__(authenticator=NoAuth())
         self._advertiser_ids = []
-
+        self._config = config
         # for Sandbox env
         self._advertiser_id = advertiser_id
         if not self._advertiser_id:
@@ -128,7 +129,7 @@ class ListAdvertiserIdsStream(TiktokStream):
         """
         the config parameter advertiser_id is required for Sandbox
         """
-        return self._advertiser_id is not None
+        return self._advertiser_id
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -158,14 +159,17 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     # max value of page
     page_size = 1000
 
-    def __init__(self, advertiser_id: int, app_id: int, secret: str, start_time: str, **kwargs):
+    def __init__(self, advertiser_id: int, app_id: int, secret: str, start_time: str, config: Any = None, **kwargs):
         super().__init__(**kwargs)
         # convert a start date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._start_time = pendulum.parse(start_time or "2021-01-01").strftime("%Y-%m-%d 00:00:00")
+        self._start_time = pendulum.parse(
+            start_time or "2021-01-01").strftime("%Y-%m-%d 00:00:00")
         self._advertiser_storage = ListAdvertiserIdsStream(
-            advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
+            advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token,
+            config=config,
         )
+        self.__config = config
         self._max_cursor_date = None
 
     @property
@@ -258,7 +262,8 @@ class Advertisers(FullRefreshTiktokStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["advertiser_ids"] = self.convert_array_param(self.advertiser_ids)
+        params["advertiser_ids"] = self.convert_array_param(
+            self.advertiser_ids)
         return params
 
     def path(self, *args, **kwargs) -> str:

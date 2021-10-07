@@ -38,7 +38,8 @@ class SandboxEnvSpec(BaseModel):
 
     environment: str = Field("sandbox", const=True)
 
-    advertiser_id: int = Field(
+    # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
+    advertiser_id: str = Field(
         description="The Advertiser ID  which generated for the developer's Sandbox application.",
     )
 
@@ -49,25 +50,31 @@ class ProductionEnvSpec(BaseModel):
 
     environment: str = Field("prod", const=True)
 
-    app_id: int = Field(
+    # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
+    app_id: str = Field(
         description="The App id applied by the developer.",
     )
-    secret: str = Field(description="The private key of the developer's application.", airbyte_secret=True)
+    secret: str = Field(
+        description="The private key of the developer's application.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title)
+    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(
+        default=ProductionEnvSpec.Config.title)
 
-    access_token: str = Field(description="Long-term Authorized Access Token.", airbyte_secret=True)
+    access_token: str = Field(
+        description="Long-term Authorized Access Token.", airbyte_secret=True)
 
-    start_date: str = Field(description="Start Date in format: YYYY-MM-DD.", default="2021-01-01", pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+    start_date: str = Field(description="Start Date in format: YYYY-MM-DD.",
+                            default="2021-01-01", pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
     @staticmethod
     def change_format_to_oneOf(schema: dict, field_name: str) -> dict:
-        schema["properties"][field_name]["oneOf"] = deepcopy(schema["properties"][field_name]["anyOf"])
+        schema["properties"][field_name]["oneOf"] = deepcopy(
+            schema["properties"][field_name]["anyOf"])
         schema["properties"][field_name]["type"] = "object"
         del schema["properties"][field_name]["anyOf"]
         return schema
@@ -78,7 +85,8 @@ class SourceTiktokMarketingSpec(BaseModel):
         str_schema = json.dumps(schema)
         for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
             ref = json.loads(ref_block)["$ref"]
-            str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
+            str_schema = str_schema.replace(ref_block, json.dumps(
+                json_schema_ref_resolver.resolve(ref)[1]))
         pyschema = json.loads(str_schema)
         del pyschema["definitions"]
         return pyschema
