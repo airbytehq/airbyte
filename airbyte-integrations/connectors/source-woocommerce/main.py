@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_marketo_singer import SourceMarketoSinger
+from airbyte_cdk.entrypoint import launch
+from source_woocommerce import SourceWoocommerce
 
 if __name__ == "__main__":
-    source = SourceMarketoSinger()
+    source = SourceWoocommerce()
     launch(source, sys.argv[1:])
