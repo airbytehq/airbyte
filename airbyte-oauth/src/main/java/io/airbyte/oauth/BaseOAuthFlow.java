@@ -14,6 +14,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.client.utils.URIBuilder;
 
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
@@ -53,6 +55,31 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
+  }
+
+  protected String formatConsentUrl(UUID definitionId,
+                                    String clientId,
+                                    String redirectUrl,
+                                    String host,
+                                    String path,
+                                    String scope,
+                                    String responseType) throws IOException {
+    final URIBuilder builder = new URIBuilder()
+            .setScheme("https")
+            .setHost(host)
+            .setPath(path)
+            // required
+            .addParameter("client_id", clientId)
+            .addParameter("redirect_uri", redirectUrl)
+            .addParameter("state", getState())
+            // optional
+            .addParameter("response_type", responseType)
+            .addParameter("scope", scope);
+    try {
+      return builder.build().toString();
+    } catch (URISyntaxException e) {
+      throw new IOException("Failed to format Consent URL for OAuth flow", e);
+    }
   }
 
   /**
@@ -106,19 +133,20 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         .build();
     // TODO: Handle error response to report better messages
     try {
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());;
+      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()));
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
   }
 
-  /**
-   * Once the user is redirected after getting their consent, the API should redirect them to a
-   * specific redirection URL along with query parameters. This function should parse and extract the
-   * code from these query parameters in order to continue the OAuth Flow.
-   */
-  protected abstract String extractCodeParameter(Map<String, Object> queryParams) throws IOException;
+  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+    if (queryParams.containsKey("code")) {
+      return (String) queryParams.get("code");
+    } else {
+      throw new IOException("Undefined 'code' from consent redirected url.");
+    }
+  }
 
   /**
    * Returns the URL where to retrieve the access token from.
@@ -136,7 +164,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
-  private JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
+  protected JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
     try {
       final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
           configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);

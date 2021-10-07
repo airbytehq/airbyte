@@ -34,33 +34,11 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
     super(configRepository, httpClient, stateSupplier);
   }
 
-  @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
-    final URIBuilder builder = new URIBuilder()
-        .setScheme("https")
-        .setHost("www.facebook.com")
-        .setPath("v11.0/dialog/oauth")
-        // required
-        .addParameter("client_id", clientId)
-        .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
-        // optional
-        .addParameter("response_type", "code")
-        .addParameter("scope", "ads_management,ads_read,read_insights");
-    try {
-      return builder.build().toString();
-    } catch (URISyntaxException e) {
-      throw new IOException("Failed to format Consent URL for OAuth flow", e);
-    }
-  }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
-    if (queryParams.containsKey("code")) {
-      return (String) queryParams.get("code");
-    } else {
-      throw new IOException("Undefined 'code' from consent redirected url.");
-    }
+  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+    return formatConsentUrl(null, clientId, redirectUrl, "www.facebook.com",
+            "v11.0/dialog/oauth", "ads_management,ads_read,read_insights", "code");
   }
 
   @Override
