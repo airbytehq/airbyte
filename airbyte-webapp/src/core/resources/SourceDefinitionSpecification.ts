@@ -1,12 +1,7 @@
 import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import { ConnectionSpecification } from "core/domain/connection";
-
-export interface SourceDefinitionSpecification {
-  sourceDefinitionId: string;
-  documentationUrl: string;
-  connectionSpecification: ConnectionSpecification;
-}
+import { SourceDefinitionSpecification } from "core/domain/connector/types";
 
 export default class SourceDefinitionSpecificationResource
   extends BaseResource

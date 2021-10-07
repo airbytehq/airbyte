@@ -152,7 +152,8 @@ class TransformConfig:
             dbt_config["keyfile_json"] = json.loads(config["credentials_json"])
         else:
             dbt_config["method"] = "oauth"
-
+        if "dataset_location" in config:
+            dbt_config["location"] = config["dataset_location"]
         return dbt_config
 
     @staticmethod
@@ -173,6 +174,10 @@ class TransformConfig:
             "schema": config["schema"],
             "threads": 32,
         }
+
+        # if unset, we assume true.
+        if config.get("ssl", True):
+            config["sslmode"] = "require"
 
         return dbt_config
 

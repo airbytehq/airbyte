@@ -164,6 +164,22 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
     :returns list of object property keys paths
     """
     paths = []
+    if "$ref" in schema:
+        """
+        JsonRef doesnt work correctly with schemas that has refenreces in root e.g.
+        {
+            "$ref": "#/definitions/ref"
+            "definitions": {
+                "ref": ...
+            }
+        }
+        Considering this schema already processed by resolver so it should
+        contain only references to definitions section, replace root reference
+        manually before processing it with JsonRef library.
+        """
+        ref = schema["$ref"].split("/")[-1]
+        schema.update(schema["definitions"][ref])
+        schema.pop("$ref")
     # Resolve all references to simplify schema processing.
     schema = JsonRef.replace_refs(schema)
 
@@ -171,7 +187,7 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
         if "oneOf" in subschema or "anyOf" in subschema:
             if annotate_one_of:
                 return [
-                    _scan_schema({"type": "object", **s}, path + "(0)")
+                    _scan_schema({"type": "object", **s}, path + f"({num})")
                     for num, s in enumerate(subschema.get("oneOf") or subschema.get("anyOf"))
                 ]
             return [_scan_schema({"type": "object", **s}, path) for s in subschema.get("oneOf") or subschema.get("anyOf")]

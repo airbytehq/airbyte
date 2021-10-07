@@ -45,7 +45,7 @@ Thank you and we hope you enjoy using Airbyte.
 
 
 {% hint style="warning" %}
-At the moment, Airbyte runs a full-refresh to recreate the final tables. This can cause more costs in some destinations like Snowflake, Redshidt, and Bigquery.
+At the moment, Airbyte runs a full-refresh to recreate the final tables. This can cause more costs in some destinations like Snowflake, Redshift, and Bigquery.
 To understand better what sync mode and frequency you should select, read [this doc](../understanding-airbyte/connections/README.md).
 There is a FAQ topic on our Discourse that more extensively explains the cost issue [here](https://discuss.airbyte.io/t/why-are-my-final-tables-are-being-recreated-everytime/76).
 {% endhint %}

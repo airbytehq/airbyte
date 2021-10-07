@@ -193,4 +193,27 @@ public class MongoUtils {
     }
   }
 
+  public enum MongoInstanceType {
+
+    STANDALONE("standalone"),
+    REPLICA("replica"),
+    ATLAS("atlas");
+
+    private final String type;
+
+    MongoInstanceType(String type) {
+      this.type = type;
+    }
+
+    public static MongoInstanceType fromValue(String value) {
+      for (MongoInstanceType instance : values()) {
+        if (value.equalsIgnoreCase(instance.type)) {
+          return instance;
+        }
+      }
+      throw new IllegalArgumentException("Unknown instance type value: " + value);
+    }
+
+  }
+
 }

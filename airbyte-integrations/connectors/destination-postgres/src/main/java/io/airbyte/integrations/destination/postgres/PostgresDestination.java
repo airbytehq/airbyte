@@ -25,6 +25,10 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
+  }
+
   public PostgresDestination() {
     super(DRIVER_CLASS, new PostgresSQLNameTransformer(), new PostgresSqlOperations());
   }
@@ -40,7 +44,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -61,7 +65,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
+    final Destination destination = PostgresDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
