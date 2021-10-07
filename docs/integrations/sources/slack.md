@@ -4,8 +4,6 @@
 
 This source can sync data for the [Slack API](https://api.slack.com/). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Singer Tap](https://github.com/airbytehq/tap-slack).
-
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
@@ -46,6 +44,16 @@ The Slack connector should not run into Slack API limitations under normal usage
 
 ### Requirements
 
+#### Slack connector can be connected using two types of authentication: OAuth2.0 or API Token
+
+#### Using OAuth2.0 authenticator
+* Client ID - issued when you created your app
+* Client Secret - issued when you created your app
+* Refresh Token - a special kind of token used to obtain a renewed access token
+
+You can get more detailed information about this type of authentication by reading [Slack's documentation about OAuth2.0](https://api.slack.com/authentication/oauth-v2).
+
+#### Using API Token
 * Slack API Token 
 
 ### Setup guide
@@ -101,6 +109,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.12   | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570) | Implement OAuth support with OAuth authenticator |
 | 0.1.11   | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830) | Fixed sync operations hang forever issue |
 | 0.1.10   | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697) | Fixed max retries issue |
 | 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fixed reading threads issue |

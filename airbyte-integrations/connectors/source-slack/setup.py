@@ -15,7 +15,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-cdk~=0.1.13", "slack_sdk==3.4.2", "pendulum>=2,<3"],
+    install_requires=["airbyte-cdk~=0.1", "pendulum>=2,<3"],
     package_data={"": ["*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,

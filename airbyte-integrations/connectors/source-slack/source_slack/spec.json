@@ -4,21 +4,15 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
     "type": "object",
-    "required": ["api_token", "start_date", "lookback_window", "join_channels"],
-    "additionalProperties": false,
+    "required": ["start_date", "lookback_window", "join_channels"],
+    "additionalProperties": true,
     "properties": {
-      "api_token": {
-        "type": "string",
-        "title": "API Token",
-        "description": "A slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
-        "airbyte_secret": true
-      },
       "start_date": {
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"],
-        "title": "Start date"
+        "title": "Start Date"
       },
       "lookback_window": {
         "type": "integer",
@@ -31,7 +25,84 @@
         "default": true,
         "title": "Join all channels",
         "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
+      },
+      "credentials": {
+        "title": "Authentication mechanism",
+        "description": "Choose how to authenticate into Slack",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Sign in via Slack (OAuth)",
+            "required": [
+              "access_token",
+              "client_id",
+              "client_secret",
+              "option_title"
+            ],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "Default OAuth2.0 authorization"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this id.",
+                "type": "string",
+                "examples": ["slack-client-id-example"]
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this secret.",
+                "type": "string",
+                "examples": ["slack-client-secret-example"],
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access token",
+                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "type": "string",
+                "examples": ["slack-access-token-example"],
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh token",
+                "description": "Slack refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "type": "string",
+                "examples": ["slack-refresh-token-example"],
+                "airbyte_secret": true
+              }
+            },
+            "order": 0
+          },
+          {
+            "type": "object",
+            "title": "API Token",
+            "required": ["api_token", "option_title"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "API Token Credentials"
+              },
+              "api_token": {
+                "type": "string",
+                "title": "API Token",
+                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
+                "airbyte_secret": true
+              }
+            },
+            "order": 1
+          }
+        ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }
