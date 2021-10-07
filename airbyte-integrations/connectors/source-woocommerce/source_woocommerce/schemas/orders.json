@@ -150,7 +150,7 @@
           "total_tax": {
             "type": ["null", "string"]
           },
-          "taxes":{
+          "taxes": {
             "$ref": "taxes.json"
           },
           "meta_data": {
