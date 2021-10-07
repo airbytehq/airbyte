@@ -17,14 +17,16 @@ class GreenhouseStream(HttpStream, ABC):
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
-        # wrap to str() to pass mypy pre-commit validation
+        # wrap with str() to pass mypy pre-commit validation
         return str(self.name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # parsing response header links is the recommended pagination method https://developers.greenhouse.io/harvest.html#pagination
         parsed_link = parse.urlparse(response.links.get("next", {}).get("url", ""))
-        query_params = dict(parse.parse_qsl(parsed_link.query))
-        return query_params
+        if parsed_link:
+            query_params = dict(parse.parse_qsl(parsed_link.query))
+            return query_params
+        return None
 
     def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"per_page": self.page_size}
