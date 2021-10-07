@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mysql-strict-encrypt.MysqlStrictEncryptSource'
+    mainClass = 'io.airbyte.integrations.source.mysql_strict_encrypt.MySqlStrictEncryptSource'
 }
 
 dependencies {
