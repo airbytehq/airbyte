@@ -292,7 +292,7 @@ class SourceSlack(AbstractSource):
         credentials = config.get("credentials")
         credentials_title = credentials.get("option_title")
         if credentials_title == "Default OAuth2.0 authorization":
-            # We can get `refresh_token` only if the token rotation function is enabled for the Slack Application.
+            # We can get `refresh_token` only if the token rotation function is enabled for the Slack Oauth Application.
             # If it is disabled, then we use the generated `access_token`, which acts without expiration.
             # https://api.slack.com/authentication/rotation
             if credentials.get("refresh_token", "").strip():
