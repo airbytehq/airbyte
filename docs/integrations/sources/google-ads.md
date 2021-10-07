@@ -22,6 +22,7 @@ This source is capable of syncing the following tables and their data:
 * [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
 * [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
+* [click_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
 
 #### Report Tables
 * [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
@@ -29,6 +30,8 @@ This source is capable of syncing the following tables and their data:
 * [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 * [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 * [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+
+**Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
 ## Getting Started (Airbyte-Cloud)
 
@@ -91,6 +94,8 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view` |
+| `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565) | Fix OAuth Spec File |
 | `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |
 | `0.1.11` | 2021-09-22 | [#6373](https://github.com/airbytehq/airbyte/pull/6373) | Fix inconsistent segments.date field type across all streams |
 | `0.1.10` | 2021-09-13 | [#6022](https://github.com/airbytehq/airbyte/pull/6022) | Annotate Oauth2 flow initialization parameters in connector spec |
