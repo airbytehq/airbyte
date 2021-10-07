@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date" : {
+      "type": ["null", "integer"]
+    },
+    "data" : {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "domain" : {
+            "type": ["null", "string"]
+          },
+          "sum_visibility": {
+            "type": ["null", "integer"]
+          },
+          "count_keywords": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/marketo",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Source Search Metrics Spec",
+    "type": "object",
+    "required": ["api_key", "client_secret", "country_code"],
+    "additionalProperties": false,
+    "properties": {
+      "api_key": {
+        "title": "API Key",
+        "type": "string",
+        "description": "",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "type": "string",
+        "description": "",
+        "airbyte_secret": true
+      },
+      "country_code": {
+        "title": "Country Code",
+        "type": "string",
+        "default": "",
+        "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+        "enum": [
+          "",
+          "AR",
+          "AU",
+          "AT",
+          "BE",
+          "BR",
+          "CA",
+          "CN",
+          "CO",
+          "DK",
+          "FI",
+          "FR",
+          "DE",
+          "HK",
+          "IN",
+          "IE",
+          "IT",
+          "JP",
+          "MX",
+          "NL",
+          "NO",
+          "PL",
+          "RU",
+          "SG",
+          "ZA",
+          "ES",
+          "SE",
+          "CH",
+          "TR",
+          "US",
+          "GB"
+        ],
+        "order": 2
+      }
+    }
+  }
+}

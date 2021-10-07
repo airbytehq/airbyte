@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "trend": {
+      "type": ["null", "object"],
+      "properties": {
+        "trend": {
+          "type": ["null", "integer"]
+        },
+        "abs": {
+          "type": ["null", "integer"]
+        },
+        "per": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "date": ["null", "integer"]
+    },
+    "sum_visibility": {
+      "type": ["null", "integer"]
+    },
+    "count_keywords": {
+      "type": ["null", "integer"]
+    }
+  }
+}
