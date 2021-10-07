@@ -81,7 +81,7 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mysql:dev";
+    return "airbyte/source-mysql-strict-encrypt:dev";
   }
 
   @Override
