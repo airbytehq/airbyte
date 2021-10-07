@@ -1,7 +1,7 @@
 {
-  "type": ["null","array"],
+  "type": ["null", "array"],
   "items": {
-    "type": ["null","object"],
+    "type": ["null", "object"],
     "properties": {
       "id": {
         "type": ["null", "integer"]
