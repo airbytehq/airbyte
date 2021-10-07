@@ -1,5 +1,5 @@
 The Business Marketing API is [a REST based API](https://business-api.tiktok.com/marketing_api/docs?rid=88iodtuzdt7&id=1701890905779201). Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
-As well this service provide a [sandbox](https://business-api.tiktok.com/marketing_api/docs?rid=88iodtuzdt7&id=1701890920013825) environment for testing with some limitations.
+This service also provides a [sandbox](https://business-api.tiktok.com/marketing_api/docs?rid=88iodtuzdt7&id=1701890920013825) environment for testing with some limitations.
 
 ## Core Advertiser stream
 The basic entity is 'advertiser'. All other streams use this required parameter for data loading. This works slightly differently between sandbox and production environments. For production, every developer application can have multiple advertisers. [This endpoint](https://business-api.tiktok.com/marketing_api/docs?id=1708503202263042) gets a list of advertiser accounts that authorized an app, providing us functionality to obtain the associated advertisers. However, this endpoint is inaccessible for sandbox because a sandbox can have only one advertiser object and its ID is known in advance.
