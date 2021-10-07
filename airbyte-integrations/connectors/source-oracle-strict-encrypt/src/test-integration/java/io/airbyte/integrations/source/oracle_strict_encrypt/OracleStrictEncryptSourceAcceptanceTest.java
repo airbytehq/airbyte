@@ -85,12 +85,12 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-oracle:dev";
+    return "airbyte/source-oracle-strict-encrypt:dev";
   }
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
+    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
   }
 
   @Override

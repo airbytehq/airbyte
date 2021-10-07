@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.oracle.OracleSourceStrictEncrypt'
+    mainClass = 'io.airbyte.integrations.source.oracle_strict_encrypt.OracleStrictEncryptSource'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
