@@ -84,6 +84,11 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
   protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
