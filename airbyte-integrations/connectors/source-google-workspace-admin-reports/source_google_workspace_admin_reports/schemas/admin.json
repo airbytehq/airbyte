@@ -20,8 +20,7 @@
         "customerId": {
           "type": "string"
         }
-      },
-      "required": ["time", "uniqueQualifier", "applicationName", "customerId"]
+      }
     },
     "actor": {
       "type": "object",
@@ -38,8 +37,7 @@
         "key": {
           "type": "string"
         }
-      },
-      "required": ["callerType", "email", "profileId", "key"]
+      }
     },
     "ownerDomain": {
       "type": "string"
@@ -48,7 +46,7 @@
       "type": "string"
     },
     "events": {
-      "type": "array",
+      "type": "object",
       "items": [
         {
           "type": "object",
@@ -77,15 +75,16 @@
                     "boolValue": {
                       "type": "string"
                     }
-                  },
-                  "required": ["name", "value", "intValue", "boolValue"]
+                  }
                 }
               ]
             }
-          },
-          "required": ["type", "name", "parameters"]
+          }
         }
       ]
+    },
+    "time": {
+      "type": "string"
     }
   }
 }

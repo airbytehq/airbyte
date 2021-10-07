@@ -209,6 +209,9 @@
           "required": ["name", "parameters"]
         }
       ]
+    },
+    "time": {
+      "type": "string"
     }
   }
 }

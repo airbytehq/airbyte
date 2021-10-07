@@ -140,6 +140,9 @@
           "required": ["type", "name", "parameters"]
         }
       ]
+    },
+    "time": {
+      "type": "string"
     }
   }
 }
