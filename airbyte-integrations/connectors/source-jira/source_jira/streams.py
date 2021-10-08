@@ -677,6 +677,11 @@ class Projects(JiraStream):
     def path(self, **kwargs) -> str:
         return "project/search"
 
+    def request_params(self, **kwargs):
+        params = super().request_params(**kwargs)
+        params["expand"] = "description"
+        return params
+
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in super().read_records(**kwargs):
             if project["key"] in self._projects:
