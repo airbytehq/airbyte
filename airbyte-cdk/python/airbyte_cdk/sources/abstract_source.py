@@ -151,6 +151,7 @@ class AbstractSource(Source, ABC):
                 return True
         return False
 
+    # fix this
     def _read_incremental(
         self,
         logger: AirbyteLogger,
