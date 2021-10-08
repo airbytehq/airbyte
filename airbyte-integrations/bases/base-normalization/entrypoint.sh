@@ -26,6 +26,13 @@ function configuredbt() {
     # No git repository provided, use the dbt-template folder (shipped inside normalization docker image)
     # as the base folder for dbt workspace
     cp -r /airbyte/normalization_code/dbt-template/* "${PROJECT_DIR}"
+    if [ "${INTEGRATION_TYPE}" == "MSSQL" ]; then
+      cp -r /airbyte/normalization_code/dbt-template-mssql/* "${PROJECT_DIR}"
+    elif [ "${INTEGRATION_TYPE}" == "MYSQL" ]; then
+      cp -r /airbyte/normalization_code/dbt-template-mysql/* "${PROJECT_DIR}"
+    elif [ "${INTEGRATION_TYPE}" == "ORACLE" ]; then
+      cp -r /airbyte/normalization_code/dbt-template-oracle/* "${PROJECT_DIR}"
+    fi
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     # Generate a profiles.yml file for the selected destination/integration type
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"

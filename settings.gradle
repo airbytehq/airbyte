@@ -90,7 +90,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-oracle'
     include ':airbyte-integrations:connectors:destination-mssql'
 
-    //Needed by destination-bugquery
+    //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
     include ':airbyte-integrations:connectors:destination-gcs'
 }

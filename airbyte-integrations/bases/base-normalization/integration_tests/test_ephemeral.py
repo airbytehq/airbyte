@@ -8,12 +8,14 @@ import pathlib
 import re
 import shutil
 import tempfile
+from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
+from dbt_integration_test import NORMALISATION_TEST_TARGET
 
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
@@ -21,15 +23,20 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
+    if os.getenv(NORMALISATION_TEST_TARGET):
+        destinations_to_test = [d.value for d in {DestinationType.POSTGRES, DestinationType.from_string(os.getenv("TEST_NORMALIZATION"))}]
+    else:
+        destinations_to_test = [d.value for d in DestinationType]
+    target_schema = dbt_test_utils.generate_random_target_schema("test_normalization_ephemeral_")
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_db()
+    dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
-
+    # TODO delete target_schema in destination
 
 @pytest.fixture
 def setup_test_path(request):
@@ -43,10 +50,10 @@ def setup_test_path(request):
 @pytest.mark.parametrize("column_count", [1500])
 @pytest.mark.parametrize("integration_type", list(DestinationType))
 def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
-    if integration_type == DestinationType.MYSQL:
+    if integration_type.value not in dbt_test_utils.get_test_targets() or integration_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1500.
-        return
+        pytest.skip("Destinations is not in TEST_NORMALIZATION env variable (MYSQL is also skipped)")
     if integration_type == DestinationType.ORACLE:
         column_count = 998
     if integration_type == DestinationType.MSSQL:
@@ -69,6 +76,8 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
+    if integration_type not in dbt_test_utils.get_test_targets():
+        pytest.skip("Destinations is not in TEST_NORMALIZATION env variable")
     run_test(DestinationType.from_string(integration_type), column_count, expected_exception_message)
 
 
@@ -93,10 +102,10 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
     if expected_exception_message:
         with pytest.raises(AssertionError):
-            dbt_test_utils.dbt_run(test_root_dir)
+            dbt_test_utils.dbt_run(destination_type, test_root_dir)
         assert search_logs_for_pattern(test_root_dir + "/dbt_output.log", expected_exception_message)
     else:
-        dbt_test_utils.dbt_run(test_root_dir)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
 
 
 def search_logs_for_pattern(log_file: str, pattern: str):
@@ -119,6 +128,12 @@ def setup_test_dir(integration_type: str) -> str:
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
     dbt_test_utils.copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
+    if integration_type == DestinationType.MSSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+    elif integration_type == DestinationType.MYSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+    elif integration_type == DestinationType.ORACLE.value:
+        copy_tree("../dbt-project-template-oracle", test_root_dir)
     return test_root_dir
 
 

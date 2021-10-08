@@ -8,6 +8,7 @@ import pathlib
 import re
 import shutil
 import tempfile
+from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
@@ -26,14 +27,17 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
+    if os.getenv("RANDOM_TEST_SCHEMA"):
+        target_schema = dbt_test_utils.generate_random_target_schema("test_normalization_ci_")
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_db()
+    dbt_test_utils.setup_db(dbt_test_utils.get_test_targets())
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
+    # TODO delete target_schema in destination
 
 
 @pytest.fixture
@@ -54,11 +58,10 @@ def setup_test_path(request):
         ]
     ),
 )
-# Uncomment the following line as an example on how to run the test against local destinations only...
-# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL, ...])
-# Run tests on all destinations:
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip("Destinations is not in TEST_NORMALIZATION env variable")
     print("Testing normalization")
     integration_type = destination_type.value
 
@@ -75,14 +78,14 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     if integration_type == DestinationType.ORACLE.value:
         # Oracle doesnt support nested with clauses
         # Skip the dbt_test for DestinationType.ORACLE
-        dbt_test_utils.dbt_run(test_root_dir)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
     else:
         # Setup test resources and models
         dbt_test_setup(destination_type, test_resource_name, test_root_dir)
         # Run DBT process
-        dbt_test_utils.dbt_run(test_root_dir)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
         # Run checks on Tests results
-        dbt_test(test_root_dir)
+        dbt_test(destination_type, test_root_dir)
         check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
@@ -109,6 +112,12 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
+    if integration_type == DestinationType.MSSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+    elif integration_type == DestinationType.MYSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+    elif integration_type == DestinationType.ORACLE.value:
+        copy_tree("../dbt-project-template-oracle", test_root_dir)
     if integration_type.lower() != "redshift":
         # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
         dbt_test_utils.copy_replace(
@@ -209,7 +218,7 @@ def dbt_test_setup(destination_type: DestinationType, test_resource_name: str, t
         )
 
 
-def dbt_test(test_root_dir: str):
+def dbt_test(destination_type: DestinationType, test_root_dir: str):
     """
     dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
     - Schema tests are added in .yml files from the schema_tests directory
@@ -218,7 +227,8 @@ def dbt_test(test_root_dir: str):
 
     We use this mechanism to verify the output of our integration tests.
     """
-    assert dbt_test_utils.run_check_dbt_command("test", test_root_dir)
+    normalization_image: str = dbt_test_utils.get_normalization_image(destination_type)
+    assert dbt_test_utils.run_check_dbt_command(normalization_image, "test", test_root_dir)
 
 
 def check_outputs(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):

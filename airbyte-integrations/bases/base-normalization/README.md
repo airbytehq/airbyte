@@ -108,6 +108,15 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
+You can restrict the tests to a subset of destinations by specifying a comma separated list of destinations.
+For example, let's say you are working on a change to normalization for Postgres, with Gradle:
+
+    NORMALIZATION_TEST_TARGET=postgres ./gradlew :airbyte-integrations:bases:base-normalization:integrationTest
+
+or directly with pytest:
+
+    NORMALIZATION_TEST_TARGET=postgres  pytest airbyte-integrations/bases/base-normalization/integration_tests
+
 Note that these tests are connecting and processing data on top of real data warehouse destinations.
 Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run 
 (not included in git repository).

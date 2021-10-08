@@ -20,25 +20,25 @@ models:
             - NZD
             - USD
       - dbt_utils.equal_rowcount:
-          description: check_raw_and_normalized_rowcounts
-            Raw and normalized tables should be equal.
+          # description: check_raw_and_normalized_rowcounts
+          #  Raw and normalized tables should be equal.
           compare_model: source('test_normalization', '_airbyte_raw_exchange_rate')
       - dbt_utils.expression_is_true:
-          description: check no column collisions
-            Two columns having similar names especially after removing special characters should remain distincts
+          # description: check no column collisions
+          #  Two columns having similar names especially after removing special characters should remain distincts
           expression: cast("HKD@spéçiäl & characters" as {{ dbt_utils.type_string() }}) != HKD_special___characters
     columns:
       - name: '"HKD@spéçiäl & characters"'
-        description: check special charactesrs
-          Use special characters in column names and make sure they are correctly parsed in the JSON blob and populated
+        # description: check special charactesrs
+        #  Use special characters in column names and make sure they are correctly parsed in the JSON blob and populated
         tests:
           - not_null
 
   - name: dedup_exchange_rate
     tests:
       - dbt_utils.unique_combination_of_columns:
-          description: check_deduplication_by_primary_key
-            The final table for this stream should have unique composite primary key values.
+          # description: check_deduplication_by_primary_key
+          #  The final table for this stream should have unique composite primary key values.
           combination_of_columns:
             - id
             - currency

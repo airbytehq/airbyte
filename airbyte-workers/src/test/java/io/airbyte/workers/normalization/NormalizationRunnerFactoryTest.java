@@ -24,7 +24,7 @@ class NormalizationRunnerFactoryTest {
 
   @Test
   void testMappings() {
-    for (Map.Entry<String, DefaultNormalizationRunner.DestinationType> entry : NormalizationRunnerFactory.NORMALIZATION_MAPPING.entrySet()) {
+    for (Map.Entry<String, DefaultNormalizationRunner.DestinationType> entry : NormalizationRunnerFactory.DESTINATION_TYPE_MAPPING.entrySet()) {
       assertEquals(entry.getValue(),
           ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
               String.format("%s:0.1.0", entry.getKey()), processFactory)).getDestinationType());

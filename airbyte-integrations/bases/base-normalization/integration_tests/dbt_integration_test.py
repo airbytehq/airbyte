@@ -19,23 +19,33 @@ from typing import Any, Dict, List
 from normalization.destination_type import DestinationType
 from normalization.transform_config.transform import TransformConfig
 
+NORMALISATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
+
 
 class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
-        self.db_names = ["postgres", "mysql", "mssql"]
+        self.db_names = []
+
+    def generate_random_target_schema(self, prefix: str) -> str:
+        self.target_schema = prefix + DbtIntegrationTest.random_string(5)
+        return self.target_schema
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
-    def setup_db(self):
-        self.setup_postgres_db()
-        self.setup_mysql_db()
-        self.setup_mssql_db()
+    def setup_db(self, destinations_to_test: List[str]):
+        if DestinationType.POSTGRES.value in destinations_to_test:
+            self.setup_postgres_db()
+        if DestinationType.MYSQL.value in destinations_to_test:
+            self.setup_mysql_db()
+        if DestinationType.MSSQL.value in destinations_to_test:
+            self.setup_mssql_db()
 
     def setup_postgres_db(self):
+        self.db_names.append("postgres")
         print("Starting localhost postgres container for tests")
         port = self.find_free_port()
         config = {
@@ -78,6 +88,7 @@ class DbtIntegrationTest(object):
             fh.write(json.dumps(config))
 
     def setup_mysql_db(self):
+        self.db_names.append("mysql")
         print("Starting localhost mysql container for tests")
         port = self.find_free_port()
         config = {
@@ -115,6 +126,7 @@ class DbtIntegrationTest(object):
             fh.write(json.dumps(config))
 
     def setup_mssql_db(self):
+        self.db_names.append("mssql")
         print("Starting localhost MS SQL Server container for tests")
         port = self.find_free_port()
         config = {
@@ -262,20 +274,32 @@ class DbtIntegrationTest(object):
             process.wait()
         return process.returncode == 0
 
-    def dbt_run(self, test_root_dir: str):
+    @staticmethod
+    def get_normalization_image(destination_type: DestinationType) -> str:
+        if DestinationType.MSSQL.value == destination_type.value:
+            return "airbyte/normalization-mssql:dev"
+        elif DestinationType.MYSQL.value == destination_type.value:
+            return "airbyte/normalization-mysql:dev"
+        elif DestinationType.ORACLE.value == destination_type.value:
+            return "airbyte/normalization-oracle:dev"
+        else:
+            return "airbyte/normalization:dev"
+
+    def dbt_run(self, destination_type: DestinationType, test_root_dir: str):
         """
         Run the dbt CLI to perform transformations on the test raw data in the destination
         """
+        normalization_image: str = self.get_normalization_image(destination_type)
         # Perform sanity check on dbt project settings
-        assert self.run_check_dbt_command("debug", test_root_dir)
-        assert self.run_check_dbt_command("deps", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "debug", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "deps", test_root_dir)
         final_sql_files = os.path.join(test_root_dir, "final")
         shutil.rmtree(final_sql_files, ignore_errors=True)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
-        assert self.run_check_dbt_command("run", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "run", test_root_dir)
 
     @staticmethod
-    def run_check_dbt_command(command: str, cwd: str) -> bool:
+    def run_check_dbt_command(normalization_image: str, command: str, cwd: str) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -298,7 +322,7 @@ class DbtIntegrationTest(object):
             "--entrypoint",
             "/usr/local/bin/dbt",
             "-i",
-            "airbyte/normalization:dev",
+            normalization_image,
             command,
             "--profiles-dir=/workspace",
             "--project-dir=/workspace",
@@ -374,3 +398,18 @@ class DbtIntegrationTest(object):
             file1.close()
         if isinstance(dst, str):
             file2.close()
+
+    @staticmethod
+    def get_test_targets() -> List[str]:
+        """
+        Returns a list of destinations to run tests on.
+
+        if the environment variable NORMALIZATION_TEST_TARGET is set with a comma separated list of destination names,
+        then the tests are run only on that subsets of destinations
+        Otherwise tests are run against all destinations
+        """
+        if os.getenv(NORMALISATION_TEST_TARGET):
+            target_str = os.getenv(NORMALISATION_TEST_TARGET)
+            return [d.value for d in {DestinationType.from_string(s) for s in target_str.split(",")}]
+        else:
+            return [d.value for d in DestinationType]

@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 plugins {
     id 'airbyte-docker'
     id 'airbyte-python'
@@ -27,13 +29,13 @@ task checkSshScriptCopy(type: Task, dependsOn: copySshScript) {
     }
 }
 
-test.dependsOn checkSshScriptCopy
-assemble.dependsOn checkSshScriptCopy
+airbyteDocker.dependsOn(checkSshScriptCopy)
+test.dependsOn(checkSshScriptCopy)
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
 integrationTest.dependsOn(build)
 
-task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
+task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
     module = "pytest"
     command = "-s integration_tests"
 
@@ -59,3 +61,37 @@ task('mypyCheck', type: PythonTask) {
     dependsOn 'blackFormat'
 }
 check.dependsOn mypyCheck
+
+static def getDockerfile(String customConnector) {
+    return "${customConnector}.Dockerfile"
+}
+
+static def getDockerImageName(String customConnector) {
+    return "airbyte/normalization-${customConnector}"
+}
+
+static def getImageNameWithTag(String customConnector) {
+    return "${getDockerImageName(customConnector)}:dev"
+}
+
+
+def buildAirbyteDocker(String customConnector) {
+    def baseCommand = ['docker', 'build', '.', '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector)]
+    return {
+        commandLine baseCommand
+    }
+}
+
+task airbyteDockerMSSql(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('mssql')
+}
+task airbyteDockerMySql(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('mysql')
+}
+task airbyteDockerOracle(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('oracle')
+}
+
+airbyteDocker.dependsOn(airbyteDockerMSSql)
+airbyteDocker.dependsOn(airbyteDockerMySql)
+airbyteDocker.dependsOn(airbyteDockerOracle)
