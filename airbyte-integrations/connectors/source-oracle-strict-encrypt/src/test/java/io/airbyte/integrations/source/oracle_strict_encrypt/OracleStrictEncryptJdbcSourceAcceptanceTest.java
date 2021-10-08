@@ -14,7 +14,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.oracle.OracleSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -111,7 +110,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
           conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? SourceJdbcUtils
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
