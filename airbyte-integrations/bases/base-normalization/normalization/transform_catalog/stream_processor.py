@@ -597,6 +597,10 @@ from {{ from_table }}
             cdc_active_row_pattern = f"and {col_cdc_deleted_at} is null "
             cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
 
+        if "_ab_cdc_log_pos" in column_names.keys():
+            col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos")
+            cdc_updated_order_pattern += f", {col_cdc_log_pos} desc"
+
         sql = template.render(
             order_null=order_null,
             airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at"),
