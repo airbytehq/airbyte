@@ -1,5 +1,10 @@
 # Incremental Sync - Deduped History
 
+## High-Level Context
+
+This connector syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data. Simply put, if you've synced a row before and it has since been updated, this mode will combine the two rows
+in the destination and use the updated data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
+
 ## Overview
 
 Airbyte supports syncing data in **Incremental Deduped History** mode i.e:

@@ -1,4 +1,4 @@
-# Connections
+# Connections and Sync Modes
 
 A connection is a configuration for syncing data between a source and a destination. To setup a connection, a user must configure things such as:
 
