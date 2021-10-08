@@ -8,7 +8,7 @@ This tutorial will describe how to determine if you need to run this upgrade pro
 
 Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
 
-If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md), you will need to use one of the two processes defined [here](https://docs.airbyte.io/upgrading-airbyte#upgrading-k-8-s) that differ based on your Airbyte version. 
+If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md), you will need to use one of the two processes defined [here](https://docs.airbyte.io/upgrading-airbyte#upgrading-k-8-s) that differ based on your Airbyte version.
 
 ## Upgrading on Docker
 
@@ -38,9 +38,9 @@ If you did not start Airbyte from the root of the Airbyte monorepo, you may run 
 This will completely reset your Airbyte deployment back to scratch and you will lose all data.
 {% endhint %}
 
-## Upgrading on K8s (0.27.0-alpha and above)
+## Upgrading on K8s \(0.27.0-alpha and above\)
 
-If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **0.27.0-alpha or above** on Kubernetes :
+If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte version **0.27.0-alpha or above** on Kubernetes :
 
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
@@ -57,13 +57,14 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    ```bash
    kubectl apply -k kube/overlays/stable
    ```
-   After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer
-   on Kubernetes clusters with slow internet connections.
+
+   After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer on Kubernetes clusters with slow internet connections.
 
    Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` to allow access to the UI/API.
 
-## Upgrading on K8s (0.26.4-alpha and below)
-If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte version **before 0.27.0-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
+## Upgrading on K8s \(0.26.4-alpha and below\)
+
+If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte version **before 0.27.0-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
 
 1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 
@@ -96,13 +97,14 @@ If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte ver
    # Careful, this is deleting data!
    kubectl delete -k kube/overlays/stable
    ```
-4. Follow **Step 2** in the `Upgrading on Docker` section to check out the most recent version of Airbyte. Although it is possible to
-   migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
 
+4. Follow **Step 2** in the `Upgrading on Docker` section to check out the most recent version of Airbyte. Although it is possible to migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
 5. Bring Airbyte back up.
+
    ```bash
    kubectl apply -k kube/overlays/stable
    ```
+
 6. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab and click on Import. Upload your migrated archive.
 
 If you prefer to import and export your data via API instead the UI, follow these instructions:
@@ -124,3 +126,4 @@ Here is an example of what this request might look like assuming that the migrat
 ```bash
 curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
+

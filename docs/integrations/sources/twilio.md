@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Twilio connector can be used to sync your Twilio data. 
-It supports full refresh sync for all streams and incremental sync for the Alerts, Calls, Conferences, Message Media, Messages, Recordings and Usage Records streams.
+The Twilio connector can be used to sync your Twilio data. It supports full refresh sync for all streams and incremental sync for the Alerts, Calls, Conferences, Message Media, Messages, Recordings and Usage Records streams.
 
 ### Output schema
 
@@ -65,6 +64,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
+
