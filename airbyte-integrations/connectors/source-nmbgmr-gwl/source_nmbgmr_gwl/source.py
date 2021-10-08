@@ -230,7 +230,7 @@ class SourceNmbgmrGwl(Source):
                           supported_sync_modes=["full_refresh", "incremental"],
                           source_defined_cursor=True,
                           json_schema=manual_gwl_schema),
-            AirbyteStream(name='PressureWellLevels',
+            AirbyteStream(name='PressureGWL',
                           supported_sync_modes=["full_refresh", "incremental"],
                           source_defined_cursor=True,
                           json_schema=pressure_gwl_schema),
