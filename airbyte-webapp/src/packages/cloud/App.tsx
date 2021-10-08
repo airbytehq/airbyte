@@ -65,7 +65,7 @@ const App: React.FC = () => {
                   <FeatureService features={Features}>
                     <AppServicesProvider>
                       <AuthenticationProvider>
-                        <IntercomProvider appId={INTERCOM_APP_ID}>
+                        <IntercomProvider appId={INTERCOM_APP_ID} autoBoot>
                           <AnalyticsInitializer>
                             <Routing />
                           </AnalyticsInitializer>
