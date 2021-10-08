@@ -28,6 +28,8 @@ import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { Routes } from "pages/routes";
+import { Button } from "../../components";
+import { FormattedMessage } from "react-intl";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -41,6 +43,20 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   position: relative;
   z-index: 2;
 `;
+
+const Footer = styled.div`
+  box-shadow: 0 2px 4px rgb(26 25 77 / 12%);
+  width: 100%;
+  height: 50px;
+  background-color: #fff;
+  border-radius: 10px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  justify-content: flex-end;
+`;
+
 const ScreenContent = styled.div`
   width: 100%;
   position: relative;
@@ -95,6 +111,11 @@ const OnboardingPage: React.FC = () => {
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
+
+  const handleFinishOnboarding = () => {
+    finishOnboarding();
+    push(Routes.Connections);
+  };
 
   const renderStep = () => {
     if (currentStep === StepType.INSTRUCTION) {
@@ -204,16 +225,12 @@ const OnboardingPage: React.FC = () => {
     }
 
     const onSync = () => syncConnection(connections[0]);
-    const onCloseOnboarding = () => {
-      finishOnboarding();
-      push(Routes.Connections);
-    };
 
     return (
       <FinalStep
         connectionId={connections[0].connectionId}
         onSync={onSync}
-        onFinishOnboarding={onCloseOnboarding}
+        onFinishOnboarding={handleFinishOnboarding}
       />
     );
   };
@@ -235,6 +252,11 @@ const OnboardingPage: React.FC = () => {
         <StepsCounter steps={steps} currentStep={currentStep} />
 
         <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+        <Footer>
+          <Button secondary onClick={() => handleFinishOnboarding()}>
+            <FormattedMessage id="onboarding.skipOnboarding" />
+          </Button>
+        </Footer>
       </Content>
     </ScreenContent>
   );
