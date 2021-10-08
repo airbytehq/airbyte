@@ -1,16 +1,16 @@
 with table_row_counts as (
-    select distinct count(*) as row_count, 9 as expected_count
+    select distinct count(*) as row_count, 10 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
 union all
-    select distinct count(*) as row_count, 9 as expected_count
+    select distinct count(*) as row_count, 10 as expected_count
     from {{ ref('exchange_rate') }}
 
 union all
 
-    select distinct count(*) as row_count, 9 as expected_count
+    select distinct count(*) as row_count, 10 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 union all
-    select distinct count(*) as row_count, 9 as expected_count
+    select distinct count(*) as row_count, 10 as expected_count
     from {{ ref('dedup_exchange_rate_scd') }}
 union all
     select distinct count(*) as row_count, 5 as expected_count
