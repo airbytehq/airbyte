@@ -159,7 +159,7 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
     @staticmethod
     def str2unixtime(str_dt: str) -> Optional[int]:
         """convert string to unixtime number
-        Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         Output example: 1626936955"
         """
         if not str_dt:
