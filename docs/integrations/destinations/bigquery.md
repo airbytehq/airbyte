@@ -23,9 +23,7 @@ There are two flavors of connectors for this destination:
 
 ## Troubleshooting
 
-#### Issue: `Dataset not found` after running sync. [\[Solution\]](https://discuss.airbyte.io/t/destination-bigquery-dataset-not-found/52)
-
-#### Issue: `Field _airbyte_emitted_at has changed type from TIMESTAMP to STRING` sync error. [\[Solution\]](https://discuss.airbyte.io/t/destination-bigquery-field-airbyte-emitted-at-has-changed-type-from-timestamp-to-string/60)
+Check out common troubleshooting issues for the BigQuery destination connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/destination-bigquery).
 
 ## Output Schema for BigQuery
 
@@ -146,6 +144,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.4.0 | 2021-10-04 | [#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers |
 | 0.4.0 | 2021-08-26 | [#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
 | 0.3.12 | 2021-08-03 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
 | 0.3.11 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
