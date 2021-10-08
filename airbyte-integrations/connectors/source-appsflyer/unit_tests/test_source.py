@@ -29,16 +29,28 @@ def test_check_connection_expected_ok():
     with patch("requests.request") as mock_request:
         mock_request.return_value.status_code = 200
         source = SourceAppsflyer()
-        logger_mock, config_mock = MagicMock(), MagicMock()
-        assert source.check_connection(logger_mock, config_mock) == (True, None)
+        config = {
+            "app_id": "app.yourapp.android",
+            "api_token": "secret",
+            "start_date": "2021-09-27 20:00:00",
+            "timezone":"UTC",
+        }
+        logger_mock = MagicMock()
+        assert source.check_connection(logger_mock, config) == (True, None)
 
 
 def test_check_connection_expected_app_id_invalid():
     with patch("requests.request") as mock_request:
         mock_request.return_value.status_code = HTTPStatus.NOT_FOUND
         source = SourceAppsflyer()
-        logger_mock, config_mock = MagicMock(), MagicMock()
-        assert source.check_connection(logger_mock, config_mock) == (False, "The supplied APP ID is invalid")
+        config = {
+            "app_id": "app.yourapp.android",
+            "api_token": "secret",
+            "start_date": "2021-09-27 20:00:00",
+            "timezone":"UTC",
+        }
+        logger_mock = MagicMock()
+        assert source.check_connection(logger_mock, config) == (False, "The supplied APP ID is invalid")
 
 
 def test_check_connection_expected_api_token_invalid():
@@ -46,8 +58,27 @@ def test_check_connection_expected_api_token_invalid():
         mock_request.return_value.status_code = HTTPStatus.BAD_REQUEST
         mock_request.return_value.text = "The supplied API token is invalid"
         source = SourceAppsflyer()
-        logger_mock, config_mock = MagicMock(), MagicMock()
-        assert source.check_connection(logger_mock, config_mock) == (False, "The supplied API token is invalid")
+        config = {
+            "app_id": "app.yourapp.android",
+            "api_token": "secret",
+            "start_date": "2021-09-27 20:00:00",
+            "timezone":"UTC",
+        }
+        logger_mock = MagicMock()
+        assert source.check_connection(logger_mock, config) == (False, "The supplied API token is invalid")
+
+
+def test_check_connection_expected_timezone_invalid():
+    with patch("requests.request") as mock_request:
+        source = SourceAppsflyer()
+        config = {
+            "app_id": "app.yourapp.android",
+            "api_token": "secret",
+            "start_date": "2021-09-27 20:00:00",
+            "timezone":"Invalid",
+        }
+        logger_mock = MagicMock()
+        assert source.check_connection(logger_mock, config) == (False, "The supplied timezone is invalid.")
 
 
 def test_streams():
