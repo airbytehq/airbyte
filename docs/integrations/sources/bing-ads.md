@@ -55,7 +55,6 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 * user_id:  Sign in to the Microsoft Advertising web application. The URL will contain a uid key/value pair in the query string that identifies your User ID
 * customer_id: Use this [guide](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids) to get this id
 * developer_token: You can find this token [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token)
-* access_token: Token received during [auth process](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth?view=bingads-13)
 * refresh_token: Token received during [auth process](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth?view=bingads-13)
 * client_secret: Secret generated during application registration
 * client_id: Id generated during application registration
