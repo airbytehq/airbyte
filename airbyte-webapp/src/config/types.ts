@@ -18,6 +18,7 @@ declare global {
     FIREBASE_AUTH_DOMAIN?: string;
     CLOUD_API_URL?: string;
     REACT_APP_SENTRY_DSN?: string;
+    REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
 
     analytics: SegmentAnalytics;
