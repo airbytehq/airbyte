@@ -49,9 +49,9 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        if config["auth_method"].get("access_token"):
+        if config["auth_method"]["auth_method"] == "access_token":
             return TokenAuthenticator(token=config["auth_method"]["access_token"])
-        elif config["auth_method"].get("email") and config["auth_method"].get("api_token"):
+        elif config["auth_method"]["auth_method"] == "api_token":
             return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
         raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
 
