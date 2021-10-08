@@ -236,7 +236,7 @@ public class SchedulerApp {
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, new EnvConfigs().getPublishMetrics());
+    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient,

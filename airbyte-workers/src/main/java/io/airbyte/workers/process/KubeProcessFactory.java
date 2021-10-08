@@ -98,10 +98,10 @@ public class KubeProcessFactory implements ProcessFactory {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
 
-      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final int stderrLocalPort = KubePortManagerSingleton.take();
+      final int stderrLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       var allLabels = new HashMap<>(customLabels);

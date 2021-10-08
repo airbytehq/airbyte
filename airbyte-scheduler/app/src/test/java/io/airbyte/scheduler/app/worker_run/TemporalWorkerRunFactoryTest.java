@@ -47,7 +47,7 @@ class TemporalWorkerRunFactoryTest {
     Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_worker_run_test");
     jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
     temporalClient = mock(TemporalClient.class);
-    workerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, new EnvConfigs().getAirbyteVersionOrWarning());
+    workerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, "unknown airbyte version");
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
