@@ -53,6 +53,11 @@
       "type": "string",
       "description": "The ID of the project containing the epic.",
       "readOnly": true
+    },
+    "projectKey": {
+      "type": "string",
+      "description": "The key of the project containing the epic.",
+      "readOnly": true
     }
   },
   "additionalProperties": false

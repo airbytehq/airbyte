@@ -183,10 +183,11 @@ class Boards(V1ApiJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"], "project_key": project["key"]}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
+        record["projectKey"] = stream_slice["project_key"]
         return record
 
 
@@ -258,10 +259,11 @@ class Epics(IncrementalJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"], "project_key": project["key"]}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
+        record["projectKey"] = stream_slice["project_key"]
         return record
 
 
