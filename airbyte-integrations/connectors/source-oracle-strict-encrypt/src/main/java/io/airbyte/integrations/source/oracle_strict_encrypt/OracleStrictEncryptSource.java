@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -25,7 +26,8 @@ public class OracleStrictEncryptSource extends SpecModifyingSource implements So
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
+    ((ArrayNode) spec.getConnectionSpecification().get("required")).add("encryption");
+    ((ArrayNode) spec.getConnectionSpecification().get("properties").get("encryption").get("oneOf")).remove(0);
     return spec;
   }
 

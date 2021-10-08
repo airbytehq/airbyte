@@ -46,6 +46,10 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+                .put("encryption_method", "client_nne")
+                .put("encryption_algorithm", "3DES168")
+                .build()))
         .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
@@ -55,8 +59,8 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             config.get("port").asText(),
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( 3DES168 )");
+            "oracle.net.encryption_client=REQUIRED;" +
+                    "oracle.net.encryption_types_client=( 3DES168 )");
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
