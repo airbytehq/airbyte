@@ -136,6 +136,8 @@ class AppsflyerStream(HttpStream, ABC):
         fields = add(self.main_fields, self.additional_fields) if self.additional_fields else self.main_fields
         csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
         reader = csv.DictReader(csv_data, fields)
+
+        # Skip CSV Header
         next(reader, {})
 
         yield from map(self.transform, reader)
