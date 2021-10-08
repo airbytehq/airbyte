@@ -51,8 +51,3 @@ From the settings page, you can click `Test` to send a test message to the chann
 ![](../.gitbook/assets/notifications_slack_message.png)
 
 You're done!
-
-
-
-
-
