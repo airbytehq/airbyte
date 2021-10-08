@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
+import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
 import useSource, { useSourceList } from "hooks/services/useSourceHook";
 import useDestination, {
@@ -28,7 +29,6 @@ import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { Routes } from "pages/routes";
-import { Button } from "../../components";
 import { FormattedMessage } from "react-intl";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
@@ -45,16 +45,13 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
 `;
 
 const Footer = styled.div`
-  box-shadow: 0 2px 4px rgb(26 25 77 / 12%);
   width: 100%;
-  height: 50px;
-  background-color: #fff;
+  height: 100px;
   border-radius: 10px;
-  margin-top: 10px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  justify-content: flex-end;
+  justify-content: center;
+  padding: 40px 20px 0;
 `;
 
 const ScreenContent = styled.div`
@@ -227,11 +224,7 @@ const OnboardingPage: React.FC = () => {
     const onSync = () => syncConnection(connections[0]);
 
     return (
-      <FinalStep
-        connectionId={connections[0].connectionId}
-        onSync={onSync}
-        onFinishOnboarding={handleFinishOnboarding}
-      />
+      <FinalStep connectionId={connections[0].connectionId} onSync={onSync} />
     );
   };
 
@@ -254,7 +247,7 @@ const OnboardingPage: React.FC = () => {
         <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>
-            <FormattedMessage id="onboarding.skipOnboarding" />
+            <FormattedMessage id="onboarding.closeOnboarding" />
           </Button>
         </Footer>
       </Content>
