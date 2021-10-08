@@ -18,8 +18,9 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
 
   @Override
   public ConnectionRead match(ConnectionRead query) {
-    if (search == null)
+    if (search == null) {
       return query;
+    }
 
     final ConnectionRead fromSearch = new ConnectionRead();
     fromSearch.connectionId(search.getConnectionId() == null ? query.getConnectionId() : search.getConnectionId());
