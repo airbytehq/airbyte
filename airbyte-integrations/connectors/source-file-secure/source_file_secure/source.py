@@ -43,18 +43,19 @@ class URLFileSecure(ParentURLFile):
         super().__init__(url, provider)
 
 
-# replace a standard class variable to the new one
-Client.reader_class = URLFileSecure
-
-
 class SourceFileSecure(ParentSourceFile):
     """Updating of default source logic
     This connector shouldn't work with local files.
     The base logic of this connector are implemented in the "source-file" connector.
     """
 
-    # replace a standard class variable to the new one
-    client_class = Client
+    @property
+    def client_class(self):
+        # replace a standard class variable to the new one
+        class ClientSecure(Client):
+            reader_class = URLFileSecure
+
+        return ClientSecure
 
     def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
         """Tries to find and remove a spec data about local storage settings"""
