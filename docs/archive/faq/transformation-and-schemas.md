@@ -16,5 +16,5 @@ For now, the schema can only be updated manually in the UI \(by clicking "Update
 
 ## **How does Airbyte handle namespaces \(or schemas for the DB-inclined\)?**
 
-Airbyte respects source-defined namespaces when syncing data with a namespace-supported destination. See [this](../understanding-airbyte/namespaces.md) for more details.
+Airbyte respects source-defined namespaces when syncing data with a namespace-supported destination. See [this](../../understanding-airbyte/namespaces.md) for more details.
 
