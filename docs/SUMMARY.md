@@ -200,7 +200,7 @@
   * [AirbyteCatalog Reference](understanding-airbyte/catalog.md)
   * [Airbyte Specification](understanding-airbyte/airbyte-specification.md)
   * [Basic Normalization](understanding-airbyte/basic-normalization.md)
-  * [Connections](understanding-airbyte/connections/README.md)
+  * [Connections and Sync Modes](understanding-airbyte/connections/README.md)
     * [Full Refresh - Overwrite](understanding-airbyte/connections/full-refresh-overwrite.md)
     * [Full Refresh - Append](understanding-airbyte/connections/full-refresh-append.md)
     * [Incremental Sync - Append](understanding-airbyte/connections/incremental-append.md)
