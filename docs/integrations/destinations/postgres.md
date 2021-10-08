@@ -21,10 +21,11 @@ Each stream will be output into its own table in Postgres. Each table will conta
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in Postgres is `JSONB`.
 
-## Getting Started (Airbyte Cloud)
+## Getting Started \(Airbyte Cloud\)
+
 Airbyte Cloud only supports connecting to your Postgres instance with SSL or TLS encryption. TLS is used by default. Other than that, you can proceed with the open-source instructions below.
 
-## Getting Started (Airbyte Open-Source)
+## Getting Started \(Airbyte Open-Source\)
 
 #### Requirements
 
@@ -45,6 +46,7 @@ You need a Postgres user that can create tables and write rows. We highly recomm
 You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
 
 ### Setup the Postgres Destination in Airbyte
+
 You should now have all the requirements needed to configure Postgres as a destination in the UI. You'll need the following information to configure the Postgres destination:
 
 * **Host**
@@ -72,7 +74,9 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
 ## Changelog
+
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.3.10 | 2021-08-11 | [#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000(NULL) value processing |
-| 0.3.11 | 2021-09-07 | [#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
+| :--- | :--- | :--- | :--- |
+| 0.3.10 | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing |
+| 0.3.11 | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
+

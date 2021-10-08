@@ -1,4 +1,4 @@
-# AirbyteCatalog & ConfiguredAirbyteCatalog Reference
+# AirbyteCatalog Reference
 
 ## Overview
 

@@ -84,18 +84,18 @@ The Airbyte UI will ask for two things:
 1. The spreadsheet ID
 2. The content of the credentials JSON you created in the "Create a Service Account and Service Account Key" step above. This should be as simple as opening the file and copy-pasting all its contents into this field in the Airbyte UI. 
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.2.5   | 2021-09-12 | [5972](https://github.com/airbytehq/airbyte/pull/5972) | Fix full_refresh test by adding supported_sync_modes to Stream initialization |
-| 0.2.4   | 2021-08-05 | [5233](https://github.com/airbytehq/airbyte/pull/5233) | Fix error during listing sheets with diagram only |
-| 0.2.3   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
-| 0.2.2   | 2021-04-20 | [2994](https://github.com/airbytehq/airbyte/pull/2994) | Formatting spec |
-| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
-| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.7   | 2021-01-21 | [1762](https://github.com/airbytehq/airbyte/pull/1762) | Fix issue large spreadsheet |
-| 0.1.6   | 2021-01-27 | [1668](https://github.com/airbytehq/airbyte/pull/1668) | Adopt connector best practices |
-| 0.1.5   | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438) | Implement backoff |
-| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.5 | 2021-09-12 | [5972](https://github.com/airbytehq/airbyte/pull/5972) | Fix full\_refresh test by adding supported\_sync\_modes to Stream initialization |
+| 0.2.4 | 2021-08-05 | [5233](https://github.com/airbytehq/airbyte/pull/5233) | Fix error during listing sheets with diagram only |
+| 0.2.3 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |
+| 0.2.2 | 2021-04-20 | [2994](https://github.com/airbytehq/airbyte/pull/2994) | Formatting spec |
+| 0.2.1 | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.7 | 2021-01-21 | [1762](https://github.com/airbytehq/airbyte/pull/1762) | Fix issue large spreadsheet |
+| 0.1.6 | 2021-01-27 | [1668](https://github.com/airbytehq/airbyte/pull/1668) | Adopt connector best practices |
+| 0.1.5 | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438) | Implement backoff |
+| 0.1.4 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+

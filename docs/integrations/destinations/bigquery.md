@@ -13,7 +13,7 @@ description: >-
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
 | Incremental - Deduped History | Yes |  |
-| Bulk loading | Yes | | 
+| Bulk loading | Yes |  |
 | Namespaces | Yes |  |
 
 There are two flavors of connectors for this destination:
@@ -30,10 +30,10 @@ Check out common troubleshooting issues for the BigQuery destination connector o
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `String`. Due to a Google [limitations](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types) for data migration from GCs to BigQuery by its native job - the timestamp (seconds from 1970' can't be used). Only date format, so only String is accepted for us in this case.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `String`. Due to a Google [limitations](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types) for data migration from GCs to BigQuery by its native job - the timestamp \(seconds from 1970' can't be used\). Only date format, so only String is accepted for us in this case.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
-## Getting Started (Airbyte Open-Source / Airbyte Cloud)
+## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 #### Requirements
 
@@ -45,6 +45,7 @@ To use the BigQuery destination, you'll need:
 * A Service Account Key to authenticate into your Service Account
 
 For GCS Staging upload mode:
+
 * GCS role enabled for same user as used for biqquery
 * HMAC key obtained for user. Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future.
 
@@ -88,39 +89,42 @@ You should now have all the requirements needed to configure BigQuery as a desti
 * **Dataset Location**
 * **Dataset ID**: the name of the schema where the tables will be created.
 * **Service Account Key**: the contents of your Service Account Key JSON file
-* **Google BigQuery client chunk size**: Google BigQuery client's chunk(buffer) size (MIN=1, MAX = 15) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
+* **Google BigQuery client chunk size**: Google BigQuery client's chunk\(buffer\) size \(MIN=1, MAX = 15\) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to [https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html](https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html)
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
 #### Uploading Options
+
 There are 2 available options to upload data to BigQuery `Standard` and `GCS Staging`.
-- `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
+
+* `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
+
   Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours.
-  This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
-- `GCS Uploading (CSV format)`: This approach has been implemented in order to avoid the issue for big datasets mentioned above.
+
+  This is caused by the Google BigQuery SDK client limitations. For more details please check [https://github.com/airbytehq/airbyte/issues/3549](https://github.com/airbytehq/airbyte/issues/3549)
+
+* `GCS Uploading (CSV format)`: This approach has been implemented in order to avoid the issue for big datasets mentioned above.
+
   At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
-  The [destination-gcs connector](./gcs.md) is partially used under the hood here, so you may check its documentation for more details.
+
+  The [destination-gcs connector](gcs.md) is partially used under the hood here, so you may check its documentation for more details.
 
 For the GCS Staging upload type additional params must be configured:
 
-  * **GCS Bucket Name**
-  * **GCS Bucket Path**
-  * **GCS Bucket Keep files after migration**
-    * See [this](https://cloud.google.com/storage/docs/creating-buckets) to create an S3 bucket.
-  * **HMAC Key Access ID**
-    * See [this](https://cloud.google.com/storage/docs/authentication/hmackeys) on how to generate an access key.
-    * We recommend creating an Airbyte-specific user or service account. This user or account will require read and write permissions to objects in the bucket.
-  * **Secret Access Key**
-    * Corresponding key to the above access ID.
-* Make sure your GCS bucket is accessible from the machine running Airbyte.
-  * This depends on your networking setup.
-  * The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
+* **GCS Bucket Name**
+* **GCS Bucket Path**
+* **GCS Bucket Keep files after migration**
+  * See [this](https://cloud.google.com/storage/docs/creating-buckets) to create an S3 bucket.
+* **HMAC Key Access ID**
+  * See [this](https://cloud.google.com/storage/docs/authentication/hmackeys) on how to generate an access key.
+  * We recommend creating an Airbyte-specific user or service account. This user or account will require read and write permissions to objects in the bucket.
+* **Secret Access Key**
+  * Corresponding key to the above access ID.
+  * Make sure your GCS bucket is accessible from the machine running Airbyte.
+* This depends on your networking setup.
+* The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
 
-
-Note:
-It partially re-uses the destination-gcs connector under the hood. So you may also refer to its guide for additional clarifications. 
-**GCS Region** for GCS would be used the same as set for BigQuery
-**Format** - Gcs format is set to CSV
+Note: It partially re-uses the destination-gcs connector under the hood. So you may also refer to its guide for additional clarifications. **GCS Region** for GCS would be used the same as set for BigQuery **Format** - Gcs format is set to CSV
 
 ## Naming Conventions
 
@@ -143,24 +147,25 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 ### bigquery
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.4.0 | 2021-10-04 | [#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers |
-| 0.4.0 | 2021-08-26 | [#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
-| 0.3.12 | 2021-08-03 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
-| 0.3.11 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
-| 0.3.10 | 2021-07-28 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId |
-| 0.3.9 | 2021-07-28 | [#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names |
-| 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
-| 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
+| :--- | :--- | :--- | :--- |
+| 0.4.0 | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers |
+| 0.4.0 | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
+| 0.3.12 | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
+| 0.3.11 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.3.10 | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId |
+| 0.3.9 | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names |
+| 0.3.6 | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
+| 0.3.4 | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
 
 ### bigquery-denormalized
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.1.6 | 2021-09-16 | [#6145](https://github.com/airbytehq/airbyte/pull/6145) | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key
-| 0.1.5 | 2021-09-07 | [#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix
-| 0.1.4 | 2021-09-04 | [#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
-| 0.1.3 | 2021-08-07 | [#5261](https://github.com/airbytehq/airbyte/pull/5261) | 🐛 Destination BigQuery(Denormalized): Fix processing arrays of records |
-| 0.1.2 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
-| 0.1.1 | 2021-06-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
-| 0.1.0 | 2021-06-21 | [#4176](https://github.com/airbytehq/airbyte/pull/4176) | Destination using Typed Struct and Repeated fields |
+| :--- | :--- | :--- | :--- |
+| 0.1.6 | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145) | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key |
+| 0.1.5 | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix |
+| 0.1.4 | 2021-09-04 | [\#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
+| 0.1.3 | 2021-08-07 | [\#5261](https://github.com/airbytehq/airbyte/pull/5261) | 🐛 Destination BigQuery\(Denormalized\): Fix processing arrays of records |
+| 0.1.2 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.1 | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
+| 0.1.0 | 2021-06-21 | [\#4176](https://github.com/airbytehq/airbyte/pull/4176) | Destination using Typed Struct and Repeated fields |
+

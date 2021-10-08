@@ -16,11 +16,10 @@ This Source is capable of syncing the following core Streams:
 * [RelationshipRecords](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationships/)
 * [ObjectTypePolicies](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/permissions/)
 * [Jobs](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/jobs/) 
+
   This stream is currently not available because it stores data temporary.
+
 * [Limits](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/limits/)
-
-
-
 
 ### Data type mapping
 
@@ -60,7 +59,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-08 | [4359](https://github.com/airbytehq/airbyte/pull/4359) | Initial Release |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-07-08 | [4359](https://github.com/airbytehq/airbyte/pull/4359) | Initial Release |
 

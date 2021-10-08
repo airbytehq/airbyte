@@ -26,10 +26,9 @@ We recommend following [this guide](https://docs.docker.com/docker-for-windows/i
 
 **I have a Mac with the M1 chip. Is it possible to run Airbyte?**
 
-Some users using Macs with an M1 chip are facing some problems running Airbyte.
-The problem is related with the chip and Docker. [Issue #2017](https://github.com/airbytehq/airbyte/issues/2017) was created to follow up the problem, you can subscribe to it and get updates about the resolution.
-If you can successfully run Airbyte using a MacBook with the M1 chip, let us know so that we can share the process with the community!
+Some users using Macs with an M1 chip are facing some problems running Airbyte. The problem is related with the chip and Docker. [Issue \#2017](https://github.com/airbytehq/airbyte/issues/2017) was created to follow up the problem, you can subscribe to it and get updates about the resolution. If you can successfully run Airbyte using a MacBook with the M1 chip, let us know so that we can share the process with the community!
 
 **Other issues**
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting/on-deploying.md) section in our docs for common problems.
+

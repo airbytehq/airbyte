@@ -11,7 +11,7 @@ Airbyte Cloud requires no setup and can be immediately run from your web browser
 If you don't have an invite, sign up [here!](https://airbyte.io/cloud-waitlist)
 
 **2. Click on the default workspace.**
-   
+
 You will be provided 1000 credits to get your first few syncs going!
 
 ![](../.gitbook/assets/cloud_onboarding.png)
@@ -21,3 +21,4 @@ You will be provided 1000 credits to get your first few syncs going!
 ![](../.gitbook/assets/cloud_connection_onboarding.png)
 
 **4. You're done!**
+

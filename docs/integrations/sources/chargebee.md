@@ -25,29 +25,29 @@ This connector outputs the following streams:
 Some streams may depend on Product Catalog version and be accessible only on sites with specific Product Catalog version. This means that we have following streams:
 
 1. presented in both `Product Catalog 1.0` and `Product Catalog 2.0`:
-    - Subscriptions
-    - Customers
-    - Invoices
-    - Orders
-    
+   * Subscriptions
+   * Customers
+   * Invoices
+   * Orders
 2. presented only in `Product Catalog 1.0`:
-    - Plans
-    - Addons
-    
+   * Plans
+   * Addons
 3. presented only in `Product Catalog 2.0`:
-    - Items
-    - Item Prices
-    - Attached Items
+   * Items
+   * Item Prices
+   * Attached Items
 
 Also, 8 streams from the above 9 incremental streams are pure incremental meaning that they:
-- read only new records;
-- output only new records.
+
+* read only new records;
+* output only new records.
 
 `Attached Items` incremental stream is also incremental but with one difference, it:
-- read all records;
-- output only new records.
 
-This means that syncing the `Attached Items` stream, even in incremental mode, is expensive in terms of your Chargebee API quota. Generally speaking, it incurs a number of API calls equal to the total number of attached items in your chargebee instance divided by 100, regardless of how many AttachedItems were actually changed or synced in a particular sync job. 
+* read all records;
+* output only new records.
+
+This means that syncing the `Attached Items` stream, even in incremental mode, is expensive in terms of your Chargebee API quota. Generally speaking, it incurs a number of API calls equal to the total number of attached items in your chargebee instance divided by 100, regardless of how many AttachedItems were actually changed or synced in a particular sync job.
 
 ### Features
 
@@ -75,16 +75,15 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 ### Setup guide
 
-Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
-Then follow [these](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2) instructions, under `API Version` section, on how to find your Product Catalog version.
-
+Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication). Then follow [these](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2) instructions, under `API Version` section, on how to find your Product Catalog version.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.4   | 2021-09-27 | [6454](https://github.com/airbytehq/airbyte/pull/6454) | Fix examples in spec file |
-| 0.1.3   | 2021-08-17 | [5421](https://github.com/airbytehq/airbyte/pull/5421) | Add support for "Product Catalog 2.0" specific streams: `Items`, `Item prices` and `Attached Items` |
-| 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Prepare connector for publishing |
-| 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector |
-| 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.4 | 2021-09-27 | [6454](https://github.com/airbytehq/airbyte/pull/6454) | Fix examples in spec file |
+| 0.1.3 | 2021-08-17 | [5421](https://github.com/airbytehq/airbyte/pull/5421) | Add support for "Product Catalog 2.0" specific streams: `Items`, `Item prices` and `Attached Items` |
+| 0.1.2 | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Prepare connector for publishing |
+| 0.1.1 | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector |
+| 0.1.0 | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee |
+

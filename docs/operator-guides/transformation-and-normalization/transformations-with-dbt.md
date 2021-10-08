@@ -6,18 +6,17 @@ This tutorial will describe how to integrate SQL based transformations with Airb
 
 This tutorial is the second part of the previous tutorial [Transformations with SQL](transformations-with-sql.md). Next, we'll wrap-up with a third part on submitting transformations back in Airbyte: [Transformations with Airbyte](transformations-with-airbyte.md).
 
-(Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
+\(Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021\)
 
 ## Transformations with dbt
 
 The tool in charge of transformation behind the scenes is actually called [dbt](https://blog.getdbt.com/what--exactly--is-dbt-/) \(Data Build Tool\).
 
-Before generating the SQL files as we've seen in the previous tutorial, Airbyte sets up a dbt Docker instance and automatically generates a dbt project for us. This is created as specified in the [dbt project documentation page](https://docs.getdbt.com/docs/building-a-dbt-project/projects) with the right credentials for the target destination. The dbt models are then run afterward, thanks to the [dbt CLI](https://docs.getdbt.com/dbt-cli/cli-overview).
-However, for now, let's run through working with the dbt tool.
+Before generating the SQL files as we've seen in the previous tutorial, Airbyte sets up a dbt Docker instance and automatically generates a dbt project for us. This is created as specified in the [dbt project documentation page](https://docs.getdbt.com/docs/building-a-dbt-project/projects) with the right credentials for the target destination. The dbt models are then run afterward, thanks to the [dbt CLI](https://docs.getdbt.com/dbt-cli/cli-overview). However, for now, let's run through working with the dbt tool.
 
 ### Validate dbt project settings
 
-Let's say we identified our workspace (as shown in the previous tutorial [Transformations with SQL](transformations-with-sql.md)), and we have a workspace ID of:
+Let's say we identified our workspace \(as shown in the previous tutorial [Transformations with SQL](transformations-with-sql.md)\), and we have a workspace ID of:
 
 ```bash
 NORMALIZE_WORKSPACE="5/0/"
@@ -59,6 +58,7 @@ Connection:
   sslmode: None
   Connection test: OK connection ok
 ```
+
 ### Compile and build dbt normalization models
 
 If the previous command does not show any errors or discrepancies, it is now possible to invoke the CLI from within the docker image to trigger transformation processing:
@@ -78,13 +78,14 @@ Concurrency: 32 threads (target='prod')
 
 1 of 1 START table model quarantine.covid_epidemiology....................................................... [RUN]
 1 of 1 OK created table model quarantine.covid_epidemiology.................................................. [SELECT 35822 in 0.47s]
- 
+
 Finished running 1 table model in 0.74s.
 
 Completed successfully
 
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
 ```
+
 ### Exporting dbt normalization project outside Airbyte
 
 As seen in the tutorial on [exploring workspace folder](../browsing-output-logs.md), it is possible to browse the `normalize` folder and examine further logs if an error occurs.
@@ -214,3 +215,4 @@ Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
 Now, that you've exported the generated normalization models, you can edit and tweak them as necessary.
 
 If you want to know how to push your modifications back to Airbyte and use your updated dbt project during Airbyte syncs, you can continue with the following [tutorial on importing transformations into Airbyte](transformations-with-airbyte.md)...
+

@@ -1,6 +1,6 @@
 # Introduction
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](./LICENSE) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](./LICENSE)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
 
 ![](docs/.gitbook/assets/airbyte_new_logo.svg)
 
@@ -20,7 +20,7 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
-Here's a list of our [connectors with their health status](docs/integrations).
+Here's a list of our [connectors with their health status](docs/integrations/).
 
 ## Quick start
 
@@ -52,7 +52,7 @@ If you want to schedule a 20-min call with our team to help you get set up, plea
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](slack.airbyte.io) where the core team can help answer your questions. 
+See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
@@ -73,5 +73,5 @@ Check out our [roadmap](docs/project-overview/roadmap.md) to get informed on wha
 
 ## License
 
-See the [LICENSE](docs/project-overview/licenses/README.md) file for licensing information.
+See the [LICENSE](docs/project-overview/licenses/) file for licensing information.
 

@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Harvest connector can be used to sync your Harvest data. It supports full refresh sync for all streams and incremental sync for all streams except of Expense Reports streams which are: Clients Report, Projects Report, Categories Report, Team Report.
-Incremental sync is also now available for Company stream, but it always has only one record.
+The Harvest connector can be used to sync your Harvest data. It supports full refresh sync for all streams and incremental sync for all streams except of Expense Reports streams which are: Clients Report, Projects Report, Categories Report, Team Report. Incremental sync is also now available for Company stream, but it always has only one record.
 
 ### Output schema
 
@@ -35,7 +34,6 @@ Several output streams are available from this source:
 * [Time Reports](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/)
 * [Project Budget Report](https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/)
 
-
 ### Features
 
 | Feature | Supported? |
@@ -62,19 +60,19 @@ The Harvest connector will gracefully handle rate limits. For more information, 
 This connector supports only authentication with API Key. To obtain API key follow the instructions below:
 
 1. Go to Account Settings page;
-1. Under Integrations section press Authorized OAuth2 API Clients button;
-1. New page will be opened on which you need to click on Create New Personal Access Token button and follow instructions.
+2. Under Integrations section press Authorized OAuth2 API Clients button;
+3. New page will be opened on which you need to click on Create New Personal Access Token button and follow instructions.
 
 See [docs](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/) for more details.
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.5   | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747) | Update schema date-time fields |
-| 0.1.4   | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071) | Harvest normalization failure: fixing the schemas |
-| 0.1.3   | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274) | Fix wrong data type on `statement_key` in `clients` stream |
-| 0.1.2   | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222) | Correct specification parameter name |
-| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| 0.1.0   | 2021-06-07 | [3709](https://github.com/airbytehq/airbyte/pull/3709) | Release Harvest connector! |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.5 | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747) | Update schema date-time fields |
+| 0.1.4 | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071) | Harvest normalization failure: fixing the schemas |
+| 0.1.3 | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274) | Fix wrong data type on `statement_key` in `clients` stream |
+| 0.1.2 | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222) | Correct specification parameter name |
+| 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.1.0 | 2021-06-07 | [3709](https://github.com/airbytehq/airbyte/pull/3709) | Release Harvest connector! |
+

@@ -30,20 +30,20 @@ As mentioned above, the delta from a sync will be _appended_ to the existing his
 
 Assume that `updated_at` is our `cursor_field` and `name` is the `primary_key`. Let's say the following data already exists into our data warehouse.
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | false | 1754 |
 | Marie Antoinette | false | 1755 |
 
 In the next sync, the delta contains the following record:
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVII | false | 1785 |
 
 At the end of this incremental sync, the data warehouse would now contain:
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | false | 1754 |
 | Marie Antoinette | false | 1755 |
@@ -53,7 +53,7 @@ At the end of this incremental sync, the data warehouse would now contain:
 
 Let's assume that our warehouse contains all the data that it did at the end of the previous section. Now, unfortunately the king and queen lose their heads. Let's see that delta:
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | true | 1793 |
 | Marie Antoinette | true | 1793 |
@@ -62,7 +62,7 @@ The output we expect to see in the warehouse is as follows:
 
 In the history table:
 
-| name | deceased | updated_at | start_at | end_at |
+| name | deceased | updated\_at | start\_at | end\_at |
 | :--- | :--- | :--- | :--- | :--- |
 | Louis XVI | false | 1754 | 1754 | 1793 |
 | Louis XVI | true | 1793 | 1793 | NULL |
@@ -72,7 +72,7 @@ In the history table:
 
 In the final de-duplicated table:
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | true | 1793 |
 | Louis XVII | false | 1785 |
@@ -122,33 +122,31 @@ select * from table where cursor_field > 'last_sync_max_cursor_field_value'
 
 Let's say the following data already exists into our data warehouse.
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | false | 1754 |
 | Marie Antoinette | false | 1755 |
 
 At the start of the next sync, the source data contains the following new record:
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | true | 1754 |
 
 At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field \(the cursor field is not greater than last sync's max value, `1754 < 1755`\), so it is not emitted by the source as a new or modified record.
 
-| name | deceased | updated_at |
+| name | deceased | updated\_at |
 | :--- | :--- | :--- |
 | Louis XVI | false | 1754 |
 | Marie Antoinette | false | 1755 |
 
 Similarly, if multiple modifications are made during the same day to the same records. If the frequency of the sync is not granular enough \(for example, set for every 24h\), then intermediate modifications to the data are not going to be detected and emitted. Only the state of data at the time the sync runs will be reflected in the destination.
 
-Those concerns could be solved by using a different incremental approach based on binary logs, Write-Ahead-Logs \(WAL\), or also called [Change Data Capture (CDC)](../cdc.md).
+Those concerns could be solved by using a different incremental approach based on binary logs, Write-Ahead-Logs \(WAL\), or also called [Change Data Capture \(CDC\)](../cdc.md).
 
 The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
-Additionally, this sync mode is only supported for destinations where dbt/normalization is possible for the moment.
-The de-duplicating logic is indeed implemented as dbt models as part of a sequence of transformations applied after the Extract and Load activities (thus, an ELT approach).
-Nevertheless, it is theoretically possible that destinations can handle directly this logic (maybe in the future) before actually writing records to the destination (as in traditional ETL manner), but that's not the way it is implemented at this time.
+Additionally, this sync mode is only supported for destinations where dbt/normalization is possible for the moment. The de-duplicating logic is indeed implemented as dbt models as part of a sequence of transformations applied after the Extract and Load activities \(thus, an ELT approach\). Nevertheless, it is theoretically possible that destinations can handle directly this logic \(maybe in the future\) before actually writing records to the destination \(as in traditional ETL manner\), but that's not the way it is implemented at this time.
 
 If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../operator-guides/transformation-and-normalization/transformations-with-sql.md)
 
