@@ -4,9 +4,9 @@ description: Using Airbyte and MeiliSearch
 
 # Save and Search Through Your Slack History on a Free Slack Plan
 
-![](../.gitbook/assets/slack-history-ui-title.png)
+![](../../.gitbook/assets/slack-history-ui-title.png)
 
-The [Slack free tier](https://slack.com/pricing/paid-vs-free) saves only the last 10K messages. For social Slack instances, it may be impractical to upgrade to a paid plan to retain these messages. Similarly, for an open-source project like [Airbyte](../understanding-airbyte/catalog.md) where we interact with our community through a public Slack instance, the cost of paying for a seat for every Slack member is prohibitive.
+The [Slack free tier](https://slack.com/pricing/paid-vs-free) saves only the last 10K messages. For social Slack instances, it may be impractical to upgrade to a paid plan to retain these messages. Similarly, for an open-source project like [Airbyte](../../understanding-airbyte/catalog.md) where we interact with our community through a public Slack instance, the cost of paying for a seat for every Slack member is prohibitive.
 
 However, searching through old messages can be really helpful. Losing that history feels like some advanced form of memory loss. What was that joke about Java 8 Streams? This contributor question sounds familiar—haven't we seen it before? But you just can't remember!
 
@@ -53,7 +53,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 In the Airbyte UI, select Slack from the dropdown. We provide step-by-step instructions for setting up the Slack source in Airbyte [here](https://docs.airbyte.io/integrations/sources/slack#setup-guide). These will walk you through how to complete the form on this page.
 
-![](../.gitbook/assets/slack-history-setup-wizard.png)
+![](../../.gitbook/assets/slack-history-setup-wizard.png)
 
 By the end of these instructions, you should have created a Slack source in the Airbyte UI. For now, just add your Slack app to a single public channel \(you can add it to more channels later\). Only messages from that channel will be replicated.
 
@@ -67,7 +67,7 @@ Head back to the Airbyte UI. It should still be prompting you to set up a destin
 
 On the next page, you will be asked to select which streams of data you'd like to replicate. We recommend unchecking "files" and "remote files" since you won't really be able to search them easily in this search engine.
 
-![](../.gitbook/assets/airbyte_connection-settings.png)
+![](../../.gitbook/assets/airbyte_connection-settings.png)
 
 For frequency, we recommend every 24 hours.
 
@@ -75,7 +75,7 @@ For frequency, we recommend every 24 hours.
 
 After the connection has been saved, Airbyte should start replicating the data immediately. When it completes you should see the following:
 
-![](../.gitbook/assets/slack-history-sync.png)
+![](../../.gitbook/assets/slack-history-sync.png)
 
 When the sync is done, you can sanity check that this is all working by making a search request to MeiliSearch. Replication can take several minutes depending on the size of your Slack instance.
 
@@ -96,7 +96,7 @@ Making curl requests to search your Slack History is a little clunky, so we have
 
 Download \(or copy and paste\) this [html file](https://github.com/airbytehq/airbyte/blob/master/docs/examples/slack-history/index.html) to your workstation. Then, open it using a browser. You should now be able to write search terms in the search bar and get results instantly!
 
-![](../.gitbook/assets/slack-history-ui.png)
+![](../../.gitbook/assets/slack-history-ui.png)
 
 ## 5. "Productionizing" Saving Slack History
 
