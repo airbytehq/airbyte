@@ -17,6 +17,7 @@ declare global {
     FIREBASE_API_KEY?: string;
     FIREBASE_AUTH_DOMAIN?: string;
     CLOUD_API_URL?: string;
+    REACT_APP_SENTRY_DSN?: string;
 
     analytics: SegmentAnalytics;
     _API_URL: string;
