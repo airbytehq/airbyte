@@ -247,7 +247,11 @@ const OnboardingPage: React.FC = () => {
         <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>
-            <FormattedMessage id="onboarding.closeOnboarding" />
+            {currentStep === StepType.FINAl ? (
+              <FormattedMessage id="onboarding.closeOnboarding" />
+            ) : (
+              <FormattedMessage id="onboarding.skipOnboarding" />
+            )}
           </Button>
         </Footer>
       </Content>
