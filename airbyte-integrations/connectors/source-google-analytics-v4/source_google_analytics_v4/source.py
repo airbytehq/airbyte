@@ -383,55 +383,29 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
-class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
-    """
-    This class supports either default authorization_code and JWT OAuth
-    authorizations in case of service account.
-
-    Request example for API token extraction:
+class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
+    """Request example for API token extraction:
     curl --location --request POST
     https://oauth2.googleapis.com/token?grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=signed_JWT
     """
 
-    use_jwt_auth: bool = False
-
     def __init__(self, config):
-        client_secret, client_id, refresh_token = None, None, None
-        if "credentials_json" in config:
-            # Backward compatability with previous config format. Use
-            # credentials_json from config root.
-            auth = config
-        else:
-            auth = config["credentials"]
-        if "credentials_json" in auth:
-            # Service account JWT authorization
-            self.use_jwt_auth = True
-            credentials_json = json.loads(auth["credentials_json"])
-            client_secret, client_id, refresh_token = credentials_json["private_key"], credentials_json["private_key_id"], None
-            self.client_email = credentials_json["client_email"]
-        else:
-            # OAuth 2.0 authorization_code authorization
-            client_secret, client_id, refresh_token = auth["client_secret"], auth["client_id"], auth["refresh_token"]
+        self.credentials_json = json.loads(config["credentials_json"])
+        self.client_email = self.credentials_json["client_email"]
         self.scope = "https://www.googleapis.com/auth/analytics.readonly"
 
         super().__init__(
             token_refresh_endpoint="https://oauth2.googleapis.com/token",
-            client_secret=client_secret,
-            client_id=client_id,
-            refresh_token=refresh_token,
-            scopes=[self.scope],
+            client_secret=self.credentials_json["private_key"],
+            client_id=self.credentials_json["private_key_id"],
+            refresh_token=None,
         )
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
-        Calling the Google OAuth 2.0 token endpoint. Used for authorizing
-        with signed JWT if credentials_json provided by config. Otherwise use
-        default OAuth2.0 workflow.
-        :return tuple with access token and token's time-to-live.
+        Calling the Google OAuth 2.0 token endpoint. Used for authorizing signed JWT.
+        Returns tuple with access token and token's time-to-live
         """
-        if not self.use_jwt_auth:
-            return super().refresh_access_token()
-
         response_json = None
         try:
             response = requests.request(method="POST", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
@@ -452,7 +426,6 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
     def get_refresh_request_params(self) -> Mapping[str, any]:
         """
         Sign the JWT with RSA-256 using the private key found in service account JSON file.
-        Not used with default OAuth2.0 authorization_code grant_type.
         """
         token_lifetime = 3600  # token lifetime is 1 hour
 
@@ -469,17 +442,35 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
         }
         headers = {"kid": self.client_id}
         signed_jwt = jwt.encode(payload, self.client_secret, headers=headers, algorithm="RS256")
-        return {"grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion": signed_jwt}
+        return {"grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion": str(signed_jwt)}
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""
 
+    @staticmethod
+    def get_authenticator(config):
+        # backwards compatibility, credentials_json used to be in the top level of the connector
+        if config.get("credentials_json"):
+            return GoogleAnalyticsServiceOauth2Authenticator(config)
+
+        auth_params = config.get("credentials")
+        if auth_params.pop("auth_type") == "Service":
+            return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
+        else:
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://oauth2.googleapis.com/token",
+                client_secret=auth_params.get("client_secret"),
+                client_id=auth_params.get("client_id"),
+                refresh_token=auth_params.get("refresh_token"),
+                scopes=["https://www.googleapis.com/auth/analytics.readonly"],
+            )
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             url = f"{GoogleAnalyticsV4TypesList.url_base}"
 
-            authenticator = GoogleAnalyticsOauth2Authenticator(config)
+            authenticator = self.get_authenticator(config)
 
             session = requests.get(url, headers=authenticator.get_auth_header())
             session.raise_for_status()
@@ -496,7 +487,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
 
-        authenticator = GoogleAnalyticsOauth2Authenticator(config)
+        authenticator = self.get_authenticator(config)
 
         config["authenticator"] = authenticator
 
