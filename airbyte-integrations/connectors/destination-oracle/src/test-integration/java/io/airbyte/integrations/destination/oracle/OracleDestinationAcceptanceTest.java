@@ -84,7 +84,7 @@ public class OracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    final JsonNode invalidConfig = Jsons.clone(getConfig());
+    final JsonNode invalidConfig = getConfig();
     ((ObjectNode) invalidConfig).put("password", "wrong password");
     return invalidConfig;
   }
