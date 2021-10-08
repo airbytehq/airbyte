@@ -31,8 +31,10 @@ This Source is capable of syncing the following core Streams:
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
 
-#### NOTE: 
+#### NOTE:
+
 For better experience with `Incremental Refresh` the follwing is recomended:
+
 * `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
 * `Discount Codes` should be synced along with `Price Rules` stream.
 
@@ -57,13 +59,13 @@ If child streams are synced alone from the parent stream - the full sync will ta
 
 ### Performance considerations
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits).
-Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
-```
+Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
+
+```text
 "Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
 ```
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error.
-With given error message the sync operation is still goes on, but will require more time to finish.
+
+This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. With given error message the sync operation is still goes on, but will require more time to finish.
 
 ## Getting started
 
@@ -75,24 +77,24 @@ With given error message the sync operation is still goes on, but will require m
 5. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
 6. You're ready to set up Shopify in Airbyte!
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.18  | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
-| 0.1.17  | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
-| 0.1.16  | 2021-09-09 | [5965](https://github.com/airbytehq/airbyte/pull/5945) | Fixed the connector's performance for `Incremental refresh` |
-| 0.1.15  | 2021-09-02 | [5853](https://github.com/airbytehq/airbyte/pull/5853) | Fixed `amount` type in `order_refund` schema |
-| 0.1.14  | 2021-09-02 | [5801](https://github.com/airbytehq/airbyte/pull/5801) | Fixed `line_items/discount allocations` & `duties` parts of `orders` schema |
-| 0.1.13  | 2021-08-17 | [5470](https://github.com/airbytehq/airbyte/pull/5470) | Fixed rate limits throttling |
-| 0.1.12  | 2021-08-09 | [5276](https://github.com/airbytehq/airbyte/pull/5276) | Add status property to product schema |
-| 0.1.11  | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943) | Fix products schema up to API 2021-07 |
-| 0.1.10  | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fix for streams json schemas, upgrade to API version 2021-07 |
-| 0.1.9   | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated_at instead of since_id by default |
-| 0.1.8   | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121) | Add draft orders stream |
-| 0.1.7   | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290) | Fixed the bug when limiting output records to 1 caused infinity loop |
-| 0.1.6   | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009) | Add pages, price rules and discount codes streams |
-| 0.1.5   | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| 0.1.4   | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926) | New attributes to Orders schema |
-| 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Add Native Shopify Source Connector |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.18 | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
+| 0.1.17 | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
+| 0.1.16 | 2021-09-09 | [5965](https://github.com/airbytehq/airbyte/pull/5945) | Fixed the connector's performance for `Incremental refresh` |
+| 0.1.15 | 2021-09-02 | [5853](https://github.com/airbytehq/airbyte/pull/5853) | Fixed `amount` type in `order_refund` schema |
+| 0.1.14 | 2021-09-02 | [5801](https://github.com/airbytehq/airbyte/pull/5801) | Fixed `line_items/discount allocations` & `duties` parts of `orders` schema |
+| 0.1.13 | 2021-08-17 | [5470](https://github.com/airbytehq/airbyte/pull/5470) | Fixed rate limits throttling |
+| 0.1.12 | 2021-08-09 | [5276](https://github.com/airbytehq/airbyte/pull/5276) | Add status property to product schema |
+| 0.1.11 | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943) | Fix products schema up to API 2021-07 |
+| 0.1.10 | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fix for streams json schemas, upgrade to API version 2021-07 |
+| 0.1.9 | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated\_at instead of since\_id by default |
+| 0.1.8 | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121) | Add draft orders stream |
+| 0.1.7 | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290) | Fixed the bug when limiting output records to 1 caused infinity loop |
+| 0.1.6 | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009) | Add pages, price rules and discount codes streams |
+| 0.1.5 | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.1.4 | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926) | New attributes to Orders schema |
+| 0.1.3 | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Add Native Shopify Source Connector |
+

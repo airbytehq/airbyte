@@ -1,4 +1,4 @@
-# Google Adwords (Deprecated)
+# Google Adwords
 
 As mentioned by Google, the AdWords API will sunset in [April 2022](https://ads-developers.googleblog.com/2021/04/upgrade-to-google-ads-api-from-adwords.html). Migrate all requests to the Google Ads API by then to continue managing your Google Ads accounts.
 
@@ -22,9 +22,9 @@ This Adwords source wraps the [Singer Adwords Tap](https://github.com/singer-io/
 
 Several tables and their data are available from this source \(accounts, campaigns, ads, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-adwords/tree/master/tap_adwords/schemas).
 
-## Getting Started (Airbyte Open-Source / Airbyte Cloud)
+## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
-#### Requirements
+### Requirements
 
 * Google Adwords Manager Account with an approved Developer Token \(note: In order to get API access to Google Adwords, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
@@ -54,12 +54,13 @@ If for any reason the request gets denied, let us know and we will be able to un
 
 Tokens issued after April 28, 2021 are only given access to the Google Ads API as the AdWords API is no longer available for new users. Thus, this source can only be used if you already have a token issued previously. A new source using the Google Ads API is being built \(see [issue 3457](https://github.com/airbytehq/airbyte/issues/3457) for more information\).
 
-## Rate Limiting & Performance Considerations (Airbyte Open-Source)
+## Rate Limiting & Performance Considerations \(Airbyte Open-Source\)
 
 This source is constrained by whatever API limits are set for the Google Adwords Manager that is used. You can read more about those limits in the [Google Developer docs](https://developers.google.com/adwords/api/faq#access).
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2  | 2021-06-25 | [4205](https://github.com/airbytehq/airbyte/pull/4205) | Set up CDK SAT tests. Incremental tests are disabled due to unsupported state structure in current tests: required structure: {stream_name: cursor_value} given {‘bookmarks’: {stream_name: cursor_value}} |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-06-25 | [4205](https://github.com/airbytehq/airbyte/pull/4205) | Set up CDK SAT tests. Incremental tests are disabled due to unsupported state structure in current tests: required structure: {stream\_name: cursor\_value} given {‘bookmarks’: {stream\_name: cursor\_value}} |
+
