@@ -252,6 +252,7 @@ class Epics(IncrementalJiraStream):
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
         params["jql"] = f"issuetype = 'Epic' and project = '{project_id}' and updated > '{issues_state_row}'"
+        params["expand"] = "renderedFields"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
