@@ -43,8 +43,8 @@ select
 ) as id,
     cast(currency as 
     VARCHAR(max)) as currency,
-    try_parse("date" as date) as "date",
-    try_parse(timestamp_col as datetime) as timestamp_col,
+    try_parse(nullif("date", '''') as date) as "date",
+    try_parse(nullif(timestamp_col, '''') as datetime) as timestamp_col,
     cast("HKD@spéçiäl & characters" as 
     float
 ) as "HKD@spéçiäl & characters",

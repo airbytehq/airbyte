@@ -27,10 +27,10 @@ select
     numeric
 ) as id,
     cast(currency as varchar2(4000)) as currency,
-    cast("DATE" as 
+    cast(nullif("DATE", '') as
     varchar2(4000)
 ) as "DATE",
-    cast(timestamp_col as 
+    cast(nullif(timestamp_col, '') as
     varchar2(4000)
 ) as timestamp_col,
     cast(hkd_special___characters as 

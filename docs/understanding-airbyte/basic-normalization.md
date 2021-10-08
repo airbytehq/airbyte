@@ -307,7 +307,9 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- | :--- |
+| 0.30.16-alpha | 0.1.52 | 2021-10-07 | [#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
 | 0.30.16-alpha | 0.1.51 | 2021-10-08 | [#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad_cdc_log_pos while normalization  |
+| 0.30.16-alpha | 0.1.50 | 2021-10-07 | [#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization  |
 | 0.30.16-alpha | 0.1.49 | 2021-10-06 | [#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
 | 0.29.17-alpha | 0.1.47 | 2021-09-20 | [#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel  |
 | 0.29.17-alpha | 0.1.45 | 2021-09-18 | [#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format  |

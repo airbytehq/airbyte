@@ -3,8 +3,11 @@
 select
     cast(id as {{ dbt_utils.type_bigint() }}) as id,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
-    cast({{ adapter.quote('date') }} as {{ type_date() }}) as {{ adapter.quote('date') }},
-    cast(timestamp_col as {{ type_timestamp_with_timezone() }}) as timestamp_col,
+        case when {{ adapter.quote('date') }} = '' then NULL
+        else cast({{ adapter.quote('date') }} as date)
+        end as {{ adapter.quote('date') }}
+        ,
+    cast({{ empty_string_to_null('timestamp_col') }} as {{ type_timestamp_with_timezone() }}) as timestamp_col,
     cast({{ adapter.quote('HKD@spéçiäl & characters') }} as {{ dbt_utils.type_float() }}) as {{ adapter.quote('HKD@spéçiäl & characters') }},
     cast(hkd_special___characters as {{ dbt_utils.type_string() }}) as hkd_special___characters,
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,

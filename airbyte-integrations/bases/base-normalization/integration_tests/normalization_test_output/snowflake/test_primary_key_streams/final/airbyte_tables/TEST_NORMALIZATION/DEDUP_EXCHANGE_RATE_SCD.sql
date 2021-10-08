@@ -27,7 +27,7 @@ select
     cast(CURRENCY as 
     varchar
 ) as CURRENCY,
-    cast(DATE as 
+    cast(nullif(DATE, '') as 
     date
 ) as DATE,
     case
@@ -35,6 +35,7 @@ select
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SSTZH')
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{4}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{2}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+        when TIMESTAMP_COL = '' then NULL
     else to_timestamp_tz(TIMESTAMP_COL)
     end as TIMESTAMP_COL
     ,
