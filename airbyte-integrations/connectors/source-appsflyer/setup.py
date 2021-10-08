@@ -27,7 +27,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "pendulum"
+    "pendulum~=2.1.2"
 ]
 
 TEST_REQUIREMENTS = [
