@@ -30,6 +30,15 @@
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":7,"name":"lotus","_ab_cdc_updated_at":1623850868237,"_ab_cdc_lsn":27010048,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":6,"name":null,"_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010232,"_ab_cdc_deleted_at":1623850868371},"emitted_at":1623861660}}
 
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":1,"name":"mazda","_ab_cdc_updated_at":1623849130530,"_ab_cdc_lsn":26971624,"_ab_cdc_log_pos": 33274,"_ab_cdc_deleted_at":null},"emitted_at":1623859926}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":2,"name":"toyata","_ab_cdc_updated_at":1623849130549,"_ab_cdc_lsn":26971624,"_ab_cdc_log_pos": 33275,"_ab_cdc_deleted_at":null},"emitted_at":1623859926}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":2,"name":"bmw","_ab_cdc_updated_at":1623849314535,"_ab_cdc_lsn":26974776,"_ab_cdc_log_pos": 33278,"_ab_cdc_deleted_at":null},"emitted_at":1623860160}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":3,"name":null,"_ab_cdc_updated_at":1623849314791,"_ab_cdc_lsn":26975440,"_ab_cdc_log_pos": 33274,"_ab_cdc_deleted_at":1623849314791},"emitted_at":1623860160}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":4,"name":"lotus","_ab_cdc_updated_at":1623850868237,"_ab_cdc_lsn":27010048,"_ab_cdc_log_pos": 33271,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":4,"name":null,"_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010232,"_ab_cdc_log_pos": 33279,"_ab_cdc_deleted_at":1623850868371},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":5,"name":"lotus","_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010048,"_ab_cdc_log_pos": 33280,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":5,"name":"lily","_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010232,"_ab_cdc_log_pos": 33281,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
+
 {"type":"RECORD","record":{"stream":"conflict_stream_name","data":{"id":1,"conflict_stream_name":{"conflict_stream_name": {"groups": "1", "custom_fields": [{"id":1, "value":3}, {"id":2, "value":4}], "conflict_stream_name": 3}}},"emitted_at":1623861660}}
 {"type":"RECORD","record":{"stream":"conflict_stream_name","data":{"id":2,"conflict_stream_name":{"conflict_stream_name": {"groups": "2", "custom_fields": [{"id":1, "value":3}, {"id":2, "value":4}], "conflict_stream_name": 3}}},"emitted_at":1623861660}}
 

@@ -68,3 +68,9 @@ models:
       - name: name
         tests:
           - not_null
+
+  - name: pos_dedup_cdcx
+    columns:
+      - name: name
+        tests:
+          - not_null

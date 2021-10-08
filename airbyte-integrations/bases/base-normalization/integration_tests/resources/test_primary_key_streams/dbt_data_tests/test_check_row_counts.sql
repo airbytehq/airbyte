@@ -29,6 +29,17 @@ union all
 
 union all
 
+    select distinct count(*) as row_count, 8 as expected_count
+    from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
+union all
+    select distinct count(*) as row_count, 8 as expected_count
+    from {{ ref('pos_dedup_cdcx_scd') }}
+union all
+    select distinct count(*) as row_count, 3 as expected_count
+    from {{ ref('pos_dedup_cdcx') }}
+
+union all
+
     select distinct count(*) as row_count, 2 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 union all
