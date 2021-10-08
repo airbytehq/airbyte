@@ -57,7 +57,11 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
 
   private final JdbcSourceOperations sourceOperations;
 
-  public MssqlSource() {
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
+  }
+
+  MssqlSource() {
     super(DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration());
     this.sourceOperations = JdbcUtils.getDefaultSourceOperations();
   }
@@ -309,7 +313,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
+    final Source source = MssqlSource.sshWrappedSource();
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);
