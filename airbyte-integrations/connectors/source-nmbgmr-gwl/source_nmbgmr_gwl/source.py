@@ -90,7 +90,12 @@ class SourceNmbgmrGwl(Source):
                                               'DateTimeMeasured': {'type': 'string',
                                                                    'format': 'date-time'},
                                               'DepthToWaterBGS': {'type': 'number'},
-                                              'DepthToWater': {'type': 'number'}}
+                                              'WaterHead': {'type': 'number'},
+                                              'WaterHeadAdjusted': {'type': 'number'},
+                                              'DataSource': {'type': 'string'},
+                                              'MeasuringAgency': {'type': 'string'},
+                                              'MeasurementMethod': {'type': 'string'},
+                                              }
                                }
         manual_gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
                              'type': 'object',
