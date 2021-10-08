@@ -89,8 +89,8 @@ public class SchedulerApp {
                       JobNotifier jobNotifier,
                       TemporalClient temporalClient,
                       Integer submitterNumThreads,
-      Integer maxSyncJobAttempts,
-      String airbyteVersionOrWarnings) {
+                      Integer maxSyncJobAttempts,
+                      String airbyteVersionOrWarnings) {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;

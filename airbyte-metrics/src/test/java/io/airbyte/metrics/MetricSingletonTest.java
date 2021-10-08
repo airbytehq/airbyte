@@ -7,7 +7,6 @@ package io.airbyte.metrics;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;

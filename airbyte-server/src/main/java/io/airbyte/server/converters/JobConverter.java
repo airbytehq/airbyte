@@ -15,7 +15,6 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;

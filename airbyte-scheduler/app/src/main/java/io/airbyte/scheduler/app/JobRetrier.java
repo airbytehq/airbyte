@@ -4,7 +4,6 @@
 
 package io.airbyte.scheduler.app;
 
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobNotifier;

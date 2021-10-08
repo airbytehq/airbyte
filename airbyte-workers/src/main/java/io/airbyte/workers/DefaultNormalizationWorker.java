@@ -5,7 +5,6 @@
 package io.airbyte.workers;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import java.nio.file.Files;

@@ -55,7 +55,8 @@ public class WorkerApp {
                    ProcessFactory processFactory,
                    SecretsHydrator secretsHydrator,
                    WorkflowServiceStubs temporalService,
-                   MaxWorkersConfig maxWorkers, WorkerEnvironment workerEnvironment) {
+                   MaxWorkersConfig maxWorkers,
+                   WorkerEnvironment workerEnvironment) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;

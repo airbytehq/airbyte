@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * scheduler deployment.
  */
 public class KubePortManagerSingleton {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePortManagerSingleton.class);
 
   private static KubePortManagerSingleton instance;
@@ -34,14 +35,15 @@ public class KubePortManagerSingleton {
   private KubePortManagerSingleton() {
     this(new EnvConfigs().getTemporalWorkerPorts());
   }
+
   private KubePortManagerSingleton(Set<Integer> ports) {
     workerPorts = new LinkedBlockingDeque<>(ports);
   }
 
   /**
-   * Configures the instance by using the configuration available through
-   * EnvConfigs; this must exist as env vars at runtime to be found, or
-   * an empty set of ports will be used instead.
+   * Configures the instance by using the configuration available through EnvConfigs; this must exist
+   * as env vars at runtime to be found, or an empty set of ports will be used instead.
+   *
    * @return
    */
   public static synchronized KubePortManagerSingleton getInstance() {
@@ -53,8 +55,8 @@ public class KubePortManagerSingleton {
 
   @VisibleForTesting
   /**
-   * Configures the instance using the given set of ports; this is presumed to be used only
-   * in a testing context and never reused after that in the same jvm.
+   * Configures the instance using the given set of ports; this is presumed to be used only in a
+   * testing context and never reused after that in the same jvm.
    */
   protected synchronized static KubePortManagerSingleton getInstance(Set<Integer> ports) {
     if (instance == null) {

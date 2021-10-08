@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
@@ -55,7 +54,8 @@ class DefaultNormalizationWorkerTest {
 
   @Test
   void test() throws Exception {
-    final DefaultNormalizationWorker normalizationWorker = new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
+    final DefaultNormalizationWorker normalizationWorker =
+        new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
 
     normalizationWorker.run(normalizationInput, jobRoot);
 

@@ -14,7 +14,6 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -83,8 +82,7 @@ class SecretsMigrationTest {
   }
 
   @BeforeEach
-  public void setup() throws Exception {
-  }
+  public void setup() throws Exception {}
 
   public static void failOnDifferingConfigurations(Map<String, Stream<JsonNode>> leftConfigs, Map<String, Stream<JsonNode>> rightConfigs) {
     // Check that both sets have exactly the same keys. If they don't, we already know we're failing the

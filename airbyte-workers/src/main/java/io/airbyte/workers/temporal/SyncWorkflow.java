@@ -256,7 +256,10 @@ public interface SyncWorkflow {
     private final AirbyteConfigValidator validator;
     private final WorkerEnvironment workerEnvironment;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, WorkerEnvironment workerEnvironment) {
+    public NormalizationActivityImpl(ProcessFactory processFactory,
+                                     SecretsHydrator secretsHydrator,
+                                     Path workspaceRoot,
+                                     WorkerEnvironment workerEnvironment) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
     }
 
@@ -264,7 +267,8 @@ public interface SyncWorkflow {
     NormalizationActivityImpl(ProcessFactory processFactory,
                               SecretsHydrator secretsHydrator,
                               Path workspaceRoot,
-                              AirbyteConfigValidator validator, WorkerEnvironment workerEnvironment) {
+                              AirbyteConfigValidator validator,
+                              WorkerEnvironment workerEnvironment) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -302,7 +306,8 @@ public interface SyncWorkflow {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           NormalizationRunnerFactory.create(
               destinationLauncherConfig.getDockerImage(),
-              processFactory), workerEnvironment);
+              processFactory),
+          workerEnvironment);
     }
 
   }
