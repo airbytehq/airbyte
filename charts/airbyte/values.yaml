@@ -479,6 +479,14 @@ temporal:
   ##
   tolerations: []
 
+  ## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
+
 
 ## @section Airbyte Database parameters
 
