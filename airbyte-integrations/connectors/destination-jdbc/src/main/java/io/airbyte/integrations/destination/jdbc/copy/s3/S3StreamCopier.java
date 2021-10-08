@@ -88,7 +88,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String prepareS3StagingFile() {
-    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + s3FileName);
+    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 6) + "_" + s3FileName);
   }
 
   @Override
