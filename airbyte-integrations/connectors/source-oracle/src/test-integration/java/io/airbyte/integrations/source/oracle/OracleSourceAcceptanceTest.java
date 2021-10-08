@@ -30,8 +30,8 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
-  private OracleContainer container;
-  private JsonNode config;
+  protected OracleContainer container;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
@@ -45,6 +45,9 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
