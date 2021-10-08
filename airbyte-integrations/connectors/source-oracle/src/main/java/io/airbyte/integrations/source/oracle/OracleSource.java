@@ -122,12 +122,14 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
-    runProcess("keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt", run);
+    runProcess(
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt",
+        run);
   }
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
     Process pr = run.exec(cmd);
-    if (!pr.waitFor(10, TimeUnit.SECONDS)) {
+    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     } ;

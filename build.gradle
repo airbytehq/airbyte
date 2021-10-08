@@ -68,6 +68,8 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template',
         'dbt_data_tests',
         'dbt_schema_tests',
+        'dbt_data_tests_mssql',
+        'dbt_tmp_data_test_mssql',
         'normalization_test_output',
         'tools',
         'secrets',

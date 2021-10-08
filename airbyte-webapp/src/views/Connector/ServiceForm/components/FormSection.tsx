@@ -14,7 +14,7 @@ import GroupControls from "components/GroupControls";
 import { naturalComparator } from "utils/objects";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { AuthButton } from "./AuthButton";
-import { WithFeature } from "hooks/services/Feature";
+import { FeatureItem, WithFeature } from "hooks/services/Feature";
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {
   const aIsNumber = Number.isInteger(a.order);
@@ -177,7 +177,7 @@ const FormSection: React.FC<{
   return (
     <>
       {hasOauth && (
-        <WithFeature featureId="ALLOW_OAUTH_CONNECTOR">
+        <WithFeature featureId={FeatureItem.AllowOAuthConnector}>
           {
             <SectionContainer>
               <AuthButton />
