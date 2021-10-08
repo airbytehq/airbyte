@@ -11,7 +11,7 @@
 
 ## Troubleshooting
 
-#### Issue: `Normalization failing, keyError updated` [\[Discussion.\]](https://discuss.airbyte.io/t/source-jira-failing-in-normalization-step-keyerror-updated/57)
+Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
 
 ## Supported Tables
 
