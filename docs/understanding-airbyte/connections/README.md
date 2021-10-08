@@ -5,8 +5,8 @@ A connection is a configuration for syncing data between a source and a destinat
 * Sync schedule: when to trigger a sync of the data.
 * Destination [Namespace](../namespaces.md) and stream names: where the data will end up being written.
 * A catalog selection: which [streams and fields](../catalog.md) to replicate from the source
-* Sync mode: how streams should be replicated (read and write):
-* Optional transformations: how to convert Airbyte protocol messages (raw JSON blob) data into some other data representations. 
+* Sync mode: how streams should be replicated \(read and write\):
+* Optional transformations: how to convert Airbyte protocol messages \(raw JSON blob\) data into some other data representations. 
 
 ## Sync schedules
 
@@ -28,7 +28,7 @@ When a scheduled connection is first created, a sync is executed as soon as poss
 
 ## Destination namespace
 
-The location of where a connection replication will store data is referenced as the destination namespace. The destination connectors should create and write records (for both raw and normalized tables) in the specified namespace which should be configurable in the UI via the Namespace Configuration field (or NamespaceDefinition in the API). You can read more about configuring namespaces [here](../namespaces.md).
+The location of where a connection replication will store data is referenced as the destination namespace. The destination connectors should create and write records \(for both raw and normalized tables\) in the specified namespace which should be configurable in the UI via the Namespace Configuration field \(or NamespaceDefinition in the API\). You can read more about configuring namespaces [here](../namespaces.md).
 
 ## Destination stream name
 
@@ -44,20 +44,18 @@ All the customization of namespace and stream names described above will be equa
 
 A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes to account for various use cases. To minimize confusion, a mode's behavior is reflected in its name. The easiest way to understand Airbyte's sync modes is to understand how the modes are named.
 
-1.  The first part of the name denotes how the source connector reads data from the source:
-
-* Incremental: Read records added to the source since the last sync job. (The first sync using Incremental is equivalent to a Full Refresh)
-  * Method 1: Using a cursor. Generally supported by all connectors whose data source allows extracting records incrementally.
-  * Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
-* Full Refresh: Read everything in the source.
-
-2. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
-
-* Overwrite: Overwrite by first deleting existing data in the destination.
-* Append: Write by adding data to existing tables in the destination.
-* Deduped History: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is produced by de-duplicating the intermediate ones using a primary key.
+1. The first part of the name denotes how the source connector reads data from the source:
+2. Incremental: Read records added to the source since the last sync job. \(The first sync using Incremental is equivalent to a Full Refresh\)
+   * Method 1: Using a cursor. Generally supported by all connectors whose data source allows extracting records incrementally.
+   * Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
+3. Full Refresh: Read everything in the source.
+4. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
+5. Overwrite: Overwrite by first deleting existing data in the destination.
+6. Append: Write by adding data to existing tables in the destination.
+7. Deduped History: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is produced by de-duplicating the intermediate ones using a primary key.
 
 A sync mode is therefore, a combination of a source and destination mode together. The UI exposes the following options, whenever both source and destination connectors are capable to support it for the corresponding stream:
+
 * [Full Refresh Overwrite](full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
 * [Full Refresh Append](full-refresh-append.md): Sync the whole stream and append data in destination.
 * [Incremental Append](incremental-append.md): Sync new records from stream and append data in destination.
@@ -71,11 +69,11 @@ As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyt
 
 On top of this replication, Airbyte provides the option to enable or disable an additional transformation step at the end of the sync called [basic normalization](../basic-normalization.md). This operation is:
 
-- only available for destinations that support dbt execution.
-- responsible for automatically generating a pipeline or a DAG of dbt transformation models to convert JSON blob objects into normalized tables.
-- responsible for running and applying these dbt models to the data written in the destination.
+* only available for destinations that support dbt execution.
+* responsible for automatically generating a pipeline or a DAG of dbt transformation models to convert JSON blob objects into normalized tables.
+* responsible for running and applying these dbt models to the data written in the destination.
 
 ### Custom sync operations
 
-Further operations can be included in a sync on top of Airbyte basic normalization (or even to replace it completely).
-See [operations](../operations.md) for more details.
+Further operations can be included in a sync on top of Airbyte basic normalization \(or even to replace it completely\). See [operations](../operations.md) for more details.
+
