@@ -9,7 +9,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-from .common import get_base_api_url
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -26,7 +25,7 @@ class SunshineStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return get_base_api_url(self.subdomain)
+        return  f"https://{self.subdomain}.zendesk.com/"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
