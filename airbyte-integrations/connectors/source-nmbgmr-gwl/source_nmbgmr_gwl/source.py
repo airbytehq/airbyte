@@ -81,13 +81,25 @@ class SourceNmbgmrGwl(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
-                      'type': 'object',
-                      'properties': {'OBJECTID': {'type': 'number'},
-                                     'PointID': {'type': 'string'},
-                                     'DateMeasured': {'type': 'string',
-                                                      'format': 'date-time'},
-                                     'DepthToWaterBGS': {'type': 'number'}}}
+        manual_gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                             'type': 'object',
+                             'properties': {'OBJECTID': {'type': 'number'},
+                                            'PointID': {'type': 'string'},
+                                            'WellID': {'type': 'string'},
+                                            'GlobalID': {'type': 'string'},
+                                            'DateTimeMeasured': {'type': 'string',
+                                                                 'format': 'date-time'},
+                                            'DepthToWaterBGS': {'type': 'number'},
+                                            'DepthToWater': {'type': 'number'},
+                                            'SiteNotes': {'type': 'string'},
+                                            'DataSource': {'type': 'string'},
+                                            'MeasuringAgency': {'type': 'string'},
+                                            'LevelStatus': {'type': 'string'},
+                                            'DataQuality': {'type': 'string'},
+                                            'MPHeight': {'type': 'number'},
+                                            }
+                             }
+
         site_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
                        'type': 'object',
                        'properties': {'OBJECTID': {'type': 'number'},
@@ -198,26 +210,26 @@ class SourceNmbgmrGwl(Source):
                                          }}
 
         streams = [
-                   # AirbyteStream(name='Acoustic',
-                   #               supported_sync_modes=["full_refresh", "incremental"],
-                   #               source_defined_cursor=True,
-                   #               json_schema=gwl_schema),
-                   # AirbyteStream(name='Manual',
-                   #               supported_sync_modes=["full_refresh", "incremental"],
-                   #               source_defined_cursor=True,
-                   #               json_schema=gwl_schema),
-                   # AirbyteStream(name='Pressure',
-                   #               supported_sync_modes=["full_refresh", "incremental"],
-                   #               source_defined_cursor=True,
-                   #               json_schema=gwl_schema),
-                   AirbyteStream(name='WellScreens',
-                                 supported_sync_modes=["full_refresh",],
-                                 source_defined_cursor=True,
-                                 json_schema=screens_schema),
-                   AirbyteStream(name='SiteMetaData',
-                                 supported_sync_modes=['full_refresh',],
-                                 source_defined_cursor=True,
-                                 json_schema=site_schema)]
+            AirbyteStream(name='ManualWellLevels',
+                          supported_sync_modes=["full_refresh", "incremental"],
+                          source_defined_cursor=True,
+                          json_schema=manual_gwl_schema),
+            # AirbyteStream(name='Manual',
+            #               supported_sync_modes=["full_refresh", "incremental"],
+            #               source_defined_cursor=True,
+            #               json_schema=gwl_schema),
+            # AirbyteStream(name='Pressure',
+            #               supported_sync_modes=["full_refresh", "incremental"],
+            #               source_defined_cursor=True,
+            #               json_schema=gwl_schema),
+            AirbyteStream(name='WellScreens',
+                          supported_sync_modes=["full_refresh", ],
+                          source_defined_cursor=True,
+                          json_schema=screens_schema),
+            AirbyteStream(name='SiteMetaData',
+                          supported_sync_modes=['full_refresh', ],
+                          source_defined_cursor=True,
+                          json_schema=site_schema)]
 
         return AirbyteCatalog(streams=streams)
 
@@ -252,11 +264,12 @@ class SourceNmbgmrGwl(Source):
                 url = sitemetadata_url(config)
             elif key == 'WellScreens':
                 url = screens_url(config)
+            elif key == 'ManualWaterLevels':
+                url = manual_water_levels_url(config)
 
             while 1:
                 objectid = state[key]
                 if objectid:
-                    # url = f'{url}?objectid={state[key]}'
                     curl = f'{url}?objectid={objectid}'
                 else:
                     curl = url
@@ -274,41 +287,83 @@ class SourceNmbgmrGwl(Source):
                         record=AirbyteRecordMessage(stream=name, data=di,
                                                     emitted_at=int(datetime.now().timestamp()) * 1000))
 
-            # is_incremental = stream.sync_mode == SyncMode.incremental and key in state
-            # if key == 'SiteMetaData':
-            #     # data = get_sitemetadata(logger, state, config, key, is_incremental)
-            #
-            # elif key == 'Screens':
-            #     url = screens_url(config)
-            #     while 1:
-            #         url = f'{url}?objectid={state[key]}'
-            #         jobj = get_json(logger, url)
-            #         if jobj:
-            #             state[key] = jobj[-1]['OBJECTID']
-            #         for di in data:
-            #             yield AirbyteMessage(
-            #                 type=Type.RECORD,
-            #                 record=AirbyteRecordMessage(stream=name, data=di,
-            #                                             emitted_at=int(datetime.now().timestamp()) * 1000))
-            #     update_state(state)
-            #     return
-            # else:
-            #     data = get_waterlevels(logger, state, config, key, is_incremental)
-            #
-            # if data:
-            #     for di in data:
-            #         yield AirbyteMessage(
-            #             type=Type.RECORD,
-            #             record=AirbyteRecordMessage(stream=name, data=di,
-            #                                         emitted_at=int(datetime.now().timestamp()) * 1000))
-            # else:
-            #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
-            # data = get_data(logger, stream, state, config)
-            # if data:
-            #
-            # else:
-            #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
+def update_state(state):
+    output_message = {"type": "STATE", "state": {"data": state}}
+    print(json.dumps(output_message))
+
+
+def public_url(config):
+    return f'{config["url"]}/maps/data/waterlevels'
+
+
+def records_url(config, tag):
+    pu = public_url(config)
+    url = f'{pu}/records_{tag}'
+    return url
+
+
+def sitemetadata_url(config):
+    return f'{public_url(config)}/sitemetadata'
+
+
+def screens_url(config):
+    return f'{public_url(config)}/wellscreens'
+
+
+def manual_water_levels_url(config):
+    return f'{public_url(config)}/manual_gwl'
+
+
+def get_resp(logger, url):
+    resp = requests.get(url)
+    logger.debug(f'url={url}, resp={resp}')
+    if resp.status_code == 200:
+        return resp
+
+
+def get_json(logger, url):
+    resp = get_resp(logger, url)
+    if resp:
+        jobj = resp.json()
+        return jobj
+
+# EOF ========================================================================
+# is_incremental = stream.sync_mode == SyncMode.incremental and key in state
+# if key == 'SiteMetaData':
+#     # data = get_sitemetadata(logger, state, config, key, is_incremental)
+#
+# elif key == 'Screens':
+#     url = screens_url(config)
+#     while 1:
+#         url = f'{url}?objectid={state[key]}'
+#         jobj = get_json(logger, url)
+#         if jobj:
+#             state[key] = jobj[-1]['OBJECTID']
+#         for di in data:
+#             yield AirbyteMessage(
+#                 type=Type.RECORD,
+#                 record=AirbyteRecordMessage(stream=name, data=di,
+#                                             emitted_at=int(datetime.now().timestamp()) * 1000))
+#     update_state(state)
+#     return
+# else:
+#     data = get_waterlevels(logger, state, config, key, is_incremental)
+#
+# if data:
+#     for di in data:
+#         yield AirbyteMessage(
+#             type=Type.RECORD,
+#             record=AirbyteRecordMessage(stream=name, data=di,
+#                                         emitted_at=int(datetime.now().timestamp()) * 1000))
+# else:
+#     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
+
+# data = get_data(logger, stream, state, config)
+# if data:
+#
+# else:
+#     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
 
 # def get_screens(logger, state, config, key, is_incremental):
@@ -380,40 +435,3 @@ class SourceNmbgmrGwl(Source):
 #             return jobj
 #         else:
 #             update_state(state)
-
-
-def update_state(state):
-    output_message = {"type": "STATE", "state": {"data": state}}
-    print(json.dumps(output_message))
-
-
-def public_url(config):
-    return f'{config["url"]}/maps/data/waterlevels'
-
-
-def records_url(config, tag):
-    pu = public_url(config)
-    url = f'{pu}/records_{tag}'
-    return url
-
-
-def sitemetadata_url(config):
-    return f'{public_url(config)}/sitemetadata'
-
-
-def screens_url(config):
-    return f'{public_url(config)}/wellscreens'
-
-
-def get_resp(logger, url):
-    resp = requests.get(url)
-    logger.debug(f'url={url}, resp={resp}')
-    if resp.status_code == 200:
-        return resp
-
-
-def get_json(logger, url):
-    resp = get_resp(logger, url)
-    if resp:
-        jobj = resp.json()
-        return jobj
