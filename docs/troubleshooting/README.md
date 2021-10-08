@@ -1,6 +1,9 @@
-# Troubleshooting
+# Troubleshooting & FAQ
 
-This section is aimed at collecting common issues users have to provide quick solutions. 
+Our FAQ is now a section on our Discourse forum. Check it out [here](https://discuss.airbyte.io/c/faq/15)!
+If you don't see your question answered, feel free to open up a new topic for it.
+
+The troubleshooting section is aimed at collecting common issues users have to provide quick solutions. 
 There are some sections you can find:
 - [On Deploying](on-deploying.md): 
 - [On Setting up a New Connection](new-connection.md)
