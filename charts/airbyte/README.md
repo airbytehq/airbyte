@@ -48,6 +48,7 @@
 | `webapp.fullstory.enabled`   | Whether or not to enable fullstory                               | `false`          |
 | `webapp.openreplay.enabled`  | Whether or not to enable openreplay                              | `false`          |
 | `webapp.storytime.enabled`   | Whether or not to enable Papercups storytime                     | `false`          |
+| `webapp.extraEnv`            | Additional env vars for webapp pod(s).                           | `[]`             |
 
 
 ### Scheduler Parameters
@@ -64,6 +65,7 @@
 | `scheduler.nodeSelector`       | Node labels for pod assignment                                      | `{}`                |
 | `scheduler.tolerations`        | Tolerations for scheduler pod assignment.                           | `[]`                |
 | `scheduler.log.level`          | The log level to log at.                                            | `INFO`              |
+| `scheduler.extraEnv`           | Additional env vars for scheduler pod(s).                           | `[]`                |
 
 
 ### Pod Sweeper parameters
@@ -111,6 +113,7 @@
 | `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
 | `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
 | `server.log.level`                          | The log level to log at                                          | `INFO`           |
+| `server.extraEnv`                           | Additional env vars for server pod(s).                           | `[]`             |
 
 
 ### Worker Parameters
@@ -154,6 +157,7 @@
 | `temporal.service.port`     | The temporal port and exposed kubernetes port | `7233`                  |
 | `temporal.nodeSelector`     | Node labels for pod assignment                | `{}`                    |
 | `temporal.tolerations`      | Tolerations for pod assignment.               | `[]`                    |
+| `temporal.extraEnv`         | Additional env vars for temporal pod(s).      | `[]`                    |
 
 
 ### Airbyte Database parameters
