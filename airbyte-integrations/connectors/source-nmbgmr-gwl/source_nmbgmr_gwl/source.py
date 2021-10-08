@@ -81,6 +81,17 @@ class SourceNmbgmrGwl(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
+        pressure_gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                               'type': 'object',
+                               'properties': {'OBJECTID': {'type': 'number'},
+                                              'PointID': {'type': 'string'},
+                                              'WellID': {'type': 'string'},
+                                              'GlobalID': {'type': 'string'},
+                                              'DateTimeMeasured': {'type': 'string',
+                                                                   'format': 'date-time'},
+                                              'DepthToWaterBGS': {'type': 'number'},
+                                              'DepthToWater': {'type': 'number'}}
+                               }
         manual_gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
                              'type': 'object',
                              'properties': {'OBJECTID': {'type': 'number'},
@@ -210,10 +221,14 @@ class SourceNmbgmrGwl(Source):
                                          }}
 
         streams = [
-            AirbyteStream(name='ManualWellLevels',
+            AirbyteStream(name='ManualGWL',
                           supported_sync_modes=["full_refresh", "incremental"],
                           source_defined_cursor=True,
                           json_schema=manual_gwl_schema),
+            AirbyteStream(name='PressureWellLevels',
+                          supported_sync_modes=["full_refresh", "incremental"],
+                          source_defined_cursor=True,
+                          json_schema=pressure_gwl_schema),
             # AirbyteStream(name='Manual',
             #               supported_sync_modes=["full_refresh", "incremental"],
             #               source_defined_cursor=True,
@@ -264,7 +279,7 @@ class SourceNmbgmrGwl(Source):
                 url = sitemetadata_url(config)
             elif key == 'WellScreens':
                 url = screens_url(config)
-            elif key == 'ManualWaterLevels':
+            elif key == 'ManualGWL':
                 url = manual_water_levels_url(config)
 
             while 1:
