@@ -4,7 +4,7 @@
 
 This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/0-getting-started.md)
 
-If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out [here](https://www.youtube.com/watch?v=kJ3hLoNfz_E). 
+If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out below.
 
 ## Dependencies
 
