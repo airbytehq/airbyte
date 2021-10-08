@@ -33,71 +33,20 @@
         "type": "object",
         "oneOf": [
           {
-            "properties": {
               "api_token": {
                 "type": "string",
                 "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\">docs</a> for information on how to generate this key."
               }
-            }
           },
           {
-            "type": "object",
-            "properties": {
-              "oauth_credentials": {
-                "type": "object",
-                "title": "The oauth_credentials schema",
-                "description": "An explanation about the purpose of this instance.",
-                "default": {},
-                "examples": [
-                  {
-                    "client_secret": "",
-                    "client_id": "",
-                    "authorization_code": ""
-                  }
-                ],
-                "required": [
-                  "client_secret",
-                  "client_id",
-                  "authorization_code"
-                ],
-                "access_token": {
-                  "type": "string",
-                  "title": "The client_secret schema",
-                  "description": "An explanation about the purpose of this instance.",
-                  "default": "",
-                  "examples": [
-                    ""
-                  ]
-                },
-                "client_secret": {
-                  "type": "string",
-                  "title": "The client_secret schema",
-                  "description": "An explanation about the purpose of this instance.",
-                  "default": "",
-                  "examples": [
-                    ""
-                  ]
-                },
-                "client_id": {
-                  "type": "string",
-                  "title": "The client_id schema",
-                  "description": "An explanation about the purpose of this instance.",
-                  "default": "",
-                  "examples": [
-                    ""
-                  ]
-                },
-                "authorization_code": {
-                  "type": "string",
-                  "title": "The authorization_code schema",
-                  "description": "An explanation about the purpose of this instance.",
-                  "default": "",
-                  "examples": [
-                    ""
-                  ]
-                },
-                "additionalProperties": false
-              }
+            "access_token": {
+              "type": "string",
+              "title": "The client_secret schema",
+              "description": "An explanation about the purpose of this instance.",
+              "default": "",
+              "examples": [
+                ""
+              ]
             }
           }
         ]
@@ -119,6 +68,21 @@
           "2021-01-01T00:00:00.000000Z"
         ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [
+        "credentials",
+        0
+      ],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [
+        [
+          "access_token"
+        ]
+      ]
     }
   }
 }

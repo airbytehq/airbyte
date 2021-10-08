@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 def get_base_api_url(subdomain: str) -> str:
     return f"{get_base_url(subdomain)}api/sunshine/"
 

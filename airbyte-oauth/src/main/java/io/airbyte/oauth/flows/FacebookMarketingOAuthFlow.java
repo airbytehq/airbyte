@@ -10,12 +10,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Following docs from
@@ -34,11 +32,10 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
     super(configRepository, httpClient, stateSupplier);
   }
 
-
   @Override
   protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
     return formatConsentUrl(null, clientId, redirectUrl, "www.facebook.com",
-            "v11.0/dialog/oauth", "ads_management,ads_read,read_insights", "code");
+        "v11.0/dialog/oauth", "ads_management,ads_read,read_insights", "code");
   }
 
   @Override

@@ -24,41 +24,10 @@ class OauthAuthenticator(HttpAuthenticator):
     def __init__(self, config: Mapping[str, str], **kwargs):
         self.auth_method = "Bearer"
         self.auth_header = "Authorization"
-        oauth_credentials = config["authentication"]["oauth_credentials"]
-        self.authorization_code = oauth_credentials.get("authorization_code")
-        self._access_token = oauth_credentials.get("access_token")
-        self.client_id = oauth_credentials["client_id"]
-        self.client_secret = oauth_credentials["client_secret"]
+        self.access_token = config.get("access_token")
         self.base_url = get_base_url(subdomain=config["subdomain"])
         self.redirect_uri = "http://localhost"
         super().__init__(**kwargs)
-
-    @property
-    def request_token_url(self):
-        return f"{self.base_url}oauth/tokens"
-
-    @property
-    def access_token(self) -> str:
-        if not self._access_token:
-            res = requests.post(self.request_token_url, data={
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-                "code": self.authorization_code,
-                "grant_type": "authorization_code",
-                "redirect_uri": self.redirect_uri
-            })
-            data = res.json()
-            print(data)
-            res.raise_for_status()
-
-            self._access_token = data["access_token"]
-            # TODO: access token needs to be persisted somehow.
-            print(self._access_token)
-            return self._access_token
-
-
-        else:
-            return self._access_token
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {self.auth_header: f"{self.auth_method} {self.access_token}"}

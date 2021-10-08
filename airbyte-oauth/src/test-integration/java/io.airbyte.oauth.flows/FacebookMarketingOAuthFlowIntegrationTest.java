@@ -5,14 +5,10 @@
 package io.airbyte.oauth.flows;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -20,24 +16,17 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
-
 
   @Override
   protected Path get_credentials_path() {
@@ -53,7 +42,6 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
   public void setup() throws IOException {
     super.setup();
   }
-
 
   @Test
   public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
@@ -85,6 +73,5 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
     assertTrue(params.containsKey("access_token"));
     assertTrue(params.get("access_token").toString().length() > 0);
   }
-
 
 }
