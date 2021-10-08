@@ -4,7 +4,7 @@ import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
 
 import { AuthErrorCodes } from "firebase/auth";
 
-import { H5, Link } from "components";
+import { H5, Link, LoadingButton } from "components";
 import { FormTitle } from "../components/FormTitle";
 import FormContent from "../components/FormContent";
 import News from "../components/News";
@@ -21,6 +21,7 @@ const Text = styled(H5)`
 
 const Resend = styled(Link)`
   cursor: pointer;
+  margin-bottom: 20px;
 `;
 
 const TitleBlock = styled.div`
@@ -64,7 +65,7 @@ enum FirebaseAuthMessageId {
 }
 
 const ConfirmEmailPage: React.FC = () => {
-  const { sendEmailVerification } = useAuthService();
+  const { sendEmailVerification, logout } = useAuthService();
   const { email } = useCurrentUser();
   const { registerNotification } = useNotificationService();
   const { formatMessage } = useIntl();
@@ -135,6 +136,10 @@ const ConfirmEmailPage: React.FC = () => {
             <Resend $light as="div" onClick={onClickSendEmailVerification}>
               <FormattedMessage id="login.resendEmail" />
             </Resend>
+
+            <LoadingButton danger onClick={() => logout()}>
+              <FormattedMessage id="settings.accountSettings.logoutText" />
+            </LoadingButton>
           </div>
         </FormContent>
       </Part>
