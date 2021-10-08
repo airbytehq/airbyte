@@ -123,10 +123,22 @@ If you can't find the data type you are looking for or have any problems feel fr
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
+## Encryption Options
+
+Airbite has the ability to connect to the Oracle source with 3 network connectivity options:
+
+1.`Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the network will be transmitted in unencrypted form.
+2.`Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports.
+In this case, the *SQLNET.ENCRYPTION_CLIENT* option will always be set as *REQUIRED* by default: The client or server will only accept encrypted traffic,
+but the user has the opportunity to choose an `Encryption algorithm` according to the security policies he needs.
+3.`TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be transfered using the TLS protocol, taking into account the handshake procedure and certificate verification.
+To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
+
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.7   | 2021-10-01 | [6616](https://github.com/airbytehq/airbyte/pull/6616) | Added network encryption options |
 | 0.3.6   | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.3.5   | 2021-09-22 | [6356](https://github.com/airbytehq/airbyte/pull/6356) | Added option to connect to DB via SSH. |
 | 0.3.4   | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038) | Remove automatic filtering of system schemas. |
