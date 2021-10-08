@@ -21,7 +21,7 @@
               "app_id": {
                 "title": "App Id",
                 "description": "The App id applied by the developer.",
-                "type": "integer"
+                "type": "string"
               },
               "secret": {
                 "title": "Secret",
@@ -44,7 +44,7 @@
               "advertiser_id": {
                 "title": "Advertiser Id",
                 "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
-                "type": "integer"
+                "type": "string"
               }
             },
             "required": ["advertiser_id"]
@@ -61,7 +61,7 @@
       "start_date": {
         "title": "Start Date",
         "description": "Start Date in format: YYYY-MM-DD.",
-        "default": "2021-01-01",
+        "default": "01-09-2016",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "type": "string"
       }

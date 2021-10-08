@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -57,8 +37,7 @@ class SourceTiktokMarketing(AbstractSource):
             documentationUrl=DOCUMENTATION_URL,
             changelogUrl=DOCUMENTATION_URL,
             supportsIncremental=True,
-            supported_destination_sync_modes=[
-                DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTiktokMarketingSpec.schema(),
         )
 
@@ -71,7 +50,6 @@ class SourceTiktokMarketing(AbstractSource):
             "advertiser_id": int(config["environment"].get("advertiser_id", 0)),
             "app_id": int(config["environment"].get("app_id", 0)),
             "secret": config["environment"].get("secret"),
-            "config": config,
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -79,8 +57,7 @@ class SourceTiktokMarketing(AbstractSource):
         Tests if the input configuration can be used to successfully connect to the integration
         """
         try:
-            next(Advertisers(**self._prepare_stream_args(config)
-                             ).read_records(SyncMode.full_refresh))
+            next(Advertisers(**self._prepare_stream_args(config)).read_records(SyncMode.full_refresh))
         except Exception as err:
             return False, err
         return True, None
