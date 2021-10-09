@@ -231,6 +231,8 @@ export const Routing: React.FC = () => {
       boot({
         email: user.email,
         name: user.name,
+        userId: user.userId,
+        userHash: user.intercomHash,
       });
     }
   }, [user]);
