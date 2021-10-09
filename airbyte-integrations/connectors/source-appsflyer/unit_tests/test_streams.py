@@ -89,36 +89,23 @@ def test_should_retry_aggregate_data(patch_base_class):
     assert stream.should_retry(response_mock) == True
 
 @pytest.mark.parametrize(
-    ("http_status", "expected_backoff_time"),
+    ("http_status", "response_text", "expected_backoff_time"),
     [
-        (HTTPStatus.OK, None),
-        (HTTPStatus.BAD_REQUEST, None),
-        (HTTPStatus.TOO_MANY_REQUESTS, None),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, None),
+        (HTTPStatus.OK, "", None),
+        (HTTPStatus.BAD_REQUEST, "", None),
+        (HTTPStatus.TOO_MANY_REQUESTS, "", None),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, "", None),
+        (HTTPStatus.FORBIDDEN, "Limit reached for ", 60), # Wait time for aggregate data is 60 Seconds.
+        (
+            HTTPStatus.BAD_REQUEST,
+            "Your API calls limit has been reached for report type",
+            (pendulum.tomorrow("UTC") - pendulum.now("UTC")).seconds
+        ), # Wait time for raw data is Midnight UTC - Now UTC.
     ],
 )
-def test_backoff_time_default(patch_base_class, http_status, expected_backoff_time):
+def test_backoff_time(patch_base_class, http_status, response_text, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.status_code = http_status
+    response_mock.text = response_text
     stream = AppsflyerStream()
-    assert stream.backoff_time(response_mock) == expected_backoff_time
-
-
-def test_backoff_time_aggregate_data(patch_base_class):
-    response_mock = MagicMock()
-    response_mock.status_code = 403
-    response_mock.text = "Limit reached for "
-    stream = AppsflyerStream()
-    expected_backoff_time = 60
-    assert stream.backoff_time(response_mock) == expected_backoff_time
-
-
-def test_backoff_time_raw_data(patch_base_class):
-    response_mock = MagicMock()
-    response_mock.status_code = 400
-    response_mock.text = "Your API calls limit has been reached for report type"
-    stream = AppsflyerStream()
-    now = pendulum.now("UTC")
-    midnight = pendulum.tomorrow("UTC")
-    expected_backoff_time = (midnight - now).seconds
     assert stream.backoff_time(response_mock) == expected_backoff_time
