@@ -133,35 +133,35 @@ public class ConnectionHelpers {
   public static ConnectionRead connectionReadFromStandardSync(StandardSync standardSync) {
     final ConnectionRead connectionRead = new ConnectionRead();
     connectionRead
-      .connectionId(standardSync.getConnectionId())
-      .sourceId(standardSync.getSourceId())
-      .destinationId(standardSync.getDestinationId())
-      .operationIds(standardSync.getOperationIds())
-      .name(standardSync.getName())
-      .namespaceFormat(standardSync.getNamespaceFormat())
-      .prefix(standardSync.getPrefix());
+        .connectionId(standardSync.getConnectionId())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
+        .name(standardSync.getName())
+        .namespaceFormat(standardSync.getNamespaceFormat())
+        .prefix(standardSync.getPrefix());
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
-        .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
+          .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
     }
     if (standardSync.getStatus() != null) {
       connectionRead.status(io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
     }
     if (standardSync.getSchedule() != null) {
       connectionRead.schedule(new io.airbyte.api.model.ConnectionSchedule()
-        .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-        .units(standardSync.getSchedule().getUnits()));
+          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+          .units(standardSync.getSchedule().getUnits()));
     }
     if (standardSync.getCatalog() != null) {
       connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
     }
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
-        .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-        .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-        .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
-        .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
+          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
+          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
     }
     return connectionRead;
   }

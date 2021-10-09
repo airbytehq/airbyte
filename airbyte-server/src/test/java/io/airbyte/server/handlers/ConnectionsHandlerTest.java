@@ -355,18 +355,18 @@ class ConnectionsHandlerTest {
   void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead1 = ConnectionHelpers.connectionReadFromStandardSync(standardSync);
     final StandardSync standardSync2 = new StandardSync()
-      .withConnectionId(UUID.randomUUID())
-      .withName("test connection")
-      .withNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.CUSTOMFORMAT)
-      .withNamespaceFormat("ns_format")
-      .withPrefix("test_prefix")
-      .withStatus(StandardSync.Status.ACTIVE)
-      .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
-      .withSourceId(sourceId)
-      .withDestinationId(destinationId)
-      .withOperationIds(List.of(operationId))
-      .withManual(true)
-      .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withConnectionId(UUID.randomUUID())
+        .withName("test connection")
+        .withNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.CUSTOMFORMAT)
+        .withNamespaceFormat("ns_format")
+        .withPrefix("test_prefix")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId))
+        .withManual(true)
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")
@@ -382,9 +382,9 @@ class ConnectionsHandlerTest {
     when(configRepository.getDestinationConnection(destination.getDestinationId()))
         .thenReturn(destination);
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
-      .thenReturn(standardSync);
+        .thenReturn(standardSync);
     when(configRepository.getStandardSync(standardSync2.getConnectionId()))
-      .thenReturn(standardSync2);
+        .thenReturn(standardSync2);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(sourceDefinition);
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
