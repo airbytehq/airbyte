@@ -110,7 +110,7 @@
                 "number"
             ]
         },
-        "account_login_sales_in_idr": {
+        "account_login_sales_in_usd": {
             "type": [
                 "null",
                 "number"
@@ -128,7 +128,7 @@
                 "number"
             ]
         },
-        "af_complete_registration_sales_in_idr": {
+        "af_complete_registration_sales_in_usd": {
             "type": [
                 "null",
                 "number"
@@ -146,7 +146,7 @@
                 "number"
             ]
         },
-        "checkout_success_sales_in_idr": {
+        "checkout_success_sales_in_usd": {
             "type": [
                 "null",
                 "number"
@@ -164,7 +164,7 @@
                 "number"
             ]
         },
-        "create_product_complete_sales_in_idr": {
+        "create_product_complete_sales_in_usd": {
             "type": [
                 "null",
                 "number"
@@ -182,7 +182,7 @@
                 "number"
             ]
         },
-        "init_appsflyer_id_sales_in_idr": {
+        "init_appsflyer_id_sales_in_usd": {
             "type": [
                 "null",
                 "number"

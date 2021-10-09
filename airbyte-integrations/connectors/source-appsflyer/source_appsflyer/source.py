@@ -27,6 +27,7 @@ import decimal
 import pendulum
 import requests
 
+from . import fields
 from abc import ABC
 from datetime import date, datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Callable
@@ -186,35 +187,35 @@ class AppsflyerStream(HttpStream, ABC):
         transform_boolean(record, "is_receipt_validated")
         transform_boolean(record, "store_reinstall")
         transform_decimal(record, "account_login_event_counter")
-        transform_decimal(record, "account_login_sales_in_idr")
+        transform_decimal(record, "account_login_sales_in_usd")
         transform_decimal(record, "account_login_unique_users")
         transform_decimal(record, "af_complete_registration_event_counter")
-        transform_decimal(record, "af_complete_registration_sales_in_idr")
+        transform_decimal(record, "af_complete_registration_sales_in_usd")
         transform_decimal(record, "af_complete_registration_unique_users")
         transform_decimal(record, "af_purchase_registration_event_counter")
-        transform_decimal(record, "af_purchase_registration_sales_in_idr")
+        transform_decimal(record, "af_purchase_registration_sales_in_usd")
         transform_decimal(record, "af_purchase_registration_unique_users")
         transform_decimal(record, "average_ecpi")
         transform_decimal(record, "average_revenue_per_user")
         transform_decimal(record, "checkout_success_event_counter")
-        transform_decimal(record, "checkout_success_sales_in_idr")
+        transform_decimal(record, "checkout_success_sales_in_usd")
         transform_decimal(record, "checkout_success_unique_users")
         transform_decimal(record, "click_through_rate")
         transform_decimal(record, "clicks")
         transform_decimal(record, "conversion_rate")
         transform_decimal(record, "conversions")
         transform_decimal(record, "create_product_complete_event_counter")
-        transform_decimal(record, "create_product_complete_sales_in_idr")
+        transform_decimal(record, "create_product_complete_sales_in_usd")
         transform_decimal(record, "create_product_complete_unique_users")
         transform_decimal(record, "impressions")
         transform_decimal(record, "init_appsflyer_id_event_counter")
-        transform_decimal(record, "init_appsflyer_id_sales_in_idr")
+        transform_decimal(record, "init_appsflyer_id_sales_in_usd")
         transform_decimal(record, "init_appsflyer_id_unique_users")
         transform_decimal(record, "installs")
         transform_decimal(record, "loyal_users")
         transform_decimal(record, "loyal_users_rate")
         transform_decimal(record, "pay_premium_pkg_event_counter")
-        transform_decimal(record, "pay_premium_pkg_sales_in_idr")
+        transform_decimal(record, "pay_premium_pkg_sales_in_usd")
         transform_decimal(record, "pay_premium_pkg_unique_users")
         transform_decimal(record, "return_on_investment")
         transform_decimal(record, "sessions")
@@ -272,130 +273,8 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         return dates
 
 class RawDataMixin:
-
-    main_fields = (
-        "attributed_touch_type",
-        "attributed_touch_time",
-        "install_time",
-        "event_time",
-        "event_name",
-        "event_value",
-        "event_revenue",
-        "event_revenue_currency",
-        "event_revenue_usd",
-        "event_source",
-        "is_receipt_validated",
-        "af_prt",
-        "media_source",
-        "af_channel",
-        "af_keywords",
-        "campaign",
-        "af_c_id",
-        "af_adset",
-        "af_adset_id",
-        "af_ad",
-        "af_ad_id",
-        "af_ad_type",
-        "af_siteid",
-        "af_sub_siteid",
-        "af_sub1",
-        "af_sub2",
-        "af_sub3",
-        "af_sub4",
-        "af_sub5",
-        "af_cost_model",
-        "af_cost_value",
-        "af_cost_currency",
-        "contributor1_af_prt",
-        "contributor1_media_source",
-        "contributor1_campaign",
-        "contributor1_touch_type",
-        "contributor1_touch_time",
-        "contributor2_af_prt",
-        "contributor2_media_source",
-        "contributor2_campaign",
-        "contributor2_touch_type",
-        "contributor2_touch_time",
-        "contributor3_af_prt",
-        "contributor3_media_source",
-        "contributor3_campaign",
-        "contributor3_touch_type",
-        "contributor3_touch_time",
-        "region",
-        "country_code",
-        "state",
-        "city",
-        "postal_code",
-        "dma",
-        "ip",
-        "wifi",
-        "operator",
-        "carrier",
-        "language",
-        "appsflyer_id",
-        "advertising_id",
-        "idfa",
-        "android_id",
-        "customer_user_id",
-        "imei",
-        "idfv",
-        "platform",
-        "device_type",
-        "os_version",
-        "app_version",
-        "sdk_version",
-        "app_id",
-        "app_name",
-        "bundle_id",
-        "is_retargeting",
-        "retargeting_conversion_type",
-        "af_attribution_lookback",
-        "af_reengagement_window",
-        "is_primary_attribution",
-        "user_agent",
-        "http_referrer",
-        "original_url",
-    )
-
-    additional_fields = (
-        "app_type",
-        "custom_data",
-        "network_account_id",
-        "install_app_store",
-        "contributor1_match_type",
-        "contributor2_match_type",
-        "contributor3_match_type",
-        "campaign_type",
-        "conversion_type",
-        "match_type",
-        "gp_referrer",
-        "gp_click_time",
-        "gp_install_begin",
-        "gp_broadcast_referrer",
-        "keyword_match_type",
-        "keyword_id",
-        "att",
-        "amazon_aid",
-        "device_category",
-        "device_model",
-        "device_download_time",
-        "deeplink_url",
-        "oaid",
-        "is_lat",
-        "store_reinstall",
-        "placement",
-        "mediation_network",
-        "segment",
-        "ad_unit",
-        "monetization_network",
-        "impressions",
-        "blocked_reason",
-        "blocked_reason_value",
-        "blocked_reason_rule",
-        "blocked_sub_reason",
-        "rejected_reason",
-        "rejected_reason_value"
-    )
+    main_fields = fields.raw_data.main_fields
+    additional_fields = fields.raw_data.additional_fields
 
     def request_params(
         self,
@@ -451,42 +330,7 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
 
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
-
-    additional_fields = (
-        "custom_data",
-        "network_account_id",
-        "install_app_store",
-        "contributor1_match_type",
-        "contributor2_match_type",
-        "contributor3_match_type",
-        "match_type",
-        "gp_referrer",
-        "gp_click_time",
-        "gp_install_begin",
-        "gp_broadcast_referrer",
-        "keyword_match_type",
-        "keyword_id",
-        "amazon_aid",
-        "device_category",
-        "device_model",
-        "device_download_time",
-        "deeplink_url",
-        "oaid",
-        "is_lat",
-        "store_reinstall",
-        "placement",
-        "mediation_network",
-        "segment",
-        "ad_unit",
-        "monetization_network",
-        "impressions",
-        "blocked_reason",
-        "blocked_reason_value",
-        "blocked_reason_rule",
-        "blocked_sub_reason",
-        "rejected_reason",
-        "rejected_reason_value"
-    )
+    additional_fields = fields.uninstall_events.additional_fields
 
     def path(
         self,
@@ -514,47 +358,7 @@ class RetargetingConversions(RetargetingMixin,Installs):
     pass
 
 class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
-    # This order matters
-    main_fields = (
-        "date",
-        "af_prt",
-        "media_source",
-        "campaign",
-        "impressions",
-        "clicks",
-        "click_through_rate",
-        "installs",
-        "conversion_rate",
-        "sessions",
-        "loyal_users",
-        "loyal_users_rate",
-        "total_revenue",
-        "total_cost",
-        "return_on_investment",
-        "average_revenue_per_user",
-        "average_ecpi",
-        "account_login_unique_users",
-        "account_login_event_counter",
-        "account_login_sales_in_idr",
-        "af_complete_registration_unique_users",
-        "af_complete_registration_event_counter",
-        "af_complete_registration_sales_in_idr",
-        "af_purchase_registration_unique_users",
-        "af_purchase_registration_event_counter",
-        "af_purchase_registration_sales_in_idr",
-        "checkout_success_unique_users",
-        "checkout_success_event_counter",
-        "checkout_success_sales_in_idr",
-        "create_product_complete_unique_users",
-        "create_product_complete_event_counter",
-        "create_product_complete_sales_in_idr",
-        "init_appsflyer_id_unique_users",
-        "init_appsflyer_id_event_counter",
-        "init_appsflyer_id_sales_in_idr",
-        "pay_premium_pkg_unique_users",
-        "pay_premium_pkg_event_counter",
-        "pay_premium_pkg_sales_in_idr"
-    )
+    main_fields = fields.partners_report.main_fields
 
     def path(
         self,
@@ -565,23 +369,7 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
         return "partners_by_date_report/v5"
 
 class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
-    # This order matters
-    main_fields = (
-        "date",
-        "af_prt",
-        "media_source",
-        "campaign",
-        "impressions",
-        "clicks",
-        "click_through_rate",
-        "installs",
-        "conversion_rate",
-        "sessions",
-        "loyal_users",
-        "loyal_users_rate",
-        "total_cost",
-        "average_ecpi"
-    )
+    main_fields = fields.daily_report.main_fields
 
     def path(
         self,
@@ -592,48 +380,7 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
         return "daily_report/v5"
 
 class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
-    # This order matters
-    main_fields = (
-        "date",
-        "country_code",
-        "af_prt",
-        "media_source",
-        "campaign",
-        "impressions",
-        "clicks",
-        "click_through_rate",
-        "installs",
-        "conversion_rate",
-        "sessions",
-        "loyal_users",
-        "loyal_users_rate",
-        "total_revenue",
-        "total_cost",
-        "return_on_investment",
-        "average_revenue_per_user",
-        "average_ecpi",
-        "account_login_unique_users",
-        "account_login_event_counter",
-        "account_login_sales_in_idr",
-        "af_complete_registration_unique_users",
-        "af_complete_registration_event_counter",
-        "af_complete_registration_sales_in_idr",
-        "af_purchase_registration_unique_users",
-        "af_purchase_registration_event_counter",
-        "af_purchase_registration_sales_in_idr",
-        "checkout_success_unique_users",
-        "checkout_success_event_counter",
-        "checkout_success_sales_in_idr",
-        "create_product_complete_unique_users",
-        "create_product_complete_event_counter",
-        "create_product_complete_sales_in_idr",
-        "init_appsflyer_id_unique_users",
-        "init_appsflyer_id_event_counter",
-        "init_appsflyer_id_sales_in_idr",
-        "pay_premium_pkg_unique_users",
-        "pay_premium_pkg_event_counter",
-        "pay_premium_pkg_sales_in_idr"
-    )
+    main_fields = fields.geo_report.main_fields
 
     def path(
         self,
@@ -644,95 +391,13 @@ class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
         return "geo_by_date_report/v5"
 
 class RetargetingPartnersReport(RetargetingMixin, PartnersReport):
-    # This order matters
-    main_fields = (
-        "date",
-        "af_prt",
-        "media_source",
-        "campaign",
-        "clicks",
-        "conversions",
-        "conversion_type",
-        "conversion_rate",
-        "sessions",
-        "loyal_users",
-        "loyal_users_rate",
-        "total_revenue",
-        "total_cost",
-        "return_on_investment",
-        "average_revenue_per_user",
-        "average_ecpi",
-        "account_login_unique_users",
-        "account_login_event_counter",
-        "account_login_sales_in_idr",
-        "af_complete_registration_unique_users",
-        "af_complete_registration_event_counter",
-        "af_complete_registration_sales_in_idr",
-        "checkout_success_unique_users",
-        "checkout_success_event_counter",
-        "checkout_success_sales_in_idr",
-        "create_product_complete_unique_users",
-        "create_product_complete_event_counter",
-        "create_product_complete_sales_in_idr",
-        "init_appsflyer_id_unique_users",
-        "init_appsflyer_id_event_counter",
-        "init_appsflyer_id_sales_in_idr"
-    )
+    main_fields = fields.retargeting_partners_report.main_fields
 
 class RetargetingDailyReport(RetargetingMixin, DailyReport):
-    # This order matters
-    main_fields = (
-        "date",
-        "af_prt",
-        "media_source",
-        "campaign",
-        "clicks",
-        "conversions",
-        "conversion_type",
-        "conversion_rate",
-        "sessions",
-        "loyal_users",
-        "loyal_users_rate",
-        "total_cost",
-        "average_ecpi"
-    )
+    main_fields = fields.retargeting_daily_report.main_fields
 
 class RetargetingGeoReport(RetargetingMixin, GeoReport):
-    # This order matters
-    main_fields = (
-        "date",
-        "country_code",
-        "af_prt",
-        "media_source",
-        "campaign",
-        "clicks",
-        "conversions",
-        "conversion_type",
-        "conversion_rate",
-        "sessions",
-        "loyal_users",
-        "loyal_users_rate",
-        "total_revenue",
-        "total_cost",
-        "return_on_investment",
-        "average_revenue_per_user",
-        "average_ecpi",
-        "account_login_unique_users",
-        "account_login_event_counter",
-        "account_login_sales_in_idr",
-        "af_complete_registration_unique_users",
-        "af_complete_registration_event_counter",
-        "af_complete_registration_sales_in_idr",
-        "checkout_success_unique_users",
-        "checkout_success_event_counter",
-        "checkout_success_sales_in_idr",
-        "create_product_complete_unique_users",
-        "create_product_complete_event_counter",
-        "create_product_complete_sales_in_idr",
-        "init_appsflyer_id_unique_users",
-        "init_appsflyer_id_event_counter",
-        "init_appsflyer_id_sales_in_idr"
-    )
+    main_fields = fields.retargeting_geo_report.main_fields
 
 # Source
 class SourceAppsflyer(AbstractSource):
