@@ -54,322 +54,54 @@ def test_cursor_field(patch_incremental_base_class, mocker, class_, expected_cur
     stream = class_()
     assert stream.cursor_field == expected_cursor_field
 
-
-def test_request_params_in_app_events(mocker):
+@pytest.mark.parametrize(
+    ("class_", "cursor_field", "date_only", "additional_fields", "retargeting"),
+    [
+        (InAppEvents, "event_time", False, fields.raw_data.additional_fields, None),
+        (RetargetingInAppEvents, "event_time", False, fields.raw_data.additional_fields, True),
+        (UninstallEvents, "event_time", False, fields.uninstall_events.additional_fields, None),
+        (Installs, "install_time", False, fields.raw_data.additional_fields, None),
+        (RetargetingConversions, "install_time", False, fields.raw_data.additional_fields, True),
+        (PartnersReport, "date", True, None, None),
+        (DailyReport, "date", True, None, None),
+        (GeoReport, "date", True, None, None),
+        (RetargetingPartnersReport, "date", True, None, True),
+        (RetargetingDailyReport, "date", True, None, True),
+        (RetargetingGeoReport, "date", True, None, True),
+    ],
+)
+def test_request_params(mocker, class_, cursor_field, date_only, additional_fields, retargeting):
     timezone = "UTC"
     def __init__(self):
         self.api_token = "secret"
         self.timezone = pendulum.timezone("UTC")
         self.start_date = pendulum.yesterday(timezone)
         self.end_date = pendulum.today(timezone)
-    mocker.patch.object(InAppEvents, "__init__", __init__)
-    mocker.patch.object(InAppEvents, "cursor_field", "date")
-    stream = InAppEvents()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
+    mocker.patch.object(class_, "__init__", __init__)
+    mocker.patch.object(class_, "cursor_field", cursor_field)
+    stream = class_()
+    start = pendulum.yesterday(timezone)
+    end = pendulum.today(timezone)
+    inputs = dict()
+    inputs["stream_slice"] = {
+        cursor_field: start,
+        cursor_field + "_end": end
     }
-    expected_params = {
-        "additional_fields": (",").join(fields.raw_data.additional_fields),
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_datetime_string(),
-        "to": pendulum.today(timezone).to_datetime_string(),
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_installs(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(Installs, "__init__", __init__)
-    mocker.patch.object(Installs, "cursor_field", "date")
-    stream = Installs()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "additional_fields": (",").join(fields.raw_data.additional_fields),
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_datetime_string(),
-        "to": pendulum.today(timezone).to_datetime_string(),
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_retargeting_in_app_events(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(RetargetingInAppEvents, "__init__", __init__)
-    mocker.patch.object(RetargetingInAppEvents, "cursor_field", "date")
-    stream = RetargetingInAppEvents()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "additional_fields": (",").join(fields.raw_data.additional_fields),
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_datetime_string(),
-        "to": pendulum.today(timezone).to_datetime_string(),
-        "reattr": True
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_retargeting_conversions(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(RetargetingConversions, "__init__", __init__)
-    mocker.patch.object(RetargetingConversions, "cursor_field", "date")
-    stream = RetargetingConversions()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "additional_fields": (",").join(fields.raw_data.additional_fields),
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_datetime_string(),
-        "to": pendulum.today(timezone).to_datetime_string(),
-        "reattr": True
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_uninstall_events(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(UninstallEvents, "__init__", __init__)
-    mocker.patch.object(UninstallEvents, "cursor_field", "date")
-    stream = UninstallEvents()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "additional_fields": (",").join(fields.uninstall_events.additional_fields),
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_datetime_string(),
-        "to": pendulum.today(timezone).to_datetime_string(),
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_partners_report(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(PartnersReport, "__init__", __init__)
-    mocker.patch.object(PartnersReport, "cursor_field", "date")
-    stream = PartnersReport()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_date_string(),
-        "to": pendulum.today(timezone).to_date_string(),
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_daily_report(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(DailyReport, "__init__", __init__)
-    mocker.patch.object(DailyReport, "cursor_field", "date")
-    stream = DailyReport()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_date_string(),
-        "to": pendulum.today(timezone).to_date_string(),
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_geo_report(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(GeoReport, "__init__", __init__)
-    mocker.patch.object(GeoReport, "cursor_field", "date")
-    stream = GeoReport()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_date_string(),
-        "to": pendulum.today(timezone).to_date_string(),
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_retargeting_partners_report(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(RetargetingPartnersReport, "__init__", __init__)
-    mocker.patch.object(RetargetingPartnersReport, "cursor_field", "date")
-    stream = RetargetingPartnersReport()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_date_string(),
-        "to": pendulum.today(timezone).to_date_string(),
-        "reattr":True
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_retargeting_daily_report(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(RetargetingDailyReport, "__init__", __init__)
-    mocker.patch.object(RetargetingDailyReport, "cursor_field", "date")
-    stream = RetargetingDailyReport()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_date_string(),
-        "to": pendulum.today(timezone).to_date_string(),
-        "reattr": True
-    }
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_request_params_retargeting_geo_report(mocker):
-    timezone = "UTC"
-    def __init__(self):
-        self.api_token = "secret"
-        self.timezone = pendulum.timezone("UTC")
-        self.start_date = pendulum.yesterday(timezone)
-        self.end_date = pendulum.today(timezone)
-    mocker.patch.object(RetargetingGeoReport, "__init__", __init__)
-    mocker.patch.object(RetargetingGeoReport, "cursor_field", "date")
-    stream = RetargetingGeoReport()
-    inputs = {
-        "stream_slice": {
-            "date": pendulum.yesterday(timezone),
-            "date_end": pendulum.today(timezone)
-        },
-        "next_page_token": None,
-        "stream_state": None
-    }
-    expected_params = {
-        "api_token": "secret",
-        "timezone": timezone,
-        "maximum_rows": 1_000_000,
-        "from": pendulum.yesterday(timezone).to_date_string(),
-        "to": pendulum.today(timezone).to_date_string(),
-        "reattr": True
-    }
+    inputs["next_page_token"] = None
+    inputs["stream_state"] = None
+    expected_params = dict()
+    expected_params["api_token"] = "secret"
+    expected_params["timezone"] = timezone
+    expected_params["maximum_rows"] = 1_000_000
+    expected_params["from"] = start.to_datetime_string()
+    expected_params["to"] = end.to_datetime_string()
+    if date_only:
+        expected_params["from"] = start.to_date_string()
+        expected_params["to"] = end.to_date_string()
+    if additional_fields:
+        expected_params["additional_fields"] = (",").join(additional_fields)
+    if retargeting:
+        expected_params["reattr"] = retargeting
     assert stream.request_params(**inputs) == expected_params
 
 
