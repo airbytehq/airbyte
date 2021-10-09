@@ -3,6 +3,7 @@
 #
 from datetime import timezone
 import pendulum
+import pytest
 from pytest import fixture, raises
 from unittest.mock import MagicMock
 from pendulum.parsing.exceptions import ParserError
@@ -31,75 +32,26 @@ def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalAppsflyerStream, "__abstractmethods__", set())
 
 
-def test_cursor_field(patch_incremental_base_class, mocker):
-    def __init__(self): pass
-    mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
-    stream = IncrementalAppsflyerStream()
-    expected_cursor_field = []
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_in_app_events(mocker):
-    def __init__(self): pass
-    mocker.patch.object(InAppEvents, "__init__", __init__)
-    stream = InAppEvents()
-    expected_cursor_field = "event_time"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_uninstall_events(mocker):
-    def __init__(self): pass
-    mocker.patch.object(UninstallEvents, "__init__", __init__)
-    stream = UninstallEvents()
-    expected_cursor_field = "event_time"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_retargeting_in_app_events(mocker):
-    def __init__(self): pass
-    mocker.patch.object(RetargetingInAppEvents, "__init__", __init__)
-    stream = RetargetingInAppEvents()
-    expected_cursor_field = "event_time"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_installs(mocker):
-    def __init__(self): pass
-    mocker.patch.object(Installs, "__init__", __init__)
-    stream = Installs()
-    expected_cursor_field = "install_time"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_retargeting_conversions(mocker):
-    def __init__(self): pass
-    mocker.patch.object(RetargetingConversions, "__init__", __init__)
-    stream = RetargetingConversions()
-    expected_cursor_field = "install_time"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_partners_report(mocker):
-    def __init__(self): pass
-    mocker.patch.object(PartnersReport, "__init__", __init__)
-    stream = PartnersReport()
-    expected_cursor_field = "date"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_daily_report(mocker):
-    def __init__(self): pass
-    mocker.patch.object(DailyReport, "__init__", __init__)
-    stream = DailyReport()
-    expected_cursor_field = "date"
-    assert stream.cursor_field == expected_cursor_field
-
-
-def test_cursor_field_geo_report(mocker):
-    def __init__(self): pass
-    mocker.patch.object(GeoReport, "__init__", __init__)
-    stream = GeoReport()
-    expected_cursor_field = "date"
+@pytest.mark.parametrize(
+    ("class_", "expected_cursor_field"),
+    [
+        (IncrementalAppsflyerStream, []),
+        (InAppEvents, "event_time"),
+        (RetargetingInAppEvents, "event_time"),
+        (UninstallEvents, "event_time"),
+        (Installs, "install_time"),
+        (RetargetingConversions, "install_time"),
+        (PartnersReport, "date"),
+        (DailyReport, "date"),
+        (GeoReport, "date"),
+        (RetargetingPartnersReport, "date"),
+        (RetargetingDailyReport, "date"),
+        (RetargetingGeoReport, "date"),
+    ],
+)
+def test_cursor_field(patch_incremental_base_class, mocker, class_, expected_cursor_field):
+    mocker.patch.object(class_, "__init__", lambda x: None)
+    stream = class_()
     assert stream.cursor_field == expected_cursor_field
 
 
