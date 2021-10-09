@@ -286,6 +286,10 @@ class SourceNmbgmrGwl(Source):
                 url = screens_url(config)
             elif key == 'ManualGWL':
                 url = manual_water_levels_url(config)
+            elif key == 'PressureGWL':
+                url = pressure_water_levels_url(config)
+            else:
+                continue
 
             while 1:
                 objectid = state[key]
@@ -333,6 +337,10 @@ def screens_url(config):
 
 def manual_water_levels_url(config):
     return f'{public_url(config)}/manual_gwl'
+
+
+def pressure_water_levels_url(config):
+    return f'{public_url(config)}/pressure_gwl'
 
 
 def get_resp(logger, url):
