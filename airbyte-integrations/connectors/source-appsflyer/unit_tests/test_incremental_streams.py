@@ -54,6 +54,7 @@ def test_cursor_field(patch_incremental_base_class, mocker, class_, expected_cur
     stream = class_()
     assert stream.cursor_field == expected_cursor_field
 
+
 @pytest.mark.parametrize(
     ("class_", "cursor_field", "date_only", "additional_fields", "retargeting"),
     [
@@ -169,23 +170,20 @@ def test_stream_slices(patch_incremental_base_class, mocker):
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
-    def __init__(self): pass
-    mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
+    mocker.patch.object(IncrementalAppsflyerStream, "__init__", lambda x: None)
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "dummy_field")
     stream = IncrementalAppsflyerStream()
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class, mocker):
-    def __init__(self): pass
-    mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
+    mocker.patch.object(IncrementalAppsflyerStream, "__init__", lambda x: None)
     stream = IncrementalAppsflyerStream()
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class, mocker):
-    def __init__(self): pass
-    mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
+    mocker.patch.object(IncrementalAppsflyerStream, "__init__", lambda x: None)
     stream = IncrementalAppsflyerStream()
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
