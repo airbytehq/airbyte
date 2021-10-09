@@ -106,33 +106,26 @@ def test_request_params(mocker, class_, cursor_field, date_only, additional_fiel
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_get_updated_state_all_exists(patch_incremental_base_class, mocker):
+@pytest.mark.parametrize(
+    ("current_stream_state", "latest_record", "expected_state"),
+    [
+        (dict(event_time="2021-09-09"), dict(event_time="2021-09-09"), dict(event_time="2021-09-09")),
+        ({}, dict(event_time="2021-09-09"), dict(event_time="2021-09-09")),
+        ({}, {}, {}),
+    ],
+)
+def test_get_updated_state(
+    patch_incremental_base_class,
+    mocker,
+    current_stream_state,
+    latest_record,
+    expected_state
+):
     def __init__(self): self.timezone= pendulum.timezone("UTC")
     mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
     stream = IncrementalAppsflyerStream()
-    inputs = {"current_stream_state": dict(event_time="2021-09-09"), "latest_record": dict(event_time="2021-09-09")}
-    expected_state = dict(event_time="2021-09-09")
-    assert stream.get_updated_state(**inputs) == expected_state
-
-
-def test_get_updated_state_empty_current_stream_and_empty_latest_record(patch_incremental_base_class, mocker):
-    def __init__(self): self.timezone= pendulum.timezone("UTC")
-    mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
-    mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
-    stream = IncrementalAppsflyerStream()
-    inputs = {"current_stream_state": {}, "latest_record": {}}
-    expected_state = {}
-    assert stream.get_updated_state(**inputs) == expected_state
-
-
-def test_get_updated_state_empty_current_stream_and_exists_latest_record(patch_incremental_base_class, mocker):
-    def __init__(self): self.timezone= pendulum.timezone("UTC")
-    mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
-    mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
-    stream = IncrementalAppsflyerStream()
-    inputs = {"current_stream_state": {}, "latest_record": dict(event_time="2021-09-09")}
-    expected_state = dict(event_time="2021-09-09")
+    inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
