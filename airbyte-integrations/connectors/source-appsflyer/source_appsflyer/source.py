@@ -29,13 +29,6 @@ def parse_date(date: Any, timezone: Timezone) -> datetime:
         return pendulum.parse(date).replace(tzinfo=timezone)
     return date
 
-def transform_datetime_field(record, field_name, timezone):
-    value = record.get(field_name, None)
-    if value is None:
-        return
-
-    record[field_name] = parse_date(record[field_name], timezone)
-
 def transform_empty_strings_to_none(record):
     for key, value in record.items():
         if value == "":
