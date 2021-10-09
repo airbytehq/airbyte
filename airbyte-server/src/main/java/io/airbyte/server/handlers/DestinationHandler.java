@@ -12,6 +12,7 @@ import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -185,6 +186,22 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
+  public DestinationReadList searchDestinations(DestinationSearch destinationSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<DestinationRead> reads = Lists.newArrayList();
+
+    for (DestinationConnection dci : configRepository.listDestinationConnection()) {
+      if (!dci.getTombstone()) {
+        DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
+        if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
+          reads.add(destinationRead);
+        }
+      }
+    }
+
+    return new DestinationReadList().destinations(reads);
+  }
+
   private void validateDestination(final ConnectorSpecification spec, final JsonNode configuration) throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
@@ -230,11 +247,11 @@ public class DestinationHandler {
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
-    return buildDestinationRead(dci, standardDestinationDefinition);
+    return toDestinationRead(dci, standardDestinationDefinition);
   }
 
-  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection,
-                                               final StandardDestinationDefinition standardDestinationDefinition) {
+  protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
+                                                     final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationId(destinationConnection.getDestinationId())
