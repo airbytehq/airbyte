@@ -36,23 +36,19 @@ def test_request_params(patch_base_class):
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_parse_response_return_ok(mocker, patch_base_class):
-    mocker.patch.object(AppsflyerStream, "main_fields", ("a", "b"))
+@pytest.mark.parametrize(
+    ("main_fields", "return_value", "expected_parsed_object"),
+    [
+        (("a", "b"), [b"a,b", b"c,d"], [{"a": "c", "b": "d"}]),
+        (("a"), [b"a"], []),
+    ],
+)
+def test_parse_response(patch_base_class, mocker, main_fields, return_value, expected_parsed_object):
+    mocker.patch.object(AppsflyerStream, "main_fields", main_fields)
     stream = AppsflyerStream()
     response = MagicMock()
-    response.iter_lines.return_value = [b"a,b", b"c,d", b"e,f"]
+    response.iter_lines.return_value = return_value
     inputs = {"response": response}
-    expected_parsed_object = {"a": "c", "b": "d"}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
-
-
-def test_parse_response_return_empty_row(mocker, patch_base_class):
-    mocker.patch.object(AppsflyerStream, "main_fields", ("a"))
-    stream = AppsflyerStream()
-    response = MagicMock()
-    response.iter_lines.return_value = [b"a"]
-    inputs = {"response": response}
-    expected_parsed_object = []
     assert list(stream.parse_response(**inputs)) == expected_parsed_object
 
 
