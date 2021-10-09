@@ -353,7 +353,21 @@ class ConnectionsHandlerTest {
 
   @Test
   void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    final ConnectionRead connectionRead1 = ConnectionHelpers.connectionReadFromStandardSync(standardSync);
+    final StandardSync standardSync2 = new StandardSync()
+      .withConnectionId(UUID.randomUUID())
+      .withName("test connection")
+      .withNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.CUSTOMFORMAT)
+      .withNamespaceFormat("ns_format")
+      .withPrefix("test_prefix")
+      .withStatus(StandardSync.Status.ACTIVE)
+      .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
+      .withSourceId(sourceId)
+      .withDestinationId(destinationId)
+      .withOperationIds(List.of(operationId))
+      .withManual(true)
+      .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")
         .withSourceDefinitionId(UUID.randomUUID());
@@ -362,13 +376,15 @@ class ConnectionsHandlerTest {
         .withDestinationDefinitionId(UUID.randomUUID());
 
     when(configRepository.listStandardSyncs())
-        .thenReturn(Lists.newArrayList(standardSync));
+        .thenReturn(Lists.newArrayList(standardSync, standardSync2));
     when(configRepository.getSourceConnection(source.getSourceId()))
         .thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId()))
         .thenReturn(destination);
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
-        .thenReturn(standardSync);
+      .thenReturn(standardSync);
+    when(configRepository.getStandardSync(standardSync2.getConnectionId()))
+      .thenReturn(standardSync2);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(sourceDefinition);
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
@@ -377,22 +393,32 @@ class ConnectionsHandlerTest {
     final ConnectionSearch connectionSearch = new ConnectionSearch();
     ConnectionReadList actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(1, actualConnectionReadList.getConnections().size());
-    assertEquals(connectionRead, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(null);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
 
     final SourceSearch sourceSearch = new SourceSearch().sourceId(UUID.randomUUID());
     connectionSearch.setSource(sourceSearch);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(0, actualConnectionReadList.getConnections().size());
 
-    sourceSearch.sourceId(connectionRead.getSourceId());
+    sourceSearch.sourceId(connectionRead1.getSourceId());
     connectionSearch.setSource(sourceSearch);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
-    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
 
     final DestinationSearch destinationSearch = new DestinationSearch();
     connectionSearch.setDestination(destinationSearch);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
-    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
 
     destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "not-found")));
     connectionSearch.setDestination(destinationSearch);
@@ -402,31 +428,58 @@ class ConnectionsHandlerTest {
     destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
     connectionSearch.setDestination(destinationSearch);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
-    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
 
     connectionSearch.name("non-existent");
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(0, actualConnectionReadList.getConnections().size());
 
-    connectionSearch.name(connectionRead.getName());
+    connectionSearch.name(connectionRead1.getName());
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
 
-    connectionSearch.namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT);
+    connectionSearch.name(connectionRead2.getName());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(connectionRead1.getNamespaceDefinition());
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(0, actualConnectionReadList.getConnections().size());
 
-    connectionSearch.namespaceDefinition(connectionRead.getNamespaceDefinition());
+    connectionSearch.name(null);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
 
+    connectionSearch.namespaceDefinition(connectionRead2.getNamespaceDefinition());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(null);
     connectionSearch.status(ConnectionStatus.INACTIVE);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(0, actualConnectionReadList.getConnections().size());
 
     connectionSearch.status(ConnectionStatus.ACTIVE);
     actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
+
+    connectionSearch.prefix(connectionRead1.getPrefix());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
     assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.prefix(connectionRead2.getPrefix());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(0));
   }
 
   @Test

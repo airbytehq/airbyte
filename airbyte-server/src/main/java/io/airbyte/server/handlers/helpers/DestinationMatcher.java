@@ -20,8 +20,9 @@ public class DestinationMatcher implements Matchable<DestinationRead> {
 
   @Override
   public DestinationRead match(DestinationRead query) {
-    if (search == null)
+    if (search == null) {
       return query;
+    }
 
     final DestinationRead fromSearch = new DestinationRead();
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());

@@ -430,8 +430,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/delete:
@@ -746,8 +744,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/check_connection:
@@ -946,8 +942,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConnectionReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/delete:
@@ -1498,8 +1492,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/sources/create:

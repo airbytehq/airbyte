@@ -20,8 +20,9 @@ public class SourceMatcher implements Matchable<SourceRead> {
 
   @Override
   public SourceRead match(SourceRead query) {
-    if (search == null)
+    if (search == null) {
       return query;
+    }
 
     final SourceRead fromSearch = new SourceRead();
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
