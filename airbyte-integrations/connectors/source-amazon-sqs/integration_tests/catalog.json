@@ -1,0 +1,27 @@
+{
+  "streams": [
+    {
+      "name": "ab-airbyte-testing",
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": false,
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "body": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}

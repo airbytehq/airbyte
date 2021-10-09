@@ -1,0 +1,61 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-sqs",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Amazon SQS Source Spec",
+    "type": "object",
+    "required": ["QUEUE_URL", "REGION"],
+    "additionalProperties": false,
+    "properties": {
+      "QUEUE_URL": {
+        "title": "Queue URL",
+        "description": "URL of the SQS Queue",
+        "type": "string",
+        "examples": ["https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-quue"],
+        "order": 0
+      },
+      "REGION": {
+        "title": "AWS Region",
+        "description": "AWS Region of the SQS Queue",
+        "type": "string",
+        "examples": ["eu-west-1"],
+        "order": 1
+      },
+      "MAX_BATCH_SIZE": {
+        "title": "Max Batch Size",
+        "description": "Max amount of messages to get in one batch (10 max)",
+        "type": "integer",
+        "examples": ["5"],
+        "order": 2
+      },
+      "MAX_WAIT_TIME": {
+        "title": "Max Wait Time",
+        "description": "Max amount of time in seconds to wait for messages in a single poll (20 max)",
+        "type": "integer",
+        "examples": ["5"],
+        "order": 3
+      },
+      "ATTRIBUTES_TO_RETURN": {
+        "title": "Message Attributes To Return",
+        "description": "Comma separated list of Mesage Attribute names to return",
+        "type": "string",
+        "examples": ["attr1,attr2"],
+        "order": 4
+      },
+      "ACCESS_KEY": {
+        "title": "AWS IAM Access Key ID",
+        "description": "The Access Key ID of the AWS IAM Role to use for pulling messages (Insecure - use AWS profiles instead)",
+        "type": "string",
+        "examples": ["xxxxxHRNxxx3TBxxxxxx"],
+        "order": 5
+      },
+      "SECRET_KEY": {
+        "title": "AWS IAM Secret Key",
+        "description": "The Secret Key of the AWS IAM Role to use for pulling messages (Insecure - use AWS profiles instead)",
+        "type": "string",
+        "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
+        "order": 6
+      }
+    }
+  }
+}
