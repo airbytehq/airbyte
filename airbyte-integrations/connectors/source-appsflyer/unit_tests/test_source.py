@@ -1,64 +1,34 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import pytest
+from requests import request
 from http import HTTPStatus
 from source_appsflyer.source import SourceAppsflyer
 from unittest.mock import patch, MagicMock
 
-def test_check_connection_expected_ok():
+@pytest.mark.parametrize(
+    ("timezone", "http_status", "response_text", "expected_result"),
+    [
+        ("UTC", HTTPStatus.OK, "", (True, None)),
+        ("UTC", HTTPStatus.NOT_FOUND, "", (False, "The supplied APP ID is invalid")),
+        ("UTC", HTTPStatus.BAD_REQUEST, "The supplied API token is invalid", (False, "The supplied API token is invalid")),
+        ("Invalid", None, "", (False, "The supplied timezone is invalid.")),
+    ],
+)
+def test_check_connection(mocker, timezone, http_status, response_text, expected_result):
     with patch("requests.request") as mock_request:
-        mock_request.return_value.status_code = 200
+        mock_request.return_value.status_code = http_status
+        mock_request.return_value.text = response_text
         source = SourceAppsflyer()
         config = {
             "app_id": "app.yourapp.android",
             "api_token": "secret",
             "start_date": "2021-09-27 20:00:00",
-            "timezone":"UTC",
+            "timezone":timezone,
         }
         logger_mock = MagicMock()
-        assert source.check_connection(logger_mock, config) == (True, None)
-
-
-def test_check_connection_expected_app_id_invalid():
-    with patch("requests.request") as mock_request:
-        mock_request.return_value.status_code = HTTPStatus.NOT_FOUND
-        source = SourceAppsflyer()
-        config = {
-            "app_id": "app.yourapp.android",
-            "api_token": "secret",
-            "start_date": "2021-09-27 20:00:00",
-            "timezone":"UTC",
-        }
-        logger_mock = MagicMock()
-        assert source.check_connection(logger_mock, config) == (False, "The supplied APP ID is invalid")
-
-
-def test_check_connection_expected_api_token_invalid():
-    with patch("requests.request") as mock_request:
-        mock_request.return_value.status_code = HTTPStatus.BAD_REQUEST
-        mock_request.return_value.text = "The supplied API token is invalid"
-        source = SourceAppsflyer()
-        config = {
-            "app_id": "app.yourapp.android",
-            "api_token": "secret",
-            "start_date": "2021-09-27 20:00:00",
-            "timezone":"UTC",
-        }
-        logger_mock = MagicMock()
-        assert source.check_connection(logger_mock, config) == (False, "The supplied API token is invalid")
-
-
-def test_check_connection_expected_timezone_invalid():
-    with patch("requests.request") as mock_request:
-        source = SourceAppsflyer()
-        config = {
-            "app_id": "app.yourapp.android",
-            "api_token": "secret",
-            "start_date": "2021-09-27 20:00:00",
-            "timezone":"Invalid",
-        }
-        logger_mock = MagicMock()
-        assert source.check_connection(logger_mock, config) == (False, "The supplied timezone is invalid.")
+        assert source.check_connection(logger_mock, config) == expected_result
 
 
 def test_streams():
