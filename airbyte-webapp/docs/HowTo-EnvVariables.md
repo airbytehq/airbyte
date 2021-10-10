@@ -21,7 +21,6 @@ Dynamic env variables in our cases are injected into app by nginx
   window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
   window.PAPERCUPS_STORYTIME = "$PAPERCUPS_STORYTIME";
   window.FULLSTORY = "$FULLSTORY";
-  window.OPENREPLAY = "$OPENREPLAY";
   window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
   window.API_URL = "$API_URL";
   window.IS_DEMO = "$IS_DEMO";
