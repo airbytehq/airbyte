@@ -58,14 +58,14 @@
       },
       "ACCESS_KEY": {
         "title": "AWS IAM Access Key ID",
-        "description": "The Access Key ID of the AWS IAM Role to use for pulling messages (Insecure - use AWS profiles instead)",
+        "description": "The Access Key ID of the AWS IAM Role to use for pulling messages",
         "type": "string",
         "examples": ["xxxxxHRNxxx3TBxxxxxx"],
         "order": 7
       },
       "SECRET_KEY": {
         "title": "AWS IAM Secret Key",
-        "description": "The Secret Key of the AWS IAM Role to use for pulling messages (Insecure - use AWS profiles instead)",
+        "description": "The Secret Key of the AWS IAM Role to use for pulling messages",
         "type": "string",
         "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
         "order": 8
