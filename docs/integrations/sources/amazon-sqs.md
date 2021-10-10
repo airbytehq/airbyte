@@ -6,7 +6,7 @@ This source will sync messages from an [SQS Queue](https://docs.aws.amazon.com/s
 
 ### Output schema
 
-This source will output one stream for the configured SQS Queue.
+This source will output one stream for the configured SQS Queue.  
 The stream record data will have three fields:
 * id (a UUIDv4 as a STRING)
 * body (message body as a STRING)
@@ -18,7 +18,7 @@ The stream record data will have three fields:
 | :--- | :--- | :--- |
 | Full Refresh Sync | yes |  |
 | Incremental Sync | no |  |
-| Namespaces | No |  |
+| Namespaces | no |  |
 
 ### Performance considerations
 
@@ -57,11 +57,11 @@ The stream record data will have three fields:
   * After a message is read, how much time (in seconds) should the message be hidden from other consumers
   * After this timeout, the message is not deleted and can be re-read
   * Default: 30
-* AWS IAM Access Key ID
+* **AWS IAM Access Key ID** (STRING)
   * The Access Key for the IAM User with permissions on this Queue
   * If `Delete Messages After Read` is `false` then only `sqs:ReceiveMessage`
   * If `Delete Messages After Read` is `true` then `sqs:DeleteMessage` is also needed
-* AWS IAM Secret Key
+* **AWS IAM Secret Key** (STRING)
   * The Secret Key for the IAM User with permissions on this Queue
 
 ### Setup guide
