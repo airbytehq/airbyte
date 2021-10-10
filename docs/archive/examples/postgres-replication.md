@@ -10,7 +10,7 @@ Here's a 6-minute video showing you how you can do it.
 
 {% embed url="https://www.youtube.com/watch?v=Rcpt5SVsMpk" caption="" %}
 
-First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, follow the [guide](../deploying-airbyte/local-deployment.md) for the recommended approach to install Docker. 
+First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, follow the [guide](../../deploying-airbyte/local-deployment.md) for the recommended approach to install Docker. 
 
 Once Docker is installed successfully, run the following commands:
 
@@ -26,7 +26,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 You should see an onboarding page. Enter your email and continue.
 
-![](../.gitbook/assets/airbyte_get-started.png)
+![](../../.gitbook/assets/airbyte_get-started.png)
 
 ## 2. Set up your first connection
 
@@ -55,7 +55,7 @@ You now have a Postgres database ready to be replicated!
 
 In the UI, you will see a wizard that allows you choose the data you want to send through Airbyte.
 
-![](../.gitbook/assets/02_set-up-sources.png)
+![](../../.gitbook/assets/02_set-up-sources.png)
 
 Use the name `airbyte-source` for the name and `Postgres`as the type. If you used our instructions to create a Postgres database, fill in the configuration fields as follows:
 
@@ -81,7 +81,7 @@ DB Name: postgres
 
 After adding the destination, you can choose what tables and columns you want to sync.
 
-![](../.gitbook/assets/03_set-up-connection.png)
+![](../../.gitbook/assets/03_set-up-connection.png)
 
 For this demo, we recommend leaving the defaults and selecting "Every 5 Minutes" as the frequency. Click `Set Up Connection` to finish setting up the sync.
 
@@ -89,7 +89,7 @@ For this demo, we recommend leaving the defaults and selecting "Every 5 Minutes"
 
 You should now see a list of sources with the source you just added. Click on it to find more information about your connection. This is the page where you can update any settings about this source and how it syncs. There should be a `Completed` job under the history section. If you click on that run, it will show logs from that run.
 
-![](../.gitbook/assets/04_source-details.png)
+![](../../.gitbook/assets/04_source-details.png)
 
 One of biggest problems we've seen in tools like Fivetran is the lack of visibility when debugging. In Airbyte, allowing full log access and the ability to debug and fix connector problems is one of our highest priorities. We'll be working hard to make these logs accessible and understandable.
 
