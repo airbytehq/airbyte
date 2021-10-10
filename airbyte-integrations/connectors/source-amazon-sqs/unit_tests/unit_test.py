@@ -3,18 +3,15 @@
 #
 
 import json
-from typing import Any, Mapping, Dict
-
-from airbyte_cdk.sources.source import Source
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (ConfiguredAirbyteCatalog, Status)
-
-from source_amazon_sqs import SourceAmazonSqs
-
+from typing import Any, Dict, Mapping
 
 import boto3
-from moto import mock_sqs, mock_iam
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.sources.source import Source
+from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
+from source_amazon_sqs import SourceAmazonSqs
 
 
 @mock_iam
@@ -43,7 +40,7 @@ def create_config(queue_url, access_key, secret_key, queue_region, delete_messag
         "REGION": queue_region,
         "ACCESS_KEY": access_key,
         "SECRET_KEY": secret_key,
-        "MAX_WAIT_TIME": 2
+        "MAX_WAIT_TIME": 2,
     }
 
 
@@ -61,19 +58,13 @@ def test_check():
     # Create Queue
     queue_name = "amazon-sqs-mock-queue"
     queue_region = "eu-west-1"
-    client = boto3.client("sqs",
-                          aws_access_key_id=user["AccessKeyId"],
-                          aws_secret_access_key=user["SecretAccessKey"],
-                          region_name=queue_region)
+    client = boto3.client(
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+    )
 
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
-    config = create_config(
-        queue_url,
-        user["AccessKeyId"],
-        user["SecretAccessKey"],
-        queue_region,
-        False)
+    config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)
     # Create AirbyteLogger
     logger = AirbyteLogger()
     # Create Source
@@ -82,21 +73,16 @@ def test_check():
     status = source.check(logger, config)
     assert status.status == Status.SUCCEEDED
 
+
 @mock_sqs
 def test_discover():
     # Create Queue
     queue_name = "amazon-sqs-mock-queue"
     queue_region = "eu-west-1"
-    client = boto3.client("sqs",
-                          region_name=queue_region)
+    client = boto3.client("sqs", region_name=queue_region)
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
-    config = create_config(
-        queue_url,
-        "xxx",
-        "xxx",
-        queue_region,
-        False)
+    config = create_config(queue_url, "xxx", "xxx", queue_region, False)
     # Create AirbyteLogger
     logger = AirbyteLogger()
     # Create Source
@@ -115,21 +101,15 @@ def test_read():
     # Create Queue
     queue_name = "amazon-sqs-mock-queue"
     queue_region = "eu-west-1"
-    client = boto3.client("sqs",
-                          aws_access_key_id=user["AccessKeyId"],
-                          aws_secret_access_key=user["SecretAccessKey"],
-                          region_name=queue_region)
+    client = boto3.client(
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+    )
 
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
-    config = create_config(
-        queue_url,
-        user["AccessKeyId"],
-        user["SecretAccessKey"],
-        queue_region,
-        False)
+    config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)
     # Create ConfiguredAirbyteCatalog
-    catalog = ConfiguredAirbyteCatalog(streams=get_catalog()['streams'])
+    catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
     # Create AirbyteLogger
     logger = AirbyteLogger()
     # Create State

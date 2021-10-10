@@ -24,7 +24,6 @@ from botocore.exceptions import ClientError
 
 
 class SourceAmazonSqs(Source):
-
     def delete_message(self, message):
         try:
             message.delete()
@@ -41,13 +40,12 @@ class SourceAmazonSqs(Source):
             # TODO: Handle errors
 
     def parse_queue_name(self, url: str) -> str:
-        return url.rsplit('/', 1)[-1]
+        return url.rsplit("/", 1)[-1]
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         try:
 
-            optional_properties = ["MAX_BATCH_SIZE",
-                                   "MAX_WAIT_TIME", "ATTRIBUTES_TO_RETURN"]
+            optional_properties = ["MAX_BATCH_SIZE", "MAX_WAIT_TIME", "ATTRIBUTES_TO_RETURN"]
             if "MAX_BATCH_SIZE" in config:
                 # Max batch size must be between 1 and 10
                 if config["MAX_BATCH_SIZE"] > 10 or config["MAX_BATCH_SIZE"] < 1:
@@ -64,8 +62,7 @@ class SourceAmazonSqs(Source):
             access_key = config["ACCESS_KEY"]
             secret_key = config["SECRET_KEY"]
 
-            session = boto3.Session(
-                aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
+            session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
             sqs = session.resource("sqs")
             queue = sqs.Queue(url=queue_url)
             # This will fail if we are not connected to the Queue (AWS.SimpleQueueService.NonExistentQueue)
@@ -83,10 +80,9 @@ class SourceAmazonSqs(Source):
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {"id": {"type": "integer"}, "body": {"type": "string"}, "attributes": {"type": "object"}},
+            "properties": {"id": {"type": "string"}, "body": {"type": "string"}, "attributes": {"type": "object"}},
         }
-        streams.append(AirbyteStream(
-            name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
+        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -113,8 +109,7 @@ class SourceAmazonSqs(Source):
         access_key = config["ACCESS_KEY"]
         secret_key = config["SECRET_KEY"]
 
-        session = boto3.Session(aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key, region_name=queue_region)
+        session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
         sqs = session.resource("sqs")
         queue = sqs.Queue(url=queue_url)
 
@@ -140,8 +135,7 @@ class SourceAmazonSqs(Source):
                     }
                     yield AirbyteMessage(
                         type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(
-                            datetime.now().timestamp()) * 1000),
+                        record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
                     if delete_messages:
                         self.delete_message(msg)
