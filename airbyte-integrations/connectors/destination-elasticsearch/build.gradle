@@ -1,0 +1,41 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.elasticsearch.ElasticsearchDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+
+    //testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    //testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+
+    // MIT
+    // https://www.testcontainers.org/
+    testImplementation "org.testcontainers:testcontainers:1.16.0"
+    testImplementation "org.testcontainers:elasticsearch:1.16.0"
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')
+}
+
+repositories {
+    maven {
+        name = "ESSnapshots"
+        url = "https://snapshots.elastic.co/maven/"
+    }
+    maven {
+        name = "ESJavaGithubPackages"
+        url = "https://maven.pkg.github.com/elastic/elasticsearch-java"
+    }
+}
