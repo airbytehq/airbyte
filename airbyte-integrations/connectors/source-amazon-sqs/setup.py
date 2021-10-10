@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3", "moto[sqs, iam]"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
