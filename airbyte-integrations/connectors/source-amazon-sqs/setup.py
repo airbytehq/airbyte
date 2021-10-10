@@ -5,11 +5,12 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3", "moto[sqs, iam]"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "source-acceptance-test",
+    "moto[sqs, iam]"
 ]
 
 setup(
