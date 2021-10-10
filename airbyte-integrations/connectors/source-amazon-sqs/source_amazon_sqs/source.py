@@ -38,7 +38,7 @@ class SourceAmazonSqs(Source):
             message.change_visibility(VisibilityTimeout=visibility_timeout)
         except ClientError as error:
             print("Couldn't change message visibility: %s", message.message_id)
-            # TODO: Handle errors  
+            # TODO: Handle errors
 
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit('/', 1)[-1]
@@ -86,7 +86,7 @@ class SourceAmazonSqs(Source):
             "properties": {"id": {"type": "integer"}, "body": {"type": "string"}, "attributes": {"type": "object"}},
         }
         streams.append(AirbyteStream(
-            name=stream_name, json_schema=json_schema))
+            name=stream_name, json_schema=json_schema, supported_sync_modes=["FULL_REFRESH"]))
         return AirbyteCatalog(streams=streams)
 
     def read(
