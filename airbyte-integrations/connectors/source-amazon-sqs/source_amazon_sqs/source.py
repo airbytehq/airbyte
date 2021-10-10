@@ -33,6 +33,13 @@ class SourceAmazonSqs(Source):
             print("Couldn't delete message: %s", message.message_id)
             # TODO: Handle errors
 
+    def change_message_visibility(self, message, visibility_timeout):
+        try:
+            message.change_visibility(VisibilityTimeout=visibility_timeout)
+        except ClientError as error:
+            print("Couldn't change message visibility: %s", message.message_id)
+            # TODO: Handle errors  
+
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit('/', 1)[-1]
 
@@ -95,6 +102,7 @@ class SourceAmazonSqs(Source):
         # Optional Properties
         max_batch_size = config.get("MAX_BATCH_SIZE", 10)
         max_wait_time = config.get("MAX_WAIT_TIME", 20)
+        visibility_timeout = config.get("VISIBILITY_TIMEOUT")
         attributes_to_return = config.get("ATTRIBUTES_TO_RETURN")
         if attributes_to_return is None:
             attributes_to_return = ["All"]
@@ -122,6 +130,9 @@ class SourceAmazonSqs(Source):
                     break
 
                 for msg in messages:
+                    if visibility_timeout:
+                        self.change_message_visibility(msg, visibility_timeout)
+
                     data = {
                         "id": msg.message_id,
                         "body": msg.body,

@@ -49,19 +49,26 @@
         "examples": ["attr1,attr2"],
         "order": 5
       },
+      "VISIBILITY_TIMEOUT": {
+        "title": "Message Visibility Timeout",
+        "description": "Modify the Visibility Timeout of the individual message from the Queue's default (seconds).",
+        "type": "integer",
+        "examples": ["15"],
+        "order": 6
+      },
       "ACCESS_KEY": {
         "title": "AWS IAM Access Key ID",
         "description": "The Access Key ID of the AWS IAM Role to use for pulling messages (Insecure - use AWS profiles instead)",
         "type": "string",
         "examples": ["xxxxxHRNxxx3TBxxxxxx"],
-        "order": 6
+        "order": 7
       },
       "SECRET_KEY": {
         "title": "AWS IAM Secret Key",
         "description": "The Secret Key of the AWS IAM Role to use for pulling messages (Insecure - use AWS profiles instead)",
         "type": "string",
         "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
-        "order": 7
+        "order": 8
       }
     }
   }
