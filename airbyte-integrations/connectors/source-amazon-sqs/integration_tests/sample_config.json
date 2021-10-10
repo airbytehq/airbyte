@@ -1,8 +1,10 @@
 {
   "MAX_BATCH_SIZE":10,
   "MAX_WAIT_TIME":20,
+  "VISIBILITY_TIMEOUT":120,
+  "DELETE_MESSAGES":false,
   "ATTRIBUTES_TO_RETURN": "path,iter",
-  "QUEUE_URL":"https://sqs.eu-west-1.amazonaws.com/840836244599/ab-airbyte-testing",
+  "QUEUE_URL":"https://sqs.eu-west-1.amazonaws.com/1234567890/ab-airbyte-testing",
   "REGION":"eu-west-1",
   "ACCESS_KEY":"xxx",
   "SECRET_KEY":"xxx"

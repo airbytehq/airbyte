@@ -13,13 +13,13 @@
 					"type": "object",
 					"properties": {
 						"id": {
-							"type": "integer"
+							"type": "string"
 						},
 						"body": {
 							"type": "string"
 						},
 						"attributes": {
-							"type": "object"
+							"type": [null, "object"]
 						}
 					}
 				}
