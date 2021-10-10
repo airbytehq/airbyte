@@ -417,5 +417,5 @@
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
 
   "email.duplicate": "Email already exists",
-  "password.invalid": "Password too weak"
+  "password.invalid": "Invalid password"
 }
