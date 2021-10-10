@@ -86,7 +86,7 @@ class SourceAmazonSqs(Source):
             "properties": {"id": {"type": "integer"}, "body": {"type": "string"}, "attributes": {"type": "object"}},
         }
         streams.append(AirbyteStream(
-            name=stream_name, json_schema=json_schema, supported_sync_modes=["FULL_REFRESH"]))
+            name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
         return AirbyteCatalog(streams=streams)
 
     def read(
