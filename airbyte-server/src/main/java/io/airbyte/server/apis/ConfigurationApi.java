@@ -13,6 +13,7 @@ import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DbMigrationExecutionRead;
@@ -30,6 +31,7 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.api.model.ImportRead;
@@ -64,6 +66,7 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
@@ -332,6 +335,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceReadList searchSources(SourceSearch sourceSearch) {
+    return execute(() -> sourceHandler.searchSources(sourceSearch));
+  }
+
+  @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> sourceHandler.getSource(sourceIdRequestBody));
   }
@@ -431,6 +439,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public DestinationReadList searchDestinations(DestinationSearch destinationSearch) {
+    return execute(() -> destinationHandler.searchDestinations(destinationSearch));
+  }
+
+  @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
   }
@@ -460,6 +473,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch) {
+    return execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
   @Override
@@ -583,7 +601,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WebBackendConnectionReadList webBackendConnectionSearch(final WebBackendConnectionSearch webBackendConnectionSearch) {
+  public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch) {
     return execute(() -> webBackendConnectionsHandler.webBackendSearchConnections(webBackendConnectionSearch));
   }
 

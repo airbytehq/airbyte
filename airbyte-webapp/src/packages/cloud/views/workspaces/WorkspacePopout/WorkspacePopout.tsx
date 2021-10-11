@@ -7,12 +7,12 @@ import { MenuListComponentProps } from "react-select/src/components/Menu";
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import {
+  useGetWorkspace,
   useListWorkspaces,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import ExitIcon from "./components/ExitIcon";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import ExitIcon from "./components/ExitIcon";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -66,14 +66,14 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
 const WorkspacePopout: React.FC<{
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const workspace = useCurrentWorkspace();
   const { data: workspaces } = useListWorkspaces();
-  const { selectWorkspace } = useWorkspaceService();
+  const { selectWorkspace, currentWorkspaceId } = useWorkspaceService();
+  const { data: workspace } = useGetWorkspace(currentWorkspaceId || "");
 
   return (
     <Popout
       targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen, value: workspace.name })
+        children({ onOpen: targetProps.onOpen, value: workspace?.name })
       }
       components={{
         MenuList: WorkspacesList,
@@ -83,7 +83,7 @@ const WorkspacePopout: React.FC<{
         value: workspace.workspaceId,
         label: workspace.name,
       }))}
-      value={workspace.workspaceId}
+      value={workspace?.workspaceId}
       onChange={({ value }) => selectWorkspace(value)}
     />
   );
