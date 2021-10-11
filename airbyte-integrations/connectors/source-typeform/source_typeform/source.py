@@ -208,7 +208,7 @@ class SourceTypeform(AbstractSource):
                 if form.get("id") in form_ids:
                     form_ids.remove(form.get("id"))
             if form_ids:
-                return False, f"{form_ids} is not valid IDs"
+                return False, f"Cannot find forms with IDs: {form_ids}. Please make sure they are valid form IDs and try again."
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
