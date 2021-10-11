@@ -24,6 +24,8 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
+    if DestinationType.POSTGRES.value not in destinations_to_test:
+        destinations_to_test.append(DestinationType.POSTGRES.value)
     dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
