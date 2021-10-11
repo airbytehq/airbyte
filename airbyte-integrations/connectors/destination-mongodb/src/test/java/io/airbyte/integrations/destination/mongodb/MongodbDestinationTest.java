@@ -101,16 +101,16 @@ class MongodbDestinationTest {
             "mongodb+srv://cluster.shard.url/dbName?authSource=dbName&retryWrites=true&w=majority&tls=true"),
         // older versions support
         arguments(Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", "localhost")
-                .put("port", "27017")
-                .put("database", "dbName")
-                .put("auth_type", authConfig).build()),
+            .put("host", "localhost")
+            .put("port", "27017")
+            .put("database", "dbName")
+            .put("auth_type", authConfig).build()),
             "mongodb://user:pass@localhost:27017/?authSource=dbName&ssl=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", "localhost")
-                .put("port", "27017")
-                .put("database", "dbName")
-                .put("auth_type", noneAuthConfig).build()),
+            .put("host", "localhost")
+            .put("port", "27017")
+            .put("database", "dbName")
+            .put("auth_type", noneAuthConfig).build()),
             "mongodb://localhost:27017/?authSource=dbName&ssl=false"));
   }
 

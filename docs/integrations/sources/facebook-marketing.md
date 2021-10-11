@@ -18,22 +18,23 @@ This Source is capable of syncing the following tables and their data:
 * [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/) 
 
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
+
 * Country
 * DMA \(Designated Market Area\)
 * Gender & Age
 * Platform & Device
 * Region
 
-For more information, see the [Facebook Insights API documentation. ](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)\\
+For more information, see the [Facebook Insights API documentation. ](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)\
 
-## Getting Started (Airbyte Cloud)
+## Getting Started \(Airbyte Cloud\)
 
 1. Click `Authenticate your Facebook Marketing account`.
 2. Enter your Account ID. Learn how to find it are [here](https://www.facebook.com/business/help/1492627900875762).
 3. Enter a start date and your Insights settings.   
 4. You're done.
 
-## Getting Started (Airbyte Open-Source)
+## Getting Started \(Airbyte Open-Source\)
 
 #### Requirements
 
@@ -70,7 +71,7 @@ See the Facebook [documentation on Authorization](https://developers.facebook.co
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 
-## Rate Limiting & Performance Considerations (Airbyte Open Source)
+## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 
@@ -87,28 +88,29 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.2.20  | 2021-10-04 | [6719](https://github.com/airbytehq/airbyte/pull/6719) | Update version of facebook_bussiness package to 12.0 |
-| 0.2.19  | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
-| 0.2.18  | 2021-09-28 | [6499](https://github.com/airbytehq/airbyte/pull/6499) | Fix field values converting fail |
-| 0.2.17  | 2021-09-14 | [4978](https://github.com/airbytehq/airbyte/pull/4978) | Convert values' types according to schema types |
-| 0.2.16  | 2021-09-14 | [6060](https://github.com/airbytehq/airbyte/pull/6060) | Fix schema for `ads_insights` stream |
-| 0.2.15  | 2021-09-14 | [5958](https://github.com/airbytehq/airbyte/pull/5958) | Fix url parsing and add report that exposes conversions |
-| 0.2.14  | 2021-07-19 | [4820](https://github.com/airbytehq/airbyte/pull/4820) | Improve the rate limit management |
-| 0.2.12  | 2021-06-20 | [3743](https://github.com/airbytehq/airbyte/pull/3743) | Refactor connector to use CDK:<br>- Improve error handling.<br>- Improve async job performance (insights).<br>- Add new configuration parameter `insights_days_per_job`.<br>- Rename stream `adsets` to `ad_sets`.<br>- Refactor schema logic for insights, allowing to configure any possible insight stream. |
-| 0.2.10  | 2021-06-16 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Update version of facebook_bussiness to 11.0 |
-| 0.2.9   | 2021-06-10 | [3996](https://github.com/airbytehq/airbyte/pull/3996) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| 0.2.8   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add 80000 as a rate-limiting error code |
-| 0.2.7   | 2021-06-03 | [3646](https://github.com/airbytehq/airbyte/pull/3646) | Add missing fields to AdInsights streams |
-| 0.2.6   | 2021-05-25 | [3525](https://github.com/airbytehq/airbyte/pull/3525) | Fix handling call rate limit |
-| 0.2.5   | 2021-05-20 | [3396](https://github.com/airbytehq/airbyte/pull/3396) | Allow configuring insights lookback window |
-| 0.2.4   | 2021-05-13 | [3395](https://github.com/airbytehq/airbyte/pull/3395) | Fix an issue that caused losing Insights data from the past 28 days while incremental sync |
-| 0.2.3   | 2021-04-28 | [3116](https://github.com/airbytehq/airbyte/pull/3116) | Wait longer (5 min) for async jobs to start |
-| 0.2.2   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
-| 0.2.1   | 2021-03-12 | [2391](https://github.com/airbytehq/airbyte/pull/2391) | Support FB Marketing API v10 |
-| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.4   | 2021-02-24 | [1902](https://github.com/airbytehq/airbyte/pull/1902) | Add `include_deleted` option in params |
-| 0.1.3   | 2021-02-15 | [1990](https://github.com/airbytehq/airbyte/pull/1990) | Support Insights stream via async queries |
-| 0.1.2   | 2021-01-22 | [1699](https://github.com/airbytehq/airbyte/pull/1699) | Add incremental support |
-| 0.1.1   | 2021-01-15 | [1552](https://github.com/airbytehq/airbyte/pull/1552) | Release Native Facebook Marketing Connector |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.20 | 2021-10-04 | [6719](https://github.com/airbytehq/airbyte/pull/6719) | Update version of facebook\_bussiness package to 12.0 |
+| 0.2.19 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
+| 0.2.18 | 2021-09-28 | [6499](https://github.com/airbytehq/airbyte/pull/6499) | Fix field values converting fail |
+| 0.2.17 | 2021-09-14 | [4978](https://github.com/airbytehq/airbyte/pull/4978) | Convert values' types according to schema types |
+| 0.2.16 | 2021-09-14 | [6060](https://github.com/airbytehq/airbyte/pull/6060) | Fix schema for `ads_insights` stream |
+| 0.2.15 | 2021-09-14 | [5958](https://github.com/airbytehq/airbyte/pull/5958) | Fix url parsing and add report that exposes conversions |
+| 0.2.14 | 2021-07-19 | [4820](https://github.com/airbytehq/airbyte/pull/4820) | Improve the rate limit management |
+| 0.2.12 | 2021-06-20 | [3743](https://github.com/airbytehq/airbyte/pull/3743) | Refactor connector to use CDK: - Improve error handling. - Improve async job performance \(insights\). - Add new configuration parameter `insights_days_per_job`. - Rename stream `adsets` to `ad_sets`. - Refactor schema logic for insights, allowing to configure any possible insight stream. |
+| 0.2.10 | 2021-06-16 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Update version of facebook\_bussiness to 11.0 |
+| 0.2.9 | 2021-06-10 | [3996](https://github.com/airbytehq/airbyte/pull/3996) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.2.8 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add 80000 as a rate-limiting error code |
+| 0.2.7 | 2021-06-03 | [3646](https://github.com/airbytehq/airbyte/pull/3646) | Add missing fields to AdInsights streams |
+| 0.2.6 | 2021-05-25 | [3525](https://github.com/airbytehq/airbyte/pull/3525) | Fix handling call rate limit |
+| 0.2.5 | 2021-05-20 | [3396](https://github.com/airbytehq/airbyte/pull/3396) | Allow configuring insights lookback window |
+| 0.2.4 | 2021-05-13 | [3395](https://github.com/airbytehq/airbyte/pull/3395) | Fix an issue that caused losing Insights data from the past 28 days while incremental sync |
+| 0.2.3 | 2021-04-28 | [3116](https://github.com/airbytehq/airbyte/pull/3116) | Wait longer \(5 min\) for async jobs to start |
+| 0.2.2 | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.1 | 2021-03-12 | [2391](https://github.com/airbytehq/airbyte/pull/2391) | Support FB Marketing API v10 |
+| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.4 | 2021-02-24 | [1902](https://github.com/airbytehq/airbyte/pull/1902) | Add `include_deleted` option in params |
+| 0.1.3 | 2021-02-15 | [1990](https://github.com/airbytehq/airbyte/pull/1990) | Support Insights stream via async queries |
+| 0.1.2 | 2021-01-22 | [1699](https://github.com/airbytehq/airbyte/pull/1699) | Add incremental support |
+| 0.1.1 | 2021-01-15 | [1552](https://github.com/airbytehq/airbyte/pull/1552) | Release Native Facebook Marketing Connector |
+
