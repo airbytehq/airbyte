@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": ["string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "sha": {
+      "type": ["null", "string"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "type": ["null", "string"]
+    },
+    "commit": {
+      "type": ["null", "object"],
+      "properties": {
+        "author": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "email": {
+              "type": ["null", "string"]
+            },
+            "date": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "committer": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "email": {
+              "type": ["null", "string"]
+            },
+            "date": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "message": {
+          "type": ["null", "string"]
+        },
+        "tree": {
+          "type": ["null", "object"],
+          "properties": {
+            "sha": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "comment_count": {
+          "type": ["null", "integer"]
+        },
+        "verification": {
+          "type": ["null", "object"],
+          "properties": {
+            "verified": {
+              "type": ["null", "boolean"]
+            },
+            "reason": {
+              "type": ["null", "string"]
+            },
+            "signature": {
+              "type": ["null", "string"]
+            },
+            "payload": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "author": {
+      "$ref": "user.json"
+    },
+    "committer": {
+      "$ref": "user.json"
+    },
+    "parents": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "sha": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "html_url": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

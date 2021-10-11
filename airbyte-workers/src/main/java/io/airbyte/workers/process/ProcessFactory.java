@@ -1,29 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.List;
@@ -36,14 +17,16 @@ public interface ProcessFactory {
    *
    * @param jobId job Id
    * @param attempt attempt Id
-   * @param jobPath Workspace directory to run the process from
-   * @param imageName Docker image name to start the process from
-   * @param files file name to contents map that will be written into the working dir of the process
-   *        prior to execution
+   * @param jobPath Workspace directory to run the process from.
+   * @param imageName Docker image name to start the process from.
+   * @param files File name to contents map that will be written into the working dir of the process
+   *        prior to execution.
    * @param entrypoint If not null, the default entrypoint program of the docker image can be changed
-   *        by this argument
-   * @param args arguments to pass to the docker image being run in the new process
-   * @return the ProcessBuilder object to run the process
+   *        by this argument.
+   * @param resourceRequirements CPU and RAM to assign to the created process.
+   * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
+   * @param args Arguments to pass to the docker image being run in the new process.
+   * @return ProcessBuilder object to run the process.
    * @throws WorkerException
    */
   Process create(String jobId,
@@ -53,6 +36,8 @@ public interface ProcessFactory {
                  final boolean usesStdin,
                  final Map<String, String> files,
                  final String entrypoint,
+                 final ResourceRequirements resourceRequirements,
+                 final Map<String, String> labels,
                  final String... args)
       throws WorkerException;
 
@@ -63,9 +48,11 @@ public interface ProcessFactory {
                          final boolean usesStdin,
                          final Map<String, String> files,
                          final String entrypoint,
+                         final ResourceRequirements resourceRequirements,
+                         final Map<String, String> labels,
                          final List<String> args)
       throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, args.toArray(new String[0]));
+    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, resourceRequirements, labels, args.toArray(new String[0]));
   }
 
 }

@@ -29,6 +29,9 @@ function configuredbt() {
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     # Generate a profiles.yml file for the selected destination/integration type
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
+    # Remove config file as it might still contain sensitive credentials  (for example,
+    # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
+    rm "${CONFIG_FILE}"
     if [[ -n "${CATALOG_FILE}" ]]; then
       # If catalog file is provided, generate normalization models, otherwise skip it
       echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data"
@@ -37,18 +40,17 @@ function configuredbt() {
   else
     # Use git repository as a base workspace folder for dbt projects
     if [[ -d git_repo ]]; then
-      echo "git_repo already exists in ${PROJECT_DIR}"
+      rm -rf git_repo
+    fi
+    # Make a shallow clone of the latest git repository in the workspace folder
+    if [[ -z "${GIT_BRANCH}" ]]; then
+      # Checkout a particular branch from the git repository
+      echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  \$GIT_REPO git_repo"
+      git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  "${GIT_REPO}" git_repo
     else
-      # Make a shallow clone of the latest git repository in the workspace folder
-      if [[ -z "${GIT_BRANCH}" ]]; then
-        # Checkout a particular branch from the git repository
-        echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  \$GIT_REPO git_repo"
-        git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  "${GIT_REPO}" git_repo
-      else
-        # No git branch specified, use the default branch of the git repository
-        echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
-        git clone --depth ${GIT_HISTORY_DEPTH} -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
-      fi
+      # No git branch specified, use the default branch of the git repository
+      echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
+      git clone --depth ${GIT_HISTORY_DEPTH} -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
     fi
     # Print few history logs to make it easier for users to verify the right code version has been checked out from git
     echo "Last 5 commits in git_repo:"
@@ -56,6 +58,9 @@ function configuredbt() {
     # Generate a profiles.yml file for the selected destination/integration type
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
+    # Remove config file as it might still contain sensitive credentials  (for example,
+    # injected OAuth Parameters should not be visible to custom docker images running custom transformation operations)
+    rm "${CONFIG_FILE}"
   fi
 }
 
@@ -64,7 +69,6 @@ function main() {
   CMD="$1"
   shift 1 || error "command not specified."
 
-  ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
     --config)
@@ -96,8 +100,12 @@ function main() {
   case "$CMD" in
   run)
     configuredbt
+    . /airbyte/sshtunneling.sh
+    openssh "${PROJECT_DIR}/ssh.json"
+    trap 'closessh' EXIT
     # Run dbt to compile and execute the generated normalization models
     dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
+    closessh
     ;;
   configure-dbt)
     configuredbt

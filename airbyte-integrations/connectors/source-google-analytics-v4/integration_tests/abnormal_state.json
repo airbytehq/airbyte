@@ -1,0 +1,14 @@
+{
+  "website_overview": { "ga_date": "2050-05-01" },
+  "traffic_sources": { "ga_date": "2050-05-01" },
+  "pages": { "ga_date": "2050-05-01" },
+  "locations": { "ga_date": "2050-05-01" },
+  "monthly_active_users": { "ga_date": "2050-05-01" },
+  "four_weekly_active_users": { "ga_date": "2050-05-01" },
+  "two_weekly_active_users": { "ga_date": "2050-05-01" },
+  "weekly_active_users": { "ga_date": "2050-05-01" },
+  "daily_active_users": { "ga_date": "2050-05-01" },
+  "devices": { "ga_date": "2050-05-01" },
+  "users_per_day": { "ga_date": "2050-05-01" },
+  "sessions_per_country_day": { "ga_date": "2050-05-01" }
+}

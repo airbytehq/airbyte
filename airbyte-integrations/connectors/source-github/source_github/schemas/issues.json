@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": ["string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "repository_url": {
+      "type": ["null", "string"]
+    },
+    "labels_url": {
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "number": {
+      "type": ["null", "integer"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "user": {
+      "$ref": "user.json"
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "labels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "node_id": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "color": {
+            "type": ["null", "string"]
+          },
+          "default": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "assignee": {
+      "$ref": "user.json"
+    },
+    "assignees": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "user.json"
+      }
+    },
+    "milestone": {
+      "type": ["null", "object"],
+      "properties": {
+        "url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "labels_url": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "number": {
+          "type": ["null", "integer"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "creator": {
+          "$ref": "user.json"
+        },
+        "open_issues": {
+          "type": ["null", "integer"]
+        },
+        "closed_issues": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "closed_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "due_on": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "locked": {
+      "type": ["null", "boolean"]
+    },
+    "active_lock_reason": {
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "type": ["null", "integer"]
+    },
+    "pull_request": {
+      "properties": {
+        "url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "diff_url": {
+          "type": ["null", "string"]
+        },
+        "patch_url": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "closed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "author_association": {
+      "type": ["null", "string"]
+    }
+  }
+}

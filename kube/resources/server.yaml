@@ -24,16 +24,6 @@ spec:
       labels:
         airbyte: server
     spec:
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: airbyte
-                    operator: In
-                    values:
-                      - scheduler
-              topologyKey: kubernetes.io/hostname
       containers:
         - name: airbyte-server-container
           image: airbyte/server
@@ -50,8 +40,8 @@ spec:
                   key: CONFIG_ROOT
             - name: DATABASE_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_PASSWORD
             - name: DATABASE_URL
               valueFrom:
@@ -60,20 +50,19 @@ spec:
                   key: DATABASE_URL
             - name: DATABASE_USER
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_USER
             - name: TRACKING_STRATEGY
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
                   key: TRACKING_STRATEGY
-            - name: WAIT_BEFORE_HOSTS
-              value: "5"
-            - name: WAIT_HOSTS
-              value: airbyte-db-svc:5432
-            - name: WAIT_HOSTS_TIMEOUT
-              value: "45"
+            - name: WORKER_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_ENVIRONMENT
             - name: WORKSPACE_ROOT
               valueFrom:
                 configMapKeyRef:
@@ -89,17 +78,83 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: TEMPORAL_HOST
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: LOG_LEVEL
+            - name: RESOURCE_CPU_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_CPU_REQUEST
+            - name: RESOURCE_CPU_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_CPU_LIMIT
+            - name: RESOURCE_MEMORY_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_MEMORY_REQUEST
+            - name: RESOURCE_MEMORY_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_MEMORY_LIMIT
+            - name: S3_LOG_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET
+            - name: S3_LOG_BUCKET_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET_REGION
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: S3_MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_MINIO_ENDPOINT
+            - name: S3_PATH_STYLE_ACCESS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_PATH_STYLE_ACCESS
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: GOOGLE_APPLICATION_CREDENTIALS
+            - name: GCP_STORAGE_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: GCP_STORAGE_BUCKET
           ports:
             - containerPort: 8001
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs
-            - name: airbyte-volume-workspace
-              mountPath: /workspace
+            - name: gcs-log-creds-volume
+              mountPath: /secrets/gcs-log-creds
+              readOnly: true
       volumes:
-        - name: airbyte-volume-workspace
-          persistentVolumeClaim:
-            claimName: airbyte-volume-workspace
         - name: airbyte-volume-configs
           persistentVolumeClaim:
             claimName: airbyte-volume-configs
+        - name: gcs-log-creds-volume
+          secret:
+            secretName: gcs-log-creds

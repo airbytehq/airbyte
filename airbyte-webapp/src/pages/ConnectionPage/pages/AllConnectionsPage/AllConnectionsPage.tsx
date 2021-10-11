@@ -1,32 +1,22 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
-import styled from "styled-components";
 
-import {
-  Button,
-  MainPageWithScroll,
-  PageTitle,
-  LoadingPage,
-  ContentCard,
-} from "components";
+import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
 import ConnectionResource from "core/resources/Connection";
-import config from "config";
 import ConnectionsTable from "./components/ConnectionsTable";
 import { Routes } from "pages/routes";
-import useRouter from "components/hooks/useRouterHook";
-import EmptyResource from "components/EmptyResourceBlock";
+import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
-
-const Content = styled(ContentCard)`
-  margin: 0 32px 0 27px;
-`;
+import Placeholder, { ResourceTypes } from "components/Placeholder";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
+  const { workspace } = useWorkspace();
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`);
@@ -49,11 +39,7 @@ const AllConnectionsPage: React.FC = () => {
         {connections.length ? (
           <ConnectionsTable connections={connections} />
         ) : (
-          <Content>
-            <EmptyResource
-              text={<FormattedMessage id="connection.noConnections" />}
-            />
-          </Content>
+          <Placeholder resource={ResourceTypes.Connections} />
         )}
       </Suspense>
     </MainPageWithScroll>

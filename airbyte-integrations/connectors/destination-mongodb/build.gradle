@@ -1,0 +1,27 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.mongodb.MongodbDestination'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-protocol:models')
+
+    compile 'org.mongodb:mongodb-driver-sync:4.3.0'
+
+    testImplementation 'org.testcontainers:mongodb:1.15.3'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mongodb')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}

@@ -1,0 +1,88 @@
+{
+  "bookmarks": {
+    "accounts": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "bill_payments": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "bills": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "budgets": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "classes": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "credit_memos": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "customers": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "departments": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "deposits": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "employees": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "estimates": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "invoices": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "items": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "journal_entries": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "payment_methods": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "payments": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "purchase_orders": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "purchases": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "refund_receipts": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "sales_receipts": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "tax_agencies": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "tax_codes": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "tax_rates": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "terms": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "time_activities": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "transfers": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "vendor_credits": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    },
+    "vendors": {
+      "LastUpdatedTime": "2121-04-16T22:59:57-07:00"
+    }
+  }
+}

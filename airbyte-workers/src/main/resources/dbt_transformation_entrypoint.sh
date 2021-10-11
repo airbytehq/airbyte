@@ -1,22 +1,61 @@
 #!/usr/bin/env bash
 set -e
 
-if [[ -f "/data/job/transform/git_repo/dbt_project.yml" ]]; then
-  # Find profile name used in the custom dbt project:
-  PROFILE_NAME=`cat "/data/job/transform/git_repo/dbt_project.yml" | grep "profile:" | sed -E "s/profile: *['\"](.*)['\"]/\1/"`
-  if [[ -n "${PROFILE_NAME}" ]]; then
-    mv /data/job/transform/profiles.yml /data/job/transform/profiles.txt
-    # Refer to the appropriate profile name in the profiles.yml file
-    echo "Regenerate profiles.yml file for profile: $PROFILE_NAME"
-    cat /data/job/transform/profiles.txt | sed -E "s/normalize:/$PROFILE_NAME:/" > /data/job/transform/profiles.yml
-    rm -f /data/job/transform/profiles.txt
-    if [[ -f "/data/job/transform/bq_keyfile.json" ]]; then
-      cp /data/job/transform/bq_keyfile.json /tmp/bq_keyfile.json
-    fi
-  fi
-else
-  echo "git repo does not contain a dbt_project.yml file?"
+CWD=$(pwd)
+# change directory to be inside git_repo that was just cloned
+cd git_repo
+echo "Running from $(pwd)"
+POSITIONAL=()
+# Detect if some mandatory dbt flags were already passed as arguments
+CONTAINS_PROFILES_DIR="false"
+CONTAINS_PROJECT_DIR="false"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --profiles-dir=*|--profiles-dir)
+      CONTAINS_PROFILES_DIR="true"
+      POSITIONAL+=("$1")
+      shift
+      ;;
+    --project-dir=*|--project-dir)
+      CONTAINS_PROJECT_DIR="true"
+      POSITIONAL+=("$1")
+      shift
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
+
+if [[ -f "${CWD}/bq_keyfile.json" ]]; then
+  cp "${CWD}/bq_keyfile.json" /tmp/bq_keyfile.json
 fi
-# Run custom dbt command
-echo "Running: dbt $@"
-dbt $@
+
+. $CWD/sshtunneling.sh
+openssh $CWD/ssh.json
+trap 'closessh' EXIT
+
+# Add mandatory flags profiles-dir and project-dir when calling dbt when necessary
+case "${CONTAINS_PROFILES_DIR}-${CONTAINS_PROJECT_DIR}" in
+  true-true)
+    echo "Running: dbt $@"
+    dbt $@ --profile normalize
+    ;;
+  true-false)
+    echo "Running: dbt $@ --project-dir=${CWD}/git_repo"
+    dbt $@ "--project-dir=${CWD}/git_repo" --profile normalize
+    ;;
+  false-true)
+    echo "Running: dbt $@ --profiles-dir=${CWD}"
+    dbt $@ "--profiles-dir=${CWD}" --profile normalize
+    ;;
+  *)
+    echo "Running: dbt $@ --profiles-dir=${CWD} --project-dir=${CWD}/git_repo"
+    dbt $@ "--profiles-dir=${CWD}" "--project-dir=${CWD}/git_repo" --profile normalize
+    ;;
+esac
+
+closessh

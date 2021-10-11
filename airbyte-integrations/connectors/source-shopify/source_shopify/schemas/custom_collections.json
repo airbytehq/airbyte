@@ -22,7 +22,8 @@
       "type": ["null", "string"]
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "image": {
       "properties": {
@@ -36,7 +37,8 @@
           "type": ["null", "integer"]
         },
         "created_at": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "height": {
           "type": ["null", "integer"]
@@ -45,7 +47,8 @@
       "type": ["null", "object"]
     },
     "published_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "template_suffix": {
       "type": ["null", "string"]

@@ -2,7 +2,7 @@
 
 set -e
 
-BUCKET=airbyte-status
+BUCKET=airbyte-connector-build-status
 
 CONNECTOR=$1
 REPOSITORY=$2
@@ -89,7 +89,7 @@ function write_badge_and_summary() {
 
   echo "message: $message"
 
-  HTML_TOP="<html><head><title>$CONNECTOR</title><style>body {padding:20px; font-family:monospace;} table {border-collapse: collapse;} th, td {padding:20px; text-align:left;} th, td { border:1px solid #c5c4ff;} </style></head><body><p><img src=\"https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2F$CONNECTOR%2Fbadge.json\"></p><h1>$CONNECTOR</h1>"
+  HTML_TOP="<html><head><title>$CONNECTOR</title><style>body {padding:20px; font-family:monospace;} table {border-collapse: collapse;} th, td {padding:20px; text-align:left;} th, td { border:1px solid #c5c4ff;} </style></head><body><p><img src=\"https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2F$CONNECTOR%2Fbadge.json\"></p><h1>$CONNECTOR</h1>"
   HTML_BOTTOM="</body></html>"
   HTML_TABLE="<table><tr><th>datetime</th><th>status</th><th>workflow</th></tr>$HTML_TABLE_ROWS</table>"
 

@@ -29,22 +29,6 @@
       "type": "string",
       "format": "date-time"
     },
-    "ads": {
-      "properties": {
-        "data": {
-          "items": {
-            "properties": {
-              "id": {
-                "type": ["null", "string"]
-              }
-            },
-            "type": ["null", "object"]
-          },
-          "type": ["null", "array"]
-        }
-      },
-      "type": ["null", "object"]
-    },
     "adlabels": {
       "type": ["null", "array"],
       "items": {

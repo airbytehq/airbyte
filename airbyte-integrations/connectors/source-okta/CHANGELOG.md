@@ -1,8 +1,3 @@
 # Changelog
 
-## 0.1.0
-Initial Release
-Added the following incremental streams:
-- Groups
-- Logs
-- Users
+See the [docs](https://docs.airbyte.io/integrations/sources/okta#changelog)

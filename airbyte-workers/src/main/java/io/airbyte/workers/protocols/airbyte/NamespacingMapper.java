@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.protocols.airbyte;
@@ -66,7 +46,12 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
           stream.withNamespace(null);
         } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          stream.withNamespace(formatNamespace(stream.getName(), stream.getNamespace(), namespaceFormat));
+          final String namespace = formatNamespace(stream.getNamespace(), namespaceFormat);
+          if (namespace == null) {
+            LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings",
+                stream.getName());
+          }
+          stream.withNamespace(namespace);
         }
       }
       stream.withName(transformStreamName(stream.getName(), streamPrefix));
@@ -83,7 +68,7 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
           message.getRecord().withNamespace(null);
         } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          message.getRecord().withNamespace(formatNamespace(message.getRecord().getStream(), message.getRecord().getNamespace(), namespaceFormat));
+          message.getRecord().withNamespace(formatNamespace(message.getRecord().getNamespace(), namespaceFormat));
         }
       }
       message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), streamPrefix));
@@ -92,14 +77,13 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
     return inputMessage;
   }
 
-  private static String formatNamespace(String streamName, final String sourceNamespace, final String namespaceFormat) {
+  private static String formatNamespace(final String sourceNamespace, final String namespaceFormat) {
     String result = "";
     if (Strings.isNotBlank(namespaceFormat)) {
       final String regex = Pattern.quote("${SOURCE_NAMESPACE}");
-      result = namespaceFormat.replaceAll(regex, Strings.isNotEmpty(sourceNamespace) ? sourceNamespace : "");
+      result = namespaceFormat.replaceAll(regex, Strings.isNotBlank(sourceNamespace) ? sourceNamespace : "");
     }
     if (Strings.isBlank(result)) {
-      LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings", streamName);
       result = null;
     }
     return result;

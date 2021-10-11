@@ -68,12 +68,15 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template',
         'dbt_data_tests',
         'dbt_schema_tests',
+        'dbt_data_tests_mssql',
+        'dbt_tmp_data_test_mssql',
         'normalization_test_output',
         'tools',
-        'secrets'
+        'secrets',
+        'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
-    if (System.getenv().containsKey("CORE_ONLY")) {
+    if (System.getenv().containsKey("SUB_BUILD")) {
         excludes.add("airbyte-integrations/connectors")
     }
 
@@ -88,7 +91,7 @@ spotless {
 
         eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -114,9 +117,10 @@ allprojects {
     afterEvaluate { project ->
         def composeDeps = [
                 ":airbyte-config:init",
-                ":airbyte-db",
+                ":airbyte-db:lib",
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
+                ":airbyte-workers",
                 ":airbyte-server",
                 ":airbyte-webapp",
         ].toSet().asImmutable()
@@ -152,6 +156,10 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven {
+            // TODO(Issue-4915): Remove this when upstream is merged in.
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
     }
 
     pmd {
@@ -184,31 +192,46 @@ subprojects {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
+
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
         implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-        implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
+        implementation 'com.google.guava:guava:30.1.1-jre'
 
-        implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+        implementation 'commons-io:commons-io:2.7'
 
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+        implementation 'org.apache.commons:commons-compress:1.20'
+        implementation 'org.apache.commons:commons-lang3:3.11'
+
+        implementation 'org.slf4j:slf4j-api:1.7.30'
+
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-api:2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-web:2.14.1'
 
         // Bridges from other logging implementations to SLF4J
-        implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.30' // JUL bridge
-        implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30' //JCL bridge
-        implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30' // log4j1.2 bridge
+        implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
+        implementation 'org.slf4j:jcl-over-slf4j:1.7.30' //JCL bridge
+        implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
+
+        // Dependencies for logging to cloud storage, as well as the various clients used to do so.
+        implementation 'com.therealvan:appender-log4j2:3.1.2-SNAPSHOT'
+        implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
+        implementation 'com.google.cloud:google-cloud-storage:1.115.0'
+
+        implementation 'software.amazon.awssdk:s3:2.16.84'
+
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
-        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.9.0'
+        testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
     }
 }
 
@@ -222,10 +245,12 @@ task composeBuild {
         }
     }
 }
-build.dependsOn(composeBuild)
+
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+    build.dependsOn(composeBuild)
+}
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateSeed', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
@@ -243,7 +268,7 @@ subprojects {
     if(pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE'))
+            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
@@ -268,3 +293,52 @@ tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+// TODO: Davin will turn this back on.
+//// Configure what subprojects to publish.
+//String[] toPublish = [
+//        ':airbyte-analytics',
+//        ':airbyte-api',
+//        ':airbyte-commons',
+//        ':airbyte-commons-docker',
+//        ':airbyte-config:init',
+//        ':airbyte-config:models',
+//        ':airbyte-config:persistence',
+//        ':airbyte-db:lib',
+//        ':airbyte-json-validation',
+//        ':airbyte-migration',
+//        ':airbyte-notification',
+//        ':airbyte-protocol:models',
+//        ':airbyte-scheduler:client',
+//        ':airbyte-scheduler:models',
+//        ':airbyte-scheduler:persistence',
+//        ':airbyte-server',
+//        ':airbyte-workers'
+//]
+//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
+//    apply plugin: 'maven-publish'
+//
+//    publishing {
+//        repositories {
+//            publications {
+//                // This block is present so Gradle knows to publish a Maven jar.
+//                maven(MavenPublication) {
+//                    from components.java
+//                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+//                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+//                }
+//            }
+//
+//            maven {
+//                credentials {
+//                    name 'cloudrepo'
+//                    username System.getenv('CLOUDREPO_USER')
+//                    password System.getenv('CLOUDREPO_PASSWORD')
+//                }
+//                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+//            }
+//
+//            mavenLocal()
+//        }
+//    }
+//}

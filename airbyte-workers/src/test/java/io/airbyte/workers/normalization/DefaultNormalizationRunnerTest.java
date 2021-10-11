@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.normalization;
@@ -36,7 +16,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
+import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -70,7 +52,10 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, false, files, null, "run",
+    when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, false, files, null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
+        "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
@@ -85,7 +70,7 @@ class DefaultNormalizationRunnerTest {
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
+    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
   }
 
   @Test
@@ -93,10 +78,10 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory);
-    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog);
+    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     runner.close();
 
-    verify(process).destroy();
+    verify(process).waitFor();
   }
 
   @Test
@@ -104,7 +89,8 @@ class DefaultNormalizationRunnerTest {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory);
-    assertThrows(RuntimeException.class, () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
+    assertThrows(RuntimeException.class,
+        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
 
     verify(process).destroy();
   }

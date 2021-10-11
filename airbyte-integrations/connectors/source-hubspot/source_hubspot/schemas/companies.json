@@ -1,33 +1,68 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "portalId": {
       "type": ["null", "integer"]
     },
     "companyId": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "isDeleted": {
       "type": ["null", "boolean"]
     },
-    "additionalDomains": {
-      "type": ["null", "array"]
-    },
     "stateChanges": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "additionalDomains": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "mergeAudits": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "mergedCompanyId": {
+            "type": ["null", "integer"]
+          },
+          "canonicalCompanyId": {
+            "type": ["null", "integer"]
+          },
+          "sourceId": {
+            "type": ["null", "string"]
+          },
+          "entityId": {
+            "type": ["null", "string"]
+          },
+          "mergedCompanyName": {
+            "type": ["null", "string"]
+          },
+          "movedProperties": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "contacts": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

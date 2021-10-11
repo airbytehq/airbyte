@@ -17,17 +17,17 @@
 We will _not_ merge sources that cannot pass these tests unless the author can provide a very good reason™.
 
 ## What tests do the standard tests include?
-Check out each function in [TestSource](src/main/java/io/airbyte/integrations/standardtest/source/TestSource.java). Each function annotated with `@Test` is a single test. Each of these functions is proceeded by comments that document what they are testing.
+Check out each function in [SourceAcceptanceTest](src/main/java/io/airbyte/integrations/standardtest/source/SourceAcceptanceTest.java). Each function annotated with `@Test` is a single test. Each of these functions is proceeded by comments that document what they are testing.
 
 ## How to run them from your integration?
 * If writing a source in Python, check out this [readme](../base-python-test/readme.md)
 
 ## What do I need to provide as input to these tests?
 * The name of the image of your integration (with the `:dev` tag at the end).
-* A handful of json inputs, e.g. a valid configuration file and a catalog that will be used to try to run the `read` operation on your integration. These are fully documented in [TestSource](src/main/java/io/airbyte/integrations/standardtest/source/TestSource.java). Each method that is marked as `abstract` are methods that the user needs to implement to provide the necessary information. Each of these methods are preceded by comments explaining what they need to return.
+* A handful of json inputs, e.g. a valid configuration file and a catalog that will be used to try to run the `read` operation on your integration. These are fully documented in [SourceAcceptanceTest](src/main/java/io/airbyte/integrations/standardtest/source/SourceAcceptanceTest.java). Each method that is marked as `abstract` are methods that the user needs to implement to provide the necessary information. Each of these methods are preceded by comments explaining what they need to return.
 * Optionally you can run before and after methods before each test.
 
 ## Do I have to write java to use these tests?
 No! Our goal is to allow you to write your integration _entirely_ in your language of choice. If you are writing an integration in Python, for instance, you should be able to interact with this test suite in python and not need to write java. _Right now, we only have a Python interface to reduce friction for interacting with these tests_, and with time, we intend to make more language-specific helpers available. In the meantime, however, you can still use your language of choice and leverage this standard test suite. 
 
-If working in Python, the Python interface that you need to implement can be found [here](../base-python-test/base_python_test/test_iface.py). Our [python template](../../connector-templates/python-source/README.md) and [singer template](../../connector-templates/singer-source/README.md) also walk you through how to implement the interface. You can also find an example of how this is done for an already existing integration [here](../../connectors/source-github-singer/standardtest/standard_source_test.py).
+If working in Python, the Python interface that you need to implement can be found [here](../base-python-test/base_python_test/test_iface.py). Our [python template](../../connector-templates/source-python/README.md.hbs) and [singer template](../../connector-templates/source-singer/README.md.hbs) also walk you through how to implement the interface.

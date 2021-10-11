@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "position": {
+      "type": "integer"
+    },
+    "visible": {
+      "type": "boolean"
+    },
+    "family": {
+      "type": "string"
+    },
+    "subtype": {
+      "type": "string"
+    },
+    "layout": {
+      "type": ["object", "null"]
+    },
+    "sorting": {
+      "type": ["string", "null"]
+    },
+    "required": {
+      "type": ["string", "null"]
+    },
+    "validation": {
+      "type": ["string", "null"]
+    },
+    "forced_ranking": {
+      "type": "boolean"
+    },
+    "headings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "heading": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "href": {
+      "type": "string"
+    },
+    "answers": {
+      "type": "object",
+      "properties": {
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "position": {
+                "type": "integer"
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "text": {
+                "type": "string"
+              },
+              "quiz_options": {
+                "type": "object",
+                "properties": {
+                  "score": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

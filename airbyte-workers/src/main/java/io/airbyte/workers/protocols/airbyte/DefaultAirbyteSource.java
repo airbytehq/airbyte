@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.protocols.airbyte;
@@ -29,10 +9,11 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
@@ -75,16 +56,16 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
+  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
     sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-        Jsons.serialize(input.getSourceConnectionConfiguration()),
+        Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(input.getCatalog()),
-        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        input.getState() == null ? null : Jsons.serialize(input.getState().getState()));
+        Jsons.serialize(sourceConfig.getCatalog()),
+        sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
@@ -97,6 +78,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
+    // As this check is done on every message read, it is important for this operation to be efficient.
+    // Short circuit early to avoid checking the underlying process.
+    var isEmpty = !messageIterator.hasNext();
+    if (!isEmpty) {
+      return false;
+    }
 
     return !sourceProcess.isAlive() && !messageIterator.hasNext();
   }
@@ -111,6 +98,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public void close() throws Exception {
     if (sourceProcess == null) {
+      LOGGER.debug("Source process already exited");
       return;
     }
 
@@ -123,9 +111,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      LOGGER.warn(
-          "Source process might not have shut down correctly. source process alive: {}, source process exit value: {}. This warning is normal if the job was cancelled.",
-          sourceProcess.isAlive(), sourceProcess.exitValue());
+      String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 

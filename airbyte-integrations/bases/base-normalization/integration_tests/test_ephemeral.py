@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -42,10 +22,10 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_postgres_db()
+    dbt_test_utils.setup_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    dbt_test_utils.tear_down_postgres_db()
+    dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
@@ -62,7 +42,17 @@ def setup_test_path(request):
 
 @pytest.mark.parametrize("column_count", [1500])
 @pytest.mark.parametrize("integration_type", list(DestinationType))
-def test_destination_supported_limits(integration_type: DestinationType, column_count: int, setup_test_path):
+def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
+    if integration_type == DestinationType.MYSQL:
+        # In MySQL, the max number of columns is limited by row size (8KB),
+        # not by absolute column count. It is way fewer than 1500.
+        return
+    if integration_type == DestinationType.ORACLE:
+        column_count = 998
+    if integration_type == DestinationType.MSSQL:
+        # In MS SQL Server, the max number of columns / table = 1024,
+        # We should leave the space for the '_airbyte_emitted_at' column. So 1022 is the max what could be inserted.
+        column_count = 1022
     run_test(integration_type, column_count)
 
 
@@ -70,17 +60,12 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     "integration_type, column_count, expected_exception_message",
     [
         ("Postgres", 1665, "target lists can have at most 1664 entries"),
-        (
-            "BigQuery",
-            2500,
-            "The view is too large.",
-        ),
-        (
-            "Snowflake",
-            2000,
-            "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
-        ),
+        ("BigQuery", 2500, "The view is too large."),
+        ("Snowflake", 2000, "Operation failed because soft limit on objects of type 'Column' per table was exceeded."),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
+        ("MySQL", 250, "Row size too large"),
+        ("Oracle", 1001, "ORA-01792: maximum number of columns in a table or view is 1000"),
+        ("MSSQL", 1025, "exceeds the maximum of 1024 columns."),
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
@@ -101,6 +86,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test

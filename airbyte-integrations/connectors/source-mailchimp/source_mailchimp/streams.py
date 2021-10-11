@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -33,13 +13,17 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class MailChimpStream(HttpStream, ABC):
-    url_base = "https://us2.api.mailchimp.com/3.0/"
     primary_key = "id"
     page_size = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_offset = 0
+        self.data_center = kwargs["authenticator"].data_center
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.data_center}.api.mailchimp.com/3.0/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -72,7 +56,7 @@ class MailChimpStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """the responce entry that contains useful data"""
+        """The responce entry that contains useful data"""
         pass
 
 
@@ -127,6 +111,7 @@ class Campaigns(IncrementalMailChimpStream):
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     data_field = "emails"
+    primary_key = None
 
     def stream_slices(self, **kwargs):
         campaign_stream = Campaigns(authenticator=self.authenticator)
@@ -173,8 +158,5 @@ class EmailActivity(IncrementalMailChimpStream):
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
         data = response_json[self.data_field]
         for item in data:
-            for activity_record in item["activity"]:
-                new_record = {k: v for k, v in item.items() if k != "activity"}
-                for k, v in activity_record.items():
-                    new_record[k] = v
-                yield new_record
+            for activity_item in item.pop("activity", []):
+                yield {**item, **activity_item}

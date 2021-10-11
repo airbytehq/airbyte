@@ -123,9 +123,6 @@
     "cost_per_outbound_click": {
       "$ref": "ads_action_stats.json"
     },
-    "cost_per_store_visit_action": {
-      "$ref": "ads_action_stats.json"
-    },
     "cost_per_thruplay": {
       "$ref": "ads_action_stats.json"
     },
@@ -151,18 +148,18 @@
       "type": ["null", "number"]
     },
     "created_time": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "ctr": {
       "type": ["null", "number"]
     },
     "date_start": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "date_stop": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "engagement_rate_ranking": {
@@ -217,7 +214,7 @@
       "type": ["null", "number"]
     },
     "instant_experience_outbound_clicks": {
-      "type": ["null", "integer"]
+      "$ref": "ads_action_stats.json"
     },
     "labels": {
       "type": ["null", "string"]
@@ -258,9 +255,6 @@
     "spend": {
       "type": ["null", "number"]
     },
-    "store_visit_actions": {
-      "$ref": "ads_action_stats.json"
-    },
     "unique_actions": {
       "$ref": "ads_action_stats.json"
     },
@@ -286,7 +280,7 @@
       "$ref": "ads_action_stats.json"
     },
     "updated_time": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "video_15_sec_watched_actions": {
@@ -317,7 +311,7 @@
       "$ref": "ads_action_stats.json"
     },
     "video_play_actions": {
-      "$ref": "ads_histogram_stats.json"
+      "$ref": "ads_action_stats.json"
     },
     "video_play_curve_actions": {
       "$ref": "ads_histogram_stats.json"

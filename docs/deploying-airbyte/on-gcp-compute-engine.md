@@ -38,7 +38,7 @@ INSTANCE_NAME=airbyte # or anyother name that you've used
 {% tab title="MacOS" %}
 ```bash
 # In your workstation terminal
-brew cask install google-cloud-sdk
+brew install --cask google-cloud-sdk
 gcloud init # Follow instructions
 ```
 {% endtab %}
@@ -131,5 +131,5 @@ gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploy.md) section in our docs for common problems.
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
 

@@ -1,29 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
@@ -35,7 +16,8 @@ public interface SqlOperations {
   /**
    * Create a schema with provided name if it does not already exist.
    *
-   * @param schemaName name of schema.
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema.
    * @throws Exception exception
    */
   void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception;
@@ -43,8 +25,9 @@ public interface SqlOperations {
   /**
    * Create a table with provided name in provided schema if it does not already exist.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -52,17 +35,18 @@ public interface SqlOperations {
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @return query
    */
-  String createTableQuery(String schemaName, String tableName);
+  String createTableQuery(JdbcDatabase database, String schemaName, String tableName);
 
   /**
    * Drop the table if it exists.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -70,18 +54,20 @@ public interface SqlOperations {
   /**
    * Query to remove all records from a table. Assumes the table exists.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
-   * @return query
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param tableName Name of table
+   * @return Query
    */
-  String truncateTableQuery(String schemaName, String tableName);
+  String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName);
 
   /**
    * Insert records into table. Assumes the table exists.
    *
-   * @param records records to insert.
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param database Database that the connector is syncing
+   * @param records Records to insert.
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
@@ -90,17 +76,19 @@ public interface SqlOperations {
    * Query to copy all records from source table to destination table. Both tables must be in the
    * specified schema. Assumes both table exist.
    *
-   * @param schemaName name of schema
-   * @param sourceTableName name of source table
-   * @param destinationTableName name of destination table
-   * @return query
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param sourceTableName Name of source table
+   * @param destinationTableName Name of destination table
+   * @return Query
    */
-  String copyTableQuery(String schemaName, String sourceTableName, String destinationTableName);
+  String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName);
 
   /**
    * Given an arbitrary number of queries, execute a transaction.
    *
-   * @param queries queries to execute
+   * @param database Database that the connector is syncing
+   * @param queries Queries to execute
    * @throws Exception exception
    */
   void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
@@ -108,7 +96,7 @@ public interface SqlOperations {
   /**
    * Check if the data record is valid and ok to be written to destination
    */
-  boolean isValidData(final String data);
+  boolean isValidData(final JsonNode data);
 
   /**
    * Denotes whether the destination has the concept of schema or not

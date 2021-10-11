@@ -4,22 +4,20 @@ import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import HeadTitle from "components/HeadTitle";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import ConnectionResource from "core/resources/Connection";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-import config from "config";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import Link from "components/Link";
 import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
-import SourceResource from "core/resources/Source";
-import DestinationResource from "core/resources/Destination";
+import { equal } from "utils/objects";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";
@@ -29,23 +27,16 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   currentStep,
 }) => {
   const { query, push } = useRouter<{ id: string }>();
-
+  const analyticsService = useAnalytics();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId: query.id,
   });
 
-  const frequency = FrequencyConfig.find(
-    (item) =>
-      JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  const frequency = FrequencyConfig.find((item) =>
+    equal(item.config, connection.schedule)
   );
 
-  const source = useResource(SourceResource.detailShape(), {
-    sourceId: connection.sourceId,
-  });
-
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: connection.destinationId,
-  });
+  const { source, destination } = connection;
 
   const sourceDefinition = useResource(
     SourceDefinitionResource.detailShape(),
@@ -87,8 +78,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   };
 
   const onAfterSaveSchema = () => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+    analyticsService.track("Source - Action", {
       action: "Edit schema",
       connector_source: source.sourceName,
       connector_source_id: source.sourceDefinitionId,
@@ -122,13 +112,13 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   };
 
   const linkToSource = () => (
-    <Link clear to={`${Routes.Source}/${source.sourceId}`}>
+    <Link $clear to={`${Routes.Source}/${source.sourceId}`}>
       {source.name}
     </Link>
   );
 
   const linkToDestination = () => (
-    <Link clear to={`${Routes.Destination}/${destination.destinationId}`}>
+    <Link $clear to={`${Routes.Destination}/${destination.destinationId}`}>
       {destination.name}
     </Link>
   );

@@ -59,3 +59,5 @@ Email us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your 
 
 You don't need to include a cover letter, but just a paragraph how you found us and what makes you a great person to join our founding team!
 
+At Airbyte, we don’t just accept difference — we celebrate it and support it. We thrive on it for the benefit of our employees, our product, and our community. Airbyte is proud to be an **Equal Opportunity Workplace** and is an **Affirmative Action employer**.
+

@@ -20,7 +20,7 @@ const LoadingPage: React.FC<IProps> = ({ full }) => {
   const theme = useTheme() as Theme;
   return (
     <Container full={full}>
-      <Spinner backgroundColor={theme.greyColor0} />
+      <Spinner backgroundColor={theme.backgroundColor} />
     </Container>
   );
 };

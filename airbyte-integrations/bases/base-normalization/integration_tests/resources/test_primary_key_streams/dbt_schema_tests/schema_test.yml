@@ -4,16 +4,17 @@ models:
   - name: exchange_rate
     tests:
       - dbt_utils.equality:
-          description: check_streams_are_equal
-            In this integration test, we are sending the same records to both streams
-            exchange_rate and dedup_exchange_rate.
-            The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
-            the final table with append or overwrite mode from exchange_rate.
+          # description: check_streams_are_equal
+          #  In this integration test, we are sending the same records to both streams
+          #  exchange_rate and dedup_exchange_rate.
+          #  The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
+          #  the final table with append or overwrite mode from exchange_rate.
           compare_model: ref('dedup_exchange_rate_scd')
           compare_columns:
             - id
             - currency
             - date
+            - timestamp_col
             - '"HKD@spéçiäl & characters"'
             - HKD_special___characters
             - NZD
@@ -44,14 +45,13 @@ models:
             - NZD
 
   - name: nested_stream_with_complex_columns_resulting_into_long_names_partition
-    columns:
-      - name: DATA
-        tests:
-          - not_null
-        #quote: true in postgres
-      - name: double_array_data
-        tests:
-          - not_null
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "double_array_data is not null"
+      - dbt_utils.expression_is_true:
+          expression: "DATA is not null"
+      - dbt_utils.expression_is_true:
+          expression: "\"column`_'with\"\"_quotes\" is not null"
   - name: nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA
     columns:
       - name: currency
@@ -62,3 +62,15 @@ models:
       - name: id
         tests:
           # - not_null # TODO Fix bug here
+
+  - name: dedup_cdc_excluded
+    columns:
+      - name: name
+        tests:
+          - not_null
+
+  - name: pos_dedup_cdcx
+    columns:
+      - name: name
+        tests:
+          - not_null

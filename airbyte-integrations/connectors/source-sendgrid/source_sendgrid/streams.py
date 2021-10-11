@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -48,8 +28,23 @@ class SendgridStream(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        for record in records:
-            yield record
+
+        if records is not None:
+            for record in records:
+                yield record
+        else:
+            # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding
+            #  log statements to help reproduce and prevent the connector from failing.
+            err_msg = (
+                f"Response contained no valid JSON data. Response body: {response.text}\n"
+                f"Response status: {response.status_code}\n"
+                f"Response body: {response.text}\n"
+                f"Response headers: {response.headers}\n"
+                f"Request URL: {response.request.url}\n"
+                f"Request body: {response.request.body}\n"
+            )
+            # do NOT print request headers as it contains auth token
+            self.logger.info(err_msg)
 
 
 class SendgridStreamOffsetPagination(SendgridStream):
@@ -72,7 +67,7 @@ class SendgridStreamOffsetPagination(SendgridStream):
         return {"offset": self.offset}
 
 
-class SendgridStreamIncrementalMixin(HttpStream):
+class SendgridStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "created"
 
     def __init__(self, start_time: int, **kwargs):
@@ -176,6 +171,18 @@ class Segments(SendgridStream):
         return "marketing/segments"
 
 
+class SingleSends(SendgridStreamMetadataPagination):
+    """
+    https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats
+    """
+
+    data_field = "results"
+
+    @staticmethod
+    def initial_path() -> str:
+        return "marketing/stats/singlesends"
+
+
 class Templates(SendgridStreamMetadataPagination):
     data_field = "result"
 
@@ -190,6 +197,8 @@ class Templates(SendgridStreamMetadataPagination):
 
 
 class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/unsubscribes"
 
@@ -200,25 +209,35 @@ class SuppressionGroups(SendgridStream):
 
 
 class SuppressionGroupMembers(SendgridStreamOffsetPagination):
+    primary_key = "group_id"
+
     def path(self, **kwargs) -> str:
         return "asm/suppressions"
 
 
 class Blocks(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/blocks"
 
 
 class Bounces(SendgridStream, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/bounces"
 
 
 class InvalidEmails(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/invalid_emails"
 
 
 class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"

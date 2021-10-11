@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": ["string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "user": {
+      "$ref": "user.json"
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "pull_request_url": {
+      "type": ["null", "string"]
+    },
+    "_links": {
+      "type": ["null", "object"],
+      "properties": {
+        "html": {
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "pull_request": {
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "submitted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "commit_id": {
+      "type": ["null", "string"]
+    },
+    "author_association": {
+      "type": ["null", "string"]
+    }
+  }
+}

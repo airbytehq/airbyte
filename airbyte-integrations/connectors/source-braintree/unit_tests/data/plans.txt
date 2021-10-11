@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plans type="array">
+    <plan>
+        <id>eqweqw</id>
+        <merchant-id>v4h2qqxh3krhq7p3</merchant-id>
+        <billing-day-of-month nil="true"/>
+        <billing-frequency type="integer">1</billing-frequency>
+        <currency-iso-code>USD</currency-iso-code>
+        <description>This is plan created for testing</description>
+        <name>test plan</name>
+        <number-of-billing-cycles type="integer">3</number-of-billing-cycles>
+        <price>20.00</price>
+        <trial-duration type="integer">2</trial-duration>
+        <trial-duration-unit>month</trial-duration-unit>
+        <trial-period type="boolean">true</trial-period>
+        <created-at type="datetime">2021-08-10T12:43:15Z</created-at>
+        <updated-at type="datetime">2021-08-10T12:43:15Z</updated-at>
+        <add-ons type="array">
+            <add-on>
+                <amount>2.00</amount>
+                <created-at type="datetime">2021-08-10T12:46:19Z</created-at>
+                <description>this is test addon</description>
+                <id>test_addon</id>
+                <kind>add_on</kind>
+                <merchant-id>v4h2qqxh3krhq7p3</merchant-id>
+                <name>test addon</name>
+                <never-expires type="boolean">false</never-expires>
+                <number-of-billing-cycles type="integer">34</number-of-billing-cycles>
+                <updated-at type="datetime">2021-08-10T12:46:19Z</updated-at>
+            </add-on>
+            <add-on>
+                <amount>1.00</amount>
+                <created-at type="datetime">2021-08-10T13:48:51Z</created-at>
+                <description></description>
+                <id>test_addon_empty</id>
+                <kind>add_on</kind>
+                <merchant-id>v4h2qqxh3krhq7p3</merchant-id>
+                <name>test_addon</name>
+                <never-expires type="boolean">true</never-expires>
+                <number-of-billing-cycles nil="true"/>
+                <updated-at type="datetime">2021-08-10T13:48:51Z</updated-at>
+            </add-on>
+        </add-ons>
+        <discounts type="array">
+            <discount>
+                <amount>2.00</amount>
+                <created-at type="datetime">2021-08-10T12:43:41Z</created-at>
+                <description>This is test discount</description>
+                <id>dissscount</id>
+                <kind>discount</kind>
+                <merchant-id>v4h2qqxh3krhq7p3</merchant-id>
+                <name>test discount</name>
+                <never-expires type="boolean">true</never-expires>
+                <number-of-billing-cycles nil="true"/>
+                <updated-at type="datetime">2021-08-10T12:43:41Z</updated-at>
+            </discount>
+        </discounts>
+    </plan>
+</plans>

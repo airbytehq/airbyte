@@ -29,7 +29,18 @@
       "format": "date-time"
     },
     "recipients": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "properties": {
+          "email": {
+            "type": ["string", "null"]
+          },
+          "name": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": "object"
+      }
     },
     "event_type": {
       "type": ["null", "string"]

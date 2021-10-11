@@ -32,6 +32,7 @@ module.exports = function (plop) {
   const genericJdbcSourceInputRoot = '../source-java-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
   const javaDestinationInput = '../destination-java';
+  const pythonDestinationInputRoot = '../destination-python';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
@@ -40,10 +41,34 @@ module.exports = function (plop) {
   const genericJdbcSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
+  const pythonDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
+
+  plop.setGenerator('Python Destination', {
+    description: 'Generate a destination connector written in Python',
+    prompts: [{type:'input', name:'name', 'message': 'Connector name e.g: redis'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonDestinationOutputRoot,
+        base: pythonDestinationInputRoot,
+        templateFiles: `${pythonDestinationInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonDestinationInputRoot}/.dockerignore`,
+        path: `${pythonDestinationOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: pythonDestinationOutputRoot}
+    ]
+
+  })
 
   plop.setGenerator('Python HTTP API Source', {
     description: 'Generate a Source that pulls data from a synchronous HTTP API.',
@@ -113,12 +138,6 @@ module.exports = function (plop) {
             {
                 type:'add',
                 abortOnFail: true,
-                templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
-                path: `${pythonSourceOutputRoot}/.gitignore`
-            },
-            {
-                type:'add',
-                abortOnFail: true,
                 templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
                 path: `${pythonSourceOutputRoot}/.dockerignore`
             },
@@ -162,12 +181,12 @@ module.exports = function (plop) {
     });
 
   plop.setGenerator('Java Destination', {
-    description: 'Generate a minimal Java Airbyte Destination Connector that works with any kind of data source. Use this if none of the other templates serve your use case.',
+    description: 'Generate a Java Destination Connector.',
     prompts: [
       {
         type: 'input',
         name: 'name',
-        message: 'Destination name, without the "destination-" prefix e.g: "google-analytics"',
+        message: 'Destination name, without the "destination-" prefix e.g: "google-pubsub"',
       },
       {
         type: 'input',

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -33,6 +13,7 @@ from typing import Iterable, List
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
 logger = AirbyteLogger()
 
@@ -80,14 +61,21 @@ class AirbyteEntrypoint(object):
             raise Exception("No command passed")
 
         # todo: add try catch for exceptions with different exit codes
+        source_spec = self.source.spec(logger)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
-                message = AirbyteMessage(type=Type.SPEC, spec=self.source.spec(logger))
+                message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                 yield message.json(exclude_unset=True)
             else:
                 raw_config = self.source.read_config(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
+                # Remove internal flags from config before validating so
+                # jsonschema's additionalProperties flag wont fail the validation
+                config, internal_config = split_config(config)
+                check_config_against_spec_or_exit(config, source_spec, logger)
+                # Put internal flags back to config dict
+                config.update(internal_config.dict())
 
                 if cmd == "check":
                     check_result = self.source.check(logger, config)

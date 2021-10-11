@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -109,19 +89,13 @@ public class JdbcBufferedConsumerFactory {
 
       final String streamName = abStream.getName();
       final String tableName = namingResolver.getRawTableName(streamName);
-      String tmpTableName = namingResolver.getTmpTableName(streamName);
-
-      // TODO (#2948): Refactor into StandardNameTransformed , this is for MySQL destination, the table
-      // names can't have more than 64 characters.
-      if (tmpTableName.length() > 64) {
-        String prefix = tmpTableName.substring(0, 31); // 31
-        String suffix = tmpTableName.substring(32, 63); // 31
-        tmpTableName = prefix + "__" + suffix;
-      }
-
+      final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      return new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      LOGGER.info("Write config: {}", writeConfig);
+
+      return writeConfig;
     };
   }
 
@@ -189,12 +163,12 @@ public class JdbcBufferedConsumerFactory {
 
           sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
-            case OVERWRITE -> queryList.add(sqlOperations.truncateTableQuery(schemaName, dstTableName));
+            case OVERWRITE -> queryList.add(sqlOperations.truncateTableQuery(database, schemaName, dstTableName));
             case APPEND -> {}
             case APPEND_DEDUP -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }
-          queryList.add(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));
+          queryList.add(sqlOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
         }
 
         LOGGER.info("Executing finalization of tables.");

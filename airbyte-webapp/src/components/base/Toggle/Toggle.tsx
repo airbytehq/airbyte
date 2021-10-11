@@ -1,14 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 const Switch = styled.label`
   position: relative;
   display: inline-block;
-  width: 60px;
-  min-width: 60px;
-  height: 30px;
+  width: 42px;
+  min-width: 42px;
+  height: 24px;
 `;
 
 const SwitchInput = styled.input`
@@ -24,25 +22,26 @@ const Slider = styled.span`
   left: 0;
   right: 0;
   bottom: 0;
-  background: ${({ theme }) => theme.lightPrimaryColor};
+  background: ${({ theme }) => theme.greyColor20};
   transition: 0.3s;
   border-radius: 19px;
+  border: 1px solid ${({ theme }) => theme.textColor};
 
   &:before {
     position: absolute;
     z-index: 1;
     content: "";
-    height: 24px;
-    width: 24px;
-    left: 3px;
-    bottom: 3px;
-    top: 3px;
+    height: 22px;
+    width: 22px;
+    left: -1px;
+    top: -1px;
     background: ${({ theme }) => theme.whiteColor};
     transition: 0.3s;
     border-radius: 50%;
+    border: 1px solid ${({ theme }) => theme.textColor};
 
     input:checked + & {
-      transform: translateX(30px);
+      transform: translateX(19px);
     }
   }
 
@@ -59,16 +58,6 @@ const Slider = styled.span`
   }
 `;
 
-const SuccessIcon = styled(FontAwesomeIcon)`
-  font-size: 14px;
-  line-height: 14px;
-  color: ${({ theme }) => theme.whiteColor};
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  cursor: pointer;
-`;
-
 const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
   props
 ) => {
@@ -81,7 +70,6 @@ const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
         checked={props.checked || !!props.value}
       />
       <Slider />
-      <SuccessIcon icon={faCheck} />
     </Switch>
   );
 };

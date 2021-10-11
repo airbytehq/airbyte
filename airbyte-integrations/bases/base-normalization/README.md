@@ -2,12 +2,31 @@
 
 Related documentation on normalization is available here:
 
-- [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
-* [tutorials / Custom DBT normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
+- [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
+* [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
 
 # Testing normalization
 
 Below are short descriptions of the kind of tests that may be affected by changes to the normalization code.
+
+### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
+```
+python3 -m venv .venv
+```
+
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
+```
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
 
 ## Unit Tests
 
@@ -54,6 +73,9 @@ allowed characters, if quotes are needed or not, and the length limitations:
 - [postgres](../../../docs/integrations/destinations/postgres.md)
 - [redshift](../../../docs/integrations/destinations/redshift.md)
 - [snowflake](../../../docs/integrations/destinations/snowflake.md)
+- [mysql](../../../docs/integrations/destinations/mysql.md)
+- [oracle](../../../docs/integrations/destinations/oracle.md)
+- [mssql](../../../docs/integrations/destinations/mssql.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
 - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
@@ -216,13 +238,22 @@ A nice improvement would be to add csv/json seed files as expected output data f
 The integration tests would verify that the content of such tables in the destination would match
 these seed files or fail.
 
+### Debug dbt operations with local database
+This only works for testing databases launched in local containers (e.g. postgres and mysql).
+
+- In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
+- Find the name of the database container in the logs (e.g. by searching `Executing`).
+- Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
+- Connect to the database inside the container (e.g. `mysql -u root` for mysql).
+- Test the generated dbt operations directly in the database.
+
 ## Standard Destination Tests
 
 Generally, to invoke standard destination tests, you run with gradle using:
 
     ./gradlew :airbyte-integrations:connectors:destination-<connector name>:integrationTest
 
-For more details and options, you can also refer to the [testing connectors docs](../../../docs/contributing-to-airbyte/building-new-connector/testing-connectors.md).
+For more details and options, you can also refer to the [testing connectors docs](../../../docs/connector-development/testing-connectors/README.md).
 
 ## Acceptance Tests
 

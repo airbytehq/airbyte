@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.services;
@@ -34,12 +14,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Convenience class for retrieving files checked into the Airbyte Github repo.
  */
 public class AirbyteGithubStore {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);
 
   private static final String GITHUB_BASE_URL = "https://raw.githubusercontent.com";
   private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
@@ -65,12 +50,26 @@ public class AirbyteGithubStore {
     this.timeout = timeout;
   }
 
-  public List<StandardDestinationDefinition> getLatestDestinations() throws IOException, InterruptedException {
-    return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
+  public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
+    try {
+      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
+    } catch (IOException e) {
+      LOGGER.warn(
+          "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
+          e);
+      return Collections.emptyList();
+    }
   }
 
-  public List<StandardSourceDefinition> getLatestSources() throws IOException, InterruptedException {
-    return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
+  public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
+    try {
+      return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
+    } catch (IOException e) {
+      LOGGER.warn(
+          "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
+          e);
+      return Collections.emptyList();
+    }
   }
 
   @VisibleForTesting
@@ -80,7 +79,11 @@ public class AirbyteGithubStore {
         .timeout(timeout)
         .header("accept", "*/*") // accept any file type
         .build();
-    return httpClient.send(request, BodyHandlers.ofString()).body();
+    final var resp = httpClient.send(request, BodyHandlers.ofString());
+    if (resp.statusCode() >= 400) {
+      throw new IOException("getFile request ran into status code error: " + resp.statusCode() + "with message: " + resp.getClass());
+    }
+    return resp.body();
   }
 
 }

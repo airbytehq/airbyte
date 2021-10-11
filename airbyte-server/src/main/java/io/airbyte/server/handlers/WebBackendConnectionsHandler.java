@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -36,18 +16,17 @@ import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -57,7 +36,9 @@ import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -154,7 +135,8 @@ public class WebBackendConnectionsHandler {
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination)
-        .operations(operations);
+        .operations(operations.getOperations())
+        .resourceRequirements(connectionRead.getResourceRequirements());
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
@@ -170,6 +152,19 @@ public class WebBackendConnectionsHandler {
           WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
           WebBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
         });
+  }
+
+  public WebBackendConnectionReadList webBackendSearchConnections(WebBackendConnectionSearch webBackendConnectionSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
+    for (ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
+      if (connectionsHandler.matchSearch(toConnectionSearch(webBackendConnectionSearch), connectionRead)) {
+        reads.add(buildWebBackendConnectionRead(connectionRead));
+      }
+    }
+
+    return new WebBackendConnectionReadList().connections(reads);
   }
 
   public WebBackendConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)
@@ -259,7 +254,7 @@ public class WebBackendConnectionsHandler {
       ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
 
       // wait for this to execute
-      JobInfoRead resetJob = schedulerHandler.resetConnection(connectionId);
+      schedulerHandler.resetConnection(connectionId);
 
       // just create the job
       schedulerHandler.syncConnection(connectionId);
@@ -270,7 +265,7 @@ public class WebBackendConnectionsHandler {
   private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<UUID> operationIds = new ArrayList<>();
-    for (var operationCreate : webBackendConnectionCreate.getWithOperations()) {
+    for (var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
     }
     return operationIds;
@@ -278,10 +273,11 @@ public class WebBackendConnectionsHandler {
 
   private List<UUID> updateOperations(WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionRead connectionRead =
-        connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
+    final ConnectionRead connectionRead = connectionsHandler
+        .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
+
     for (var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
         final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
@@ -296,19 +292,29 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
+  private UUID getWorkspaceIdForConnection(UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceId = connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getSourceId();
+    return getWorkspaceIdForSource(sourceId);
+  }
+
+  private UUID getWorkspaceIdForSource(UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return sourceHandler.getSource(new SourceIdRequestBody().sourceId(sourceId)).getWorkspaceId();
+  }
+
   @VisibleForTesting
-  protected static OperationCreate toOperationCreate(OperationCreateOrUpdate operationCreateOrUpdate) {
-    OperationCreate operationCreate = new OperationCreate();
+  protected static OperationCreate toOperationCreate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
+    final OperationCreate operationCreate = new OperationCreate();
 
     operationCreate.name(operationCreateOrUpdate.getName());
+    operationCreate.workspaceId(operationCreateOrUpdate.getWorkspaceId());
     operationCreate.operatorConfiguration(operationCreateOrUpdate.getOperatorConfiguration());
 
     return operationCreate;
   }
 
   @VisibleForTesting
-  protected static OperationUpdate toOperationUpdate(OperationCreateOrUpdate operationCreateOrUpdate) {
-    OperationUpdate operationUpdate = new OperationUpdate();
+  protected static OperationUpdate toOperationUpdate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
+    final OperationUpdate operationUpdate = new OperationUpdate();
 
     operationUpdate.operationId(operationCreateOrUpdate.getOperationId());
     operationUpdate.name(operationCreateOrUpdate.getName());
@@ -319,7 +325,7 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static ConnectionCreate toConnectionCreate(WebBackendConnectionCreate webBackendConnectionCreate, List<UUID> operationIds) {
-    ConnectionCreate connectionCreate = new ConnectionCreate();
+    final ConnectionCreate connectionCreate = new ConnectionCreate();
 
     connectionCreate.name(webBackendConnectionCreate.getName());
     connectionCreate.namespaceDefinition(webBackendConnectionCreate.getNamespaceDefinition());
@@ -331,13 +337,14 @@ public class WebBackendConnectionsHandler {
     connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
+    connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
 
     return connectionCreate;
   }
 
   @VisibleForTesting
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate, List<UUID> operationIds) {
-    ConnectionUpdate connectionUpdate = new ConnectionUpdate();
+    final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
     connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
@@ -347,8 +354,25 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
+    connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
 
     return connectionUpdate;
+  }
+
+  @VisibleForTesting
+  protected static ConnectionSearch toConnectionSearch(WebBackendConnectionSearch webBackendConnectionSearch) {
+    return new ConnectionSearch()
+        .name(webBackendConnectionSearch.getName())
+        .connectionId(webBackendConnectionSearch.getConnectionId())
+        .source(webBackendConnectionSearch.getSource())
+        .sourceId(webBackendConnectionSearch.getSourceId())
+        .destination(webBackendConnectionSearch.getDestination())
+        .destinationId(webBackendConnectionSearch.getDestinationId())
+        .namespaceDefinition(webBackendConnectionSearch.getNamespaceDefinition())
+        .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
+        .prefix(webBackendConnectionSearch.getPrefix())
+        .schedule(webBackendConnectionSearch.getSchedule())
+        .status(webBackendConnectionSearch.getStatus());
   }
 
 }

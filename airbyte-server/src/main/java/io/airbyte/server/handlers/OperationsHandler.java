@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -31,7 +11,6 @@ import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.CheckOperationRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
@@ -70,9 +49,9 @@ public class OperationsHandler {
     this(configRepository, UUID::randomUUID);
   }
 
-  public CheckOperationRead checkOperation(OperationCreateOrUpdate operationCreateOrUpdate) {
+  public CheckOperationRead checkOperation(OperatorConfiguration operationCheck) {
     try {
-      toStandardSyncOperation(operationCreateOrUpdate);
+      validateOperation(operationCheck);
     } catch (IllegalArgumentException e) {
       return new CheckOperationRead().status(StatusEnum.FAILED)
           .message(e.getMessage());
@@ -90,6 +69,7 @@ public class OperationsHandler {
 
   private static StandardSyncOperation toStandardSyncOperation(OperationCreate operationCreate) {
     final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
+        .withWorkspaceId(operationCreate.getWorkspaceId())
         .withName(operationCreate.getName())
         .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
         .withTombstone(false);
@@ -109,25 +89,13 @@ public class OperationsHandler {
     return standardSyncOperation;
   }
 
-  private static StandardSyncOperation toStandardSyncOperation(OperationCreateOrUpdate operationCreate) {
-    final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
-        .withName(operationCreate.getName())
-        .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
-        .withTombstone(false);
-    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
-          .withOption(Enums.convertTo(operationCreate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
+  private void validateOperation(OperatorConfiguration operatorConfiguration) {
+    if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
+      Preconditions.checkArgument(operatorConfiguration.getNormalization() != null);
     }
-    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
-      standardSyncOperation.withOperatorDbt(new OperatorDbt()
-          .withGitRepoUrl(operationCreate.getOperatorConfiguration().getDbt().getGitRepoUrl())
-          .withGitRepoBranch(operationCreate.getOperatorConfiguration().getDbt().getGitRepoBranch())
-          .withDockerImage(operationCreate.getOperatorConfiguration().getDbt().getDockerImage())
-          .withDbtArguments(operationCreate.getOperatorConfiguration().getDbt().getDbtArguments()));
+    if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
+      Preconditions.checkArgument(operatorConfiguration.getDbt() != null);
     }
-    return standardSyncOperation;
   }
 
   public OperationRead updateOperation(OperationUpdate operationUpdate)
@@ -170,14 +138,12 @@ public class OperationsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<OperationRead> operationReads = Lists.newArrayList();
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
-    for (StandardSyncOperation standardSyncOperation : configRepository.listStandardSyncOperations()) {
+    for (UUID operationId : standardSync.getOperationIds()) {
+      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
       if (standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone()) {
         continue;
       }
-      if (!standardSync.getOperationIds().contains(standardSyncOperation.getOperationId())) {
-        continue;
-      }
-      operationReads.add(buildOperationRead(standardSyncOperation.getOperationId()));
+      operationReads.add(buildOperationRead(standardSyncOperation));
     }
     return new OperationReadList().operations(operationReads);
   }
@@ -270,6 +236,7 @@ public class OperationsHandler {
           .dbtArguments(standardSyncOperation.getOperatorDbt().getDbtArguments()));
     }
     return new OperationRead()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(operatorConfiguration);

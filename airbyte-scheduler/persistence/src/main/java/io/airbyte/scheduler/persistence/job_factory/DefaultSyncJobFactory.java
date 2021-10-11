@@ -1,29 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence.job_factory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.config.DestinationConnection;
@@ -44,12 +25,14 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
 
   private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
-                               final ConfigRepository configRepository) {
-
+                               final ConfigRepository configRepository,
+                               final OAuthConfigSupplier oAuthConfigSupplier) {
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   public Long create(final UUID connectionId) {
@@ -57,7 +40,16 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
       final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
       final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
-
+      final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+          sourceConnection.getSourceDefinitionId(),
+          sourceConnection.getWorkspaceId(),
+          sourceConnection.getConfiguration());
+      sourceConnection.withConfiguration(sourceConfiguration);
+      final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+          destinationConnection.getDestinationDefinitionId(),
+          destinationConnection.getWorkspaceId(),
+          destinationConnection.getConfiguration());
+      destinationConnection.withConfiguration(destinationConfiguration);
       final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());

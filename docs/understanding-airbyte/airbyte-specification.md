@@ -178,7 +178,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 
 ### Destination
 
-* A source is implemented as a Docker container. The container must adhere to the following interface.
+A destination is implemented as a Docker container. The container must adhere to the following interface.
 
 **How the container will be called:**
 
@@ -209,7 +209,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
   2. `catalog` - An `AirbyteCatalog`. This `catalog` should be a subset of the `catalog` returned by the `discover` command. Any `AirbyteRecordMessages`s that the destination receives that do _not_ match the structure described in the `catalog` will fail.
   3. `message stream` - \(this stream is consumed on stdin--it is not passed as an arg\). It will receive a stream of JSON-serialized `AirbyteMesssage`.
 * Output:
-  1. none.
+  1. `AirbyteMessage`s of type `AirbyteStateMessage`. The destination connector should only output state messages if they were previously received as input on stdin. Outputting a state message indicates that all records which came before it have been successfully written to the destination.
 * The destination should read in the `AirbyteMessages` and write any that are of type `AirbyteRecordMessage` to the underlying data store.
 * The destination should fail if any of the messages it receives do not match the structure described in the `catalog`.
 
@@ -226,7 +226,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 * Each message must be on its own line. Multiple messages _cannot_ be sent on the same line.
 * Each message must but serialize to a JSON object that is exactly 1 line. The JSON objects cannot be serialized across multiple lines.
 
-## Recognition
+## Acknowledgements
 
-We have been heavily inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge how some of their choices have helped us bootstrap.
+We'd like to note that we were initially inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge that some of their design choices helped us bootstrap our project. We've since made a lot of modernizations to our protocol and specification, but don't want to forget the tools that helped us get started.
 

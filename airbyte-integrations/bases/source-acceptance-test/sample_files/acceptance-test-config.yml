@@ -12,7 +12,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
-      validate_output_from_all_streams: yes
+      empty_streams: []
       expect_records:
         path: "integration_tests/expected_records.txt"
         extra_fields: no

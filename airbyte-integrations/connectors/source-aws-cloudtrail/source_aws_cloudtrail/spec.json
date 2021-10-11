@@ -1,0 +1,38 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/aws-cloudtrail",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Aws CloudTrail Spec",
+    "type": "object",
+    "required": [
+      "aws_key_id",
+      "aws_secret_key",
+      "aws_region_name",
+      "start_date"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "aws_key_id": {
+        "type": "string",
+        "description": "Specifies an AWS access key associated with an IAM user or role.",
+        "airbyte_secret": true
+      },
+      "aws_secret_key": {
+        "type": "string",
+        "description": "Specifies the secret key associated with the access key. This is essentially the 'password' for the access key.",
+        "airbyte_secret": true
+      },
+      "aws_region_name": {
+        "type": "string",
+        "description": "The default AWS Region to use, for example, us-west-1 or us-west-2. When specifying a Region inline during client initialization, this property is named region_name."
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The date you would like to replicate data. Data in ClouTraid is available for last 90 days only. Format: YYYY-MM-DD.",
+        "examples": ["2021-01-01"],
+        "default": "1970-01-01",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      }
+    }
+  }
+}

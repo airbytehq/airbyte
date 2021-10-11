@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -31,6 +11,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -87,6 +68,8 @@ public class DockerProcessFactory implements ProcessFactory {
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
+                        final ResourceRequirements resourceRequirements,
+                        final Map<String, String> labels,
                         final String... args)
       throws WorkerException {
     try {
@@ -116,11 +99,28 @@ public class DockerProcessFactory implements ProcessFactory {
               "-w",
               rebasePath(jobRoot).toString(),
               "--network",
-              networkName);
+              networkName,
+              "--log-driver",
+              "none");
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
       }
+      if (resourceRequirements != null) {
+        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
+          cmd.add(String.format("--cpu-shares=%s", resourceRequirements.getCpuRequest()));
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
+          cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
+          cmd.add(String.format("--memory-reservation=%s", resourceRequirements.getMemoryRequest()));
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
+          cmd.add(String.format("--memory=%s", resourceRequirements.getMemoryLimit()));
+        }
+      }
+
       cmd.add(imageName);
       cmd.addAll(Arrays.asList(args));
 

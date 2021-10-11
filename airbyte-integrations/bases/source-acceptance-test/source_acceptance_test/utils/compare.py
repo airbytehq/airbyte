@@ -1,29 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
-from typing import List, Optional
+import functools
+import json
+from typing import List, Mapping, Optional
 
 import icdiff
 import py
@@ -67,3 +49,29 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
     icdiff_lines = list(differ.make_table(pretty_left, pretty_right, context=True))
 
     return ["equals failed"] + [color_off + line for line in icdiff_lines]
+
+
+@functools.total_ordering
+class DictWithHash(dict):
+
+    _hash: str = None
+
+    def __hash__(self):
+        if not self._hash:
+            self._hash = hash(json.dumps({k: serialize(v) for k, v in self.items()}, sort_keys=True))
+        return self._hash
+
+    def __lt__(self, other):
+        return hash(self) < hash(other)
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+
+def serialize(value) -> str:
+    """Simplify comparison of nested dicts/lists"""
+    if isinstance(value, Mapping):
+        return DictWithHash(value)
+    if isinstance(value, List):
+        return sorted([serialize(v) for v in value])
+    return str(value)

@@ -1,14 +1,10 @@
 import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
-import BaseResource from "./BaseResource";
-import { ConnectionSpecification } from "core/domain/connection";
-import { DestinationSyncMode } from "../domain/catalog";
 
-export interface DestinationDefinitionSpecification {
-  destinationDefinitionId: string;
-  connectionSpecification: ConnectionSpecification;
-  documentationUrl: string;
-  supportedDestinationSyncModes: DestinationSyncMode[];
-}
+import { ConnectionSpecification } from "core/domain/connection";
+import { DestinationSyncMode } from "core/domain/catalog";
+import { DestinationDefinitionSpecification } from "core/domain/connector/types";
+
+import BaseResource from "./BaseResource";
 
 export default class DestinationDefinitionSpecificationResource
   extends BaseResource
@@ -20,6 +16,8 @@ export default class DestinationDefinitionSpecificationResource
     required: [""],
   };
   readonly supportedDestinationSyncModes: DestinationSyncMode[] = [];
+  readonly supportsDbt: boolean = false;
+  readonly supportsNormalization: boolean = false;
 
   pk(): string {
     return this.destinationDefinitionId?.toString();

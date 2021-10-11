@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.helpers;
@@ -34,6 +14,7 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
+import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -46,6 +27,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.server.converters.CatalogConverter;
+import io.airbyte.workers.WorkerUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -72,7 +55,8 @@ public class ConnectionHelpers {
         .withDestinationId(UUID.randomUUID())
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(false)
-        .withSchedule(generateBasicSchedule());
+        .withSchedule(generateBasicSchedule())
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
   public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
@@ -120,7 +104,12 @@ public class ConnectionHelpers {
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())
-        .syncCatalog(ConnectionHelpers.generateBasicApiCatalog());
+        .syncCatalog(ConnectionHelpers.generateBasicApiCatalog())
+        .resourceRequirements(new ResourceRequirements()
+            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
@@ -138,6 +127,42 @@ public class ConnectionHelpers {
           .units(standardSync.getSchedule().getUnits()));
     }
 
+    return connectionRead;
+  }
+
+  public static ConnectionRead connectionReadFromStandardSync(StandardSync standardSync) {
+    final ConnectionRead connectionRead = new ConnectionRead();
+    connectionRead
+        .connectionId(standardSync.getConnectionId())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
+        .name(standardSync.getName())
+        .namespaceFormat(standardSync.getNamespaceFormat())
+        .prefix(standardSync.getPrefix());
+
+    if (standardSync.getNamespaceDefinition() != null) {
+      connectionRead
+          .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
+    }
+    if (standardSync.getStatus() != null) {
+      connectionRead.status(io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
+    }
+    if (standardSync.getSchedule() != null) {
+      connectionRead.schedule(new io.airbyte.api.model.ConnectionSchedule()
+          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+          .units(standardSync.getSchedule().getUnits()));
+    }
+    if (standardSync.getCatalog() != null) {
+      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+    }
+    if (standardSync.getResourceRequirements() != null) {
+      connectionRead.resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
+          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
+    }
     return connectionRead;
   }
 

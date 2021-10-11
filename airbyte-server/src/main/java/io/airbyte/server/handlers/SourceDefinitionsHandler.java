@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -35,14 +15,13 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -87,7 +66,7 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
@@ -103,16 +82,14 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return toSourceDefinitionReadList(getLatestDestinations());
+    return toSourceDefinitionReadList(getLatestSources());
   }
 
-  private List<StandardSourceDefinition> getLatestDestinations() {
+  private List<StandardSourceDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();
-    } catch (IOException e) {
-      return Collections.emptyList();
     } catch (InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 

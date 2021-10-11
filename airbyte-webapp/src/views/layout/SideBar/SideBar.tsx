@@ -1,27 +1,24 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faLifeRing,
-  faBook,
-  faCog,
-  faTools,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRocket, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Routes } from "pages/routes";
-import config from "config";
+import { useConfig } from "config";
 
-import useConnector from "components/hooks/services/useConnector";
-import Link from "components/Link";
+import useConnector from "hooks/services/useConnector";
+import { Link } from "components";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
 
-import Source from "./components/Source";
-import Connections from "./components/Connections";
-import Destination from "./components/Destination";
+import Source from "./components/SourceIcon";
+import Connections from "./components/ConnectionsIcon";
+import Destination from "./components/DestinationIcon";
+import Onboarding from "./components/OnboardingIcon";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Bar = styled.nav`
   width: 100px;
@@ -94,7 +91,7 @@ const HelpIcon = styled(FontAwesomeIcon)`
   line-height: 21px;
 `;
 
-const AdminIcon = styled(FontAwesomeIcon)`
+const SettingsIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 15px;
 `;
@@ -107,14 +104,32 @@ const Notification = styled(Indicator)`
 
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
+  const config = useConfig();
+  const { workspace } = useWorkspace();
 
   return (
     <Bar>
       <div>
-        <Link to={Routes.Root}>
+        <Link
+          to={
+            workspace.displaySetupWizard
+              ? Routes.Onboarding
+              : Routes.Connections
+          }
+        >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
+          {workspace.displaySetupWizard ? (
+            <li>
+              <MenuItem to={Routes.Onboarding} activeClassName="active">
+                <Onboarding />
+                <Text>
+                  <FormattedMessage id="sidebar.onboarding" />
+                </Text>
+              </MenuItem>
+            </li>
+          ) : null}
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
               <Connections />
@@ -124,15 +139,7 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem
-              to={Routes.Root}
-              exact
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname === Routes.Root ||
-                location.pathname.startsWith(Routes.Source)
-              }
-            >
+            <MenuItem to={Routes.Source} activeClassName="active">
               <Source />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -148,17 +155,31 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Admin} activeClassName="active">
+            <MenuItem
+              to={`${Routes.Settings}${Routes.Account}`}
+              activeClassName="active"
+              isActive={(_, location) =>
+                location.pathname.startsWith(Routes.Settings)
+              }
+            >
               {hasNewVersions ? <Notification /> : null}
-              <AdminIcon icon={faTools} />
+              <SettingsIcon icon={faCog} />
               <Text>
-                <FormattedMessage id="sidebar.admin" />
+                <FormattedMessage id="sidebar.settings" />
               </Text>
             </MenuItem>
           </li>
         </Menu>
       </div>
       <Menu>
+        <li>
+          <MenuLinkItem href={config.ui.updateLink} target="_blank">
+            <HelpIcon icon={faRocket} />
+            <Text>
+              <FormattedMessage id="sidebar.update" />
+            </Text>
+          </MenuLinkItem>
+        </li>
         <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
             {/*@ts-ignore slack icon fails here*/}
@@ -169,28 +190,12 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <MenuLinkItem href={config.ui.helpLink} target="_blank">
-            <HelpIcon icon={faLifeRing} />
-            <Text>
-              <FormattedMessage id="sidebar.help" />
-            </Text>
-          </MenuLinkItem>
-        </li>
-        <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">
             <DocsIcon icon={faBook} />
             <Text>
               <FormattedMessage id="sidebar.docs" />
             </Text>
           </MenuLinkItem>
-        </li>
-        <li>
-          <MenuItem to={Routes.Settings} activeClassName="active">
-            <AdminIcon icon={faCog} />
-            <Text>
-              <FormattedMessage id="sidebar.settings" />
-            </Text>
-          </MenuItem>
         </li>
         {config.version ? (
           <li>

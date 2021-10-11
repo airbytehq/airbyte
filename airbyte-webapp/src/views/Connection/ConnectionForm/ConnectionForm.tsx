@@ -1,24 +1,35 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
-
-import { SyncSchema } from "core/domain/catalog";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
+import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import { equal } from "utils/objects";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
-import BottomBlock from "./components/BottomBlock";
+import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
+import useWorkspace from "hooks/services/useWorkspace";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { TransformationField } from "./components/TransformationField";
+import { NormalizationField } from "./components/NormalizationField";
+import { NamespaceField } from "./components/NamespaceField";
+import {
+  ConnectionFormValues,
+  connectionValidationSchema,
+  useDefaultTransformation,
+  FormikConnectionFormValues,
+  mapFormPropsToOperation,
+  useFrequencyDropdownData,
+  useInitialValues,
+} from "./formConfig";
+import SectionTitle from "./components/SectionTitle";
+import CreateControls from "./components/CreateControls";
 import Connector from "./components/Connector";
-import SchemaField from "./components/SchemaField";
+import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
-import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
-import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
-import { ConnectionFormValues, connectionValidationSchema } from "./formConfig";
+import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -39,25 +50,25 @@ const ConnectorLabel = styled(ControlLabels)`
 `;
 
 type ConnectionFormProps = {
-  schema: SyncSchema;
   onSubmit: (values: ConnectionFormValues) => void;
   className?: string;
-  source: Source;
-  destination: Destination;
-  errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
+
+  /** Should be passed when connection is updated with withRefreshCatalog flag */
   editSchemeMode?: boolean;
-  frequencyValue?: string;
-  prefixValue?: string;
   isEditMode?: boolean;
-  isLoading?: boolean;
   additionalSchemaControl?: React.ReactNode;
   sourceIcon?: string;
   destinationIcon?: string;
+
+  connection:
+    | Connection
+    | (Partial<Connection> &
+        Pick<Connection, "syncCatalog" | "source" | "destination">);
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -67,54 +78,93 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   sourceIcon,
   destinationIcon,
   className,
-  errorMessage,
   onDropDownSelect,
-  frequencyValue,
-  prefixValue,
   isEditMode,
   successMessage,
   additionBottomControls,
   editSchemeMode,
-  isLoading,
   additionalSchemaControl,
-  source,
-  destination,
-  ...props
+  connection,
 }) => {
-  const initialSchema = useInitialSchema(props.schema);
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
-    destination.destinationDefinitionId
+    connection.destination.destinationDefinitionId
   );
-  const dropdownData = useFrequencyDropdownData();
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
-  const formatMessage = useIntl().formatMessage;
+  const [submitError, setSubmitError] = useState<Error | null>(null);
 
-  return (
-    <Formik
-      initialValues={{
-        frequency: frequencyValue || "",
-        prefix: prefixValue || "",
-        schema: initialSchema,
-      }}
-      validateOnBlur={true}
-      validateOnChange={true}
-      validationSchema={connectionValidationSchema}
-      onSubmit={async (values) => {
-        await onSubmit(
-          connectionValidationSchema.cast(values, {
-            context: { isRequest: true },
-          })
-        );
+  const formatMessage = useIntl().formatMessage;
+  const { hasFeature } = useFeatureService();
+
+  const { source, destination, operations } = connection;
+  const supportsNormalization = destDefinition.supportsNormalization;
+  const supportsTransformations =
+    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
+
+  const initialValues = useInitialValues(
+    connection,
+    destDefinition,
+    isEditMode
+  );
+
+  const { workspace } = useWorkspace();
+
+  const onFormSubmit = useCallback(
+    async (values: FormikConnectionFormValues) => {
+      const formValues: ConnectionFormValues = connectionValidationSchema.cast(
+        values,
+        {
+          context: { isRequest: true },
+        }
+      ) as any;
+
+      const newOperations = mapFormPropsToOperation(
+        values,
+        operations,
+        workspace.workspaceId
+      );
+
+      if (newOperations.length > 0) {
+        formValues.operations = newOperations;
+      }
+
+      setSubmitError(null);
+      try {
+        await onSubmit(formValues);
 
         const requiresReset =
-          isEditMode && !equal(initialSchema, values.schema) && !editSchemeMode;
+          isEditMode &&
+          !equal(initialValues.syncCatalog, values.syncCatalog) &&
+          !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
-      }}
+      } catch (e) {
+        setSubmitError(e);
+      }
+    },
+    [
+      editSchemeMode,
+      initialValues.syncCatalog,
+      isEditMode,
+      onSubmit,
+      operations,
+      workspace.workspaceId,
+    ]
+  );
+
+  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
+  const frequencies = useFrequencyDropdownData();
+  const defaultTransformation = useDefaultTransformation();
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={connectionValidationSchema}
+      enableReinitialize={true}
+      onSubmit={onFormSubmit}
     >
-      {({ isSubmitting, setFieldValue, values, isValid, dirty, resetForm }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <ControlLabelsWithMargin>
             <ConnectorLabel
@@ -131,8 +181,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             >
               <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
-            <Field name="frequency">
-              {({ field, meta }: FieldProps<string>) => (
+            <Field name="schedule">
+              {({ field, meta }: FieldProps<ScheduleProperties>) => (
                 <ConnectorLabel
                   error={!!meta.error && meta.touched}
                   label={formatMessage({
@@ -142,8 +192,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   <DropDown
                     {...field}
                     error={!!meta.error && meta.touched}
-                    data={dropdownData}
-                    onSelect={(item) => {
+                    options={frequencies}
+                    onChange={(item) => {
                       if (onDropDownSelect) {
                         onDropDownSelect(item);
                       }
@@ -154,6 +204,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           </ControlLabelsWithMargin>
+          <NamespaceField />
           <Field name="prefix">
             {({ field }: FieldProps<string>) => (
               <ControlLabelsWithMargin
@@ -174,50 +225,82 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <SchemaField
+          <Field
+            name="syncCatalog.streams"
             destinationSupportedSyncModes={
               destDefinition.supportedDestinationSyncModes
             }
             additionalControl={additionalSchemaControl}
+            component={SchemaField}
           />
-          {!isEditMode ? (
+          {supportsNormalization || supportsTransformations ? (
+            <SectionTitle>
+              {[
+                supportsNormalization &&
+                  formatMessage({ id: "connectionForm.normalization.title" }),
+                supportsTransformations &&
+                  formatMessage({ id: "connectionForm.transformation.title" }),
+              ]
+                .filter(Boolean)
+                .join(" & ")}
+            </SectionTitle>
+          ) : null}
+          {supportsNormalization && (
+            <Field name="normalization" component={NormalizationField} />
+          )}
+          {supportsTransformations && (
+            <FieldArray name="transformations">
+              {(formProps) => (
+                <TransformationField
+                  defaultTransformation={defaultTransformation}
+                  {...formProps}
+                />
+              )}
+            </FieldArray>
+          )}
+          {!isEditMode && (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}
             />
-          ) : null}
+          )}
           {isEditMode ? (
-            <>
-              <EditControls
-                isSubmitting={isLoading || isSubmitting}
-                isValid={isValid}
-                dirty={dirty || !equal(initialSchema, values.schema)}
-                resetForm={() => {
-                  resetForm();
-                  if (onCancel) {
-                    onCancel();
-                  }
-                }}
-                successMessage={successMessage}
-                errorMessage={errorMessage}
-                editSchemeMode={editSchemeMode}
-              />
-              {modalIsOpen && (
-                <ResetDataModal
-                  modalType={ModalTypes.RESET_CHANGED_COLUMN}
-                  onClose={() => setResetModalIsOpen(false)}
-                  onSubmit={async () => {
-                    await onReset?.();
-                    setResetModalIsOpen(false);
-                  }}
-                />
-              )}
-            </>
+            <EditControls
+              isSubmitting={isSubmitting}
+              dirty={dirty}
+              resetForm={() => {
+                resetForm();
+                if (onCancel) {
+                  onCancel();
+                }
+              }}
+              successMessage={successMessage}
+              errorMessage={
+                errorMessage || !isValid
+                  ? formatMessage({ id: "connectionForm.validation.error" })
+                  : null
+              }
+              editSchemeMode={editSchemeMode}
+            />
           ) : (
-            <BottomBlock
+            <CreateControls
               additionBottomControls={additionBottomControls}
               isSubmitting={isSubmitting}
               isValid={isValid}
-              errorMessage={errorMessage}
+              errorMessage={
+                errorMessage || !isValid
+                  ? formatMessage({ id: "connectionForm.validation.error" })
+                  : null
+              }
+            />
+          )}
+          {modalIsOpen && (
+            <ResetDataModal
+              modalType={ModalTypes.RESET_CHANGED_COLUMN}
+              onClose={() => setResetModalIsOpen(false)}
+              onSubmit={async () => {
+                await onReset?.();
+                setResetModalIsOpen(false);
+              }}
             />
           )}
         </FormContainer>
@@ -226,4 +309,5 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 };
 
+export type { ConnectionFormProps };
 export default ConnectionForm;

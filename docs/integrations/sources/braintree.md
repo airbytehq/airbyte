@@ -4,13 +4,17 @@
 
 This source can sync data for the [Braintree API](https://developers.braintreepayments.com/start/overview). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-braintree).
-
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
 
+* [Customers](https://developer.paypal.com/braintree/docs/reference/request/customer/search)
+* [Discounts](https://developer.paypal.com/braintree/docs/reference/response/discount)
+* [Disputes](https://developer.paypal.com/braintree/docs/reference/request/dispute/search)
 * [Transactions](https://developers.braintreepayments.com/reference/response/transaction/python)
+* [Merchant Accounts](https://developer.paypal.com/braintree/docs/reference/response/merchant-account)
+* [Plans](https://developer.paypal.com/braintree/docs/reference/response/plan)
+* [Subscriptions](https://developer.paypal.com/braintree/docs/reference/response/subscription)
 
 ### Data type mapping
 
@@ -49,4 +53,10 @@ The Braintree connector should not run into Braintree API limitations under norm
 Generate all requirements using the [Braintree documentation](https://articles.braintreepayments.com/control-panel/important-gateway-credentials).
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-08-17 | [5362](https://github.com/airbytehq/airbyte/pull/5362) | Initial version |
 

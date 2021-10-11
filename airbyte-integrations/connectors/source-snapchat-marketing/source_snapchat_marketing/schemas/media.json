@@ -1,0 +1,54 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "ad_account_id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "media_status": {
+      "type": ["null", "string"]
+    },
+    "file_name": {
+      "type": ["null", "string"]
+    },
+    "download_link": {
+      "type": ["null", "string"]
+    },
+    "duration_in_seconds": {
+      "type": ["null", "number"],
+      "multipleOf": 1e-10
+    },
+    "image_metadata": {
+      "type": ["null", "object"]
+    },
+    "video_metadata": {
+      "type": ["null", "object"]
+    },
+    "file_size_in_bytes": {
+      "type": ["null", "integer"]
+    },
+    "is_demo_media": {
+      "type": ["null", "boolean"]
+    },
+    "hash": {
+      "type": ["null", "string"]
+    },
+    "visibility": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    }
+  }
+}

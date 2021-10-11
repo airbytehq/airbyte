@@ -117,15 +117,13 @@
         "properties": {
           "price_set": {},
           "price": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "title": {
             "type": ["null", "string"]
           },
           "rate": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "compare_at": {
             "type": ["null", "string"]
@@ -145,8 +143,7 @@
       "type": ["null", "array"]
     },
     "total_line_items_price": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "number"]
     },
     "closed_at": {
       "type": ["null", "string"],
@@ -168,12 +165,10 @@
       "type": ["null", "string"]
     },
     "total_tax": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "number"]
     },
     "subtotal_price": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "number"]
     },
     "line_items": {
       "items": {
@@ -186,7 +181,7 @@
             "type": ["null", "integer"]
           },
           "compare_at_price": {
-            "type": ["null", "string"]
+            "type": ["null", "number"]
           },
           "destination_location_id": {
             "type": ["null", "integer"]
@@ -195,7 +190,7 @@
             "type": ["null", "string"]
           },
           "line_price": {
-            "type": ["null", "string"]
+            "type": ["null", "number"]
           },
           "origin_location_id": {
             "type": ["null", "integer"]
@@ -288,18 +283,16 @@
               "properties": {
                 "price_set": {},
                 "price": {
-                  "type": ["null", "number"],
-                  "multipleOf": 1e-10
+                  "type": ["null", "number"]
                 },
                 "title": {
                   "type": ["null", "string"]
                 },
                 "rate": {
-                  "type": ["null", "number"],
-                  "multipleOf": 1e-10
+                  "type": ["null", "number"]
                 },
                 "compare_at": {
-                  "type": ["null", "string"]
+                  "type": ["null", "number"]
                 },
                 "position": {
                   "type": ["null", "integer"]
@@ -345,8 +338,7 @@
             "type": ["null", "object"]
           },
           "price": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "requires_shipping": {
             "type": ["null", "boolean"]
@@ -407,8 +399,7 @@
       "type": ["null", "string"]
     },
     "total_discounts": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "number"]
     },
     "note": {
       "type": ["null", "string"]
@@ -439,8 +430,7 @@
             "type": ["null", "integer"]
           },
           "price": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "requested_fulfillment_service_id": {
             "type": ["null", "string"]
@@ -456,8 +446,7 @@
               "properties": {
                 "price_set": {},
                 "price": {
-                  "type": ["null", "number"],
-                  "multipleOf": 1e-10
+                  "type": ["null", "number"]
                 },
                 "title": {
                   "type": ["null", "string"]
@@ -641,7 +630,7 @@
           "type": ["null", "boolean"]
         },
         "total_spent": {
-          "type": ["null", "string"]
+          "type": ["null", "number"]
         },
         "last_order_id": {
           "type": ["null", "integer"]
@@ -757,8 +746,7 @@
       }
     },
     "total_price": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "number"]
     },
     "cart_token": {
       "type": ["null", "string"]

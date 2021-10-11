@@ -7,5 +7,3 @@ airbytePython {
     moduleDirectory 'source_acceptance_test'
 }
 
-// no-op integration test task to allow build script to succeed. TODO fix build script to not require a task with this name.
-task("integrationTest")
