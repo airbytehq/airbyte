@@ -284,6 +284,32 @@ class TestTransformConfig:
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
 
+    def test_transform_mssql(self):
+        input = {
+            "type": "sqlserver",
+            "host": "airbyte.io",
+            "port": 1433,
+            "database": "my_db",
+            "schema": "my_db",
+            "username": "SA",
+            "password": "password1234",
+        }
+
+        actual = TransformConfig().transform_mysql(input)
+        expected = {
+            "type": "sqlserver",
+            "server": "airbyte.io",
+            "port": 1433,
+            "schema": "my_db",
+            "database": "my_db",
+            "username": "SA",
+            "password": "password1234",
+        }
+
+        assert expected == actual
+        # DBT schema is equivalent to MySQL database
+        assert extract_schema(actual) == "my_db"
+
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
         input = {

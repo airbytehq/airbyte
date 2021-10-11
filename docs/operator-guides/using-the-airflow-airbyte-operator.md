@@ -2,11 +2,9 @@
 description: Start triggering Airbyte jobs with Apache Airflow in minutes
 ---
 
-# Using Apache Airflow with the Airbyte Operator
+# Using the Airflow Airbyte Operator
 
-Airbyte is an official community provider for the Apache Airflow project. 
-The Airbyte operator allows you to trigger synchronization jobs in Apache Airflow,
-and this tutorial will walk through configuring your Airflow DAG to do so.
+Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger synchronization jobs in Apache Airflow, and this tutorial will walk through configuring your Airflow DAG to do so.
 
 {% hint style="warning" %}
 Due to some difficulties in setting up Airflow, we recommend first trying out the deployment using the local example [here](https://github.com/airbytehq/airbyte/tree/master/resources/examples/airflow), as it contains accurate configuration required to get the Airbyte operator up and running.
@@ -26,9 +24,7 @@ For the purposes of this tutorial, set your Connection's **sync frequency** to *
 
 ### **Start Apache Airflow**
 
-If you don't have an Airflow instance, we recommend following this [guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) to set one up.
-Additionally, you will need to install the `apache-airflow-providers-airbyte` package to use Airbyte Operator on Apache Airflow.
-You can read more about it [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html)
+If you don't have an Airflow instance, we recommend following this [guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) to set one up. Additionally, you will need to install the `apache-airflow-providers-airbyte` package to use Airbyte Operator on Apache Airflow. You can read more about it [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html)
 
 ## 2. Create a DAG in Apache Airflow to trigger your Airbyte job
 

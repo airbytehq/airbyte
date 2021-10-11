@@ -126,7 +126,7 @@
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -140,7 +140,7 @@
 - sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   name: Google Analytics v4
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -221,7 +221,7 @@
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -326,7 +326,7 @@
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   sourceType: database
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
