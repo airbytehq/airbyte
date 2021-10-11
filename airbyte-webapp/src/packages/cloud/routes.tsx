@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo } from "react";
+import React, { Suspense, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
 import { useAsync } from "react-use";
-import { useIntercom } from "react-use-intercom";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -26,6 +25,7 @@ import { WorkspacesPage } from "packages/cloud/views/workspaces";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { useIntercom } from "packages/cloud/services/useIntercom";
 import useConnector from "hooks/services/useConnector";
 
 import {
@@ -183,6 +183,8 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 
 const MainViewRoutes = () => {
   useApiHealthPoll();
+  useIntercom();
+
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (
@@ -223,17 +225,6 @@ const FirebaseActionRoute: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
-
-  const { boot } = useIntercom();
-
-  useEffect(() => {
-    if (user && user.email && user.name) {
-      boot({
-        email: user.email,
-        name: user.name,
-      });
-    }
-  }, [user]);
 
   return (
     <Router>
