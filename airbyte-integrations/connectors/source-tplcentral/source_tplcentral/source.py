@@ -27,6 +27,7 @@ from abc import ABC
 from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
                     Tuple)
 from urllib.parse import parse_qsl, urlparse
+import arrow
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -51,6 +52,9 @@ class TplcentralStream(HttpStream, ABC):
         self.customer_id = config.get('customer_id', None)
         self.facility_id = config.get('facility_id', None)
         self.start_date = config.get('start_date', None)
+
+        if self.start_date is not None:
+            self.start_date = arrow.get(self.start_date)
 
         self.total_results_field = "TotalResults"
 
@@ -106,27 +110,31 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = 10
 
-    @property
-    def cursor_field(self) -> str:
-        return []
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        if current_stream_state is not None and "cursor" in current_stream_state:
+            current_date = arrow.get(current_stream_state["cursor"])
+            latest_record_date = arrow.get(latest_record["cursor"])
+            return {
+                "cursor": max(current_date, latest_record_date).isoformat()
+            }
         return {
-            "last_modified_date": latest_record.get('ReadOnly', {}).get('LastModifiedDate', None)
+            "cursor": self.start_date.isoformat()
         }
 
 
 class Items(IncrementalTplcentralStream):
-    cursor_field = "last_modified_date"
-    primary_key = "id"
+    primary_key = "cursor"
+    cursor_field = "cursor"
+
     collection_field = "ResourceList"
 
     def path(self, **kwargs) -> str:
         return f"customers/{self.customer_id}/items"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        start_date = arrow.get(stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
         return [{
-            "last_modified_date": "2021-08-01"
+            "cursor": start_date
         }]
 
     def request_params(
@@ -144,7 +152,12 @@ class Items(IncrementalTplcentralStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [normalize(v) for v in response.json()['ResourceList']]
+        out = []
+        for v in response.json()['ResourceList']:
+            v = normalize(v)
+            v['cursor'] = v['read_only']['last_modified_date']
+            out.append(v)
+        return out
 
 
 class TplcentralAuthenticator(Oauth2Authenticator):
