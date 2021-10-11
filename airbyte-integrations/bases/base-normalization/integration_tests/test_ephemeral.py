@@ -12,7 +12,6 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
-from dbt_integration_test import NORMALISATION_TEST_TARGET
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
