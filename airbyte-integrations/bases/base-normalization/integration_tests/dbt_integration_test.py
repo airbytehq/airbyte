@@ -348,6 +348,7 @@ class DbtIntegrationTest(object):
                         "Nothing to do.",  # When no schema/data tests are setup
                         "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
                         "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
+                        "depends on a node named 'disabled_test' which was not found",  # Tests throwing warning because it is disabled
                     ]:
                         if except_clause in str_line:
                             is_exception = True

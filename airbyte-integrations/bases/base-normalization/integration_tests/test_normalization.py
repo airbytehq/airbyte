@@ -62,8 +62,19 @@ def setup_test_path(request):
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip("Destinations is not in TEST_NORMALIZATION env variable")
-    print("Testing normalization")
+        pytest.skip("Destinations is not in NORMALISATION_TEST_TARGET env variable")
+    target_schema = dbt_test_utils.target_schema
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    try:
+        run_test_normalization(destination_type, test_resource_name, setup_test_path)
+    finally:
+        dbt_test_utils.set_target_schema(target_schema)
+
+
+def run_test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
+    print("Testing normalization in ", dbt_test_utils.target_schema)
     integration_type = destination_type.value
 
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
@@ -76,18 +87,14 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
 
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
-    if integration_type == DestinationType.ORACLE.value:
-        # Oracle doesnt support nested with clauses
-        # Skip the dbt_test for DestinationType.ORACLE
-        dbt_test_utils.dbt_run(destination_type, test_root_dir)
-    else:
-        # Setup test resources and models
-        dbt_test_setup(destination_type, test_resource_name, test_root_dir)
-        # Run DBT process
-        dbt_test_utils.dbt_run(destination_type, test_root_dir)
+    # Setup test resources and models
+    dbt_test_setup(destination_type, test_resource_name, test_root_dir)
+    # Run DBT process
+    dbt_test_utils.dbt_run(destination_type, test_root_dir)
+    if destination_type.value != DestinationType.ORACLE.value:
         # Run checks on Tests results
         dbt_test(destination_type, test_root_dir)
-        check_outputs(destination_type, test_resource_name, test_root_dir)
+    check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
@@ -195,28 +202,18 @@ def dbt_test_setup(destination_type: DestinationType, test_resource_name: str, t
         destination_type,
         replace_identifiers,
     )
-    if destination_type.value == DestinationType.MSSQL.value:
-        # MS SQL Server doesn't support nested WITH clause,
-        # we use the separed sql statement, to handle this
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_data_tests_mssql"),
-            os.path.join(test_root_dir, "tests"),
-            destination_type,
-            replace_identifiers,
-        )
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_tmp_data_test_mssql"),
-            os.path.join(test_root_dir, "models/dbt_tmp_data_test"),
-            destination_type,
-            replace_identifiers,
-        )
-    else:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_data_tests"),
-            os.path.join(test_root_dir, "tests"),
-            destination_type,
-            replace_identifiers,
-        )
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_data_tests_tmp"),
+        os.path.join(test_root_dir, "models/dbt_data_tests_tmp"),
+        destination_type,
+        replace_identifiers,
+    )
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_data_test"),
+        os.path.join(test_root_dir, "tests"),
+        destination_type,
+        replace_identifiers,
+    )
 
 
 def dbt_test(destination_type: DestinationType, test_root_dir: str):
@@ -260,6 +257,12 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             identifiers_map = json.loads(contents)
             pattern = []
             replace_value = []
+            if dbt_test_utils.target_schema != "test_normalization":
+                pattern.append("test_normalization")
+                if destination_type.value == DestinationType.SNOWFLAKE.value:
+                    replace_value.append(dbt_test_utils.target_schema.upper())
+                else:
+                    replace_value.append(dbt_test_utils.target_schema)
             if destination_type.value in identifiers_map:
                 for entry in identifiers_map[destination_type.value]:
                     for k in entry:

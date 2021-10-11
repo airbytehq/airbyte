@@ -24,7 +24,7 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     if os.getenv(NORMALISATION_TEST_TARGET):
-        destinations_to_test = [d.value for d in {DestinationType.POSTGRES, DestinationType.from_string(os.getenv("TEST_NORMALIZATION"))}]
+        destinations_to_test = [d.value for d in {DestinationType.POSTGRES, DestinationType.from_string(os.getenv("NORMALISATION_TEST_TARGET"))}]
     else:
         destinations_to_test = [d.value for d in DestinationType]
     dbt_test_utils.set_target_schema("test_ephemeral")
@@ -53,7 +53,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     if integration_type.value not in dbt_test_utils.get_test_targets() or integration_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1500.
-        pytest.skip("Destinations is not in TEST_NORMALIZATION env variable (MYSQL is also skipped)")
+        pytest.skip("Destinations is not in NORMALISATION_TEST_TARGET env variable (MYSQL is also skipped)")
     if integration_type == DestinationType.ORACLE:
         column_count = 998
     if integration_type == DestinationType.MSSQL:
@@ -77,7 +77,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
     if integration_type not in dbt_test_utils.get_test_targets():
-        pytest.skip("Destinations is not in TEST_NORMALIZATION env variable")
+        pytest.skip("Destinations is not in NORMALISATION_TEST_TARGET env variable")
     run_test(DestinationType.from_string(integration_type), column_count, expected_exception_message)
 
 
