@@ -3,17 +3,15 @@
 #
 
 import csv
-import decimal
 import pendulum
 import requests
 
 from . import fields
 from abc import ABC
 from datetime import date, datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Callable
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Callable, Dict
 from operator import add
 from pendulum.tz.timezone import Timezone
-from pendulum.parsing.exceptions import ParserError
 from http import HTTPStatus
 from decimal import Decimal
 
@@ -22,6 +20,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # Simple transformer
 def parse_date(date: Any, timezone: Timezone) -> datetime:
@@ -29,32 +28,6 @@ def parse_date(date: Any, timezone: Timezone) -> datetime:
         return pendulum.parse(date).replace(tzinfo=timezone)
     return date
 
-def transform_empty_strings_to_none(record):
-    for key, value in record.items():
-        if value == "":
-            record[key] = None
-
-def transform_na_to_none(record):
-    for key, value in record.items():
-        if value == "N/A":
-            record[key] = None
-
-def transform_boolean(record, field_name):
-    value = record.get(field_name, None)
-    if value is None:
-        return
-
-    if value.lower() == "TRUE".lower():
-        record[field_name] = True
-    else:
-        record[field_name] = False
-
-def transform_decimal(record, field_name):
-    value = record.get(field_name, None)
-    if value is None:
-        return
-
-    record[field_name] = Decimal(value)
 
 # Basic full refresh stream
 class AppsflyerStream(HttpStream, ABC):
@@ -62,6 +35,7 @@ class AppsflyerStream(HttpStream, ABC):
     main_fields = ()
     additional_fields = ()
     maximum_rows = 1_000_000
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(
         self,
@@ -114,7 +88,7 @@ class AppsflyerStream(HttpStream, ABC):
         # Skip CSV Header
         next(reader, {})
 
-        yield from map(self.transform, reader)
+        yield from reader
 
     def is_aggregate_reports_reached_limit(self, response: requests.Response) -> bool:
         template = "Limit reached for "
@@ -150,52 +124,13 @@ class AppsflyerStream(HttpStream, ABC):
         AirbyteLogger().log("INFO", f"Rate limit exceded. Retry in {wait_time} seconds.")
         return wait_time
 
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        transform_empty_strings_to_none(record)
-        transform_na_to_none(record)
-        transform_boolean(record, "wifi")
-        transform_boolean(record, "is_retargeting")
-        transform_boolean(record, "is_primary_attribution")
-        transform_boolean(record, "is_lat")
-        transform_boolean(record, "is_receipt_validated")
-        transform_boolean(record, "store_reinstall")
-        transform_decimal(record, "account_login_event_counter")
-        transform_decimal(record, "account_login_sales_in_usd")
-        transform_decimal(record, "account_login_unique_users")
-        transform_decimal(record, "af_complete_registration_event_counter")
-        transform_decimal(record, "af_complete_registration_sales_in_usd")
-        transform_decimal(record, "af_complete_registration_unique_users")
-        transform_decimal(record, "af_purchase_registration_event_counter")
-        transform_decimal(record, "af_purchase_registration_sales_in_usd")
-        transform_decimal(record, "af_purchase_registration_unique_users")
-        transform_decimal(record, "average_ecpi")
-        transform_decimal(record, "average_revenue_per_user")
-        transform_decimal(record, "checkout_success_event_counter")
-        transform_decimal(record, "checkout_success_sales_in_usd")
-        transform_decimal(record, "checkout_success_unique_users")
-        transform_decimal(record, "click_through_rate")
-        transform_decimal(record, "clicks")
-        transform_decimal(record, "conversion_rate")
-        transform_decimal(record, "conversions")
-        transform_decimal(record, "create_product_complete_event_counter")
-        transform_decimal(record, "create_product_complete_sales_in_usd")
-        transform_decimal(record, "create_product_complete_unique_users")
-        transform_decimal(record, "impressions")
-        transform_decimal(record, "init_appsflyer_id_event_counter")
-        transform_decimal(record, "init_appsflyer_id_sales_in_usd")
-        transform_decimal(record, "init_appsflyer_id_unique_users")
-        transform_decimal(record, "installs")
-        transform_decimal(record, "loyal_users")
-        transform_decimal(record, "loyal_users_rate")
-        transform_decimal(record, "pay_premium_pkg_event_counter")
-        transform_decimal(record, "pay_premium_pkg_sales_in_usd")
-        transform_decimal(record, "pay_premium_pkg_unique_users")
-        transform_decimal(record, "return_on_investment")
-        transform_decimal(record, "sessions")
-        transform_decimal(record, "total_cost")
-        transform_decimal(record, "total_revenue")
-
-        return record
+    @transformer.registerCustomTransform
+    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        if original_value == "" or original_value == "N/A" or original_value == "NULL":
+            return None
+        if isinstance(original_value, float):
+            return Decimal(original_value)
+        return original_value
 
 # Basic incremental stream
 class IncrementalAppsflyerStream(AppsflyerStream, ABC):
