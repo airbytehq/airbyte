@@ -4,7 +4,8 @@ import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
 
 import { AuthErrorCodes } from "firebase/auth";
 
-import { H5, Link, LoadingButton } from "components";
+import { H5, Link } from "components";
+
 import { FormTitle } from "../components/FormTitle";
 import FormContent from "../components/FormContent";
 import News from "../components/News";
@@ -137,9 +138,9 @@ const ConfirmEmailPage: React.FC = () => {
               <FormattedMessage id="login.resendEmail" />
             </Resend>
 
-            <LoadingButton danger onClick={() => logout()}>
-              <FormattedMessage id="settings.accountSettings.logoutText" />
-            </LoadingButton>
+            <Resend $light as="div" onClick={logout}>
+              <FormattedMessage id="login.loginInstead" />
+            </Resend>
           </div>
         </FormContent>
       </Part>
