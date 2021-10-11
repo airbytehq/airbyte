@@ -15,14 +15,21 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.ResourceRequirements;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -32,6 +39,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.CatalogConverter;
+import io.airbyte.server.handlers.helpers.ConnectionMatcher;
+import io.airbyte.server.handlers.helpers.DestinationMatcher;
+import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -256,6 +266,56 @@ public class ConnectionsHandler {
   public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionIdRequestBody.getConnectionId());
+  }
+
+  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<ConnectionRead> reads = Lists.newArrayList();
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
+        ConnectionRead connectionRead = buildConnectionRead(standardSync.getConnectionId());
+        if (matchSearch(connectionSearch, connectionRead)) {
+          reads.add(connectionRead);
+        }
+      }
+    }
+
+    return new ConnectionReadList().connections(reads);
+  }
+
+  public boolean matchSearch(ConnectionSearch connectionSearch, ConnectionRead connectionRead)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionRead.getSourceId());
+    final StandardSourceDefinition sourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    SourceRead sourceRead = SourceHandler.toSourceRead(sourceConnection, sourceDefinition);
+
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionRead.getDestinationId());
+    final StandardDestinationDefinition destinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+    DestinationRead destinationRead = DestinationHandler.toDestinationRead(destinationConnection, destinationDefinition);
+
+    final ConnectionMatcher connectionMatcher = new ConnectionMatcher(connectionSearch);
+    final ConnectionRead connectionReadFromSearch = connectionMatcher.match(connectionRead);
+
+    return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
+        matchSearch(connectionSearch.getSource(), sourceRead) &&
+        matchSearch(connectionSearch.getDestination(), destinationRead);
+  }
+
+  public boolean matchSearch(SourceSearch sourceSearch, SourceRead sourceRead) {
+    final SourceMatcher sourceMatcher = new SourceMatcher(sourceSearch);
+    final SourceRead sourceReadFromSearch = sourceMatcher.match(sourceRead);
+
+    return (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead));
+  }
+
+  public boolean matchSearch(DestinationSearch destinationSearch, DestinationRead destinationRead) {
+    final DestinationMatcher destinationMatcher = new DestinationMatcher(destinationSearch);
+    final DestinationRead destinationReadFromSearch = destinationMatcher.match(destinationRead);
+
+    return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
   public void deleteConnection(ConnectionIdRequestBody connectionIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
