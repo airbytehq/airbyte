@@ -88,7 +88,7 @@ def test_should_retry(patch_base_class, http_status, response_text, should_retry
         (
             HTTPStatus.BAD_REQUEST,
             "Your API calls limit has been reached for report type",
-            (pendulum.tomorrow("UTC") - pendulum.now("UTC")).seconds
+            "Midnight"
         ), # Wait time for raw data is Midnight UTC - Now UTC.
     ],
 )
@@ -97,4 +97,6 @@ def test_backoff_time(patch_base_class, http_status, response_text, expected_bac
     response_mock.status_code = http_status
     response_mock.text = response_text
     stream = AppsflyerStream()
+    if expected_backoff_time == "Midnight":
+        expected_backoff_time = (pendulum.tomorrow("UTC") - pendulum.now("UTC")).seconds
     assert stream.backoff_time(response_mock) == expected_backoff_time
