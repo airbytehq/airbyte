@@ -150,9 +150,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
     switch (instance) {
       case STANDALONE -> {
+        // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
+        var tls = !instanceConfig.has(TLS) || instanceConfig.get(TLS).asBoolean();
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-                config.get(DATABASE).asText(), instanceConfig.get(TLS).asBoolean()));
+                config.get(DATABASE).asText(), tls));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
