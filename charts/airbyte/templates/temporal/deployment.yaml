@@ -43,7 +43,9 @@ spec:
           value: {{ include "airbyte.database.host" . }}
         - name: DYNAMIC_CONFIG_FILE_PATH
           value: "config/dynamicconfig/development.yaml"
-
+        {{- if .Values.temporal.extraEnv }}
+        {{ .Values.temporal.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: 7233
         volumeMounts:
