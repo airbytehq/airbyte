@@ -32,6 +32,7 @@ public class MssqlStrictEncryptDestination extends SpecModifyingDestination impl
   @Override
   public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
+    // Remove the first element in the "ssl_method" array, because it allows users to choose an unencrypted connection.
     ((ArrayNode) spec.getConnectionSpecification().get("properties").get("ssl_method").get("oneOf")).remove(0);
     return spec;
   }
