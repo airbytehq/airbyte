@@ -90,7 +90,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
-      if (database.getCollectionNames() == null || database.getCollectionNames().first() == null) {
+      if (database.getCollectionNames().isEmpty()) {
         throw new Exception("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
