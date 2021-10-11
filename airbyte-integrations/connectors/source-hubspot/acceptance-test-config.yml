@@ -17,20 +17,8 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
-      empty_streams:
-        [
-          "contact_lists",
-          "campaigns",
-          "tickets",
-          "subscription_changes",
-          "quotes",
-          "email_events",
-          "engagements",
-          "forms",
-          "products",
-          "workflows",
-        ]
+      configured_catalog_path: "sample_files/full_refresh_catalog.json"
+      empty_streams: ["workflows"]
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
       empty_streams:
@@ -59,6 +47,6 @@ tests:
   #        email_events: ["timestamp"]
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
+      configured_catalog_path: "sample_files/full_refresh_catalog.json"
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
