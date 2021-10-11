@@ -28,7 +28,8 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     if os.getenv("RANDOM_TEST_SCHEMA"):
-        target_schema = dbt_test_utils.generate_random_target_schema("test_normalization_ci_")
+        target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
+        dbt_test_utils.set_target_schema(target_schema)
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(dbt_test_utils.get_test_targets())
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
@@ -37,7 +38,7 @@ def before_all_tests(request):
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
-    # TODO delete target_schema in destination
+    # TODO delete target_schema in destination by copying dbt_project.yml and injecting a on-run-end hook to clean up
 
 
 @pytest.fixture

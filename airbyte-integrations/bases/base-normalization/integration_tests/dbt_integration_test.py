@@ -28,13 +28,16 @@ class DbtIntegrationTest(object):
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
         self.db_names = []
 
-    def generate_random_target_schema(self, prefix: str) -> str:
-        self.target_schema = prefix + DbtIntegrationTest.random_string(5)
-        return self.target_schema
+    @staticmethod
+    def generate_random_string(prefix: str) -> str:
+        return prefix + DbtIntegrationTest.random_string(5)
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
+
+    def set_target_schema(self, target_schema: str):
+        self.target_schema = target_schema
 
     def setup_db(self, destinations_to_test: List[str]):
         if DestinationType.POSTGRES.value in destinations_to_test:

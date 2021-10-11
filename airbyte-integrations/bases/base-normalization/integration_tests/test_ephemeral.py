@@ -12,10 +12,10 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
+from dbt_integration_test import NORMALISATION_TEST_TARGET
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
-from dbt_integration_test import NORMALISATION_TEST_TARGET
 
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
@@ -27,7 +27,7 @@ def before_all_tests(request):
         destinations_to_test = [d.value for d in {DestinationType.POSTGRES, DestinationType.from_string(os.getenv("TEST_NORMALIZATION"))}]
     else:
         destinations_to_test = [d.value for d in DestinationType]
-    target_schema = dbt_test_utils.generate_random_target_schema("test_normalization_ephemeral_")
+    dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
@@ -36,7 +36,7 @@ def before_all_tests(request):
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
-    # TODO delete target_schema in destination
+
 
 @pytest.fixture
 def setup_test_path(request):
@@ -176,7 +176,7 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
         "streams": [
             {
                 "stream": {
-                    "name": f"stream_with_{column_count}_columns",
+                    "name": dbt_test_utils.generate_random_string(f"stream_with_{column_count}_columns"),
                     "json_schema": {
                         "type": ["null", "object"],
                         "properties": {},
