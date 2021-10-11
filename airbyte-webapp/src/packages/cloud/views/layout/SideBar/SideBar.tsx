@@ -31,6 +31,7 @@ const Bar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow-y: auto;
 `;
 
 const Menu = styled.ul`
