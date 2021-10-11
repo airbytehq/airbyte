@@ -13,8 +13,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .transform import DataTypeEnforcer
 from .auth import ShopifyAuthenticator
+from .transform import DataTypeEnforcer
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
@@ -332,9 +332,9 @@ class SourceShopify(AbstractSource):
         Testing connection availability for the connector.
         """
         auth = ShopifyAuthenticator(config).get_auth_header()
-        api_version = "2021-07" # Latest Stable Release
+        api_version = "2021-07"  # Latest Stable Release
         url = f"https://{config['shop']}.myshopify.com/admin/api/{api_version}/shop.json"
-        
+
         try:
             session = requests.get(url, headers=auth)
             session.raise_for_status()

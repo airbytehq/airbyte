@@ -27,7 +27,7 @@
             "type": "object",
             "title": "OAuth2.0",
             "properties": {
-              "auth_option": {
+              "auth_method": {
                 "type": "string",
                 "const": "access_token"
               },
@@ -54,7 +54,7 @@
             "title": "API Password",
             "type": "object",
             "properties": {
-              "auth_option": {
+              "auth_method": {
                 "type": "string",
                 "const": "api_password"
               },

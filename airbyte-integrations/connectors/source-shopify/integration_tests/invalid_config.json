@@ -2,7 +2,7 @@
   "shop": "SHOP_NAME",
   "start_date": "2020-11-01",
   "auth_method": {
-    "auth_option": "api_password",
+    "auth_method": "api_password",
     "api_password": "SOME_API_PASSWORD"
   }
 }
