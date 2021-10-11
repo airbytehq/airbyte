@@ -21,7 +21,7 @@ This source produces a single table for the target file as it replicates only on
 | Amazon Web Services S3 | Yes |
 | SFTP | Yes |
 | SSH / SCP | Yes |
-| local filesystem | Inaccessible for Airbyte Cloud |
+| local filesystem | Local use only (inaccessible for Airbyte Cloud) |
 
 ### File / Stream Compression
 
