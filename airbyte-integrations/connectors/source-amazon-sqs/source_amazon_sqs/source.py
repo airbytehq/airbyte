@@ -27,17 +27,14 @@ class SourceAmazonSqs(Source):
     def delete_message(self, message):
         try:
             message.delete()
-            # TODO: Info logging for deleted messages?
         except ClientError as error:
-            print("Couldn't delete message: %s", message.message_id)
-            # TODO: Handle errors
+            raise Exception("Couldn't delete message: %s - does your IAM user have sqs:DeleteMessage?", message.message_id)
 
     def change_message_visibility(self, message, visibility_timeout):
         try:
             message.change_visibility(VisibilityTimeout=visibility_timeout)
         except ClientError as error:
-            print("Couldn't change message visibility: %s", message.message_id)
-            # TODO: Handle errors
+            raise Exception("Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id)
 
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit("/", 1)[-1]
@@ -57,17 +54,27 @@ class SourceAmazonSqs(Source):
 
             # Required propeties
             queue_url = config["QUEUE_URL"]
+            logger.debug("Amazon SQS Source Config Check - QUEUE_URL: " + queue_url)
             queue_region = config["REGION"]
+            logger.debug("Amazon SQS Source Config Check - REGION: " + queue_region)
             # Senstive Properties
             access_key = config["ACCESS_KEY"]
+            logger.debug("Amazon SQS Source Config Check - ACCESS_KEY (ends with): " + access_key[-1])
             secret_key = config["SECRET_KEY"]
+            logger.debug("Amazon SQS Source Config Check - SECRET_KEY (ends with): " + secret_key[-1])
 
+            logger.debug("Amazon SQS Source Config Check - Starting connection test ---")
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
             sqs = session.resource("sqs")
             queue = sqs.Queue(url=queue_url)
             # This will fail if we are not connected to the Queue (AWS.SimpleQueueService.NonExistentQueue)
             attrs = queue.attributes
+            logger.debug("Amazon SQS Source Config Check - Connection test successful ---")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        except sqs.exceptions.QueueDoesNotExist as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Configured SQS Queue does not exist: "+ queue_url +f"{str(e)}")
+        except ClientError as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {str(e)}")
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
@@ -76,6 +83,7 @@ class SourceAmazonSqs(Source):
 
         # Get the queue name by getting substring after last /
         stream_name = self.parse_queue_name(config["QUEUE_URL"])
+        logger.debug("Amazon SQS Source Stream Discovery - stream is: " + stream_name)
 
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -89,6 +97,7 @@ class SourceAmazonSqs(Source):
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = self.parse_queue_name(config["QUEUE_URL"])
+        logger.debug("Amazon SQS Source Read - stream is: " + stream_name)
 
         # Required propeties
         queue_url = config["QUEUE_URL"]
@@ -109,24 +118,30 @@ class SourceAmazonSqs(Source):
         access_key = config["ACCESS_KEY"]
         secret_key = config["SECRET_KEY"]
 
+        logger.debug("Amazon SQS Source Read - Creating SQS connection ---")
         session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
         sqs = session.resource("sqs")
         queue = sqs.Queue(url=queue_url)
-
+        logger.debug("Amazon SQS Source Read - Connected to SQS Queue ---")
         timed_out = False
         while not timed_out:
             try:
+                logger.debug("Amazon SQS Source Read - Beginning message poll ---")
                 messages = queue.receive_messages(
                     MessageAttributeNames=attributes_to_return, MaxNumberOfMessages=max_batch_size, WaitTimeSeconds=max_wait_time
                 )
 
                 if not messages:
+                    logger.debug("Amazon SQS Source Read - No messages recieved during poll, time out reached ---")
                     timed_out = True
                     break
 
                 for msg in messages:
+                    logger.debug("Amazon SQS Source Read - Message recieved: " + msg)
                     if visibility_timeout:
+                        logger.debug("Amazon SQS Source Read - Setting message visibility timeout: " + msg.message_id)
                         self.change_message_visibility(msg, visibility_timeout)
+                        logger.debug("Amazon SQS Source Read - Message visibility timeout set: " + msg.message_id)
 
                     data = {
                         "id": msg.message_id,
@@ -138,9 +153,10 @@ class SourceAmazonSqs(Source):
                         record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
                     if delete_messages:
+                        logger.debug("Amazon SQS Source Read - Deleting message: " + msg.message_id)
                         self.delete_message(msg)
+                        logger.debug("Amazon SQS Source Read - Message deleted: " + msg.message_id)
                         # TODO: Delete messages in batches to reduce amount of requests?
 
             except ClientError as error:
-                print("Couldn't receive messages from queue: %s", queue)
-                raise error
+                raise Exception("Error in AWS Client: " + str(error))
