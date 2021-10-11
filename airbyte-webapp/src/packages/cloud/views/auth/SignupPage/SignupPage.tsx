@@ -16,6 +16,7 @@ import { Button, H1, LabeledInput, Link } from "components";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import SpecialBlock from "./components/SpecialBlock";
 
 type FormValues = {
   name: string;
@@ -28,32 +29,6 @@ type FormValues = {
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
-`;
-
-const HighlightBlock = styled.span<{ red?: boolean }>`
-  color: ${({ theme, red }) => (red ? theme.redColor : "inhered")};
-  font-family: ${({ theme }) => theme.italicFont};
-`;
-
-const SpecialOffer = styled.div`
-  margin-top: 27px;
-  background: ${({ theme }) => theme.redTransparentColor};
-  border-radius: 12px;
-  padding: 14px 8px 14px 19px;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-`;
-
-const SumBlock = styled.span`
-  display: inline-block;
-  background: ${({ theme }) => theme.lightRedColor};
-  border: 4px solid ${({ theme }) => theme.redColor};
-  box-sizing: border-box;
-  box-shadow: 0 2px 4px ${({ theme }) => theme.cardShadowColor};
-  border-radius: 8px;
-  font-family: ${({ theme }) => theme.italicFont};
-  padding: 0 5px;
 `;
 
 const SignupPageValidationSchema = yup.object().shape({
@@ -85,20 +60,7 @@ const SignupPage: React.FC = () => {
       <H1 bold>
         <FormattedMessage id="login.activateAccess" />
       </H1>
-      <SpecialOffer>
-        <FormattedMessage
-          id="login.activateAccess.subtitle"
-          values={{
-            sum: (...sum: React.ReactNode[]) => <SumBlock>{sum}</SumBlock>,
-            special: (...special: React.ReactNode[]) => (
-              <HighlightBlock red>{special}</HighlightBlock>
-            ),
-            free: (...free: React.ReactNode[]) => (
-              <HighlightBlock>{free}</HighlightBlock>
-            ),
-          }}
-        />
-      </SpecialOffer>
+      <SpecialBlock />
 
       <Formik<FormValues>
         initialValues={{
