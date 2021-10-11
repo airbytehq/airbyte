@@ -16,12 +16,14 @@ import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.BsonDocument;
@@ -34,6 +36,7 @@ public class MongoDatabase extends AbstractDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
+  private static final String MONGO_RESERVED_COLLECTION_PREFIX = "system.";
 
   private final ConnectionString connectionString;
   private final com.mongodb.client.MongoDatabase database;
@@ -63,8 +66,13 @@ public class MongoDatabase extends AbstractDatabase {
     return mongoClient.listDatabaseNames();
   }
 
-  public MongoIterable<String> getCollectionNames() {
-    return database.listCollectionNames();
+  public Set<String> getCollectionNames() {
+    MongoIterable<String> collectionNames = database.listCollectionNames();
+    if (collectionNames == null) {
+      return Collections.EMPTY_SET;
+    }
+    return MoreIterators.toSet(database.listCollectionNames().iterator()).stream()
+        .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX)).collect(Collectors.toSet());
   }
 
   public MongoCollection<Document> getCollection(String collectionName) {
