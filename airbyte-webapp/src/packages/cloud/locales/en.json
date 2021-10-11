@@ -19,7 +19,7 @@
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your 30-day free trial",
-  "login.activateAccess.subtitle": "Get our special launch offer of $1,000 worth of free usage. No credit card required.",
+  "login.activateAccess.subtitle": "Get our <special>Special launch offer</special> of <sum>$1,000</sum>  worth of <free>free usage</free>. No credit card required.",
   "login.fullName": "Full name*",
   "login.fullName.placeholder": "Christopher Smith",
   "login.companyName": "Company name*",
