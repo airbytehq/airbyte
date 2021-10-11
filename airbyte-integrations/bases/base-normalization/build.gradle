@@ -30,6 +30,7 @@ task checkSshScriptCopy(type: Task, dependsOn: copySshScript) {
 }
 
 airbyteDocker.dependsOn(checkSshScriptCopy)
+assemble.dependsOn(checkSshScriptCopy)
 test.dependsOn(checkSshScriptCopy)
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
