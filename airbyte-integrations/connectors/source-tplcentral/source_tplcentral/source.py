@@ -37,7 +37,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import \
     Oauth2Authenticator
 from requests.auth import HTTPBasicAuth
 
-from .util import deep_snake_keys
+from .util import normalize
 
 
 # Basic full refresh stream
@@ -99,7 +99,7 @@ class StockSummaries(TplcentralStream):
         return "inventory/stocksummaries"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [deep_snake_keys(v) for v in response.json()['Summaries']]
+        return [normalize(v) for v in response.json()['Summaries']]
 
 
 class IncrementalTplcentralStream(TplcentralStream, ABC):
@@ -144,7 +144,7 @@ class Items(IncrementalTplcentralStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json()['ResourceList']
+        return [normalize(v) for v in response.json()['ResourceList']]
 
 
 class TplcentralAuthenticator(Oauth2Authenticator):
