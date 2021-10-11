@@ -48,14 +48,13 @@ public class KubePodProcessIntegrationTest {
   @BeforeEach
   public void setup() throws Exception {
     openPorts = new ArrayList<>(getOpenPorts(5));
-    KubePortManagerSingleton.getInstance(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
 
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost());
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(), new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
