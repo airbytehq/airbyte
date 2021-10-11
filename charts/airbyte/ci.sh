@@ -72,7 +72,8 @@ case "$1" in
   check-docs-updated)
     readme-generator -v ./values.yaml -r README.md
     if git status --porcelain | grep "charts/airbyte/README.md"; then
-      echo "It appears the README.md has not been updated with changes from the values.yaml."
+      echo "It appears the README.md has not been updated with changes from the values.yaml. See diff below:"
+      git --no-pager diff
       echo "Please run './ci.sh update-docs' locally and commit your changes."
       exit 1
     else

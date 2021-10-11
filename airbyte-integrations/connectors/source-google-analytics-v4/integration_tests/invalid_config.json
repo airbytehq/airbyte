@@ -1,5 +1,8 @@
 {
-  "credentials": { "credentials_json": "" },
+  "credentials": {
+    "auth_type": "Service",
+    "credentials_json": "None"
+  },
   "view_id": "211669975",
   "start_date": "2021-02-11",
   "window_in_days": 1,

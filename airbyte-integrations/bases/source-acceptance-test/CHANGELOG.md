@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.23
+Fix incorrect auth init flow check defect.
+
+## 0.1.22
+Fix checking schemas with root $ref keyword
+
 ## 0.1.21
 Fix rootObject oauth init parameter check
 
