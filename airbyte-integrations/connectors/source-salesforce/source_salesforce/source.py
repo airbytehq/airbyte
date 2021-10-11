@@ -62,6 +62,7 @@ class SourceSalesforce(AbstractSource):
         logger.info("Starting generating streams")
         stream_instances = {s.name: s for s in self.streams(config, catalog=catalog)}
         logger.info(f"Starting syncing {self.name}")
+        self._stream_to_instance_map = stream_instances
         for configured_stream in catalog.streams:
             stream_instance = stream_instances.get(configured_stream.stream.name)
             if not stream_instance:
