@@ -48,17 +48,20 @@ public class WorkerApp {
   private final SecretsHydrator secretsHydrator;
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
+  private final String airbyteVersion;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
                    SecretsHydrator secretsHydrator,
                    WorkflowServiceStubs temporalService,
-                   MaxWorkersConfig maxWorkers) {
+                   MaxWorkersConfig maxWorkers,
+                   String airbyteVersion) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
+    this.airbyteVersion = airbyteVersion;
   }
 
   public void start() {
@@ -94,8 +97,8 @@ public class WorkerApp {
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot));
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, airbyteVersion),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, airbyteVersion));
 
     factory.start();
   }
@@ -140,7 +143,7 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
-    new WorkerApp(workspaceRoot, processFactory, secretsHydrator, temporalService, configs.getMaxWorkers()).start();
+    new WorkerApp(workspaceRoot, processFactory, secretsHydrator, temporalService, configs.getMaxWorkers(), configs.getAirbyteVersion()).start();
   }
 
 }

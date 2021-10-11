@@ -5,8 +5,6 @@
 package io.airbyte.workers.normalization;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
@@ -39,14 +37,13 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
-  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
+  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory, String airbyteVersion) {
     final String imageNameWithoutTag = imageName.split(":")[0];
     if (DESTINATION_TYPE_MAPPING.containsKey(imageNameWithoutTag) && NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      final Configs configs = new EnvConfigs();
       return new DefaultNormalizationRunner(
           DESTINATION_TYPE_MAPPING.get(imageNameWithoutTag),
           processFactory,
-          String.format("%s:%s", NORMALIZATION_MAPPING.get(imageNameWithoutTag), configs.getAirbyteVersion()));
+          String.format("%s:%s", NORMALIZATION_MAPPING.get(imageNameWithoutTag), airbyteVersion));
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mappings.", imageName));

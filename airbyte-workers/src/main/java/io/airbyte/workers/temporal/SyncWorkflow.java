@@ -253,20 +253,23 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final String airbyteVersion;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), airbyteVersion);
     }
 
     @VisibleForTesting
     NormalizationActivityImpl(ProcessFactory processFactory,
                               SecretsHydrator secretsHydrator,
                               Path workspaceRoot,
-                              AirbyteConfigValidator validator) {
+                              AirbyteConfigValidator validator,
+                              String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -299,7 +302,8 @@ public interface SyncWorkflow {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           NormalizationRunnerFactory.create(
               destinationLauncherConfig.getDockerImage(),
-              processFactory));
+              processFactory,
+              airbyteVersion));
     }
 
   }
@@ -323,20 +327,23 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final String airbyteVersion;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), airbyteVersion);
     }
 
     @VisibleForTesting
     DbtTransformationActivityImpl(ProcessFactory processFactory,
                                   SecretsHydrator secretsHydrator,
                                   Path workspaceRoot,
-                                  AirbyteConfigValidator validator) {
+                                  AirbyteConfigValidator validator,
+                                  String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -373,7 +380,8 @@ public interface SyncWorkflow {
           new DbtTransformationRunner(
               processFactory, NormalizationRunnerFactory.create(
                   destinationLauncherConfig.getDockerImage(),
-                  processFactory)));
+                  processFactory,
+                  airbyteVersion)));
     }
 
   }
