@@ -13,14 +13,14 @@ import java.util.Map;
 
 public class NormalizationRunnerFactory {
 
-  public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.52";
+  public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
 
   static final Map<String, String> NORMALIZATION_MAPPING =
       ImmutableMap.<String, String>builder()
           .put("airbyte/destination-bigquery", BASE_NORMALIZATION_IMAGE_NAME)
-          .put("airbyte/destination-mssql", "airbyte/normalization-mssql:0.1.0")
-          .put("airbyte/destination-mysql", "airbyte/normalization-mysql:0.1.0")
-          .put("airbyte/destination-oracle", "airbyte/normalization-oracle:0.1.0")
+          .put("airbyte/destination-mssql", "airbyte/normalization-mssql")
+          .put("airbyte/destination-mysql", "airbyte/normalization-mysql")
+          .put("airbyte/destination-oracle", "airbyte/normalization-oracle")
           .put("airbyte/destination-postgres", BASE_NORMALIZATION_IMAGE_NAME)
           .put("airbyte/destination-postgres-strict-encrypt", BASE_NORMALIZATION_IMAGE_NAME)
           .put("airbyte/destination-redshift", BASE_NORMALIZATION_IMAGE_NAME)
@@ -42,19 +42,11 @@ public class NormalizationRunnerFactory {
   public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
     final String imageNameWithoutTag = imageName.split(":")[0];
     if (DESTINATION_TYPE_MAPPING.containsKey(imageNameWithoutTag) && NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      final String normalizationImage = NORMALIZATION_MAPPING.get(imageNameWithoutTag);
       final Configs configs = new EnvConfigs();
-      if (configs.getAirbyteVersion().equals("dev")) {
-        return new DefaultNormalizationRunner(
-            DESTINATION_TYPE_MAPPING.get(imageNameWithoutTag),
-            processFactory,
-            String.format("%s:dev", normalizationImage.split(":")[0]));
-      } else {
-        return new DefaultNormalizationRunner(
-            DESTINATION_TYPE_MAPPING.get(imageNameWithoutTag),
-            processFactory,
-            normalizationImage);
-      }
+      return new DefaultNormalizationRunner(
+          DESTINATION_TYPE_MAPPING.get(imageNameWithoutTag),
+          processFactory,
+          String.format("%s:%s", NORMALIZATION_MAPPING.get(imageNameWithoutTag), configs.getAirbyteVersion()));
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mappings.", imageName));
