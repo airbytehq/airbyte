@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -40,26 +20,26 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = SalesloftStream(authenticator=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'page': 1, 'per_page': 100}
+    expected_params = {"page": 1, "per_page": 100}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = SalesloftStream(authenticator=MagicMock())
     response = MagicMock()
-    response.json.return_value = {'metadata': {'paging': {'next_page': 2}}}
+    response.json.return_value = {"metadata": {"paging": {"next_page": 2}}}
     inputs = {"response": response}
-    expected_token = {'page': 2}
+    expected_token = {"page": 2}
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = SalesloftStream(authenticator=MagicMock())
     response = MagicMock()
-    response.json.return_value = {'data': [{'id': 123, 'name': 'John Doe'}]}
+    response.json.return_value = {"data": [{"id": 123, "name": "John Doe"}]}
     inputs = {"response": response}
     # TODO: replace this with your expected parced object
-    expected_parsed_object = {'id': 123, 'name': 'John Doe'}
+    expected_parsed_object = {"id": 123, "name": "John Doe"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
@@ -69,7 +49,7 @@ def test_request_headers(patch_base_class):
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     # TODO: replace this with your expected request headers
     expected_headers = {}
-    assert stream.request_headers(**inputs) == {}
+    assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
