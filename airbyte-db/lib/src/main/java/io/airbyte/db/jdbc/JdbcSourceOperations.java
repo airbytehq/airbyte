@@ -12,6 +12,7 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -20,8 +21,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -173,53 +176,124 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
     node.put(columnName, resultSet.getString(index));
   }
 
-  // todo (cgardens) - move generic date helpers to commons.
-
   public void setStatementField(PreparedStatement preparedStatement,
                                 int parameterIndex,
                                 JDBCType cursorFieldType,
                                 String value)
       throws SQLException {
     switch (cursorFieldType) {
-      // parse time, and timestamp the same way. this seems to not cause an problems and allows us
-      // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-      // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
-      // value in the following format
-      case TIME, TIMESTAMP -> {
-        try {
-          preparedStatement.setTimestamp(parameterIndex, Timestamp.from(
-              DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
-        } catch (ParseException e) {
-          throw new RuntimeException(e);
-        }
-      }
 
-      case DATE -> {
-        try {
-          Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
-          preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
-        } catch (ParseException e) {
-          throw new RuntimeException(e);
-        }
-      }
-      // todo (cgardens) - currently we do not support bit because it requires special handling in the
-      // prepared statement.
-      // see
-      // https://www.postgresql-archive.org/Problems-with-BIT-datatype-and-preparedStatment-td5733533.html.
-      // case BIT -> preparedStatement.setString(parameterIndex, value);
-      case BOOLEAN -> preparedStatement.setBoolean(parameterIndex, Boolean.parseBoolean(value));
-      case TINYINT, SMALLINT -> preparedStatement.setShort(parameterIndex, Short.parseShort(value));
-      case INTEGER -> preparedStatement.setInt(parameterIndex, Integer.parseInt(value));
-      case BIGINT -> preparedStatement.setLong(parameterIndex, Long.parseLong(value));
-      case FLOAT, DOUBLE -> preparedStatement.setDouble(parameterIndex, Double.parseDouble(value));
-      case REAL -> preparedStatement.setFloat(parameterIndex, Float.parseFloat(value));
-      case NUMERIC, DECIMAL -> preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(value));
-      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> preparedStatement.setString(parameterIndex, value);
-      case BINARY, BLOB -> preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
+      case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case DATE -> setDate(preparedStatement, parameterIndex, value);
+      case BIT -> setBit(preparedStatement, parameterIndex, value);
+      case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
+      case TINYINT, SMALLINT -> setShortInt(preparedStatement, parameterIndex, value);
+      case INTEGER -> setInteger(preparedStatement, parameterIndex, value);
+      case BIGINT -> setBigInteger(preparedStatement, parameterIndex, value);
+      case FLOAT, DOUBLE -> setDouble(preparedStatement, parameterIndex, value);
+      case REAL -> setReal(preparedStatement, parameterIndex, value);
+      case NUMERIC, DECIMAL -> setDecimal(preparedStatement, parameterIndex, value);
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> setString(preparedStatement, parameterIndex, value);
+      case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
       default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
     }
+  }
+
+  protected void setTime(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    setTimestamp(preparedStatement, parameterIndex, value);
+  }
+
+  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    // parse time, and timestamp the same way. this seems to not cause an problems and allows us
+    // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
+    // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
+    // value in the following format
+    try {
+      preparedStatement.setTimestamp(parameterIndex, Timestamp
+          .from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
+    } catch (ParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected void setDate(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    try {
+      Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
+      preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
+    } catch (ParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected void setBit(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    // todo (cgardens) - currently we do not support bit because it requires special handling in the
+    // prepared statement.
+    // see
+    // https://www.postgresql-archive.org/Problems-with-BIT-datatype-and-preparedStatment-td5733533.html.
+    throw new RuntimeException("BIT value is not supported as incremental parameter!");
+  }
+
+  protected void setBoolean(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setBoolean(parameterIndex, Boolean.parseBoolean(value));
+  }
+
+  protected void setShortInt(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setShort(parameterIndex, Short.parseShort(value));
+  }
+
+  protected void setInteger(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setInt(parameterIndex, Integer.parseInt(value));
+  }
+
+  protected void setBigInteger(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setLong(parameterIndex, Long.parseLong(value));
+  }
+
+  protected void setDouble(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setDouble(parameterIndex, Double.parseDouble(value));
+  }
+
+  protected void setReal(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setFloat(parameterIndex, Float.parseFloat(value));
+  }
+
+  protected void setDecimal(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(value));
+  }
+
+  protected void setString(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setBinary(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+    preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
+  }
+
+  public String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
+    final StringJoiner joiner = new StringJoiner(",");
+    for (String col : identifiers) {
+      String s = enquoteIdentifier(connection, col);
+      joiner.add(s);
+    }
+    return joiner.toString();
+  }
+
+  public String enquoteIdentifier(Connection connection, String identifier) throws SQLException {
+    final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
+
+    return identifierQuoteString + identifier + identifierQuoteString;
+  }
+
+  public String getFullyQualifiedTableName(String schemaName, String tableName) {
+    return JdbcUtils.getFullyQualifiedTableName(schemaName, tableName);
+  }
+
+  public String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
+    final String quotedTableName = enquoteIdentifier(connection, tableName);
+    return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
   @Override

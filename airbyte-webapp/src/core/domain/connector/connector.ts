@@ -1,12 +1,5 @@
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { isSourceDefinition } from "./source";
-
-export type ConnectorDefinition = SourceDefinition | DestinationDefinition;
-
-export function isConnectorDeprecated(connector: ConnectorDefinition): boolean {
-  return !connector.latestDockerImageTag;
-}
+import { isSourceDefinition, isSourceDefinitionSpecification } from "./source";
+import { ConnectorDefinition, ConnectorDefinitionSpecification } from "./types";
 
 export class Connector {
   static id(connector: ConnectorDefinition): string {
@@ -24,5 +17,13 @@ export class Connector {
       !Connector.isDeprecated(connector) &&
       connector.latestDockerImageTag !== connector.dockerImageTag
     );
+  }
+}
+
+export class ConnectorSpecification {
+  static id(connector: ConnectorDefinitionSpecification): string {
+    return isSourceDefinitionSpecification(connector)
+      ? connector.sourceDefinitionId
+      : connector.destinationDefinitionId;
   }
 }

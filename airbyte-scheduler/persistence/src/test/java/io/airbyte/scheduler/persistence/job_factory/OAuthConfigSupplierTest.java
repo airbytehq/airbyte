@@ -5,15 +5,23 @@
 package io.airbyte.scheduler.persistence.job_factory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -27,27 +35,34 @@ import org.junit.jupiter.api.Test;
 public class OAuthConfigSupplierTest {
 
   private ConfigRepository configRepository;
+  private TrackingClient trackingClient;
   private OAuthConfigSupplier oAuthConfigSupplier;
+  private UUID sourceDefinitionId;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
     configRepository = mock(ConfigRepository.class);
-    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
+    trackingClient = mock(TrackingClient.class);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
+    sourceDefinitionId = UUID.randomUUID();
+    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withName("test")
+        .withDockerImageTag("dev"));
   }
 
   @Test
-  public void testInjectEmptyOAuthParameters() throws JsonValidationException, IOException {
+  public void testInjectEmptyOAuthParameters() throws IOException {
     final JsonNode config = generateJsonConfig();
-    final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     assertEquals(config, actualConfig);
+    assertNoTracking();
   }
 
   @Test
   public void testInjectGlobalOAuthParameters() throws JsonValidationException, IOException {
     final JsonNode config = generateJsonConfig();
-    final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
@@ -67,12 +82,15 @@ public class OAuthConfigSupplierTest {
       expectedConfig.set(key, Jsons.jsonNode(oauthParameters.get(key)));
     }
     assertEquals(expectedConfig, actualConfig);
+    verify(trackingClient, times(1)).track(workspaceId, "OAuth Injection - Backend", Map.of(
+        "connector_source", "test",
+        "connector_source_definition_id", sourceDefinitionId,
+        "connector_source_version", "dev"));
   }
 
   @Test
   public void testInjectWorkspaceOAuthParameters() throws JsonValidationException, IOException {
     final JsonNode config = generateJsonConfig();
-    final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
         new SourceOAuthParameter()
@@ -95,14 +113,17 @@ public class OAuthConfigSupplierTest {
         Map.of("id", "id"),
         Map.of("service", "account")))));
     assertEquals(expectedConfig, actualConfig);
+    verify(trackingClient, times(1)).track(workspaceId, "OAuth Injection - Backend", Map.of(
+        "connector_source", "test",
+        "connector_source_definition_id", sourceDefinitionId,
+        "connector_source_version", "dev"));
   }
 
   @Test
   void testInjectMaskedOAuthParameters() throws JsonValidationException, IOException {
-    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true);
+    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
 
     final JsonNode config = generateJsonConfig();
-    final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
@@ -122,6 +143,7 @@ public class OAuthConfigSupplierTest {
       expectedConfig.set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
     }
     assertEquals(expectedConfig, actualConfig);
+    assertNoTracking();
   }
 
   private ObjectNode generateJsonConfig() {
@@ -150,7 +172,7 @@ public class OAuthConfigSupplierTest {
 
   @Test
   void testInjectUnnestedNode_Masked() {
-    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, true);
+    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
     ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
     ObjectNode maskedOauthParams = Jsons.clone(oauthParams);
     maskAllValues(maskedOauthParams);
@@ -160,11 +182,12 @@ public class OAuthConfigSupplierTest {
 
     supplier.injectJsonNode(actual, oauthParams);
     assertEquals(expected, actual);
+    assertNoTracking();
   }
 
   @Test
   void testInjectUnnestedNode_Unmasked() {
-    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false);
+    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
     ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
 
     ObjectNode actual = generateJsonConfig();
@@ -174,11 +197,12 @@ public class OAuthConfigSupplierTest {
     supplier.injectJsonNode(actual, oauthParams);
 
     assertEquals(expected, actual);
+    assertNoTracking();
   }
 
   @Test
   void testInjectNewNestedNode_Masked() {
-    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, true);
+    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
     ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
     ObjectNode maskedOauthParams = Jsons.clone(oauthParams);
     maskAllValues(maskedOauthParams);
@@ -193,12 +217,13 @@ public class OAuthConfigSupplierTest {
 
     supplier.injectJsonNode(actual, nestedConfig);
     assertEquals(expected, actual);
+    assertNoTracking();
   }
 
   @Test
   @DisplayName("A nested config should be inserted with the same nesting structure")
   void testInjectNewNestedNode_Unmasked() {
-    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false);
+    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
     ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
     ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
         .put("oauth_credentials", oauthParams)
@@ -211,12 +236,13 @@ public class OAuthConfigSupplierTest {
 
     supplier.injectJsonNode(actual, nestedConfig);
     assertEquals(expected, actual);
+    assertNoTracking();
   }
 
   @Test
   @DisplayName("A nested node which partially exists in the main config should be merged into the main config, not overwrite the whole nested object")
   void testInjectedPartiallyExistingNestedNode_Unmasked() {
-    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false);
+    OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
     ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
     ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
         .put("oauth_credentials", oauthParams)
@@ -230,6 +256,11 @@ public class OAuthConfigSupplierTest {
 
     supplier.injectJsonNode(actual, nestedConfig);
     assertEquals(expected, actual);
+    assertNoTracking();
+  }
+
+  private void assertNoTracking() {
+    verify(trackingClient, times(0)).track(any(), anyString(), anyMap());
   }
 
 }
