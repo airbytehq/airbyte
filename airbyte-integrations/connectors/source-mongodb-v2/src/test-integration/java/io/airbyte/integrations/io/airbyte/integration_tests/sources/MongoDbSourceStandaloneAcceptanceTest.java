@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
@@ -25,6 +27,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     mongoDBContainer.start();
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", STANDALONE.getType())
         .put("host", mongoDBContainer.getHost())
         .put("port", mongoDBContainer.getFirstMappedPort())
         .put("tls", false)

@@ -16,6 +16,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
+import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
@@ -47,6 +48,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String USER = "user";
   private static final String PASSWORD = "password";
   private static final String INSTANCE_TYPE = "instance_type";
+  private static final String INSTANCE = "instance";
   private static final String HOST = "host";
   private static final String PORT = "port";
   private static final String CLUSTER_URL = "cluster_url";
@@ -70,30 +72,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         ? String.format("%s:%s@", config.get(USER).asText(), config.get(PASSWORD).asText())
         : StringUtils.EMPTY;
 
-    StringBuilder connectionStrBuilder = new StringBuilder();
-    JsonNode instanceConfig = config.get(INSTANCE_TYPE);
-    if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
-      // Standalone MongoDb Instance
-      var tls = config.has(TLS) ? config.get(TLS).asBoolean() : instanceConfig.get(TLS).asBoolean(); // for backward compatibility
-      connectionStrBuilder.append(String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-          config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), tls));
-    } else if (instanceConfig.has(CLUSTER_URL)) {
-      // MongoDB Atlas
-      connectionStrBuilder.append(
-          String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
-              config.get(AUTH_SOURCE).asText()));
-    } else {
-      // Replica Set & Shard
-      connectionStrBuilder.append(
-          String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
-              config.get(AUTH_SOURCE).asText()));
-      if (instanceConfig.has(REPLICA_SET)) {
-        connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
-      }
-    }
-
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("connectionString", connectionStrBuilder.toString())
+        .put("connectionString", buildConnectionString(config, credentials))
         .put("database", config.get(DATABASE).asText())
         .build());
   }
@@ -204,6 +184,37 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  private String buildConnectionString(JsonNode config, String credentials) {
+    StringBuilder connectionStrBuilder = new StringBuilder();
+
+    JsonNode instanceConfig = config.get(INSTANCE_TYPE);
+    MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
+    switch (instance) {
+      case STANDALONE -> {
+        // supports backward compatibility and secure only connector
+        var tls = config.has(TLS) ? config.get(TLS).asBoolean() : (instanceConfig.has(TLS) ? instanceConfig.get(TLS).asBoolean() : true);
+        connectionStrBuilder.append(
+            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
+                config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), tls));
+      }
+      case REPLICA -> {
+        connectionStrBuilder.append(
+            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
+                config.get(AUTH_SOURCE).asText()));
+        if (instanceConfig.has(REPLICA_SET)) {
+          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
+        }
+      }
+      case ATLAS -> {
+        connectionStrBuilder.append(
+            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
+                config.get(AUTH_SOURCE).asText()));
+      }
+      default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
+    }
+    return connectionStrBuilder.toString();
   }
 
 }

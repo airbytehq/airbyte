@@ -201,6 +201,10 @@ public class MongoUtils {
 
     private final String type;
 
+    public String getType() {
+      return this.type;
+    }
+
     MongoInstanceType(String type) {
       this.type = type;
     }
