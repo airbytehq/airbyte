@@ -1,0 +1,22 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Freshsales Spec",
+    "type": "object",
+    "required": ["domain_name", "api_key"],
+    "additionalProperties": false,
+    "properties": {
+      "domain_name": {
+        "type": "string",
+        "description": "Freshsales domain",
+        "examples": ["mydomain.myfreshworks.com"]
+      },
+      "api_key": {
+        "type": "string",
+        "description": "Your API Access Key. See <a href=\"https://crmsupport.freshworks.com/support/solutions/articles/50000002503-how-to-find-my-api-key-\">here</a>. The key is case sensitive.",
+        "airbyte_secret": true
+      }
+    }
+  }
+}
