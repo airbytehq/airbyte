@@ -3,31 +3,13 @@
 #
 
 
-import os
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from vcr.cassette import Cassette
-
-
-def request_cache() -> Cassette:
-    """
-    Builds VCR instance.
-    It deletes file everytime we create it, normally should be called only once.
-    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
-    """
-    filename = "request_cache.yml"
-    try:
-        os.remove(filename)
-    except FileNotFoundError:
-        pass
-
-    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
 class GitlabStream(HttpStream, ABC):
@@ -38,27 +20,9 @@ class GitlabStream(HttpStream, ABC):
     page = 1
     per_page = 50
 
-    cache = request_cache()
-    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
-    # Here's an example of dangerous behavior:
-    # cache = Cassette.use('whatever')
-    # with cache:
-    #     with cache:
-    #         pass
-    #
-    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
-    top_level_stream = True
-
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        if self.top_level_stream:
-            with self.cache:
-                yield from super().read_records(**kwargs)
-        else:
-            yield from super().read_records(**kwargs)
 
     def request_params(
         self,
@@ -181,6 +145,8 @@ class IncrementalGitlabChildStream(GitlabChildStream):
 
 
 class Groups(GitlabStream):
+    use_cache = True
+
     def __init__(self, group_ids: List, **kwargs):
         super().__init__(**kwargs)
         self.group_ids = group_ids
@@ -201,6 +167,7 @@ class Groups(GitlabStream):
 
 class Projects(GitlabStream):
     stream_base_params = {"statistics": 1}
+    use_cache = True
 
     def __init__(self, project_ids: List = None, **kwargs):
         super().__init__(**kwargs)
@@ -216,7 +183,6 @@ class Projects(GitlabStream):
 
 class GroupProjects(Projects):
     name = "projects"
-    top_level_stream = False
 
     def __init__(self, parent_stream: GitlabStream = None, **kwargs):
         super().__init__(**kwargs)
@@ -234,43 +200,36 @@ class GroupProjects(Projects):
 
 class GroupMilestones(GitlabChildStream):
     path_template = "groups/{id}/milestones"
-    top_level_stream = False
 
 
 class ProjectMilestones(GitlabChildStream):
     path_template = "projects/{id}/milestones"
-    top_level_stream = False
 
 
 class GroupMembers(GitlabChildStream):
     path_template = "groups/{id}/members"
     flatten_parent_id = True
-    top_level_stream = False
 
 
 class ProjectMembers(GitlabChildStream):
     path_template = "projects/{id}/members"
     flatten_parent_id = True
-    top_level_stream = False
 
 
 class GroupLabels(GitlabChildStream):
     path_template = "groups/{id}/labels"
     flatten_parent_id = True
-    top_level_stream = False
 
 
 class ProjectLabels(GitlabChildStream):
     path_template = "projects/{id}/labels"
     flatten_parent_id = True
-    top_level_stream = False
 
 
 class Branches(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["commit"]
     flatten_parent_id = True
-    top_level_stream = False
 
 
 class Commits(IncrementalGitlabChildStream):
@@ -278,27 +237,23 @@ class Commits(IncrementalGitlabChildStream):
     filter_field = "since"
     flatten_parent_id = True
     stream_base_params = {"with_stats": True}
-    top_level_stream = False
 
 
 class Issues(IncrementalGitlabChildStream):
     stream_base_params = {"scope": "all"}
     flatten_id_keys = ["author", "assignee", "closed_by", "milestone"]
     flatten_list_keys = ["assignees"]
-    top_level_stream = False
 
 
 class MergeRequests(IncrementalGitlabChildStream):
     stream_base_params = {"scope": "all"}
     flatten_id_keys = ["author", "assignee", "closed_by", "milestone", "merged_by"]
     flatten_list_keys = ["assignees"]
-    top_level_stream = False
 
 
 class MergeRequestCommits(GitlabChildStream):
     path_list = ["project_id", "iid"]
     path_template = "projects/{project_id}/merge_requests/{iid}"
-    top_level_stream = False
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
@@ -312,7 +267,6 @@ class Releases(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["author", "commit"]
     flatten_list_keys = ["milestones"]
-    top_level_stream = False
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
@@ -324,7 +278,6 @@ class Releases(GitlabChildStream):
 class Tags(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["commit"]
-    top_level_stream = False
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
@@ -334,20 +287,18 @@ class Tags(GitlabChildStream):
 
 
 class Pipelines(IncrementalGitlabChildStream):
-    top_level_stream = False
+    pass
 
 
 class PipelinesExtended(GitlabChildStream):
     path_list = ["project_id", "id"]
     path_template = "projects/{project_id}/pipelines/{id}"
-    top_level_stream = False
 
 
 class Jobs(GitlabChildStream):
     flatten_id_keys = ["user", "pipeline", "runner", "commit"]
     path_list = ["project_id", "id"]
     path_template = "projects/{project_id}/pipelines/{id}/jobs"
-    top_level_stream = False
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
@@ -356,14 +307,13 @@ class Jobs(GitlabChildStream):
 
 
 class Users(GitlabChildStream):
-    top_level_stream = False
+    pass
 
 
 # TODO: We need to upgrade the plan for these feature (epics) to be available
 class Epics(GitlabChildStream):
     primary_key = "iid"
     flatten_id_keys = ["author"]
-    top_level_stream = False
 
 
 # TODO: We need to upgrade the plan for these feature (epics) to be available
@@ -373,4 +323,3 @@ class EpicIssues(GitlabChildStream):
     flatten_id_keys = ["milestone", "assignee", "author"]
     flatten_list_keys = ["assignees"]
     path_template = "groups/{group_id}/epics/{id}/issues"
-    top_level_stream = False
