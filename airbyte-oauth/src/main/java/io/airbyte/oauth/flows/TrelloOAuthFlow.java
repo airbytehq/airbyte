@@ -52,31 +52,31 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
 
   public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return getConstentUrl(oAuthParamConfig, redirectUrl);
+    return getConsetntUrl(oAuthParamConfig, redirectUrl);
   }
 
   public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return getConstentUrl(oAuthParamConfig, redirectUrl);
+    return getConsetntUrl(oAuthParamConfig, redirectUrl);
   }
 
-  private String getConstentUrl(JsonNode oAuthParamConfig, String redirectUrl) throws IOException, ConfigNotFoundException {
+  private String getConsetntUrl(JsonNode oAuthParamConfig, String redirectUrl) throws IOException, ConfigNotFoundException {
     final String clientKey = getClientIdUnsafe(oAuthParamConfig);
     final String clientSecret = getClientSecretUnsafe(oAuthParamConfig);
-    OAuthGetTemporaryToken tempTokenRequest = new OAuthGetTemporaryToken(REQUEST_TOKEN_URL);
+    final OAuthGetTemporaryToken oAuthGetTemporaryToken = new OAuthGetTemporaryToken(REQUEST_TOKEN_URL);
     signer.clientSharedSecret = clientSecret;
     signer.tokenSharedSecret = null;
-    tempTokenRequest.signer = signer;
-    tempTokenRequest.callback = redirectUrl;
-    tempTokenRequest.transport = transport;
-    tempTokenRequest.consumerKey = clientKey;
-    OAuthCredentialsResponse temporaryTokenResponse = tempTokenRequest.execute();
+    oAuthGetTemporaryToken.signer = signer;
+    oAuthGetTemporaryToken.callback = redirectUrl;
+    oAuthGetTemporaryToken.transport = transport;
+    oAuthGetTemporaryToken.consumerKey = clientKey;
+    OAuthCredentialsResponse temporaryTokenResponse = oAuthGetTemporaryToken.execute();
 
-    OAuthAuthorizeTemporaryTokenUrl accessTempToken = new OAuthAuthorizeTemporaryTokenUrl(AUTHENTICATE_URL);
-    accessTempToken.temporaryToken = temporaryTokenResponse.token;
+    final OAuthAuthorizeTemporaryTokenUrl oAuthAuthorizeTemporaryTokenUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHENTICATE_URL);
+    oAuthAuthorizeTemporaryTokenUrl.temporaryToken = temporaryTokenResponse.token;
     signer.tokenSharedSecret = temporaryTokenResponse.tokenSecret;
-    return accessTempToken.build();
+    return oAuthAuthorizeTemporaryTokenUrl.build();
   }
 
   public Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
@@ -104,13 +104,13 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     }
     String temporaryToken = (String) queryParams.get("oauth_token");
     String verificationCode = (String) queryParams.get("oauth_verifier");
-    OAuthGetAccessToken getAccessToken = new OAuthGetAccessToken(ACCESS_TOKEN_URL);
-    getAccessToken.signer = signer;
-    getAccessToken.transport = transport;
-    getAccessToken.temporaryToken = temporaryToken;
-    getAccessToken.verifier = verificationCode;
-    getAccessToken.consumerKey = clientKey;
-    OAuthCredentialsResponse accessTokenResponse = getAccessToken.execute();
+    final OAuthGetAccessToken oAuthGetAccessToken = new OAuthGetAccessToken(ACCESS_TOKEN_URL);
+    oAuthGetAccessToken.signer = signer;
+    oAuthGetAccessToken.transport = transport;
+    oAuthGetAccessToken.temporaryToken = temporaryToken;
+    oAuthGetAccessToken.verifier = verificationCode;
+    oAuthGetAccessToken.consumerKey = clientKey;
+    OAuthCredentialsResponse accessTokenResponse = oAuthGetAccessToken.execute();
     String accessToken = accessTokenResponse.token;
     return Map.of("token", accessToken, "key", clientKey);
   }

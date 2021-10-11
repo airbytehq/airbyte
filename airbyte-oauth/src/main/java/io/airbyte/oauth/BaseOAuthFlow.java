@@ -21,6 +21,9 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 
+/*
+ * Class implementing generic oAuth 2.0 flow.
+ */
 public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   private final HttpClient httpClient;
