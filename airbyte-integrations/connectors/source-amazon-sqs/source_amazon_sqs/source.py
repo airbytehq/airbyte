@@ -148,6 +148,8 @@ class SourceAmazonSqs(Source):
                         "body": msg.body,
                         "attributes": msg.message_attributes,
                     }
+
+                    # TODO: Support a 'BATCH OUTPUT' mode that outputs the full batch in a single AirbyteRecordMessage
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
