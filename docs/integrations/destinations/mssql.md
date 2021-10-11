@@ -119,6 +119,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.10| 2021-10-11 | [\#6877](https://github.com/airbytehq/airbyte/pull/6877) | Add `normalization` capability, add `append+deduplication` sync mode |
 | 0.1.9 | 2021-09-29 | [\#5970](https://github.com/airbytehq/airbyte/pull/5970) | Add support & test cases for MSSQL Destination via SSH tunnels |
 | 0.1.8 | 2021-08-07 | [\#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records |
 | 0.1.7 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |

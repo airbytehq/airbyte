@@ -62,6 +62,13 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+      throws Exception {
+    String tableName = namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(tableName, namespace);
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,
@@ -80,6 +87,11 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsNormalization() {
     return true;
   }
 
