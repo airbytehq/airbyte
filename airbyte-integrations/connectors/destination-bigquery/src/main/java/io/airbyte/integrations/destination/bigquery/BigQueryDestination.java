@@ -81,7 +81,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       BigQueryUtils.createSchemaTable(bigquery, datasetId, datasetLocation);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
-          .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
+          .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES` LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
 

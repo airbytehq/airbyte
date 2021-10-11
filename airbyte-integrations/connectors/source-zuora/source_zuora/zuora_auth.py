@@ -5,7 +5,7 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 
 class ZuoraAuthenticator(Oauth2Authenticator):
