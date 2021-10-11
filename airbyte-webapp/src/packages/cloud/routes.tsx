@@ -183,7 +183,24 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 
 const MainViewRoutes = () => {
   useApiHealthPoll();
+
+  const { user } = useAuthService();
   const { currentWorkspaceId } = useWorkspaceService();
+
+  const { boot, shutdown } = useIntercom();
+
+  useEffect(() => {
+    if (user && user.email && user.name) {
+      boot({
+        email: user.email,
+        name: user.name,
+        userId: user.userId,
+        userHash: user.intercomHash,
+      });
+    }
+
+    return () => shutdown();
+  }, [user]);
 
   return (
     <>
@@ -223,19 +240,6 @@ const FirebaseActionRoute: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
-
-  const { boot } = useIntercom();
-
-  useEffect(() => {
-    if (user && user.email && user.name) {
-      boot({
-        email: user.email,
-        name: user.name,
-        userId: user.userId,
-        userHash: user.intercomHash,
-      });
-    }
-  }, [user]);
 
   return (
     <Router>

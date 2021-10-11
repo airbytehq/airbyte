@@ -15,7 +15,6 @@ const CreditsTitle: React.FC = () => {
   const { show } = useIntercom();
 
   const handleGetCredits = () => {
-    // TODO: setup custom bot here before show
     show();
   };
 
