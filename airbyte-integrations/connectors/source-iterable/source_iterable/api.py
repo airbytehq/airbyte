@@ -284,6 +284,7 @@ class Events(IterableStream):
     """
     https://api.iterable.com/api/docs#events_User_events
     """
+
     primary_key = None
     data_field = "events"
     page_size = EVENT_ROWS_LIMIT
