@@ -23,12 +23,7 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
-    if os.getenv(NORMALISATION_TEST_TARGET):
-        destinations_to_test = [
-            d.value for d in {DestinationType.POSTGRES, DestinationType.from_string(os.getenv("NORMALISATION_TEST_TARGET"))}
-        ]
-    else:
-        destinations_to_test = [d.value for d in DestinationType]
+    destinations_to_test = dbt_test_utils.get_test_targets()
     dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
