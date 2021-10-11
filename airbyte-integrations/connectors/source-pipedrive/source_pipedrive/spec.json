@@ -12,7 +12,7 @@
         "title": "Authentication Type",
         "oneOf": [
           {
-            "title": "Authenticate via OAuth",
+            "title": "Sign in via Pipedrive (OAuth)",
             "type": "object",
             "required": [
               "auth_type",
