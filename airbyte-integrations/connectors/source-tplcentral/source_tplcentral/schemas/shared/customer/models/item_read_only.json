@@ -12,14 +12,14 @@
     "creation_date": {
       "type": [
         "null",
-        "integer"
+        "string"
       ],
       "format": "date-time"
     },
     "last_modified_date": {
       "type": [
         "null",
-        "integer"
+        "string"
       ],
       "format": "date-time"
     },
@@ -29,7 +29,7 @@
     "last_price_change": {
       "type": [
         "null",
-        "integer"
+        "string"
       ],
       "format": "date-time"
     },
