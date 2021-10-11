@@ -139,7 +139,7 @@ const ConfirmEmailPage: React.FC = () => {
             </Resend>
 
             <Resend $light as="div" onClick={logout}>
-              <FormattedMessage id="login.loginInstead" />
+              <FormattedMessage id="confirmEmail.signOut" />
             </Resend>
           </div>
         </FormContent>
