@@ -63,7 +63,6 @@ class TplcentralStream(HttpStream, ABC):
         None
 
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
-        print("next_page_token")
         data = response.json()
         total = data[self.total_results_field]
 
@@ -107,7 +106,6 @@ class StockSummaries(TplcentralStream):
 
 
 class IncrementalTplcentralStream(TplcentralStream, ABC):
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = 10
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
