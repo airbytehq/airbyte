@@ -3,12 +3,13 @@
 select
     cast(ID as {{ dbt_utils.type_bigint() }}) as ID,
     cast(CURRENCY as {{ dbt_utils.type_string() }}) as CURRENCY,
-    cast(DATE as {{ type_date() }}) as DATE,
+    cast({{ empty_string_to_null('DATE') }} as {{ type_date() }}) as DATE,
     case
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SSTZH')
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{4}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
         when TIMESTAMP_COL regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{2}' then to_timestamp_tz(TIMESTAMP_COL, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+        when TIMESTAMP_COL = '' then NULL
     else to_timestamp_tz(TIMESTAMP_COL)
     end as TIMESTAMP_COL
     ,
