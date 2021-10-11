@@ -12,7 +12,7 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { Button, H5, LabeledInput, Link } from "components";
+import { H5, LabeledInput, Link, LoadingButton } from "components";
 import { FormTitle } from "../components/FormTitle";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -45,16 +45,6 @@ const SignupPage: React.FC = () => {
 
   const { signUp } = useAuthService();
 
-  const isSignUpDisabled = (values: FormValues): boolean => {
-    return (
-      !values.security ||
-      !values.name ||
-      !values.password ||
-      !values.email ||
-      !values.company
-    );
-  };
-
   return (
     <div>
       <FormTitle bold>
@@ -84,160 +74,163 @@ const SignupPage: React.FC = () => {
           })
         }
         validateOnBlur={true}
-        validateOnChange={false}
+        validateOnChange={true}
       >
-        {({ values }) => {
-          return (
-            <Form>
-              <RowFieldItem>
-                <Field name="name">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <LabeledInput
-                      {...field}
-                      label={<FormattedMessage id="login.fullName" />}
-                      placeholder={formatMessage({
-                        id: "login.fullName.placeholder",
-                      })}
-                      type="text"
-                      error={!!meta.error && meta.touched}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
-                    />
-                  )}
-                </Field>
-                <Field name="company">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <LabeledInput
-                      {...field}
-                      label={<FormattedMessage id="login.companyName" />}
-                      placeholder={formatMessage({
-                        id: "login.companyName.placeholder",
-                      })}
-                      type="text"
-                      error={!!meta.error && meta.touched}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
-                    />
-                  )}
-                </Field>
-              </RowFieldItem>
-              <FieldItem>
-                <Field name="email">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <LabeledInput
-                      {...field}
-                      label={<FormattedMessage id="login.yourEmail" />}
-                      placeholder={formatMessage({
-                        id: "login.yourEmail.placeholder",
-                      })}
-                      type="text"
-                      error={!!meta.error && meta.touched}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
-                    />
-                  )}
-                </Field>
-              </FieldItem>
-              <FieldItem>
-                <Field name="password">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <LabeledInput
-                      {...field}
-                      label={<FormattedMessage id="login.password" />}
-                      placeholder={formatMessage({
-                        id: "login.password.placeholder",
-                      })}
-                      type="password"
-                      error={!!meta.error && meta.touched}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
-                    />
-                  )}
-                </Field>
-              </FieldItem>
-              <FieldItem>
-                <Field name="subscribe">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <MarginBlock>
-                      <CheckBoxControl
-                        {...field}
-                        checked={!!field.value}
-                        checkbox
-                        label={<FormattedMessage id="login.subscribe" />}
-                        message={
-                          meta.touched &&
-                          meta.error &&
-                          formatMessage({ id: meta.error })
-                        }
-                      />
-                    </MarginBlock>
-                  )}
-                </Field>
-                <Field name="security">
-                  {({ field, meta }: FieldProps<string>) => (
+        {({ isValid, isSubmitting }) => (
+          <Form>
+            <RowFieldItem>
+              <Field name="name">
+                {({ field, meta }: FieldProps<string>) => (
+                  <LabeledInput
+                    {...field}
+                    label={<FormattedMessage id="login.fullName" />}
+                    placeholder={formatMessage({
+                      id: "login.fullName.placeholder",
+                    })}
+                    type="text"
+                    error={!!meta.error && meta.touched}
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
+                    }
+                  />
+                )}
+              </Field>
+              <Field name="company">
+                {({ field, meta }: FieldProps<string>) => (
+                  <LabeledInput
+                    {...field}
+                    label={<FormattedMessage id="login.companyName" />}
+                    placeholder={formatMessage({
+                      id: "login.companyName.placeholder",
+                    })}
+                    type="text"
+                    error={!!meta.error && meta.touched}
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
+                    }
+                  />
+                )}
+              </Field>
+            </RowFieldItem>
+            <FieldItem>
+              <Field name="email">
+                {({ field, meta }: FieldProps<string>) => (
+                  <LabeledInput
+                    {...field}
+                    label={<FormattedMessage id="login.yourEmail" />}
+                    placeholder={formatMessage({
+                      id: "login.yourEmail.placeholder",
+                    })}
+                    type="text"
+                    error={!!meta.error && meta.touched}
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
+                    }
+                  />
+                )}
+              </Field>
+            </FieldItem>
+            <FieldItem>
+              <Field name="password">
+                {({ field, meta }: FieldProps<string>) => (
+                  <LabeledInput
+                    {...field}
+                    label={<FormattedMessage id="login.password" />}
+                    placeholder={formatMessage({
+                      id: "login.password.placeholder",
+                    })}
+                    type="password"
+                    error={!!meta.error && meta.touched}
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
+                    }
+                  />
+                )}
+              </Field>
+            </FieldItem>
+            <FieldItem>
+              <Field name="subscribe">
+                {({ field, meta }: FieldProps<string>) => (
+                  <MarginBlock>
                     <CheckBoxControl
                       {...field}
                       checked={!!field.value}
                       checkbox
-                      label={
-                        <FormattedMessage
-                          id="login.security"
-                          values={{
-                            terms: (...terms: React.ReactNode[]) => (
-                              <Link
-                                $clear
-                                target="_blank"
-                                href={config.ui.termsLink}
-                                as="a"
-                              >
-                                {terms}
-                              </Link>
-                            ),
-                            privacy: (...privacy: React.ReactNode[]) => (
-                              <Link
-                                $clear
-                                target="_blank"
-                                href={config.ui.privacyLink}
-                                as="a"
-                              >
-                                {privacy}
-                              </Link>
-                            ),
-                          }}
-                        />
-                      }
+                      label={<FormattedMessage id="login.subscribe" />}
                       message={
                         meta.touched &&
                         meta.error &&
                         formatMessage({ id: meta.error })
                       }
                     />
-                  )}
-                </Field>
-              </FieldItem>
-              <BottomBlock>
-                <>
-                  <div />
-                  <Button type="submit" disabled={isSignUpDisabled(values)}>
-                    <FormattedMessage id="login.signup" />
-                  </Button>
-                </>
-              </BottomBlock>
-            </Form>
-          );
-        }}
+                  </MarginBlock>
+                )}
+              </Field>
+              <Field name="security">
+                {({ field, meta }: FieldProps<string>) => (
+                  <CheckBoxControl
+                    {...field}
+                    onChange={(e) => field.onChange(e)}
+                    checked={!!field.value}
+                    checkbox
+                    label={
+                      <FormattedMessage
+                        id="login.security"
+                        values={{
+                          terms: (...terms: React.ReactNode[]) => (
+                            <Link
+                              $clear
+                              target="_blank"
+                              href={config.ui.termsLink}
+                              as="a"
+                            >
+                              {terms}
+                            </Link>
+                          ),
+                          privacy: (...privacy: React.ReactNode[]) => (
+                            <Link
+                              $clear
+                              target="_blank"
+                              href={config.ui.privacyLink}
+                              as="a"
+                            >
+                              {privacy}
+                            </Link>
+                          ),
+                        }}
+                      />
+                    }
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
+                    }
+                  />
+                )}
+              </Field>
+            </FieldItem>
+            <BottomBlock>
+              <>
+                <div />
+                <LoadingButton
+                  type="submit"
+                  isLoading={isSubmitting}
+                  disabled={!isValid}
+                >
+                  <FormattedMessage id="login.signup" />
+                </LoadingButton>
+              </>
+            </BottomBlock>
+          </Form>
+        )}
       </Formik>
     </div>
   );
