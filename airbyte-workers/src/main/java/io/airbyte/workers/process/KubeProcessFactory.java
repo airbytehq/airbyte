@@ -57,7 +57,8 @@ public class KubeProcessFactory implements ProcessFactory {
   public KubeProcessFactory(String namespace,
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl, Set<Integer> ports) {
+                            String kubeHeartbeatUrl,
+                            Set<Integer> ports) {
     this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
   }
 
@@ -75,7 +76,8 @@ public class KubeProcessFactory implements ProcessFactory {
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
                             String kubeHeartbeatUrl,
-                            String processRunnerHost, Set<Integer> ports) {
+                            String processRunnerHost,
+                            Set<Integer> ports) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;

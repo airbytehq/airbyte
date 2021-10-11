@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.config.EnvConfigs;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -38,6 +36,7 @@ public class KubePortManagerSingleton {
 
   /**
    * Make sure init(ports) is called once prior to repeatedly using getInstance().
+   *
    * @return
    */
   public static synchronized KubePortManagerSingleton getInstance() {
@@ -46,8 +45,11 @@ public class KubePortManagerSingleton {
     }
     return instance;
   }
+
   /**
-   * Sets up the port range; make sure init(ports) is called once prior to repeatedly using getInstance().
+   * Sets up the port range; make sure init(ports) is called once prior to repeatedly using
+   * getInstance().
+   *
    * @return
    */
   public static synchronized void init(Set<Integer> ports) {

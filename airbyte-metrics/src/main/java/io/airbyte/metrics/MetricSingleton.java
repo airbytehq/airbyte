@@ -38,8 +38,8 @@ public class MetricSingleton {
 
   private HTTPServer monitoringDaemon;
 
-  private MetricSingleton() {
-  }
+  private MetricSingleton() {}
+
   public static synchronized MetricSingleton getInstance() {
     if (instance == null) {
       throw new RuntimeException("You must initialize configuration with the initializeMonitoringServiceDaemon() method before getting an instance.");
@@ -184,8 +184,8 @@ public class MetricSingleton {
 
   /**
    * Stand up a separate thread to publish metrics to the specified port. This method (in lieu of a
-   * constructor) must be called ahead of recording time, in order to set up the monitoring daemon and initialize the isPublish()
-   * configuration as true/false.
+   * constructor) must be called ahead of recording time, in order to set up the monitoring daemon and
+   * initialize the isPublish() configuration as true/false.
    *
    * @param monitorPort to publish metrics to
    */
