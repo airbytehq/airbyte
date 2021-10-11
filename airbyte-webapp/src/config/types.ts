@@ -13,6 +13,13 @@ declare global {
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
+    CLOUD?: string;
+    FIREBASE_API_KEY?: string;
+    FIREBASE_AUTH_DOMAIN?: string;
+    CLOUD_API_URL?: string;
+    REACT_APP_SENTRY_DSN?: string;
+    REACT_APP_WEBAPP_TAG?: string;
+    REACT_APP_INTERCOM_APP_ID?: string;
 
     analytics: SegmentAnalytics;
     _API_URL: string;
@@ -32,6 +39,7 @@ export type Config = {
   openreplay: OpenReplayOptions;
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
+  oauthRedirectUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
