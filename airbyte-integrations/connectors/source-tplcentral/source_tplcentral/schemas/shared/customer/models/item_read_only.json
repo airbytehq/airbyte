@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customer_identifier": {
+      "$ref": "../../generic/models/customer_identifier.json"
+    },
+    "item_id": {
+      "type": "integer"
+    },
+    "creation_date": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "format": "date-time"
+    },
+    "last_modified_date": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "format": "date-time"
+    },
+    "deactivated": {
+      "type": "boolean"
+    },
+    "last_price_change": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "format": "date-time"
+    },
+    "has_storage_rates": {
+      "type": "boolean"
+    }
+  }
+}

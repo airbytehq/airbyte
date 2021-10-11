@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location_zones": {
+      "type": "string"
+    },
+    "pallet_location_zones": {
+      "type": "string"
+    },
+    "over_alloc_location_zones": {
+      "type": "string"
+    },
+    "preferred_location_identifier": {
+      "$ref": "../../generic/models/location_identifier.json"
+    },
+    "force_into_preferred_location": {
+      "type": "boolean"
+    },
+    "allow_mixed_item_storage": {
+      "type": "boolean"
+    },
+    "allow_mixed_lot_storage": {
+      "type": "boolean"
+    },
+    "mixed_expiration_days_threshold": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    }
+  }
+}

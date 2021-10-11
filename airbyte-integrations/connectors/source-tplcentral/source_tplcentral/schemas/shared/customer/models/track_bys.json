@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "track_lot_number": {
+      "$ref": "../../common/enum/usage_level.json"
+    },
+    "track_serial_number": {
+      "$ref": "../../common/enum/serial_number_usage_level.json"
+    },
+    "track_expiration_date": {
+      "$ref": "../../common/enum/usage_level.json"
+    },
+    "outbound_mobile_serialization_behavior": {
+      "$ref": "../../common/enum/outbound_mobile_serialization_behavior.json"
+    },
+    "auto_hold_expiration_days_threshold": {
+      "type": ["null", "integer"]
+    },
+    "is_pick_lot_number_required": {
+      "type": "boolean"
+    },
+    "is_pick_serial_number_required": {
+      "type": "boolean"
+    },
+    "is_pick_expiration_date_required": {
+      "type": "boolean"
+    }
+  }
+}

@@ -4,16 +4,7 @@
   "additionalProperties": false,
   "properties": {
     "item_identifier": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "sku": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
-        }
-      }
+      "$ref": "generic/models/item_identifier.json"
     },
     "qualifier": {
       "type": "string"
