@@ -207,7 +207,7 @@ class JobsOpenings(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-job-openings
     """
 
-    parent_stream = DemographicsQuestionSets
+    parent_stream = Jobs
     path_template = "jobs/{parent_id}/openings"
 
 
@@ -216,7 +216,7 @@ class JobsStages(GreenhouseSubStream, GreenhouseStream):
     Docs: https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job
     """
 
-    parent_stream = DemographicsQuestionSets
+    parent_stream = Jobs
     path_template = "jobs/{parent_id}/stages"
 
 

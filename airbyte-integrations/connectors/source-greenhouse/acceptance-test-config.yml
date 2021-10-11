@@ -20,17 +20,12 @@ tests:
       empty_streams:
         [
           "applications_demographics_answers",
-          "applications_interviews",
           "demographics_answer_options",
           "demographics_answers",
           "demographics_answers_answer_options",
           "demographics_question_sets",
           "demographics_question_sets_questions",
           "demographics_questions",
-          "interviews",
-          "rejection_reasons",
-          "jobs_openings",
-          "jobs_stages",
         ]
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
