@@ -60,18 +60,6 @@ def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessa
     return list(filter(lambda x: x.type == type_, records))
 
 
-def remove_ignored_fields(output: List[AirbyteMessage], ignored_fields: Mapping[str, List[str]]) -> List[Mapping[str, Any]]:
-    """Remove ignored fields from records in TestFullRefresh.test_sequential_reads"""
-    data = []
-    for message in output:
-        if message.type == Type.RECORD:
-            stream = message.record.stream
-            stream_ignored_fields = ignored_fields.get(stream, [])
-            record_data = message.record.data
-            data.append({key: value for key, value in record_data.items() if key not in stream_ignored_fields})
-    return data
-
-
 class SecretDict(UserDict):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(******)"

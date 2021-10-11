@@ -68,8 +68,9 @@ class DictWithHash(dict):
         return hash(self) == hash(other)
 
 
-def serialize(value) -> str:
+def serialize(value, exclude_fields=None) -> str:
     """Simplify comparison of nested dicts/lists"""
+    print(value)
     if isinstance(value, Mapping):
         return DictWithHash(value)
     if isinstance(value, List):

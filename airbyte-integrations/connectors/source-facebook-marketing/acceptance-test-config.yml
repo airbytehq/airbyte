@@ -23,4 +23,4 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       ignored_fields:
-        "ads_insights_age_and_gender": [ "cost_per_estimated_ad_recallers", ]
+        - "ads_insights_age_and_gender/cost_per_estimated_ad_recallers"

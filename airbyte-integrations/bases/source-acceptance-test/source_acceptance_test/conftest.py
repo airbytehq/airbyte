@@ -164,9 +164,3 @@ def detailed_logger() -> Logger:
     logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
     logger.handlers = [fh]
     return logger
-
-
-@pytest.fixture(name="ignored_fields")
-def ignored_fields_fixture(inputs) -> Mapping[str, List[str]]:
-    ignored_fields = getattr(inputs, "ignored_fields") or {}
-    return ignored_fields
