@@ -4,9 +4,6 @@ import { isDefined } from "utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
-    papercups: {
-      enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
-    },
     openreplay: {
       projectID: window.OPENREPLAY === "disabled" ? -1 : undefined,
       revID: window.AIRBYTE_VERSION,
@@ -46,14 +43,6 @@ const envConfigProvider: ConfigProvider = async () => {
         Number.isInteger(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
           ? Number.parseInt(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
           : -1,
-    },
-    papercups: {
-      accountId: process.env.REACT_APP_PAPERCUPS_ACCOUNT_ID,
-      enableStorytime: isDefined(
-        process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
-      )
-        ? !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
-        : undefined,
     },
   };
 };

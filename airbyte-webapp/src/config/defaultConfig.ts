@@ -14,11 +14,6 @@ const defaultConfig: Config = {
     revID: "",
     projectID: -1,
   },
-  papercups: {
-    baseUrl: "https://app.papercups.io",
-    enableStorytime: false,
-    accountId: "",
-  },
   version: "",
   apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,

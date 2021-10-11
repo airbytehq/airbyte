@@ -7,7 +7,6 @@ import { UiConfig } from "./uiConfig";
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
-    PAPERCUPS_STORYTIME?: string;
     FULLSTORY?: string;
     OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
@@ -26,16 +25,9 @@ declare global {
   }
 }
 
-export type PaperCupsConfig = {
-  accountId: string;
-  baseUrl: string;
-  enableStorytime: boolean;
-};
-
 export type Config = {
   ui: UiConfig;
   segment: { token: string; enabled: boolean };
-  papercups: PaperCupsConfig;
   openreplay: OpenReplayOptions;
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
