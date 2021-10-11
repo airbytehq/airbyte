@@ -4,7 +4,7 @@
 
 The Airbyte Redshift destination allows you to sync data to Redshift.
 
-This Redshift destination connector has two replication strategies: 
+This Redshift destination connector has two replication strategies:
 
 1. INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). **Not recommended for production workloads as this does not scale well**.  
 2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html). Requires an S3 bucket and credentials.
@@ -45,7 +45,7 @@ You will need to choose an existing database or create a new database that will 
 3. A staging S3 bucket with credentials \(for the COPY strategy\).
 
 {% hint style="info" %}
-Even if your Airbyte instance is running on a server in the same VPC as your Redshift cluster, you may need to place them in the **same security group** to allow connections between the two. 
+Even if your Airbyte instance is running on a server in the same VPC as your Redshift cluster, you may need to place them in the **same security group** to allow connections between the two.
 {% endhint %}
 
 ### Setup guide
@@ -109,9 +109,10 @@ See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.3.14   | 2021-10-08 | [5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table  |
-| 0.3.13   | 2021-09-02 | [5745](https://github.com/airbytehq/airbyte/pull/5745) | Disable STATUPDATE flag when using S3 staging to speed up performance |
-| 0.3.12   | 2021-07-21 | [3555](https://github.com/airbytehq/airbyte/pull/3555) | Enable partial checkpointing for halfway syncs |
-| 0.3.11   | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | allow `additionalProperties` in connector spec |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.3.14 | 2021-10-08 | [5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table |
+| 0.3.13 | 2021-09-02 | [5745](https://github.com/airbytehq/airbyte/pull/5745) | Disable STATUPDATE flag when using S3 staging to speed up performance |
+| 0.3.12 | 2021-07-21 | [3555](https://github.com/airbytehq/airbyte/pull/3555) | Enable partial checkpointing for halfway syncs |
+| 0.3.11 | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | allow `additionalProperties` in connector spec |
+
