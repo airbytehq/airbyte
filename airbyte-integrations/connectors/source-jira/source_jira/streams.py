@@ -361,10 +361,11 @@ class Issues(IncrementalJiraStream):
                 fields.append(field_ids_by_name[name])
         projects_stream = Projects(**stream_args)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"], "fields": list(set(fields))}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
+        record["projectKey"] = stream_slice["project_key"]
         return record
 
 

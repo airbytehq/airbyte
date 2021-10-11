@@ -108,6 +108,11 @@
       "type": "string",
       "description": "The ID of the project containing the issue.",
       "readOnly": true
+    },
+    "projectKey": {
+      "type": "string",
+      "description": "The key of the project containing the issue.",
+      "readOnly": true
     }
   },
   "additionalProperties": false
