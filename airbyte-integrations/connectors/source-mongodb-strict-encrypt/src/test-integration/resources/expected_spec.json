@@ -38,13 +38,6 @@
                 "default": 27017,
                 "examples": ["27017"],
                 "order": 1
-              },
-              "tls": {
-                "title": "TLS connection",
-                "type": "boolean",
-                "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\">documentation</a>.",
-                "default": false,
-                "order": 2
               }
             }
           },
