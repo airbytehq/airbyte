@@ -12,11 +12,11 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { H5, LabeledInput, Link, LoadingButton } from "components";
-import { FormTitle } from "../components/FormTitle";
+import { H1, LabeledInput, Link, LoadingButton } from "components";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import SpecialBlock from "./components/SpecialBlock";
 
 type FormValues = {
   name: string;
@@ -47,12 +47,10 @@ const SignupPage: React.FC = () => {
 
   return (
     <div>
-      <FormTitle bold>
+      <H1 bold>
         <FormattedMessage id="login.activateAccess" />
-      </FormTitle>
-      <H5>
-        <FormattedMessage id="login.activateAccess.subtitle" />
-      </H5>
+      </H1>
+      <SpecialBlock />
 
       <Formik<FormValues>
         initialValues={{
