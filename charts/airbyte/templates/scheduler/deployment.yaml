@@ -168,6 +168,9 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: INTERNAL_API_HOST
+        {{- if .Values.scheduler.extraEnv }}
+        {{ .Values.scheduler.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         {{- if .Values.scheduler.resources }}
         resources: {{- toYaml .Values.scheduler.resources | nindent 10 }}
         {{- end }}

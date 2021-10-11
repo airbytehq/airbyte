@@ -129,6 +129,14 @@ webapp:
   storytime:
     enabled: false
 
+  ## @param webapp.extraEnv [array] Additional env vars for webapp pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
+
 ## @section Scheduler Parameters
 
 scheduler:
@@ -180,6 +188,14 @@ scheduler:
   ## @param scheduler.log.level The log level to log at.
   log:
     level: "INFO"
+
+  ## @param scheduler.extraEnv [array] Additional env vars for scheduler pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
 
 
 ## @section Pod Sweeper parameters
@@ -332,6 +348,14 @@ server:
   log:
     level: "INFO"
 
+  ## @param server.extraEnv [array] Additional env vars for server pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
+
 ## @section Worker Parameters
 
 worker:
@@ -454,6 +478,14 @@ temporal:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
 
 
 ## @section Airbyte Database parameters
