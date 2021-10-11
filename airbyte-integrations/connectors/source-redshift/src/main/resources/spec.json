@@ -37,7 +37,7 @@
         "title": "TLS connection",
         "type": "boolean",
         "description": "Indicates whether TLS encryption protocol will be used to connect to Redshift. It is recommended to use TLS connection if possible",
-        "default": false,
+        "default": false
       }
     }
   }
