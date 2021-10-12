@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import NoAuth, Oauth2Authenticator
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
 
@@ -18,9 +19,13 @@ class PipedriveStream(HttpStream, ABC):
     data_field = "data"
     page_size = 50
 
-    def __init__(self, api_token: str, replication_start_date: pendulum.datetime = None, **kwargs):
-        super().__init__(**kwargs)
-        self._api_token = api_token
+    def __init__(self, authenticator, replication_start_date=None, **kwargs):
+        if isinstance(authenticator, Oauth2Authenticator):
+            super().__init__(authenticator=authenticator, **kwargs)
+        else:
+            super().__init__(**kwargs)
+            self._api_token = authenticator["api_token"]
+
         self._replication_start_date = replication_start_date
 
     @property
@@ -56,7 +61,10 @@ class PipedriveStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
-        params = {"api_token": self._api_token, "limit": self.page_size, **next_page_token}
+        params = {"limit": self.page_size, **next_page_token}
+
+        if isinstance(self.authenticator, NoAuth):
+            params["api_token"] = self._api_token
 
         replication_start_date = self._replication_start_date
         if replication_start_date:
