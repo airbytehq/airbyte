@@ -19,7 +19,7 @@ from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_o
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         self.source = source
-        self.logger = init_logger(source.name)
+        self.logger = init_logger(getattr(source, "name", "source"))
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         # set up parent parsers
