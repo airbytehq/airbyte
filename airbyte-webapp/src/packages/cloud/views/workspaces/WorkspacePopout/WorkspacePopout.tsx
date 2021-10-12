@@ -41,7 +41,7 @@ const TextBlock = styled.div`
   display: inline-block;
 `;
 
-const List = styled.div`
+const List = styled.div<{ single: boolean }>`
   & .react-select__option {
     & div {
       font-weight: 400;
@@ -51,7 +51,8 @@ const List = styled.div`
   }
 
   & .react-select__option--is-selected {
-    border-bottom: 1px solid rgba(139, 139, 160, 0.25);
+    ${({ single }) =>
+      !single && "border-bottom: 1px solid rgba(139, 139, 160, 0.25);"}
 
     & div {
       background-color: #fff;
@@ -71,7 +72,7 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
   const { selectWorkspace } = useWorkspaceService();
 
   return (
-    <List>
+    <List single={props.options.length === 1}>
       <components.MenuList {...props}>{children}</components.MenuList>
       <BottomElement>
         <Block onClick={() => selectWorkspace("")}>
