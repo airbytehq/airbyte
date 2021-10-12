@@ -156,7 +156,8 @@ class Items(IncrementalTplcentralStream):
             cursor = stream_slice.get(self.cursor_field, None)
             if cursor:
                 params.update({
-                    "rql": f"ReadOnly.lastModifiedDate=ge={cursor}",
+                    "sort": "ReadOnly.LastModifiedDate",
+                    "rql": f"ReadOnly.LastModifiedDate=ge={cursor}",
                 })
 
         return params
