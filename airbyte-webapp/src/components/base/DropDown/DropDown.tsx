@@ -44,8 +44,6 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       )
     : props.options?.find((op) => equal(op.value, props.value));
 
-  console.log(props.isSearchable);
-
   return (
     <CustomSelect
       data-testid={props.name}
