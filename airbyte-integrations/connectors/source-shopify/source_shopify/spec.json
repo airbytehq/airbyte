@@ -69,14 +69,14 @@
           }
         ]
       }
-    },
-    "authSpecification": {
-      "auth_type": "oauth2.0",
-      "oauth2Specification": {
-        "rootObject": ["auth_method", 0],
-        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-        "oauthFlowOutputParameters": [["client_id"], ["client_secret"], ["access_token"]]
-      }
     } 
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["auth_method", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"]]
+    }
   }
 }
