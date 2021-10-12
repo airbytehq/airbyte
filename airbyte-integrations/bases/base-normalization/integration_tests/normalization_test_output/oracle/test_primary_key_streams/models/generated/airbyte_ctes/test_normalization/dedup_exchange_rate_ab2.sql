@@ -3,8 +3,8 @@
 select
     cast(id as {{ dbt_utils.type_bigint() }}) as id,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
-    cast({{ quote('DATE') }} as {{ type_date() }}) as {{ quote('DATE') }},
-    cast(timestamp_col as {{ type_timestamp_with_timezone() }}) as timestamp_col,
+    cast(empty_string_to_null({{ quote('DATE') }}) as {{ type_date() }}) as {{ quote('DATE') }},
+    cast(empty_string_to_null('timestamp_col') as {{ type_timestamp_with_timezone() }}) as timestamp_col,
     cast(hkd_special___characters as {{ dbt_utils.type_float() }}) as hkd_special___characters,
     cast(hkd_special___characters_1 as {{ dbt_utils.type_string() }}) as hkd_special___characters_1,
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,

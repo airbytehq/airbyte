@@ -20,27 +20,27 @@ The BigQuery data types mapping:
 
 | CockroachDb Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
-| `BOOL` | Boolean | |
-| `INT64` | Number | |
-| `FLOAT64` | Number | |
-| `NUMERIC` | Number | |
-| `BIGNUMERIC` | Number | |
-| `STRING` | String | |
-| `BYTES` | String | |
+| `BOOL` | Boolean |  |
+| `INT64` | Number |  |
+| `FLOAT64` | Number |  |
+| `NUMERIC` | Number |  |
+| `BIGNUMERIC` | Number |  |
+| `STRING` | String |  |
+| `BYTES` | String |  |
 | `DATE` | String | In ISO8601 format |
 | `DATETIME` | String | In ISO8601 format |
 | `TIMESTAMP` | String | In ISO8601 format |
-| `TIME` | String | |
-| `ARRAY` | Array | |
-| `STRUCT` | Object | |
-| `GEOGRAPHY` | String | |
+| `TIME` | String |  |
+| `ARRAY` | Array |  |
+| `STRUCT` | Object |  |
+| `GEOGRAPHY` | String |  |
 
 ### Features
 
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync| Yes |  |
+| Incremental Sync | Yes |  |
 | Change Data Capture | No |  |
 | SSL Support | Yes |  |
 
@@ -77,7 +77,7 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 You should now have all the requirements needed to configure BigQuery as a source in the UI. You'll need the following information to configure the BigQuery source:
 
 * **Project ID**
-* **Default Dataset ID [Optional]**: the schema name if only one schema is interested. Dramatically boost source discover operation.
+* **Default Dataset ID \[Optional\]**: the schema name if only one schema is interested. Dramatically boost source discover operation.
 * **Credentials JSON**: the contents of your Service Account Key JSON file
 
 Once you've configured BigQuery as a source, delete the Service Account Key from your computer.
@@ -87,9 +87,10 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 ### source-bigquery
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.1.4 | 2021-09-30 | [#6524](https://github.com/airbytehq/airbyte/pull/6524) | Allow `dataset_id` null in spec |
-| 0.1.3 | 2021-09-16 | [#6051](https://github.com/airbytehq/airbyte/pull/6051) | Handle NPE `dataset_id` is not provided|
-| 0.1.2 | 2021-09-16 | [#6135](https://github.com/airbytehq/airbyte/pull/6135) | 🐛 BigQuery source: Fix nested structs |
-| 0.1.1 | 2021-07-28 | [#4981](https://github.com/airbytehq/airbyte/pull/4981) | 🐛 BigQuery source: Fix nested arrays |
-| 0.1.0 | 2021-07-22 | [#4457](https://github.com/airbytehq/airbyte/pull/4457) | 🎉 New Source: Big Query. |
+| :--- | :--- | :--- | :--- |
+| 0.1.4 | 2021-09-30 | [\#6524](https://github.com/airbytehq/airbyte/pull/6524) | Allow `dataset_id` null in spec |
+| 0.1.3 | 2021-09-16 | [\#6051](https://github.com/airbytehq/airbyte/pull/6051) | Handle NPE `dataset_id` is not provided |
+| 0.1.2 | 2021-09-16 | [\#6135](https://github.com/airbytehq/airbyte/pull/6135) | 🐛 BigQuery source: Fix nested structs |
+| 0.1.1 | 2021-07-28 | [\#4981](https://github.com/airbytehq/airbyte/pull/4981) | 🐛 BigQuery source: Fix nested arrays |
+| 0.1.0 | 2021-07-22 | [\#4457](https://github.com/airbytehq/airbyte/pull/4457) | 🎉 New Source: Big Query. |
+
