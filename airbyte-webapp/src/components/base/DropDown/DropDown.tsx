@@ -62,7 +62,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         menuPortal: (base: CSSObject) => ({
           ...base,
           zIndex: 9999,
-          ...(!props.isSearchable ? { transform: "translateY(-37px)" } : {}),
+          ...(!props.isSearchable ? { transform: "translateY(-35px)" } : {}),
         }),
       }}
       value={currentValue}
