@@ -37,13 +37,20 @@ export const theme = {
 
   whiteColor: "#FFFFFF",
   beigeColor: "#FEF9F4",
+  darkBeigeColor: "#FFEBD7",
   darkGreyColor: "#8B8BA0",
   redColor: "#FF6A4D",
+  lightRedColor: "#FF8870",
+  redTransparentColor: "rgba(255, 118, 94, 0.1)",
   whiteColor5: "rgba(255, 255, 255, .5)",
+  transparentColor: "rgba(255, 255, 255, 0)",
 
   regularFont: "Inter, Arial, sans-serif",
   highlightFont: "Montserrat, Arial, sans-serif",
   codeFont: "Courier Prime, Arial, sans-serif",
+  italicFont: "Shrikhand, serif",
 };
+
+export const barChartColors = ["#E8E8ED", "#AFAFC1"];
 
 export type Theme = typeof theme;

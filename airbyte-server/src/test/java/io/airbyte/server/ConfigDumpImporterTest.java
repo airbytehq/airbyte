@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -44,9 +24,11 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -76,13 +58,21 @@ class ConfigDumpImporterTest {
   private DestinationConnection destinationConnection;
   private StandardSyncOperation operation;
   private StandardSync connection;
+  private ConnectorSpecification emptyConnectorSpec;
+  private SpecFetcher specFetcher;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     workspaceHelper = mock(WorkspaceHelper.class);
-    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class));
+
+    specFetcher = mock(SpecFetcher.class);
+    emptyConnectorSpec = mock(ConnectorSpecification.class);
+    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
+    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+
+    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();
@@ -153,12 +143,12 @@ class ConfigDumpImporterTest {
 
   @Test
   public void testImportIntoWorkspaceWithConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listSourceConnection())
+    when(configRepository.listSourceConnectionWithSecrets())
         .thenReturn(List.of(sourceConnection,
             new SourceConnection()
                 .withSourceId(UUID.randomUUID())
                 .withWorkspaceId(UUID.randomUUID())));
-    when(configRepository.listDestinationConnection())
+    when(configRepository.listDestinationConnectionWithSecrets())
         .thenReturn(List.of(destinationConnection,
             new DestinationConnection()
                 .withDestinationId(UUID.randomUUID())
@@ -176,9 +166,12 @@ class ConfigDumpImporterTest {
     configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
 
     verify(configRepository)
-        .writeSourceConnection(Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))));
+        .writeSourceConnection(
+            Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))),
+            eq(emptyConnectorSpec));
     verify(configRepository).writeDestinationConnection(
-        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))));
+        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))),
+        eq(emptyConnectorSpec));
     verify(configRepository)
         .writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId).withOperationId(not(eq(operation.getOperationId()))));
     verify(configRepository).writeStandardSync(Jsons.clone(connection).withConnectionId(not(eq(connection.getConnectionId()))));
@@ -186,7 +179,7 @@ class ConfigDumpImporterTest {
 
   @Test
   public void testImportIntoWorkspaceWithoutConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listSourceConnection())
+    when(configRepository.listSourceConnectionWithSecrets())
         // First called for export
         .thenReturn(List.of(sourceConnection,
             new SourceConnection()
@@ -196,7 +189,7 @@ class ConfigDumpImporterTest {
         .thenReturn(List.of(new SourceConnection()
             .withSourceId(UUID.randomUUID())
             .withWorkspaceId(UUID.randomUUID())));
-    when(configRepository.listDestinationConnection())
+    when(configRepository.listDestinationConnectionWithSecrets())
         // First called for export
         .thenReturn(List.of(destinationConnection,
             new DestinationConnection()
@@ -226,8 +219,10 @@ class ConfigDumpImporterTest {
     final UUID newWorkspaceId = UUID.randomUUID();
     configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
 
-    verify(configRepository).writeSourceConnection(Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId));
-    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId));
+    verify(configRepository).writeSourceConnection(
+        Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId),
+        emptyConnectorSpec);
+    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId), emptyConnectorSpec);
     verify(configRepository).writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId));
     verify(configRepository).writeStandardSync(connection);
   }

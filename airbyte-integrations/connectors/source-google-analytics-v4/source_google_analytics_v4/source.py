@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -403,7 +383,7 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
-class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
+class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
     """Request example for API token extraction:
     curl --location --request POST
     https://oauth2.googleapis.com/token?grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=signed_JWT
@@ -460,22 +440,37 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
             "iat": issued_at,
             "exp": expiration_time,
         }
-
         headers = {"kid": self.client_id}
-
         signed_jwt = jwt.encode(payload, self.client_secret, headers=headers, algorithm="RS256")
-
         return {"grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion": str(signed_jwt)}
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""
 
+    @staticmethod
+    def get_authenticator(config):
+        # backwards compatibility, credentials_json used to be in the top level of the connector
+        if config.get("credentials_json"):
+            return GoogleAnalyticsServiceOauth2Authenticator(config)
+
+        auth_params = config.get("credentials")
+        if auth_params.pop("auth_type") == "Service":
+            return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
+        else:
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://oauth2.googleapis.com/token",
+                client_secret=auth_params.get("client_secret"),
+                client_id=auth_params.get("client_id"),
+                refresh_token=auth_params.get("refresh_token"),
+                scopes=["https://www.googleapis.com/auth/analytics.readonly"],
+            )
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             url = f"{GoogleAnalyticsV4TypesList.url_base}"
 
-            authenticator = GoogleAnalyticsOauth2Authenticator(config)
+            authenticator = self.get_authenticator(config)
 
             session = requests.get(url, headers=authenticator.get_auth_header())
             session.raise_for_status()
@@ -492,7 +487,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
 
-        authenticator = GoogleAnalyticsOauth2Authenticator(config)
+        authenticator = self.get_authenticator(config)
 
         config["authenticator"] = authenticator
 

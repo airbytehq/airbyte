@@ -23,6 +23,7 @@ import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
+import { CompleteOauthRequest } from "./CompleteOauthRequest";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -40,33 +41,49 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
 }
 
-const MainViewRoutes = () => (
-  <MainView>
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route path={Routes.Destination}>
-          <DestinationPage />
-        </Route>
-        <Route path={Routes.Source}>
-          <SourcesPage />
-        </Route>
-        <Route path={Routes.Connections}>
-          <ConnectionPage />
-        </Route>
-        <Route path={Routes.Settings}>
-          <SettingsPage />
-        </Route>
-        <Route exact path={Routes.Root}>
-          <SourcesPage />
-        </Route>
-        <Redirect to={Routes.Root} />
-      </Switch>
-    </Suspense>
-  </MainView>
-);
+const MainViewRoutes = () => {
+  const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
+
+  return (
+    <MainView>
+      <Suspense fallback={<LoadingPage />}>
+        <Switch>
+          <Route path={Routes.AuthFlow}>
+            <CompleteOauthRequest />
+          </Route>
+          <Route path={Routes.Destination}>
+            <DestinationPage />
+          </Route>
+          <Route path={Routes.Source}>
+            <SourcesPage />
+          </Route>
+          <Route path={Routes.Connections}>
+            <ConnectionPage />
+          </Route>
+          <Route path={Routes.Settings}>
+            <SettingsPage />
+          </Route>
+          {workspace.displaySetupWizard && (
+            <Route path={Routes.Onboarding}>
+              <OnboardingPage />
+            </Route>
+          )}
+          <Route exact path={Routes.Source}>
+            <SourcesPage />
+          </Route>
+          <Redirect to={mainRedirect} />
+        </Switch>
+      </Suspense>
+    </MainView>
+  );
+};
 
 const PreferencesRoutes = () => (
   <Switch>
@@ -74,15 +91,6 @@ const PreferencesRoutes = () => (
       <PreferencesPage />
     </Route>
     <Redirect to={Routes.Preferences} />
-  </Switch>
-);
-
-const OnboardingsRoutes = () => (
-  <Switch>
-    <Route path={Routes.Onboarding}>
-      <OnboardingPage />
-    </Route>
-    <Redirect to={Routes.Onboarding} />
   </Switch>
 );
 
@@ -116,8 +124,6 @@ export const Routing: React.FC = () => {
       <Suspense fallback={<LoadingPage />}>
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
-        ) : workspace.displaySetupWizard ? (
-          <OnboardingsRoutes />
         ) : (
           <>
             <WithPageAnalytics />

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -28,12 +8,12 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -47,14 +27,14 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
   public StreamCopier create(String configuredSchema,
                              GcsConfig gcsConfig,
                              String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             AirbyteStream stream,
+                             ConfiguredAirbyteStream configuredStream,
                              ExtendedNameTransformer nameTransformer,
                              JdbcDatabase db,
                              SqlOperations sqlOperations) {
     try {
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var schema = getSchema(stream, configuredSchema, nameTransformer);
+      AirbyteStream stream = configuredStream.getStream();
+      DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
+      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
       InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
       GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
@@ -64,7 +44,7 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
           .build()
           .getService();
 
-      return create(stagingFolder, syncMode, schema, pair.getName(), storageClient, db, gcsConfig, nameTransformer, sqlOperations);
+      return create(stagingFolder, syncMode, schema, stream.getName(), storageClient, db, gcsConfig, nameTransformer, sqlOperations);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -83,13 +63,5 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
                                       ExtendedNameTransformer nameTransformer,
                                       SqlOperations sqlOperations)
       throws Exception;
-
-  private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
-    if (stream.getNamespace() != null) {
-      return nameTransformer.convertStreamName(stream.getNamespace());
-    } else {
-      return nameTransformer.convertStreamName(configuredSchema);
-    }
-  }
 
 }

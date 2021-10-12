@@ -1,31 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
@@ -64,9 +46,11 @@ import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.OauthModelConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -84,6 +68,7 @@ import org.slf4j.LoggerFactory;
 public class SchedulerHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
+  private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
@@ -94,13 +79,15 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public SchedulerHandler(ConfigRepository configRepository,
                           SchedulerJobClient schedulerJobClient,
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
                           JobNotifier jobNotifier,
-                          WorkflowServiceStubs temporalService) {
+                          WorkflowServiceStubs temporalService,
+                          OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
         schedulerJobClient,
@@ -110,7 +97,8 @@ public class SchedulerHandler {
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
         jobNotifier,
-        temporalService);
+        temporalService,
+        oAuthConfigSupplier);
   }
 
   @VisibleForTesting
@@ -122,7 +110,8 @@ public class SchedulerHandler {
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
                    JobNotifier jobNotifier,
-                   WorkflowServiceStubs temporalService) {
+                   WorkflowServiceStubs temporalService,
+                   OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -132,6 +121,7 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -147,11 +137,16 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        sourceConfig.getConnectionConfiguration(),
+        specFetcher.execute(imageName));
+
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(sourceConfig.getConnectionConfiguration());
+        .withConfiguration(partialConfig);
 
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
@@ -183,11 +178,17 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
+
+    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+        destinationConfig.getConnectionConfiguration(),
+        specFetcher.execute(imageName));
+
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(destinationConfig.getConnectionConfiguration());
+        .withConfiguration(partialConfig);
+
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 
@@ -246,11 +247,18 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
-    return new SourceDefinitionSpecificationRead()
+    SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
+
+    Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
+    if (authSpec.isPresent()) {
+      specRead.setAuthSpecification(authSpec.get());
+    }
+
+    return specRead;
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
@@ -260,7 +268,8 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
-    return new DestinationDefinitionSpecificationRead()
+
+    DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
@@ -268,6 +277,13 @@ public class SchedulerHandler {
         .supportsNormalization(spec.getSupportsNormalization())
         .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
+
+    Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
+    if (authSpec.isPresent()) {
+      specRead.setAuthSpecification(authSpec.get());
+    }
+
+    return specRead;
   }
 
   public SynchronousResponse<ConnectorSpecification> getConnectorSpecification(String dockerImage) throws IOException {
@@ -279,13 +295,24 @@ public class SchedulerHandler {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
-    final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
-    final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        sourceConnection.getSourceDefinitionId(),
+        sourceConnection.getWorkspaceId(),
+        sourceConnection.getConfiguration());
+    sourceConnection.withConfiguration(sourceConfiguration);
+    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destinationConnection.getDestinationDefinitionId(),
+        destinationConnection.getWorkspaceId(),
+        destinationConnection.getConfiguration());
+    destinationConnection.withConfiguration(destinationConfiguration);
 
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final String sourceImageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+    final StandardDestinationDefinition destinationDef =
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
     final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
@@ -295,8 +322,8 @@ public class SchedulerHandler {
     }
 
     final Job job = schedulerJobClient.createOrGetActiveSyncJob(
-        source,
-        destination,
+        sourceConnection,
+        destinationConnection,
         standardSync,
         sourceImageName,
         destinationImageName,
@@ -352,7 +379,7 @@ public class SchedulerHandler {
 
   private void cancelTemporalWorkflowIfPresent(long jobId) throws IOException {
     var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
-                                                                                 // specific to a job id, allowing us to do this.
+    // specific to a job id, allowing us to do this.
     var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
     if (workflowId.isPresent()) {

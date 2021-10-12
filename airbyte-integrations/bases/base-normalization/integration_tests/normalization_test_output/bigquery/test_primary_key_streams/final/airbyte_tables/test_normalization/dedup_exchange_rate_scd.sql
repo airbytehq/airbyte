@@ -31,10 +31,10 @@ select
     cast(currency as 
     string
 ) as currency,
-    cast(date as 
+    cast(nullif(date, '') as
     date
 ) as date,
-    cast(timestamp_col as 
+    cast(nullif(timestamp_col, '') as
     timestamp
 ) as timestamp_col,
     cast(HKD_special___characters as 

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -35,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
@@ -46,7 +27,7 @@ from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url: str, params: [str]) -> str:
+def remove_params_from_url(url: str, params: List[str]) -> str:
     """
     Parses a URL and removes the query parameters specified in params
     :param url: URL
@@ -65,6 +46,7 @@ class FBMarketingStream(Stream, ABC):
     """Base stream class"""
 
     primary_key = "id"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     page_size = 100
 
@@ -161,9 +143,10 @@ class FBMarketingStream(Stream, ABC):
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
 
-    def __init__(self, start_date: datetime, **kwargs):
+    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date)
+        self._end_date = pendulum.instance(end_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -298,7 +281,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 3
+    MAX_ASYNC_JOBS = 10
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
@@ -356,7 +339,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
             job_id = job["report_run_id"]
-            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
+            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete ({job['async_status']})")
             runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":
@@ -445,7 +428,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = pendulum.parse(state_value) - self.lookback_window
         else:
             start_date = self._start_date
-        end_date = pendulum.now()
+        end_date = self._end_date
         start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
 
         for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):

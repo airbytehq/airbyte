@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -36,6 +16,7 @@ import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
@@ -55,6 +36,7 @@ import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -170,6 +152,19 @@ public class WebBackendConnectionsHandler {
           WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
           WebBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
         });
+  }
+
+  public WebBackendConnectionReadList webBackendSearchConnections(WebBackendConnectionSearch webBackendConnectionSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
+    for (ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
+      if (connectionsHandler.matchSearch(toConnectionSearch(webBackendConnectionSearch), connectionRead)) {
+        reads.add(buildWebBackendConnectionRead(connectionRead));
+      }
+    }
+
+    return new WebBackendConnectionReadList().connections(reads);
   }
 
   public WebBackendConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)
@@ -362,6 +357,22 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
 
     return connectionUpdate;
+  }
+
+  @VisibleForTesting
+  protected static ConnectionSearch toConnectionSearch(WebBackendConnectionSearch webBackendConnectionSearch) {
+    return new ConnectionSearch()
+        .name(webBackendConnectionSearch.getName())
+        .connectionId(webBackendConnectionSearch.getConnectionId())
+        .source(webBackendConnectionSearch.getSource())
+        .sourceId(webBackendConnectionSearch.getSourceId())
+        .destination(webBackendConnectionSearch.getDestination())
+        .destinationId(webBackendConnectionSearch.getDestinationId())
+        .namespaceDefinition(webBackendConnectionSearch.getNamespaceDefinition())
+        .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
+        .prefix(webBackendConnectionSearch.getPrefix())
+        .schedule(webBackendConnectionSearch.getSchedule())
+        .status(webBackendConnectionSearch.getStatus());
   }
 
 }

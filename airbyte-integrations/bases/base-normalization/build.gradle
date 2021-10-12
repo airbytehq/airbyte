@@ -44,10 +44,12 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
 
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")
+customIntegrationTests.dependsOn("customIntegrationTestPython")
 
 // TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
 task('mypyCheck', type: PythonTask) {
