@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcDatabase;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -15,10 +17,7 @@ import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-
 import java.util.function.Consumer;
-
-import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcDatabase;
 
 /**
  * A more efficient Redshift Destination than the sql-based {@link RedshiftDestination}. Instead of
@@ -33,48 +32,48 @@ import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestina
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
-    @Override
-    public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                              ConfiguredAirbyteCatalog catalog,
-                                              Consumer<AirbyteMessage> outputRecordCollector)
-            throws Exception {
-        return CopyConsumerFactory.create(
-                outputRecordCollector,
-                getDatabase(config),
-                getSqlOperations(),
-                getNameTransformer(),
-                getS3Config(config),
-                catalog,
-                new RedshiftStreamCopierFactory(),
-                getConfiguredSchema(config));
-    }
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    return CopyConsumerFactory.create(
+        outputRecordCollector,
+        getDatabase(config),
+        getSqlOperations(),
+        getNameTransformer(),
+        getS3Config(config),
+        catalog,
+        new RedshiftStreamCopierFactory(),
+        getConfiguredSchema(config));
+  }
 
-    @Override
-    public void checkPersistence(JsonNode config) {
-        S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
-    }
+  @Override
+  public void checkPersistence(JsonNode config) {
+    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
+  }
 
-    @Override
-    public ExtendedNameTransformer getNameTransformer() {
-        return new RedshiftSQLNameTransformer();
-    }
+  @Override
+  public ExtendedNameTransformer getNameTransformer() {
+    return new RedshiftSQLNameTransformer();
+  }
 
-    @Override
-    public JdbcDatabase getDatabase(JsonNode config) {
-        return getJdbcDatabase(config);
-    }
+  @Override
+  public JdbcDatabase getDatabase(JsonNode config) {
+    return getJdbcDatabase(config);
+  }
 
-    @Override
-    public SqlOperations getSqlOperations() {
-        return new RedshiftSqlOperations();
-    }
+  @Override
+  public SqlOperations getSqlOperations() {
+    return new RedshiftSqlOperations();
+  }
 
-    private String getConfiguredSchema(JsonNode config) {
-        return config.get("schema").asText();
-    }
+  private String getConfiguredSchema(JsonNode config) {
+    return config.get("schema").asText();
+  }
 
-    private S3Config getS3Config(JsonNode config) {
-        return S3Config.getS3Config(config);
-    }
+  private S3Config getS3Config(JsonNode config) {
+    return S3Config.getS3Config(config);
+  }
 
 }
