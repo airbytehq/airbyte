@@ -46,5 +46,4 @@ You can find or create authentication tokens within [Sentry](https://sentry.io/s
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2021-10-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | New Source: Sentry |
-
+| 0.1.0 | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975) | New Source: Sentry |
