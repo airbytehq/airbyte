@@ -16,8 +16,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /*
- * Class with methods for getting oAuth config parameters for source and
- * destination oAuth flow from config repository.
+ * Class with methods for getting oAuth config parameters for source and destination oAuth flow from
+ * config repository.
  */
 public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
 
