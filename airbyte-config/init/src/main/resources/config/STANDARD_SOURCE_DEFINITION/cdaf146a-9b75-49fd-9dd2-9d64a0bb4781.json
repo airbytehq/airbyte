@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
+  "name": "Sentry",
+  "dockerRepository": "airbyte/source-sentry",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/sentry"
+}
