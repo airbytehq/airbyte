@@ -10,17 +10,16 @@ import sys
 import tempfile
 from typing import Iterable, List
 
-from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
-
-logger = AirbyteLogger()
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         self.source = source
+        self.logger = init_logger(getattr(source, "name", "source"))
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         # set up parent parsers
@@ -61,7 +60,7 @@ class AirbyteEntrypoint(object):
             raise Exception("No command passed")
 
         # todo: add try catch for exceptions with different exit codes
-        source_spec = self.source.spec(logger)
+        source_spec = self.source.spec(self.logger)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
@@ -73,26 +72,26 @@ class AirbyteEntrypoint(object):
                 # Remove internal flags from config before validating so
                 # jsonschema's additionalProperties flag wont fail the validation
                 config, internal_config = split_config(config)
-                check_config_against_spec_or_exit(config, source_spec, logger)
+                check_config_against_spec_or_exit(config, source_spec, self.logger)
                 # Put internal flags back to config dict
                 config.update(internal_config.dict())
 
                 if cmd == "check":
-                    check_result = self.source.check(logger, config)
+                    check_result = self.source.check(self.logger, config)
                     if check_result.status == Status.SUCCEEDED:
-                        logger.info("Check succeeded")
+                        self.logger.info("Check succeeded")
                     else:
-                        logger.error("Check failed")
+                        self.logger.error("Check failed")
 
                     output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
                     yield output_message
                 elif cmd == "discover":
-                    catalog = self.source.discover(logger, config)
+                    catalog = self.source.discover(self.logger, config)
                     yield AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True)
                 elif cmd == "read":
                     config_catalog = self.source.read_catalog(parsed_args.catalog)
                     state = self.source.read_state(parsed_args.state)
-                    generator = self.source.read(logger, config, config_catalog, state)
+                    generator = self.source.read(self.logger, config, config_catalog, state)
                     for message in generator:
                         yield message.json(exclude_unset=True)
                 else:
