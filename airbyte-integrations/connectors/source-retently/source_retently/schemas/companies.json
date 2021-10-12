@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+
+    "id": { "type": "string" }, 
+    "createdDate": { "type": "string" }, 
+    "tags": { "type": "array", "items": { "type": "string" } }, 
+    "cxMetrics": { "type": "object" },
+    "industryName": { "type": "string" }, 
+    "domain": { "type": "string" }, 
+    "companyName": { "type": "string" }
+
+  }
+}
