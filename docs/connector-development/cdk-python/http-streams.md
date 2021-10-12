@@ -60,4 +60,4 @@ The caching mechanism is related to parent streams. For child streams, there is 
 
 To use caching in the parent/child relationship, perform the following steps:
 1. Turn on parent stream caching by overriding the `use_cache` property.
-2. Inherit child stream class from `HtttpSubStream` class.
+2. Inherit child stream class from `HttpSubStream` class.
