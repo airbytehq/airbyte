@@ -27,6 +27,9 @@ class FreshsalesStream(HttpStream, ABC):
         self.get_view_id()
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        There is no next page token in the respond so incrementing the page param until there is no new result
+        """
         list_result = response.json().get(self.object_name, [])
         if list_result:
             self.page += 1
@@ -46,6 +49,9 @@ class FreshsalesStream(HttpStream, ABC):
         yield from records
     
     def get_filters(self):
+        """
+        Some streams require a filter id to be passed in. This function gets the filter ids
+        """
         filters_url = f"https://{self.domain_name}/crm/sales/api/{self.object_name}/filters"
         auth = self.authenticator.get_auth_header()
         try:
@@ -56,6 +62,9 @@ class FreshsalesStream(HttpStream, ABC):
             return False, e
 
     def get_view_id(self):
+        """
+        This function get the relevant filter id for the stream
+        """
         if hasattr(self, "filter_name"):
             filters = self.get_filters()
             return next(filter['id'] for filter in filters if filter['name'] == self.filter_name)
