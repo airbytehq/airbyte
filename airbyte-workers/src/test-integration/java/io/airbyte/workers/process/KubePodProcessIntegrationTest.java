@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +46,12 @@ public class KubePodProcessIntegrationTest {
 
   private static WorkerHeartbeatServer server;
 
+  @BeforeAll
+  public void init() throws Exception {
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
+        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+  }
+
   @BeforeEach
   public void setup() throws Exception {
     openPorts = new ArrayList<>(getOpenPorts(5));
@@ -54,8 +61,6 @@ public class KubePodProcessIntegrationTest {
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
-        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
