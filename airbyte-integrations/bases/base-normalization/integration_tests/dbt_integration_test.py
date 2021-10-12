@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 from normalization.destination_type import DestinationType
 from normalization.transform_config.transform import TransformConfig
 
-NORMALISATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
+NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
 
 
 class DbtIntegrationTest(object):
@@ -223,12 +223,6 @@ class DbtIntegrationTest(object):
         else:
             os.chdir(request.fspath.dirname)
 
-    def generate_project_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
-        config_generator = TransformConfig()
-        project_yaml = config_generator.transform_dbt_project(destination_type)
-        config_generator.write_yaml_config(test_root_dir, project_yaml, "dbt_project.yml")
-        return project_yaml
-
     def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
         """
         Each destination requires different settings to connect to. This step generates the adequate profiles.yml
@@ -412,8 +406,8 @@ class DbtIntegrationTest(object):
         then the tests are run only on that subsets of destinations
         Otherwise tests are run against all destinations
         """
-        if os.getenv(NORMALISATION_TEST_TARGET):
-            target_str = os.getenv(NORMALISATION_TEST_TARGET)
+        if os.getenv(NORMALIZATION_TEST_TARGET):
+            target_str = os.getenv(NORMALIZATION_TEST_TARGET)
             return [d.value for d in {DestinationType.from_string(s) for s in target_str.split(",")}]
         else:
             return [d.value for d in DestinationType]

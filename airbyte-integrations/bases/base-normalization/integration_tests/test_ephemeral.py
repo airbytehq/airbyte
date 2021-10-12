@@ -45,15 +45,15 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1000])
-@pytest.mark.parametrize("integration_type", list(DestinationType))
-def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
-    if integration_type.value not in dbt_test_utils.get_test_targets() or integration_type.value == DestinationType.MYSQL.value:
+@pytest.mark.parametrize("destination_type", list(DestinationType))
+def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
+    if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1000.
-        pytest.skip(f"Destinations {integration_type} is not in NORMALISATION_TEST_TARGET env variable (MYSQL is also skipped)")
-    if integration_type == DestinationType.ORACLE:
+        pytest.skip(f"Destinations {destination_type} is not in NORMALISATION_TEST_TARGET env variable (MYSQL is also skipped)")
+    if destination_type.value == DestinationType.ORACLE.value:
         column_count = 998
-    run_test(integration_type, column_count)
+    run_test(destination_type, column_count)
 
 
 @pytest.mark.parametrize(
@@ -69,9 +69,10 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
-    if integration_type not in dbt_test_utils.get_test_targets():
-        pytest.skip(f"Destinations {integration_type} is not in NORMALISATION_TEST_TARGET env variable")
-    run_test(DestinationType.from_string(integration_type), column_count, expected_exception_message)
+    destination_type = DestinationType.from_string(integration_type)
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALISATION_TEST_TARGET env variable")
+    run_test(destination_type, column_count, expected_exception_message)
 
 
 def test_empty_streams(setup_test_path):
@@ -93,7 +94,6 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
-    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
@@ -125,7 +125,6 @@ def setup_test_dir(integration_type: str) -> str:
     shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
-    dbt_test_utils.copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
     if integration_type == DestinationType.MSSQL.value:
         copy_tree("../dbt-project-template-mysql", test_root_dir)
     elif integration_type == DestinationType.MYSQL.value:

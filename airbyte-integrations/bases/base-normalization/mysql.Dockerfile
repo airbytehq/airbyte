@@ -11,7 +11,7 @@ WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
 COPY setup.py .
 COPY dbt-project-template/ ./dbt-template/
-COPY dbt-project-template-mysql/ ./dbt-template-mysql/
+COPY dbt-project-template-mysql/* ./dbt-template/
 
 WORKDIR /airbyte/base_python_structs
 RUN pip install .

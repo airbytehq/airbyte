@@ -54,6 +54,5 @@ models:
         +materialized: table
     +materialized: table
 
-dispatch:
-  - macro_namespace: dbt_utils
-    search_order: ['airbyte_utils', 'dbt_utils']
+vars:
+  dbt_utils_dispatch_list: ['airbyte_utils']
