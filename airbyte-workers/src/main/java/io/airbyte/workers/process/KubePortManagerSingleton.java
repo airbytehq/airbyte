@@ -27,7 +27,7 @@ public class KubePortManagerSingleton {
 
   private static KubePortManagerSingleton instance;
 
-  private final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
+  private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
   private BlockingQueue<Integer> workerPorts;
 
   private KubePortManagerSingleton(Set<Integer> ports) {
