@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "vendor_id": { "type": "integer" },
+    "name": { "type": "string" },
+    "po_number": { "type": "string" },
+    "vendor_details": { "type": "string" },
+    "expected_delivery_date": { "type": "string" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "created_by": { "type": "string" },
+    "status": { "type": "integer" },
+    "shipping_address": { "type": "string" },
+    "billing_same_as_shipping": { "type": "boolean" },
+    "billing_address": { "type": "string" },
+    "currency_code": { "type": "string" },
+    "conversion_rate": { "type": "number" },
+    "department_id": { "type": "integer" },
+    "discount_percentage": { "type": "integer" },
+    "tax_percentage": { "type": "integer" },
+    "shipping_cost": { "type": "integer" },
+    "custom_fields": { "type": "object" },
+    "purchase_items": { "type": "array" }
+  }
+}

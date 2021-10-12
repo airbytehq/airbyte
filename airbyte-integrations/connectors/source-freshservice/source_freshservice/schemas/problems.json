@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "agent_id": { "type": "integer" },
+    "requester_id": { "type": "integer" },
+    "group_id": { "type": "integer" },
+    "description": { "type": "string" },
+    "description_text": { "type": "string" },
+    "priority": { "type": "integer" },
+    "status": { "type": "integer" },
+    "impact": { "type": "integer" },
+    "known_error": { "type": "boolean" },
+    "subject": { "type": "string" },
+    "due_by": { "type": "date-time" },
+    "department_id": { "type": "integer" },
+    "category": { "type": "string" },
+    "sub_category": { "type": "string" },
+    "item_category": { "type": "string" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "associated_change": { "type": "integer" },
+    "custom_fields": { "type": "object" },
+    "analysis_fields": { "type": "object" }
+  }
+}

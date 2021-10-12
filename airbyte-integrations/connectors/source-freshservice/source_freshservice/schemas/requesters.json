@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "first_name": { "type": "string" },
+    "last_name": { "type": "string" },
+    "job_title": { "type": "string" },
+    "primary_email": { "type": "string" },
+    "secondary_emails": { "type": "array" },
+    "work_phone_number": { "type": "integer" },
+    "mobile_phone_number": { "type": "integer" },
+    "department_ids": { "type": "array" },
+    "can_see_all_tickets_from_associated_departments": { "type": "boolean" },
+    "reporting_manager_id": { "type": "integer" },
+    "address": { "type": "string" },
+    "time_zone": { "type": "string" },
+    "time_format": { "type": "string" },
+    "language": { "type": "string" },
+    "location_id": { "type": "integer" },
+    "background_information": { "type": "string" },
+    "custom_fields": { "type": "object" },
+    "active": { "type": "boolean" },
+    "has_logged_in": { "type": "boolean" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "is_agent": { "type": "boolean" }
+  }
+}

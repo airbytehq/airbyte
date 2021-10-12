@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "agent_id": { "type": "integer" },
+    "description": { "type": "string" },
+    "description_text": { "type": "string" },
+    "requester_id": { "type": "integer" },
+    "group_id": { "type": "integer" },
+    "priority": { "type": "integer" },
+    "impact": { "type": "integer" },
+    "status": { "type": "integer" },
+    "risk": { "type": "integer" },
+    "change_type": { "type": "integer" },
+    "approval_status": { "type": "integer" },
+    "planned_start_date": { "type": "integer" },
+    "planned_end_date": { "type": "integer" },
+    "subject": { "type": "string" },
+    "department_id": { "type": "integer" },
+    "category": { "type": "string" },
+    "sub_category": { "type": "string" },
+    "item_category": { "type": "string" },
+    "custom_fields": { "type": "object" },
+    "maintenance_window": { "type": "object" },
+    "blackout_window": { "type": "object" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "agent_id": { "type": "integer" },
+    "group_id": { "type": "integer" },
+    "priority": { "type": "integer" },
+    "status": { "type": "integer" },
+    "release_type": { "type": "integer" },
+    "subject": { "type": "string" },
+    "description": { "type": "string" },
+    "planned_start_date": { "type": "date-time" },
+    "planned_end_date": { "type": "date-time" },
+    "work_start_date": { "type": "date-time" },
+    "work_end_date": { "type": "date-time" },
+    "department_id": { "type": "integer" },
+    "category": { "type": "string" },
+    "sub_category": { "type": "string" },
+    "item_category": { "type": "string" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "associated_assets": { "type": "array" },
+    "associated_changes": { "type": "array" },
+    "custom_fields": { "type": "object" },
+    "planning_fields": { "type": "object" }
+  }
+}

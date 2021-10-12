@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "display_id": { "type": "integer" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "asset_type_id": { "type": "integer" },
+    "asset_tag": { "type": "string" },
+    "impact": { "type": "string" },
+    "author_type": { "type": "string" },
+    "usage_type": { "type": "string" },
+    "user_id": { "type": "integer" },
+    "location_id": { "type": "integer" },
+    "department_id": { "type": "integer" },
+    "agent_id": { "type": "integer" },
+    "group_id": { "type": "integer" },
+    "assigned_on": { "type": "date-time" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" }
+  }
+}
