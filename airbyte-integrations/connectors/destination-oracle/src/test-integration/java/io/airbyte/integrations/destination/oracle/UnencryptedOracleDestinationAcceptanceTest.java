@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.oracle;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -11,6 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
@@ -19,8 +22,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
+import org.junit.Test;
 
-public class OracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
@@ -154,6 +158,25 @@ public class OracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(TestDestinationEnv testEnv) {
     db.stop();
     db.close();
+  }
+
+  @Test
+  public void testNoneEncryption() throws SQLException {
+    JsonNode config = getConfig();
+
+    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
+        "oracle.jdbc.driver.OracleDriver");
+
+    String network_service_banner = "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
+    List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+
+    assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
+        .contains("Oracle Advanced Security: encryption"));
   }
 
 }

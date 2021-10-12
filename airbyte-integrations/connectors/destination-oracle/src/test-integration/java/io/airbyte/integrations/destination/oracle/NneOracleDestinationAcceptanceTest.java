@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.oracle;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
 
-public class OracleDestinationNneAcceptanceTest extends OracleDestinationAcceptanceTest {
+public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestinationAcceptanceTest {
 
   @Test
   public void testEncryption() throws SQLException {
@@ -43,25 +46,6 @@ public class OracleDestinationNneAcceptanceTest extends OracleDestinationAccepta
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
         equals("Oracle Advanced Security: " + algorithm + " encryption"));
-  }
-
-  @Test
-  public void testNoneEncryption() throws SQLException {
-    JsonNode config = getConfig();
-
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
-
-    String network_service_banner = "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
-
-    assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: encryption"));
   }
 
   @Test

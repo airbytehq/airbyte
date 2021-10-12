@@ -131,8 +131,7 @@
                 "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations",
                 "type": "string",
                 "airbyte_secret": true,
-                "multiline": true,
-                "order": 4
+                "multiline": true
               }
             }
           }

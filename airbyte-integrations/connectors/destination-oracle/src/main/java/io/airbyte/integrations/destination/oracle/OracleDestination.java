@@ -105,7 +105,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       }
     }
     throw new RuntimeException(
-        "Failed to obtain connection protocol from config" + encryption.asText());
+        "Failed to obtain connection protocol from config " + encryption.asText());
   }
 
   private static void convertAndImportCertificate(String certificate)
@@ -121,7 +121,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
     Process pr = run.exec(cmd);
-    if (!pr.waitFor(10, TimeUnit.SECONDS)) {
+    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
