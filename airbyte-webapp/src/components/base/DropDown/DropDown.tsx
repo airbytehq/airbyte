@@ -10,6 +10,7 @@ import Option, { IDataItem } from "./components/Option";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { SelectContainer } from "./SelectContainer";
 import { CustomSelect } from "./CustomSelect";
+import { CSSObject } from "styled-components";
 
 export type OptionType = any;
 type DropdownProps = Props<OptionType> & {
@@ -43,6 +44,8 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       )
     : props.options?.find((op) => equal(op.value, props.value));
 
+  console.log(props.isSearchable);
+
   return (
     <CustomSelect
       data-testid={props.name}
@@ -54,8 +57,14 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}
-      styles={{ menuPortal: (base: any) => ({ ...base, zIndex: 9999 }) }}
       {...props}
+      styles={{
+        menuPortal: (base: CSSObject) => ({
+          ...base,
+          zIndex: 9999,
+          ...(!props.isSearchable ? { transform: "translateY(-37px)" } : {}),
+        }),
+      }}
       value={currentValue}
       components={components}
     />
