@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "due_date": { "type": "date-time" },
+    "targetable_id": { "type": "integer" },
+    "targetable_type": { "type": "string" },
+    "Possible": { "type": "string" },
+    "owner_id": { "type": "integer" },
+    "status": { "type": "boolean" },
+    "creater_id": { "type": "integer" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "outcome_id": { "type": "integer" },
+    "task_type_id": { "type": "integer" }
+  }
+}

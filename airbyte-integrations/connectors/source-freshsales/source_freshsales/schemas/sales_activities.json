@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "title": { "type": "string" },
+    "sales_activity_type_id": { "type": "integer" },
+    "sales_activity_outcome_id": { "type": "integer" },
+    "start_date": { "type": "date-time" },
+    "end_date": { "type": "date-time" },
+    "notes": { "type": "string" },
+    "owner_id": { "type": "integer" },
+    "targetable_id": { "type": "integer" },
+    "targetable_type": { "type": "string" },
+    "Possible": { "type": "values" },
+    "creater_id": { "type": "integer" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "location": { "type": "string" },
+    "latitude": { "type": "string" },
+    "longitude": { "type": "string" },
+    "checkedin_at": { "type": "date-time" }
+  }
+}

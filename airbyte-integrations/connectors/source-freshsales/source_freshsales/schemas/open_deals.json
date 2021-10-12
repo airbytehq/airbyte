@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "amount": { "type": "number" },
+    "currency_id": { "type": "integer" },
+    "base_currency_amount": { "type": "number" },
+    "sales_account_id": { "type": "integer" },
+    "deal_stage_id": { "type": "integer" },
+    "deal_reason_id": { "type": "integer" },
+    "deal_type_id": { "type": "integer" },
+    "owner_id": { "type": "integer" },
+    "expected_close": { "type": "date" },
+    "closed_date": { "type": "date" },
+    "lead_source_id": { "type": "integer" },
+    "campaign_id": { "type": "integer" },
+    "deal_product_id": { "type": "integer" },
+    "deal_payment_status_id": { "type": "integer" },
+    "probability": { "type": "integer" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "territory_id": { "type": "integer" },
+    "deal_pipeline_id": { "type": "integer" }
+  }
+}

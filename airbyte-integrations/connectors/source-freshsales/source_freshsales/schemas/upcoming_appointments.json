@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "from_date": { "type": "date-time" },
+    "date": { "type": "date-time" },
+    "Start": { "type": "date" },
+    "end_date": { "type": "date-time" },
+    "End": { "type": "date" },
+    "time_zone": { "type": "string" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "creater_id": { "type": "integer" },
+    "targetable_id": { "type": "integer" },
+    "targetable_type": { "type": "string" },
+    "Possible": { "type": "string" },
+    "location": { "type": "string" },
+    "created_at": { "type": "date-time" },
+    "updated_at": { "type": "date-time" },
+    "is_allday": { "type": "boolean" },
+    "appointment_attendees_attributes": { "type": "array" },
+    "outcome_id": { "type": "integer" },
+    "latitude": { "type": "string" },
+    "longitude": { "type": "string" },
+    "checkedin_at": { "type": "date-time" }
+  }
+}

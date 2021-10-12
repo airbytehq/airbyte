@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": "array",
   "properties": {
     "id": {
-      "type": "number"
+      "type": "integer"
     },
     "first_name": {
       "type": "string"
@@ -12,7 +12,7 @@
       "type": "string"
     },
     "subscription_status": {
-      "type": "object"
+      "type": "array"
     },
     "job_title": {
       "type": "string"
@@ -48,25 +48,25 @@
       "type": "string"
     },
     "sales_accounts": {
-      "type": "object"
+      "type": "array"
     },
     "territory_id": {
-      "type": "number"
+      "type": "integer"
     },
     "lead_source_id": {
-      "type": "number"
+      "type": "integer"
     },
     "owner_id": {
-      "type": "number"
+      "type": "integer"
     },
     "subscription_types": {
-      "type": "object"
+      "type": "array"
     },
     "medium": {
       "type": "string"
     },
     "campaign_id": {
-      "type": "number"
+      "type": "integer"
     },
     "keyword": {
       "type": "string"
@@ -90,13 +90,13 @@
       "type": "date-time"
     },
     "contact_status_id": {
-      "type": "number"
+      "type": "integer"
     },
     "sales_account_id": {
-      "type": "number"
+      "type": "integer"
     },
     "lifecycle_stage_id": {
-      "type": "number"
+      "type": "integer"
     }
   }
 }
