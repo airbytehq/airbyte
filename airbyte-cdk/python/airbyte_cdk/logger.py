@@ -50,6 +50,7 @@ LOGGING_CONFIG = {
 
 
 def init_logger(name: str):
+    """Initial set up of logger"""
     logging.setLoggerClass(AirbyteNativeLogger)
     logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
     logger = logging.getLogger(name)
@@ -62,6 +63,7 @@ class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
     def format(self, record: logging.LogRecord) -> str:
+        """Return a JSON representation of the log message"""
         message = super().format(record)
         log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=record.levelname, message=message))
         return log_message.json(exclude_unset=True)
@@ -75,6 +77,7 @@ class AirbyteNativeLogger(logging.Logger):
         self.valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
 
     def log_by_prefix(self, msg, default_level):
+        """Custom method, which takes log level from first word of message"""
         split_line = msg.split()
         first_word = next(iter(split_line), None)
         if first_word in self.valid_log_types:

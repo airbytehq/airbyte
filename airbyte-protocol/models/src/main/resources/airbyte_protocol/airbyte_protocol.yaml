@@ -86,8 +86,10 @@ definitions:
         type: string
         enum:
           - FATAL
+          - CRITICAL
           - ERROR
           - WARN
+          - WARNING
           - INFO
           - DEBUG
           - TRACE
