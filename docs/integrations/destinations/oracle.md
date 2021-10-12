@@ -10,6 +10,7 @@
 | Namespaces | Yes |  |
 | Basic Normalization | Yes | Doesn't support for nested json yet |
 | SSH Tunnel Connection | Yes |  |
+| Encryption | Yes | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
 
 ## Output Schema
 
@@ -69,19 +70,50 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
 
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
-2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
-   2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
-3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
-4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
-5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the Oracle username.
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Oracle password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
-7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use
+   an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
+      establishing the SSH Tunnel \(see below for more information on generating this key\).
+   2. Choose `Password Authentication` if you will be using a password as your secret for
+      establishing the SSH Tunnel.
+3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will
+   connect to. This should be a hostname or an IP Address.
+4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection.
+   The default port for SSH connections is `22`, so unless you have explicitly changed something, go
+   with the default.
+5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion
+   server. This is NOT the Oracle username.
+6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the
+   password of the User from the previous step. If you are using `SSH Key Authentication` leave this
+   blank. Again, this is not the Oracle password, but the password for the OS-user that Airbyte is
+   using to perform commands on the bastion.
+7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA
+   Private Key that you are using to create the SSH connection. This should be the full contents of
+   the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
+   with `-----END RSA PRIVATE KEY-----`.
+
+## Encryption Options
+
+Airbite has the ability to connect to the Oracle source with 3 network connectivity options:
+
+1. `Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the
+   network will be transmitted in unencrypted form.
+2. `Native network encryption` gives you the ability to encrypt database connections, without the
+   configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on
+   different ports. In this case, the *SQLNET.ENCRYPTION_CLIENT*
+   option will always be set as *REQUIRED* by default: The client or server will only accept
+   encrypted traffic, but the user has the opportunity to choose an `Encryption algorithm` according
+   to the security policies he needs.
+3. `TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be
+   transfered using the TLS protocol, taking into account the handshake procedure and certificate
+   verification. To use this option, insert the content of the certificate issued by the server into
+   the `SSL PEM file` field
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.10 | 2021-10-08 | [\#6893](https://github.com/airbytehq/airbyte/pull/6893)| 🎉 Destination Oracle: implemented connection encryption |
 | 0.1.9 | 2021-10-06 | [\#6611](https://github.com/airbytehq/airbyte/pull/6611) | 🐛 Destination Oracle: maxStringLength should be 128 |
 | 0.1.8 | 2021-09-28 | [\#6370](https://github.com/airbytehq/airbyte/pull/6370) | Add SSH Support for Oracle Destination |
 | 0.1.7 | 2021-08-30 | [\#5746](https://github.com/airbytehq/airbyte/pull/5746) | Use default column name for raw tables |
