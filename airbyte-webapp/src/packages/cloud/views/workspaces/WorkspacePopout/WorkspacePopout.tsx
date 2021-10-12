@@ -69,7 +69,6 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
   ...props
 }) => {
   const { selectWorkspace } = useWorkspaceService();
-  console.log(children, props);
 
   return (
     <List>
