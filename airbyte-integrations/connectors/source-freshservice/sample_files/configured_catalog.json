@@ -1,0 +1,55 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "tickets",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "attachments": { "type": "array" },
+            "cc_emails": { "type": "array" },
+            "department_id": { "type": "integer" },
+            "custom_fields": { "type": "object" },
+            "deleted": { "type": "boolean" },
+            "description": { "type": "string" },
+            "description_text": { "type": "string" },
+            "due_by": { "type": "date-time" },
+            "email": { "type": "string" },
+            "email_config_id": { "type": "integer" },
+            "fr_due_by": { "type": "date-time" },
+            "fr_escalated": { "type": "boolean" },
+            "fwd_emails": { "type": "array" },
+            "group_id": { "type": "integer" },
+            "id": { "type": "integer" },
+            "is_escalated": { "type": "boolean" },
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "priority": { "type": "integer" },
+            "category": { "type": "integer" },
+            "sub_category": { "type": "string" },
+            "item_category": { "type": "string" },
+            "reply_cc_emails": { "type": "array" },
+            "requester_id": { "type": "integer" },
+            "responder_id": { "type": "integer" },
+            "source": { "type": "integer" },
+            "spam": { "type": "boolean" },
+            "status": { "type": "integer" },
+            "subject": { "type": "string" },
+            "tags": { "type": "array" },
+            "to_emails": { "type": "array" },
+            "type": { "type": "string" },
+            "created_at": { "type": "date-time" },
+            "updated_at": { "type": "date-time" },
+            "urgency": { "type": "integer" },
+            "impact": { "type": "integer" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
