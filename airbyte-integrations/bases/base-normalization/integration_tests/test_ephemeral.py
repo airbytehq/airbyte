@@ -25,7 +25,6 @@ def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
     if DestinationType.POSTGRES.value not in destinations_to_test:
         destinations_to_test.append(DestinationType.POSTGRES.value)
-    dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
@@ -45,19 +44,15 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize("column_count", [1500])
+@pytest.mark.parametrize("column_count", [1000])
 @pytest.mark.parametrize("integration_type", list(DestinationType))
 def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
     if integration_type.value not in dbt_test_utils.get_test_targets() or integration_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
-        # not by absolute column count. It is way fewer than 1500.
-        pytest.skip("Destinations is not in NORMALISATION_TEST_TARGET env variable (MYSQL is also skipped)")
+        # not by absolute column count. It is way fewer than 1000.
+        pytest.skip(f"Destinations {integration_type} is not in NORMALISATION_TEST_TARGET env variable (MYSQL is also skipped)")
     if integration_type == DestinationType.ORACLE:
         column_count = 998
-    if integration_type == DestinationType.MSSQL:
-        # In MS SQL Server, the max number of columns / table = 1024,
-        # We should leave the space for the '_airbyte_emitted_at' column. So 1022 is the max what could be inserted.
-        column_count = 1022
     run_test(integration_type, column_count)
 
 
@@ -75,7 +70,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
     if integration_type not in dbt_test_utils.get_test_targets():
-        pytest.skip("Destinations is not in NORMALISATION_TEST_TARGET env variable")
+        pytest.skip(f"Destinations {integration_type} is not in NORMALISATION_TEST_TARGET env variable")
     run_test(DestinationType.from_string(integration_type), column_count, expected_exception_message)
 
 
@@ -88,6 +83,11 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    else:
+        dbt_test_utils.set_target_schema("test_ephemeral")
     print("Testing ephemeral")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
