@@ -6,7 +6,7 @@ You can set up Airbyte to notify you when syncs have **failed** or **succeeded**
 
 ## Set up Slack Notifications on Sync Status
 
-If you're more of a visual learner, just head over to [this video] to learn how to do this. Otherwise, keep reading!
+If you're more of a visual learner, just head over to [this video](https://www.youtube.com/watch?v=NjYm8F-KiFc&ab_channel=Airbyte) to learn how to do this. Otherwise, keep reading!
 
 **Set up the bot.**
 
