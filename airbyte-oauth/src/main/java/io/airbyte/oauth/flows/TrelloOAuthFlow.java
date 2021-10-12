@@ -51,16 +51,16 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
 
   public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return getConsetntUrl(oAuthParamConfig, redirectUrl);
+    return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
   public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return getConsetntUrl(oAuthParamConfig, redirectUrl);
+    return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
-  private String getConsetntUrl(JsonNode oAuthParamConfig, String redirectUrl) throws IOException, ConfigNotFoundException {
+  private String getConsentUrl(JsonNode oAuthParamConfig, String redirectUrl) throws IOException, ConfigNotFoundException {
     final String clientKey = getClientIdUnsafe(oAuthParamConfig);
     final String clientSecret = getClientSecretUnsafe(oAuthParamConfig);
     final OAuthGetTemporaryToken oAuthGetTemporaryToken = new OAuthGetTemporaryToken(REQUEST_TOKEN_URL);
@@ -111,7 +111,7 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     oAuthGetAccessToken.consumerKey = clientKey;
     OAuthCredentialsResponse accessTokenResponse = oAuthGetAccessToken.execute();
     String accessToken = accessTokenResponse.token;
-    return Map.of("token", accessToken, "key", clientKey);
+    return Map.of("credentials", Map.of("token", accessToken, "key", clientKey));
   }
 
 }
