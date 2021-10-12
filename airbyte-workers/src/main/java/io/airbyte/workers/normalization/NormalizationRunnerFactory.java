@@ -8,44 +8,33 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class NormalizationRunnerFactory {
 
   public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
 
-  static final Map<String, String> NORMALIZATION_MAPPING =
-      ImmutableMap.<String, String>builder()
-          .put("airbyte/destination-bigquery", BASE_NORMALIZATION_IMAGE_NAME)
-          .put("airbyte/destination-mssql", "airbyte/normalization-mssql")
-          .put("airbyte/destination-mssql-strict-encrypt", "airbyte/normalization-mssql")
-          .put("airbyte/destination-mysql", "airbyte/normalization-mysql")
-          .put("airbyte/destination-oracle", "airbyte/normalization-oracle")
-          .put("airbyte/destination-postgres", BASE_NORMALIZATION_IMAGE_NAME)
-          .put("airbyte/destination-postgres-strict-encrypt", BASE_NORMALIZATION_IMAGE_NAME)
-          .put("airbyte/destination-redshift", BASE_NORMALIZATION_IMAGE_NAME)
-          .put("airbyte/destination-snowflake", BASE_NORMALIZATION_IMAGE_NAME)
-          .build();
-
-  static final Map<String, DefaultNormalizationRunner.DestinationType> DESTINATION_TYPE_MAPPING =
-      ImmutableMap.<String, DefaultNormalizationRunner.DestinationType>builder()
-          .put("airbyte/destination-bigquery", DefaultNormalizationRunner.DestinationType.BIGQUERY)
-          .put("airbyte/destination-mssql", DefaultNormalizationRunner.DestinationType.MSSQL)
-          .put("airbyte/destination-mssql-strict-encrypt", DefaultNormalizationRunner.DestinationType.MSSQL)
-          .put("airbyte/destination-mysql", DefaultNormalizationRunner.DestinationType.MYSQL)
-          .put("airbyte/destination-oracle", DestinationType.ORACLE)
-          .put("airbyte/destination-postgres", DefaultNormalizationRunner.DestinationType.POSTGRES)
-          .put("airbyte/destination-postgres-strict-encrypt", DefaultNormalizationRunner.DestinationType.POSTGRES)
-          .put("airbyte/destination-redshift", DefaultNormalizationRunner.DestinationType.REDSHIFT)
-          .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
+  static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
+      ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
+          .put("airbyte/destination-bigquery", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DefaultNormalizationRunner.DestinationType.BIGQUERY))
+          .put("airbyte/destination-mssql", ImmutablePair.of("airbyte/normalization-mssql", DestinationType.MSSQL))
+          .put("airbyte/destination-mssql-strict-encrypt", ImmutablePair.of("airbyte/normalization-mssql", DestinationType.MSSQL))
+          .put("airbyte/destination-mysql", ImmutablePair.of("airbyte/normalization-mysql", DestinationType.MYSQL))
+          .put("airbyte/destination-oracle", ImmutablePair.of("airbyte/normalization-oracle", DestinationType.ORACLE))
+          .put("airbyte/destination-postgres", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
+          .put("airbyte/destination-postgres-strict-encrypt", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
+          .put("airbyte/destination-redshift", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.REDSHIFT))
+          .put("airbyte/destination-snowflake", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.SNOWFLAKE))
           .build();
 
   public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory, String airbyteVersion) {
     final String imageNameWithoutTag = imageName.split(":")[0];
-    if (DESTINATION_TYPE_MAPPING.containsKey(imageNameWithoutTag) && NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
+    if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
+      var valuePair = NORMALIZATION_MAPPING.get(imageNameWithoutTag);
       return new DefaultNormalizationRunner(
-          DESTINATION_TYPE_MAPPING.get(imageNameWithoutTag),
+          valuePair.getRight(),
           processFactory,
-          String.format("%s:%s", NORMALIZATION_MAPPING.get(imageNameWithoutTag), airbyteVersion));
+          String.format("%s:%s", valuePair.getLeft(), airbyteVersion));
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mappings.", imageName));
