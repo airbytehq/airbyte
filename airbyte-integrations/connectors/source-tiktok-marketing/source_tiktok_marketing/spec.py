@@ -11,7 +11,7 @@ from typing import Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-# TikTok Initial release	date is September 2016
+# TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "01-09-2016"
 
 
