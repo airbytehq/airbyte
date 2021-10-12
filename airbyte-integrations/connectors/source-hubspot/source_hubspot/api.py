@@ -324,7 +324,7 @@ class Stream(ABC):
                     if stream_records:
                         for counter, record in enumerate(self.parse_response(response)):
                             if counter <= len(stream_records) and stream_records[counter].get("properties"):
-                                stream_records[counter]["properties"].update(record.get("properties"))
+                                stream_records[counter]["properties"].update(record.get("properties", {}))
                     else:
                         stream_records = list(self.parse_response(response))
 
