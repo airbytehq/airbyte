@@ -37,23 +37,17 @@ import org.junit.jupiter.api.Test;
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
-  private List<Integer> openPorts;
-  private int heartbeatPort;
-  private String heartbeatUrl;
-  private ApiClient officialClient;
-  private KubernetesClient fabricClient;
-  private KubeProcessFactory processFactory;
+  private static List<Integer> openPorts;
+  private static int heartbeatPort;
+  private static String heartbeatUrl;
+  private static ApiClient officialClient;
+  private static KubernetesClient fabricClient;
+  private static KubeProcessFactory processFactory;
 
-  private static WorkerHeartbeatServer server;
+  private WorkerHeartbeatServer server;
 
   @BeforeAll
-  public void init() throws Exception {
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
-        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
+  public static void init() throws Exception {
     openPorts = new ArrayList<>(getOpenPorts(5));
 
     heartbeatPort = openPorts.get(0);
@@ -62,6 +56,12 @@ public class KubePodProcessIntegrationTest {
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
+        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
   }
