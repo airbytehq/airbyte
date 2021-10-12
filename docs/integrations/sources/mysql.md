@@ -145,8 +145,8 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `bigint` | number |  |
 | `binary` | string |  |
 | `blob` | string |  |
-| `date` | string |  |
-| `datetime` | string |  |
+| `date` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
+| `datetime` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
 | `decimal` | number |  |
 | `decimal(19, 2)` | number |  |
 | `double` | number |  |
@@ -166,8 +166,8 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `string` | string |  |
 | `tinyint` | number |  |
 | `text` | string |  |
-| `time` | string |  |
-| `timestamp` | string |  |
+| `time` | string | MySql JDBC driver has limitation. Value should be in range between 00:00:00 and 23:59:59. |
+| `timestamp` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
 | `tinytext` | string |  |
 | `varbinary(256)` | string |  |
 | `varchar` | string |  |
