@@ -3,17 +3,13 @@
 #
 
 
-import tempfile
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-
-cache_file = tempfile.NamedTemporaryFile()
 
 
 class GitlabStream(HttpStream, ABC):
@@ -27,10 +23,6 @@ class GitlabStream(HttpStream, ABC):
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
-            yield from super().read_records(**kwargs)
 
     def request_params(
         self,
@@ -153,6 +145,8 @@ class IncrementalGitlabChildStream(GitlabChildStream):
 
 
 class Groups(GitlabStream):
+    use_cache = True
+
     def __init__(self, group_ids: List, **kwargs):
         super().__init__(**kwargs)
         self.group_ids = group_ids
@@ -173,6 +167,7 @@ class Groups(GitlabStream):
 
 class Projects(GitlabStream):
     stream_base_params = {"statistics": 1}
+    use_cache = True
 
     def __init__(self, project_ids: List = None, **kwargs):
         super().__init__(**kwargs)
@@ -258,7 +253,6 @@ class MergeRequests(IncrementalGitlabChildStream):
 
 class MergeRequestCommits(GitlabChildStream):
     path_list = ["project_id", "iid"]
-
     path_template = "projects/{project_id}/merge_requests/{iid}"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):

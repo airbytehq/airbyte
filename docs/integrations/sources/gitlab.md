@@ -57,5 +57,6 @@ Your token should have the `read_api` scope, that Grants read access to the API,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932) | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK |
 | 0.1.0 | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | Initial Release |
 
