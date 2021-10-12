@@ -1,3 +1,5 @@
 {
-  "fix-me": "TODO"
+  "domain_name": "mydomain.freshservice.com",
+  "api_key": "12345",
+  "start_date": "2021-09-01"
 }
