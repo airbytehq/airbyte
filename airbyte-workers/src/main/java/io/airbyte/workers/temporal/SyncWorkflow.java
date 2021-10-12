@@ -9,6 +9,7 @@ import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
@@ -253,20 +254,26 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public NormalizationActivityImpl(ProcessFactory processFactory,
+                                     SecretsHydrator secretsHydrator,
+                                     Path workspaceRoot,
+                                     WorkerEnvironment workerEnvironment) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
     }
 
     @VisibleForTesting
     NormalizationActivityImpl(ProcessFactory processFactory,
                               SecretsHydrator secretsHydrator,
                               Path workspaceRoot,
-                              AirbyteConfigValidator validator) {
+                              AirbyteConfigValidator validator,
+                              WorkerEnvironment workerEnvironment) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
     }
 
     @Override
@@ -299,7 +306,8 @@ public interface SyncWorkflow {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           NormalizationRunnerFactory.create(
               destinationLauncherConfig.getDockerImage(),
-              processFactory));
+              processFactory),
+          workerEnvironment);
     }
 
   }

@@ -59,7 +59,7 @@ import org.slf4j.MDC;
  * Operations can have thread pools under the hood. An important thread pool to note is that the job
  * submitter thread pool. This pool does the work of submitting jobs to temporal - the size of this
  * pool determines the number of concurrent jobs that can be run. This is controlled via the
- * {@link #SUBMITTER_NUM_THREADS} variable.
+ * SUBMITTER_NUM_THREADS variable of EnvConfigs.
  */
 public class SchedulerApp {
 
@@ -68,7 +68,6 @@ public class SchedulerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static final int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
@@ -79,28 +78,37 @@ public class SchedulerApp {
   private final JobCleaner jobCleaner;
   private final JobNotifier jobNotifier;
   private final TemporalClient temporalClient;
+  private final int submitterNumThreads;
+  private final int maxSyncJobAttempts;
+  private final String airbyteVersionOrWarnings;
 
   public SchedulerApp(Path workspaceRoot,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       JobCleaner jobCleaner,
                       JobNotifier jobNotifier,
-                      TemporalClient temporalClient) {
+                      TemporalClient temporalClient,
+                      Integer submitterNumThreads,
+                      Integer maxSyncJobAttempts,
+                      String airbyteVersionOrWarnings) {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.jobCleaner = jobCleaner;
     this.jobNotifier = jobNotifier;
     this.temporalClient = temporalClient;
+    this.submitterNumThreads = submitterNumThreads;
+    this.maxSyncJobAttempts = maxSyncJobAttempts;
+    this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
   }
 
   public void start() throws IOException {
-    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(SUBMITTER_NUM_THREADS, THREAD_FACTORY);
+    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(submitterNumThreads, THREAD_FACTORY);
     final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
-    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, airbyteVersionOrWarnings);
+    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
     final JobSubmitter jobSubmitter = new JobSubmitter(
@@ -228,11 +236,12 @@ public class SchedulerApp {
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc);
+    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient)
-        .start();
+    new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient,
+        Integer.parseInt(configs.getSubmitterNumThreads()), configs.getMaxSyncJobAttempts(), configs.getAirbyteVersionOrWarning())
+            .start();
   }
 
 }

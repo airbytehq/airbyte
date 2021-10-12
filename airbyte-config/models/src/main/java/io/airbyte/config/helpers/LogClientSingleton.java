@@ -70,7 +70,7 @@ public class LogClientSingleton {
 
   public static File getServerLogFile(final Configs configs) {
     final var logPathBase = getServerLogsRoot(configs);
-    if (shouldUseLocalLogs(configs)) {
+    if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
@@ -85,7 +85,7 @@ public class LogClientSingleton {
 
   public static File getSchedulerLogFile(final Configs configs) {
     final var logPathBase = getSchedulerLogsRoot(configs);
-    if (shouldUseLocalLogs(configs)) {
+    if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
@@ -103,7 +103,7 @@ public class LogClientSingleton {
       return Collections.emptyList();
     }
 
-    if (shouldUseLocalLogs(configs)) {
+    if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 
@@ -121,7 +121,7 @@ public class LogClientSingleton {
       return;
     }
 
-    if (shouldUseLocalLogs(configs)) {
+    if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       throw new NotImplementedException("Local log deletes not supported.");
     }
     final var logConfigs = new LogConfigDelegator(configs);
@@ -130,8 +130,10 @@ public class LogClientSingleton {
   }
 
   public static void setJobMdc(final Path path) {
-    final var configs = new EnvConfigs();
-    if (shouldUseLocalLogs(configs)) {
+    // setJobMdc is referenced from TemporalAttemptExecution without input parameters, so hard to pass
+    // this in.
+    Configs configs = new EnvConfigs();
+    if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       LOGGER.debug("Setting docker job mdc");
       MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     } else {
@@ -144,7 +146,7 @@ public class LogClientSingleton {
 
   public static void setWorkspaceMdc(final Path path) {
     final var configs = new EnvConfigs();
-    if (shouldUseLocalLogs(configs)) {
+    if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       LOGGER.debug("Setting docker workspace mdc");
       MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
     } else {
@@ -155,8 +157,8 @@ public class LogClientSingleton {
     }
   }
 
-  private static boolean shouldUseLocalLogs(final Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER);
+  private static boolean shouldUseLocalLogs(WorkerEnvironment workerEnvironment) {
+    return workerEnvironment.equals(WorkerEnvironment.DOCKER);
   }
 
   private static void createCloudClientIfNull(final LogConfigs configs) {

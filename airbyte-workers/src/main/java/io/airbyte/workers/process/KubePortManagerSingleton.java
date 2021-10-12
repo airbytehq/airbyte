@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.config.EnvConfigs;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -20,36 +18,63 @@ import org.slf4j.LoggerFactory;
  * Although this data structure can do without the wrapper class, this class allows easier testing
  * via the {@link #getNumAvailablePorts()} function.
  *
- * The singleton pattern clarifies that only one copy of this class is intended to exists per
+ * The singleton pattern clarifies that only one copy of this class is intended to exist per
  * scheduler deployment.
  */
 public class KubePortManagerSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePortManagerSingleton.class);
-  private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
-  private static BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(new EnvConfigs().getTemporalWorkerPorts());
 
-  public static Integer take() throws InterruptedException {
+  private static KubePortManagerSingleton instance;
+
+  private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
+  private BlockingQueue<Integer> workerPorts;
+
+  private KubePortManagerSingleton(Set<Integer> ports) {
+    workerPorts = new LinkedBlockingDeque<>(ports);
+  }
+
+  /**
+   * Make sure init(ports) is called once prior to repeatedly using getInstance().
+   *
+   * @return
+   */
+  public static synchronized KubePortManagerSingleton getInstance() {
+    if (instance == null) {
+      throw new RuntimeException("Must initialize with init(ports) before using.");
+    }
+    return instance;
+  }
+
+  /**
+   * Sets up the port range; make sure init(ports) is called once prior to repeatedly using
+   * getInstance().
+   *
+   * @return
+   */
+  public static synchronized void init(Set<Integer> ports) {
+    if (instance != null) {
+      throw new RuntimeException("Cannot initialize twice!");
+    }
+    instance = new KubePortManagerSingleton(ports);
+  }
+
+  public Integer take() throws InterruptedException {
     return workerPorts.poll(10, TimeUnit.MINUTES);
   }
 
-  public static void offer(Integer port) {
+  public void offer(Integer port) {
     if (!workerPorts.contains(port)) {
       workerPorts.add(port);
     }
   }
 
-  public static int getNumAvailablePorts() {
+  public int getNumAvailablePorts() {
     return workerPorts.size();
   }
 
-  public static int getSupportedWorkers() {
+  public int getSupportedWorkers() {
     return workerPorts.size() / MAX_PORTS_PER_WORKER;
-  }
-
-  @VisibleForTesting
-  protected static void setWorkerPorts(Set<Integer> ports) {
-    workerPorts = new LinkedBlockingDeque<>(ports);
   }
 
 }

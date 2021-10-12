@@ -513,8 +513,8 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
-    KubePortManagerSingleton.offer(stdoutLocalPort);
-    KubePortManagerSingleton.offer(stderrLocalPort);
+    KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
+    KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }

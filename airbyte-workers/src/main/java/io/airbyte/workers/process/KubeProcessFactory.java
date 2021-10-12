@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -56,8 +57,9 @@ public class KubeProcessFactory implements ProcessFactory {
   public KubeProcessFactory(String namespace,
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+                            String kubeHeartbeatUrl,
+                            Set<Integer> ports) {
+    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
   }
 
   /**
@@ -74,12 +76,14 @@ public class KubeProcessFactory implements ProcessFactory {
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
                             String kubeHeartbeatUrl,
-                            String processRunnerHost) {
+                            String processRunnerHost,
+                            Set<Integer> ports) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
+    KubePortManagerSingleton.init(ports);
   }
 
   @Override
@@ -98,10 +102,10 @@ public class KubeProcessFactory implements ProcessFactory {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
 
-      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final int stderrLocalPort = KubePortManagerSingleton.take();
+      final int stderrLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       var allLabels = new HashMap<>(customLabels);

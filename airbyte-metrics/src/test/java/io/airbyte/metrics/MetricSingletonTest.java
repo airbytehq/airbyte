@@ -41,13 +41,12 @@ public class MetricSingletonTest {
       availPort = socket.getLocalPort();
     }
 
-    MetricSingleton.setToPublish();
-    MetricSingleton.initializeMonitoringServiceDaemon(String.valueOf(availPort), Map.of());
+    MetricSingleton.initializeMonitoringServiceDaemon(String.valueOf(availPort), Map.of(), true);
   }
 
   @AfterAll
   public static void tearDown() {
-    MetricSingleton.closeMonitoringServiceDaemon();
+    MetricSingleton.getInstance().closeMonitoringServiceDaemon();
   }
 
   @Nested
@@ -55,12 +54,12 @@ public class MetricSingletonTest {
 
     @Test
     public void testNameWithDashFails() {
-      assertThrows(RuntimeException.class, () -> MetricSingleton.incrementCounter("bad-name", 0.0, "name with dashes are not allowed"));
+      assertThrows(RuntimeException.class, () -> MetricSingleton.getInstance().incrementCounter("bad-name", 0.0, "name with dashes are not allowed"));
     }
 
     @Test
     public void testNoDescriptionFails() {
-      assertThrows(RuntimeException.class, () -> MetricSingleton.incrementCounter("good_name", 0.0, null));
+      assertThrows(RuntimeException.class, () -> MetricSingleton.getInstance().incrementCounter("good_name", 0.0, null));
     }
 
   }
@@ -70,7 +69,7 @@ public class MetricSingletonTest {
     var metricName = "test_counter";
     var rand = new Random();
     for (int i = 0; i < 5; i++) {
-      MetricSingleton.incrementCounter(metricName, rand.nextDouble() * 2, "testing counter");
+      MetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing counter");
       Thread.sleep(500);
     }
 
@@ -83,7 +82,7 @@ public class MetricSingletonTest {
     var metricName = "test_gauge";
     var rand = new Random();
     for (int i = 0; i < 5; i++) {
-      MetricSingleton.incrementCounter(metricName, rand.nextDouble() * 2, "testing gauge");
+      MetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing gauge");
       Thread.sleep(500);
     }
 
@@ -96,7 +95,7 @@ public class MetricSingletonTest {
     var metricName = "test_timer";
     var rand = new Random();
     for (int i = 0; i < 5; i++) {
-      MetricSingleton.recordTime(metricName, rand.nextDouble() * 2, "testing time");
+      MetricSingleton.getInstance().recordTime(metricName, rand.nextDouble() * 2, "testing time");
       Thread.sleep(500);
     }
 

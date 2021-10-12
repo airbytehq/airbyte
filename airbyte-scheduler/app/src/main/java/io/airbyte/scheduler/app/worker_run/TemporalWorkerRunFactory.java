@@ -29,15 +29,17 @@ public class TemporalWorkerRunFactory {
 
   private final TemporalClient temporalClient;
   private final Path workspaceRoot;
+  private final String airbyteVersionOrWarnings;
 
-  public TemporalWorkerRunFactory(TemporalClient temporalClient, Path workspaceRoot) {
+  public TemporalWorkerRunFactory(TemporalClient temporalClient, Path workspaceRoot, String airbyteVersionOrWarnings) {
     this.temporalClient = temporalClient;
     this.workspaceRoot = workspaceRoot;
+    this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
   }
 
   public WorkerRun create(Job job) {
     final int attemptId = job.getAttemptsCount();
-    return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId));
+    return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {

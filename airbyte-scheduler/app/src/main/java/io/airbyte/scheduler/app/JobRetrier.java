@@ -4,7 +4,6 @@
 
 package io.airbyte.scheduler.app;
 
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -21,17 +20,18 @@ import org.slf4j.LoggerFactory;
 public class JobRetrier implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
-  private static final int MAX_SYNC_JOB_ATTEMPTS = new EnvConfigs().getMaxSyncJobAttempts();;
   private static final int RETRY_WAIT_MINUTES = 1;
 
   private final JobPersistence persistence;
   private final Supplier<Instant> timeSupplier;
   private final JobNotifier jobNotifier;
+  private final int maxSyncJobAttempts;
 
-  public JobRetrier(JobPersistence jobPersistence, Supplier<Instant> timeSupplier, JobNotifier jobNotifier) {
+  public JobRetrier(JobPersistence jobPersistence, Supplier<Instant> timeSupplier, JobNotifier jobNotifier, int maxSyncJobAttempts) {
     this.persistence = jobPersistence;
     this.timeSupplier = timeSupplier;
     this.jobNotifier = jobNotifier;
+    this.maxSyncJobAttempts = maxSyncJobAttempts;
   }
 
   @Override
@@ -75,7 +75,7 @@ public class JobRetrier implements Runnable {
 
   private boolean hasReachedMaxAttempt(Job job) {
     if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
-      return job.getAttemptsCount() >= MAX_SYNC_JOB_ATTEMPTS;
+      return job.getAttemptsCount() >= maxSyncJobAttempts;
     } else {
       return job.getAttemptsCount() >= 1;
     }
