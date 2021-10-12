@@ -31,6 +31,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | Incremental - Append Sync | Yes |  |
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
+| SSL Support | Yes |  |
 
 #### Target Database
 
