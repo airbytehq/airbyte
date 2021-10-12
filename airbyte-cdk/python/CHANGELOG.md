@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.26
+Added `check_config_against_spec` parameter to `Connector` abstract class 
+to allow us to skip `check_config_against_spec_or_exit()` call on source/destination command runs.
+
+
 ## 0.1.25
 Modified `OAuth2Specification` model, added new fields: `rootObject` and `oauthFlowOutputParameters`
 
