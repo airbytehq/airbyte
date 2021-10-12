@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "flex_fields": {
+      "type": "boolean"
+    },
+    "allow_duplicate_upcs": {
+      "description": "if AllowDuplicateUPCs is true, Unit-of-measure-based UPCs are disabled",
+      "type": "boolean"
+    }
+  }
+}

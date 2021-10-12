@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "alerts": {
+      "$ref": "alerts.json"
+    },
+    "storage": {
+      "$ref": "storage.json"
+    },
+    "edi": {
+      "$ref": "edi.json"
+    },
+    "receiving": {
+      "$ref": "receiving.json"
+    },
+    "shipping": {
+      "$ref": "shipping.json"
+    },
+    "packaging": {
+      "$ref": "packaging.json"
+    },
+    "other_system_behaviors": {
+      "$ref": "other_system_behaviors.json"
+    },
+    "user_interface": {
+      "$ref": "user_interface.json"
+    },
+    "saved_elements": {
+      "description": "UI assistance for adding saved elements to a transaction and its line items. Since it is merely a UI assistance, it is up to a UI to decide if, how and when it will verify requiredness. In other words, business logic doesn't care.",
+      "$ref": "saved_element_defs.json"
+    }
+  }
+}

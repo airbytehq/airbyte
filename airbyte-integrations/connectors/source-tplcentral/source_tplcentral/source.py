@@ -105,6 +105,18 @@ class StockSummaries(TplcentralStream):
         return [normalize(v) for v in response.json()['Summaries']]
 
 
+class Customers(TplcentralStream):
+    primary_key = [["read_only", "customer_id"]]
+    page_size = 100
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "customers"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return [normalize(v) for v in response.json()['ResourceList']]
+
 class IncrementalTplcentralStream(TplcentralStream, ABC):
     state_checkpoint_interval = 10
 
@@ -231,4 +243,5 @@ class SourceTplcentral(AbstractSource):
         return [
             StockSummaries(config),
             Items(config),
+            Customers(config),
         ]

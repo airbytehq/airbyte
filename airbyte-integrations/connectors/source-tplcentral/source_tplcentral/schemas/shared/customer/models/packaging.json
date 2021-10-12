@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "small_parcel_usps3rd_party": {
+      "type": "string"
+    },
+    "ucc128_manufacturers_id": {
+      "type": "integer"
+    },
+    "use_vendor_id_on_bol": {
+      "type": "boolean"
+    },
+    "sps_close_on_update": {
+      "type": "boolean"
+    },
+    "small_parcel_return_shipping_cost": {
+      "type": "boolean"
+    },
+    "small_parcel_return_fed_ex_service": {
+      "type": "string"
+    },
+    "small_parcel_usps_return_type": {
+      "type": "string"
+    },
+    "small_parcel_return_ups_service": {
+      "type": "string"
+    },
+    "small_parcel_return_default_checked": {
+      "type": "boolean"
+    },
+    "small_parcel_high_volume_default_checked": {
+      "type": "boolean"
+    },
+    "small_parcel_high_volume_zpl_batched": {
+      "type": "boolean"
+    },
+    "small_parcel_references": {
+      "type": "string"
+    },
+    "small_parcel_intl_duty_bill_type": {
+      "type": "string"
+    },
+    "small_parcel_customize_duties": {
+      "type": "boolean"
+    },
+    "small_parcel_duties_and_taxes": {
+      "type": "string"
+    },
+    "small_parcel_create_packages_on_find": {
+      "type": "boolean"
+    },
+    "small_parcel_rate_shopping_carrier_ids": {
+      "type": "string"
+    },
+    "small_parcel_rate_shopping_logic": {
+      "type": "string"
+    },
+    "small_parcel_zpl_print_default": {
+      "type": "boolean"
+    }
+  }
+}

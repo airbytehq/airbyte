@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "expiration_notification_threshold": {
+      "description": "number of days???",
+      "type": "integer"
+    },
+    "notify_ship_to": {
+      "type": "boolean"
+    },
+    "from_email_address": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "reply_to_address": {
+      "type": "string"
+    }
+  }
+}
