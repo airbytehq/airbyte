@@ -12,9 +12,11 @@ import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -117,13 +119,15 @@ public class DestinationHandler {
       connectionsHandler.deleteConnection(connectionRead);
     }
 
+    final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
+
     // persist
     persistDestinationConnection(
         destination.getName(),
         destination.getDestinationDefinitionId(),
         destination.getWorkspaceId(),
         destination.getDestinationId(),
-        destination.getConnectionConfiguration(),
+        fullConfig,
         true);
   }
 
@@ -182,6 +186,22 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
+  public DestinationReadList searchDestinations(DestinationSearch destinationSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<DestinationRead> reads = Lists.newArrayList();
+
+    for (DestinationConnection dci : configRepository.listDestinationConnection()) {
+      if (!dci.getTombstone()) {
+        DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
+        if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
+          reads.add(destinationRead);
+        }
+      }
+    }
+
+    return new DestinationReadList().destinations(reads);
+  }
+
   private void validateDestination(final ConnectorSpecification spec, final JsonNode configuration) throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
@@ -222,16 +242,16 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
+    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
     dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
-    return buildDestinationRead(dci, standardDestinationDefinition);
+    return toDestinationRead(dci, standardDestinationDefinition);
   }
 
-  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection,
-                                               final StandardDestinationDefinition standardDestinationDefinition) {
+  protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
+                                                     final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationId(destinationConnection.getDestinationId())

@@ -156,18 +156,40 @@ def get_object_structure(obj: dict) -> List[str]:
     return paths
 
 
-def get_expected_schema_structure(schema: dict) -> List[str]:
+def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -> List[str]:
     """
     Travers through json schema and compose list of property keys that object expected to have.
+    :param annotate_one_of: Generate one_of index in path
     :param schema: jsonschema to get expected paths
     :returns list of object property keys paths
     """
     paths = []
+    if "$ref" in schema:
+        """
+        JsonRef doesnt work correctly with schemas that has refenreces in root e.g.
+        {
+            "$ref": "#/definitions/ref"
+            "definitions": {
+                "ref": ...
+            }
+        }
+        Considering this schema already processed by resolver so it should
+        contain only references to definitions section, replace root reference
+        manually before processing it with JsonRef library.
+        """
+        ref = schema["$ref"].split("/")[-1]
+        schema.update(schema["definitions"][ref])
+        schema.pop("$ref")
     # Resolve all references to simplify schema processing.
     schema = JsonRef.replace_refs(schema)
 
     def _scan_schema(subschema, path=""):
         if "oneOf" in subschema or "anyOf" in subschema:
+            if annotate_one_of:
+                return [
+                    _scan_schema({"type": "object", **s}, path + f"({num})")
+                    for num, s in enumerate(subschema.get("oneOf") or subschema.get("anyOf"))
+                ]
             return [_scan_schema({"type": "object", **s}, path) for s in subschema.get("oneOf") or subschema.get("anyOf")]
         schema_type = subschema.get("type", ["null"])
         if not isinstance(schema_type, list):
