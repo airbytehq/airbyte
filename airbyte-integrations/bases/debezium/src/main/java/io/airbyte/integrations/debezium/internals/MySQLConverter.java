@@ -4,11 +4,15 @@
 
 package io.airbyte.integrations.debezium.internals;
 
+import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.Properties;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.slf4j.Logger;
@@ -21,22 +25,48 @@ import org.slf4j.LoggerFactory;
  * https://debezium.io/documentation/reference/1.4/development/converters.html This is built from
  * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
  * rename this class then remember to rename the datetime.type property value in
- * {@link io.airbyte.integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties()} (If you
+ * {@link io.airbyte-integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties()} (If you
  * don't rename, a test would still fail but it might be tricky to figure out where to change the
  * property name)
  */
-public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
+public class MySQLConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDateTimeConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLConverter.class);
+
+  private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME"};
+  private final String[] TEXT_TYPES = {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT"};
 
   @Override
   public void configure(Properties props) {}
 
   @Override
   public void converterFor(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
-    if (!"DATETIME".equalsIgnoreCase(field.typeName())) {
-      return;
+    if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
+      registerDate(field, registration);
+    } else if (Arrays.stream(TEXT_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
+      registerText(field, registration);
     }
+  }
+
+  private void registerText(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+    registration.register(SchemaBuilder.string(), x -> {
+      if (x == null) {
+        if (field.isOptional()) {
+          return null;
+        } else if (field.hasDefaultValue()) {
+          return field.defaultValue();
+        }
+        return null;
+      }
+
+      if (x instanceof byte[]) {
+        return new String((byte[]) x);
+      } else
+        return x.toString();
+    });
+  }
+
+  private void registerDate(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), x -> {
       if (x == null) {
         if (field.isOptional()) {
@@ -55,11 +85,15 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
        * Secondly, we use LocalDateTime to handle this cause it represents DATETIME datatype in JAVA
        */
       if (x instanceof LocalDateTime) {
-        return x.toString();
+        return DataTypeUtils.toISO8601String((LocalDateTime) x);
+      } else if (x instanceof LocalDate) {
+        return DataTypeUtils.toISO8601String((LocalDate) x);
+      } else if (x instanceof Duration) {
+        return DataTypeUtils.toISO8601String((Duration) x);
       } else if (x instanceof Timestamp) {
-        return ((Timestamp) x).toLocalDateTime().toString();
+        return DataTypeUtils.toISO8601String(((Timestamp) x).toLocalDateTime());
       } else if (x instanceof Number) {
-        return new Timestamp(((Number) x).longValue()).toLocalDateTime().toString();
+        return DataTypeUtils.toISO8601String(new Timestamp(((Number) x).longValue()).toLocalDateTime());
       } else if (x instanceof String) {
         try {
           return LocalDateTime.parse((String) x).toString();
@@ -68,7 +102,7 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
           return x.toString();
         }
       }
-      LOGGER.warn("Cannot convert value '{}' to LocalDateTime", x);
+      LOGGER.warn("Uncovered date class type '{}'. Use default converter", x.getClass().getName());
       return x.toString();
     });
   }
