@@ -17,7 +17,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthConfig;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -114,4 +113,5 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     String accessToken = accessTokenResponse.token;
     return Map.of("token", accessToken, "key", clientKey);
   }
+
 }
