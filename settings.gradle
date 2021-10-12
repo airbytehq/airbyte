@@ -67,8 +67,10 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
 // connectors base
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
     include ':airbyte-cdk:python'
+    include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-integrations:bases:base'
     include ':airbyte-integrations:bases:base-java'
+    include ':airbyte-integrations:bases:base-normalization'
     include ':airbyte-integrations:bases:base-python'
     include ':airbyte-integrations:bases:base-python-test'
     include ':airbyte-integrations:bases:base-singer'
@@ -94,6 +96,8 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
     include ':airbyte-integrations:connectors:destination-gcs'
+
+    include ':tools:code-generator'
 }
 
 // connectors
