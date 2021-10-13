@@ -90,9 +90,7 @@ def run_test_normalization(destination_type: DestinationType, test_resource_name
     dbt_test_setup(destination_type, test_resource_name, test_root_dir)
     # Run DBT process
     dbt_test_utils.dbt_run(destination_type, test_root_dir)
-    if destination_type.value != DestinationType.ORACLE.value:
-        # Run checks on Tests results
-        dbt_test(destination_type, test_root_dir)
+    dbt_test(destination_type, test_root_dir)
     check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
