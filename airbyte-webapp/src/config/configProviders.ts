@@ -4,10 +4,6 @@ import { isDefined } from "utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
-    openreplay: {
-      projectID: window.OPENREPLAY === "disabled" ? -1 : undefined,
-      revID: window.AIRBYTE_VERSION,
-    },
     fullstory: { devMode: window.FULLSTORY === "disabled" },
     segment: {
       enabled: isDefined(window.TRACKING_STRATEGY)
@@ -36,13 +32,6 @@ const envConfigProvider: ConfigProvider = async () => {
     },
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
-    },
-    openreplay: {
-      projectID:
-        isDefined(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID) &&
-        Number.isInteger(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
-          ? Number.parseInt(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
-          : -1,
     },
   };
 };

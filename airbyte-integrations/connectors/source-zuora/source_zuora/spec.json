@@ -16,7 +16,7 @@
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 90,
-        "minimum": 30,
+        "minimum": 1,
         "maximum": 364
       },
       "client_id": {
@@ -51,7 +51,7 @@
       "oauth2Specification": {
         "rootObject": [],
         "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-        "oauthFlowOutputParameters": [["access_token"]]
+        "oauthFlowOutputParameters": [["client_id"], ["client_secret"]]
       }
     }
   }

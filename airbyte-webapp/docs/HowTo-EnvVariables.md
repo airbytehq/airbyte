@@ -20,7 +20,6 @@ Dynamic env variables in our cases are injected into app by nginx
 <script language="javascript" \>
   window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
   window.FULLSTORY = "$FULLSTORY";
-  window.OPENREPLAY = "$OPENREPLAY";
   window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
   window.API_URL = "$API_URL";
   window.IS_DEMO = "$IS_DEMO";

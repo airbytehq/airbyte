@@ -1,4 +1,3 @@
-import { Options as OpenReplayOptions } from "@asayerio/tracker";
 import * as Fullstory from "@fullstory/browser";
 
 import { SegmentAnalytics } from "core/analytics/types";
@@ -8,7 +7,6 @@ declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     FULLSTORY?: string;
-    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -28,7 +26,6 @@ declare global {
 export type Config = {
   ui: UiConfig;
   segment: { token: string; enabled: boolean };
-  openreplay: OpenReplayOptions;
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   oauthRedirectUrl: string;

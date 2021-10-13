@@ -165,7 +165,6 @@ services:
       - API_URL=${API_URL:-}
       - IS_DEMO=${IS_DEMO:-}
       - FULLSTORY=${FULLSTORY:-}
-      - OPENREPLAY=${OPENREPLAY:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
   airbyte-temporal:
