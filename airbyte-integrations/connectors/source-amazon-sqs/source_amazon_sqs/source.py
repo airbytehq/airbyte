@@ -58,7 +58,7 @@ class SourceAmazonSqs(Source):
             # Senstive Properties
             access_key = config["access_key"]
             logger.debug("Amazon SQS Source Config Check - access_key (ends with): " + access_key[-1])
-            secret_key = config["SECRET_KEY"]
+            secret_key = config["secret_key"]
             logger.debug("Amazon SQS Source Config Check - secret_key (ends with): " + secret_key[-1])
 
             logger.debug("Amazon SQS Source Config Check - Starting connection test ---")
