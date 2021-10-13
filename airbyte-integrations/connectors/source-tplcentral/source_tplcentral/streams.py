@@ -38,13 +38,11 @@ class TplcentralStream(HttpStream, ABC):
         pgsiz = int(qs.get('pgsiz', pgsiz))
         pgnum = int(qs.get('pgnum', 1))
 
-        if pgsiz * pgnum >= total:
-            return None
-
-        return {
-            'pgsiz': pgsiz,
-            'pgnum': pgnum + 1,
-        }
+        if pgsiz * pgnum <= total:
+            return {
+                'pgsiz': pgsiz,
+                'pgnum': pgnum + 1,
+            }
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
