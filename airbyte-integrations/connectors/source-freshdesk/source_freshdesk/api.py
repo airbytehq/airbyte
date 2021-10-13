@@ -46,7 +46,11 @@ class API:
 
         self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
-        self._start_date = pendulum.parse(start_date)
+        # By default, only tickets that have been created within the past 30 days will be returned.
+        # Since this logic rely not on updated tickets, it can break tickets dependant streams - conversations.
+        # So updated_since parameter will be always used in tickets streams. And start_date will be used too
+        # with default value 30 days look back.
+        self._start_date = pendulum.parse(start_date) if start_date else pendulum.now().add(days=-30)
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -169,7 +173,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Build query parameters responsible for current state"""
         if self._state:
             return {self.state_filter: self._state}
-        return {}
+        return {self.state_filter: self._api._start_date}
 
     @property
     def name(self):
@@ -258,13 +262,6 @@ class SurveysAPI(ClientIncrementalStreamAPI):
 class TicketsAPI(IncrementalStreamAPI):
     call_credit = 3  # each include consumes 2 additional credits
 
-    def _state_params(self) -> Mapping[str, Any]:
-        """Build query parameters responsible for current state"""
-        params = super(TicketsAPI, self)._state_params()
-        if not params and self._api._start_date:
-            params["updated_since"] = self._api._start_date
-        return params
-
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         params = {"include": "description"}
@@ -350,8 +347,9 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
             yield from self.read(partial(self._api_get, url=url))
 
 
-class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
+class SatisfactionRatingsAPI(IncrementalStreamAPI):
     """Surveys satisfaction replies"""
+    state_filter = "created_since"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
