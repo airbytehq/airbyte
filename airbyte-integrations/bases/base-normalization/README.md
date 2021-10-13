@@ -124,6 +124,11 @@ Therefore, valid credentials files are expected to be injected in the `secrets/`
 This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
 re-use the `destination_config.json` passed to destination connectors.
 
+As normalization supports more and more destinations, tests are relying on an increasing number of destinations. 
+As a result, it is possible that the docker garbage collector is triggered to wipe "unused" docker images while the 
+integration tests for normalization are running. Thus, if you encounter errors about a connector's docker image not being 
+present locally (even though it was built beforehand), make sure to increase the docker image storage size of your docker engine ("defaultKeepStorage" for mac for example).
+
 ### Integration Tests Definitions for test_ephemeral.py:
 The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of
 columns in a catalog, this may throw exceptions and fail. This test ensures that we support reasonable number of columns in destination tables.
