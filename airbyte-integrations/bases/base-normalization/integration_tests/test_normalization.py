@@ -212,7 +212,7 @@ def dbt_test_setup(destination_type: DestinationType, test_resource_name: str, t
         replace_identifiers,
     )
     copy_test_files(
-        os.path.join("resources", test_resource_name, "dbt_data_test"),
+        os.path.join("resources", test_resource_name, "dbt_data_tests"),
         os.path.join(test_root_dir, "tests"),
         destination_type,
         replace_identifiers,
