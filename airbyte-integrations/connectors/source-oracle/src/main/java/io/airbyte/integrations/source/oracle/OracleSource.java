@@ -109,7 +109,8 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         return Protocol.TCPS;
       }
     }
-    throw new RuntimeException("Failed to obtain connection protocol from config" + encryption.asText());
+    throw new RuntimeException(
+        "Failed to obtain connection protocol from config " + encryption.asText());
   }
 
   private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
