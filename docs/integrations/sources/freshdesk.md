@@ -49,3 +49,9 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 
 Please read [How to find your API key](https://support.freshdesk.com/support/solutions/articles/215517).
 
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.7 | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442) | Add start_date parameter to specification from which to start pulling data. |
+
