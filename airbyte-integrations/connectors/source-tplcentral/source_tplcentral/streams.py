@@ -123,7 +123,7 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         params = super().request_params(
             stream_state=stream_state,
             stream_slice=stream_slice,
-            next_page_token=next_page_token
+            next_page_token=next_page_token,
         )
 
         return params or {}
@@ -158,7 +158,7 @@ class Items(IncrementalTplcentralStream):
         params = super().request_params(
             stream_state=stream_state,
             stream_slice=stream_slice,
-            next_page_token=next_page_token
+            next_page_token=next_page_token,
         )
 
         params.update({"sort": "ReadOnly.LastModifiedDate"})
@@ -188,7 +188,7 @@ class StockDetails(IncrementalTplcentralStream):
         params = super().request_params(
             stream_state=stream_state,
             stream_slice=stream_slice,
-            next_page_token=next_page_token
+            next_page_token=next_page_token,
         )
 
         params.update({
@@ -222,7 +222,7 @@ class Inventory(IncrementalTplcentralStream):
         params = super().request_params(
             stream_state=stream_state,
             stream_slice=stream_slice,
-            next_page_token=next_page_token
+            next_page_token=next_page_token,
         )
 
         params.update({
@@ -263,7 +263,7 @@ class Orders(IncrementalTplcentralStream):
         params = super().request_params(
             stream_state=stream_state,
             stream_slice=stream_slice,
-            next_page_token=next_page_token
+            next_page_token=next_page_token,
         )
 
         params.update({
