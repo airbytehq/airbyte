@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -36,7 +37,8 @@ public class ConfigurationApiTest {
         mock(FileTtlManager.class),
         mock(WorkflowServiceStubs.class),
         mock(Database.class),
-        mock(Database.class));
+        mock(Database.class),
+        mock(TrackingClient.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
 
