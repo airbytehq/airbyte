@@ -76,6 +76,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
       }
       LOGGER.info("adding write config. stream: {}, table: {}, syncMode: {}", streamName, tableName, syncMode);
       writeConfigs.put(stream.getStream().getName(), tableName);
+      connection.createIndexIfMissing(tableName);
     }
     return new ElasticsearchAirbyteMessageConsumer(connection, configuredCatalog, writeConfigs);
   }
