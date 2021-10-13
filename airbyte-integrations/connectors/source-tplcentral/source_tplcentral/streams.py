@@ -44,7 +44,7 @@ class TplcentralStream(HttpStream, ABC):
         pgsiz = int(qs.get('pgsiz', pgsiz))
         pgnum = int(qs.get('pgnum', 1))
 
-        if pgsiz * pgnum <= total:
+        if pgsiz * pgnum < total:
             return {
                 'pgsiz': pgsiz,
                 'pgnum': pgnum + 1,
