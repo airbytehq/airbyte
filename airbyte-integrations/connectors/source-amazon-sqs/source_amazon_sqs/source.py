@@ -34,7 +34,9 @@ class SourceAmazonSqs(Source):
         try:
             message.change_visibility(VisibilityTimeout=visibility_timeout)
         except ClientError as error:
-            raise Exception("Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id)
+            raise Exception(
+                "Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id
+            )
 
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit("/", 1)[-1]
@@ -70,7 +72,10 @@ class SourceAmazonSqs(Source):
             logger.debug("Amazon SQS Source Config Check - Connection test successful ---")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except sqs.exceptions.QueueDoesNotExist as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Configured SQS Queue does not exist: "+ queue_url +f"{str(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED,
+                message=f"Amazon SQS Source Config Check - Configured SQS Queue does not exist: " + queue_url + f"{str(e)}",
+            )
         except ClientError as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {str(e)}")
         except Exception as e:

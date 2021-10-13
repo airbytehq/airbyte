@@ -11,7 +11,9 @@
         "title": "Queue URL",
         "description": "URL of the SQS Queue",
         "type": "string",
-        "examples": ["https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue"],
+        "examples": [
+          "https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue"
+        ],
         "order": 0
       },
       "region": {
