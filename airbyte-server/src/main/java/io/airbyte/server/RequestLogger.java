@@ -65,11 +65,11 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     String url = servletRequest.getRequestURI();
     boolean isContentTypeGzip =
         servletRequest.getHeader("Content-Type") != null && (
-            // the exhaustive media type can be found here https://www.iana.org/assignments/media-types/media-types.xhtml if some more need to be added
-            servletRequest.getHeader("Content-Type").toLowerCase().contains("application/x-gzip") ||
-                servletRequest.getHeader("Content-Type").toLowerCase().contains("application/gzip") ||
-                servletRequest.getHeader("Content-Type").toLowerCase().contains("application/tlsprt+gzip")
-        );
+        // the exhaustive media type can be found here
+        // https://www.iana.org/assignments/media-types/media-types.xhtml if some more need to be added
+        servletRequest.getHeader("Content-Type").toLowerCase().contains("application/x-gzip") ||
+            servletRequest.getHeader("Content-Type").toLowerCase().contains("application/gzip") ||
+            servletRequest.getHeader("Content-Type").toLowerCase().contains("application/tlsprt+gzip"));
     int status = responseContext.getStatus();
 
     StringBuilder logBuilder = new StringBuilder()
