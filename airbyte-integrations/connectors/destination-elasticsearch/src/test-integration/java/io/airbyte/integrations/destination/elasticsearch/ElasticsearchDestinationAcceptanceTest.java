@@ -11,9 +11,12 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -22,7 +25,22 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
 
   private ObjectMapper mapper = new ObjectMapper();
   //private JsonNode configJson;
-  private GenericContainer container;
+  private static ElasticsearchContainer container;
+
+  @BeforeAll
+  public static void beforeAll() {
+    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
+            .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+            .withNetwork(Network.SHARED)
+            .withStartupTimeout(Duration.ofSeconds(60));
+    container.start();
+  }
+
+  @AfterAll
+  public static void afterAll() {
+    container.stop();
+    container.close();
+  }
 
   @Override
   protected String getImageName() {
@@ -30,26 +48,16 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return false;
+  protected int getMaxRecordValueLimit() {
+    return 2000000;
   }
 
   @Override
   protected JsonNode getConfig() {
     var configJson = mapper.createObjectNode();
-    configJson.put("host", container.getHost());
-    configJson.put("port", container.getFirstMappedPort());
-    configJson.put("indexPrefix", "test-index");
+    configJson.put("host", container.getHttpHostAddress());
+    configJson.put("port", container.getMappedPort(9200));
+    //configJson.put("indexPrefix", "test-index");
     return configJson;
   }
 
@@ -76,20 +84,12 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
-            .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
-            .withStartupTimeout(Duration.ofSeconds(90));
-    /*
-    container = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
-            .withExposedPorts(9200);
-     */
-    container.start();
+
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    container.stop();
-    container.close();
+
   }
 
 }
