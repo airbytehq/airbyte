@@ -1,11 +1,11 @@
 {
-  "MAX_BATCH_SIZE":10,
-  "MAX_WAIT_TIME":20,
-  "VISIBILITY_TIMEOUT":120,
-  "DELETE_MESSAGES":false,
-  "ATTRIBUTES_TO_RETURN": "path,iter",
-  "QUEUE_URL":"https://sqs.eu-west-1.amazonaws.com/1234567890/ab-airbyte-testing",
-  "REGION":"eu-west-1",
-  "ACCESS_KEY":"xxx",
-  "SECRET_KEY":"xxx"
+  "max_batch_size":10,
+  "max_wait_time":20,
+  "visibility_timeout":120,
+  "delete_messages":false,
+  "attributes_to_return": "path,iter",
+  "queue_url":"https://sqs.eu-west-1.amazonaws.com/840836244599/ab-airbyte-testing",
+  "region":"eu-west-1",
+  "access_key":"xxx",
+  "secret_key":"xxx"
 }
