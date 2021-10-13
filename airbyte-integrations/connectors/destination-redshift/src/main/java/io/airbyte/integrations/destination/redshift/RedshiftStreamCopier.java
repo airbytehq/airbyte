@@ -16,6 +16,8 @@ import java.sql.SQLException;
 
 public class RedshiftStreamCopier extends S3StreamCopier {
 
+  private static final int FILE_PREFIX_LENGTH = 5;
+
   public RedshiftStreamCopier(String stagingFolder,
                               DestinationSyncMode destSyncMode,
                               String schema,
@@ -25,8 +27,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               S3Config s3Config,
                               ExtendedNameTransformer nameTransformer,
                               SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", 5) + "_" + streamName, client, db, s3Config,
-        nameTransformer, sqlOperations);
+    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
+            client, db, s3Config, nameTransformer, sqlOperations);
   }
 
   @Override
