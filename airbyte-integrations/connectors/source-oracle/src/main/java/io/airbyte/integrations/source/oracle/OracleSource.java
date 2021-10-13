@@ -31,7 +31,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
-  static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
   private List<String> schemas;
 
@@ -45,6 +45,10 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   public OracleSource() {
     super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
+  }
+
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new OracleSource(), List.of("host"), List.of("port"));
   }
 
   @Override
@@ -157,7 +161,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new OracleSource(), List.of("host"), List.of("port"));
+    final Source source = OracleSource.sshWrappedSource();
     LOGGER.info("starting source: {}", OracleSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", OracleSource.class);
