@@ -90,6 +90,7 @@
     * [Mongo DB](integrations/sources/mongodb-v2.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
+    * [OneSignal](integrations/sources/onesignal.md)
     * [Oracle DB](integrations/sources/oracle.md)
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
     * [Oracle Siebel CRM](integrations/sources/oracle-siebel-crm.md)
