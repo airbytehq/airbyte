@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.28
+Transforming Python log levels to Airbyte protocol log levels
+
 ## 0.1.27
 Improving unit test for logger
 
