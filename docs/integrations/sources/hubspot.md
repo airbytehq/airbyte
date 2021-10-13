@@ -34,6 +34,8 @@ This source is capable of syncing the following tables and their data:
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
+**Note**: Hubspot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream. 
+
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 #### Requirements
