@@ -27,6 +27,11 @@ class TplcentralStream(HttpStream, ABC):
     def page_size(self):
         None
 
+    @property
+    @abstractmethod
+    def collection_field(self) -> str:
+        pass
+
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         data = response.json()
         total = data[self.total_results_field]
@@ -51,24 +56,22 @@ class TplcentralStream(HttpStream, ABC):
         return next_page_token
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return normalize(response.json())
+        return normalize(response.json()[self.collection_field])
 
 
 class StockSummaries(TplcentralStream):
+    collection_field = "Summaries"
     primary_key = ["facility_id", ["item_identifier", "id"]]
     page_size = 500
-    collection_field = "Summaries"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "inventory/stocksummaries"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response['summaries']
-
 
 class Customers(TplcentralStream):
+    collection_field = "ResourceList"
     primary_key = [["read_only", "customer_id"]]
     page_size = 100
 
@@ -76,9 +79,6 @@ class Customers(TplcentralStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "customers"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response["resource_list"]
 
 
 class IncrementalTplcentralStream(TplcentralStream, ABC):
@@ -128,15 +128,12 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
         return params or {}
 
-    def normalized_collection_field(self) -> str:
-        return camel_to_snake(self.collection_field)
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response = super().parse_response(response, **kwargs)
         return [{
             **record,
             self.cursor_field: self.__class__.cursor_value(record)
-        } for record in response[self.normalized_collection_field()]]
+        } for record in response]
 
 
 class Items(IncrementalTplcentralStream):
