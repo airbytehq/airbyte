@@ -254,7 +254,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
+        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
+        getSourceOperations());
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
