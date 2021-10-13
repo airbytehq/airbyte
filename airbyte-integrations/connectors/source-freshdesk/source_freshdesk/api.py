@@ -50,7 +50,7 @@ class API:
         # Since this logic rely not on updated tickets, it can break tickets dependant streams - conversations.
         # So updated_since parameter will be always used in tickets streams. And start_date will be used too
         # with default value 30 days look back.
-        self._start_date = pendulum.parse(start_date) if start_date else pendulum.now().add(days=-30)
+        self._start_date = pendulum.parse(start_date) if start_date else pendulum.now() - pendulum.duration(days=30)
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
