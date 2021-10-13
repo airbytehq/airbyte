@@ -62,7 +62,7 @@ def setup_test_path(request):
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip("Destinations is not in NORMALISATION_TEST_TARGET env variable")
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
     target_schema = dbt_test_utils.target_schema
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
@@ -118,24 +118,28 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     os.makedirs(test_root_dir)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
+    dbt_project_yaml = "../dbt-project-template/dbt_project.yml"
     shutil.copytree("../dbt-project-template", test_root_dir)
     if integration_type == DestinationType.MSSQL.value:
-        copy_tree("../dbt-project-template-mysql", test_root_dir)
+        copy_tree("../dbt-project-template-mssql", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-mssql/dbt_project.yml"
     elif integration_type == DestinationType.MYSQL.value:
         copy_tree("../dbt-project-template-mysql", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-mysql/dbt_project.yml"
     elif integration_type == DestinationType.ORACLE.value:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
-    if integration_type.lower() != "redshift":
+        dbt_project_yaml = "../dbt-project-template-oracle/dbt_project.yml"
+    if integration_type.lower() != "redshift" and integration_type.lower() != "oracle":
         # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
         dbt_test_utils.copy_replace(
-            "../dbt-project-template/dbt_project.yml",
+            dbt_project_yaml,
             os.path.join(test_root_dir, "dbt_project.yml"),
             pattern="ephemeral",
             replace_value="view",
         )
     else:
-        # 'view' materializations on redshift are too slow, so keep it ephemeral there...
-        dbt_test_utils.copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
+        # keep ephemeral tables
+        dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
