@@ -106,6 +106,11 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
         return {self.cursor_field: self.start_date}
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        return [{
+            self.cursor_field: stream_state.get(self.cursor_field, self.start_date)
+        }]
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -127,12 +132,6 @@ class Items(IncrementalTplcentralStream):
 
     def path(self, **kwargs) -> str:
         return f"customers/{self.customer_id}/items"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        start_date = arrow.get(stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
-        return [{
-            "cursor": start_date
-        }]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -167,13 +166,6 @@ class StockDetails(IncrementalTplcentralStream):
 
     def path(self, **kwargs) -> str:
         return "inventory/stockdetails"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        start_date = arrow.get(
-            stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
-        return [{
-            "cursor": start_date
-        }]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -212,13 +204,6 @@ class Inventory(IncrementalTplcentralStream):
 
     def path(self, **kwargs) -> str:
         return "inventory"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        start_date = arrow.get(
-            stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
-        return [{
-            "cursor": start_date
-        }]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -264,13 +249,6 @@ class Orders(IncrementalTplcentralStream):
 
     def path(self, **kwargs) -> str:
         return "orders"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        start_date = arrow.get(
-            stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
-        return [{
-            "cursor": start_date
-        }]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
