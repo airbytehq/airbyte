@@ -41,8 +41,6 @@ class SourceAmazonSqs(Source):
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         try:
-
-            optional_properties = ["max_batch_size", "max_wait_time", "attributes_to_return"]
             if "max_batch_size" in config:
                 # Max batch size must be between 1 and 10
                 if config["max_batch_size"] > 10 or config["max_batch_size"] < 1:
