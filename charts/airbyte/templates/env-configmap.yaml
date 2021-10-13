@@ -22,7 +22,6 @@ data:
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
   LOCAL_ROOT: /tmp/airbyte_local
-  OPENREPLAY: {{ ternary "enabled" "disabled" .Values.webapp.openreplay.enabled }}
   PAPERCUPS_STORYTIME: {{ ternary "enabled" "disabled" .Values.webapp.storytime.enabled }}
   RESOURCE_CPU_LIMIT: ""
   RESOURCE_CPU_REQUEST: ""
