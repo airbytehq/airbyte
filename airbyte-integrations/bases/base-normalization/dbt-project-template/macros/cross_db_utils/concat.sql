@@ -1,5 +1,5 @@
 {#
-    concat in dbt 0.6.4 used to work fine for bigquery but the new implementaion in 0.7.3 is less scalable (can not handle too many colulmns)
+    concat in dbt 0.6.4 used to work fine for bigquery but the new implementaion in 0.7.3 is less scalable (can not handle too many columns)
     Therefore, we revert the implementation here and add versions for missing destinations
 #}
 
@@ -8,6 +8,7 @@
 {%- endmacro %}
 
 {% macro bigquery__concat(fields) -%}
+    {#-- concat() in SQL bigquery scales better with number of columns than using the '||' operator --#}
     concat({{ fields|join(', ') }})
 {%- endmacro %}
 
