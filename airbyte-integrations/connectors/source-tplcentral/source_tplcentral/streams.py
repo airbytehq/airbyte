@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
+from airbyte_cdk.sources.utils.casing import camel_to_snake
 
 import arrow
 import requests
@@ -92,6 +93,11 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         """
         pass
 
+    @staticmethod
+    @abstractmethod
+    def cursor_value(self) -> str:
+        pass
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -122,13 +128,26 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
         return params or {}
 
+    def normalized_collection_field(self) -> str:
+        return camel_to_snake(self.collection_field)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+        return [{
+            **record,
+            self.cursor_field: self.__class__.cursor_value(record)
+        } for record in response[self.normalized_collection_field()]]
+
 
 class Items(IncrementalTplcentralStream):
     cursor_field = "cursor"
+    collection_field = "ResourceList"
 
     primary_key = "cursor"
 
-    collection_field = "ResourceList"
+    @staticmethod
+    def cursor_value(record) -> str:
+        return record["read_only"]["last_modified_date"]
 
     def path(self, **kwargs) -> str:
         return f"customers/{self.customer_id}/items"
@@ -149,20 +168,16 @@ class Items(IncrementalTplcentralStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        return [{
-            **r,
-            self.cursor_field: r["read_only"]["last_modified_date"]
-        } for r in response["resource_list"]]
-
 
 class StockDetails(IncrementalTplcentralStream):
     cursor_field = "cursor"
+    collection_field = "ResourceList"
 
     primary_key = "cursor"
 
-    collection_field = "ResourceList"
+    @staticmethod
+    def cursor_value(record) -> str:
+        return record["received_date"]
 
     def path(self, **kwargs) -> str:
         return "inventory/stockdetails"
@@ -187,20 +202,16 @@ class StockDetails(IncrementalTplcentralStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        return [{
-            **r,
-            self.cursor_field: r["received_date"]
-        } for r in response["resource_list"]]
-
 
 class Inventory(IncrementalTplcentralStream):
     cursor_field = "cursor"
+    collection_field = "ResourceList"
 
     primary_key = "cursor"
 
-    collection_field = "ResourceList"
+    @staticmethod
+    def cursor_value(record) -> str:
+        return record["received_date"]
 
     def path(self, **kwargs) -> str:
         return "inventory"
@@ -232,20 +243,16 @@ class Inventory(IncrementalTplcentralStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        return [{
-            **r,
-            self.cursor_field: r["received_date"]
-        } for r in response["resource_list"]]
-
 
 class Orders(IncrementalTplcentralStream):
     cursor_field = "cursor"
+    collection_field = "ResourceList"
 
     primary_key = "cursor"
 
-    collection_field = "ResourceList"
+    @staticmethod
+    def cursor_value(record) -> str:
+        return record["read_only"]["last_modified_date"]
 
     def path(self, **kwargs) -> str:
         return "orders"
@@ -276,10 +283,3 @@ class Orders(IncrementalTplcentralStream):
             })
 
         return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        return [{
-            **r,
-            self.cursor_field: r["read_only"]["last_modified_date"]
-        } for r in response["resource_list"]]
