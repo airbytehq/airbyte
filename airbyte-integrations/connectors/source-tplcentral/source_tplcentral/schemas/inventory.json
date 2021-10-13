@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "receiver_id": {
+      "type": "integer"
+    },
+    "received_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "receive_item_id": {
+      "type": "integer"
+    },
+    "customer_identifier": {
+      "$ref": "generic/models/customer_identifier.json"
+    },
+    "facility_identifier": {
+      "$ref": "generic/models/facility_identifier.json"
+    },
+    "item_identifier": {
+      "$ref": "generic/models/item_identifier.json"
+    },
+    "item_description": {
+      "type": "string"
+    },
+    "description2": {
+      "description": "item's Description2 propert",
+      "type": "string"
+    },
+    "upc": {
+      "type": "string"
+    },
+    "qualifier": {
+      "type": "string"
+    },
+    "inventory_unit_of_measure_identifier": {
+      "$ref": "generic/models/unit_of_measure_identifier.json"
+    },
+    "secondary_unit_of_measure_identifier": {
+      "$ref": "generic/models/unit_of_measure_identifier.json"
+    },
+    "inventory_units_per_secondary_unit": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "received_qty": {
+      "type": "number"
+    },
+    "on_hand_qty": {
+      "type": "number"
+    },
+    "available_qty": {
+      "type": "number"
+    },
+    "on_hold_qty": {
+      "type": "number"
+    },
+    "secondary_received_qty": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "secondary_on_hand_qty": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "secondary_available_qty": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "secondary_on_hold_qty": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weight_imperial": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weight_imperial_on_hand": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weight_imperial_available": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weight_metric": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weight_metric_on_hand": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weight_metric_available": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "saved_elements": {
+      "type": "array",
+      "items": {
+        "$ref": "generic/models/saved_element.json"
+      }
+    },
+    "lot_number": {
+      "type": "string"
+    },
+    "serial_number": {
+      "type": "string"
+    },
+    "expiration_date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "cost": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "supplier_identifier": {
+      "$ref": "generic/models/contact_identifier.json"
+    },
+    "location_identifier": {
+      "$ref": "generic/models/location_identifier.json"
+    },
+    "pallet_identifier": {
+      "$ref": "generic/models/pallet_identifier.json"
+    },
+    "on_hold": {
+      "type": "boolean"
+    },
+    "on_hold_reason": {
+      "type": "string"
+    },
+    "on_hold_date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "on_hold_user_identifier": {
+      "$ref": "generic/models/user_identifier.json"
+    },
+    "quarantined": {
+      "type": "boolean"
+    },
+    "stock_row_version": {
+      "type": "string"
+    },
+    "reference_num": {
+      "type": "string"
+    },
+    "po_num": {
+      "type": "string"
+    },
+    "trailer_number": {
+      "type": "string"
+    }
+  }
+}

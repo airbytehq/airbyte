@@ -213,6 +213,50 @@ class StockDetails(IncrementalTplcentralStream):
         return out
 
 
+class Inventory(IncrementalTplcentralStream):
+    primary_key = "cursor"
+    cursor_field = "cursor"
+
+    collection_field = "ResourceList"
+
+    def path(self, **kwargs) -> str:
+        return "inventory"
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        start_date = arrow.get(
+            stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
+        return [{
+            "cursor": start_date
+        }]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
+
+        if self.cursor_field:
+            cursor = stream_slice.get(self.cursor_field, None)
+            if cursor:
+                params.update({
+                    "sort": "ReceivedDate",
+                    "rql": ";".join([
+                        f"ReceivedDate=ge={cursor}",
+                        f"CustomerIdentifier.Id=={self.customer_id}",
+                        f"FacilityIdentifier.Id=={self.facility_id}",
+                    ])
+                })
+
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        out = []
+        for v in response.json()['ResourceList']:
+            v = normalize(v)
+            v['cursor'] = v['received_date']
+            out.append(v)
+        return out
+
+
 class TplcentralAuthenticator(Oauth2Authenticator):
     def __init__(
         self,
@@ -286,6 +330,8 @@ class SourceTplcentral(AbstractSource):
         return [
             StockSummaries(config),
             Customers(config),
+
             Items(config),
             StockDetails(config),
+            Inventory(config),
         ]
