@@ -411,6 +411,27 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/search:
+    post:
+      tags:
+        - source
+      summary: Search sources
+      operationId: searchSources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceSearch"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceReadList"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/delete:
     post:
       tags:
@@ -704,6 +725,27 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/search:
+    post:
+      tags:
+        - destination
+      summary: Search destinations
+      operationId: searchDestinations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationSearch"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationReadList"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/check_connection:
     post:
       tags:
@@ -879,6 +921,27 @@ paths:
                 $ref: "#/components/schemas/ConnectionState"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/search:
+    post:
+      tags:
+        - connection
+      summary: Search connections
+      operationId: searchConnections
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionSearch"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/delete:
@@ -1415,7 +1478,7 @@ paths:
       tags:
         - web_backend
       summary: Search connections
-      operationId: webBackendConnectionSearch
+      operationId: webBackendSearchConnections
       requestBody:
         content:
           application/json:
@@ -1429,8 +1492,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/sources/create:
@@ -2527,6 +2588,35 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+    ConnectionSearch:
+      type: object
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceSearch"
+        destination:
+          $ref: "#/components/schemas/DestinationSearch"
     WebBackendConnectionSearch:
       type: object
       properties:
