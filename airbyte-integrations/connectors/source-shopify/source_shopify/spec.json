@@ -20,16 +20,18 @@
       "auth_method": {
         "title": "Shopify Authorization Method",
         "type": "object",
-        "default": "api_password",
-        "description": "Shopify provides 2 auth methods: API Password and OAuth2.0",
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
+            "required": ["client_id","client_secret","access_token"],
             "properties": {
               "auth_method": {
                 "type": "string",
-                "const": "access_token"
+                "const": "access_token",
+                "enum": ["access_token"],
+                "default": "access_token",
+                "order": 0
               },
               "client_id": {
                 "type": "string",
@@ -46,26 +48,26 @@
                 "description": "Access Token for making authenticated requests.",
                 "airbyte_secret": true
               }
-            },
-            "required": ["client_id","client_secret","access_token"],
-            "additionalProperties": false
+            }
           },
           {
             "title": "API Password",
             "type": "object",
+            "required": ["api_password"],
             "properties": {
               "auth_method": {
                 "type": "string",
-                "const": "api_password"
+                "const": "api_password",
+                "enum": ["api_password"],
+                "default": "api_password",
+                "order": 0
               },
               "api_password": {
                 "type": "string",
                 "description": "The API PASSWORD for your private application in `Shopify` shop.",
                 "airbyte_secret": true
               }
-            },
-            "required": ["api_password"],
-            "additionalProperties": false
+            }
           }
         ]
       }
