@@ -509,7 +509,7 @@ def get_sensor_data(logger,state,config,stream_name,is_incremental):
             # start date begins with last cursor value in incremental mode
             if stream_name in state: # may be in incremental mode but cursor not initialized yet
                 data_start = override_query_params['data_start'] = state[stream_name]
-                logger.debug(f"overriding config value 'data_start' for stream {stream_name} with current stream cursor value {state[key]}")
+                logger.debug(f"overriding config value 'data_start' for stream {stream_name} with current stream cursor value {state[stream_name]}")
 
         data_end = onerain_datetime_now() # default to now 
         if has_data_end:
