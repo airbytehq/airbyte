@@ -30,7 +30,7 @@ class GoogleSheetsSource(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         try:
-            client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+            client = GoogleSheetsClient(self.get_credentials(config))
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Please use valid credentials json file. Error: {e}")
 
@@ -85,7 +85,7 @@ class GoogleSheetsSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = config["spreadsheet_id"]
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
@@ -113,7 +113,7 @@ class GoogleSheetsSource(Source):
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        client = GoogleSheetsClient(self.get_credentials(config))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]
@@ -153,3 +153,12 @@ class GoogleSheetsSource(Source):
                     if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                         yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
+
+    @staticmethod
+    def get_credentials(config):
+        # backward compatible with old style config
+        if config.get("credentials_json"):
+            credentials = {"auth_type": "Service", "service_account_info": config.get("credentials_json")}
+            return credentials
+
+        return config.get("credentials")
