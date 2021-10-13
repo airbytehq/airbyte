@@ -4,65 +4,20 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Trello Spec",
     "type": "object",
-    "required": ["start_date"],
+    "required": ["token", "key", "start_date"],
     "additionalProperties": true,
     "properties": {
-      "credentials": {
-        "title": "Authentication mechanism",
-        "description": "Choose how to authenticate to Github",
-        "type": "object",
-        "oneOf": [
-          {
-            "type": "object",
-            "title": "Authenticate via Trello (Oauth)",
-            "required": ["token", "key"],
-            "properties": {
-              "option_title": {
-                "type": "string",
-                "title": "Credentials title",
-                "description": "OAuth Credentials",
-                "const": "OAuth Credentials (OAuth flow)"
-              },
-              "token": {
-                "type": "string",
-                "title": "API token",
-                "description": "token obtained from oAuth flow",
-                "airbyte_secret": true
-              },
-              "key": {
-                "type": "string",
-                "title": "API key",
-                "description": "oAuth application key",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "Enter credentials manually",
-            "required": ["token", "key"],
-            "properties": {
-              "option_title": {
-                "type": "string",
-                "title": "Credentials title",
-                "description": "OAuth Credentials",
-                "const": "OAuth Credentials (manual)"
-              },
-              "token": {
-                "type": "string",
-                "title": "API token",
-                "description": "A Trello token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
-                "airbyte_secret": true
-              },
-              "key": {
-                "type": "string",
-                "title": "API key",
-                "description": "A Trello token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
-                "airbyte_secret": true
-              }
-            }
-          }
-        ]
+      "token": {
+        "type": "string",
+        "title": "API token",
+        "description": "A Trello token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
+        "airbyte_secret": true
+      },
+      "key": {
+        "type": "string",
+        "title": "API key",
+        "description": "A Trello token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\">docs</a> for instructions on how to generate it.",
+        "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
@@ -76,7 +31,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["credentials", 0],
+      "rootObject": [],
       "oauthFlowInitParameters": [],
       "oauthFlowOutputParameters": [["token"], ["key"]]
     }

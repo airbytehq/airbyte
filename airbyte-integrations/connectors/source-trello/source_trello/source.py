@@ -187,12 +187,7 @@ class SourceTrello(AbstractSource):
 
     @staticmethod
     def _get_authenticator(config: dict) -> TrelloAuthenticator:
-        if "credentials" not in config:
-            # Backward compatability code
-            key, token = config["key"], config["token"]
-        else:
-            key, token = config["credentials"]["key"], config["credentials"]["token"]
-
+        key, token = config["key"], config["token"]
         return TrelloAuthenticator(token=token, key=key)
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:

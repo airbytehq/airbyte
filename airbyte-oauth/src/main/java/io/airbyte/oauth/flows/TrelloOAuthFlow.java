@@ -111,7 +111,7 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     oAuthGetAccessToken.consumerKey = clientKey;
     OAuthCredentialsResponse accessTokenResponse = oAuthGetAccessToken.execute();
     String accessToken = accessTokenResponse.token;
-    return Map.of("credentials", Map.of("token", accessToken, "key", clientKey));
+    return Map.of("token", accessToken, "key", clientKey);
   }
 
 }

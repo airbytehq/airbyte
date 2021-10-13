@@ -93,10 +93,9 @@ public class TrelloOAuthFlowIntegrationTest {
     final Map<String, Object> params = trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("oauth_verifier", serverHandler.getParamValue(), "oauth_token", serverHandler.getResponseQuery().get("oauth_token")), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    final Map<String, String> creds = (Map<String, String>)params.get("credentials");
-    assertTrue(creds.containsKey("token"));
-    assertTrue(creds.containsKey("key"));
-    assertTrue(creds.get("token").toString().length() > 0);
+    assertTrue(params.containsKey("token"));
+    assertTrue(params.containsKey("key"));
+    assertTrue(params.get("token").toString().length() > 0);
   }
 
   static class ServerHandler implements HttpHandler {
