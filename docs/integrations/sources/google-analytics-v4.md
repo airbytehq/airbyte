@@ -1,4 +1,4 @@
-# Google Analytics V4
+# Google Analytics
 
 ## Features
 
@@ -14,32 +14,33 @@
 
 This source is capable of syncing the following tables and their data:
 
-* website_overview
-* traffic_sources
+* website\_overview
+* traffic\_sources
 * pages
 * locations
-* monthly_active_users
-* four_weekly_active_users
-* two_weekly_active_users
-* weekly_active_users
-* daily_active_users
+* monthly\_active\_users
+* four\_weekly\_active\_users
+* two\_weekly\_active\_users
+* weekly\_active\_users
+* daily\_active\_users
 * devices
 * Any custom reports. See [below](https://docs.airbyte.io/integrations/sources/google-analytics-v4#reading-custom-reports-from-google-analytics) for details.
 
 Please reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
 
-## Getting Started (Airbyte Cloud)
+## Getting Started \(Airbyte Cloud\)
 
 1. Click `OAuth2.0 authorization` then `Authenticate your Google Analytics account`.
 2. Find your View ID for the view you want to fetch data from. Find it [here](https://ga-dev-tools.web.app/account-explorer/).
 3. Enter a start date, window size, and custom report information.
 4. You're done.
 
-## Getting Started (Airbyte Open-Source)
+## Getting Started \(Airbyte Open-Source\)
 
 There are 2 options of setting up authorization for this source:
- - Create service account specifically for Airbyte and authorize with JWT. Select "JWT authorization" from the "Authentication mechanism" dropdown list.
- - Use your Google account and authorize over Google's OAuth on connection setup. Select "Default OAuth2.0 authorization" from dropdown list.
+
+* Create service account specifically for Airbyte and authorize with JWT. Select "JWT authorization" from the "Authentication mechanism" dropdown list.
+* Use your Google account and authorize over Google's OAuth on connection setup. Select "Default OAuth2.0 authorization" from dropdown list.
 
 #### Create a Service Account
 
@@ -116,7 +117,7 @@ A custom report can contain no more than 10 unique metrics. The default availabl
 
 Incremental sync supports only if you add `ga:date` dimension to your custom report.
 
-## Rate Limits & Performance Considerations (Airbyte Open-Source)
+## Rate Limits & Performance Considerations \(Airbyte Open-Source\)
 
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)
 
@@ -129,11 +130,12 @@ The Google Analytics connector should not run into Google Analytics API limitati
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.7   | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414) | Declare oauth parameters in google sources |
-| 0.1.6   | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459) | Update OAuth Spec File |
-| 0.1.3   | 2021-09-21 | [6357](https://github.com/airbytehq/airbyte/pull/6357) | Fix oauth workflow parameters |
-| 0.1.2   | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306) | Support of airbyte OAuth initialization flow |
-| 0.1.1   | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655) | Corrected validation of empty custom report|
-| 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290) | Initial Release|
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.7 | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414) | Declare oauth parameters in google sources |
+| 0.1.6 | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459) | Update OAuth Spec File |
+| 0.1.3 | 2021-09-21 | [6357](https://github.com/airbytehq/airbyte/pull/6357) | Fix oauth workflow parameters |
+| 0.1.2 | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306) | Support of airbyte OAuth initialization flow |
+| 0.1.1 | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655) | Corrected validation of empty custom report |
+| 0.1.0 | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290) | Initial Release |
+

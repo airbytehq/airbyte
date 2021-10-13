@@ -11,6 +11,7 @@ import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -145,6 +146,22 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
+  public SourceReadList searchSources(SourceSearch sourceSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<SourceRead> reads = Lists.newArrayList();
+
+    for (SourceConnection sci : configRepository.listSourceConnection()) {
+      if (!sci.getTombstone()) {
+        SourceRead sourceRead = buildSourceRead(sci.getSourceId());
+        if (connectionsHandler.matchSearch(sourceSearch, sourceRead)) {
+          reads.add(sourceRead);
+        }
+      }
+    }
+
+    return new SourceReadList().sources(reads);
+  }
+
   public void deleteSource(SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
@@ -250,8 +267,8 @@ public class SourceHandler {
     configRepository.writeSourceConnection(sourceConnection, spec);
   }
 
-  private SourceRead toSourceRead(final SourceConnection sourceConnection,
-                                  final StandardSourceDefinition standardSourceDefinition) {
+  protected static SourceRead toSourceRead(final SourceConnection sourceConnection,
+                                           final StandardSourceDefinition standardSourceDefinition) {
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .sourceName(standardSourceDefinition.getName())
