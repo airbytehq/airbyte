@@ -16,14 +16,16 @@ dependencies {
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    implementation 'org.projectlombok:lombok:1.18.20'
 
     //testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     //testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 
     // MIT
     // https://www.testcontainers.org/
-    testImplementation "org.testcontainers:testcontainers:1.16.0"
-    testImplementation "org.testcontainers:elasticsearch:1.16.0"
+    //implementation "org.testcontainers:testcontainers:1.16.0"
+    testImplementation "org.testcontainers:elasticsearch:1.15.3"
+    integrationTestJavaImplementation "org.testcontainers:elasticsearch:1.15.3"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')

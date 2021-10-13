@@ -5,17 +5,24 @@
 package io.airbyte.integrations.destination.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
-  private JsonNode configJson;
+  private ObjectMapper mapper = new ObjectMapper();
+  //private JsonNode configJson;
+  private GenericContainer container;
 
   @Override
   protected String getImageName() {
@@ -23,18 +30,33 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
+  protected boolean supportsNormalization() {
+    return false;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
+    return false;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
+    return false;
+  }
+
+  @Override
   protected JsonNode getConfig() {
-    // TODO: Generate the configuration JSON file to be used for running the destination during the test
-    // configJson can either be static and read from secrets/config.json directly
-    // or created in the setup method
+    var configJson = mapper.createObjectNode();
+    configJson.put("host", container.getHost());
+    configJson.put("port", container.getFirstMappedPort());
+    configJson.put("indexPrefix", "test-index");
     return configJson;
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
     // should result in a failed connection check
-    return null;
+    return mapper.createObjectNode();
   }
 
   @Override
@@ -43,20 +65,31 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
                                            String namespace,
                                            JsonNode streamSchema)
       throws IOException {
-    // TODO Implement this method to retrieve records which written to the destination by the connector.
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
-    return null;
+
+    final String tableName = ElasticsearchDestination.namingResolver.getRawTableName(streamName);
+
+    ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    return connection.getRecords(tableName);
   }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any setup actions needed before every test case
+    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
+            .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+            .withStartupTimeout(Duration.ofSeconds(90));
+    /*
+    container = new GenericContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
+            .withExposedPorts(9200);
+     */
+    container.start();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any cleanup actions needed after every test case
+    container.stop();
+    container.close();
   }
 
 }

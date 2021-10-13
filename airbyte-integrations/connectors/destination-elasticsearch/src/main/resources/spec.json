@@ -1,21 +1,61 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch",
-  "supportsIncremental": true,
-  "supported_destination_sync_modes": ["TODO"],
+  "supportsIncremental": false,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "TODO",
+    "title": "Elasticsearch Connection Configuration",
     "type": "object",
     "required": [
-      "TODO"
+      "host"
     ],
     "additionalProperties": false,
     "properties": {
-      "TODO_sample_field": {
-        "title": "Sample Field",
+      "host": {
+        "title": "Host",
         "type": "string",
-        "description": "",
-        "examples": [""]
+        "description": "The host name of the Elasticsearch server",
+        "examples": ["elastic"],
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "description": "The port of the server.",
+        "minimum": 0,
+        "maximum": 65536,
+        "examples": ["9200"],
+        "default": 9200,
+        "order": 1
+      },
+      "indexPrefix": {
+        "title": "Index Prefix",
+        "description": "A prefix for the index created in Elasticsearch.",
+        "type": "string",
+        "examples": ["data_", "index1_"],
+        "order": 2
+      },
+      "apiKeyId": {
+        "title": "API Key ID",
+        "description": "The Key ID to used when accessing an enterprise Elasticsearch instance.",
+        "type": "string",
+        "order": 3
+      },
+      "apiKeySecret": {
+        "title": "API Key Secret",
+        "description": "The secret associated with the API Key ID.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "ssl": {
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
+        "type": "boolean",
+        "default": false,
+        "order": 5
       }
     }
   }
