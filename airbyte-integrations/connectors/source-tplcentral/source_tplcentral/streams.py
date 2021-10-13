@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -16,12 +16,9 @@ class TplcentralStream(HttpStream, ABC):
         super().__init__(authenticator=config['authenticator'])
 
         self.url_base = config['url_base']
-        self.customer_id = config.get('customer_id', None)
-        self.facility_id = config.get('facility_id', None)
-        self.start_date = config.get('start_date', None)
-
-        if self.start_date is not None:
-            self.start_date = arrow.get(self.start_date)
+        self.customer_id = config.get('customer_id')
+        self.facility_id = config.get('facility_id')
+        self.start_date = config.get('start_date')
 
         self.total_results_field = "TotalResults"
 
@@ -87,21 +84,34 @@ class Customers(TplcentralStream):
 class IncrementalTplcentralStream(TplcentralStream, ABC):
     state_checkpoint_interval = 10
 
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        pass
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        if current_stream_state is not None and "cursor" in current_stream_state:
-            current_date = arrow.get(current_stream_state["cursor"])
-            latest_record_date = arrow.get(latest_record["cursor"])
-            return {
-                "cursor": max(current_date, latest_record_date).isoformat()
-            }
-        return {
-            "cursor": self.start_date.isoformat()
-        }
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+
+        current = current_stream_state.get(self.cursor_field)
+        latest = latest_record.get(self.cursor_field)
+
+        if current:
+          {self.cursor_field: max(arrow.get(latest), arrow.get(current)).isoformat()}
+
+        return {self.cursor_field: self.start_date}
 
 
 class Items(IncrementalTplcentralStream):
-    primary_key = "cursor"
     cursor_field = "cursor"
+
+    primary_key = "cursor"
 
     collection_field = "ResourceList"
 
@@ -139,8 +149,9 @@ class Items(IncrementalTplcentralStream):
 
 
 class StockDetails(IncrementalTplcentralStream):
-    primary_key = "cursor"
     cursor_field = "cursor"
+
+    primary_key = "cursor"
 
     collection_field = "ResourceList"
 
@@ -181,8 +192,9 @@ class StockDetails(IncrementalTplcentralStream):
 
 
 class Inventory(IncrementalTplcentralStream):
-    primary_key = "cursor"
     cursor_field = "cursor"
+
+    primary_key = "cursor"
 
     collection_field = "ResourceList"
 
@@ -225,8 +237,9 @@ class Inventory(IncrementalTplcentralStream):
 
 
 class Orders(IncrementalTplcentralStream):
-    primary_key = "cursor"
     cursor_field = "cursor"
+
+    primary_key = "cursor"
 
     collection_field = "ResourceList"
 
