@@ -1,50 +1,32 @@
 # Amazon Seller Partner
 
-## Sync overview
-
-This source can sync data for the [Amazon Seller Partner API](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
-
-### Output schema
-
-This source is capable of syncing the following streams:
-
-* [GET\_FLAT\_FILE\_ALL\_ORDERS\_DATA\_BY\_ORDER\_DATE\_GENERAL](https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780)
-* [GET\_MERCHANT\_LISTINGS\_ALL\_DATA](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
-* [GET\_FBA\_INVENTORY\_AGED\_DATA](https://sellercentral.amazon.com/gp/help/200740930)
-* [GET\_AMAZON\_FULFILLED\_SHIPMENTS\_DATA\_GENERAL](https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120)
-* [GET\_FLAT\_FILE\_OPEN\_LISTINGS\_DATA](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
-* [GET\_FBA\_FULFILLMENT\_REMOVAL\_ORDER\_DETAIL\_DATA](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
-* [GET\_FBA\_FULFILLMENT\_REMOVAL\_SHIPMENT\_DETAIL\_DATA](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
-* [GET\_VENDOR\_INVENTORY\_HEALTH\_AND\_PLANNING\_REPORT](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#vendor-retail-analytics-reports)
-* [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md) \(incremental\)
-* [VendorDirectFulfillmentShipping](https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md)
-
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `int`, `float`, `number` | `number` |  |
-| `date` | `date` |  |
-| `datetime` | `datetime` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
+## Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | yes |  |
-| Incremental Sync | yes |  |
-| Namespaces | No |  |
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Yes |  |
 
-### Performance considerations
+This source syncs data from the [Amazon Seller Partner API](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
 
-Information about rate limits you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/usage-plans-rate-limits/Usage-Plans-and-Rate-Limits.md).
+## Supported Tables
+
+This source is capable of syncing the following streams:
+
+* [Order Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780)
+* [All Listings](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
+* [FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
+* [Amazon-Fulfilled Shipments Report](https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120)
+* [Open Listings Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
+* [Removal Order Detail Report (overview)](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
+* [Removal Shipment Detail Report](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
+* [Inventory Health & Planning Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#vendor-retail-analytics-reports)
+* [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md) \(incremental\)
+* [VendorDirectFulfillmentShipping](https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md)
 
 ## Getting started
 
-### Requirements
+**Requirements**
 
 * replication\_start\_date
 * refresh\_token
@@ -56,9 +38,25 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 * aws\_environment
 * region
 
-### Setup guide
+**Setup guide**
 
 Information about how to get credentials you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
+
+## Data type mapping
+
+| Integration Type | Airbyte Type | Notes |
+| :--- | :--- | :--- |
+| `string` | `string` |  |
+| `int`, `float`, `number` | `number` |  |
+| `date` | `date` |  |
+| `datetime` | `datetime` |  |
+| `array` | `array` |  |
+| `object` | `object` |  |
+
+### Performance Considerations (Airbyte Open-Source)
+
+Information about rate limits you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/usage-plans-rate-limits/Usage-Plans-and-Rate-Limits.md).
+
 
 ## CHANGELOG
 
