@@ -36,9 +36,6 @@ class JsonUpdatedState(pydantic.BaseModel):
         """Overrides print view"""
         return str(self.dict())
 
-    def json(self, **kwargs):
-        raise Exception("aaa")
-
     def dict(self, **kwargs):
         """Overrides default logic.
         A new updated stage has to be sent if all advertisers are used only
@@ -56,6 +53,9 @@ class TiktokException(Exception):
 class TiktokStream(HttpStream, ABC):
     # endpoints can have different list names
     response_list_field = "list"
+
+    # max value of page
+    page_size = 1000
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """All responses have the similar structure:
@@ -139,11 +139,12 @@ class ListAdvertiserIdsStream(TiktokStream):
             self._advertiser_ids.append(self._advertiser_id)
 
     @property
-    def is_sandbox(self):
+    def is_sandbox(self) -> bool:
         """
         the config parameter advertiser_id is required for Sandbox
         """
-        return self._advertiser_id
+        # only sandbox has a not empty self._advertiser_id value
+        return self._advertiser_id > 0
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -169,9 +170,6 @@ class ListAdvertiserIdsStream(TiktokStream):
 class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
-
-    # max value of page
-    page_size = 1000
 
     def __init__(self, advertiser_id: int, app_id: int, secret: str, start_time: str, **kwargs):
         super().__init__(**kwargs)
@@ -219,8 +217,6 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 
 class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     cursor_field = "modify_time"
-
-    page_size = 1000
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
