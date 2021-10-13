@@ -81,6 +81,7 @@ class Customers(TplcentralStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return [normalize(v) for v in response.json()['ResourceList']]
 
+
 class IncrementalTplcentralStream(TplcentralStream, ABC):
     state_checkpoint_interval = 10
 
@@ -103,7 +104,7 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         latest = latest_record.get(self.cursor_field)
 
         if current:
-          {self.cursor_field: max(arrow.get(latest), arrow.get(current)).isoformat()}
+            {self.cursor_field: max(arrow.get(latest), arrow.get(current)).isoformat()}
 
         return {self.cursor_field: self.start_date}
 
@@ -129,13 +130,11 @@ class Items(IncrementalTplcentralStream):
     ) -> MutableMapping[str, Any]:
         params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
 
-        if self.cursor_field:
-            cursor = stream_slice.get(self.cursor_field, None)
-            if cursor:
-                params.update({
-                    "sort": "ReadOnly.LastModifiedDate",
-                    "rql": f"ReadOnly.LastModifiedDate=ge={cursor}",
-                })
+        params.update({"sort": "ReadOnly.LastModifiedDate"})
+
+        cursor = stream_slice.get(self.cursor_field)
+        if cursor:
+            params.update({"rql": f"ReadOnly.LastModifiedDate=ge={cursor}"})
 
         return params
 
@@ -170,15 +169,15 @@ class StockDetails(IncrementalTplcentralStream):
     ) -> MutableMapping[str, Any]:
         params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
 
-        if self.cursor_field:
-            cursor = stream_slice.get(self.cursor_field, None)
-            if cursor:
-                params.update({
-                    "customerid": self.customer_id,
-                    "facilityid": self.facility_id,
-                    "sort": "ReceivedDate",
-                    "rql": f"ReceivedDate=ge={cursor}",
-                })
+        params.update({
+            "customerid": self.customer_id,
+            "facilityid": self.facility_id,
+            "sort": "ReceivedDate",
+        })
+
+        cursor = stream_slice.get(self.cursor_field, None)
+        if cursor:
+            params.update({"rql": f"ReceivedDate=ge={cursor}"})
 
         return params
 
@@ -213,17 +212,22 @@ class Inventory(IncrementalTplcentralStream):
     ) -> MutableMapping[str, Any]:
         params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
 
-        if self.cursor_field:
-            cursor = stream_slice.get(self.cursor_field, None)
-            if cursor:
-                params.update({
-                    "sort": "ReceivedDate",
-                    "rql": ";".join([
-                        f"ReceivedDate=ge={cursor}",
-                        f"CustomerIdentifier.Id=={self.customer_id}",
-                        f"FacilityIdentifier.Id=={self.facility_id}",
-                    ])
-                })
+        params.update({
+            "sort": "ReceivedDate",
+            "rql": ";".join([
+                f"CustomerIdentifier.Id=={self.customer_id}",
+                f"FacilityIdentifier.Id=={self.facility_id}",
+            ])
+        })
+
+        cursor = stream_slice.get(self.cursor_field, None)
+        if cursor:
+            params.update({
+                "rql": ";".join([
+                    params["rql"],
+                    f"ReceivedDate=ge={cursor}",
+                ])
+            })
 
         return params
 
@@ -258,17 +262,22 @@ class Orders(IncrementalTplcentralStream):
     ) -> MutableMapping[str, Any]:
         params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
 
-        if self.cursor_field:
-            cursor = stream_slice.get(self.cursor_field, None)
-            if cursor:
-                params.update({
-                    "sort": "ReadOnly.LastModifiedDate",
-                    "rql": ";".join([
-                        f"ReadOnly.LastModifiedDate=ge={cursor}",
-                        f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
-                        f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
-                    ])
-                })
+        params.update({
+            "sort": "ReadOnly.LastModifiedDate",
+            "rql": ";".join([
+                f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
+                f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
+            ])
+        })
+
+        cursor = stream_slice.get(self.cursor_field, None)
+        if cursor:
+            params.update({
+                "rql": ";".join([
+                    params["rql"],
+                    f"ReadOnly.LastModifiedDate=ge={cursor}",
+                ])
+            })
 
         return params
 
