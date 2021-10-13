@@ -42,26 +42,26 @@ class SourceAmazonSqs(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         try:
 
-            optional_properties = ["MAX_BATCH_SIZE", "MAX_WAIT_TIME", "ATTRIBUTES_TO_RETURN"]
-            if "MAX_BATCH_SIZE" in config:
+            optional_properties = ["max_batch_size", "max_wait_time", "attributes_to_return"]
+            if "max_batch_size" in config:
                 # Max batch size must be between 1 and 10
-                if config["MAX_BATCH_SIZE"] > 10 or config["MAX_BATCH_SIZE"] < 1:
-                    raise Exception("MAX_BATCH_SIZE must be between 1 and 10")
-            if "MAX_WAIT_TIME" in config:
+                if config["max_batch_size"] > 10 or config["max_batch_size"] < 1:
+                    raise Exception("max_batch_size must be between 1 and 10")
+            if "max_wait_time" in config:
                 # Max wait time must be between 1 and 20
-                if config["MAX_WAIT_TIME"] > 20 or config["MAX_WAIT_TIME"] < 1:
-                    raise Exception("MAX_WAIT_TIME must be between 1 and 20")
+                if config["max_wait_time"] > 20 or config["max_wait_time"] < 1:
+                    raise Exception("max_wait_time must be between 1 and 20")
 
             # Required propeties
-            queue_url = config["QUEUE_URL"]
-            logger.debug("Amazon SQS Source Config Check - QUEUE_URL: " + queue_url)
-            queue_region = config["REGION"]
-            logger.debug("Amazon SQS Source Config Check - REGION: " + queue_region)
+            queue_url = config["queue_url"]
+            logger.debug("Amazon SQS Source Config Check - queue_url: " + queue_url)
+            queue_region = config["region"]
+            logger.debug("Amazon SQS Source Config Check - region: " + queue_region)
             # Senstive Properties
-            access_key = config["ACCESS_KEY"]
-            logger.debug("Amazon SQS Source Config Check - ACCESS_KEY (ends with): " + access_key[-1])
+            access_key = config["access_key"]
+            logger.debug("Amazon SQS Source Config Check - access_key (ends with): " + access_key[-1])
             secret_key = config["SECRET_KEY"]
-            logger.debug("Amazon SQS Source Config Check - SECRET_KEY (ends with): " + secret_key[-1])
+            logger.debug("Amazon SQS Source Config Check - secret_key (ends with): " + secret_key[-1])
 
             logger.debug("Amazon SQS Source Config Check - Starting connection test ---")
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
@@ -82,7 +82,7 @@ class SourceAmazonSqs(Source):
         streams = []
 
         # Get the queue name by getting substring after last /
-        stream_name = self.parse_queue_name(config["QUEUE_URL"])
+        stream_name = self.parse_queue_name(config["queue_url"])
         logger.debug("Amazon SQS Source Stream Discovery - stream is: " + stream_name)
 
         json_schema = {
@@ -96,27 +96,27 @@ class SourceAmazonSqs(Source):
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        stream_name = self.parse_queue_name(config["QUEUE_URL"])
+        stream_name = self.parse_queue_name(config["queue_url"])
         logger.debug("Amazon SQS Source Read - stream is: " + stream_name)
 
         # Required propeties
-        queue_url = config["QUEUE_URL"]
-        queue_region = config["REGION"]
-        delete_messages = config["DELETE_MESSAGES"]
+        queue_url = config["queue_url"]
+        queue_region = config["region"]
+        delete_messages = config["delete_messages"]
 
         # Optional Properties
-        max_batch_size = config.get("MAX_BATCH_SIZE", 10)
-        max_wait_time = config.get("MAX_WAIT_TIME", 20)
-        visibility_timeout = config.get("VISIBILITY_TIMEOUT")
-        attributes_to_return = config.get("ATTRIBUTES_TO_RETURN")
+        max_batch_size = config.get("max_batch_size", 10)
+        max_wait_time = config.get("max_wait_time", 20)
+        visibility_timeout = config.get("visibility_timeout")
+        attributes_to_return = config.get("attributes_to_return")
         if attributes_to_return is None:
             attributes_to_return = ["All"]
         else:
             attributes_to_return = attributes_to_return.split(",")
 
         # Senstive Properties
-        access_key = config["ACCESS_KEY"]
-        secret_key = config["SECRET_KEY"]
+        access_key = config["access_key"]
+        secret_key = config["secret_key"]
 
         logger.debug("Amazon SQS Source Read - Creating SQS connection ---")
         session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)

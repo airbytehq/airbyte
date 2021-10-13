@@ -7,63 +7,63 @@
     "required": ["QUEUE_URL", "REGION", "DELETE_MESSAGES"],
     "additionalProperties": false,
     "properties": {
-      "QUEUE_URL": {
+      "queue_url": {
         "title": "Queue URL",
         "description": "URL of the SQS Queue",
         "type": "string",
         "examples": ["https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue"],
         "order": 0
       },
-      "REGION": {
+      "region": {
         "title": "AWS Region",
         "description": "AWS Region of the SQS Queue",
         "type": "string",
         "examples": ["eu-west-1"],
         "order": 1
       },
-      "DELETE_MESSAGES": {
+      "delete_messages": {
         "title": "Delete Messages After Read",
         "description": "If Enabled, messages will be deleted from the SQS Queue after being read. If Disabled, messages are left in the queue and can be read more than once.",
         "type": "boolean",
         "default": false,
         "order": 2
       },
-      "MAX_BATCH_SIZE": {
+      "max_batch_size": {
         "title": "Max Batch Size",
         "description": "Max amount of messages to get in one batch (10 max)",
         "type": "integer",
         "examples": ["5"],
         "order": 3
       },
-      "MAX_WAIT_TIME": {
+      "max_wait_time": {
         "title": "Max Wait Time",
         "description": "Max amount of time in seconds to wait for messages in a single poll (20 max)",
         "type": "integer",
         "examples": ["5"],
         "order": 4
       },
-      "ATTRIBUTES_TO_RETURN": {
+      "attributes_to_return": {
         "title": "Message Attributes To Return",
         "description": "Comma separated list of Mesage Attribute names to return",
         "type": "string",
         "examples": ["attr1,attr2"],
         "order": 5
       },
-      "VISIBILITY_TIMEOUT": {
+      "visibility_timeout": {
         "title": "Message Visibility Timeout",
         "description": "Modify the Visibility Timeout of the individual message from the Queue's default (seconds).",
         "type": "integer",
         "examples": ["15"],
         "order": 6
       },
-      "ACCESS_KEY": {
+      "access_key": {
         "title": "AWS IAM Access Key ID",
         "description": "The Access Key ID of the AWS IAM Role to use for pulling messages",
         "type": "string",
         "examples": ["xxxxxHRNxxx3TBxxxxxx"],
         "order": 7
       },
-      "SECRET_KEY": {
+      "secret_key": {
         "title": "AWS IAM Secret Key",
         "description": "The Secret Key of the AWS IAM Role to use for pulling messages",
         "type": "string",
