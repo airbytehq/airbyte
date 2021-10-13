@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "read_only": {
+      "$ref": "order/models/order_read_only.json"
+    },
+    "order_items": {
+      "type": "array",
+      "items": {
+        "$ref": "order/models/order_item.json"
+      }
+    },
+    "reference_num": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "po_num": {
+      "type": "string"
+    },
+    "external_id": {
+      "description": "connection of this order to the same order on some other system",
+      "type": "string"
+    },
+    "earliest_ship_date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "ship_cancel_date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "num_units1": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "unit1_identifier": {
+      "$ref": "generic/models/unit_of_measure_identifier.json"
+    },
+    "num_units2": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "unit2_identifier": {
+      "$ref": "generic/models/unit_of_measure_identifier.json"
+    },
+    "total_weight": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "total_volume": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "billing_code": {
+      "type": "string"
+    },
+    "asn_number": {
+      "type": "string"
+    },
+    "ups_service_option_charge": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "ups_transportation_charge": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "add_freight_to_cod": {
+      "type": "boolean"
+    },
+    "ups_is_residential": {
+      "type": "boolean"
+    },
+    "export_channel_identifier": {
+      "description": "A reference to the channel used to export an Advance Shipping Notice or RoutingRequest; must specify Id (Name alone will fail)",
+      "$ref": "generic/models/channel_identifier.json"
+    },
+    "route_pickup_date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "shipping_notes": {
+      "type": "string"
+    },
+    "master_bill_of_lading_id": {
+      "type": "string"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "fulfill_inv_info": {
+      "$ref": "order/models/fulfill_inv_info.json"
+    },
+    "routing_info": {
+      "$ref": "order/models/routing_info.json"
+    },
+    "billing": {
+      "description": "PUT: set to null to make no changes to billing",
+      "$ref": "generic/models/billing.json"
+    },
+    "ship_to": {
+      "description": "if not found, creates new shipto contact",
+      "$ref": "generic/models/order_ship_to_info.json"
+    },
+    "sold_to": {
+      "description": "if not found, creates new soldto contact",
+      "$ref": "generic/models/order_contact_info.json"
+    },
+    "bill_to": {
+      "description": "if not found, creates new billto contact",
+      "$ref": "generic/models/order_contact_info.json"
+    },
+    "saved_elements": {
+      "type": "array",
+      "items": {
+        "$ref": "generic/models/saved_element.json"
+      }
+    },
+    "parcel_option": {
+      "$ref": "order/models/parcel_option.json"
+    }
+  }
+}

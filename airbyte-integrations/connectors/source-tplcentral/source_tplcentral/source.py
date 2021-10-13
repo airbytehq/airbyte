@@ -257,6 +257,50 @@ class Inventory(IncrementalTplcentralStream):
         return out
 
 
+class Orders(IncrementalTplcentralStream):
+    primary_key = "cursor"
+    cursor_field = "cursor"
+
+    collection_field = "ResourceList"
+
+    def path(self, **kwargs) -> str:
+        return "orders"
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        start_date = arrow.get(
+            stream_state["cursor"]) if stream_state and "date" in stream_state else self.start_date
+        return [{
+            "cursor": start_date
+        }]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
+
+        if self.cursor_field:
+            cursor = stream_slice.get(self.cursor_field, None)
+            if cursor:
+                params.update({
+                    "sort": "ReadOnly.LastModifiedDate",
+                    "rql": ";".join([
+                        f"ReadOnly.LastModifiedDate=ge={cursor}",
+                        f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
+                        f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
+                    ])
+                })
+
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        out = []
+        for v in response.json()['ResourceList']:
+            v = normalize(v)
+            v['cursor'] = v['read_only']['last_modified_date']
+            out.append(v)
+        return out
+
+
 class TplcentralAuthenticator(Oauth2Authenticator):
     def __init__(
         self,
@@ -334,4 +378,5 @@ class SourceTplcentral(AbstractSource):
             Items(config),
             StockDetails(config),
             Inventory(config),
+            Orders(config),
         ]

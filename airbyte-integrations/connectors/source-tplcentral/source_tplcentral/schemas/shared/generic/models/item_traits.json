@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_identifier": {
+      "$ref": "item_identifier.json"
+    },
+    "qualifier": {
+      "type": "string"
+    },
+    "lot_number": {
+      "type": "string"
+    },
+    "serial_number": {
+      "type": "string"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pallet_identifier": {
+      "$ref": "pallet_identifier.json"
+    }
+  }
+}

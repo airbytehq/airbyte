@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "integer"
+    },
+    "asn_candidate": {
+      "type": "integer"
+    },
+    "route_candidate": {
+      "type": "integer"
+    },
+    "fully_allocated": {
+      "type": "boolean"
+    },
+    "import_module_id": {
+      "type": ["null", "integer"]
+    },
+    "export_module_ids": {
+      "type": "string"
+    },
+    "defer_notification": {
+      "type": "boolean"
+    },
+    "is_closed": {
+      "type": "boolean"
+    },
+    "process_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "pick_done_date": {
+      "description": "Stored and displayed in warehouse time",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "pick_ticket_print_date": {
+      "description": "Stored and displayed in warehouse time",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "pack_done_date": {
+      "description": "Stored in server time, displayed in warehouse time",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "labels_exported": {
+      "type": ["null", "boolean"]
+    },
+    "invoice_exported_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "invoice_delivered_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "loaded_state": {
+      "$ref": "load_out_state.json"
+    },
+    "load_out_done_date": {
+      "description": "Stored and displayed in warehouse time",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "reallocated_after_pick_ticket_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "route_sent": {
+      "type": "boolean"
+    },
+    "asn_sent_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "asn_sent": {
+      "type": ["null", "boolean"]
+    },
+    "pkgs_exported": {
+      "type": ["null", "boolean"]
+    },
+    "batch_identifier": {
+      "$ref": "../../generic/models/batch_identifier.json"
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "$ref": "package_info.json"
+      }
+    },
+    "outbound_serial_numbers": {
+      "type": "array",
+      "items": {
+        "$ref": "outbound_serial_numbers.json"
+      }
+    },
+    "parcel_label_type": {
+      "$ref": "../../common/enum/parcel_label_type.json"
+    },
+    "customer_identifier": {
+      "$ref": "../../generic/models/customer_identifier.json"
+    },
+    "facility_identifier": {
+      "$ref": "../../generic/models/facility_identifier.json"
+    },
+    "warehouse_transaction_source_type": {
+      "description": "how the transaction entered the system",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../common/enum/warehouse_transaction_source_type.json"
+        }
+      ]
+    },
+    "transaction_entry_type": {
+      "description": "the agent creating the transaction",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../common/enum/transaction_entry_type.json"
+        }
+      ]
+    },
+    "import_channel_identifier": {
+      "description": "reference to the channel trhough which this order was imported",
+      "$ref": "../../generic/models/channel_identifier.json"
+    },
+    "creation_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_by_identifier": {
+      "$ref": "../../generic/models/user_identifier.json"
+    },
+    "last_modified_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "last_modified_by_identifier": {
+      "$ref": "../../generic/models/user_identifier.json"
+    },
+    "status": {
+      "description": "For GET of orders and receivers, the value is reliable. For rql for orders, this property is reliable only for \"Canceled\" status; otherwise use the IsClosed property.",
+      "$ref": "../../common/enum/warehouse_transaction_api_status.json"
+    }
+  }
+}

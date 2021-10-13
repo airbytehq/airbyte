@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "package_content_id": {
+      "type": "integer"
+    },
+    "package_id": {
+      "type": "integer"
+    },
+    "order_item_id": {
+      "type": "integer"
+    },
+    "receive_item_id": {
+      "type": "integer"
+    },
+    "order_item_pick_exception_id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "qty": {
+      "type": "number"
+    },
+    "lot_number": {
+      "type": "string"
+    },
+    "serial_number": {
+      "type": "string"
+    },
+    "expiration_date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "create_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "serial_numbers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

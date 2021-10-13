@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "fulfill_inv_shipping_and_handling": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "fulfill_inv_tax": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "fulfill_inv_discount_code": {
+      "type": "string"
+    },
+    "fulfill_inv_discount_amount": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "fulfill_inv_gift_message": {
+      "type": "string"
+    }
+  }
+}

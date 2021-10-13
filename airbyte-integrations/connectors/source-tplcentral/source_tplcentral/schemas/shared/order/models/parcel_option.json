@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "integer"
+    },
+    "delivery_confirmation_type": {
+      "type": "string"
+    },
+    "delivered_duty_paid": {
+      "type": "integer"
+    },
+    "dry_ice_weight": {
+      "type": "number"
+    },
+    "insurance_amount": {
+      "type": "number"
+    },
+    "insurance_type": {
+      "type": "integer"
+    },
+    "international_contents_type": {
+      "type": "string"
+    },
+    "international_non_delivery": {
+      "type": "string"
+    },
+    "residential_flag": {
+      "type": "boolean"
+    },
+    "saturday_delivery_flag": {
+      "type": "boolean"
+    }
+  }
+}
