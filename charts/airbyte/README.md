@@ -46,8 +46,6 @@
 | `webapp.api.url`             | The webapp API url.                                              | `/api/v1/`       |
 | `webapp.isDemo`              | Set to true if this is a demo                                    | `false`          |
 | `webapp.fullstory.enabled`   | Whether or not to enable fullstory                               | `false`          |
-| `webapp.openreplay.enabled`  | Whether or not to enable openreplay                              | `false`          |
-| `webapp.storytime.enabled`   | Whether or not to enable Papercups storytime                     | `false`          |
 | `webapp.extraEnv`            | Additional env vars for webapp pod(s).                           | `[]`             |
 
 

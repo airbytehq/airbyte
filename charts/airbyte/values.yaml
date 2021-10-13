@@ -121,14 +121,6 @@ webapp:
   fullstory:
     enabled: false
 
-  ## @param webapp.openreplay.enabled Whether or not to enable openreplay
-  openreplay:
-    enabled: false
-
-  ## @param webapp.storytime.enabled Whether or not to enable Papercups storytime
-  storytime:
-    enabled: false
-
   ## @param webapp.extraEnv [array] Additional env vars for webapp pod(s).
   ## Example:
   ##
