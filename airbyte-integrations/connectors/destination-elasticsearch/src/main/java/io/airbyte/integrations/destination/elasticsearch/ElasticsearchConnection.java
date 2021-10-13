@@ -41,30 +41,35 @@ public class ElasticsearchConnection {
   private final String indexPrefix;
   private final ObjectMapper mapper = new ObjectMapper();
   private final ElasticsearchClient client;
-  private final Optional<String> authHeader;
 
   public ElasticsearchConnection(ConnectorConfiguration config) {
     log.info(String.format(
             "creating ElasticsearchConnection: %s:%s with indexPrefix: %s", config.getHost(), config.getPort(), config.getIndexPrefix()));
     this.indexPrefix = config.getIndexPrefix();
 
-    if (Objects.nonNull(config.getApiKeyId()) && Objects.nonNull(config.getApiKeySecret())) {
-      var bytes = (config.getApiKeyId() + ":" + config.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
-      var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
-      authHeader = Optional.of(header);
-    } else {
-      authHeader = Optional.empty();
-    }
-
     // Create the low-level client
     var httpHost = new HttpHost(config.getHost());
     RestClient restClient = RestClient.builder(httpHost)
-            .setDefaultHeaders(createHeaders())
+            .setDefaultHeaders(configureHeaders(config))
             .build();
     // Create the transport that provides JSON and http services to API clients
     Transport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
     // And create our API client
     client = new ElasticsearchClient(transport);
+  }
+
+  private Header[] configureHeaders(ConnectorConfiguration config) {
+
+    var headerList = new ArrayList<Header>();
+
+    // add Authorization header if credentials are present
+    if (Objects.nonNull(config.getApiKeyId()) && Objects.nonNull(config.getApiKeySecret())) {
+      var bytes = (config.getApiKeyId() + ":" + config.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
+      var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
+      headerList.add(new BasicHeader("Authorization", header));
+    }
+
+    return headerList.toArray(new Header[headerList.size()]);
   }
 
 
@@ -109,7 +114,7 @@ public class ElasticsearchConnection {
     }
 
     try {
-      client.delete(d -> d.id(docID));
+      client.delete(d -> d.id(docID).index(tmpIndex));
     } catch (IOException e) {
       return failIO(e);
     }
@@ -118,14 +123,9 @@ public class ElasticsearchConnection {
   }
 
   public void writeRecord(String index, String id, JsonNode data) throws Exception {
-    if(createIndexIfMissing(index)) {
-      CreateResponse createResponse = client.create(builder ->
-              builder.id(id).document(data).index(index));
-      log.debug("wrote record: {}", createResponse.result());
-    }
-    else {
-      throw new Exception("failed to create index");
-    }
+    CreateResponse createResponse = client.create(builder ->
+            builder.id(id).document(data).index(index));
+    log.debug("wrote record: {}", createResponse.result());
   }
 
   public List<JsonNode> getRecords(String index) throws IOException {
@@ -138,21 +138,18 @@ public class ElasticsearchConnection {
     this.client.shutdown();
   }
 
-  private boolean createIndexIfMissing(String index) throws IOException {
-    // Create an index...
-    final co.elastic.clients.elasticsearch.indices.CreateResponse createResponse = client.indices().create(b -> b.index(index));
-    if (createResponse.acknowledged() && createResponse.shardsAcknowledged()) {
-      return true;
-    } else {
-      log.error("failed to create index: {}, {}", index, createResponse);
-      return false;
+  public void createIndexIfMissing(String index) {
+    // Create an index, but dont throw an exception
+    try {
+      final co.elastic.clients.elasticsearch.indices.CreateResponse createResponse = client.indices().create(b -> b.index(index));
+      if (createResponse.acknowledged() && createResponse.shardsAcknowledged()) {
+        log.info("created index: {}", index);
+      } else {
+        log.info("did not create index: {}, {}", index, createResponse);
+      }
+    } catch (IOException e) {
+      log.error("failed to create index", e);
     }
-  }
-
-  private Header[] createHeaders() {
-    var headers = new ArrayList<Header>();
-    this.authHeader.ifPresent(s -> headers.add(new BasicHeader("Authorization", s)));
-    return headers.toArray(new Header[headers.size()]);
   }
 
   private AirbyteConnectionStatus failIO(IOException e) {
