@@ -106,6 +106,17 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
         return {self.cursor_field: self.start_date}
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token
+        )
+
+        return params or {}
+
 
 class Items(IncrementalTplcentralStream):
     cursor_field = "cursor"
@@ -126,7 +137,11 @@ class Items(IncrementalTplcentralStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
+        params = super().request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token
+        )
 
         params.update({"sort": "ReadOnly.LastModifiedDate"})
 
@@ -165,7 +180,11 @@ class StockDetails(IncrementalTplcentralStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
+        params = super().request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token
+        )
 
         params.update({
             "customerid": self.customer_id,
@@ -208,7 +227,11 @@ class Inventory(IncrementalTplcentralStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
+        params = super().request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token
+        )
 
         params.update({
             "sort": "ReceivedDate",
@@ -258,7 +281,11 @@ class Orders(IncrementalTplcentralStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = next_page_token.copy() if isinstance(next_page_token, dict) else {}
+        params = super().request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token
+        )
 
         params.update({
             "sort": "ReadOnly.LastModifiedDate",
