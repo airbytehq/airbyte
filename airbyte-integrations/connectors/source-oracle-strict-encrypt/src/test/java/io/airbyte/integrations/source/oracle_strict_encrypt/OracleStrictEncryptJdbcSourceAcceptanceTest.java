@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.oracle;
+package io.airbyte.integrations.source.oracle_strict_encrypt;
 
 import static org.junit.Assert.assertEquals;
 
@@ -11,8 +11,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.oracle.OracleSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -30,15 +33,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll
   static void init() {
-    // Oracle returns uppercase values
-
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
     ORACLE_DB.start();
@@ -74,6 +75,10 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
         .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "client_nne")
+            .put("encryption_algorithm", "3DES168")
+            .build()))
         .build());
 
     // Because Oracle doesn't let me create database easily I need to clean up
@@ -104,8 +109,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       final ResultSet resultSet =
           conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
-        String tableName = resultSet.getString("TABLE_NAME");
-        String tableNameProcessed = tableName.contains(" ") ? sourceOperations
+        final String tableName = resultSet.getString("TABLE_NAME");
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
@@ -123,6 +128,11 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource getJdbcSource() {
     return new OracleSource();
+  }
+
+  @Override
+  public Source getSource() {
+    return new OracleStrictEncryptSource();
   }
 
   @Override
@@ -154,9 +164,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
   }
 
-  public void executeOracleStatement(final String query) {
-    try (
-    final Connection conn = DriverManager.getConnection(
+  public void executeOracleStatement(final String query) throws SQLException {
+    try (final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
@@ -171,7 +180,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     for (final Throwable e : ex) {
       if (e instanceof SQLException) {
         if (ignoreSQLException(((SQLException) e).getSQLState()) == false) {
-          e.printStackTrace(System.err);
           LOGGER.info("SQLState: " + ((SQLException) e).getSQLState());
           LOGGER.info("Error Code: " + ((SQLException) e).getErrorCode());
           LOGGER.info("Message: " + e.getMessage());
@@ -211,8 +219,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-
+    final ConnectorSpecification expected =
+        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
 
