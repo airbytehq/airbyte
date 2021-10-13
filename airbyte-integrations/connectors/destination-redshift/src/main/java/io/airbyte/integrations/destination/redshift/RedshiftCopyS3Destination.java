@@ -21,13 +21,13 @@ import java.util.function.Consumer;
 /**
  * A more efficient Redshift Destination than the sql-based {@link RedshiftDestination}. Instead of
  * inserting data as batched SQL INSERTs, we follow Redshift best practices and, 1) Stream the data
- * to S3. One compressed file is created per table. 2) Copy the S3 file to Redshift. See
+ * to S3, creating multiple compressed files per stream. 2) Create a manifest file to load the data
+ * files in parallel. See:
  * https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-use-copy.html for more info.
  *
- * Although Redshift recommends splitting the file for more efficient copying, this introduces
- * complexity around file partitioning that should be handled by a file destination connector. The
- * single file approach is orders of magnitude faster than batch inserting and 'good-enough' for
- * now.
+ * Creating multiple files per stream currently has the naive approach of one file per batch on a
+ * stream up to the max limit of (26 * 26 * 26) 17576 files.  Each batch is randomly prefixed by
+ * 3 Alpha characters and on a collision the batch is appended to the existing file.
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
