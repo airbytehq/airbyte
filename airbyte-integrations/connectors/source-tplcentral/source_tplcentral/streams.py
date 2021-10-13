@@ -108,7 +108,7 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         latest = latest_record.get(self.cursor_field)
 
         if current:
-            {self.cursor_field: max(arrow.get(latest), arrow.get(current)).isoformat()}
+            return {self.cursor_field: max(arrow.get(latest), arrow.get(current)).isoformat()}
 
         return {self.cursor_field: self.start_date}
 
