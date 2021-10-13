@@ -48,6 +48,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
 
+  public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
   protected final AmazonS3 s3Client;
   protected final S3Config s3Config;
   protected final String tmpTableName;
@@ -88,7 +89,18 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String prepareS3StagingFile() {
-    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + s3FileName);
+    return String.join("/", stagingFolder, schemaName, getFilePrefixIndex() + "_" + s3FileName);
+  }
+
+  private Integer getFilePrefixIndex() {
+    int result = 0;
+    if (filePrefixIndexMap.containsKey(s3FileName)) {
+      result = filePrefixIndexMap.get(s3FileName) + 1;
+      filePrefixIndexMap.put(s3FileName, result);
+    } else {
+      filePrefixIndexMap.put(s3FileName, 0);
+    }
+    return result;
   }
 
   @Override
@@ -196,6 +208,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
+    filePrefixIndexMap.clear();
   }
 
   protected static String getFullS3Path(String s3BucketName, String s3StagingFile) {
