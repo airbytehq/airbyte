@@ -437,12 +437,17 @@ class TicketComments(IncrementalSortedPageStream):
             new_state[LAST_END_TIME_KEY] = self._ticket_last_end_time
         return new_state
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
         """Handle response status"""
         if response.status_code == 200:
-            yield from super().parse_response(response, stream_state=stream_state, **kwargs)
-        elif response.status_code != 404:
+            yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        elif response.status_code == 404:
+            ticket_id = stream_slice["id"]
             # skip 404 errors for not found tickets
+            self.logger.info(f"ticket {ticket_id} is not exists. It could have been removed earlier.")
+        else:
             response.raise_for_status()
 
 
