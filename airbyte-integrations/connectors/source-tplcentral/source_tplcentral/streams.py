@@ -50,7 +50,7 @@ class TplcentralStream(HttpStream, ABC):
         return next_page_token
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json()
+        return normalize(response.json())
 
 
 class StockSummaries(TplcentralStream):
@@ -64,7 +64,7 @@ class StockSummaries(TplcentralStream):
         return "inventory/stocksummaries"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [normalize(v) for v in response.json()['Summaries']]
+        return response['summaries']
 
 
 class Customers(TplcentralStream):
@@ -77,7 +77,7 @@ class Customers(TplcentralStream):
         return "customers"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [normalize(v) for v in response.json()['ResourceList']]
+        return response["resource_list"]
 
 
 class IncrementalTplcentralStream(TplcentralStream, ABC):
@@ -144,7 +144,6 @@ class Items(IncrementalTplcentralStream):
         )
 
         params.update({"sort": "ReadOnly.LastModifiedDate"})
-
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
             params.update({"rql": f"ReadOnly.LastModifiedDate=ge={cursor}"})
@@ -152,12 +151,11 @@ class Items(IncrementalTplcentralStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        out = []
-        for v in response.json()['ResourceList']:
-            v = normalize(v)
-            v['cursor'] = v['read_only']['last_modified_date']
-            out.append(v)
-        return out
+        response = super().parse_response(response, **kwargs)
+        return [{
+            **r,
+            self.cursor_field: r["read_only"]["last_modified_date"]
+        } for r in response["resource_list"]]
 
 
 class StockDetails(IncrementalTplcentralStream):
@@ -191,7 +189,6 @@ class StockDetails(IncrementalTplcentralStream):
             "facilityid": self.facility_id,
             "sort": "ReceivedDate",
         })
-
         cursor = stream_slice.get(self.cursor_field, None)
         if cursor:
             params.update({"rql": f"ReceivedDate=ge={cursor}"})
@@ -199,12 +196,11 @@ class StockDetails(IncrementalTplcentralStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        out = []
-        for v in response.json()['ResourceList']:
-            v = normalize(v)
-            v['cursor'] = v['received_date']
-            out.append(v)
-        return out
+        response = super().parse_response(response, **kwargs)
+        return [{
+            **r,
+            self.cursor_field: r["received_date"]
+        } for r in response["resource_list"]]
 
 
 class Inventory(IncrementalTplcentralStream):
@@ -240,7 +236,6 @@ class Inventory(IncrementalTplcentralStream):
                 f"FacilityIdentifier.Id=={self.facility_id}",
             ])
         })
-
         cursor = stream_slice.get(self.cursor_field, None)
         if cursor:
             params.update({
@@ -253,12 +248,11 @@ class Inventory(IncrementalTplcentralStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        out = []
-        for v in response.json()['ResourceList']:
-            v = normalize(v)
-            v['cursor'] = v['received_date']
-            out.append(v)
-        return out
+        response = super().parse_response(response, **kwargs)
+        return [{
+            **r,
+            self.cursor_field: r["received_date"]
+        } for r in response["resource_list"]]
 
 
 class Orders(IncrementalTplcentralStream):
@@ -294,7 +288,6 @@ class Orders(IncrementalTplcentralStream):
                 f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
             ])
         })
-
         cursor = stream_slice.get(self.cursor_field, None)
         if cursor:
             params.update({
@@ -307,9 +300,8 @@ class Orders(IncrementalTplcentralStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        out = []
-        for v in response.json()['ResourceList']:
-            v = normalize(v)
-            v['cursor'] = v['read_only']['last_modified_date']
-            out.append(v)
-        return out
+        response = super().parse_response(response, **kwargs)
+        return [{
+            **r,
+            self.cursor_field: r["read_only"]["last_modified_date"]
+        } for r in response["resource_list"]]
