@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.File;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
@@ -88,8 +91,12 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     }
   }
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new MSSQLDestination(), HOST_KEY, PORT_KEY);
+  }
+
   public static void main(String[] args) throws Exception {
-    final Destination destination = new MSSQLDestination();
+    final Destination destination = MSSQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MSSQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MSSQLDestination.class);

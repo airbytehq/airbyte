@@ -42,12 +42,13 @@ public class ArchiveHandler {
                         final ConfigPersistence seed,
                         final WorkspaceHelper workspaceHelper,
                         final FileTtlManager fileTtlManager,
-                        final SpecFetcher specFetcher) {
+                        final SpecFetcher specFetcher,
+                        final boolean importDefinitions) {
     this(
         version,
         fileTtlManager,
         new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper),
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, specFetcher),
+        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, specFetcher, importDefinitions),
         seed);
   }
 
@@ -144,6 +145,10 @@ public class ArchiveHandler {
 
     void importData() throws IOException, JsonValidationException, ConfigNotFoundException;
 
+  }
+
+  public boolean canImportDefinitions() {
+    return configDumpImporter.canImportDefinitions();
   }
 
 }

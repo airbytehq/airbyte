@@ -20,6 +20,7 @@ import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -216,6 +217,29 @@ class SourceHandlerTest {
   }
 
   @Test
+  void testSearchSources() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final SourceRead expectedSourceRead = SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
+
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
+    when(configRepository.listSourceConnection()).thenReturn(Lists.newArrayList(sourceConnection));
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
+        .thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
+    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
+        .thenReturn(sourceConnection.getConfiguration());
+
+    when(connectionsHandler.matchSearch(new SourceSearch(), expectedSourceRead)).thenReturn(true);
+    SourceReadList actualSourceReadList = sourceHandler.searchSources(new SourceSearch());
+    assertEquals(1, actualSourceReadList.getSources().size());
+    assertEquals(expectedSourceRead, actualSourceReadList.getSources().get(0));
+
+    when(connectionsHandler.matchSearch(new SourceSearch(), expectedSourceRead)).thenReturn(false);
+    actualSourceReadList = sourceHandler.searchSources(new SourceSearch());
+    assertEquals(0, actualSourceReadList.getSources().size());
+  }
+
+  @Test
   void testDeleteSource() throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = sourceConnection.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
@@ -229,6 +253,9 @@ class SourceHandlerTest {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceConnection.getWorkspaceId());
 
     when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+        .thenReturn(sourceConnection)
+        .thenReturn(expectedSourceConnection);
+    when(configRepository.getSourceConnectionWithSecrets(sourceConnection.getSourceId()))
         .thenReturn(sourceConnection)
         .thenReturn(expectedSourceConnection);
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))

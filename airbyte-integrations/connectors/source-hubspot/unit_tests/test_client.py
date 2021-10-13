@@ -10,12 +10,12 @@ from source_hubspot.client import Client
 
 @pytest.fixture(name="some_credentials")
 def some_credentials_fixture():
-    return {"api_key": "wrong_key"}
+    return {"credentials_title": "API Key Credentials", "api_key": "wrong_key"}
 
 
 @pytest.fixture(name="creds_with_wrong_permissions")
 def creds_with_wrong_permissions():
-    return {"api_key": "THIS-IS-THE-API_KEY"}
+    return {"credentials_title": "API Key Credentials", "api_key": "THIS-IS-THE-API_KEY"}
 
 
 def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
@@ -90,7 +90,7 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
 
     # Mock the getter method that handles requests.
     def get(url=test_stream.url, params=None):
-        response = api._session.get(api.BASE_URL + url, params=api._add_auth(params))
+        response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
     # Define request params value

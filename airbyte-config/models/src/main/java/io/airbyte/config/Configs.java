@@ -43,8 +43,6 @@ public interface Configs {
 
   String getSecretStoreGcpCredentials();
 
-  String getSecretStoreForConfigs();
-
   boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
@@ -68,6 +66,8 @@ public interface Configs {
   String getSpecCacheBucket();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
+
+  String getJobImagePullPolicy();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
 
@@ -109,6 +109,10 @@ public interface Configs {
 
   String getGoogleApplicationCredentials();
 
+  boolean getPublishMetrics();
+
+  SecretPersistenceType getSecretPersistenceType();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
@@ -122,6 +126,12 @@ public interface Configs {
   enum DeploymentMode {
     OSS,
     CLOUD
+  }
+
+  enum SecretPersistenceType {
+    NONE,
+    TESTING_CONFIG_DB_TABLE,
+    GOOGLE_SECRET_MANAGER
   }
 
 }

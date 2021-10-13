@@ -1,0 +1,14 @@
+{
+  "format": {
+    "compression_codec": {
+      "codec": "no compression"
+    },
+    "format_type": "Avro"
+  },
+  "secret_access_key": "abcdef",
+  "access_key_id": "abcdefghi",
+  "s3_bucket_region": "us-east-1",
+  "s3_bucket_path": "data_sync/test",
+  "s3_bucket_name": "airbyte_sync",
+  "s3_endpoint": ""
+}

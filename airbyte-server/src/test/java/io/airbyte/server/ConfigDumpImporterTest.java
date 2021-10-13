@@ -72,7 +72,8 @@ class ConfigDumpImporterTest {
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
     when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
 
-    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher);
+    configDumpImporter =
+        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher, true);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();
@@ -143,12 +144,12 @@ class ConfigDumpImporterTest {
 
   @Test
   public void testImportIntoWorkspaceWithConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listSourceConnection())
+    when(configRepository.listSourceConnectionWithSecrets())
         .thenReturn(List.of(sourceConnection,
             new SourceConnection()
                 .withSourceId(UUID.randomUUID())
                 .withWorkspaceId(UUID.randomUUID())));
-    when(configRepository.listDestinationConnection())
+    when(configRepository.listDestinationConnectionWithSecrets())
         .thenReturn(List.of(destinationConnection,
             new DestinationConnection()
                 .withDestinationId(UUID.randomUUID())
@@ -179,7 +180,7 @@ class ConfigDumpImporterTest {
 
   @Test
   public void testImportIntoWorkspaceWithoutConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listSourceConnection())
+    when(configRepository.listSourceConnectionWithSecrets())
         // First called for export
         .thenReturn(List.of(sourceConnection,
             new SourceConnection()
@@ -189,7 +190,7 @@ class ConfigDumpImporterTest {
         .thenReturn(List.of(new SourceConnection()
             .withSourceId(UUID.randomUUID())
             .withWorkspaceId(UUID.randomUUID())));
-    when(configRepository.listDestinationConnection())
+    when(configRepository.listDestinationConnectionWithSecrets())
         // First called for export
         .thenReturn(List.of(destinationConnection,
             new DestinationConnection()
