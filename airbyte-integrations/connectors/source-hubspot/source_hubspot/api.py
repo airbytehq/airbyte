@@ -356,7 +356,7 @@ class Stream(ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                logger.warn(f"Stream `{self.data_field}` cannot be procced. {response.get('message')}")
+                logger.warn(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
