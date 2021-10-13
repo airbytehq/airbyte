@@ -15,6 +15,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -53,8 +54,12 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       "requireSSL=true",
       "verifyServerCertificate=false");
 
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
+  }
+
   public MySqlSource() {
-    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration(), new MySqlSourceOperations());
   }
 
   private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
@@ -174,11 +179,13 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbcUrl.append("?useCursorFetch=true");
+    jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
     }
 
@@ -236,7 +243,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
+    final Source source = MySqlSource.sshWrappedSource();
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);
@@ -245,6 +252,11 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public enum ReplicationMethod {
     STANDARD,
     CDC
+  }
+
+  @Override
+  protected JdbcSourceOperations getSourceOperations() {
+    return new MySqlSourceOperations();
   }
 
 }

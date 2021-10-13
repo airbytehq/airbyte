@@ -4,27 +4,22 @@
 
 We're going over the changes from 0.29.17 and before... and there's a lot of big improvements here, so don't miss them!
 
-**New Source**: Facebook Pages
-**New Destination**: MongoDB
-**New Destination**: DynamoDB
+**New Source**: Facebook Pages **New Destination**: MongoDB **New Destination**: DynamoDB
 
-* 🎉 You can now send notifications via webhook for successes and failures on Airbyte syncs. (This is a massive contribution by @Pras, thank you) :tada:
+* 🎉 You can now send notifications via webhook for successes and failures on Airbyte syncs. \(This is a massive contribution by @Pras, thank you\) :tada:
 * 🎉 Scheduling jobs and worker jobs are now separated, allowing for workers to be scaled horizontally.
 * 🎉 When developing a connector, you can now preview what your spec looks like in real time with this process.
 * 🎉 Oracle destination: Now has basic normalization.
-* 🎉 Add XLSB (binary excel) support to the Files source (contributed by Muutech).
+* 🎉 Add XLSB \(binary excel\) support to the Files source \(contributed by Muutech\).
 * 🎉 You can now properly cancel K8s deployments.
-
 * ✨ S3 source: Support for Parquet format.
-* ✨ Github source: Branches, repositories, organization users, tags, and pull request stats streams added (contributed by @Christopher Wu).
+* ✨ Github source: Branches, repositories, organization users, tags, and pull request stats streams added \(contributed by @Christopher Wu\).
 * ✨ BigQuery destination: Added GCS upload option.
 * ✨ Salesforce source: Now Airbyte native.
 * ✨ Redshift destination: Optimized for performance.
-
 * 🏗 CDK: :tada: We’ve released a tool to generate JSON Schemas from OpenAPI specs. This should make specifying schemas for API connectors a breeze! :tada:
 * 🏗 CDK: Source Acceptance Tests now verify that connectors correctly format strings which are declared as using date-time and date formats.
-* 🏗 CDK: Add private options to help in testing: _limit and _page_size are now accepted by any CDK connector to minimze your output size for quick iteration while testing.
-
+* 🏗 CDK: Add private options to help in testing: \_limit and \_page\_size are now accepted by any CDK connector to minimze your output size for quick iteration while testing.
 * 🐛 Fixed a bug that made it possible for connector definitions to be duplicated, violating uniqueness.
 * 🐛 Pipedrive source: Output schemas no longer remove timestamp from fields.
 * 🐛 Github source: Empty repos and negative backoff values are now handled correctly.
@@ -38,7 +33,7 @@ We're going over the changes from 0.29.17 and before... and there's a lot of big
 * 🐛 Hubspot source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
 * 🐛 Typeform source: Allows for multiple choices in responses now.
 * 🐛 Shopify source: The type for the amount field is now fixed in the schema.
-* 🐛 Postgres destination: \u0000(NULL) value processing is now fixed.
+* 🐛 Postgres destination: \u0000\(NULL\) value processing is now fixed.
 
 As usual... thank you to our wonderful contributors this week: Pras, Christopher Wu, Brian M, yahu98, Michele Zuccala, jinnig, and luizgribeiro!
 
@@ -49,14 +44,10 @@ Got the changes from 0.29.13... with some other surprises!
 * 🔥 There's a new way to create Airbyte sources! The team at Faros AI has created a Javascript/Typescript CDK which can be found here and in our docs here. This is absolutely awesome and give a huge thanks to Chalenge Masekera, Christopher Wu, eskrm, and Matthew Tovbin!
 * ✨ New Destination: Azure Blob Storage :sparkles:
 
-**New Source**: Bamboo HR (contributed by @Oren Haliva)
-**New Source**: BigCommerce (contributed by @James Wilson)
-**New Source**: Trello
-**New Source**: Google Analytics V4
-**New Source**: Amazon Ads
+**New Source**: Bamboo HR \(contributed by @Oren Haliva\) **New Source**: BigCommerce \(contributed by @James Wilson\) **New Source**: Trello **New Source**: Google Analytics V4 **New Source**: Amazon Ads
 
 * 💎 Alpine Docker images are the new standard for Python connectors, so image sizes have dropped by around 100 MB!
-* ✨ You can now apply tolerations for Airbyte Pods on K8s deployments (contributed by @Pras).
+* ✨ You can now apply tolerations for Airbyte Pods on K8s deployments \(contributed by @Pras\).
 * 🐛 Shopify source: Rate limit throttling fixed.
 * 📚 We now have a doc on how to deploy Airbyte at scale. Check it out here!
 * 🏗 Airbyte CDK: You can now ignore HTTP status errors and override retry parameters.
@@ -65,15 +56,17 @@ As usual, thank you to our awesome contributors: Oren Haliva, Pras, James Wilson
 
 ## 08/26/2021 Summary
 
-New Source: Short.io (contributed by @Apostol Tegko)
+New Source: Short.io \(contributed by @Apostol Tegko\)
+
 * 💎 GitHub source: Added support for rotating through multiple API tokens!
-* ✨ Syncs are now scheduled with a 3 day timeout (contributed by @Vladimir Remar).
-* ✨ Google Ads source: Added UserLocationReport stream (contributed by @Max Krog).
-* ✨ Cart source: Added the order_items stream.
+* ✨ Syncs are now scheduled with a 3 day timeout \(contributed by @Vladimir Remar\).
+* ✨ Google Ads source: Added UserLocationReport stream \(contributed by @Max Krog\).
+* ✨ Cart source: Added the order\_items stream.
 * 🐛 Postgres source: Fixed out-of-memory issue with CDC interacting with large JSON blobs.
 * 🐛 Intercom source: Pagination now works as expected.
 
 As always, thank you to our awesome community contributors this week: Apostol Tegko, Vladimir Remar, Max Krog, Pras, Marco Fontana, Troy Harvey, and damianlegawiec!
+
 ## 08/20/2021 Summary
 
 Hey Airbyte community, we got some patch notes for y'all. Here's all the changes we've pushed since the last update.
@@ -119,12 +112,10 @@ For this week's update, we got... a few new connectors this week in 0.29.0. We f
 * New Source: Sugar CRM
 * New Source: Wordpress
 * New Source: Zencart
-
-
 * 🐛 Shopify source: Fixed the products schema to be in accordance with the API
 * 🐛 BigQuery source: No longer fails with nested array data types.
 
-View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
 
 And as always, thank you to our wonderful contributors: Madison Swain-Bowden, Brian Krausz, Apostol Tegko, Matej Hamas, Vladimir Remar, Oren Haliva, satishblotout, jacqueskpoty, wallies
 
@@ -132,22 +123,19 @@ And as always, thank you to our wonderful contributors: Madison Swain-Bowden, Br
 
 What's going on? We just released 0.28.0 and here's the main highlights.
 
-
 * New Destination: Google Cloud Storage ✨
-* New Destination: Kafka ✨ (contributed by @Mario Molina)
+* New Destination: Kafka ✨ \(contributed by @Mario Molina\)
 * New Source: Pipedrive
-* New Source: US Census (contributed by @Daniel Mateus Pires (Earnest Research))
-
-
+* New Source: US Census \(contributed by @Daniel Mateus Pires \(Earnest Research\)\)
 * ✨ Google Ads source: Now supports Campaigns, Ads, AdGroups, and Accounts streams.
-* ✨ Stripe source: All subscription types (including expired and canceled ones) are now returned.
+* ✨ Stripe source: All subscription types \(including expired and canceled ones\) are now returned.
 * 🐛 Facebook source: Improved rate limit management
-* 🐛 Square source: The send_request method is no longer broken due to CDK changes
+* 🐛 Square source: The send\_request method is no longer broken due to CDK changes
 * 🐛 MySQL destination: Does not fail on columns with JSON data now.
 
-View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
 
-And as always, thank you to our wonderful contributors: Mario Molina, Daniel Mateus Pires (Earnest Research), gunu, Ankur Adhikari, Vladimir Remar, Madison Swain-Bowden, Maksym Pavlenok, Sam Crowder, mildbyte, avida, and gaart
+And as always, thank you to our wonderful contributors: Mario Molina, Daniel Mateus Pires \(Earnest Research\), gunu, Ankur Adhikari, Vladimir Remar, Madison Swain-Bowden, Maksym Pavlenok, Sam Crowder, mildbyte, avida, and gaart
 
 ## 07/16/2021 Summary
 
@@ -156,15 +144,13 @@ As for our changes this week...
 * New Source: Zendesk Sunshine
 * New Source: Dixa
 * New Source: Typeform
-
-
 * 💎 MySQL destination: Now supports normalization!  
-* 💎 MSSQL source: Now supports CDC (Change Data Capture)
+* 💎 MSSQL source: Now supports CDC \(Change Data Capture\)
 * ✨ Snowflake destination: Data coming from Airbyte is now identifiable
 * 🐛 GitHub source: Now uses the correct cursor field for the IssueEvents stream
-* 🐛 Square source: The send_request method is no longer broken due to CDK changes
+* 🐛 Square source: The send\_request method is no longer broken due to CDK changes
 
-View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
 
 As usual, thank you to our awesome community contributors this week: Oliver Meyer, Varun, Brian Krausz, shadabshaukat, Serhii Lazebnyi, Juliano Benvenuto Piovezan, mildbyte, and Sam Crowder!
 
@@ -177,20 +163,18 @@ As usual, thank you to our awesome community contributors this week: Oliver Meye
 * New Source: Airbyte-Native GitHub
 * New Source: Airbyte-Native GitLab
 * New Source: Airbyte-Native Twilio
-
-
 * ✨ S3 destination: Now supports anyOf, oneOf and allOf schema fields.
 * ✨ Instagram source: Migrated to the CDK and has improved error handling.
 * ✨ Shopify source: Add support for draft orders.
 * ✨ K8s Deployments: Now support logging to GCS.
-* 🐛 GitHub source: Fixed issue with locked breaking normalization of the pull_request stream.
+* 🐛 GitHub source: Fixed issue with locked breaking normalization of the pull\_request stream.
 * 🐛 Okta source: Fix endless loop when syncing data from logs stream.
 * 🐛 PostgreSQL source: Fixed decimal handling with CDC.
 * 🐛 Fixed random silent source failures.
 * 📚 New document on how the CDK handles schemas.
 * 🏗️ Python CDK: Now allows setting of network adapter args on outgoing HTTP requests.
 
-View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
 
 As usual, thank you to our awesome community contributors this week: gunu, P.VAD, Rodrigo Parra, Mario Molina, Antonio Grass, sabifranjo, Jaime Farres, shadabshaukat, Rodrigo Menezes, dkelwa, Jonathan Duval, and Augustin Lafanechère.
 
@@ -199,10 +183,9 @@ As usual, thank you to our awesome community contributors this week: gunu, P.VAD
 * New Destination: Google PubSub
 * New Source: AWS CloudTrail
 
-*The risks and issues with upgrading Airbyte are now gone...*
+_The risks and issues with upgrading Airbyte are now gone..._
+
 * 🎉 Airbyte automatically upgrades versions safely at server startup 🎉
-
-
 * 💎 Logs on K8s are now stored in Minio by default, no S3 bucket required
 * ✨ Looker Source: Supports the Run Look output stream
 * ✨ Slack Source: is now Airbyte native!
@@ -211,11 +194,11 @@ As usual, thank you to our awesome community contributors this week: gunu, P.VAD
 
 Starting from next week, our weekly office hours will now become demo days! Drop by to get sneak peeks and new feature demos.
 
-* We added the #careers channel, so if you're hiring, post your job reqs there!
-* We added a #understanding-airbyte channel to mirror [this](../../understanding-airbyte) section on our docs site. Ask any questions about our architecture or protocol there.
-* We added a #contributing-to-airbyte channel. A lot of people ask us about how to contribute to the project, so ask away there!
+* We added the \#careers channel, so if you're hiring, post your job reqs there!
+* We added a \#understanding-airbyte channel to mirror [this](../../understanding-airbyte/) section on our docs site. Ask any questions about our architecture or protocol there.
+* We added a \#contributing-to-airbyte channel. A lot of people ask us about how to contribute to the project, so ask away there!
 
-View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
 
 As usual, thank you to our awesome community contributors this week: Harshith Mullapudi, Michael Irvine, and [sabifranjo](https://github.com/sabifranjo).
 
@@ -227,7 +210,7 @@ As usual, thank you to our awesome community contributors this week: Harshith Mu
 * ✨ Looker source now supports self-hosted instances.
 * ✨ Facebook Marketing source is now migrated to the CDK, massively improving async job performance and error handling.
 
-View the full connector release notes [here](./connectors.md).
+View the full connector release notes [here](connectors.md).
 
 As usual, thank you to some of our awesome community contributors this week: Harshith Mullapudi, Tyler DeLange, Daniel Mateus Pires, EdBizarro, Tyler Schroeder, and Konrad Schlatte!
 
@@ -238,7 +221,7 @@ As usual, thank you to some of our awesome community contributors this week: Har
 * ✨ We now support configuring your destination namespace at the table level when setting up a connection!
 * ✨ The S3 destination now supports Minio S3 and Parquet output!
 
-View the full release notes here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release notes here: [Platform](platform.md), [Connectors](connectors.md)
 
 As usual, thank you to some of our awesome community contributors this week: Tyler DeLange, Mario Molina, Rodrigo Parra, Prashanth Patali, Christopher Wu, Itai Admi, Fred Reimer, and Konrad Schlatte!
 
@@ -247,25 +230,25 @@ As usual, thank you to some of our awesome community contributors this week: Tyl
 * New Destination: [S3!!](../../integrations/destinations/s3.md) 
 * New Sources: [Harvest](../../integrations/sources/harvest.md), [Amplitude](../../integrations/sources/amplitude.md), [Posthog](../../integrations/sources/posthog.md)
 * 🐛 Ensure that logs from threads created by replication workers are added to the log file.
-* 🐛 Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
+* 🐛 Handle TINYINT\(1\) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
 * Jira source: now supports all available entities in Jira Cloud.
 * 📚 Added a troubleshooting section, a gradle cheatsheet, a reminder on what the reset button does, and a refresh on our docs best practices.
 
 #### Connector Development:
+
 * Containerized connector code generator
 * Added JDBC source connector bootstrap template.
 * Added Java destination generator.
 
-View the full release notes highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+View the full release notes highlights here: [Platform](platform.md), [Connectors](connectors.md)
 
-As usual, thank you to some of our awesome community contributors this week (I've noticed that we've had more contributors to our docs, which we really appreciate).
-Ping, Harshith Mullapudi, Michael Irvine, Matheus di Paula, jacqueskpoty and P.VAD.
+As usual, thank you to some of our awesome community contributors this week \(I've noticed that we've had more contributors to our docs, which we really appreciate\). Ping, Harshith Mullapudi, Michael Irvine, Matheus di Paula, jacqueskpoty and P.VAD.
 
 ## Overview
 
 Airbyte is comprised of 2 parts:
 
-* Platform (The scheduler, workers, api, web app, and the Airbyte protocol). Here is the [changelog for Platform](platform.md). 
+* Platform \(The scheduler, workers, api, web app, and the Airbyte protocol\). Here is the [changelog for Platform](platform.md). 
 * Connectors that run in Docker containers. Here is the [changelog for the connectors](connectors.md). 
 
 ## Airbyte Platform Releases

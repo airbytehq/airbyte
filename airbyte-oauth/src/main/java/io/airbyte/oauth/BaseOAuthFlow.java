@@ -6,12 +6,8 @@ package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -21,15 +17,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
+/*
+ * Class implementing generic oAuth 2.0 flow.
+ */
+public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   private final HttpClient httpClient;
-  private final ConfigRepository configRepository;
   private final Supplier<String> stateSupplier;
 
   public BaseOAuthFlow(ConfigRepository configRepository) {
@@ -37,7 +34,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
-    this.configRepository = configRepository;
+    super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
   }
@@ -136,67 +133,11 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
-  private JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
-    try {
-      final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
-          configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
-      if (param.isPresent()) {
-        return param.get().getConfiguration();
-      } else {
-        throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
-      }
-    } catch (JsonValidationException e) {
-      throw new IOException("Failed to load OAuth Parameters", e);
-    }
-  }
-
-  private JsonNode getDestinationOAuthParamConfig(UUID workspaceId, UUID destinationDefinitionId) throws IOException, ConfigNotFoundException {
-    try {
-      final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
-          configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
-      if (param.isPresent()) {
-        return param.get().getConfiguration();
-      } else {
-        throw new ConfigNotFoundException(ConfigSchema.DESTINATION_OAUTH_PARAM, "Undefined OAuth Parameter.");
-      }
-    } catch (JsonValidationException e) {
-      throw new IOException("Failed to load OAuth Parameters", e);
-    }
-  }
-
   private static String urlEncode(String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return
-   */
-  protected String getClientIdUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("client_id") != null) {
-      return oauthConfig.get("client_id").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
-    }
-  }
-
-  /**
-   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return
-   */
-  protected String getClientSecretUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("client_secret") != null) {
-      return oauthConfig.get("client_secret").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_secret' necessary for the OAuth Flow.");
     }
   }
 

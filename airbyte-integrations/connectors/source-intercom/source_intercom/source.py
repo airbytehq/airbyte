@@ -230,8 +230,11 @@ class Contacts(IncrementalIntercomStream):
 
         next_page = response.json().get("pages", {}).get("next")
 
-        if next_page:
+        if isinstance(next_page, dict):
             return {"starting_after": next_page["starting_after"]}
+
+        if isinstance(next_page, str):
+            return super().next_page_token(response)
 
     def path(self, **kwargs) -> str:
         return "contacts"

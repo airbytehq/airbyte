@@ -14,7 +14,6 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -65,7 +64,6 @@ class SecretsMigrationTest {
 
   protected static PostgreSQLContainer<?> container;
   protected static Database database;
-  private static EnvConfigs configs;
   private static ConfigPersistence readFromConfigPersistence;
   private static ConfigPersistence writeToConfigPersistence;
   private static Path rootPath;
@@ -84,9 +82,7 @@ class SecretsMigrationTest {
   }
 
   @BeforeEach
-  public void setup() throws Exception {
-    configs = new EnvConfigs();
-  }
+  public void setup() throws Exception {}
 
   public static void failOnDifferingConfigurations(Map<String, Stream<JsonNode>> leftConfigs, Map<String, Stream<JsonNode>> rightConfigs) {
     // Check that both sets have exactly the same keys. If they don't, we already know we're failing the
@@ -145,12 +141,12 @@ class SecretsMigrationTest {
     assertTrue(writeToConfigPersistence.dumpConfigs().isEmpty(), "Write config should be empty before we use it (sanity check), but found keys: "
         + writeToConfigPersistence.dumpConfigs().keySet().toString());
 
-    final SecretsMigration dryRunMigration = new SecretsMigration(configs, readFromConfigPersistence, writeToConfigPersistence, true);
+    final SecretsMigration dryRunMigration = new SecretsMigration(readFromConfigPersistence, writeToConfigPersistence, true);
     dryRunMigration.run();
     assertTrue(writeToConfigPersistence.dumpConfigs().isEmpty(), "Dry run should not have modified anything.");
 
     // real export-import
-    final SecretsMigration migration = new SecretsMigration(configs, readFromConfigPersistence, writeToConfigPersistence, false);
+    final SecretsMigration migration = new SecretsMigration(readFromConfigPersistence, writeToConfigPersistence, false);
     migration.run();
 
     // verify results

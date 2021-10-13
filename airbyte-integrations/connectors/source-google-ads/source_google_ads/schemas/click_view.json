@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "click_view.gclid": {
+      "type": ["null", "string"]
+    },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "segments.date": {
+      "type": ["null", "string"]
+    },
+    "customer.id": {
+      "type": ["null", "integer"]
+    },
+    "campaign.name": {
+      "type": ["null", "string"]
+    }
+  }
+}
