@@ -84,6 +84,11 @@ class Customers(TplcentralStream):
 class IncrementalTplcentralStream(TplcentralStream, ABC):
     state_checkpoint_interval = 10
 
+    @staticmethod
+    @abstractmethod
+    def cursor_value(self) -> str:
+        pass
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -91,11 +96,6 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def cursor_value(self) -> str:
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
