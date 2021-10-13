@@ -103,7 +103,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 | Version | Date | Pull Request | Subject |
 <<<<<<< HEAD
 | :------ | :--------  | :-----       | :------ |
-| `0.1.2` | 2021-10-01 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2 access tocken |
+| `0.1.2` | 2021-10-01 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2  |
 | `0.1.1` | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787) | fixed incremental logic for the ticket_comments stream |
 =======
 | :--- | :--- | :--- | :--- |
