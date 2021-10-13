@@ -53,11 +53,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: FULLSTORY
-            - name: OPENREPLAY
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: OPENREPLAY
             - name: IS_DEMO
               valueFrom:
                 configMapKeyRef:

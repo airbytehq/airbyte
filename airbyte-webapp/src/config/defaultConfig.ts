@@ -8,12 +8,6 @@ const defaultConfig: Config = {
   },
   segment: { enabled: true, token: "" },
   healthCheckInterval: 10000,
-  openreplay: {
-    obscureTextEmails: false,
-    obscureInputEmails: false,
-    revID: "",
-    projectID: -1,
-  },
   papercups: {
     baseUrl: "https://app.papercups.io",
     enableStorytime: false,
