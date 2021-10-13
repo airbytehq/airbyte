@@ -86,9 +86,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
-
+// zero dates by default cannot be parsed into java date objects (they will throw an error)
+// in addition, users don't always have agency in fixing them e.g: maybe they don't own the database and can't 
+// remove zero date values.
+// since zero dates are placeholders, we convert them to null by default
+    jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
     if (!additionalParameters.isEmpty()) {
-      jdbcUrl.append("?");
+      jdbcUrl.append("&");
       additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 
