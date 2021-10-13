@@ -21,7 +21,7 @@
       "type": ["null", "string"]
     },
     "delta_traffic": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "trend": {
       "type": ["null", "object"],
@@ -30,10 +30,10 @@
           "type": ["null", "integer"]
         },
         "abs": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "per": {
-          "type": ["null", "integer"]
+          "type": ["null", "number"]
         }
       }
     },

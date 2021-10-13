@@ -21,7 +21,8 @@
       "type": ["null", "integer"]
     },
     "date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "winner": {
       "type": ["null", "integer"]

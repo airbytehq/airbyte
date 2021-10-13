@@ -19,9 +19,9 @@
     },
     "engines": {
       "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

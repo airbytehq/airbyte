@@ -9,16 +9,16 @@
       "type": ["null", "integer"]
     },
     "traffic_volume": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "max_potential": {
       "type": ["null", "integer"]
     },
     "se_position": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "kd": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "keyword": {
       "type": ["null", "string"]

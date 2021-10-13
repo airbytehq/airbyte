@@ -6,7 +6,7 @@
       "type": ["null", "string"]
     },
     "visibility": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     }
   }
 }

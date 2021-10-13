@@ -3,231 +3,126 @@
   "type": "object",
   "properties": {
     "date": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "string"]
     },
     "data": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "properties": {
           "domain": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "data": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "position1": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position2": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position3": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position4": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position5": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position6": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position7": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position8": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position9": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               },
               "position10": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "keyword_count": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "keyword_per": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   }
                 }
               }

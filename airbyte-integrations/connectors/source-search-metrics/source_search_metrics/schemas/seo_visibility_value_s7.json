@@ -9,10 +9,10 @@
           "type": ["null", "integer"]
         },
         "abs": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "per": {
-          "type": ["null", "integer"]
+          "type": ["null", "number"]
         }
       }
     },
@@ -20,13 +20,14 @@
       "type": ["null", "string"]
     },
     "date": {
-      "date": ["null", "integer"]
+      "type": ["null", "integer"],
+      "format": "date"
     },
     "sum_visibility": {
       "type": ["null", "integer"]
     },
     "count_keywords": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     }
   }
 }

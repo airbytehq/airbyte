@@ -27,22 +27,22 @@
       "type": ["null", "integer"]
     },
     "own_traffic_index_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "competitor_traffic_index_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "traffic_index_difference": {
       "type": ["null", "integer"]
     },
     "avg_traffic_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "traffic_index_potential": {
       "type": ["null", "integer"]
     },
     "traffic_index_value_potential": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "keyword_count": {
       "type": ["null", "integer"]
@@ -54,7 +54,7 @@
       "type": ["null", "integer"]
     },
     "keyword_overlap": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "competitor_keyword_count": {
       "type": ["null", "integer"]

@@ -3,7 +3,8 @@
   "type": "object",
   "properties": {
     "date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "data": {
       "type": ["null", "array"],
@@ -23,7 +24,7 @@
                 "type": ["null", "integer"]
               },
               "abs": {
-                "type": ["null", "integer"]
+                "type": ["null", "string"]
               },
               "per": {
                 "type": ["null", "integer"]

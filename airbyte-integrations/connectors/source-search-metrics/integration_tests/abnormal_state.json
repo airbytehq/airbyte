@@ -1,5 +1,11 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "list_market_share_s7": {
+    "data": "30210807"
+  },
+  "list_position_spread_historic_s7": {
+    "data": "30210807"
+  },
+  "list_seo_visibility_historic_s7": {
+    "data": "30210807"
   }
 }

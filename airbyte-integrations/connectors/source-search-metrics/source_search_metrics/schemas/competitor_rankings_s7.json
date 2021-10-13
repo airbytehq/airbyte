@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "visibility": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "avg_position": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "keyword_count": {
       "type": ["null", "integer"]

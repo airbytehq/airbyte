@@ -20,25 +20,25 @@
             "type": ["null", "string"]
           },
           "visibility": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "traffic": {
             "type": ["null", "integer"]
           },
           "ad_budget": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "title": {
             "type": ["null", "string"]
           },
           "traffic_volume": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "cpc": {
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           },
           "delta_traffic": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "trend": {
             "type": ["null", "object"],
@@ -47,7 +47,7 @@
                 "type": ["null", "integer"]
               },
               "abs": {
-                "type": ["null", "integer"]
+                "type": ["null", "string"]
               },
               "per": {
                 "type": ["null", "integer"]
@@ -56,9 +56,9 @@
           },
           "tags": {
             "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+            "items": {
+              "type": ["null", "string"]
+            }
           }
         }
       }
@@ -68,18 +68,21 @@
     },
     "tags": {
       "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "delete_date": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "date": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "trend_date": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

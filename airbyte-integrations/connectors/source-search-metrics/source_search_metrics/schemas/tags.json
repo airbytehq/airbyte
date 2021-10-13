@@ -22,9 +22,9 @@
     },
     "tag_name_path": {
       "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "level": {
       "type": ["null", "integer"]

@@ -2,15 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "date" : {
+    "date": {
       "type": ["null", "integer"]
     },
-    "data" : {
+    "data": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
-          "domain" : {
+          "domain": {
             "type": ["null", "string"]
           },
           "host": {
@@ -19,7 +19,7 @@
           "url": {
             "type": ["null", "string"]
           },
-          "marketshare" : {
+          "marketshare": {
             "type": ["null", "number"]
           }
         }

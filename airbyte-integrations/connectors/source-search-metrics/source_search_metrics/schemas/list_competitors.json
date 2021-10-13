@@ -6,16 +6,16 @@
       "type": ["null", "string"]
     },
     "avg_position_1": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "avg_position_2": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "common_keywords": {
       "type": ["null", "string"]
     },
     "traffic_1": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "traffic_2": {
       "type": ["null", "string"]

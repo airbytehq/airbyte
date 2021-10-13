@@ -8,7 +8,7 @@
         "type": ["null", "object"],
         "properties": {
           "position": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "page": {
             "type": ["null", "string"]
@@ -20,7 +20,7 @@
             "type": ["null", "string"]
           },
           "visibility": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "traffic": {
             "type": ["null", "integer"]
@@ -32,33 +32,33 @@
             "type": ["null", "string"]
           },
           "traffic_volume": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "cpc": {
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           },
           "delta_traffic": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"]
           },
           "trend": {
             "type": ["null", "object"],
             "properties": {
               "trend": {
-                "type": ["null", "integer"]
+                "type": ["null", "string"]
               },
               "abs": {
-                "type": ["null", "integer"]
+                "type": ["null", "string"]
               },
               "per": {
-                "type": ["null", "integer"]
+                "type": ["null", "string"]
               }
             }
           },
           "tags": {
             "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+            "items": {
+              "type": ["null", "string"]
+            }
           }
         }
       }
@@ -68,18 +68,20 @@
     },
     "tags": {
       "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "delete_date": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "date": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer"],
+      "format": "date"
     },
     "trend_date": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer"],
+      "format": "date"
     }
   }
 }
