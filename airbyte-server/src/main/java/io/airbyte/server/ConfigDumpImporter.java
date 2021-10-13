@@ -76,12 +76,14 @@ public class ConfigDumpImporter {
   private final SpecFetcher specFetcher;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
+  private final boolean importDefinitions;
 
   public ConfigDumpImporter(final ConfigRepository configRepository,
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
-                            final SpecFetcher specFetcher) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), specFetcher);
+                            final SpecFetcher specFetcher,
+                            final boolean importDefinitions) {
+    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), specFetcher, importDefinitions);
   }
 
   @VisibleForTesting
@@ -89,12 +91,14 @@ public class ConfigDumpImporter {
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final JsonSchemaValidator jsonSchemaValidator,
-                            final SpecFetcher specFetcher) {
+                            final SpecFetcher specFetcher,
+                            final boolean importDefinitions) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
     this.specFetcher = specFetcher;
+    this.importDefinitions = importDefinitions;
   }
 
   /**
@@ -391,7 +395,11 @@ public class ConfigDumpImporter {
       }
 
       switch (configSchema) {
-        case STANDARD_SOURCE_DEFINITION -> importSourceDefinitionIntoWorkspace(configs);
+        case STANDARD_SOURCE_DEFINITION -> {
+          if (canImportDefinitions()) {
+            importSourceDefinitionIntoWorkspace(configs);
+          }
+        }
         case SOURCE_CONNECTION -> sourceIdMap.putAll(importIntoWorkspace(
             ConfigSchema.SOURCE_CONNECTION,
             configs.map(c -> (SourceConnection) c),
@@ -415,7 +423,11 @@ public class ConfigDumpImporter {
                 return;
               }
             }));
-        case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
+        case STANDARD_DESTINATION_DEFINITION -> {
+          if (canImportDefinitions()) {
+            importDestinationDefinitionIntoWorkspace(configs);
+          }
+        }
         case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
             ConfigSchema.DESTINATION_CONNECTION,
             configs.map(c -> (DestinationConnection) c),
@@ -496,6 +508,13 @@ public class ConfigDumpImporter {
             configRepository.writeStandardSync(standardSync);
           });
     }
+  }
+
+  /**
+   * Method that @return if this importer will import standard connector definitions or not
+   */
+  public boolean canImportDefinitions() {
+    return importDefinitions;
   }
 
   protected <T> void importSourceDefinitionIntoWorkspace(final Stream<T> configs)

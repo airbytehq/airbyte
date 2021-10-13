@@ -125,7 +125,8 @@ public class ArchiveHandlerTest {
         YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
-        specFetcher);
+        specFetcher,
+        true);
   }
 
   @AfterEach
