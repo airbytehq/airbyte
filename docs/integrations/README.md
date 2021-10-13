@@ -102,6 +102,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
 |[Trello](./sources/trello.md)| Beta |
+|[TikTok Marketing](./sources/tiktok-marketing.md)| Alpha |
 |[Twilio](./sources/twilio.md)| Beta |
 |[US Census](./sources/us-census.md)| Alpha |
 |[WooCommerce](./sources/woo-commerce.md)| Beta |
