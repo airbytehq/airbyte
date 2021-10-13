@@ -167,6 +167,8 @@ services:
       - FULLSTORY=${FULLSTORY:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      - OPENREPLAY=${OPENREPLAY:-}
+      - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
     logging: *default-logging
