@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Amazon SQS Source Spec",
     "type": "object",
-    "required": ["QUEUE_URL", "REGION", "DELETE_MESSAGES"],
+    "required": ["queue_url", "region", "delete_messages"],
     "additionalProperties": false,
     "properties": {
       "queue_url": {
