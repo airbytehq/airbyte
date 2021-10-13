@@ -1,9 +1,9 @@
 ---
 description: >-
-  Keen is a fully managed event streaming and analytics platform.
+  Chargify is a SaaS billing and subscription management platform which specializes in complex billing, payment collections, and business analytics.
 ---
 
-# Keen
+# Chargify
 
 ## Overview
 
