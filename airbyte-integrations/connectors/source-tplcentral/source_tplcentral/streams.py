@@ -196,7 +196,7 @@ class StockDetails(IncrementalTplcentralStream):
             "facilityid": self.facility_id,
             "sort": "ReceivedDate",
         })
-        cursor = stream_slice.get(self.cursor_field, None)
+        cursor = stream_slice.get(self.cursor_field)
         if cursor:
             params.update({"rql": f"ReceivedDate=ge={cursor}"})
 
@@ -232,7 +232,7 @@ class Inventory(IncrementalTplcentralStream):
                 f"FacilityIdentifier.Id=={self.facility_id}",
             ])
         })
-        cursor = stream_slice.get(self.cursor_field, None)
+        cursor = stream_slice.get(self.cursor_field)
         if cursor:
             params.update({
                 "rql": ";".join([
@@ -273,7 +273,7 @@ class Orders(IncrementalTplcentralStream):
                 f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
             ])
         })
-        cursor = stream_slice.get(self.cursor_field, None)
+        cursor = stream_slice.get(self.cursor_field)
         if cursor:
             params.update({
                 "rql": ";".join([
