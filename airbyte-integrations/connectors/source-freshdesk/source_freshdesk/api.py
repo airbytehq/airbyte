@@ -349,6 +349,7 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
 
 class SatisfactionRatingsAPI(IncrementalStreamAPI):
     """Surveys satisfaction replies"""
+
     state_filter = "created_since"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
