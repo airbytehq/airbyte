@@ -165,23 +165,21 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   public void executeOracleStatement(final String query) throws SQLException {
-    final Connection conn = DriverManager.getConnection(
+    try (final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-    try (final Statement stmt = conn.createStatement()) {
+    final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
       logSQLException(e);
     }
-    conn.close();
   }
 
   public static void logSQLException(final SQLException ex) {
     for (final Throwable e : ex) {
       if (e instanceof SQLException) {
         if (ignoreSQLException(((SQLException) e).getSQLState()) == false) {
-          e.printStackTrace(System.err);
           LOGGER.info("SQLState: " + ((SQLException) e).getSQLState());
           LOGGER.info("Error Code: " + ((SQLException) e).getErrorCode());
           LOGGER.info("Message: " + e.getMessage());

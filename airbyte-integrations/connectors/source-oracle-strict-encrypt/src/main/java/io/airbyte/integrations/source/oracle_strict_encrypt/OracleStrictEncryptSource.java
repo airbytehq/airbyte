@@ -27,6 +27,7 @@ public class OracleStrictEncryptSource extends SpecModifyingSource implements So
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ArrayNode) spec.getConnectionSpecification().get("required")).add("encryption");
+    // We need to remove the first item from one Of, which is responsible for connecting to the source without encrypted.
     ((ArrayNode) spec.getConnectionSpecification().get("properties").get("encryption").get("oneOf")).remove(0);
     return spec;
   }
