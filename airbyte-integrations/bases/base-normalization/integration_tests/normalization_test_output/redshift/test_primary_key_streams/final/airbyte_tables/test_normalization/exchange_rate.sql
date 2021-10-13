@@ -29,10 +29,10 @@ select
     bigint
 ) as id,
     cast(currency as varchar) as currency,
-    cast(date as 
+    cast(nullif(date, '') as
     date
 ) as date,
-    cast(timestamp_col as 
+    cast(nullif(timestamp_col, '') as
     timestamp with time zone
 ) as timestamp_col,
     cast("hkd@spéçiäl & characters" as 

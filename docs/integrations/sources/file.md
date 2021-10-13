@@ -43,24 +43,25 @@ This source produces a single table for the target file as it replicates only on
 | HTML | No |
 | XML | No |
 | Excel | Yes |
-| Excel Binary Workbook| Yes |
+| Excel Binary Workbook | Yes |
 | Feather | Yes |
 | Parquet | Yes |
 | Pickle | No |
 
-## Getting Started (Airbyte Cloud)
+## Getting Started \(Airbyte Cloud\)
 
 Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
 
-## Getting Started (Airbyte Open-Source)
+## Getting Started \(Airbyte Open-Source\)
 
 1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
 
 #### Provider Specific Information
+
 * In case of GCS, it is necessary to provide the content of the service account keyfile to access private buckets. See settings of [BigQuery Destination](../destinations/bigquery.md)
 * In case of AWS S3, the pair of `aws_access_key_id` and `aws_secret_access_key` is necessary to access private S3 buckets.
-* In case of AzBlob, it is necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [(info)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [(info)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.
+* In case of AzBlob, it is necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [\(info\)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [\(info\)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.
 
 ### Reader Options
 
@@ -121,18 +122,19 @@ In order to read large files from a remote location, this connector uses the [sm
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.2.6   | 2021-08-26 | [5613](https://github.com/airbytehq/airbyte/pull/5613) | Add support to xlsb format |
-| 0.2.5   | 2021-07-26 | [4953](https://github.com/airbytehq/airbyte/pull/4953) | Allow non-default port for SFTP type |
-| 0.2.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
-| 0.2.3   | 2021-06-01 | [3771](https://github.com/airbytehq/airbyte/pull/3771) | Add Azure Storage Blob Files option |
-| 0.2.2   | 2021-04-16 | [2883](https://github.com/airbytehq/airbyte/pull/2883) | Fix CSV discovery memory consumption |
-| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
-| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.10  | 2021-02-18 | [2118](https://github.com/airbytehq/airbyte/pull/2118) | Support JSONL format |
-| 0.1.9   | 2021-02-02 | [1768](https://github.com/airbytehq/airbyte/pull/1768) | Add test cases for all formats |
-| 0.1.8   | 2021-01-27 | [1738](https://github.com/airbytehq/airbyte/pull/1738) | Adopt connector best practices |
-| 0.1.7   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331) | Refactor Python base connector |
-| 0.1.6   | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249) | Handle NaN values |
-| 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.6 | 2021-08-26 | [5613](https://github.com/airbytehq/airbyte/pull/5613) | Add support to xlsb format |
+| 0.2.5 | 2021-07-26 | [4953](https://github.com/airbytehq/airbyte/pull/4953) | Allow non-default port for SFTP type |
+| 0.2.4 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |
+| 0.2.3 | 2021-06-01 | [3771](https://github.com/airbytehq/airbyte/pull/3771) | Add Azure Storage Blob Files option |
+| 0.2.2 | 2021-04-16 | [2883](https://github.com/airbytehq/airbyte/pull/2883) | Fix CSV discovery memory consumption |
+| 0.2.1 | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.10 | 2021-02-18 | [2118](https://github.com/airbytehq/airbyte/pull/2118) | Support JSONL format |
+| 0.1.9 | 2021-02-02 | [1768](https://github.com/airbytehq/airbyte/pull/1768) | Add test cases for all formats |
+| 0.1.8 | 2021-01-27 | [1738](https://github.com/airbytehq/airbyte/pull/1738) | Adopt connector best practices |
+| 0.1.7 | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331) | Refactor Python base connector |
+| 0.1.6 | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249) | Handle NaN values |
+| 0.1.5 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
+

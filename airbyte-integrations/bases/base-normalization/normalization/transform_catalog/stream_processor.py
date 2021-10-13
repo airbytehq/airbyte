@@ -419,19 +419,26 @@ from {{ from_table }}
                 # snowflake uses case when statement to parse timestamp field
                 # in this case [cast] operator is not needed as data already converted to timestamp type
                 return self.generate_snowflake_timestamp_statement(column_name)
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type == DestinationType.MSSQL:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_timestamp_with_timezone()")
-                return f"try_parse({column_name} as {sql_type}) as {column_name}"
+                return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_timestamp_with_timezone()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
+            if self.destination_type == DestinationType.MYSQL:
+                # MySQL does not support [cast] and [nullif] functions together
+                return self.generate_mysql_date_format_statement(column_name)
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type == DestinationType.MSSQL:
                 # in case of date, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_date()")
-                return f"try_parse({column_name} as {sql_type}) as {column_name}"
+                return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:
@@ -439,6 +446,17 @@ from {{ from_table }}
             return column_name
 
         return f"cast({column_name} as {sql_type}) as {column_name}"
+
+    @staticmethod
+    def generate_mysql_date_format_statement(column_name: str) -> str:
+        template = Template(
+            """
+        case when {{column_name}} = '' then NULL
+        else cast({{column_name}} as date)
+        end as {{column_name}}
+        """
+        )
+        return template.render(column_name=column_name)
 
     def generate_snowflake_timestamp_statement(self, column_name: str) -> str:
         """
@@ -459,6 +477,7 @@ from {{ from_table }}
     {% for format_item in formats %}
         when {{column_name}} regexp '{{format_item['regex']}}' then to_timestamp_tz({{column_name}}, '{{format_item['format']}}')
     {% endfor %}
+        when {{column_name}} = '' then NULL
     else to_timestamp_tz({{column_name}})
     end as {{column_name}}
     """
