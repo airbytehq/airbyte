@@ -11,7 +11,6 @@
     "lint": "eslint --ext js,ts,tsx src"
   },
   "dependencies": {
-    "@asayerio/tracker": "^5.6.8",
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
     "@fortawesome/free-brands-svg-icons": "^5.15.2",
     "@fortawesome/free-regular-svg-icons": "^5.14.0",
