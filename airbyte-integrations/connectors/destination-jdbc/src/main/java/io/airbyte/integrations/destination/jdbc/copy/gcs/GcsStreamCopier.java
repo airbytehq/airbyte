@@ -77,7 +77,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   private String prepareGcsStagingFile() {
-    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + streamName);
+    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 6) + "_" + streamName);
   }
 
   @Override

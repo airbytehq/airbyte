@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftStreamCopier extends S3StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopier.class);
+  private static final int FILE_PREFIX_LENGTH = 5;
 
   private final ObjectMapper objectMapper;
   private String manifestFilePath = null;
@@ -38,8 +39,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               S3Config s3Config,
                               ExtendedNameTransformer nameTransformer,
                               SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", 3) + "_" + streamName, client, db, s3Config,
-        nameTransformer, sqlOperations);
+    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
+            client, db, s3Config, nameTransformer, sqlOperations);
     objectMapper = new ObjectMapper();
   }
 
