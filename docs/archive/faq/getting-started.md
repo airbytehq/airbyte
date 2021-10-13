@@ -47,5 +47,4 @@ To disable telemetry, modify the `.env` file and define the two following enviro
 
 ```text
 TRACKING_STRATEGY=logging
-PAPERCUPS_STORYTIME=disabled
 ```

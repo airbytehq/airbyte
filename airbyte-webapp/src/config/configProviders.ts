@@ -4,9 +4,6 @@ import { isDefined } from "utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
-    papercups: {
-      enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
-    },
     fullstory: { devMode: window.FULLSTORY === "disabled" },
     segment: {
       enabled: isDefined(window.TRACKING_STRATEGY)
@@ -35,14 +32,6 @@ const envConfigProvider: ConfigProvider = async () => {
     },
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
-    },
-    papercups: {
-      accountId: process.env.REACT_APP_PAPERCUPS_ACCOUNT_ID,
-      enableStorytime: isDefined(
-        process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
-      )
-        ? !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
-        : undefined,
     },
   };
 };

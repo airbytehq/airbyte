@@ -17,7 +17,6 @@ import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
-import SupportChat from "components/SupportChat";
 
 import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
@@ -112,8 +111,6 @@ function useDemo() {
 }
 
 export const Routing: React.FC = () => {
-  const config = useConfig();
-
   useApiHealthPoll();
   useDemo();
 
@@ -130,11 +127,6 @@ export const Routing: React.FC = () => {
             <MainViewRoutes />
           </>
         )}
-        <SupportChat
-          papercupsConfig={config.papercups}
-          customerId={workspace.customerId}
-          onClick={() => window.open(config.ui.slackLink, "_blank")}
-        />
       </Suspense>
     </Router>
   );

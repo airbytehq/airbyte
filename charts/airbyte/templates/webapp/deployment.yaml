@@ -45,11 +45,6 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: TRACKING_STRATEGY
-        - name: PAPERCUPS_STORYTIME
-          valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
-              key: PAPERCUPS_STORYTIME
         - name: FULLSTORY
           valueFrom:
             configMapKeyRef:
