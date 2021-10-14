@@ -20,6 +20,9 @@ from normalization.destination_type import DestinationType
 from normalization.transform_config.transform import TransformConfig
 
 NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
+NORMALIZATION_TEST_MSSQL_DB_PORT = "NORMALIZATION_TEST_MSSQL_DB_PORT"
+NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
+NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 
 
 class DbtIntegrationTest(object):
@@ -48,9 +51,12 @@ class DbtIntegrationTest(object):
             self.setup_mssql_db()
 
     def setup_postgres_db(self):
-        self.db_names.append("postgres")
-        print("Starting localhost postgres container for tests")
-        port = self.find_free_port()
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_POSTGRES_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_POSTGRES_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
         config = {
             "host": "localhost",
             "username": "integration-tests",
@@ -59,41 +65,46 @@ class DbtIntegrationTest(object):
             "database": "postgres",
             "schema": self.target_schema,
         }
-        commands = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            f"{self.container_prefix}_postgres",
-            "-e",
-            f"POSTGRES_USER={config['username']}",
-            "-e",
-            f"POSTGRES_PASSWORD={config['password']}",
-            "-p",
-            f"{config['port']}:5432",
-            "-d",
-            "marcosmarxm/postgres-ssl:dev",
-            "-c",
-            "ssl=on",
-            "-c",
-            "ssl_cert_file=/var/lib/postgresql/server.crt",
-            "-c",
-            "ssl_key_file=/var/lib/postgresql/server.key",
-        ]
-        print("Executing: ", " ".join(commands))
-        subprocess.call(commands)
-        print("....Waiting for Postgres DB to start...15 sec")
-        time.sleep(15)
-
+        if start_db:
+            self.db_names.append("postgres")
+            print("Starting localhost postgres container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_postgres",
+                "-e",
+                f"POSTGRES_USER={config['username']}",
+                "-e",
+                f"POSTGRES_PASSWORD={config['password']}",
+                "-p",
+                f"{config['port']}:5432",
+                "-d",
+                "marcosmarxm/postgres-ssl:dev",
+                "-c",
+                "ssl=on",
+                "-c",
+                "ssl_cert_file=/var/lib/postgresql/server.crt",
+                "-c",
+                "ssl_key_file=/var/lib/postgresql/server.key",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for Postgres DB to start...15 sec")
+            time.sleep(15)
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/postgres.json", "w") as fh:
             fh.write(json.dumps(config))
 
     def setup_mysql_db(self):
-        self.db_names.append("mysql")
-        print("Starting localhost mysql container for tests")
-        port = self.find_free_port()
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_MYSQL_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_MYSQL_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
         config = {
             "host": "localhost",
             "port": port,
@@ -101,37 +112,42 @@ class DbtIntegrationTest(object):
             "username": "root",
             "password": "",
         }
-        commands = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            f"{self.container_prefix}_mysql",
-            "-e",
-            "MYSQL_ALLOW_EMPTY_PASSWORD=yes",
-            "-e",
-            "MYSQL_INITDB_SKIP_TZINFO=yes",
-            "-e",
-            f"MYSQL_DATABASE={config['database']}",
-            "-p",
-            f"{config['port']}:3306",
-            "-d",
-            "mysql",
-        ]
-        print("Executing: ", " ".join(commands))
-        subprocess.call(commands)
-        print("....Waiting for MySQL DB to start...15 sec")
-        time.sleep(15)
-
+        if start_db:
+            self.db_names.append("mysql")
+            print("Starting localhost mysql container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_mysql",
+                "-e",
+                "MYSQL_ALLOW_EMPTY_PASSWORD=yes",
+                "-e",
+                "MYSQL_INITDB_SKIP_TZINFO=yes",
+                "-e",
+                f"MYSQL_DATABASE={config['database']}",
+                "-p",
+                f"{config['port']}:3306",
+                "-d",
+                "mysql",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for MySQL DB to start...15 sec")
+            time.sleep(15)
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/mysql.json", "w") as fh:
             fh.write(json.dumps(config))
 
     def setup_mssql_db(self):
-        self.db_names.append("mssql")
-        print("Starting localhost MS SQL Server container for tests")
-        port = self.find_free_port()
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_MSSQL_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_MSSQL_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
         config = {
             "host": "localhost",
             "username": "SA",
@@ -140,26 +156,37 @@ class DbtIntegrationTest(object):
             "database": self.target_schema,
             "schema": self.target_schema,
         }
-
-        command_start_container = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            f"{self.container_prefix}_mssql",
-            "-h",
-            f"{self.container_prefix}_mssql",
-            "-e",
-            "ACCEPT_EULA='Y'",
-            "-e",
-            f"SA_PASSWORD='{config['password']}'",
-            "-e",
-            "MSSQL_PID='Standard'",
-            "-p",
-            f"{config['port']}:1433",
-            "-d",
-            "mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04",
-        ]
+        if start_db:
+            self.db_names.append("mssql")
+            print("Starting localhost MS SQL Server container for tests")
+            command_start_container = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_mssql",
+                "-h",
+                f"{self.container_prefix}_mssql",
+                "-e",
+                "ACCEPT_EULA='Y'",
+                "-e",
+                f"SA_PASSWORD='{config['password']}'",
+                "-e",
+                "MSSQL_PID='Standard'",
+                "-p",
+                f"{config['port']}:1433",
+                "-d",
+                "mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04",
+            ]
+            # cmds & parameters
+            cmd_start_container = " ".join(command_start_container)
+            wait_sec = 30
+            # run the docker container
+            print("Executing: ", cmd_start_container)
+            subprocess.check_call(cmd_start_container, shell=True)
+            # wait for service is available
+            print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
+            time.sleep(wait_sec)
         # Run additional commands to prepare the table
         command_create_db = [
             "docker",
@@ -175,20 +202,9 @@ class DbtIntegrationTest(object):
             "-Q",
             f"CREATE DATABASE [{config['database']}]",
         ]
-
-        # cmds & parameters
-        cmd_start_container = " ".join(command_start_container)
-        wait_sec = 30
-        # run the docker container
-        print("Executing: ", cmd_start_container)
-        subprocess.check_call(cmd_start_container, shell=True)
-        # wait for service is available
-        print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
-        time.sleep(wait_sec)
         # create test db
         print("Executing: ", " ".join(command_create_db))
         subprocess.call(command_create_db)
-
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/mssql.json", "w") as fh:
