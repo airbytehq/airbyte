@@ -20,8 +20,8 @@
     "twitter": { "type": "string" },
     "linkedin": { "type": "string" },
     "territory_id": { "type": "integer" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
     "parent_sales_account_id": { "type": "integer" }
   }
 }

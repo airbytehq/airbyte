@@ -3,11 +3,11 @@
   "type": "object",
   "properties": {
     "id": { "type": "integer" },
-    "from_date": { "type": "date-time" },
-    "date": { "type": "date-time" },
-    "Start": { "type": "date" },
-    "end_date": { "type": "date-time" },
-    "End": { "type": "date" },
+    "from_date": { "type": "string" },
+    "string": { "type": "string" },
+    "Start": { "type": "string" },
+    "end_date": { "type": "string" },
+    "End": { "type": "string" },
     "time_zone": { "type": "string" },
     "title": { "type": "string" },
     "description": { "type": "string" },
@@ -16,13 +16,13 @@
     "targetable_type": { "type": "string" },
     "Possible": { "type": "string" },
     "location": { "type": "string" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" },
-    "is_allday": { "type": "boolean" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "is_allday": { "type": "string" },
     "appointment_attendees_attributes": { "type": "array" },
     "outcome_id": { "type": "integer" },
     "latitude": { "type": "string" },
     "longitude": { "type": "string" },
-    "checkedin_at": { "type": "date-time" }
+    "checkedin_at": { "type": "string" }
   }
 }

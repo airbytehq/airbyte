@@ -6,19 +6,19 @@
     "title": { "type": "string" },
     "sales_activity_type_id": { "type": "integer" },
     "sales_activity_outcome_id": { "type": "integer" },
-    "start_date": { "type": "date-time" },
-    "end_date": { "type": "date-time" },
+    "start_date": { "type": "string" },
+    "end_date": { "type": "string" },
     "notes": { "type": "string" },
     "owner_id": { "type": "integer" },
     "targetable_id": { "type": "integer" },
     "targetable_type": { "type": "string" },
     "Possible": { "type": "values" },
     "creater_id": { "type": "integer" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
     "location": { "type": "string" },
     "latitude": { "type": "string" },
     "longitude": { "type": "string" },
-    "checkedin_at": { "type": "date-time" }
+    "checkedin_at": { "type": "string" }
   }
 }

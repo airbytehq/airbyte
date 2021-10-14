@@ -84,10 +84,10 @@
       "type": "string"
     },
     "created_at": {
-      "type": "date-time"
+      "type": "string"
     },
     "updated_at": {
-      "type": "date-time"
+      "type": "string"
     },
     "contact_status_id": {
       "type": "integer"
