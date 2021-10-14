@@ -20,18 +20,23 @@ temporary_folders = set()
 
 # dbt models and final sql outputs from the following git versioned tests will be written in a folder included in
 # airbyte git repository.
-git_versioned_tests = ["test_primary_key_streams"]
+git_versioned_tests = ["test_simple_streams", "test_nested_streams"]
 
 dbt_test_utils = DbtIntegrationTest()
 
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
+    destinations_to_test = dbt_test_utils.get_test_targets()
+    for integration_type in [d.value for d in DestinationType]:
+        if integration_type in destinations_to_test:
+            test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
+            shutil.rmtree(test_root_dir, ignore_errors=True)
     if os.getenv("RANDOM_TEST_SCHEMA"):
         target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
         dbt_test_utils.set_target_schema(target_schema)
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_db(dbt_test_utils.get_test_targets())
+    dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
     dbt_test_utils.tear_down_db()
@@ -63,18 +68,21 @@ def setup_test_path(request):
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+    if destination_type.value == DestinationType.ORACLE.value and test_resource_name == "test_nested_streams":
+        pytest.skip(f"Destinations {destination_type} does not support nested streams")
+
     target_schema = dbt_test_utils.target_schema
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
     try:
-        run_test_normalization(destination_type, test_resource_name, setup_test_path)
+        run_test_normalization(destination_type, test_resource_name)
     finally:
         dbt_test_utils.set_target_schema(target_schema)
 
 
-def run_test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
-    print("Testing normalization in ", dbt_test_utils.target_schema)
+def run_test_normalization(destination_type: DestinationType, test_resource_name: str):
+    print(f"Testing normalization {destination_type} for {test_resource_name} in ", dbt_test_utils.target_schema)
     integration_type = destination_type.value
 
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
@@ -112,8 +120,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
         test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
     else:
         test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
-    shutil.rmtree(test_root_dir, ignore_errors=True)
-    os.makedirs(test_root_dir)
+    os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     dbt_project_yaml = "../dbt-project-template/dbt_project.yml"
