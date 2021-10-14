@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "available": {
+      "type": ["null", "integer"]
+    },
+    "inventory_item_id": {
+      "type": ["null", "integer"]
+    },
+    "location_id": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
