@@ -48,21 +48,22 @@ public abstract class S3StreamCopier implements StreamCopier {
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
 
-  private final AmazonS3 s3Client;
-  private final S3Config s3Config;
-  private final String tmpTableName;
+  public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
+  protected final AmazonS3 s3Client;
+  protected final S3Config s3Config;
+  protected final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
-  private final String schemaName;
-  private final String streamName;
-  private final JdbcDatabase db;
+  protected final String schemaName;
+  protected final String streamName;
+  protected final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
-  private final Set<String> s3StagingFiles = new HashSet<>();
+  protected final Set<String> s3StagingFiles = new HashSet<>();
   private final Map<String, StreamTransferManager> multipartUploadManagers = new HashMap<>();
   private final Map<String, MultiPartOutputStream> outputStreams = new HashMap<>();
   private final Map<String, CSVPrinter> csvPrinters = new HashMap<>();
   private final String s3FileName;
-  private final String stagingFolder;
+  protected final String stagingFolder;
 
   public S3StreamCopier(String stagingFolder,
                         DestinationSyncMode destSyncMode,
@@ -88,7 +89,18 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String prepareS3StagingFile() {
-    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 3) + "_" + s3FileName);
+    return String.join("/", stagingFolder, schemaName, getFilePrefixIndex() + "_" + s3FileName);
+  }
+
+  private Integer getFilePrefixIndex() {
+    int result = 0;
+    if (filePrefixIndexMap.containsKey(s3FileName)) {
+      result = filePrefixIndexMap.get(s3FileName) + 1;
+      filePrefixIndexMap.put(s3FileName, result);
+    } else {
+      filePrefixIndexMap.put(s3FileName, 0);
+    }
+    return result;
   }
 
   @Override
@@ -196,9 +208,10 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
+    filePrefixIndexMap.clear();
   }
 
-  private static String getFullS3Path(String s3BucketName, String s3StagingFile) {
+  protected static String getFullS3Path(String s3BucketName, String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
