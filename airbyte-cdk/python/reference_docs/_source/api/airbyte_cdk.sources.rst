@@ -1,6 +1,3 @@
-airbyte\_cdk.sources package
-============================
-
 Subpackages
 -----------
 

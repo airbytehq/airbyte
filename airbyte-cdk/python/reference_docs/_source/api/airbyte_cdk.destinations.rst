@@ -1,6 +1,3 @@
-airbyte\_cdk.destinations package
-=================================
-
 Submodules
 ----------
 
