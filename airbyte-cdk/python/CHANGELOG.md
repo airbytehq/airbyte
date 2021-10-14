@@ -1,9 +1,14 @@
 # Changelog
 
-## 0.1.26
+## 0.1.28
 Added `check_config_against_spec` parameter to `Connector` abstract class 
 to allow us to skip `check_config_against_spec_or_exit()` call on source/destination command runs.
 
+## 0.1.27
+Improving unit test for logger
+
+## 0.1.26
+Use python standard logging instead of custom class
 
 ## 0.1.25
 Modified `OAuth2Specification` model, added new fields: `rootObject` and `oauthFlowOutputParameters`
