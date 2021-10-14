@@ -29,12 +29,12 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  private JsonNode config;
-  private JdbcDatabase database;
-  private String schemaName;
-  private String streamName;
+  protected JsonNode config;
+  protected JdbcDatabase database;
+  protected String schemaName;
+  protected String streamName;
 
-  private static JsonNode getStaticConfig() {
+  protected static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
