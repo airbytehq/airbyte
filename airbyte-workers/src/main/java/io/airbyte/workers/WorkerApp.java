@@ -50,19 +50,22 @@ public class WorkerApp {
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
+  private final String airbyteVersion;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
                    SecretsHydrator secretsHydrator,
                    WorkflowServiceStubs temporalService,
                    MaxWorkersConfig maxWorkers,
-                   WorkerEnvironment workerEnvironment) {
+                   WorkerEnvironment workerEnvironment,
+                   String airbyteVersion) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
     this.workerEnvironment = workerEnvironment;
+    this.airbyteVersion = airbyteVersion;
   }
 
   public void start() {
@@ -98,9 +101,8 @@ public class WorkerApp {
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot));
-
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, airbyteVersion),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, airbyteVersion));
     factory.start();
   }
 
@@ -144,7 +146,14 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
-    new WorkerApp(workspaceRoot, processFactory, secretsHydrator, temporalService, configs.getMaxWorkers(), configs.getWorkerEnvironment()).start();
+    new WorkerApp(
+        workspaceRoot,
+        processFactory,
+        secretsHydrator,
+        temporalService,
+        configs.getMaxWorkers(),
+        configs.getWorkerEnvironment(),
+        configs.getAirbyteVersion()).start();
   }
 
 }
