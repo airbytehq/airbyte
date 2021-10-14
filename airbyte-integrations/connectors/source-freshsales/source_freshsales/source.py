@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 # Basic full refresh stream
@@ -19,12 +19,12 @@ class FreshsalesStream(HttpStream, ABC):
     url_base = "https://{}/crm/sales/api/"
     primary_key = "id"
     order_field = "updated_at"
+
     def __init__(self, domain_name: str, **kwargs):
         super().__init__(**kwargs)
         self.url_base = self.url_base.format(domain_name)
         self.domain_name = domain_name
         self.page = 1
-        self.get_view_id()
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -48,18 +48,19 @@ class FreshsalesStream(HttpStream, ABC):
         records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
         yield from records
     
-    def _get_filters(self):
+    def _get_filters(self) -> List:
         """
         Some streams require a filter_id to be passed in. This function gets all available filters.
         """
         filters_url = f"https://{self.domain_name}/crm/sales/api/{self.object_name}/filters"
         auth = self.authenticator.get_auth_header()
+        
         try:
             r = requests.get(filters_url, headers=auth)
             r.raise_for_status()
             return r.json().get('filters')
         except requests.exceptions.RequestException as e:
-            return False, e
+            raise e
 
     def get_view_id(self):
         """
