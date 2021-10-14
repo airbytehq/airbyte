@@ -324,10 +324,10 @@ select
   {%- endfor %}
     {{ col_emitted_at }}
 from {{ from_table }} {{ table_alias }}
+{{ sql_table_comment }}
 {{ unnesting_from }}
 where 1 = 1
 {{ unnesting_where }}
-{{ sql_table_comment }}
 """
         )
         sql = template.render(
@@ -385,8 +385,8 @@ select
   {%- endfor %}
     {{ col_emitted_at }}
 from {{ from_table }}
-where 1 = 1
 {{ sql_table_comment }}
+where 1 = 1
     """
         )
         sql = template.render(
@@ -504,8 +504,8 @@ select
     ]) {{ '}}' }} as {{ hash_id }},
     tmp.*
 from {{ from_table }} tmp
-where 1 = 1
 {{ sql_table_comment }}
+where 1 = 1
     """
         )
 
@@ -563,8 +563,8 @@ select
   ) as {{ active_row }},
   tmp.*
 from {{ from_table }} tmp
-where 1 = 1
 {{ sql_table_comment }}
+where 1 = 1
         """
         )
         sql = template.render(
@@ -602,8 +602,8 @@ select
   {{ col_emitted_at }},
   {{ hash_id }}
 from {{ from_table }}
-where 1 = 1
 {{ sql_table_comment }}
+where 1 = 1
         """
 
         template = Template(scd_sql_template)
@@ -702,8 +702,8 @@ select
     {{ col_emitted_at }},
     {{ hash_id }}
 from {{ from_table }}
-where 1 = 1
 {{ sql_table_comment }}
+where 1 = 1
     """
         )
         sql = template.render(
@@ -713,6 +713,21 @@ where 1 = 1
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+        )
+        return sql
+
+    def add_incremental_clause(self, sql_query: str) -> str:
+        template = Template(
+            """
+{{ sql_query }}
+{{ '{% if is_incremental() %}' }}
+and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}' }})
+{{ '{% endif %}' }}
+    """
+        )
+        sql = template.render(
+            sql_query=sql_query,
+            col_emitted_at=self.get_emitted_at(),
         )
         return sql
 
@@ -734,7 +749,11 @@ where 1 = 1
                 # if ephemeral is used with large number of columns, use views instead
                 output = os.path.join("airbyte_views", self.schema, file)
         else:
-            output = os.path.join("airbyte_tables", self.schema, file)
+            if self.source_sync_mode.value == SyncMode.incremental.value:
+                output = os.path.join("airbyte_incremental", self.schema, file)
+                sql = self.add_incremental_clause(sql)
+            else:
+                output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)
         # The alias() macro configs a model's final table name.
         if file_name != table_name:
@@ -829,7 +848,9 @@ where 1 = 1
             return f"and {column_name} is not null"
         return ""
 
+
 # Static Functions
+
 
 def ref_table(file_name: str) -> str:
     return f"ref('{file_name}')"
