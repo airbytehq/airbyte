@@ -8,7 +8,8 @@ from typing import Any, Dict, Mapping
 import boto3
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
-from airbyte_cdk.sources.source import Source
+
+# from airbyte_cdk.sources.source import Source
 from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
 from source_amazon_sqs import SourceAmazonSqs
@@ -35,12 +36,13 @@ def create_user_with_all_permissions():
 
 def create_config(queue_url, access_key, secret_key, queue_region, delete_message):
     return {
-        "DELETE_MESSAGES": delete_message,
-        "QUEUE_URL": queue_url,
-        "REGION": queue_region,
-        "ACCESS_KEY": access_key,
-        "SECRET_KEY": secret_key,
-        "MAX_WAIT_TIME": 2,
+        "delete_messages": delete_message,
+        "queue_url": queue_url,
+        "region": queue_region,
+        "access_key": access_key,
+        "secret_key": secret_key,
+        "max_wait_time": 5,
+        "visibility_timeout": 120,
     }
 
 
@@ -61,7 +63,6 @@ def test_check():
     client = boto3.client(
         "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
     )
-
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
     config = create_config(queue_url, user["AccessKeyId"], user["SecretAccessKey"], queue_region, False)

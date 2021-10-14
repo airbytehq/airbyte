@@ -19,7 +19,7 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.source import Source
 from botocore.exceptions import ClientError
 
 
@@ -27,13 +27,13 @@ class SourceAmazonSqs(Source):
     def delete_message(self, message):
         try:
             message.delete()
-        except ClientError as error:
+        except ClientError:
             raise Exception("Couldn't delete message: %s - does your IAM user have sqs:DeleteMessage?", message.message_id)
 
     def change_message_visibility(self, message, visibility_timeout):
         try:
             message.change_visibility(VisibilityTimeout=visibility_timeout)
-        except ClientError as error:
+        except ClientError:
             raise Exception(
                 "Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id
             )
@@ -67,19 +67,17 @@ class SourceAmazonSqs(Source):
             session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key, region_name=queue_region)
             sqs = session.resource("sqs")
             queue = sqs.Queue(url=queue_url)
-            # This will fail if we are not connected to the Queue (AWS.SimpleQueueService.NonExistentQueue)
-            attrs = queue.attributes
-            logger.debug("Amazon SQS Source Config Check - Connection test successful ---")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except sqs.exceptions.QueueDoesNotExist as e:
-            return AirbyteConnectionStatus(
-                status=Status.FAILED,
-                message=f"Amazon SQS Source Config Check - Configured SQS Queue does not exist: " + queue_url + f"{str(e)}",
-            )
+            if hasattr(queue, "attributes"):
+                logger.debug("Amazon SQS Source Config Check - Connection test successful ---")
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(status=Status.FAILED, message="Amazon SQS Source Config Check - Could not connect to queue")
         except ClientError as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {str(e)}")
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {str(e)}"
+            )
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         streams = []
@@ -91,7 +89,7 @@ class SourceAmazonSqs(Source):
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {"id": {"type": "string"}, "body": {"type": "string"}, "attributes": {"type": "object"}},
+            "properties": {"id": {"type": "string"}, "body": {"type": "string"}, "attributes": {"type": ["object", "null"]}},
         }
         streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
         return AirbyteCatalog(streams=streams)
@@ -140,7 +138,7 @@ class SourceAmazonSqs(Source):
                     break
 
                 for msg in messages:
-                    logger.debug("Amazon SQS Source Read - Message recieved: " + msg)
+                    logger.debug("Amazon SQS Source Read - Message recieved: " + msg.message_id)
                     if visibility_timeout:
                         logger.debug("Amazon SQS Source Read - Setting message visibility timeout: " + msg.message_id)
                         self.change_message_visibility(msg, visibility_timeout)

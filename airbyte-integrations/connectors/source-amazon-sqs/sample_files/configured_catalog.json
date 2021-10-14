@@ -17,7 +17,7 @@
               "type": "string"
             },
             "attributes": {
-              "type": [null, "object"]
+              "type": ["null", "object"]
             }
           }
         }
