@@ -69,18 +69,6 @@ from .streams import (
 
 class SourceJira(AbstractSource):
     @staticmethod
-    def _generate_projects(config: Mapping[str, Any]) -> List[str]:
-        projects = list(filter(None, config["projects"].split(",")))
-        if not projects:
-            raise Exception("Must provide a list of project keys")
-        return list(set(projects))
-
-    @staticmethod
-    def _generate_additional_fields(config: Mapping[str, Any]) -> List[str]:
-        fields = list(filter(None, config.get("additional_fields", "").split(",")))
-        return list(set(fields))
-
-    @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
         token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
         authenticator = TokenAuthenticator(token, auth_method="Basic")
@@ -111,9 +99,7 @@ class SourceJira(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        projects = self._generate_projects(config)
-        additional_fields = self._generate_additional_fields(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": projects}
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config["start_date"]}
         return [
             ApplicationRoles(**args),
@@ -125,7 +111,7 @@ class SourceJira(AbstractSource):
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(**incremental_args, additional_fields=additional_fields, expand_changelog=config.get("expand_issue_changelog", False)),
+            Issues(**incremental_args, additional_fields=config.get("additional_fields", []), expand_changelog=config.get("expand_issue_changelog", False)),
             IssueComments(**incremental_args),
             IssueFields(**args),
             IssueFieldConfigurations(**args),

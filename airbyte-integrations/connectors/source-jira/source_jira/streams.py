@@ -210,7 +210,7 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
         params["fields"] = ["key", "updated"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"updated > '{issues_state_row}'"
+        params["jql"] = f"{self.cursor_field} > '{issues_state_row}'"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -252,7 +252,7 @@ class Epics(IncrementalJiraStream):
         params["fields"] = ["summary", "description", "status", "updated"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"issuetype = 'Epic' and project = '{project_id}' and updated > '{issues_state_row}'"
+        params["jql"] = f"issuetype = 'Epic' and project = '{project_id}' and {self.cursor_field} > '{issues_state_row}'"
         params["expand"] = "renderedFields"
         return params
 
@@ -329,7 +329,7 @@ class Issues(IncrementalJiraStream):
         params["fields"] = stream_slice["fields"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"project = '{project_id}' and updated > '{issues_state_row}'"
+        params["jql"] = f"project = '{project_id}' and {self.cursor_field} > '{issues_state_row}'"
         if self._expand_changelog:
             params["expand"] = "changelog"
         return params
@@ -905,7 +905,7 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         params["fields"] = stream_slice["fields"]
         issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
         issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"updated > '{issues_state_row}'"
+        params["jql"] = f"{self.cursor_field} > '{issues_state_row}'"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
