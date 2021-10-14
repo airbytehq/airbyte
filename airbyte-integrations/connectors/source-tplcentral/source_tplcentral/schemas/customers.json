@@ -26,7 +26,7 @@
       "type": "string"
     },
     "external_id": {
-      "descriptions": "connection of this customer to the same customer on some other system",
+      "description": "connection of this customer to the same customer on some other system",
       "type": "string"
     },
     "groups": {

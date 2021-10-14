@@ -16,7 +16,7 @@
       "$ref": "asn_pre_check_options.json"
     },
     "order_level_flex_fields": {
-      "descriptions": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order level",
+      "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order level",
       "type": "array",
       "items": {
         "type": "string"

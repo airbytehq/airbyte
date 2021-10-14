@@ -3,13 +3,11 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "properties": {
-      "name": {
-        "type": "string"
-      },
-      "value": {
-        "type": "string"
-      }
+    "name": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
     }
   }
 }

@@ -38,7 +38,7 @@
       "type": "string"
     },
     "expiration_date": {
-      "descriptions": "if present, used to allocate matching inventory",
+      "description": "if present, used to allocate matching inventory",
       "type": [
         "null",
         "string"
@@ -46,14 +46,14 @@
       "format": "date-time"
     },
     "weight_imperial": {
-      "descriptions": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
+      "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
       "type": [
         "null",
         "number"
       ]
     },
     "weight_metric": {
-      "descriptions": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
+      "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
       "type": [
         "null",
         "number"
