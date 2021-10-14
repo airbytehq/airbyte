@@ -13,7 +13,7 @@
     "created_by": { "type": "string" },
     "status": { "type": "integer" },
     "shipping_address": { "type": "string" },
-    "billing_same_as_shipping": { "type": "boolean" },
+    "billing_same_as_shipping": { "type": "integer" },
     "billing_address": { "type": "string" },
     "currency_code": { "type": "string" },
     "conversion_rate": { "type": "number" },

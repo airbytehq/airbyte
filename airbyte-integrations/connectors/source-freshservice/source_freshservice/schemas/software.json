@@ -14,7 +14,7 @@
     "sources": { "type": "string" },
     "user_count": { "type": "integer" },
     "installation_count": { "type": "integer" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" }
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
   }
 }

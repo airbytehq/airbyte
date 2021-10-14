@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_freshservice",
     description="Source implementation for Freshservice.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Tuan Nguyen",
+    author_email="anhtuan.nguyen@me.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},

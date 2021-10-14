@@ -14,10 +14,10 @@
             "deleted": { "type": "boolean" },
             "description": { "type": "string" },
             "description_text": { "type": "string" },
-            "due_by": { "type": "date-time" },
+            "due_by": { "type": "string" },
             "email": { "type": "string" },
             "email_config_id": { "type": "integer" },
-            "fr_due_by": { "type": "date-time" },
+            "fr_due_by": { "type": "string" },
             "fr_escalated": { "type": "boolean" },
             "fwd_emails": { "type": "array" },
             "group_id": { "type": "integer" },
@@ -39,8 +39,8 @@
             "tags": { "type": "array" },
             "to_emails": { "type": "array" },
             "type": { "type": "string" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" },
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" },
             "urgency": { "type": "integer" },
             "impact": { "type": "integer" }
           }
@@ -71,13 +71,13 @@
             "impact": { "type": "integer" },
             "known_error": { "type": "boolean" },
             "subject": { "type": "string" },
-            "due_by": { "type": "date-time" },
+            "due_by": { "type": "string" },
             "department_id": { "type": "integer" },
             "category": { "type": "string" },
             "sub_category": { "type": "string" },
             "item_category": { "type": "string" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" },
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" },
             "associated_change": { "type": "integer" },
             "custom_fields": { "type": "object" },
             "analysis_fields": { "type": "object" }
@@ -120,8 +120,8 @@
             "custom_fields": { "type": "object" },
             "maintenance_window": { "type": "object" },
             "blackout_window": { "type": "object" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" }
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" }
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -147,16 +147,16 @@
             "release_type": { "type": "integer" },
             "subject": { "type": "string" },
             "description": { "type": "string" },
-            "planned_start_date": { "type": "date-time" },
-            "planned_end_date": { "type": "date-time" },
-            "work_start_date": { "type": "date-time" },
-            "work_end_date": { "type": "date-time" },
+            "planned_start_date": { "type": "string" },
+            "planned_end_date": { "type": "string" },
+            "work_start_date": { "type": "string" },
+            "work_end_date": { "type": "string" },
             "department_id": { "type": "integer" },
             "category": { "type": "string" },
             "sub_category": { "type": "string" },
             "item_category": { "type": "string" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" },
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" },
             "associated_assets": { "type": "array" },
             "associated_changes": { "type": "array" },
             "custom_fields": { "type": "object" },
@@ -200,8 +200,8 @@
             "custom_fields": { "type": "object" },
             "active": { "type": "boolean" },
             "has_logged_in": { "type": "boolean" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" },
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" },
             "is_agent": { "type": "boolean" }
           }
         },
@@ -249,13 +249,13 @@
             "observer_of": { "type": "array" },
             "role_ids": { "type": "array" },
             "roles": { "type": "array" },
-            "last_login_at": { "type": "date-time" },
-            "last_active_at": { "type": "date-time" },
-            "custom_fields": { "type": "hash" },
+            "last_login_at": { "type": "string" },
+            "last_active_at": { "type": "string" },
+            "custom_fields": { "type": "object" },
             "has_logged_in": { "type": "boolean" },
             "active": { "type": "boolean" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" }
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -283,8 +283,8 @@
             "state": { "type": "string" },
             "country": { "type": "string" },
             "zipcode": { "type": "string" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" }
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -339,8 +339,8 @@
             "state": { "type": "string" },
             "country": { "type": "string" },
             "zipcode": { "type": "string" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" }
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -372,9 +372,9 @@
             "department_id": { "type": "integer" },
             "agent_id": { "type": "integer" },
             "group_id": { "type": "integer" },
-            "assigned_on": { "type": "date-time" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" }
+            "assigned_on": { "type": "string" },
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -442,8 +442,8 @@
             "sources": { "type": "string" },
             "user_count": { "type": "integer" },
             "installation_count": { "type": "integer" },
-            "created_at": { "type": "date-time" },
-            "updated_at": { "type": "date-time" }
+            "created_at": { "type": "string" },
+            "updated_at": { "type": "string" }
           }
         },
         "supported_sync_modes": ["full_refresh"],

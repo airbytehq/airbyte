@@ -14,8 +14,8 @@
     "risk": { "type": "integer" },
     "change_type": { "type": "integer" },
     "approval_status": { "type": "integer" },
-    "planned_start_date": { "type": "integer" },
-    "planned_end_date": { "type": "integer" },
+    "planned_start_date": { "type": "string" },
+    "planned_end_date": { "type": "string" },
     "subject": { "type": "string" },
     "department_id": { "type": "integer" },
     "category": { "type": "string" },
@@ -24,7 +24,7 @@
     "custom_fields": { "type": "object" },
     "maintenance_window": { "type": "object" },
     "blackout_window": { "type": "object" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" }
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
   }
 }

@@ -12,7 +12,7 @@
     "state": { "type": "string" },
     "country": { "type": "string" },
     "zipcode": { "type": "string" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" }
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
   }
 }

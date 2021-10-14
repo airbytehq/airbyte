@@ -16,8 +16,8 @@
     "department_id": { "type": "integer" },
     "agent_id": { "type": "integer" },
     "group_id": { "type": "integer" },
-    "assigned_on": { "type": "date-time" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" }
+    "assigned_on": { "type": "string" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
   }
 }

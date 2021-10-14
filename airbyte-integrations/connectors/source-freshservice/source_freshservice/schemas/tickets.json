@@ -9,10 +9,10 @@
     "deleted": { "type": "boolean" },
     "description": { "type": "string" },
     "description_text": { "type": "string" },
-    "due_by": { "type": "date-time" },
+    "due_by": { "type": "string" },
     "email": { "type": "string" },
     "email_config_id": { "type": "integer" },
-    "fr_due_by": { "type": "date-time" },
+    "fr_due_by": { "type": "string" },
     "fr_escalated": { "type": "boolean" },
     "fwd_emails": { "type": "array" },
     "group_id": { "type": "integer" },
@@ -34,8 +34,8 @@
     "tags": { "type": "array" },
     "to_emails": { "type": "array" },
     "type": { "type": "string" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
     "urgency": { "type": "integer" },
     "impact": { "type": "integer" }
   }

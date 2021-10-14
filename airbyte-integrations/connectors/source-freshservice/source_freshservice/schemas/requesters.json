@@ -22,8 +22,8 @@
     "custom_fields": { "type": "object" },
     "active": { "type": "boolean" },
     "has_logged_in": { "type": "boolean" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
     "is_agent": { "type": "boolean" }
   }
 }

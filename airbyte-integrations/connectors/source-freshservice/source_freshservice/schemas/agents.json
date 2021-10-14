@@ -29,12 +29,12 @@
     "observer_of": { "type": "array" },
     "role_ids": { "type": "array" },
     "roles": { "type": "array" },
-    "last_login_at": { "type": "date-time" },
-    "last_active_at": { "type": "date-time" },
-    "custom_fields": { "type": "hash" },
+    "last_login_at": { "type": "string" },
+    "last_active_at": { "type": "string" },
+    "custom_fields": { "type": "object" },
     "has_logged_in": { "type": "boolean" },
     "active": { "type": "boolean" },
-    "created_at": { "type": "date-time" },
-    "updated_at": { "type": "date-time" }
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
   }
 }
