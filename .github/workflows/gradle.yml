@@ -52,10 +52,23 @@ jobs:
         run: |
           mkdir -p /home/runner
 
+      - name: Output Docker Version
+        run: |
+          docker version
+
       - name: Install socat (required for port forwarding)
         run: |
           sudo apt-get update
           sudo apt-get install socat
+
+      - name: Update Docker Version
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+      - name: Output Docker Version
+        run: |
+          docker version
 
       - name: Create cluster config file
         run: |
