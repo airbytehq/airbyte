@@ -43,9 +43,9 @@ class AbstractSource(Source, ABC):
           This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
           and we can connect to the underlying data source using the provided configuration.
-
-        Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
-        The error object will be cast to string to display the problem to the user.
+          Otherwise, the input config cannot be used to connect to the underlying data source,
+          and the "error" object should describe what went wrong.
+          The error object will be cast to string to display the problem to the user.
         """
 
     @abstractmethod

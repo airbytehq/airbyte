@@ -185,6 +185,7 @@
     * [Source Acceptance Tests Reference](connector-development/testing-connectors/source-acceptance-tests-reference.md)
   * [Connector Specification Reference](connector-development/connector-specification-reference.md)
   * [Best Practices](connector-development/best-practices.md)
+  * [Sphinx Docs](connector-development/sphinx-docs.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
