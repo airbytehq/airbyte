@@ -325,6 +325,33 @@ class DiscountCodes(ChildSubstream):
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
 
+class Locations(ShopifyStream):
+
+    """
+    The location API does not support any form of filtering.
+    https://shopify.dev/api/admin-rest/2021-10/resources/location#top
+
+    Therefore, only FULL_REFRESH mode is supported.
+    """
+
+    data_field = "locations"
+
+    def path(self, **kwargs):
+        return f"{self.data_field}.json"
+
+
+class InventoryLevels(ChildSubstream):
+
+    parent_stream_class: object = Locations
+    slice_key = "location_id"
+
+    data_field = "inventory_levels"
+    cursor_field = "updated_at"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        location_id = stream_slice["location_id"]
+        return f"locations/{location_id}/{self.data_field}.json"
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
@@ -365,4 +392,6 @@ class SourceShopify(AbstractSource):
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
+            Locations(config),
+            InventoryLevels(config),
         ]
