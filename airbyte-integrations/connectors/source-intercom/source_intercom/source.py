@@ -295,7 +295,8 @@ class SourceIntercom(AbstractSource):
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        authenticator = TokenAuthenticator(token=config["access_token"])
+        authorization = config.get("authorization", {})
+        authenticator = TokenAuthenticator(token=authorization["access_token"])
         try:
             url = f"{IntercomStream.url_base}/tags"
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
@@ -306,11 +307,11 @@ class SourceIntercom(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
-        config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
-
-        auth = TokenAuthenticator(token=config["access_token"])
+        authorization = config.get("authorization", {})
+        auth = TokenAuthenticator(token=authorization["access_token"])
         return [
             Admins(authenticator=auth, **config),
             Companies(authenticator=auth, **config),
