@@ -41,7 +41,26 @@ const TextBlock = styled.div`
   display: inline-block;
 `;
 
-const List = styled.div<{ single: boolean }>`
+const TopElement = styled.div<{ single: boolean }>`
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px 12px;
+
+  & > span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  ${({ single, theme }) =>
+    !single && `border-bottom: 1px solid ${theme.greyColor20};`}
+`;
+
+const List = styled.div`
   & .react-select__option {
     & div {
       font-weight: 400;
@@ -49,30 +68,24 @@ const List = styled.div<{ single: boolean }>`
       color: #1a194d;
     }
   }
-
-  & .react-select__option--is-selected {
-    ${({ single }) =>
-      !single && "border-bottom: 1px solid rgba(139, 139, 160, 0.25);"}
-
-    & div {
-      background-color: #fff;
-      font-weight: 500;
-      font-size: 14px;
-      line-height: 17px;
-    }
-  }
 `;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false> & {
+  selectedWorkspace: string;
+};
 
 const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
   children,
+  selectedWorkspace,
   ...props
 }) => {
   const { selectWorkspace } = useWorkspaceService();
 
   return (
-    <List single={props.options.length === 1}>
+    <List>
+      <TopElement single={props.options.length === 0}>
+        <span>{selectedWorkspace}</span>
+      </TopElement>
       <components.MenuList {...props}>{children}</components.MenuList>
       <BottomElement>
         <Block onClick={() => selectWorkspace("")}>
@@ -94,7 +107,7 @@ const WorkspacePopout: React.FC<{
   const { data: workspace } = useGetWorkspace(currentWorkspaceId || "");
 
   const options = workspaces
-    ?.sort((wA) => (wA.workspaceId !== workspace.workspaceId ? 1 : -1))
+    ?.filter((w) => w.workspaceId !== workspace.workspaceId)
     .map((workspace) => ({
       value: workspace.workspaceId,
       label: workspace.name,
@@ -106,7 +119,9 @@ const WorkspacePopout: React.FC<{
         children({ onOpen: targetProps.onOpen, value: workspace?.name })
       }
       components={{
-        MenuList: WorkspacesList,
+        MenuList: (props) => (
+          <WorkspacesList {...props} selectedWorkspace={workspace.name} />
+        ),
       }}
       isSearchable={false}
       options={options}
