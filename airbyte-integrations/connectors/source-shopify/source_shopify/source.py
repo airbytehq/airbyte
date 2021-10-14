@@ -352,6 +352,7 @@ class InventoryLevels(ChildSubstream):
         location_id = stream_slice["location_id"]
         return f"locations/{location_id}/{self.data_field}.json"
 
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
