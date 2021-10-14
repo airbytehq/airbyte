@@ -81,7 +81,7 @@ public class TrelloOAuthFlowTest {
 
   @Test
   public void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
-    Map<String, String> expectedParams = Map.of("key", "test_client_id", "token", "test_token");
+    final Map<String, String> expectedParams = Map.of("key", "test_client_id", "token", "test_token");
     final Map<String, Object> queryParams = Map.of("oauth_token", "token", "oauth_verifier", "verifier");
     final Map<String, Object> returnedParams =
         trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
