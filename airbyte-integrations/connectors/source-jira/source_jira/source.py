@@ -111,7 +111,11 @@ class SourceJira(AbstractSource):
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(**incremental_args, additional_fields=config.get("additional_fields", []), expand_changelog=config.get("expand_issue_changelog", False)),
+            Issues(
+                **incremental_args,
+                additional_fields=config.get("additional_fields", []),
+                expand_changelog=config.get("expand_issue_changelog", False)
+            ),
             IssueComments(**incremental_args),
             IssueFields(**args),
             IssueFieldConfigurations(**args),
