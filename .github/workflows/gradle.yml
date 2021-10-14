@@ -52,6 +52,10 @@ jobs:
         run: |
           mkdir -p /home/runner
 
+      - name: Output Home Runner dir
+        run: |
+          ls -al /home/runner/
+
       - name: Output Docker Version
         run: |
           docker version
@@ -66,6 +70,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install docker-ce docker-ce-cli containerd.io
 
+      # WARNING: Error loading config file: .dockercfg: $HOME is not defined
       - name: Output Docker Version
         run: |
           docker version
