@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-regular-svg-icons";
 
 import { Routes } from "packages/cloud/routes";
 import { useConfig } from "config";
@@ -177,10 +177,7 @@ const SideBar: React.FC = () => {
           <MenuItem to={Routes.Credits} activeClassName="active">
             <CreditsIcon icon={faStar} />
             <Text>
-              <FormattedMessage id="credits.credits" />
-              <div>
-                <FormattedNumber value={cloudWorkspace.remainingCredits} />
-              </div>
+              <FormattedNumber value={cloudWorkspace.remainingCredits} />
             </Text>
           </MenuItem>
         </li>
