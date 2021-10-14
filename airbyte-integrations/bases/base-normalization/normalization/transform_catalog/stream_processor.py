@@ -217,9 +217,9 @@ class StreamProcessor(object):
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
             from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
             if self.destination_type == DestinationType.ORACLE:
-                where_clause = '\nwhere "_AIRBYTE_ROW_NUM" = 1'
+                where_clause = '\nand "_AIRBYTE_ROW_NUM" = 1'
             else:
-                where_clause = "\nwhere _airbyte_row_num = 1"
+                where_clause = "\nand _airbyte_row_num = 1"
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names) + where_clause,
                 is_intermediate=False,
@@ -227,9 +227,9 @@ class StreamProcessor(object):
                 suffix="scd",
             )
             if self.destination_type == DestinationType.ORACLE:
-                where_clause = '\nwhere "_AIRBYTE_ACTIVE_ROW" = 1'
+                where_clause = '\nand "_AIRBYTE_ACTIVE_ROW" = 1'
             else:
-                where_clause = "\nwhere _airbyte_active_row = 1"
+                where_clause = "\nand _airbyte_active_row = 1"
 
             from_table = self.add_to_outputs(
                 self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
@@ -324,7 +324,9 @@ select
   {%- endfor %}
     {{ col_emitted_at }}
 from {{ from_table }} {{ table_alias }}
-{{ unnesting_after_query }}
+{{ unnesting_from }}
+where 1 = 1
+{{ unnesting_where }}
 {{ sql_table_comment }}
 """
         )
@@ -335,7 +337,8 @@ from {{ from_table }} {{ table_alias }}
             parent_hash_id=self.parent_hash_id(),
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
-            unnesting_after_query=self.unnesting_after_query(),
+            unnesting_from=self.unnesting_from(),
+            unnesting_where=self.unnesting_where(),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
@@ -382,6 +385,7 @@ select
   {%- endfor %}
     {{ col_emitted_at }}
 from {{ from_table }}
+where 1 = 1
 {{ sql_table_comment }}
     """
         )
@@ -500,6 +504,7 @@ select
     ]) {{ '}}' }} as {{ hash_id }},
     tmp.*
 from {{ from_table }} tmp
+where 1 = 1
 {{ sql_table_comment }}
     """
         )
@@ -558,6 +563,7 @@ select
   ) as {{ active_row }},
   tmp.*
 from {{ from_table }} tmp
+where 1 = 1
 {{ sql_table_comment }}
         """
         )
@@ -596,6 +602,7 @@ select
   {{ col_emitted_at }},
   {{ hash_id }}
 from {{ from_table }}
+where 1 = 1
 {{ sql_table_comment }}
         """
 
@@ -695,6 +702,7 @@ select
     {{ col_emitted_at }},
     {{ hash_id }}
 from {{ from_table }}
+where 1 = 1
 {{ sql_table_comment }}
     """
         )
@@ -807,23 +815,21 @@ from {{ from_table }}
             return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")
         return ""
 
-    def unnesting_after_query(self) -> str:
-        result = ""
+    def unnesting_from(self) -> str:
         if self.parent:
-            cross_join = ""
             if self.is_nested_array:
                 parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
                 quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-                cross_join = jinja_call(f"cross_join_unnest({parent_stream_name}, {quoted_field})")
-            column_name = self.name_transformer.normalize_column_name(self.stream_name)
-            result = f"""
-{cross_join}
-where {column_name} is not null"""
-        return result
+                return jinja_call(f"cross_join_unnest({parent_stream_name}, {quoted_field})")
+        return ""
 
+    def unnesting_where(self) -> str:
+        if self.parent:
+            column_name = self.name_transformer.normalize_column_name(self.stream_name)
+            return f"and {column_name} is not null"
+        return ""
 
 # Static Functions
-
 
 def ref_table(file_name: str) -> str:
     return f"ref('{file_name}')"
