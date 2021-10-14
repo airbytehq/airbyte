@@ -37,18 +37,17 @@ public class ElasticsearchConnection {
   private static final int MAX_HITS = 10000;
   private static Logger log = LoggerFactory.getLogger(ElasticsearchConnection.class);
 
-  private final String tmpIndex = "_airbyte";
-  private final String indexPrefix;
+  private final String tmpIndex = "test_airbyte";
   private final ObjectMapper mapper = new ObjectMapper();
   private final ElasticsearchClient client;
+  private final HttpHost httpHost;
 
   public ElasticsearchConnection(ConnectorConfiguration config) {
     log.info(String.format(
-            "creating ElasticsearchConnection: %s:%s with indexPrefix: %s", config.getHost(), config.getPort(), config.getIndexPrefix()));
-    this.indexPrefix = config.getIndexPrefix();
+            "creating ElasticsearchConnection: %s:%s", config.getHost(), config.getPort()));
 
     // Create the low-level client
-    var httpHost = new HttpHost(config.getHost());
+    httpHost = new HttpHost(config.getHost(), config.getPort());
     RestClient restClient = RestClient.builder(httpHost)
             .setDefaultHeaders(configureHeaders(config))
             .build();
@@ -83,8 +82,9 @@ public class ElasticsearchConnection {
   }
   public AirbyteConnectionStatus check() {
 
-    Instant now = Instant.now();
-    String docID = String.format("_airbyte_%s", now.toEpochMilli());
+    log.info("connecting to elasticsearch at: {}", httpHost.toURI());
+    String docID = UUID.randomUUID().toString();
+    createIndexIfMissing(tmpIndex);
     // create an empty doc to test with
     ObjectNode document = mapper.createObjectNode();
     try {
@@ -129,6 +129,7 @@ public class ElasticsearchConnection {
   }
 
   public List<JsonNode> getRecords(String index) throws IOException {
+    log.info("getting records for index: {}", index);
     SearchResponse<JsonNode> search = client.search(s -> s.index(index).size(MAX_HITS), JsonNode.class);
     HitsMetadata<JsonNode> hitMeta = search.hits();
     return hitMeta.hits().stream().map(Hit::source).collect(Collectors.toList());
@@ -141,6 +142,7 @@ public class ElasticsearchConnection {
   public void createIndexIfMissing(String index) {
     // Create an index, but dont throw an exception
     try {
+      log.info("creating index: {}, info: {}", index, client.info());
       final co.elastic.clients.elasticsearch.indices.CreateResponse createResponse = client.indices().create(b -> b.index(index));
       if (createResponse.acknowledged() && createResponse.shardsAcknowledged()) {
         log.info("created index: {}", index);
@@ -148,7 +150,7 @@ public class ElasticsearchConnection {
         log.info("did not create index: {}, {}", index, createResponse);
       }
     } catch (IOException e) {
-      log.error("failed to create index", e);
+      log.error("failed to create index: {}", e.getMessage());
     }
   }
 

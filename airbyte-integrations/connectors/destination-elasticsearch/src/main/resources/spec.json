@@ -30,13 +30,6 @@
         "default": 9200,
         "order": 1
       },
-      "indexPrefix": {
-        "title": "Index Prefix",
-        "description": "A prefix for the index created in Elasticsearch.",
-        "type": "string",
-        "examples": ["data_", "index1_"],
-        "order": 2
-      },
       "apiKeyId": {
         "title": "API Key ID",
         "description": "The Key ID to used when accessing an enterprise Elasticsearch instance.",

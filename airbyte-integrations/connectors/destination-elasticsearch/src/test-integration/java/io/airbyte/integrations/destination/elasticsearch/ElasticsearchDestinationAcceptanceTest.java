@@ -13,10 +13,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.Network;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -31,7 +29,8 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   public static void beforeAll() {
     container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
             .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
-            .withNetwork(Network.SHARED)
+            .withEnv("discovery.type", "single-node")
+            .withExposedPorts(9200)
             .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
   }
@@ -55,7 +54,7 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   @Override
   protected JsonNode getConfig() {
     var configJson = mapper.createObjectNode();
-    configJson.put("host", container.getHttpHostAddress());
+    configJson.put("host", container.getHost());
     configJson.put("port", container.getMappedPort(9200));
     //configJson.put("indexPrefix", "test-index");
     return configJson;
@@ -76,7 +75,7 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
 
-    final String tableName = ElasticsearchDestination.namingResolver.getRawTableName(streamName);
+    final String tableName = ElasticsearchDestination.streamToIndexName(namespace, streamName);
 
     ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     return connection.getRecords(tableName);

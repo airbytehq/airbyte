@@ -1,6 +1,8 @@
 package io.airbyte.integrations.destination.elasticsearch;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Objects;
 
@@ -9,12 +11,13 @@ public class ConnectorConfiguration {
 
     private String host;
     private int port;
-    private String indexPrefix;
     private String apiKeyId;
     private String apiKeySecret;
     private boolean ssl;
 
-    public ConnectorConfiguration() {
+    public ConnectorConfiguration() {}
+    public static ConnectorConfiguration FromJsonNode(JsonNode config) {
+        return new ObjectMapper().convertValue(config, ConnectorConfiguration.class);
     }
 
     public String getHost() {
@@ -23,10 +26,6 @@ public class ConnectorConfiguration {
 
     public int getPort() {
         return this.port;
-    }
-
-    public String getIndexPrefix() {
-        return this.indexPrefix;
     }
 
     public String getApiKeyId() {
@@ -47,10 +46,6 @@ public class ConnectorConfiguration {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public void setIndexPrefix(String indexPrefix) {
-        this.indexPrefix = indexPrefix;
     }
 
     public void setApiKeyId(String apiKeyId) {
@@ -74,9 +69,6 @@ public class ConnectorConfiguration {
         final Object other$host = other.getHost();
         if (!Objects.equals(this$host, other$host)) return false;
         if (this.getPort() != other.getPort()) return false;
-        final Object this$index = this.getIndexPrefix();
-        final Object other$index = other.getIndexPrefix();
-        if (!Objects.equals(this$index, other$index)) return false;
         final Object this$username = this.getApiKeyId();
         final Object other$username = other.getApiKeyId();
         if (!Objects.equals(this$username, other$username)) return false;
@@ -96,8 +88,6 @@ public class ConnectorConfiguration {
         final Object $host = this.getHost();
         result = result * PRIME + ($host == null ? 43 : $host.hashCode());
         result = result * PRIME + this.getPort();
-        final Object $index = this.getIndexPrefix();
-        result = result * PRIME + ($index == null ? 43 : $index.hashCode());
         final Object $username = this.getApiKeyId();
         result = result * PRIME + ($username == null ? 43 : $username.hashCode());
         final Object $password = this.getApiKeySecret();
@@ -107,6 +97,6 @@ public class ConnectorConfiguration {
     }
 
     public String toString() {
-        return "ConnectorConfiguration(host=" + this.getHost() + ", port=" + this.getPort() + ", index=" + this.getIndexPrefix() + ", username=" + this.getApiKeyId() + ", ssl=" + this.isSsl() + ")";
+        return "ConnectorConfiguration(host=" + this.getHost() + ", port=" + this.getPort() + ", username=" + this.getApiKeyId() + ", ssl=" + this.isSsl() + ")";
     }
 }

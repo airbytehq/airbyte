@@ -13,7 +13,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +25,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
-  protected static final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
 
   public static void main(String[] args) throws Exception {
@@ -44,14 +43,14 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     }
 
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
-    return connection.check();
-    /*
+    //return connection.check();
+
     if (connection.ping()) {
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } else {
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to ping elasticsearch");
     }
-    */
+
   }
 
   @Override
@@ -65,7 +64,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     final Map<String, String> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : configuredCatalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
+      final String tableName = streamToIndexName(stream.getStream().getNamespace(), streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
         throw new IllegalStateException("Undefined destination sync mode");
@@ -83,6 +82,14 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private ConnectorConfiguration convertConfig(JsonNode config) {
     return mapper.convertValue(config, ConnectorConfiguration.class);
+  }
+
+  protected static String streamToIndexName(String namespace, String streamName) {
+    String prefix = "";
+    if (Objects.nonNull(namespace) && !namespace.isEmpty()) {
+      prefix = String.format("%s_", namespace);
+    }
+    return String.format("%s%s", prefix, namingResolver.getIdentifier(streamName));
   }
 
 }

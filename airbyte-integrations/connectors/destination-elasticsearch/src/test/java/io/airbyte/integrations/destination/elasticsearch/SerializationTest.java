@@ -36,7 +36,6 @@ public class SerializationTest {
     ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
     Assertions.assertEquals(host, config.getHost());
     Assertions.assertEquals(port, config.getPort());
-    Assertions.assertEquals(indexPrefix, config.getIndexPrefix());
     Assertions.assertEquals(apiKeyId, config.getApiKeyId());
     Assertions.assertEquals(apiKeySecret, config.getApiKeySecret());
     Assertions.assertEquals(ssl, config.isSsl());
