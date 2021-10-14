@@ -92,7 +92,8 @@
                 "description": "The JSON key of the service account to use for authorization",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
-                ]
+                ],
+                "airbyte_secret": true
               }
             }
           }
