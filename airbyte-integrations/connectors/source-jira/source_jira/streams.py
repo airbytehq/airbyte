@@ -834,7 +834,6 @@ class Sprints(V1ApiJiraStream):
     """
 
     parse_response_root = "values"
-    raise_on_http_errors = False
     use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -844,7 +843,9 @@ class Sprints(V1ApiJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+            if board["type"] == "scrum":
+                yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+        yield from []
 
 
 class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
