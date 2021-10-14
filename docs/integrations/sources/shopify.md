@@ -74,6 +74,9 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 ## Getting started
 
+This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applications) athentication methods.
+
+### Connect using `API PASSWORD` option:
 1. Go to `https://YOURSTORE.myshopify.com/admin/apps/private`
 2. Enable private development if it isn't enabled.
 3. Create a private application.
@@ -82,10 +85,17 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 5. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
 6. You're ready to set up Shopify in Airbyte!
 
+### Connect using `OAuth 2.0` option:
+1. Select `OAuth 2.0` in `Shopify Authorization Method`
+2. Click on `authenticate`
+2. Proceed the authentication using your credentials for your Shopify account.
+
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.19 | 2021-10-11 | [6951](https://github.com/airbytehq/airbyte/pull/6951) | Added support of `OAuth 2.0` authorisation option |
 | 0.1.18 | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
 | 0.1.17 | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
 | 0.1.16 | 2021-09-09 | [5965](https://github.com/airbytehq/airbyte/pull/5945) | Fixed the connector's performance for `Incremental refresh` |
