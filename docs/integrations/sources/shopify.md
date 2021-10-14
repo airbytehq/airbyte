@@ -97,7 +97,7 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.19 | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063) | Added `Location` and `InventoryLevels` as streams |
+| 0.1.20 | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063) | Added `Location` and `InventoryLevels` as streams |
 | 0.1.19 | 2021-10-11 | [6951](https://github.com/airbytehq/airbyte/pull/6951) | Added support of `OAuth 2.0` authorisation option |
 | 0.1.18 | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
 | 0.1.17 | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
