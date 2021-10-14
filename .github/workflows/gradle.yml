@@ -77,9 +77,6 @@ jobs:
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
 
-      - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
-
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
