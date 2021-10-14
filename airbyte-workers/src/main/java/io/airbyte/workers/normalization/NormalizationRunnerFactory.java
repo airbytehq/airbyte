@@ -18,6 +18,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-redshift", DefaultNormalizationRunner.DestinationType.REDSHIFT)
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .put("airbyte/destination-mysql", DefaultNormalizationRunner.DestinationType.MYSQL)
+          .put("airbyte/destination-mysql-strict-encrypt", DefaultNormalizationRunner.DestinationType.MYSQL)
           .put("airbyte/destination-mssql", DefaultNormalizationRunner.DestinationType.MSSQL)
           .put("airbyte/destination-mssql-strict-encrypt", DefaultNormalizationRunner.DestinationType.MSSQL)
           .build();

@@ -29,6 +29,10 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
+  }
+
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = getDatabase(config)) {
@@ -76,7 +80,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public JsonNode toJdbcConfig(JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("useSSL=true");
       additionalParameters.add("requireSSL=true");
       additionalParameters.add("verifyServerCertificate=false");
@@ -108,7 +112,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   public static void main(String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
+    final Destination destination = MySQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MySQLDestination.class);
