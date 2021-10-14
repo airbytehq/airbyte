@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -27,7 +26,8 @@ public class OracleStrictEncryptSource extends SpecModifyingSource implements So
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ArrayNode) spec.getConnectionSpecification().get("required")).add("encryption");
-    // We need to remove the first item from one Of, which is responsible for connecting to the source without encrypted.
+    // We need to remove the first item from one Of, which is responsible for connecting to the source
+    // without encrypted.
     ((ArrayNode) spec.getConnectionSpecification().get("properties").get("encryption").get("oneOf")).remove(0);
     return spec;
   }

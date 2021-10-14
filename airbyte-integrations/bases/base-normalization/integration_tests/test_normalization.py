@@ -8,6 +8,7 @@ import pathlib
 import re
 import shutil
 import tempfile
+from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
@@ -19,21 +20,30 @@ temporary_folders = set()
 
 # dbt models and final sql outputs from the following git versioned tests will be written in a folder included in
 # airbyte git repository.
-git_versioned_tests = ["test_primary_key_streams"]
+git_versioned_tests = ["test_simple_streams", "test_nested_streams"]
 
 dbt_test_utils = DbtIntegrationTest()
 
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
+    destinations_to_test = dbt_test_utils.get_test_targets()
+    for integration_type in [d.value for d in DestinationType]:
+        if integration_type in destinations_to_test:
+            test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
+            shutil.rmtree(test_root_dir, ignore_errors=True)
+    if os.getenv("RANDOM_TEST_SCHEMA"):
+        target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
+        dbt_test_utils.set_target_schema(target_schema)
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_db()
+    dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
+    # TODO delete target_schema in destination by copying dbt_project.yml and injecting a on-run-end hook to clean up
 
 
 @pytest.fixture
@@ -54,36 +64,42 @@ def setup_test_path(request):
         ]
     ),
 )
-# Uncomment the following line as an example on how to run the test against local destinations only...
-# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL, ...])
-# Run tests on all destinations:
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
-    print("Testing normalization")
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+    if destination_type.value == DestinationType.ORACLE.value and test_resource_name == "test_nested_streams":
+        pytest.skip(f"Destinations {destination_type} does not support nested streams")
+
+    target_schema = dbt_test_utils.target_schema
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    try:
+        run_test_normalization(destination_type, test_resource_name)
+    finally:
+        dbt_test_utils.set_target_schema(target_schema)
+
+
+def run_test_normalization(destination_type: DestinationType, test_resource_name: str):
+    print(f"Testing normalization {destination_type} for {test_resource_name} in ", dbt_test_utils.target_schema)
     integration_type = destination_type.value
 
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
-    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
 
     # Use destination connector to create _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
 
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
-    if integration_type == DestinationType.ORACLE.value:
-        # Oracle doesnt support nested with clauses
-        # Skip the dbt_test for DestinationType.ORACLE
-        dbt_test_utils.dbt_run(test_root_dir)
-    else:
-        # Setup test resources and models
-        dbt_test_setup(destination_type, test_resource_name, test_root_dir)
-        # Run DBT process
-        dbt_test_utils.dbt_run(test_root_dir)
-        # Run checks on Tests results
-        dbt_test(test_root_dir)
-        check_outputs(destination_type, test_resource_name, test_root_dir)
+    # Setup test resources and models
+    dbt_test_setup(destination_type, test_resource_name, test_root_dir)
+    # Run DBT process
+    dbt_test_utils.dbt_run(destination_type, test_root_dir)
+    dbt_test(destination_type, test_root_dir)
+    check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
@@ -104,22 +120,32 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
         test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
     else:
         test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
-    shutil.rmtree(test_root_dir, ignore_errors=True)
-    os.makedirs(test_root_dir)
+    os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
+    shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
-    shutil.copytree("../dbt-project-template", test_root_dir)
-    if integration_type.lower() != "redshift":
+    dbt_project_yaml = "../dbt-project-template/dbt_project.yml"
+    copy_tree("../dbt-project-template", test_root_dir)
+    if integration_type == DestinationType.MSSQL.value:
+        copy_tree("../dbt-project-template-mssql", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-mssql/dbt_project.yml"
+    elif integration_type == DestinationType.MYSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-mysql/dbt_project.yml"
+    elif integration_type == DestinationType.ORACLE.value:
+        copy_tree("../dbt-project-template-oracle", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-oracle/dbt_project.yml"
+    if integration_type.lower() != "redshift" and integration_type.lower() != "oracle":
         # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
         dbt_test_utils.copy_replace(
-            "../dbt-project-template/dbt_project.yml",
+            dbt_project_yaml,
             os.path.join(test_root_dir, "dbt_project.yml"),
             pattern="ephemeral",
             replace_value="view",
         )
     else:
-        # 'view' materializations on redshift are too slow, so keep it ephemeral there...
-        dbt_test_utils.copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
+        # keep ephemeral tables
+        dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
@@ -185,31 +211,21 @@ def dbt_test_setup(destination_type: DestinationType, test_resource_name: str, t
         destination_type,
         replace_identifiers,
     )
-    if destination_type.value == DestinationType.MSSQL.value:
-        # MS SQL Server doesn't support nested WITH clause,
-        # we use the separed sql statement, to handle this
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_data_tests_mssql"),
-            os.path.join(test_root_dir, "tests"),
-            destination_type,
-            replace_identifiers,
-        )
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_tmp_data_test_mssql"),
-            os.path.join(test_root_dir, "models/dbt_tmp_data_test"),
-            destination_type,
-            replace_identifiers,
-        )
-    else:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_data_tests"),
-            os.path.join(test_root_dir, "tests"),
-            destination_type,
-            replace_identifiers,
-        )
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_data_tests_tmp"),
+        os.path.join(test_root_dir, "models/dbt_data_tests_tmp"),
+        destination_type,
+        replace_identifiers,
+    )
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_data_tests"),
+        os.path.join(test_root_dir, "tests"),
+        destination_type,
+        replace_identifiers,
+    )
 
 
-def dbt_test(test_root_dir: str):
+def dbt_test(destination_type: DestinationType, test_root_dir: str):
     """
     dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
     - Schema tests are added in .yml files from the schema_tests directory
@@ -218,7 +234,8 @@ def dbt_test(test_root_dir: str):
 
     We use this mechanism to verify the output of our integration tests.
     """
-    assert dbt_test_utils.run_check_dbt_command("test", test_root_dir)
+    normalization_image: str = dbt_test_utils.get_normalization_image(destination_type)
+    assert dbt_test_utils.run_check_dbt_command(normalization_image, "test", test_root_dir)
 
 
 def check_outputs(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -249,6 +266,12 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             identifiers_map = json.loads(contents)
             pattern = []
             replace_value = []
+            if dbt_test_utils.target_schema != "test_normalization":
+                pattern.append("test_normalization")
+                if destination_type.value == DestinationType.SNOWFLAKE.value:
+                    replace_value.append(dbt_test_utils.target_schema.upper())
+                else:
+                    replace_value.append(dbt_test_utils.target_schema)
             if destination_type.value in identifiers_map:
                 for entry in identifiers_map[destination_type.value]:
                     for k in entry:
@@ -264,7 +287,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
                 shutil.copytree(src, temp_dir + "/replace", copy_function=copy_replace_identifiers)
                 src = temp_dir + "/replace"
         # final copy
-        shutil.copytree(src, dst)
+        copy_tree(src, dst)
 
 
 def copy_upper(src, dst):

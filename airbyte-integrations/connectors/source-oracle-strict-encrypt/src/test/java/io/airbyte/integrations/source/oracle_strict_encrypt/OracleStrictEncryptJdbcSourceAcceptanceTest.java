@@ -169,7 +169,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-    final Statement stmt = conn.createStatement()) {
+        final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
       logSQLException(e);

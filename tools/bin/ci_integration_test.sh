@@ -17,6 +17,8 @@ else
     selected_integration_test="base-normalization"
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/bases/base-normalization" integrationTest)"
     export SUB_BUILD="CONNECTORS_BASE"
+    # avoid schema conflicts when multiple tests for normalization are run concurrently
+    export RANDOM_TEST_SCHEMA="true"
     ./gradlew --no-daemon --scan airbyteDocker
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)

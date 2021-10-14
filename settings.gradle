@@ -52,12 +52,16 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-cli'
     include ':airbyte-e2e-testing'
     include ':airbyte-migration'
+    include ':airbyte-integrations:bases:base-normalization'
     include ':airbyte-oauth'
+    include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
-    include ':airbyte-webapp'
     include ':airbyte-tests'
+    include ':airbyte-webapp'
+
+    include ':tools:code-generator'
 }
 
 // connectors base
@@ -76,7 +80,6 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium'
-    include ':tools:code-generator'
 
     include ':airbyte-oauth'
 
@@ -90,9 +93,11 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-oracle'
     include ':airbyte-integrations:connectors:destination-mssql'
 
-    //Needed by destination-bugquery
+    //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
     include ':airbyte-integrations:connectors:destination-gcs'
+
+    include ':tools:code-generator'
 }
 
 // connectors

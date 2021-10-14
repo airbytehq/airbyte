@@ -19,25 +19,44 @@ from typing import Any, Dict, List
 from normalization.destination_type import DestinationType
 from normalization.transform_config.transform import TransformConfig
 
+NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
+NORMALIZATION_TEST_MSSQL_DB_PORT = "NORMALIZATION_TEST_MSSQL_DB_PORT"
+NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
+NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
+
 
 class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
-        self.db_names = ["postgres", "mysql", "mssql"]
+        self.db_names = []
+
+    @staticmethod
+    def generate_random_string(prefix: str) -> str:
+        return prefix + DbtIntegrationTest.random_string(5)
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
-    def setup_db(self):
-        self.setup_postgres_db()
-        self.setup_mysql_db()
-        self.setup_mssql_db()
+    def set_target_schema(self, target_schema: str):
+        self.target_schema = target_schema
+
+    def setup_db(self, destinations_to_test: List[str]):
+        if DestinationType.POSTGRES.value in destinations_to_test:
+            self.setup_postgres_db()
+        if DestinationType.MYSQL.value in destinations_to_test:
+            self.setup_mysql_db()
+        if DestinationType.MSSQL.value in destinations_to_test:
+            self.setup_mssql_db()
 
     def setup_postgres_db(self):
-        print("Starting localhost postgres container for tests")
-        port = self.find_free_port()
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_POSTGRES_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_POSTGRES_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
         config = {
             "host": "localhost",
             "username": "integration-tests",
@@ -46,40 +65,46 @@ class DbtIntegrationTest(object):
             "database": "postgres",
             "schema": self.target_schema,
         }
-        commands = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            f"{self.container_prefix}_postgres",
-            "-e",
-            f"POSTGRES_USER={config['username']}",
-            "-e",
-            f"POSTGRES_PASSWORD={config['password']}",
-            "-p",
-            f"{config['port']}:5432",
-            "-d",
-            "marcosmarxm/postgres-ssl:dev",
-            "-c",
-            "ssl=on",
-            "-c",
-            "ssl_cert_file=/var/lib/postgresql/server.crt",
-            "-c",
-            "ssl_key_file=/var/lib/postgresql/server.key",
-        ]
-        print("Executing: ", " ".join(commands))
-        subprocess.call(commands)
-        print("....Waiting for Postgres DB to start...15 sec")
-        time.sleep(15)
-
+        if start_db:
+            self.db_names.append("postgres")
+            print("Starting localhost postgres container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_postgres",
+                "-e",
+                f"POSTGRES_USER={config['username']}",
+                "-e",
+                f"POSTGRES_PASSWORD={config['password']}",
+                "-p",
+                f"{config['port']}:5432",
+                "-d",
+                "marcosmarxm/postgres-ssl:dev",
+                "-c",
+                "ssl=on",
+                "-c",
+                "ssl_cert_file=/var/lib/postgresql/server.crt",
+                "-c",
+                "ssl_key_file=/var/lib/postgresql/server.key",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for Postgres DB to start...15 sec")
+            time.sleep(15)
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/postgres.json", "w") as fh:
             fh.write(json.dumps(config))
 
     def setup_mysql_db(self):
-        print("Starting localhost mysql container for tests")
-        port = self.find_free_port()
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_MYSQL_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_MYSQL_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
         config = {
             "host": "localhost",
             "port": port,
@@ -87,36 +112,42 @@ class DbtIntegrationTest(object):
             "username": "root",
             "password": "",
         }
-        commands = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            f"{self.container_prefix}_mysql",
-            "-e",
-            "MYSQL_ALLOW_EMPTY_PASSWORD=yes",
-            "-e",
-            "MYSQL_INITDB_SKIP_TZINFO=yes",
-            "-e",
-            f"MYSQL_DATABASE={config['database']}",
-            "-p",
-            f"{config['port']}:3306",
-            "-d",
-            "mysql",
-        ]
-        print("Executing: ", " ".join(commands))
-        subprocess.call(commands)
-        print("....Waiting for MySQL DB to start...15 sec")
-        time.sleep(15)
-
+        if start_db:
+            self.db_names.append("mysql")
+            print("Starting localhost mysql container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_mysql",
+                "-e",
+                "MYSQL_ALLOW_EMPTY_PASSWORD=yes",
+                "-e",
+                "MYSQL_INITDB_SKIP_TZINFO=yes",
+                "-e",
+                f"MYSQL_DATABASE={config['database']}",
+                "-p",
+                f"{config['port']}:3306",
+                "-d",
+                "mysql",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for MySQL DB to start...15 sec")
+            time.sleep(15)
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/mysql.json", "w") as fh:
             fh.write(json.dumps(config))
 
     def setup_mssql_db(self):
-        print("Starting localhost MS SQL Server container for tests")
-        port = self.find_free_port()
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_MSSQL_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_MSSQL_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
         config = {
             "host": "localhost",
             "username": "SA",
@@ -125,26 +156,37 @@ class DbtIntegrationTest(object):
             "database": self.target_schema,
             "schema": self.target_schema,
         }
-
-        command_start_container = [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            f"{self.container_prefix}_mssql",
-            "-h",
-            f"{self.container_prefix}_mssql",
-            "-e",
-            "ACCEPT_EULA='Y'",
-            "-e",
-            f"SA_PASSWORD='{config['password']}'",
-            "-e",
-            "MSSQL_PID='Standard'",
-            "-p",
-            f"{config['port']}:1433",
-            "-d",
-            "mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04",
-        ]
+        if start_db:
+            self.db_names.append("mssql")
+            print("Starting localhost MS SQL Server container for tests")
+            command_start_container = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_mssql",
+                "-h",
+                f"{self.container_prefix}_mssql",
+                "-e",
+                "ACCEPT_EULA='Y'",
+                "-e",
+                f"SA_PASSWORD='{config['password']}'",
+                "-e",
+                "MSSQL_PID='Standard'",
+                "-p",
+                f"{config['port']}:1433",
+                "-d",
+                "mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04",
+            ]
+            # cmds & parameters
+            cmd_start_container = " ".join(command_start_container)
+            wait_sec = 30
+            # run the docker container
+            print("Executing: ", cmd_start_container)
+            subprocess.check_call(cmd_start_container, shell=True)
+            # wait for service is available
+            print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
+            time.sleep(wait_sec)
         # Run additional commands to prepare the table
         command_create_db = [
             "docker",
@@ -160,20 +202,9 @@ class DbtIntegrationTest(object):
             "-Q",
             f"CREATE DATABASE [{config['database']}]",
         ]
-
-        # cmds & parameters
-        cmd_start_container = " ".join(command_start_container)
-        wait_sec = 30
-        # run the docker container
-        print("Executing: ", cmd_start_container)
-        subprocess.check_call(cmd_start_container, shell=True)
-        # wait for service is available
-        print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
-        time.sleep(wait_sec)
         # create test db
         print("Executing: ", " ".join(command_create_db))
         subprocess.call(command_create_db)
-
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/mssql.json", "w") as fh:
@@ -207,12 +238,6 @@ class DbtIntegrationTest(object):
             os.chdir(integration_tests_dir)
         else:
             os.chdir(request.fspath.dirname)
-
-    def generate_project_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
-        config_generator = TransformConfig()
-        project_yaml = config_generator.transform_dbt_project(destination_type)
-        config_generator.write_yaml_config(test_root_dir, project_yaml, "dbt_project.yml")
-        return project_yaml
 
     def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
         """
@@ -262,20 +287,32 @@ class DbtIntegrationTest(object):
             process.wait()
         return process.returncode == 0
 
-    def dbt_run(self, test_root_dir: str):
+    @staticmethod
+    def get_normalization_image(destination_type: DestinationType) -> str:
+        if DestinationType.MSSQL.value == destination_type.value:
+            return "airbyte/normalization-mssql:dev"
+        elif DestinationType.MYSQL.value == destination_type.value:
+            return "airbyte/normalization-mysql:dev"
+        elif DestinationType.ORACLE.value == destination_type.value:
+            return "airbyte/normalization-oracle:dev"
+        else:
+            return "airbyte/normalization:dev"
+
+    def dbt_run(self, destination_type: DestinationType, test_root_dir: str):
         """
         Run the dbt CLI to perform transformations on the test raw data in the destination
         """
+        normalization_image: str = self.get_normalization_image(destination_type)
         # Perform sanity check on dbt project settings
-        assert self.run_check_dbt_command("debug", test_root_dir)
-        assert self.run_check_dbt_command("deps", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "debug", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "deps", test_root_dir)
         final_sql_files = os.path.join(test_root_dir, "final")
         shutil.rmtree(final_sql_files, ignore_errors=True)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
-        assert self.run_check_dbt_command("run", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "run", test_root_dir)
 
     @staticmethod
-    def run_check_dbt_command(command: str, cwd: str) -> bool:
+    def run_check_dbt_command(normalization_image: str, command: str, cwd: str) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -298,7 +335,7 @@ class DbtIntegrationTest(object):
             "--entrypoint",
             "/usr/local/bin/dbt",
             "-i",
-            "airbyte/normalization:dev",
+            normalization_image,
             command,
             "--profiles-dir=/workspace",
             "--project-dir=/workspace",
@@ -321,6 +358,7 @@ class DbtIntegrationTest(object):
                         "Nothing to do.",  # When no schema/data tests are setup
                         "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
                         "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
+                        "depends on a node named 'disabled_test' which was not found",  # Tests throwing warning because it is disabled
                     ]:
                         if except_clause in str_line:
                             is_exception = True
@@ -374,3 +412,18 @@ class DbtIntegrationTest(object):
             file1.close()
         if isinstance(dst, str):
             file2.close()
+
+    @staticmethod
+    def get_test_targets() -> List[str]:
+        """
+        Returns a list of destinations to run tests on.
+
+        if the environment variable NORMALIZATION_TEST_TARGET is set with a comma separated list of destination names,
+        then the tests are run only on that subsets of destinations
+        Otherwise tests are run against all destinations
+        """
+        if os.getenv(NORMALIZATION_TEST_TARGET):
+            target_str = os.getenv(NORMALIZATION_TEST_TARGET)
+            return [d.value for d in {DestinationType.from_string(s) for s in target_str.split(",")}]
+        else:
+            return [d.value for d in DestinationType]

@@ -138,7 +138,7 @@ class Events(IncrementalAmplitudeStream):
         if pendulum.parse(params["start"]).add(hours=6) > pendulum.parse(params["end"]):
             return []
         # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
-        # for example, if there is no data from the specified time period, a 404 exception is thrown 
+        # for example, if there is no data from the specified time period, a 404 exception is thrown
         # https://developers.amplitude.com/docs/export-api#status-codes
         try:
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
