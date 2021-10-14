@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 # Basic full refresh stream
@@ -48,9 +48,9 @@ class FreshsalesStream(HttpStream, ABC):
         records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
         yield from records
     
-    def get_filters(self):
+    def _get_filters(self):
         """
-        Some streams require a filter id to be passed in. This function gets the filter ids
+        Some streams require a filter_id to be passed in. This function gets all available filters.
         """
         filters_url = f"https://{self.domain_name}/crm/sales/api/{self.object_name}/filters"
         auth = self.authenticator.get_auth_header()
@@ -63,14 +63,17 @@ class FreshsalesStream(HttpStream, ABC):
 
     def get_view_id(self):
         """
-        This function get the relevant filter id for the stream
+        This function iterate over all available filters and get the relevant filter_id.
         """
         if hasattr(self, "filter_name"):
-            filters = self.get_filters()
+            filters = self._get_filters()
             return next(filter['id'] for filter in filters if filter['name'] == self.filter_name)
         else:
             return
 class Contacts(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#contacts
+    """
     object_name = "contacts"
     filter_name = "All Contacts"
     def path(
@@ -80,6 +83,9 @@ class Contacts(FreshsalesStream):
         return f"{self.object_name}/view/{view_id}"
 
 class Accounts(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#accounts
+    """
     object_name = "sales_accounts"
     filter_name = "All Accounts"
     def path(
@@ -89,6 +95,9 @@ class Accounts(FreshsalesStream):
         return f"{self.object_name}/view/{view_id}"
 
 class OpenDeals(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#deals
+    """
     object_name = "deals"
     filter_name = "Open Deals"
     def path(
@@ -98,6 +107,9 @@ class OpenDeals(FreshsalesStream):
         return f"{self.object_name}/view/{view_id}"
 
 class WonDeals(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#deals
+    """
     object_name = "deals"
     filter_name = "Won Deals"
     def path(
@@ -107,6 +119,9 @@ class WonDeals(FreshsalesStream):
         return f"{self.object_name}/view/{view_id}"
 
 class LostDeals(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#deals
+    """
     object_name = "deals"
     filter_name = "Lost Deals"
     def path(
@@ -116,6 +131,9 @@ class LostDeals(FreshsalesStream):
         return f"{self.object_name}/view/{view_id}"
 
 class OpenTasks(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#tasks
+    """
     object_name = "tasks"
     filter_value = "open"
     def path(
@@ -129,6 +147,9 @@ class OpenTasks(FreshsalesStream):
         return params
 
 class CompletedTasks(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#tasks
+    """
     object_name = "tasks"
     filter_value = "completed"
     def path(
@@ -142,6 +163,9 @@ class CompletedTasks(FreshsalesStream):
         return params
 
 class PastAppointments(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#appointments
+    """
     object_name = "appointments"
     filter_value = "past"
     def path(
@@ -155,6 +179,9 @@ class PastAppointments(FreshsalesStream):
         return params
 
 class UpcomingAppointments(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#appointments
+    """
     object_name = "appointments"
     filter_value = "upcoming"
     def path(
@@ -167,6 +194,9 @@ class UpcomingAppointments(FreshsalesStream):
         params['filter'] = self.filter_value
         return params
 class SalesActivities(FreshsalesStream):
+    """
+    API docs: https://developers.freshworks.com/crm/api/#sales-activities
+    """
     object_name = "sales_activities"
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -174,12 +204,9 @@ class SalesActivities(FreshsalesStream):
         return f"{self.object_name}"
 
 # Source
-class FreshsalesAuthenticator(TokenAuthenticator):
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Authorization": f"Token token={self._token}"}
 class SourceFreshsales(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        auth = FreshsalesAuthenticator(token=config["api_key"]).get_auth_header()
+        auth = TokenAuthenticator(token=f'token={config["api_key"]}', auth_method="Token").get_auth_header()
         url = f'https://{config["domain_name"]}/crm/sales/api/contacts/filters'
         try:
             session = requests.get(url, headers=auth)
@@ -189,7 +216,7 @@ class SourceFreshsales(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = FreshsalesAuthenticator(token=config["api_key"])
+        auth = TokenAuthenticator(token=f'token={config["api_key"]}', auth_method="Token")
         args = {"authenticator": auth, "domain_name": config["domain_name"]}
         return [
             Contacts(**args),
