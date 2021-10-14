@@ -25,7 +25,7 @@ class SunshineStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return  f"https://{self.subdomain}.zendesk.com/"
+        return f"https://{self.subdomain}.zendesk.com/api/sunshine/"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")

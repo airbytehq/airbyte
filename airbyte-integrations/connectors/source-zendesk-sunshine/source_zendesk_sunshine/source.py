@@ -19,10 +19,10 @@ from .streams import Limits, ObjectRecords, ObjectTypePolicies, ObjectTypes, Rel
 
 
 class OauthAuthenticator(HttpAuthenticator):
-    def __init__(self, config: Mapping[str, str], **kwargs):
+    def __init__(self, access_token: str, **kwargs):
         self.auth_method = "Bearer"
         self.auth_header = "Authorization"
-        self.access_token = config.get("access_token")
+        self.access_token = access_token
         super().__init__(**kwargs)
 
     def get_auth_header(self) -> Mapping[str, Any]:
@@ -49,11 +49,12 @@ class SourceZendeskSunshine(AbstractSource):
             return False, repr(e)
 
     def get_authenticator(self, config):
-        if auth := config.get("authentication"):
-            if api_token := auth.get("api_token"):
-                authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', api_token))
-            elif oauth_credentials := auth.get("oauth_credentials"):
-                authenticator = OauthAuthenticator(config)
+        if config.get("authentication"):
+            auth = config["authentication"]
+            if auth.get("api_token"):
+                authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', auth.get("api_token")))
+            elif auth.get("access_token"):
+                authenticator = OauthAuthenticator(auth["access_token"])
 
         else:
             # Legacy spec support for backward compatibility

@@ -1,25 +1,13 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk_sunshine",
   "connectionSpecification": {
-    "$schema": "https://json-schema.org/draft/2020-12",
+    "$schema":  "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Sunshine Spec",
     "type": "object",
     "required": [
       "email",
       "start_date",
       "subdomain"
-    ],
-    "oneOf": [
-      {
-        "required": [
-          "authentication"
-        ]
-      },
-      {
-        "required": [
-          "api_token"
-        ]
-      }
     ],
     "additionalProperties": false,
     "properties": {
@@ -29,25 +17,48 @@
         "deprecated": true,
         "description": "API Token for backward compatibility. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\">docs</a> for information on how to generate this key."
       },
-      "authentication": {
+      "credentials": {
         "type": "object",
         "oneOf": [
           {
-              "api_token": {
+            "type": "object",
+            "title": "Authenticate via Zendesk (Oauth)",
+            "required": ["access_token"],
+            "properties": {
+              "option_title": {
                 "type": "string",
-                "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\">docs</a> for information on how to generate this key."
+                "title": "Credentials title",
+                "description": "OAuth Credentials",
+                "const": "OAuth Credentials"
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Oauth access token",
+                "airbyte_secret": true
               }
+            },
+            "additionalProperties": false
           },
           {
-            "access_token": {
-              "type": "string",
-              "title": "The client_secret schema",
-              "description": "An explanation about the purpose of this instance.",
-              "default": "",
-              "examples": [
-                ""
-              ]
-            }
+            "type": "object",
+            "title": "Authenticate with API Token",
+            "required": ["api_token"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "title": "Credentials title",
+                "description": "API Token",
+                "const": "API Token"
+              },
+              "personal_access_token": {
+                "type": "string",
+                "title": "Api Token",
+                "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\">docs</a> for information on how to generate this key.",
+                "airbyte_secret": true
+              }
+            },
+            "additionalProperties": false
           }
         ]
       },
@@ -77,7 +88,7 @@
         "credentials",
         0
       ],
-      "oauthFlowInitParameters": [],
+      "oauthFlowInitParameters": [["client_id"]],
       "oauthFlowOutputParameters": [
         [
           "access_token"
