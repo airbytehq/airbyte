@@ -63,3 +63,16 @@ The caching mechanism is related to parent streams. For child streams, there is 
 To use caching in the parent/child relationship, perform the following steps:
 1. Turn on parent stream caching by overriding the `use_cache` property.
 2. Inherit child stream class from `HttpSubStream` class.
+
+#### Example
+```python
+class Employees(HttpStream):
+    ...
+
+    @property
+    def use_cache(self) -> bool:
+        return True
+
+class EmployeeDetails(HttpSubStream):
+    ...
+```
