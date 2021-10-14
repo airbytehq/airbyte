@@ -13,24 +13,8 @@ import requests
 import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from vcr.cassette import Cassette
 
 API_VERSION = 3
-
-
-def request_cache(name: str) -> Cassette:
-    """
-    Builds VCR instance.
-    It deletes file everytime we create it, normally should be called only once.
-    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
-    """
-    filename = f"request_cache_{name}.yml"
-    try:
-        os.remove(filename)
-    except FileNotFoundError:
-        pass
-
-    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
 class JiraStream(HttpStream, ABC):
@@ -40,11 +24,9 @@ class JiraStream(HttpStream, ABC):
 
     primary_key = "id"
     parse_response_root = None
-    use_request_cache = True
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super(JiraStream, self).__init__(**kwargs)
-        self._cache = request_cache(self.__class__.__name__)
         self._domain = domain
         self._projects = projects
 
@@ -86,13 +68,6 @@ class JiraStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        if self.use_request_cache:
-            with self._cache:
-                yield from super().read_records(**kwargs)
-        else:
-            yield from super().read_records(**kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -171,6 +146,7 @@ class Boards(V1ApiJiraStream):
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "board"
@@ -198,7 +174,6 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
 
     cursor_field = "updated"
     parse_response_root = "issues"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         board_id = stream_slice["board_id"]
@@ -273,6 +248,7 @@ class Filters(JiraStream):
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "filter/search"
@@ -282,8 +258,6 @@ class FilterSharing(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
     """
-
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         filter_id = stream_slice["filter_id"]
@@ -313,6 +287,7 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     parse_response_root = "issues"
+    use_cache = True
 
     def __init__(self, additional_fields: List[str] = [], expand_changelog: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -375,7 +350,6 @@ class IssueComments(StartDateJiraStream):
     """
 
     parse_response_root = "comments"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -391,6 +365,8 @@ class IssueFields(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
     """
+
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "field"
@@ -416,7 +392,6 @@ class IssueCustomFieldContexts(JiraStream):
     """
 
     parse_response_root = "values"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         field_id = stream_slice["field_id"]
@@ -475,7 +450,7 @@ class IssuePropertyKeys(JiraStream):
     """
 
     parse_response_root = "key"
-    top_level_stream = False
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -490,8 +465,6 @@ class IssueProperties(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
-
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -510,8 +483,6 @@ class IssueRemoteLinks(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     """
-
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -576,7 +547,6 @@ class IssueVotes(StartDateJiraStream):
     """
 
     # parse_response_root = "voters"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -596,7 +566,6 @@ class IssueWatchers(StartDateJiraStream):
     """
 
     # parse_response_root = "watchers"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -614,7 +583,6 @@ class IssueWorklogs(StartDateJiraStream):
     """
 
     parse_response_root = "worklogs"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -677,6 +645,7 @@ class Projects(JiraStream):
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "project/search"
@@ -697,8 +666,6 @@ class ProjectAvatars(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
-
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -730,7 +697,6 @@ class ProjectComponents(JiraStream):
     """
 
     parse_response_root = "values"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -747,8 +713,6 @@ class ProjectEmail(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
     """
 
-    use_request_cache = False
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_id = stream_slice["project_id"]
         return f"project/{project_id}/email"
@@ -763,8 +727,6 @@ class ProjectPermissionSchemes(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
     """
-
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -791,7 +753,6 @@ class ProjectVersions(JiraStream):
     """
 
     parse_response_root = "values"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -809,6 +770,7 @@ class Screens(JiraStream):
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "screens"
@@ -820,7 +782,7 @@ class ScreenTabs(JiraStream):
     """
 
     raise_on_http_errors = False
-    use_request_cache = False
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
@@ -840,8 +802,6 @@ class ScreenTabFields(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
     """
-
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
@@ -875,6 +835,7 @@ class Sprints(V1ApiJiraStream):
 
     parse_response_root = "values"
     raise_on_http_errors = False
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         board_id = stream_slice["board_id"]
@@ -893,7 +854,6 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
 
     cursor_field = "updated"
     parse_response_root = "issues"
-    use_request_cache = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         sprint_id = stream_slice["sprint_id"]
