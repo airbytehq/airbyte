@@ -25,6 +25,9 @@ class AirbyteSpec(object):
 
 
 class Connector(ABC):
+    # configure whether the `check_config_against_spec_or_exit()` needs to be called
+    check_config_against_spec: bool = True
+
     # can be overridden to change an input config
     def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
         """
