@@ -260,7 +260,7 @@ class SourceNmbgmrGwl(Source):
             AirbyteStream(name='AcousticGWL',
                           supported_sync_modes=["full_refresh", ],
                           source_defined_cursor=True,
-                          json_schema='acoustic_gwl_schema'
+                          json_schema=acoustic_gwl_schema
                           ),
             AirbyteStream(name='WellScreens',
                           supported_sync_modes=["full_refresh", ],
