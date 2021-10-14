@@ -46,7 +46,7 @@
       "type": "string"
     },
     "events": {
-      "type": "object",
+      "type": "array",
       "items": [
         {
           "type": "object",
