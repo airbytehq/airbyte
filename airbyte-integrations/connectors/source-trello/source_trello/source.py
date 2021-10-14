@@ -185,6 +185,11 @@ class SourceTrello(AbstractSource):
     Source Trello fetch date from web-based, Kanban-style, list-making application.
     """
 
+    @staticmethod
+    def _get_authenticator(config: dict) -> TrelloAuthenticator:
+        key, token = config["key"], config["token"]
+        return TrelloAuthenticator(token=token, key=key)
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector by granting the credentials.
@@ -193,7 +198,7 @@ class SourceTrello(AbstractSource):
         try:
             url = f"{TrelloStream.url_base}members/me"
 
-            authenticator = TrelloAuthenticator(token=config["token"], key=config["key"])
+            authenticator = self._get_authenticator(config)
 
             session = requests.get(url, headers=authenticator.get_auth_header())
             session.raise_for_status()
@@ -203,6 +208,6 @@ class SourceTrello(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = TrelloAuthenticator(token=config["token"], key=config["key"])
+        config["authenticator"] = self._get_authenticator(config)
 
         return [Actions(config), Boards(config), Cards(config), Checklists(config), Lists(config), Users(config)]
