@@ -179,7 +179,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, configs.getWorkerEnvironment(), configs.getLogConfigs());
     oAuthHandler = new OAuthHandler(configRepository, trackingClient);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
@@ -579,7 +579,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
-    return execute(() -> logsHandler.getLogs(configs, logsRequestBody));
+    return execute(() -> logsHandler.getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(), configs.getLogConfigs(), logsRequestBody));
   }
 
   @Override

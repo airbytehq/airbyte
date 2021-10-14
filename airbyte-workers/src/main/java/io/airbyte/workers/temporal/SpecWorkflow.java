@@ -5,7 +5,9 @@
 package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -58,17 +60,21 @@ public interface SpecWorkflow {
 
     private final ProcessFactory processFactory;
     private final Path workspaceRoot;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
-    public SpecActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+    public SpecActivityImpl(ProcessFactory processFactory, Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
     }
 
     public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) {
       final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
-      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification>(
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(launcherConfig),
           inputSupplier,

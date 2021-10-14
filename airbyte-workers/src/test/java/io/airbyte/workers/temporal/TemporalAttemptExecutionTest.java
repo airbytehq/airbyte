@@ -88,12 +88,12 @@ class TemporalAttemptExecutionTest {
 
     attemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
+        configs.getWorkerEnvironment(), configs.getLogConfigs(),
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        () -> "workflow_id",
-        configs);
+        () -> "workflow_id");
   }
 
   @AfterEach

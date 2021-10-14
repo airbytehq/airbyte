@@ -188,7 +188,8 @@ public class SchedulerApp {
 
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);

@@ -28,7 +28,9 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -80,6 +82,7 @@ public class SchedulerHandler {
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
   private final OAuthConfigSupplier oAuthConfigSupplier;
+  private final JobConverter jobConverter;
 
   public SchedulerHandler(ConfigRepository configRepository,
                           SchedulerJobClient schedulerJobClient,
@@ -122,6 +125,8 @@ public class SchedulerHandler {
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
+    Configs configs = new EnvConfigs();
+    this.jobConverter = new JobConverter(configs.getWorkerEnvironment(), configs.getLogConfigs());
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -229,9 +234,9 @@ public class SchedulerHandler {
     return discoverJobToOutput(response);
   }
 
-  private static SourceDiscoverSchemaRead discoverJobToOutput(SynchronousResponse<AirbyteCatalog> response) {
+  private SourceDiscoverSchemaRead discoverJobToOutput(SynchronousResponse<AirbyteCatalog> response) {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response));
+        .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
       sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
@@ -248,7 +253,7 @@ public class SchedulerHandler {
     final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
     final ConnectorSpecification spec = response.getOutput();
     SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response))
+        .jobInfo(jobConverter.getSynchronousJobRead(response))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
@@ -270,7 +275,7 @@ public class SchedulerHandler {
     final ConnectorSpecification spec = response.getOutput();
 
     DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response))
+        .jobInfo(jobConverter.getSynchronousJobRead(response))
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
@@ -329,7 +334,7 @@ public class SchedulerHandler {
         destinationImageName,
         standardSyncOperations);
 
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
@@ -350,7 +355,7 @@ public class SchedulerHandler {
 
     final Job job = schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations);
 
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
   public ConnectionState getState(ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
@@ -374,7 +379,7 @@ public class SchedulerHandler {
 
     final Job job = jobPersistence.getJob(jobId);
     jobNotifier.failJob("job was cancelled", job);
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
   private void cancelTemporalWorkflowIfPresent(long jobId) throws IOException {
@@ -397,7 +402,7 @@ public class SchedulerHandler {
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response));
+        .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
       checkConnectionRead

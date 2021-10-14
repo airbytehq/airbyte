@@ -6,8 +6,10 @@ package io.airbyte.workers.temporal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -67,11 +69,16 @@ public interface CheckConnectionWorkflow {
     private final ProcessFactory processFactory;
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot,
+        WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
     }
 
     public StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
@@ -87,7 +94,7 @@ public interface CheckConnectionWorkflow {
 
       final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
           new TemporalAttemptExecution<>(
-              workspaceRoot,
+              workspaceRoot, workerEnvironment, logConfigs,
               jobRunConfig,
               getWorkerFactory(launcherConfig),
               inputSupplier,

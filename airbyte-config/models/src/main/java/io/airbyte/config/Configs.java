@@ -4,6 +4,7 @@
 
 package io.airbyte.config;
 
+import io.airbyte.config.helpers.LogConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +96,8 @@ public interface Configs {
   String getMemoryLimit();
 
   // Logging
+  LogConfigs getLogConfigs();
+
   String getS3LogBucket();
 
   String getS3LogBucketRegion();

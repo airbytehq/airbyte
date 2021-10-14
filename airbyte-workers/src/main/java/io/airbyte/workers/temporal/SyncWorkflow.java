@@ -20,6 +20,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -131,20 +132,25 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+      this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
     ReplicationActivityImpl(ProcessFactory processFactory,
                             SecretsHydrator secretsHydrator,
                             Path workspaceRoot,
+                            WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
                             AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
     }
 
     @Override
@@ -166,7 +172,7 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
           inputSupplier,
@@ -255,12 +261,13 @@ public interface SyncWorkflow {
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
     private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
     public NormalizationActivityImpl(ProcessFactory processFactory,
                                      SecretsHydrator secretsHydrator,
                                      Path workspaceRoot,
-                                     WorkerEnvironment workerEnvironment) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
+                                     WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs);
     }
 
     @VisibleForTesting
@@ -268,12 +275,13 @@ public interface SyncWorkflow {
                               SecretsHydrator secretsHydrator,
                               Path workspaceRoot,
                               AirbyteConfigValidator validator,
-                              WorkerEnvironment workerEnvironment) {
+                              WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
       this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
     }
 
     @Override
@@ -290,7 +298,7 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig),
           inputSupplier,
@@ -331,20 +339,25 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot,
+        WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs);
     }
 
     @VisibleForTesting
     DbtTransformationActivityImpl(ProcessFactory processFactory,
                                   SecretsHydrator secretsHydrator,
                                   Path workspaceRoot,
-                                  AirbyteConfigValidator validator) {
+                                  AirbyteConfigValidator validator, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
     }
 
     @Override
@@ -362,7 +375,7 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements),
           inputSupplier,

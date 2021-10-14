@@ -8,6 +8,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
@@ -114,7 +117,8 @@ public class JobSubmitter implements Runnable {
           final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
-          LogClientSingleton.setJobMdc(workerRun.getJobRoot());
+          Configs configs = new EnvConfigs();
+          LogClientSingleton.getInstance().setJobMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
           LOGGER.debug("Job id {} succeeded", job.getId());

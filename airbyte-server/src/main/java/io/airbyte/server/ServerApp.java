@@ -157,7 +157,8 @@ public class ServerApp implements ServerRunnable {
   public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
