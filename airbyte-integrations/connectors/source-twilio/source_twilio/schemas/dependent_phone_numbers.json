@@ -28,11 +28,9 @@
       "type": ["null", "boolean"]
     },
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "sms_url": {
@@ -52,16 +50,13 @@
     },
     "capabilities": {
       "properties": {
-        "voice": {
+        "Voice": {
           "type": ["null", "boolean"]
         },
-        "sms": {
+        "SMS": {
           "type": ["null", "boolean"]
         },
-        "mms": {
-          "type": ["null", "boolean"]
-        },
-        "fax": {
+        "MMS": {
           "type": ["null", "boolean"]
         }
       },

@@ -28,11 +28,9 @@
       "type": ["null", "boolean"]
     },
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "sms_url": {
@@ -99,6 +97,9 @@
       "type": ["null", "string"]
     },
     "emergency_address_sid": {
+      "type": ["null", "string"]
+    },
+    "emergency_address_status": {
       "type": ["null", "string"]
     },
     "address_sid": {

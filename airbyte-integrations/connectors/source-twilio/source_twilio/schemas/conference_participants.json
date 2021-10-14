@@ -6,15 +6,16 @@
     "call_sid": {
       "type": ["null", "string"]
     },
+    "label": {
+      "type": ["null", "string"]
+    },
     "conference_sid": {
       "type": ["null", "string"]
     },
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "end_conference_on_exit": {

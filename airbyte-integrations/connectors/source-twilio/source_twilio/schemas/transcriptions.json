@@ -7,18 +7,15 @@
       "type": ["null", "string"]
     },
     "date_created": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
       "type": ["null", "string"]
     },
     "duration": {
       "type": ["null", "integer"]
     },
     "price": {
-      "multipleOf": 1e-8,
       "type": ["null", "number"]
     },
     "price_unit": {
