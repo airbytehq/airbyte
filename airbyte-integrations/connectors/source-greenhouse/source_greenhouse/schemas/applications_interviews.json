@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "application_id": {
+      "type": ["null", "integer"]
+    },
+    "external_event_id": {
+      "type": ["null", "string"]
+    },
+    "start": {
+      "type": ["null", "object"],
+      "properties": {
+        "date_time": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "end": {
+      "type": ["null", "object"],
+      "properties": {
+        "date_time": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "video_conferencing_url": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "interview": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "organizer": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "employee_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "interviewers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "employee_id": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "email": {
+            "type": ["null", "string"]
+          },
+          "response_status": {
+            "type": ["null", "string"]
+          },
+          "scorecard_id": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    }
+  }
+}

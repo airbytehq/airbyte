@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "opening_id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "opened_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "application_id": {
+      "type": ["null", "integer"]
+    },
+    "close_reason": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "object"],
+      "properties": {
+        "employment_type": {
+          "type": ["null", "string"]
+        },
+        "maximum_budget": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "keyed_custom_fields": {
+      "type": ["null", "object"],
+      "properties": {
+        "employment_type": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "budget": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

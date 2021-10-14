@@ -8,17 +8,24 @@ The Greenhouse source supports Full Refresh syncs. That is, every time a sync is
 
 Several output streams are available from this source:
 
-* [Applications](https://developers.greenhouse.io/harvest.html#applications)
-* [Candidates](https://developers.greenhouse.io/harvest.html#candidates)
-* [Close Reasons](https://developers.greenhouse.io/harvest.html#close-reasons)
-* [Custom Fields](https://developers.greenhouse.io/harvest.html#custom-fields)
+* [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications)
+* [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application)
+* [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates)
+* [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
+* [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
 * [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
-* [Departments](https://developers.greenhouse.io/harvest.html#departments)
-* [Job Posts](https://developers.greenhouse.io/harvest.html#job-posts)
-* [Jobs](https://developers.greenhouse.io/harvest.html#jobs)
-* [Offers](https://developers.greenhouse.io/harvest.html#offers)
-* [Scorecards](https://developers.greenhouse.io/harvest.html#scorecards)
-* [Users](https://developers.greenhouse.io/harvest.html#users)
+* [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
+* [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews)
+* [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
+* [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages)
+* [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs)
+* [Jobs Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
+* [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job)
+* [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers)
+* [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
+* [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards)
+* [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
+* [Users](https://developers.greenhouse.io/harvest.html#get-list-users)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -50,5 +57,5 @@ Please follow the [Greenhouse documentation for generating an API key](https://d
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.5 | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377) | Refactor the connector to use CDK. Implement additional stream support |
 | 0.2.4 | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238) | added identification of accessible streams for API keys with limited permissions |
-

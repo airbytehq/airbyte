@@ -125,7 +125,7 @@
       }
     },
     "custom_fields": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "employment_type": {
           "type": ["null", "string"]

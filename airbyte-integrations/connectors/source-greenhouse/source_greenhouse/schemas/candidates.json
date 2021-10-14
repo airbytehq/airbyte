@@ -85,10 +85,37 @@
             }
           },
           "rejection_reason": {
-            "type": ["null", "string"]
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "integer"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
           },
           "rejection_details": {
-            "type": ["null", "string"]
+            "type": ["null", "object"],
+            "properties": {
+              "custom_fields": {
+                "type": ["null", "object"]
+              },
+              "keyed_custom_fields": {
+                "type": ["null", "object"]
+              }
+            }
           },
           "rejected_at": {
             "type": ["null", "string"]
