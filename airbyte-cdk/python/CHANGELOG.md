@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.27
+Improving unit test for logger
+
+## 0.1.26
+Use python standard logging instead of custom class
+
 ## 0.1.25
 Modified `OAuth2Specification` model, added new fields: `rootObject` and `oauthFlowOutputParameters`
 

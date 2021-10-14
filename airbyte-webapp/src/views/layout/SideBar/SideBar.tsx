@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRocket, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -10,15 +10,18 @@ import { Routes } from "pages/routes";
 import { useConfig } from "config";
 
 import useConnector from "hooks/services/useConnector";
+import useWorkspace from "hooks/services/useWorkspace";
+
 import { Link } from "components";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
 
-import Source from "./components/SourceIcon";
-import Connections from "./components/ConnectionsIcon";
-import Destination from "./components/DestinationIcon";
-import Onboarding from "./components/OnboardingIcon";
-import useWorkspace from "hooks/services/useWorkspace";
+import ConnectionsIcon from "./components/ConnectionsIcon";
+import DestinationIcon from "./components/DestinationIcon";
+import DocsIcon from "./components/DocsIcon";
+import OnboardingIcon from "./components/OnboardingIcon";
+import SettingsIcon from "./components/SettingsIcon";
+import SourceIcon from "./components/SourceIcon";
 
 const Bar = styled.nav`
   width: 100px;
@@ -81,19 +84,9 @@ const Text = styled.div`
   margin-top: 7px;
 `;
 
-const DocsIcon = styled(FontAwesomeIcon)`
-  font-size: 18px;
-  line-height: 18px;
-`;
-
 const HelpIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
   line-height: 21px;
-`;
-
-const SettingsIcon = styled(FontAwesomeIcon)`
-  font-size: 16px;
-  line-height: 15px;
 `;
 
 const Notification = styled(Indicator)`
@@ -123,7 +116,7 @@ const SideBar: React.FC = () => {
           {workspace.displaySetupWizard ? (
             <li>
               <MenuItem to={Routes.Onboarding} activeClassName="active">
-                <Onboarding />
+                <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
                 </Text>
@@ -132,7 +125,7 @@ const SideBar: React.FC = () => {
           ) : null}
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
-              <Connections />
+              <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
               </Text>
@@ -140,7 +133,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Source} activeClassName="active">
-              <Source />
+              <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
               </Text>
@@ -148,7 +141,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Destination} activeClassName="active">
-              <Destination />
+              <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
               </Text>
@@ -163,7 +156,7 @@ const SideBar: React.FC = () => {
               }
             >
               {hasNewVersions ? <Notification /> : null}
-              <SettingsIcon icon={faCog} />
+              <SettingsIcon />
               <Text>
                 <FormattedMessage id="sidebar.settings" />
               </Text>
@@ -191,7 +184,7 @@ const SideBar: React.FC = () => {
         </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">
-            <DocsIcon icon={faBook} />
+            <DocsIcon />
             <Text>
               <FormattedMessage id="sidebar.docs" />
             </Text>

@@ -13,6 +13,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -52,7 +53,7 @@ public class OAuthConfigSupplier {
                 injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration());
                 if (!maskSecrets) {
                   // when maskSecrets = true, no real oauth injections is happening
-                  trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata);
+                  Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
                 }
               });
       return sourceConnectorConfig;

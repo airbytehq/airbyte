@@ -77,11 +77,12 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.2.4 | 2021-06-25 | [#3911](https://github.com/airbytehq/airbyte/pull/3911) | Added `run_look` endpoint. |
-| 0.2.3 | 2021-06-22 | [#3587](https://github.com/airbytehq/airbyte/pull/3587) | Added support for self-hosted instances. |
-| 0.2.2 | 2021-06-09 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support. |
-| 0.2.1 | 2021-04-02 | [#2726](https://github.com/airbytehq/airbyte/pull/2726) | Fixed connector base versioning. |
-| 0.2.0 | 2021-03-09 | [#2238](https://github.com/airbytehq/airbyte/pull/2238) | Allowed future / unknown properties in the protocol. |
-| 0.1.1 | 2021-01-27 | [#1857](https://github.com/airbytehq/airbyte/pull/1857) | Fix failed CI tests. |
-| 0.1.0 | 2020-12-24 | [#1441](https://github.com/airbytehq/airbyte/pull/1441) | Added looker connector. |
+| :--- | :--- | :--- | :--- |
+| 0.2.4 | 2021-06-25 | [\#3911](https://github.com/airbytehq/airbyte/pull/3911) | Added `run_look` endpoint. |
+| 0.2.3 | 2021-06-22 | [\#3587](https://github.com/airbytehq/airbyte/pull/3587) | Added support for self-hosted instances. |
+| 0.2.2 | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support. |
+| 0.2.1 | 2021-04-02 | [\#2726](https://github.com/airbytehq/airbyte/pull/2726) | Fixed connector base versioning. |
+| 0.2.0 | 2021-03-09 | [\#2238](https://github.com/airbytehq/airbyte/pull/2238) | Allowed future / unknown properties in the protocol. |
+| 0.1.1 | 2021-01-27 | [\#1857](https://github.com/airbytehq/airbyte/pull/1857) | Fix failed CI tests. |
+| 0.1.0 | 2020-12-24 | [\#1441](https://github.com/airbytehq/airbyte/pull/1441) | Added looker connector. |
+
