@@ -123,6 +123,7 @@ write_standard_creds source-salesforce "$SALESFORCE_BULK_INTEGRATION_TESTS_CREDS
 write_standard_creds source-salesforce "$SALESFORCE_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-shopify "$SHOPIFY_INTEGRATION_TEST_CREDS"
+write_standard_creds source-shopify "$SHOPIFY_INTEGRATION_TEST_OAUTH_CREDS" "config_oauth.json"
 write_standard_creds source-shortio "$SOURCE_SHORTIO_TEST_CREDS"
 write_standard_creds source-slack "$SOURCE_SLACK_TEST_CREDS"
 write_standard_creds source-slack "$SOURCE_SLACK_OAUTH_TEST_CREDS" "config_oauth.json"

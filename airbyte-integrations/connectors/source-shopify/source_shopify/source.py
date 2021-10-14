@@ -12,8 +12,8 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
@@ -325,25 +325,14 @@ class DiscountCodes(ChildSubstream):
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
 
-class ShopifyAuthenticator(TokenAuthenticator):
-
-    """
-    Making Authenticator to be able to accept Header-Based authentication.
-    """
-
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"X-Shopify-Access-Token": f"{self._token}"}
-
-
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         """
         Testing connection availability for the connector.
         """
-        auth = ShopifyAuthenticator(token=config["api_password"]).get_auth_header()
+        auth = ShopifyAuthenticator(config).get_auth_header()
         api_version = "2021-07"  # Latest Stable Release
-
         url = f"https://{config['shop']}.myshopify.com/admin/api/{api_version}/shop.json"
 
         try:
@@ -359,8 +348,7 @@ class SourceShopify(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-        # config["ex_state"] = super().exposed_state
-        config["authenticator"] = ShopifyAuthenticator(token=config["api_password"])
+        config["authenticator"] = ShopifyAuthenticator(config)
 
         return [
             Customers(config),
