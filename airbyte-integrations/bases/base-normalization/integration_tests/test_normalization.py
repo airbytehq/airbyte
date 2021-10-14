@@ -122,6 +122,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
         test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
     os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
+    shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
     dbt_project_yaml = "../dbt-project-template/dbt_project.yml"
     copy_tree("../dbt-project-template", test_root_dir)
