@@ -9,18 +9,11 @@ The Greenhouse source supports Full Refresh syncs. That is, every time a sync is
 Several output streams are available from this source:
 
 * [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications)
-* [Applications Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers)
 * [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application)
 * [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates)
 * [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
 * [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
 * [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
-* [Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers)
-* [Demographics Answer Options](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options)
-* [Demographics Questions](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions)
-* [Demographics Answer sAnswer Options](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question)
-* [Demographics Question Sets](https://developers.greenhouse.io/harvest.html#get-list-demographic-question-sets)
-* [Demographics Question Sets Questions](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set)
 * [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
 * [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews)
 * [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
