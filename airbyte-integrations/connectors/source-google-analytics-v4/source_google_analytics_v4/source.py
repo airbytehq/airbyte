@@ -455,7 +455,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
             return GoogleAnalyticsServiceOauth2Authenticator(config)
 
         auth_params = config.get("credentials")
-        if auth_params.pop("auth_type") == "Service":
+
+        if auth_params.get("auth_type") == "Service" or auth_params.get("credentials_json"):
             return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
         else:
             return Oauth2Authenticator(

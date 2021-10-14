@@ -37,7 +37,6 @@
             "title": "Authenticate via Google (Oauth)",
             "type": "object",
             "required": [
-              "auth_type",
               "client_id",
               "client_secret",
               "refresh_token"
@@ -79,7 +78,7 @@
           {
             "type": "object",
             "title": "Service Account Key Authentication",
-            "required": ["auth_type", "credentials_json"],
+            "required": ["credentials_json"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -93,7 +92,8 @@
                 "description": "The JSON key of the service account to use for authorization",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
-                ]
+                ],
+                "airbyte_secret": true
               }
             }
           }
@@ -105,8 +105,14 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+      "oauthFlowInitParameters": [
+        ["client_id"],
+        ["client_secret"]
+      ],
+      "oauthFlowOutputParameters": [
+        ["access_token"],
+        ["refresh_token"]
+      ]
     }
   }
 }
