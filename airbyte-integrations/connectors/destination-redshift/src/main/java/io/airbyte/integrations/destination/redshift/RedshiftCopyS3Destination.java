@@ -27,8 +27,8 @@ import java.util.function.Consumer;
  * https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-use-copy.html for more info.
  *
  * Creating multiple files per stream currently has the naive approach of one file per batch on a
- * stream up to the max limit of (26 * 26 * 26) 17576 files.  Each batch is randomly prefixed by
- * 3 Alpha characters and on a collision the batch is appended to the existing file.
+ * stream up to the max limit of (26 * 26 * 26) 17576 files. Each batch is randomly prefixed by 3
+ * Alpha characters and on a collision the batch is appended to the existing file.
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
