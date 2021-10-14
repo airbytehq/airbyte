@@ -140,7 +140,12 @@ export function useRunOauthFlow(
   const onOathGranted = useCallback(
     async (event: MessageEvent) => {
       // TODO: check if more secure option is required
-      if (event.origin === window.origin && event.data?.state) {
+      if (
+        event.origin === window.origin &&
+        // In case of oAuth 1.0a there would be no "state" field
+        // but it would be "oauth_verifier" parameter.
+        (event.data?.state || event.data?.oauth_verifier)
+      ) {
         await completeOauth(event.data);
       }
     },
