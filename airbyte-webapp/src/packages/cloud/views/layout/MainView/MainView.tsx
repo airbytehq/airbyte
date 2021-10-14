@@ -8,6 +8,7 @@ const MainContainer = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: row;
+  min-height: 680px;
 `;
 
 const Content = styled.div`
