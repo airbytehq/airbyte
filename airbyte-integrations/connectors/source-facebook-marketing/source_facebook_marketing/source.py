@@ -2,12 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
+import logging
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple, Type, MutableMapping
 from jsonschema import RefResolver
 
-from airbyte_cdk.entrypoint import logger
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification, Status
 
@@ -34,6 +34,8 @@ from source_facebook_marketing.streams import (
     Campaigns,
 )
 
+
+logger = logging.getLogger(__name__)
 
 class InsightConfig(BaseModel):
 
@@ -85,7 +87,7 @@ class ConnectorConfig(BaseModel):
         minimum=1,
         maximum=30,
     )
-    insights: Optional[List[InsightConfig]] = Field(
+    custom_insights: Optional[List[InsightConfig]] = Field(
         description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
     )
 
@@ -142,7 +144,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsActionType(**insights_args),
         ]
 
-        return self._update_insights_streams(insights=config.insights, args=insights_args, streams=streams)
+        return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
@@ -153,7 +155,7 @@ class SourceFacebookMarketing(AbstractSource):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
 
-        self._check_insights_entries(config.get('insights', []))
+        self._check_custom_insights_entries(config.get('custom_insights', []))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
@@ -197,31 +199,38 @@ class SourceFacebookMarketing(AbstractSource):
 
         return streams + insights_custom_streams
 
-    def _check_insights_entries(self, insights):
+    def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
 
         default_fields = list(ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys())
         default_breakdowns = list(ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys())
         default_actions_breakdowns = [e for e in default_breakdowns if 'action_' in e]
 
         for insight in insights:
-            if insight.get('fields') and not self._check_values(default_fields, insight.get('fields')):
-                message = f"For {insight.get('name')} that field are not espected in fields"
-                raise Exception("Config validation error: " + message) from None
-            if insight.get('breakdowns') and not self._check_values(default_breakdowns, insight.get('breakdowns')):
-                message = f"For {insight.get('name')} that breakdown are not espected in breakdowns"
-                raise Exception("Config validation error: " + message) from None
-            if insight.get('action_breakdowns') and not self._check_values(default_actions_breakdowns, insight.get('action_breakdowns')):
-                message = f"For {insight.get('name')} that action_breakdowns are not espected in action_breakdowns"
-                raise Exception("Config validation error: " + message) from None
+            if insight.get('fields'):
+                value_checked, value = self._check_values(default_fields, insight.get('fields'))
+                if not value_checked:
+                    message = f"{value} is not a valid field name"
+                    raise Exception("Config validation error: " + message) from None
+            if insight.get('breakdowns'):
+                value_checked, value = self._check_values(default_breakdowns, insight.get('breakdowns'))
+                if not value_checked:
+                    message = f"{value} is not a valid breakdown name"
+                    raise Exception("Config validation error: " + message) from None
+            if insight.get('action_breakdowns'):
+                value_checked, value = self._check_values(default_actions_breakdowns, insight.get('action_breakdowns'))
+                if not value_checked:
+                    message = f"{value} is not a valid action_breakdown name"
+                    raise Exception("Config validation error: " + message) from None
 
         return True
 
-    def _check_values(self, default_value: List[str], custom_value: List[str]) -> bool:
+    def _check_values(self, default_value: List[str], custom_value: List[str]) -> Tuple[bool, Any]:
         for e in custom_value:
             if e not in default_value:
-                logger.error(f"{e} does not appers in {default_value}")
-                return False
-        return True
+                logger.error(f"{e} does not appear in {default_value}")
+                return False, e
+
+        return True, None
 
 
 def expand_local_ref(schema, resolver=None, **kwargs):
