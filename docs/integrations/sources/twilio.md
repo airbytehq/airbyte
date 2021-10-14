@@ -66,5 +66,6 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-10-?? | [7034](https://github.com/airbytehq/airbyte/pull/7034) | Update schemas + turn on transformer for all streams |
 | 0.1.0 | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
 
