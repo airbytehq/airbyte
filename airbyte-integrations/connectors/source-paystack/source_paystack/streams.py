@@ -7,6 +7,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from datetime import datetime
 
 import requests
+import pendulum
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_paystack.constants import PAYSTACK_API_BASE_URL, PAYSTACK_CREATED_AT
 
@@ -70,11 +71,11 @@ class IncrementalPaystackStream(PaystackStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
+        latest_record_created = latest_record.get(self.cursor_field)
         return {
             self.cursor_field: max(
-                latest_record.get(self.cursor_field),
-                current_stream_state.get(self.cursor_field, None),
-                key=lambda d: pendulum.parse(d).int_timestamp if d else 0
+                pendulum.parse(latest_record_created).int_timestamp,
+                current_stream_state.get(self.cursor_field, 0),
             )
         }
 
@@ -82,28 +83,22 @@ class IncrementalPaystackStream(PaystackStream, ABC):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
 
-        start_timestamp = self.get_start_timestamp(stream_state)
-        if start_timestamp:
-            params["from"] = start_timestamp
+        start_date = self._get_start_date(stream_state)
+        if start_date:
+            params["from"] = start_date
         return params
 
-    def get_start_timestamp(self, stream_state) -> str:
+    def _get_start_date(self, stream_state) -> str:
         start_point = self.start_date
         if stream_state and self.cursor_field in stream_state:
-            start_point = max(
-                start_point,
-                stream_state[self.cursor_field],
-                key=lambda d: pendulum.parse(d).int_timestamp
-            )
+            stream_record_created = stream_state[self.cursor_field]
+            start_point = max(start_point, stream_record_created)
 
         if start_point and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
-            start_point = pendulum.parse(start_point)\
-                .subtract(days=abs(self.lookback_window_days))\
-                .isoformat()\
-                .replace("+00:00", "Z")
+            start_point = pendulum.from_timestamp(start_point).subtract(days=abs(self.lookback_window_days)).int_timestamp
 
-        return start_point
+        return pendulum.from_timestamp(start_point).isoformat().replace("+00:00", "Z")
 
 
 class Customers(IncrementalPaystackStream):
