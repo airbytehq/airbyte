@@ -130,7 +130,12 @@ class TestTransformConfig:
             s.bind(("localhost", supposedly_open_port))
 
     def test_transform_bigquery(self):
-        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account-json" }'}
+        input = {
+            "project_id": "my_project_id",
+            "dataset_id": "my_dataset_id",
+            "credentials_json": '{ "type": "service_account-json" }',
+            "dataset_location": "EU",
+        }
 
         actual_output = TransformConfig().transform_bigquery(input)
         expected_output = {
@@ -139,6 +144,7 @@ class TestTransformConfig:
             "project": "my_project_id",
             "dataset": "my_dataset_id",
             "keyfile_json": {"type": "service_account-json"},
+            "location": "EU",
             "retries": 1,
             "threads": 32,
         }
@@ -271,6 +277,32 @@ class TestTransformConfig:
             "schema": "my_db",
             "database": "my_db",
             "username": "a user",
+            "password": "password1234",
+        }
+
+        assert expected == actual
+        # DBT schema is equivalent to MySQL database
+        assert extract_schema(actual) == "my_db"
+
+    def test_transform_mssql(self):
+        input = {
+            "type": "sqlserver",
+            "host": "airbyte.io",
+            "port": 1433,
+            "database": "my_db",
+            "schema": "my_db",
+            "username": "SA",
+            "password": "password1234",
+        }
+
+        actual = TransformConfig().transform_mysql(input)
+        expected = {
+            "type": "sqlserver",
+            "server": "airbyte.io",
+            "port": 1433,
+            "schema": "my_db",
+            "database": "my_db",
+            "username": "SA",
             "password": "password1234",
         }
 

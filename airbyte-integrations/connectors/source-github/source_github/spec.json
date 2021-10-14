@@ -4,8 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Github Source Spec",
     "type": "object",
-    "required": ["credentials", "start_date", "repository"],
-    "additionalProperties": false,
+    "required": ["start_date", "repository"],
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "title": "Authentication mechanism",

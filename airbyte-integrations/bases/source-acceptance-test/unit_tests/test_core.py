@@ -254,6 +254,43 @@ def test_read(schema, record, should_fail):
             ),
             "Specified oauth fields are missed from spec schema:",
         ),
+        # SUCCESS: root object index equal to 1
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "properties": {
+                                        "api_key": {"type": "string"},
+                                    }
+                                },
+                                {
+                                    "properties": {
+                                        "client_id": {"type": "string"},
+                                        "client_secret": {"type": "string"},
+                                        "access_token": {"type": "string"},
+                                        "refresh_token": {"type": "string"},
+                                    }
+                                },
+                            ],
+                        }
+                    },
+                },
+                authSpecification={
+                    "auth_type": "oauth2.0",
+                    "oauth2Specification": {
+                        "rootObject": ["credentials", 1],
+                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
+                    },
+                },
+            ),
+            "",
+        ),
     ],
 )
 def test_validate_oauth_flow(connector_spec, expected_error):
