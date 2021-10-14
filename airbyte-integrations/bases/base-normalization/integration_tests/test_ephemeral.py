@@ -125,7 +125,7 @@ def setup_test_dir(integration_type: str) -> str:
     temporary_folders.add(test_root_dir)
     shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
-    shutil.copytree("../dbt-project-template", test_root_dir)
+    copy_tree("../dbt-project-template", test_root_dir)
     if integration_type == DestinationType.MSSQL.value:
         copy_tree("../dbt-project-template-mysql", test_root_dir)
     elif integration_type == DestinationType.MYSQL.value:

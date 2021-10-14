@@ -124,7 +124,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     dbt_project_yaml = "../dbt-project-template/dbt_project.yml"
-    shutil.copytree("../dbt-project-template", test_root_dir)
+    copy_tree("../dbt-project-template", test_root_dir)
     if integration_type == DestinationType.MSSQL.value:
         copy_tree("../dbt-project-template-mssql", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-mssql/dbt_project.yml"

@@ -1,7 +1,8 @@
 {
   "bigquery": [
     { "HKD_special___characters": "HKD_special___characters_1" },
-    { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" }
+    { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" },
+    { "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "column___with__quotes is not null" }
   ],
   "oracle": [
     { "HKD_special___characters": "HKD_special___characters_1" },
@@ -9,7 +10,8 @@
     { "HKD@spéçiäl & characters": "hkd_special___characters" },
     { "\"hkd_special___characters\"": "hkd_special___characters" },
     { "- date": "- '\"DATE\"'" },
-    { "_airbyte_raw_": "airbyte_raw_" }
+    { "_airbyte_raw_": "airbyte_raw_" },
+    { "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "column___with__quotes is not null" }
   ],
   "postgres": [],
   "snowflake": [
@@ -19,7 +21,8 @@
   "redshift": [],
   "mysql": [
     { "- HKD_special___characters": "- '\"HKD_special___characters\"'" },
-    { "!= HKD_special___characters": "!= \"HKD_special___characters\"" }
+    { "!= HKD_special___characters": "!= \"HKD_special___characters\"" },
+    { "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "`column__'with\\\"_quotes` is not null" }
   ],
   "mssql": [
     { "- HKD_special___characters": "- '\"HKD_special___characters\"'" },
