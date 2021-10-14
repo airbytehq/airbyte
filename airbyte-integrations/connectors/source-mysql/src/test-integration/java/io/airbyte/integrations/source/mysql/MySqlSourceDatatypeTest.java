@@ -14,6 +14,7 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -59,7 +60,8 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             config.get("port").asText(),
             config.get("database").asText()),
         "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+        SQLDialect.MYSQL,
+        "zeroDateTimeBehavior=convertToNull");
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -155,16 +157,16 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("float")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "10.5")
+            .addExpectedValues(null, "10.5")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "power(10, 308)", "1/power(10, 45)")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)))
+            .addInsertValues("null", "power(10, 308)", "1/power(10, 45)", "10.5")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)), "10.5")
             .build());
 
     addDataTypeTestData(
@@ -190,54 +192,40 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "1", "0")
-            // @TODO returns True/False instead of 1/0.
-            // .addExpectedValues(null, "1", "0")
+            .addExpectedValues(null, "true", "false")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
+            .addInsertValues("null", "'2021-01-01'")
+            .addExpectedValues(null, "2021-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'0000-00-00 00:00:00'")
+            .addInsertValues("null", "'2005-10-10 23:22:21'")
+            .addExpectedValues(null, "2005-10-10T23:22:21Z")
             .build());
-
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("datetime")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'2013-09-05T10:10:02'")
-    // .addExpectedValues("2013-09-05T10:10:02")
-    // .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
+            .addExpectedValues(null, null, null, null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'-838:59:59.000000'")
+            // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
+            .addInsertValues("null", "'-23:59:59.123456'", "'00:00:00'")
+            .addExpectedValues(null, "1970-01-01T23:59:59Z", "1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
@@ -274,6 +262,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("varbinary(256)")
             .addInsertValues("null", "'test'")
             // @TODO Returns binary value instead of text
+            // #5878 binary value issue
             // .addExpectedValues(null, "test")
             .build());
 
@@ -283,6 +272,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'test'")
             // @TODO Returns binary value instead of text
+            // #5878 binary value issue
             // .addExpectedValues(null, "test")
             .build());
 
@@ -290,33 +280,32 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("mediumtext")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "lpad('0', 16777214, '0')")
-            // @TODO returns null instead of long text
-            // .addExpectedValues(null, StringUtils.leftPad("0", 16777214, "0"))
+            .addInsertValues(getLogString(1048000), "'test'")
+            .addExpectedValues(StringUtils.leftPad("0", 1048000, "0"), "test")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinytext")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'test'")
+            .addExpectedValues(null, "test")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("longtext")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'test'")
+            .addExpectedValues(null, "test")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("text")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'test'")
+            .addExpectedValues(null, "test")
             .build());
 
     addDataTypeTestData(
@@ -338,11 +327,22 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("bool")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "1", "127", "-128")
-            // @TODO in MySQL boolean returns true only if value equals 1, all other not null values -> false
-            // .addExpectedValues(null, "true", "false", "false")
+            // MySql boolean logic: Only value "1" is true
+            .addInsertValues("null", "1", "0", "127", "-128")
+            .addExpectedValues(null, "true", "false", "false", "false")
             .build());
 
+  }
+
+  private String getLogString(int length) {
+    int maxLpadLength = 262144;
+    StringBuilder stringBuilder = new StringBuilder("concat(");
+    int fullChunks = length / maxLpadLength;
+    for (int i = 1; i <= fullChunks; i++) {
+      stringBuilder.append("lpad('0', 262144, '0'),");
+    }
+    stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
+    return stringBuilder.toString();
   }
 
 }

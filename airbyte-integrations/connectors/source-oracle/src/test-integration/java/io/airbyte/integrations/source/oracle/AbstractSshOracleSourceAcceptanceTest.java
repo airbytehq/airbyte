@@ -103,7 +103,10 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
         .put("sid", db.getSid())
-        .put("schemas", List.of("JDBC_SPACE"));
+        .put("schemas", List.of("JDBC_SPACE"))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()));
   }
 
   @Override
