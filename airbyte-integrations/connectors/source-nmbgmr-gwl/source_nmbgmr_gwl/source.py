@@ -110,6 +110,7 @@ class SourceNmbgmrGwl(Source):
                                               'DataSource': {'type': 'string'},
                                               'MeasuringAgency': {'type': 'string'},
                                               'MeasurementMethod': {'type': 'string'},
+                                              'import_uuid': {'type': 'string'}
                                               }
                                }
         manual_gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
