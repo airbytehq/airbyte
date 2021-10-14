@@ -6,7 +6,6 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
@@ -55,28 +54,8 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
-    if (queryParams.containsKey("code")) {
-      return (String) queryParams.get("code");
-    } else {
-      throw new IOException("Undefined 'code' from consent redirected url.");
-    }
-  }
-
-  @Override
   protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
-  }
-
-  @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
-    return ImmutableMap.<String, String>builder()
-        // required
-        .put("client_id", clientId)
-        .put("redirect_uri", redirectUrl)
-        .put("client_secret", clientSecret)
-        .put("code", authCode)
-        .build();
   }
 
   @Override
