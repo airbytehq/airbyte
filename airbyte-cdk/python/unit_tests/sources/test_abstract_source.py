@@ -22,7 +22,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.sources import AbstractSource, source
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 

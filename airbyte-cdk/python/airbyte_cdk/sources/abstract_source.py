@@ -61,7 +61,7 @@ class AbstractSource(Source, ABC):
     that rely on the output of other incremental streams can utilize the state
     to run those incremental streams in incremental mode.
     """
-    CONFIG_STATE_KEY: ClassVar[str] = "_source_state"
+    CONFIG_STATE_KEY: ClassVar[str] = "_airbyte_source_initial_state"
 
     @property
     def name(self) -> str:
