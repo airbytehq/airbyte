@@ -286,7 +286,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
                 shutil.copytree(src, temp_dir + "/replace", copy_function=copy_replace_identifiers)
                 src = temp_dir + "/replace"
         # final copy
-        shutil.copytree(src, dst)
+        copy_tree(src, dst)
 
 
 def copy_upper(src, dst):
