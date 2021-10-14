@@ -68,17 +68,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install socat
 
-      - name: Update Docker Version
-        run: |
-          sudo apt-get remove -y docker-ce docker-ce-cli
-          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `lsb_release -cs` test"
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli
-        env:
-          USER: ubuntu
-          HOME: /home/ubuntu
+#      - name: Update Docker Version
+#        run: |
+#          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+#          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+#          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `lsb_release -cs` test"
+#          sudo apt-get update
+#          sudo apt-get install -y docker-ce docker-ce-cli
+#        env:
+#          USER: ubuntu
+#          HOME: /home/ubuntu
 
       # WARNING: Error loading config file: .dockercfg: $HOME is not defined
       - name: Output Docker Version
