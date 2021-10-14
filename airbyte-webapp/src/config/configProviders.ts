@@ -4,13 +4,6 @@ import { isDefined } from "utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
-    papercups: {
-      enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
-    },
-    openreplay: {
-      projectID: window.OPENREPLAY === "disabled" ? -1 : undefined,
-      revID: window.AIRBYTE_VERSION,
-    },
     fullstory: { devMode: window.FULLSTORY === "disabled" },
     segment: {
       enabled: isDefined(window.TRACKING_STRATEGY)
@@ -20,6 +13,14 @@ const windowConfigProvider: ConfigProvider = async () => {
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,
     isDemo: window.IS_DEMO === "true",
+    // cloud only start
+    firebase: {
+      apiKey: window.FIREBASE_API_KEY,
+      authDomain: window.FIREBASE_AUTH_DOMAIN,
+    },
+    cloudApiUrl: window.CLOUD_API_URL,
+    cloud: window.CLOUD === "true",
+    // cloud only end
   };
 };
 
@@ -31,21 +32,6 @@ const envConfigProvider: ConfigProvider = async () => {
     },
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
-    },
-    openreplay: {
-      projectID:
-        isDefined(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID) &&
-        Number.isInteger(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
-          ? Number.parseInt(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
-          : -1,
-    },
-    papercups: {
-      accountId: process.env.REACT_APP_PAPERCUPS_ACCOUNT_ID,
-      enableStorytime: isDefined(
-        process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
-      )
-        ? !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
-        : undefined,
     },
   };
 };

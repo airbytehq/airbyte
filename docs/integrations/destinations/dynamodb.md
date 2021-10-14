@@ -1,4 +1,4 @@
-# Dynamodb
+# DynamoDB
 
 This destination writes data to AWS DynamoDB.
 
@@ -20,9 +20,9 @@ Each stream will be output into its own DynamoDB table. Each table will a collec
 | Feature | Support | Notes |
 | :--- | :---: | :--- |
 | Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
-| Incremental - Append Sync | ✅ | |
+| Incremental - Append Sync | ✅ |  |
 | Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | ✅  | Namespace will be used as part of the table name. |
+| Namespaces | ✅ | Namespace will be used as part of the table name. |
 
 ### Performance considerations
 
@@ -38,24 +38,25 @@ This connector by default uses 10 capacity units for both Read and Write in Dyna
 ### Setup guide
 
 * Fill up DynamoDB info
-    * **DynamoDB Endpoint**
-        * Leave empty if using AWS DynamoDB, fill in endpoint URL if using customized endpoint.
-    * **DynamoDB Table Name**
-        * The name prefix of the DynamoDB table to store the extracted data. The table name is \<tablename\>\_\<namespace\>\_\<stream\>.
-    * **DynamoDB Region**
-        * The region of the DynamoDB.
-    * **Access Key Id**
-        * See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
-        * We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_specific-table.html) to the DynamoDB table.
-    * **Secret Access Key**
-        * Corresponding key to the above key id.
+  * **DynamoDB Endpoint**
+    * Leave empty if using AWS DynamoDB, fill in endpoint URL if using customized endpoint.
+  * **DynamoDB Table Name**
+    * The name prefix of the DynamoDB table to store the extracted data. The table name is \\_\\_\.
+  * **DynamoDB Region**
+    * The region of the DynamoDB.
+  * **Access Key Id**
+    * See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
+    * We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_specific-table.html) to the DynamoDB table.
+  * **Secret Access Key**
+    * Corresponding key to the above key id.
 * Make sure your DynamoDB tables are accessible from the machine running Airbyte.
-    * This depends on your networking setup.
-    * You can check AWS DynamoDB documentation with a tutorial on how to properly configure your DynamoDB's access [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/access-control-overview.html).
-    * The easiest way to verify if Airbyte is able to connect to your DynamoDB tables is via the check connection tool in the UI.
+  * This depends on your networking setup.
+  * You can check AWS DynamoDB documentation with a tutorial on how to properly configure your DynamoDB's access [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/access-control-overview.html).
+  * The easiest way to verify if Airbyte is able to connect to your DynamoDB tables is via the check connection tool in the UI.
 
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.1.0 | 2021-08-20 | [#5561](https://github.com/airbytehq/airbyte/pull/5561) | Initial release. |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-08-20 | [\#5561](https://github.com/airbytehq/airbyte/pull/5561) | Initial release. |
+

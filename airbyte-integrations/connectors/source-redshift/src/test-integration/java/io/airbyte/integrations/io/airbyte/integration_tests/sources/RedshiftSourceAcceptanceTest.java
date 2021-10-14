@@ -11,7 +11,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -29,12 +29,12 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  private JsonNode config;
-  private JdbcDatabase database;
-  private String schemaName;
-  private String streamName;
+  protected JsonNode config;
+  protected JdbcDatabase database;
+  protected String schemaName;
+  protected String streamName;
 
-  private static JsonNode getStaticConfig() {
+  protected static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
@@ -58,7 +58,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     });
 
     streamName = "customer";
-    final String fqTableName = SourceJdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
+    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
     String createTestTable =
         String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
     database.execute(connection -> {
