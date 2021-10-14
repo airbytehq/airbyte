@@ -56,18 +56,6 @@
     },
     {
       "stream": {
-        "name": "email_events",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["created"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "engagements",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -119,18 +107,6 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "subscription_changes",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["timestamp"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["timestamp"],
-      "destination_sync_mode": "append"
     },
     {
       "stream": {
