@@ -11,9 +11,7 @@
     { "- date": "- '\"DATE\"'" },
     { "_airbyte_raw_": "airbyte_raw_" }
   ],
-  "postgres": [
-
-  ],
+  "postgres": [],
   "snowflake": [
     { "HKD@SPÉÇIÄL & CHARACTERS": "HKD@spéçiäl & characters" },
     { "TMP_TEST_DATA_CHECK_ROW_COUNTS": "tmp_test_data_check_row_counts" }

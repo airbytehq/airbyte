@@ -6,9 +6,7 @@
       "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "array_length(column___with__quotes) > 0"
     }
   ],
-  "oracle": [
-
-  ],
+  "oracle": [],
   "postgres": [
     {
       "nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data": "nested_stream_with_c__ion_double_array_data"
