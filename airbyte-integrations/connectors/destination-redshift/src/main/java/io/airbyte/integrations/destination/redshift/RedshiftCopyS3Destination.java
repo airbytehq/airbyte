@@ -4,8 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcDatabase;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -58,13 +59,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) throws Exception {
-    var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    return Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        RedshiftInsertDestination.DRIVER_CLASS);
+  public JdbcDatabase getDatabase(JsonNode config) {
+    return getJdbcDatabase(config);
   }
 
   @Override

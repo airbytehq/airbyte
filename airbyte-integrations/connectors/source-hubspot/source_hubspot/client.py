@@ -45,11 +45,14 @@ class Client(BaseClient):
             "line_items": CRMObjectStream(entity="line_item", **common_params),
             "owners": OwnerStream(**common_params),
             "products": CRMObjectStream(entity="product", **common_params),
-            "quotes": CRMObjectStream(entity="quote", **common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
             "tickets": CRMObjectStream(entity="ticket", **common_params),
             "workflows": WorkflowStream(**common_params),
         }
+
+        credentials_title = credentials.get("credentials_title")
+        if credentials_title == "API Key Credentials":
+            self._apis["quotes"] = CRMObjectStream(entity="quote", **common_params)
 
         super().__init__(**kwargs)
 
