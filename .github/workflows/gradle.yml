@@ -101,10 +101,11 @@ jobs:
         env:
           USER: ubuntu
           HOME: /home/ubuntu
-          CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Describe kube nodes
-        run: kubectl describe nodes
+        run: |
+         sleep 30
+         kubectl describe nodes
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
