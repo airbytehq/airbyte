@@ -135,10 +135,7 @@ public class ConfigRepository {
   }
 
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        sourceDefinition.getSourceDefinitionId().toString(),
-        sourceDefinition);
+    persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
 
   public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
@@ -147,14 +144,6 @@ public class ConfigRepository {
     } catch (final ConfigNotFoundException e) {
       LOGGER.info("Attempted to delete source definition with id: {}, but it does not exist", sourceDefId);
     }
-  }
-
-  public List<StandardSourceDefinition> listStandardSources() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
-  }
-
-  public void writeStandardSource(final StandardSourceDefinition source) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(), source);
   }
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
