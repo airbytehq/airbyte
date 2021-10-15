@@ -6,6 +6,7 @@ on:
   push:
 
 jobs:
+
   ## Kube Acceptance Tests
   # In case of self-hosted EC2 errors, remove this block.
   # Docker acceptance tests run as part of the build job.
@@ -62,6 +63,15 @@ jobs:
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
 
       - name: Install socat (required for port forwarding)
         run: |
