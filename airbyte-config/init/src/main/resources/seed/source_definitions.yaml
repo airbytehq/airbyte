@@ -344,7 +344,7 @@
 - sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   name: Iterable
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   sourceType: api
 - sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
