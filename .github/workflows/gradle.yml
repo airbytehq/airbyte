@@ -466,8 +466,8 @@ jobs:
           config: /tmp/kind-config.yaml
         # In case of self-hosted EC2 errors, remove this env block.
         env:
-          USER: root
-          HOME: /home/runner
+          USER: ubuntu
+          HOME: /home/ubuntu
           CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
@@ -476,6 +476,8 @@ jobs:
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
         env:
+          USER: ubuntu
+          HOME: /home/ubuntu
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
@@ -486,8 +488,8 @@ jobs:
 
       - name: Run GCP End-to-End Acceptance Tests
         env:
-          USER: root
-          HOME: /home/runner
+          USER: ubuntu
+          HOME: /home/ubuntu
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
@@ -497,8 +499,8 @@ jobs:
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
-          USER: root
-          HOME: /home/runner
+          USER: ubuntu
+          HOME: /home/ubuntu
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
