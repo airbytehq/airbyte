@@ -55,9 +55,6 @@ class PardotStream(HttpStream, ABC):
     ) -> str:
         return f"{self.object_name}/version/{self.api_version}/do/query"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
-
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         if stream_state:
             for record in records_slice:
@@ -71,6 +68,8 @@ class PardotIdReplicationStream(PardotStream):
     cursor_field = "id"
     filter_param = "id_greater_than"
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 class EmailClicks(PardotIdReplicationStream):
     object_name = "emailClick"
     data_key = "emailClick"
