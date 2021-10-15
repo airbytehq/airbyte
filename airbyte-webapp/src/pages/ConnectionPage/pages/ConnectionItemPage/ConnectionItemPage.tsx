@@ -4,7 +4,7 @@ import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import HeadTitle from "components/HeadTitle";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
@@ -17,7 +17,7 @@ import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";

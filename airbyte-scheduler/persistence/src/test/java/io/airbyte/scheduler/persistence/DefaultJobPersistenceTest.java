@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
@@ -48,7 +28,9 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -135,6 +117,18 @@ class DefaultJobPersistenceTest {
         status,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
+        NOW.getEpochSecond());
+  }
+
+  private static Attempt createUnfinishedAttempt(long id, long jobId, AttemptStatus status, Path logPath) {
+    return new Attempt(
+        id,
+        jobId,
+        logPath,
+        null,
+        status,
+        NOW.getEpochSecond(),
+        NOW.getEpochSecond(),
         null);
   }
 
@@ -160,6 +154,10 @@ class DefaultJobPersistenceTest {
   public void setup() throws Exception {
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     resetDb();
+
+    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
+    jobDbMigrator.createBaseline();
+    jobDbMigrator.migrate();
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
@@ -308,6 +306,90 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
+  @DisplayName("Should return correct set of jobs when querying on end timestamp")
+  void testListJobsWithTimestamp() throws IOException {
+    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    // TODO : Once we fix the problem of precision loss in DefaultJobPersistence, change the test value
+    // to contain milliseconds as well
+    Instant now = Instant.parse("2021-01-01T00:00:00Z");
+    when(timeSupplier.get()).thenReturn(
+        now,
+        now.plusSeconds(1),
+        now.plusSeconds(2),
+        now.plusSeconds(3),
+        now.plusSeconds(4),
+        now.plusSeconds(5),
+        now.plusSeconds(6),
+        now.plusSeconds(7),
+        now.plusSeconds(8),
+        now.plusSeconds(9),
+        now.plusSeconds(10),
+        now.plusSeconds(11),
+        now.plusSeconds(12),
+        now.plusSeconds(13),
+        now.plusSeconds(14),
+        now.plusSeconds(15),
+        now.plusSeconds(16));
+    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
+    final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+    final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
+    final Path syncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int syncJobAttemptNumber1 = jobPersistence.createAttempt(syncJobId, syncJobSecondAttemptLogPath);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber1);
+
+    final long specJobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int specJobAttemptNumber0 = jobPersistence.createAttempt(specJobId, LOG_PATH);
+    jobPersistence.failAttempt(specJobId, specJobAttemptNumber0);
+    final Path specJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int specJobAttemptNumber1 = jobPersistence.createAttempt(specJobId, specJobSecondAttemptLogPath);
+    jobPersistence.succeedAttempt(specJobId, specJobAttemptNumber1);
+
+    List<Job> jobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.EPOCH);
+    assertEquals(jobs.size(), 1);
+    assertEquals(jobs.get(0).getId(), syncJobId);
+    assertEquals(jobs.get(0).getAttempts().size(), 2);
+    assertEquals(jobs.get(0).getAttempts().get(0).getId(), 0);
+    assertEquals(jobs.get(0).getAttempts().get(1).getId(), 1);
+
+    final Path syncJobThirdAttemptLogPath = LOG_PATH.resolve("3");
+    final int syncJobAttemptNumber2 = jobPersistence.createAttempt(syncJobId, syncJobThirdAttemptLogPath);
+    jobPersistence.succeedAttempt(syncJobId, syncJobAttemptNumber2);
+
+    final long newSyncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+    final int newSyncJobAttemptNumber0 = jobPersistence.createAttempt(newSyncJobId, LOG_PATH);
+    jobPersistence.failAttempt(newSyncJobId, newSyncJobAttemptNumber0);
+    final Path newSyncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int newSyncJobAttemptNumber1 = jobPersistence.createAttempt(newSyncJobId, newSyncJobSecondAttemptLogPath);
+    jobPersistence.succeedAttempt(newSyncJobId, newSyncJobAttemptNumber1);
+
+    Long maxEndedAtTimestamp = jobs.get(0).getAttempts().stream().map(c -> c.getEndedAtInSecond().orElseThrow()).max(Long::compareTo).orElseThrow();
+
+    List<Job> secondQueryJobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.ofEpochSecond(maxEndedAtTimestamp));
+    assertEquals(secondQueryJobs.size(), 2);
+    assertEquals(secondQueryJobs.get(0).getId(), syncJobId);
+    assertEquals(secondQueryJobs.get(0).getAttempts().size(), 1);
+    assertEquals(secondQueryJobs.get(0).getAttempts().get(0).getId(), 2);
+
+    assertEquals(secondQueryJobs.get(1).getId(), newSyncJobId);
+    assertEquals(secondQueryJobs.get(1).getAttempts().size(), 2);
+    assertEquals(secondQueryJobs.get(1).getAttempts().get(0).getId(), 0);
+    assertEquals(secondQueryJobs.get(1).getAttempts().get(1).getId(), 1);
+
+    Long maxEndedAtTimestampAfterSecondQuery = -1L;
+    for (Job c : secondQueryJobs) {
+      List<Attempt> attempts = c.getAttempts();
+      Long maxEndedAtTimestampForJob = attempts.stream().map(attempt -> attempt.getEndedAtInSecond().orElseThrow())
+          .max(Long::compareTo).orElseThrow();
+      if (maxEndedAtTimestampForJob > maxEndedAtTimestampAfterSecondQuery) {
+        maxEndedAtTimestampAfterSecondQuery = maxEndedAtTimestampForJob;
+      }
+    }
+
+    assertEquals(0, jobPersistence.listJobs(ConfigType.SYNC, Instant.ofEpochSecond(maxEndedAtTimestampAfterSecondQuery)).size());
+  }
+
+  @Test
   @DisplayName("Should have valid yaml schemas in exported database")
   void testYamlSchemas() throws IOException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
@@ -337,6 +419,43 @@ class DefaultJobPersistenceTest {
   private long createJobAt(Instant created_at) throws IOException {
     when(timeSupplier.get()).thenReturn(created_at);
     return jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+  }
+
+  @Nested
+  class TemporalWorkflowId {
+
+    @Test
+    void testSuccessfulGet() throws IOException, SQLException {
+      var jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      var defaultWorkflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      assertTrue(defaultWorkflowId.isEmpty());
+
+      database.query(ctx -> ctx.execute(
+          "UPDATE attempts SET temporal_workflow_id = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
+          attemptNumber));
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
+      assertEquals(workflowId, "56a81f3a-006c-42d7-bce2-29d675d08ea4");
+    }
+
+    @Test
+    void testGetMissingAttempt() throws IOException {
+      assertTrue(jobPersistence.getAttemptTemporalWorkflowId(0, 0).isEmpty());
+    }
+
+    @Test
+    void testSuccessfulSet() throws IOException {
+      long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      var temporalWorkflowId = "test-id-usually-uuid";
+
+      jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
+
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
+      assertEquals(workflowId, temporalWorkflowId);
+    }
+
   }
 
   @Nested
@@ -429,7 +548,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.RUNNING,
-          Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
+          Lists.newArrayList(createUnfinishedAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }
@@ -464,7 +583,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.RUNNING,
-          Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
+          Lists.newArrayList(createUnfinishedAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }

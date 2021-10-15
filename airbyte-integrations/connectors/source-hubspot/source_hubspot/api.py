@@ -1,32 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import sys
 import time
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
 from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
@@ -34,6 +13,7 @@ from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapp
 import backoff
 import pendulum as pendulum
 import requests
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -59,14 +39,14 @@ KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "phone_number": ("string", None),
 }
 
-CUSTOM_FIELD_VALUE_TYPE_CAST = {
+CUSTOM_FIELD_TYPE_TO_VALUE = {
     bool: "boolean",
     str: "string",
     float: "number",
     int: "integer",
 }
 
-CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED = {v: k for k, v in CUSTOM_FIELD_VALUE_TYPE_CAST.items()}
+CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 
 def retry_connection_handler(**kwargs):
@@ -124,58 +104,25 @@ class API:
     USER_AGENT = "Airbyte"
 
     def __init__(self, credentials: Mapping[str, Any]):
-        self._credentials = {**credentials}
         self._session = requests.Session()
+        credentials_title = credentials.get("credentials_title")
+
+        if credentials_title == "OAuth Credentials":
+            self._session.auth = Oauth2Authenticator(
+                token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
+            )
+        elif credentials_title == "API Key Credentials":
+            self._session.params["hapikey"] = credentials.get("api_key")
+        else:
+            raise Exception("No supported `credentials_title` specified. See spec.json for references")
+
         self._session.headers = {
             "Content-Type": "application/json",
             "User-Agent": self.USER_AGENT,
         }
-
-    def _acquire_access_token_from_refresh_token(self):
-        payload = {
-            "grant_type": "refresh_token",
-            "redirect_uri": self._credentials["redirect_uri"],
-            "refresh_token": self._credentials["refresh_token"],
-            "client_id": self._credentials["client_id"],
-            "client_secret": self._credentials["client_secret"],
-        }
-
-        resp = requests.post(self.BASE_URL + "/oauth/v1/token", data=payload)
-        if resp.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotInvalidAuth(resp.content, response=resp)
-
-        resp.raise_for_status()
-        auth = resp.json()
-        self._credentials["access_token"] = auth["access_token"]
-        self._credentials["refresh_token"] = auth["refresh_token"]
-        self._credentials["token_expires"] = datetime.utcnow() + timedelta(seconds=auth["expires_in"] - 600)
-        logger.info(f"Token refreshed. Expires at {self._credentials['token_expires']}")
-
-    @property
-    def api_key(self) -> Optional[str]:
-        """Get API Key if set"""
-        return self._credentials.get("api_key")
-
-    @property
-    def access_token(self) -> Optional[str]:
-        """Get Access Token if set, refreshes token if needed"""
-        if not self._credentials.get("access_token"):
-            return None
-
-        if self._credentials["token_expires"] is None or self._credentials["token_expires"] < datetime.utcnow():
-            self._acquire_access_token_from_refresh_token()
-        return self._credentials.get("access_token")
-
-    def _add_auth(self, params: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """Add auth info to request params/header"""
-        params = params or {}
-
-        if self.access_token:
-            self._session.headers["Authorization"] = f"Bearer {self.access_token}"
-        else:
-            params["hapikey"] = self.api_key
-
-        return params
 
     @staticmethod
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
@@ -185,7 +132,8 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotAccessDenied(message, response=response)
+            """ Once hit the forbidden endpoint, we return the error message from response. """
+            pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
@@ -204,12 +152,14 @@ class API:
 
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
-    def get(self, url: str, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
+    def get(self, url: str, params: MutableMapping[str, Any] = None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
+        response = self._session.get(self.BASE_URL + url, params=params)
         return self._parse_and_handle_errors(response)
 
-    def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
-        response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
+    def post(
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+        response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response)
 
 
@@ -259,29 +209,45 @@ class Stream(ABC):
             yield record
 
     @staticmethod
-    def _cast_value(declared_field_types: List, field_name: str, field_value):
+    def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
+        """
+        Convert record's received value according to its declared catalog json schema type / format / attribute name.
+        :param declared_field_types type from catalog schema
+        :param field_name value's attribute name
+        :param field_value actual value to cast
+        :param declared_format format field value from catalog schema
+        :return Converted value for record
+        """
 
-        if field_value is None and "null" in declared_field_types:
-            return field_value
+        if "null" in declared_field_types:
+            if field_value is None:
+                return field_value
+            # Sometime hubspot output empty string on field with format set.
+            # Set it to null to avoid errors on destination' normalization stage.
+            if declared_format and field_value == "":
+                return None
 
         actual_field_type = type(field_value)
-        actual_field_type_name = CUSTOM_FIELD_VALUE_TYPE_CAST.get(actual_field_type)
+        actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(actual_field_type)
         if actual_field_type_name in declared_field_types:
             return field_value
 
         target_type_name = next(filter(lambda t: t != "null", declared_field_types))
-        target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
+        target_type = CUSTOM_FIELD_VALUE_TO_TYPE.get(target_type_name)
 
         if target_type_name == "number":
-            if field_name.endswith("_id"):
-                # do not cast numeric IDs into float, use integer instead
-                target_type = int
+            # do not cast numeric IDs into float, use integer instead
+            target_type = int if field_name.endswith("_id") else target_type
+
+        if target_type_name != "string" and field_value == "":
+            # do not cast empty strings, return None instead to be properly casted.
+            field_value = None
+            return field_value
 
         try:
             casted_value = target_type(field_value)
-        except ValueError as e:
-            logger.warn(f"Could not cast {field_value} to {target_type}")
-            logger.warn(e)
+        except ValueError:
+            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
             return field_value
 
         return casted_value
@@ -297,10 +263,13 @@ class Stream(ABC):
         properties = properties or self.properties
 
         for field_name, field_value in record["properties"].items():
-            declared_field_types = properties[field_name].get("type") or []
+            declared_field_types = properties[field_name].get("type", [])
             if not isinstance(declared_field_types, Iterable):
                 declared_field_types = [declared_field_types]
-            record["properties"][field_name] = self._cast_value(declared_field_types, field_name, field_value)
+            format = properties[field_name].get("format")
+            record["properties"][field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+            )
 
         return record
 
@@ -336,7 +305,25 @@ class Stream(ABC):
         while True:
             response = getter(params=params)
             if isinstance(response, Mapping):
+                if response.get("status", None) == "error":
+                    """
+                    When the API Key doen't have the permissions to access the endpoint,
+                    we break the read, skip this stream and log warning message for the user.
+
+                    Example:
+
+                    response.json() = {
+                        'status': 'error',
+                        'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
+                        'correlationId': '111111-2222-3333-4444-55555555555'}
+                    """
+                    logger.warn(f"Stream `{self.data_field}` cannot be procced. {response.get('message')}")
+                    break
+
                 if response.get(self.data_field) is None:
+                    """
+                    When the response doen't have the stream's data, raise an exception.
+                    """
                     raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
                 yield from response[self.data_field]
@@ -452,7 +439,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
@@ -488,7 +475,9 @@ class CRMObjectStream(Stream):
         """Entity URL"""
         return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(self, entity: str = None, associations: List[str] = None, include_archived_only: bool = False, **kwargs):
+    def __init__(
+        self, entity: Optional[str] = None, associations: Optional[List[str]] = None, include_archived_only: bool = False, **kwargs
+    ):
         super().__init__(**kwargs)
         self.entity = entity or self.entity
         self.associations = associations or self.associations

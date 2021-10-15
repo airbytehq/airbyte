@@ -19,7 +19,7 @@ Cypress.Commands.add("fillTestLocalJsonForm", (name) => {
 })
 
 Cypress.Commands.add("openSourcePage", () => {
-  cy.visit("/");
+  cy.visit("/source");
   cy.intercept("/sources/list").as("getSourcesList");
   cy.wait("@getSourcesList");
 })

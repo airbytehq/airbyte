@@ -6,11 +6,11 @@
       "type": ["null", "integer"]
     },
     "amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "paid_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "paid_date": {
       "type": ["null", "string"],
@@ -30,11 +30,11 @@
     },
     "created_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "updated_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "payment_gateway": {
       "type": ["null", "object"],

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
@@ -268,8 +248,9 @@ public class DefaultJobPersistence implements JobPersistence {
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
 
       ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.FAILED),
+          now,
           now,
           jobId,
           attemptNumber);
@@ -285,13 +266,37 @@ public class DefaultJobPersistence implements JobPersistence {
       updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
 
       ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
           Sqls.toSqlName(AttemptStatus.SUCCEEDED),
+          now,
           now,
           jobId,
           attemptNumber);
       return null;
     });
+  }
+
+  @Override
+  public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
+    database.query(ctx -> ctx.execute(
+        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
+        temporalWorkflowId,
+        jobId,
+        attemptNumber));
+  }
+
+  @Override
+  public Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
+    var result = database.query(ctx -> ctx.fetch(
+        " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
+        jobId,
+        attemptNumber)).stream().findFirst();
+
+    if (result.isEmpty() || result.get().get("temporal_workflow_id") == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(result.get().get("temporal_workflow_id", String.class));
   }
 
   @Override
@@ -403,6 +408,16 @@ public class DefaultJobPersistence implements JobPersistence {
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+  }
+
+  @Override
+  public List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
+    return database.query(ctx -> getJobsFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(config_type AS VARCHAR) =  ? AND " +
+            " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC", Sqls.toSqlName(configType),
+            timeConvertedIntoLocalDateTime)));
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {
@@ -663,6 +678,9 @@ public class DefaultJobPersistence implements JobPersistence {
     ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
+  /**
+   * TODO: we need version specific importers to copy data to the database. Issue: #5682.
+   */
   private static void importTable(DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.getTableDefinition();
@@ -675,7 +693,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final Stream<List<?>> data = jsonStream.map(node -> {
         final List<Object> values = new ArrayList<>();
         for (final Field<?> column : columns) {
-          values.add(getJsonNodeValue(column.getName(), node.get(column.getName())));
+          values.add(getJsonNodeValue(node, column.getName()));
         }
         return values;
       });
@@ -742,9 +760,13 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * Convert the JSON @param valueNode and @return Java Values for the @param columnName
+   * @return Java Values for the @param columnName in @param jsonNode
    */
-  private static Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
+  private static Object getJsonNodeValue(final JsonNode jsonNode, final String columnName) {
+    if (!jsonNode.has(columnName)) {
+      return null;
+    }
+    final JsonNode valueNode = jsonNode.get(columnName);
     final JsonNodeType nodeType = valueNode.getNodeType();
     if (nodeType == JsonNodeType.OBJECT) {
       return valueNode.toString();

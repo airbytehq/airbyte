@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -32,17 +12,19 @@ import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.JsonSecretsProcessor;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -62,8 +44,8 @@ public class DestinationHandler {
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
-  private final JsonSecretsProcessor secretProcessor;
   private final ConfigurationUpdate configurationUpdate;
+  private final JsonSecretsProcessor secretsProcessor;
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
@@ -78,8 +60,8 @@ public class DestinationHandler {
     this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
-    this.secretProcessor = secretsProcessor;
     this.configurationUpdate = configurationUpdate;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
@@ -90,7 +72,8 @@ public class DestinationHandler {
         configRepository,
         integrationSchemaValidation,
         specFetcher,
-        connectionsHandler, UUID::randomUUID,
+        connectionsHandler,
+        UUID::randomUUID,
         new JsonSecretsProcessor(),
         new ConfigurationUpdate(configRepository, specFetcher));
   }
@@ -136,13 +119,15 @@ public class DestinationHandler {
       connectionsHandler.deleteConnection(connectionRead);
     }
 
+    final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
+
     // persist
     persistDestinationConnection(
         destination.getName(),
         destination.getDestinationDefinitionId(),
         destination.getWorkspaceId(),
         destination.getDestinationId(),
-        destination.getConnectionConfiguration(),
+        fullConfig,
         true);
   }
 
@@ -201,15 +186,34 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
+  public DestinationReadList searchDestinations(DestinationSearch destinationSearch)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<DestinationRead> reads = Lists.newArrayList();
+
+    for (DestinationConnection dci : configRepository.listDestinationConnection()) {
+      if (!dci.getTombstone()) {
+        DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
+        if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
+          reads.add(destinationRead);
+        }
+      }
+    }
+
+    return new DestinationReadList().destinations(reads);
+  }
+
   private void validateDestination(final ConnectorSpecification spec, final JsonNode configuration) throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
-  private ConnectorSpecification getSpec(UUID destinationDefinitionId)
+  public ConnectorSpecification getSpec(UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return getSpec(specFetcher, configRepository.getStandardDestinationDefinition(destinationDefinitionId));
+  }
+
+  public static ConnectorSpecification getSpec(SpecFetcher specFetcher, StandardDestinationDefinition destinationDef)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return specFetcher.execute(DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag()));
   }
 
   private void persistDestinationConnection(final String name,
@@ -218,7 +222,7 @@ public class DestinationHandler {
                                             final UUID destinationId,
                                             final JsonNode configurationJson,
                                             final boolean tombstone)
-      throws JsonValidationException, IOException {
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withName(name)
         .withDestinationDefinitionId(destinationDefinitionId)
@@ -226,8 +230,7 @@ public class DestinationHandler {
         .withDestinationId(destinationId)
         .withConfiguration(configurationJson)
         .withTombstone(tombstone);
-
-    configRepository.writeDestinationConnection(destinationConnection);
+    configRepository.writeDestinationConnection(destinationConnection, getSpec(destinationDefinitionId));
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -239,16 +242,16 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
-    dci.setConfiguration(secretProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
+    dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
-    return buildDestinationRead(dci, standardDestinationDefinition);
+    return toDestinationRead(dci, standardDestinationDefinition);
   }
 
-  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection,
-                                               final StandardDestinationDefinition standardDestinationDefinition) {
+  protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
+                                                     final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationId(destinationConnection.getDestinationId())

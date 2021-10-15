@@ -1,32 +1,13 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import copy
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+from functools import lru_cache
+from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -35,6 +16,7 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
+    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
@@ -43,6 +25,9 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 
 
 class AbstractSource(Source, ABC):
@@ -67,6 +52,9 @@ class AbstractSource(Source, ABC):
         :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
+
+    # Stream name to instance map for applying output object transformation
+    _stream_to_instance_map: Dict[str, AirbyteStream] = {}
 
     @property
     def name(self) -> str:
@@ -95,9 +83,11 @@ class AbstractSource(Source, ABC):
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
+        config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
+        self._stream_to_instance_map = stream_instances
         for configured_stream in catalog.streams:
             stream_instance = stream_instances.get(configured_stream.stream.name)
             if not stream_instance:
@@ -107,7 +97,11 @@ class AbstractSource(Source, ABC):
 
             try:
                 yield from self._read_stream(
-                    logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, connector_state=connector_state
+                    logger=logger,
+                    stream_instance=stream_instance,
+                    configured_stream=configured_stream,
+                    connector_state=connector_state,
+                    internal_config=internal_config,
                 )
             except Exception as e:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
@@ -121,13 +115,18 @@ class AbstractSource(Source, ABC):
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
+        internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
+
+        if internal_config.page_size and isinstance(stream_instance, HttpStream):
+            logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
+            stream_instance.page_size = internal_config.page_size
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
-            record_iterator = self._read_incremental(logger, stream_instance, configured_stream, connector_state)
+            record_iterator = self._read_incremental(logger, stream_instance, configured_stream, connector_state, internal_config)
         else:
-            record_iterator = self._read_full_refresh(stream_instance, configured_stream)
+            record_iterator = self._read_full_refresh(stream_instance, configured_stream, internal_config)
 
         record_counter = 0
         stream_name = configured_stream.stream.name
@@ -139,12 +138,26 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
+    @staticmethod
+    def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
+        """
+        Check if record count reached liimt set by internal config.
+        :param internal_config - internal CDK configuration separated from user defined config
+        :records_counter - number of records already red
+        :return True if limit reached, False otherwise
+        """
+        if internal_config.limit:
+            if records_counter >= internal_config.limit:
+                return True
+        return False
+
     def _read_incremental(
         self,
         logger: AirbyteLogger,
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
+        internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
@@ -155,38 +168,71 @@ class AbstractSource(Source, ABC):
         slices = stream_instance.stream_slices(
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
+        total_records_counter = 0
         for slice in slices:
-            record_counter = 0
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=slice,
                 stream_state=stream_state,
                 cursor_field=configured_stream.cursor_field or None,
             )
-            for record_data in records:
-                record_counter += 1
+            for record_counter, record_data in enumerate(records, start=1):
                 yield self._as_airbyte_record(stream_name, record_data)
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
-            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+                total_records_counter += 1
+                # This functionality should ideally live outside of this method
+                # but since state is managed inside this method, we keep track
+                # of it here.
+                if self._limit_reached(internal_config, total_records_counter):
+                    # Break from slice loop to save state and exit from _read_incremental function.
+                    break
 
-    def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
+            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+            if self._limit_reached(internal_config, total_records_counter):
+                return
+
+    def _read_full_refresh(
+        self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, internal_config: InternalConfig
+    ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
+        total_records_counter = 0
         for slice in slices:
             records = stream_instance.read_records(
                 stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
             )
             for record in records:
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
+                total_records_counter += 1
+                if self._limit_reached(internal_config, total_records_counter):
+                    return
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
         logger.info(f"Setting state of {stream_name} stream to {stream_state}")
         connector_state[stream_name] = stream_state
         return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
 
+    @lru_cache(maxsize=None)
+    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, dict]:
+        """
+        Lookup stream's transform object and jsonschema based on stream name.
+        This function would be called a lot so using caching to save on costly
+        get_json_schema operation.
+        :param stream_name name of stream from catalog.
+        :return tuple with stream transformer object and discover json schema.
+        """
+        stream_instance = self._stream_to_instance_map.get(stream_name)
+        return stream_instance.transformer, stream_instance.get_json_schema()
+
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
         now_millis = int(datetime.now().timestamp()) * 1000
+        transformer, schema = self._get_stream_transformer_and_schema(stream_name)
+        # Transform object fields according to config. Most likely you will
+        # need it to normalize values against json schema. By default no action
+        # taken unless configured. See
+        # docs/connector-development/cdk-python/schemas.md for details.
+        transformer.transform(data, schema)
         message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)

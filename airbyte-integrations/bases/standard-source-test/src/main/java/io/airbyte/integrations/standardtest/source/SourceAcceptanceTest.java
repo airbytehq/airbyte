@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
@@ -53,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SourceAcceptanceTest extends SourceAbstractTest {
+public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -82,7 +62,6 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
       "airbyte/source-mixpanel-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-braintree-singer",
-      "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
       "airbyte/source-exchange-rates",
       "airbyte/source-stripe",
@@ -98,7 +77,7 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
    */
   private Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
-      "airbyte/source-google-workspace-admin-reports");
+      "airbyte/source-google-workspace-admin-reports", "airbyte/source-kafka");
 
   /**
    * Specification for integration. Will be passed to integration where appropriate in each test.

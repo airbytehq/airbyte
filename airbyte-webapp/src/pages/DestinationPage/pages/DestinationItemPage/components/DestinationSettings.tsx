@@ -3,18 +3,20 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import ContentCard from "components/ContentCard";
+import { ContentCard } from "components";
+import { JobsLogItem } from "components/JobItem";
+import DeleteBlock from "components/DeleteBlock";
+
 import ServiceForm from "views/Connector/ServiceForm";
 import { Destination } from "core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import useDestination from "components/hooks/services/useDestinationHook";
-import DeleteBlock from "components/DeleteBlock";
+import useDestination from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
 import { JobInfo } from "core/resources/Scheduler";
-import { JobsLogItem } from "components/JobItem";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+
+import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 const Content = styled.div`
   width: 100%;
@@ -118,7 +120,7 @@ const DestinationsSettings: React.FC<IProps> = ({
             ...currentDestination,
             serviceType: currentDestination.destinationDefinitionId,
           }}
-          specifications={destinationSpecification.connectionSpecification}
+          selectedConnector={destinationSpecification}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorStatusRequest?.statusMessage}
         />

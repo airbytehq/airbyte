@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-dixa:dev
 tests:
@@ -14,20 +14,13 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#      expect_records:
-#        path: "integration_tests/expected_records.txt"
-#        extra_fields: no
-#        exact_order: no
-#        extra_records: yes
+      timeout_seconds: 1200
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-#      future_state_path: "integration_tests/abnormal_state.json"
-# We skip the full_refresh test because of unusual behaviour in the Dixa API.
-# We observed cases where a record was updated without the updated_at value changing.
-# See the thread below for further information:
-# https://airbytehq.slack.com/archives/C01VDDEGL7M/p1625319909273300
-#  full_refresh:
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+      timeout_seconds: 1200
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 1200

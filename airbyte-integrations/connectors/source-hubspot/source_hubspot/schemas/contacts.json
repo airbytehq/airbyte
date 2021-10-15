@@ -1,7 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
+    "id": {
+      "type": "string"
+    },
     "vid": {
       "type": ["null", "integer"]
     },
@@ -27,20 +30,19 @@
       "type": ["null", "string"]
     },
     "associated-company": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "properties": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "about_us": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -51,15 +53,13 @@
               }
             },
             "closedate_timestamp_earliest_value_a2a17e6e": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -70,14 +70,13 @@
               }
             },
             "facebookfans": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -88,15 +87,13 @@
               }
             },
             "first_contact_createdate_timestamp_earliest_value_78b50eea": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -107,15 +104,13 @@
               }
             },
             "first_conversion_date_timestamp_earliest_value_61f58f2c": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -126,15 +121,13 @@
               }
             },
             "first_conversion_event_name_timestamp_earliest_value_68ddae0a": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -145,15 +138,13 @@
               }
             },
             "first_deal_created_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -164,14 +155,13 @@
               }
             },
             "founded_year": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -182,14 +172,13 @@
               }
             },
             "hs_additional_domains": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -200,15 +189,13 @@
               }
             },
             "hs_analytics_first_timestamp": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -219,15 +206,13 @@
               }
             },
             "hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -238,14 +223,13 @@
               }
             },
             "hs_analytics_first_touch_converting_campaign": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -256,15 +240,13 @@
               }
             },
             "hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -275,15 +257,13 @@
               }
             },
             "hs_analytics_first_visit_timestamp": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -294,15 +274,13 @@
               }
             },
             "hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -313,15 +291,13 @@
               }
             },
             "hs_analytics_last_timestamp": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -332,15 +308,13 @@
               }
             },
             "hs_analytics_last_timestamp_timestamp_latest_value_4e16365a": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -351,14 +325,13 @@
               }
             },
             "hs_analytics_last_touch_converting_campaign": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -369,15 +342,13 @@
               }
             },
             "hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -388,15 +359,13 @@
               }
             },
             "hs_analytics_last_visit_timestamp": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -407,15 +376,13 @@
               }
             },
             "hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -426,14 +393,13 @@
               }
             },
             "hs_analytics_num_page_views": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -444,14 +410,13 @@
               }
             },
             "hs_analytics_num_page_views_cardinality_sum_e46e85b0": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -462,14 +427,13 @@
               }
             },
             "hs_analytics_num_visits": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -480,14 +444,13 @@
               }
             },
             "hs_analytics_num_visits_cardinality_sum_53d952a6": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -498,14 +461,13 @@
               }
             },
             "hs_analytics_source": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -516,14 +478,13 @@
               }
             },
             "hs_analytics_source_data_1": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -534,15 +495,13 @@
               }
             },
             "hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -553,14 +512,13 @@
               }
             },
             "hs_analytics_source_data_2": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -571,15 +529,13 @@
               }
             },
             "hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -590,15 +546,13 @@
               }
             },
             "hs_analytics_source_timestamp_earliest_value_25a3a52c": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -609,14 +563,13 @@
               }
             },
             "hs_avatar_filemanager_key": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -627,14 +580,13 @@
               }
             },
             "hs_created_by_user_id": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -645,15 +597,13 @@
               }
             },
             "hs_createdate": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -664,14 +614,13 @@
               }
             },
             "hs_ideal_customer_profile": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -682,14 +631,13 @@
               }
             },
             "hs_is_target_account": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "boolean"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -700,15 +648,13 @@
               }
             },
             "hs_last_booked_meeting_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -719,15 +665,13 @@
               }
             },
             "hs_last_logged_call_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -738,15 +682,13 @@
               }
             },
             "hs_last_open_task_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -757,15 +699,13 @@
               }
             },
             "hs_last_sales_activity_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -776,15 +716,13 @@
               }
             },
             "hs_last_sales_activity_timestamp": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -795,15 +733,13 @@
               }
             },
             "hs_lastmodifieddate": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -814,14 +750,13 @@
               }
             },
             "hs_merged_object_ids": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -832,14 +767,13 @@
               }
             },
             "hs_num_blockers": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -850,14 +784,13 @@
               }
             },
             "hs_num_contacts_with_buying_roles": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -868,14 +801,13 @@
               }
             },
             "hs_num_decision_makers": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -886,14 +818,13 @@
               }
             },
             "hs_num_open_deals": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -904,14 +835,13 @@
               }
             },
             "hs_object_id": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -922,14 +852,13 @@
               }
             },
             "hs_predictivecontactscore_v2_next_max_max_d4e58c1e": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -940,14 +869,13 @@
               }
             },
             "hs_target_account": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -958,14 +886,13 @@
               }
             },
             "hs_target_account_probability": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -976,15 +903,13 @@
               }
             },
             "hs_target_account_recommendation_snooze_time": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -995,14 +920,13 @@
               }
             },
             "hs_target_account_recommendation_state": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1013,14 +937,13 @@
               }
             },
             "hs_total_deal_value": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1031,14 +954,13 @@
               }
             },
             "hs_updated_by_user_id": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1049,14 +971,13 @@
               }
             },
             "hs_user_ids_of_all_owners": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1067,15 +988,13 @@
               }
             },
             "hubspot_owner_assigneddate": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1086,14 +1005,13 @@
               }
             },
             "is_public": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "boolean"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1104,14 +1022,13 @@
               }
             },
             "num_associated_contacts": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1122,14 +1039,13 @@
               }
             },
             "num_associated_deals": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1140,14 +1056,13 @@
               }
             },
             "num_conversion_events_cardinality_sum_d095f14b": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1158,15 +1073,13 @@
               }
             },
             "recent_conversion_date_timestamp_latest_value_72856da1": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1177,15 +1090,13 @@
               }
             },
             "recent_conversion_event_name_timestamp_latest_value_66c820bf": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1196,14 +1107,13 @@
               }
             },
             "recent_deal_amount": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1214,15 +1124,13 @@
               }
             },
             "recent_deal_close_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1233,14 +1141,13 @@
               }
             },
             "timezone": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1251,14 +1158,13 @@
               }
             },
             "total_money_raised": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1269,14 +1175,13 @@
               }
             },
             "total_revenue": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1287,14 +1192,13 @@
               }
             },
             "name": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1305,14 +1209,13 @@
               }
             },
             "twitterhandle": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1323,14 +1226,13 @@
               }
             },
             "phone": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1341,14 +1243,13 @@
               }
             },
             "twitterbio": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1359,14 +1260,13 @@
               }
             },
             "twitterfollowers": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1377,14 +1277,13 @@
               }
             },
             "address": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1395,14 +1294,13 @@
               }
             },
             "address2": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1413,14 +1311,13 @@
               }
             },
             "facebook_company_page": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1431,14 +1328,13 @@
               }
             },
             "city": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1449,14 +1345,13 @@
               }
             },
             "linkedin_company_page": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1467,14 +1362,13 @@
               }
             },
             "linkedinbio": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1485,14 +1379,13 @@
               }
             },
             "state": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1503,14 +1396,13 @@
               }
             },
             "googleplus_page": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1521,15 +1413,13 @@
               }
             },
             "engagements_last_meeting_booked": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1540,14 +1430,13 @@
               }
             },
             "engagements_last_meeting_booked_campaign": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1558,14 +1447,13 @@
               }
             },
             "engagements_last_meeting_booked_medium": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1576,14 +1464,13 @@
               }
             },
             "engagements_last_meeting_booked_source": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1594,15 +1481,13 @@
               }
             },
             "hs_latest_meeting_activity": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1613,15 +1498,13 @@
               }
             },
             "hs_sales_email_last_replied": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1632,14 +1515,13 @@
               }
             },
             "hubspot_owner_id": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1650,15 +1532,13 @@
               }
             },
             "notes_last_contacted": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1669,15 +1549,13 @@
               }
             },
             "notes_last_updated": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1688,15 +1566,13 @@
               }
             },
             "notes_next_activity_date": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1707,14 +1583,13 @@
               }
             },
             "num_contacted_notes": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1725,14 +1600,13 @@
               }
             },
             "num_notes": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "number", "string"]
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1743,14 +1617,13 @@
               }
             },
             "zip": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1761,14 +1634,13 @@
               }
             },
             "country": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1779,14 +1651,13 @@
               }
             },
             "hubspot_team_id": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1797,14 +1668,13 @@
               }
             },
             "hs_all_owner_ids": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1815,14 +1685,13 @@
               }
             },
             "website": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1833,14 +1702,13 @@
               }
             },
             "domain": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1851,14 +1719,13 @@
               }
             },
             "hs_all_team_ids": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1869,14 +1736,13 @@
               }
             },
             "hs_all_accessible_team_ids": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1887,14 +1753,13 @@
               }
             },
             "numberofemployees": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "number", "string"]
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1905,14 +1770,13 @@
               }
             },
             "industry": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1923,14 +1787,13 @@
               }
             },
             "annualrevenue": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1941,14 +1804,13 @@
               }
             },
             "lifecyclestage": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1959,14 +1821,13 @@
               }
             },
             "hs_lead_status": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1977,14 +1838,13 @@
               }
             },
             "hs_parent_company_id": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -1995,14 +1855,13 @@
               }
             },
             "type": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2013,14 +1872,13 @@
               }
             },
             "description": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2031,14 +1889,13 @@
               }
             },
             "hs_num_child_companies": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2049,15 +1906,13 @@
               }
             },
             "createdate": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2068,15 +1923,13 @@
               }
             },
             "closedate": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2087,15 +1940,13 @@
               }
             },
             "first_contact_createdate": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2106,14 +1957,13 @@
               }
             },
             "days_to_close": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "number", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2124,14 +1974,13 @@
               }
             },
             "web_technologies": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "value": {
                   "type": ["null", "string"]
                 },
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "source": {
                   "type": ["null", "string"]
@@ -2157,12 +2006,10 @@
         "type": ["null", "object"],
         "properties": {
           "deleted-changed-timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "saved-at-timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "vid": {
             "type": ["null", "integer"]
@@ -2173,8 +2020,7 @@
               "type": ["null", "object"],
               "properties": {
                 "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "string"]
                 },
                 "type": {
                   "type": ["null", "string"]
@@ -2203,8 +2049,7 @@
             "type": ["null", "integer"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "vid": {
             "type": ["null", "integer"]
@@ -2221,8 +2066,7 @@
             "type": ["null", "string"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "form-id": {
             "type": ["null", "string"]
@@ -2251,8 +2095,7 @@
             "type": ["null", "integer"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": ["null", "string"]
           },
           "user-id": {
             "type": ["null", "integer"]
@@ -2316,10 +2159,10 @@
       }
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

@@ -10,7 +10,7 @@ The CDK provides an improved developer experience by providing basic implementat
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the #connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the \#connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
 
 ## Getting Started
 
@@ -23,29 +23,29 @@ cd airbyte-integrations/connector-templates/generator
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
 
-Additionally, you can follow [this tutorial](https://github.com/airbytehq/airbyte/tree/184dab77ebfbc00c69eea9e34b7db29c79a9e6d1/airbyte-cdk/python/docs/tutorials/http_api_source.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+Additionally, you can follow [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
 
 #### Basic Concepts
 
-If you want to learn more about the classes required to implement an Airbyte Source, head to our [basic concepts doc](./basic-concepts.md).
+If you want to learn more about the classes required to implement an Airbyte Source, head to our [basic concepts doc](basic-concepts.md).
 
 #### Full Refresh Streams
 
-If you have questions or are running into issues creating your first full refresh stream, head over to our [full refresh stream doc](./full-refresh-stream.md). If you have questions about implementing a `path` or `parse_response` function, this doc is for you.
+If you have questions or are running into issues creating your first full refresh stream, head over to our [full refresh stream doc](full-refresh-stream.md). If you have questions about implementing a `path` or `parse_response` function, this doc is for you.
 
 #### Incremental Streams
 
-Having trouble figuring out how to write a `stream_slices` function or aren't sure what a `cursor_field` is? Head to our [incremental stream doc](./incremental-stream.md).
+Having trouble figuring out how to write a `stream_slices` function or aren't sure what a `cursor_field` is? Head to our [incremental stream doc](incremental-stream.md).
 
 #### Practical Tips
 
 Airbyte recommends using the CDK template generator to develop with the CDK. The template generates created all the required scaffolding, with convenient TODOs, allowing developers to truly focus on implementing the API.
 
-For tips on useful Python knowledge, see the [Python Concepts](./python-concepts.md) page.
+For tips on useful Python knowledge, see the [Python Concepts](python-concepts.md) page.
 
-You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http)
+You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/)
 
 ### Example Connectors
 
@@ -94,7 +94,7 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 
 1. Bump the package version in `setup.py`
 2. Open a PR
-3. An Airbyte member must comment `/publish-cdk --dry-run=<true or false>`. Dry runs publish to test.pypi.org.
+3. An Airbyte member must comment `/publish-cdk dry-run=true` to publish the package to test.pypi.org or `/publish-cdk dry-run=false` to publish it to the real index of pypi.org.
 
 ## Coming Soon
 
@@ -102,5 +102,5 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 * Airbyte Java HTTP CDK
 * CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
 * CDK for other protocols
-* Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/tree/184dab77ebfbc00c69eea9e34b7db29c79a9e6d1/airbyte-cdk/python/github.com/airbytehq/airbyte/issues/new/choose/README.md)
+* Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement&template=feature-request.md&title=)
 

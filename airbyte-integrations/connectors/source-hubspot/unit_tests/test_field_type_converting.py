@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -67,15 +47,37 @@ def test_bad_field_type_converting(field_type, expected, capsys):
 
 
 @pytest.mark.parametrize(
-    "declared_field_types,field_name,field_value,casted_value",
+    "declared_field_types,field_name,field_value,format,casted_value",
     [
-        (["null", "string"], "some_field", None, None),
-        ("string", "some_field", "test", "test"),
-        (["null", "number"], "some_field", "123.456", 123.456),
-        (["null", "number"], "user_id", "123", 123),
-        (["null", "string"], "some_field", "123", "123"),
-        (["null", "string"], "some_field", "", ""),
+        # test for None in field_values
+        (["null", "string"], "some_field", None, None, None),
+        (["null", "number"], "some_field", None, None, None),
+        (["null", "integer"], "some_field", None, None, None),
+        (["null", "object"], "some_field", None, None, None),
+        (["null", "boolean"], "some_field", None, None, None),
+        # specific cases
+        ("string", "some_field", "test", None, "test"),
+        (["null", "number"], "some_field", "123.456", None, 123.456),
+        (["null", "number"], "user_id", "123", None, 123),
+        (["null", "string"], "some_field", "123", None, "123"),
+        # when string has empty field_value (empty string)
+        (["null", "string"], "some_field", "", None, ""),
+        # when NOT string type but has empty sting in field_value, instead of double or null,
+        # we should use None instead, to have it properly casted to the correct type
+        (["null", "number"], "some_field", "", None, None),
+        (["null", "integer"], "some_field", "", None, None),
+        (["null", "object"], "some_field", "", None, None),
+        (["null", "boolean"], "some_field", "", None, None),
+        # Test casting fields with format specified
+        (["null", "string"], "some_field", "", "date-time", None),
+        (["string"], "some_field", "", "date-time", ""),
+        (["null", "string"], "some_field", "2020", "date-time", "2020"),
     ],
 )
-def test_cast_type_if_needed(declared_field_types, field_name, field_value, casted_value):
-    assert Stream._cast_value(declared_field_types, field_name, field_value) == casted_value
+def test_cast_type_if_needed(declared_field_types, field_name, field_value, format, casted_value):
+    assert (
+        Stream._cast_value(
+            declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+        )
+        == casted_value
+    )

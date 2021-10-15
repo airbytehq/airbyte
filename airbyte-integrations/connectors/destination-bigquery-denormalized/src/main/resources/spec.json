@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Denormalized Typed Struct Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id", "credentials_json"],
+    "required": ["project_id", "dataset_id"],
     "additionalProperties": true,
     "properties": {
       "project_id": {
@@ -60,7 +60,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key.",
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
         "title": "Credentials JSON",
         "airbyte_secret": true
       }

@@ -1,21 +1,28 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "description": {
-      "type": "string"
-    },
     "id": {
-      "type": "string"
-    },
-    "isAnyIssueType": {
-      "type": "boolean"
-    },
-    "isGlobalContext": {
-      "type": "boolean"
+      "type": "string",
+      "description": "The ID of the context."
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "The name of the context."
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the context."
+    },
+    "isGlobalContext": {
+      "type": "boolean",
+      "description": "Whether the context is global."
+    },
+    "isAnyIssueType": {
+      "type": "boolean",
+      "description": "Whether the context apply to all issue types."
     }
   },
-  "type": "object"
+  "additionalProperties": false,
+  "description": "The details of a custom field context."
 }

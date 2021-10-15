@@ -55,11 +55,10 @@
     },
     "next_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "next_activity_id": {
       "type": ["null", "integer"]
@@ -69,7 +68,7 @@
     },
     "last_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "lost_reason": {
       "type": ["null", "string"]
@@ -125,7 +124,7 @@
     },
     "expected_close_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "last_incoming_mail_time": {
       "type": ["null", "string"],
@@ -154,8 +153,7 @@
       "type": ["null", "string"]
     },
     "next_activity_duration": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "next_activity_note": {
       "type": ["null", "string"]
@@ -174,7 +172,7 @@
     },
     "rotten_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "time"
     },
     "owner_name": {
       "type": ["null", "string"]

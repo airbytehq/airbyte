@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
@@ -28,10 +8,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -52,6 +34,7 @@ public class JobSubmitter implements Runnable {
   private final JobPersistence persistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final JobTracker jobTracker;
+  private final JobNotifier jobNotifier;
 
   // See attemptJobSubmit() to understand the need for this Concurrent Set.
   private final Set<Long> runningJobs = Sets.newConcurrentHashSet();
@@ -59,23 +42,27 @@ public class JobSubmitter implements Runnable {
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
                       final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                      final JobTracker jobTracker) {
+                      final JobTracker jobTracker,
+                      final JobNotifier jobNotifier) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.jobTracker = jobTracker;
+    this.jobNotifier = jobNotifier;
   }
 
   @Override
   public void run() {
     try {
       LOGGER.debug("Running job-submitter...");
+      var start = System.currentTimeMillis();
 
       final Optional<Job> nextJob = persistence.getNextJob();
 
       nextJob.ifPresent(attemptJobSubmit());
 
-      LOGGER.debug("Completed Job-Submitter...");
+      var end = System.currentTimeMillis();
+      LOGGER.debug("Completed Job-Submitter. Time taken: {} ms", end - start);
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
@@ -102,9 +89,12 @@ public class JobSubmitter implements Runnable {
         runningJobs.add(job.getId());
         trackSubmission(job);
         submitJob(job);
+        var pending = SchedulerApp.PENDING_JOBS.decrementAndGet();
         LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
+        LOGGER.debug("Pending jobs: {}", pending);
       } else {
         LOGGER.info("Attempting to submit already running job {}. There are probably too many queued jobs.", job.getId());
+        LOGGER.debug("Pending jobs: {}", SchedulerApp.PENDING_JOBS.get());
       }
     };
   }
@@ -127,12 +117,16 @@ public class JobSubmitter implements Runnable {
           LogClientSingleton.setJobMdc(workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
+          LOGGER.debug("Job id {} succeeded", job.getId());
           if (output.getOutput().isPresent()) {
             persistence.writeOutput(job.getId(), attemptNumber, output.getOutput().get());
           }
 
           if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
+            if (job.getConfigType() == ConfigType.SYNC) {
+              jobNotifier.successJob(job);
+            }
           } else {
             persistence.failAttempt(job.getId(), attemptNumber);
           }
@@ -145,6 +139,7 @@ public class JobSubmitter implements Runnable {
         })
         .setOnFinish(() -> {
           runningJobs.remove(job.getId());
+          LOGGER.debug("Job id {} cleared", job.getId());
           MDC.clear();
         })
         .build());

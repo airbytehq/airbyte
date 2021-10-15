@@ -1,6 +1,6 @@
 # Step 5: Declare the Schema
 
-The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.io/tutorials/tutorials/beginners-guide-to-catalog) for more information.
+The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
 This is a simple task with the Airbyte CDK. For each stream in our connector we'll need to: 1. Create a python `class` in `source.py` which extends `HttpStream` 2. Place a `<stream_name>.json` file in the `source_<name>/schemas/` directory. The name of the file should be the snake\_case name of the stream whose schema it describes, and its contents should be the JsonSchema describing the output from that stream.
 

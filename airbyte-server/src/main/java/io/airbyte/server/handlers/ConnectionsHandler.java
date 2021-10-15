@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -29,20 +9,27 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
-import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.ResourceRequirements;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -52,6 +39,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.CatalogConverter;
+import io.airbyte.server.handlers.helpers.ConnectionMatcher;
+import io.airbyte.server.handlers.helpers.DestinationMatcher;
+import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -72,21 +62,26 @@ public class ConnectionsHandler {
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
+  private final TrackingClient trackingClient;
 
   @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator, final WorkspaceHelper workspaceHelper) {
+  ConnectionsHandler(final ConfigRepository configRepository,
+                     final Supplier<UUID> uuidGenerator,
+                     final WorkspaceHelper workspaceHelper,
+                     TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
+    this.trackingClient = trackingClient;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
-    this(configRepository, UUID::randomUUID, workspaceHelper);
+  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+    this(configRepository, UUID::randomUUID, workspaceHelper, trackingClient);
   }
 
   private void validateWorkspace(UUID sourceId, UUID destinationId, Set<UUID> operationIds) {
-    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceId(sourceId);
-    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationId(destinationId);
+    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId);
+    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
 
     Preconditions.checkArgument(
         sourceWorkspace.equals(destinationWorkspace),
@@ -98,7 +93,7 @@ public class ConnectionsHandler {
             destinationWorkspace));
 
     for (UUID operationId : operationIds) {
-      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationId(operationId);
+      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
       Preconditions.checkArgument(
           sourceWorkspace.equals(operationWorkspace),
           String.format(
@@ -165,9 +160,9 @@ public class ConnectionsHandler {
 
   private void trackNewConnection(final StandardSync standardSync) {
     try {
-      final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
+      final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(standardSync.getConnectionId());
       final Builder<String, Object> metadataBuilder = generateMetadata(standardSync);
-      TrackingClientSingleton.get().track(workspaceId, "New Connection - Backend", metadataBuilder.build());
+      trackingClient.track(workspaceId, "New Connection - Backend", metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.", e);
     }
@@ -255,9 +250,72 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
+  public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
+        continue;
+      }
+      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+    }
+
+    return new ConnectionReadList().connections(connectionReads);
+  }
+
   public ConnectionRead getConnection(ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionIdRequestBody.getConnectionId());
+  }
+
+  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<ConnectionRead> reads = Lists.newArrayList();
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
+        ConnectionRead connectionRead = buildConnectionRead(standardSync.getConnectionId());
+        if (matchSearch(connectionSearch, connectionRead)) {
+          reads.add(connectionRead);
+        }
+      }
+    }
+
+    return new ConnectionReadList().connections(reads);
+  }
+
+  public boolean matchSearch(ConnectionSearch connectionSearch, ConnectionRead connectionRead)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionRead.getSourceId());
+    final StandardSourceDefinition sourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    SourceRead sourceRead = SourceHandler.toSourceRead(sourceConnection, sourceDefinition);
+
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionRead.getDestinationId());
+    final StandardDestinationDefinition destinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+    DestinationRead destinationRead = DestinationHandler.toDestinationRead(destinationConnection, destinationDefinition);
+
+    final ConnectionMatcher connectionMatcher = new ConnectionMatcher(connectionSearch);
+    final ConnectionRead connectionReadFromSearch = connectionMatcher.match(connectionRead);
+
+    return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
+        matchSearch(connectionSearch.getSource(), sourceRead) &&
+        matchSearch(connectionSearch.getDestination(), destinationRead);
+  }
+
+  public boolean matchSearch(SourceSearch sourceSearch, SourceRead sourceRead) {
+    final SourceMatcher sourceMatcher = new SourceMatcher(sourceSearch);
+    final SourceRead sourceReadFromSearch = sourceMatcher.match(sourceRead);
+
+    return (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead));
+  }
+
+  public boolean matchSearch(DestinationSearch destinationSearch, DestinationRead destinationRead) {
+    final DestinationMatcher destinationMatcher = new DestinationMatcher(destinationSearch);
+    final DestinationRead destinationReadFromSearch = destinationMatcher.match(destinationRead);
+
+    return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
   public void deleteConnection(ConnectionIdRequestBody connectionIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {

@@ -66,11 +66,16 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
+        'dbt-project-template-mssql',
+        'dbt-project-template-mysql',
+        'dbt-project-template-oracle',
         'dbt_data_tests',
+        'dbt_data_tests_tmp',
         'dbt_schema_tests',
         'normalization_test_output',
         'tools',
-        'secrets'
+        'secrets',
+        'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -88,7 +93,7 @@ spotless {
 
         eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -114,9 +119,11 @@ allprojects {
     afterEvaluate { project ->
         def composeDeps = [
                 ":airbyte-config:init",
-                ":airbyte-db",
+                ":airbyte-db:lib",
                 ":airbyte-migration",
+                ":airbyte-integrations:bases:base-normalization",
                 ":airbyte-scheduler:app",
+                ":airbyte-workers",
                 ":airbyte-server",
                 ":airbyte-webapp",
         ].toSet().asImmutable()
@@ -247,7 +254,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateSeed', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
@@ -265,7 +271,7 @@ subprojects {
     if(pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE'))
+            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
@@ -291,50 +297,51 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-// Configure what subprojects to publish.
-String[] toPublish = [
-        ':airbyte-analytics',
-        ':airbyte-api',
-        ':airbyte-commons',
-        ':airbyte-commons-docker',
-        ':airbyte-config:init',
-        ':airbyte-config:models',
-        ':airbyte-config:persistence',
-        ':airbyte-db',
-        ':airbyte-json-validation',
-        ':airbyte-migration',
-        ':airbyte-notification',
-        ':airbyte-protocol:models',
-        ':airbyte-scheduler:client',
-        ':airbyte-scheduler:models',
-        ':airbyte-scheduler:persistence',
-        ':airbyte-server',
-        ':airbyte-workers'
-]
-configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
-    apply plugin: 'maven-publish'
-
-    publishing {
-        repositories {
-            publications {
-                // This block is present so Gradle knows to publish a Maven jar.
-                maven(MavenPublication) {
-                    from components.java
-                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-                }
-            }
-
-            maven {
-                credentials {
-                    name 'cloudrepo'
-                    username System.getenv('CLOUDREPO_USER')
-                    password System.getenv('CLOUDREPO_PASSWORD')
-                }
-                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            }
-
-            mavenLocal()
-        }
-    }
-}
+// TODO: Davin will turn this back on.
+//// Configure what subprojects to publish.
+//String[] toPublish = [
+//        ':airbyte-analytics',
+//        ':airbyte-api',
+//        ':airbyte-commons',
+//        ':airbyte-commons-docker',
+//        ':airbyte-config:init',
+//        ':airbyte-config:models',
+//        ':airbyte-config:persistence',
+//        ':airbyte-db:lib',
+//        ':airbyte-json-validation',
+//        ':airbyte-migration',
+//        ':airbyte-notification',
+//        ':airbyte-protocol:models',
+//        ':airbyte-scheduler:client',
+//        ':airbyte-scheduler:models',
+//        ':airbyte-scheduler:persistence',
+//        ':airbyte-server',
+//        ':airbyte-workers'
+//]
+//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
+//    apply plugin: 'maven-publish'
+//
+//    publishing {
+//        repositories {
+//            publications {
+//                // This block is present so Gradle knows to publish a Maven jar.
+//                maven(MavenPublication) {
+//                    from components.java
+//                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+//                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+//                }
+//            }
+//
+//            maven {
+//                credentials {
+//                    name 'cloudrepo'
+//                    username System.getenv('CLOUDREPO_USER')
+//                    password System.getenv('CLOUDREPO_PASSWORD')
+//                }
+//                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+//            }
+//
+//            mavenLocal()
+//        }
+//    }
+//}

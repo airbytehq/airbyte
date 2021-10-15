@@ -14,9 +14,7 @@ import {
 } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { isSourceDefinition } from "core/domain/connector/source";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
 
 import Instruction from "./Instruction";
 import { IDataItem } from "components/base/DropDown/components/Option";
@@ -56,14 +54,10 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   </>
 );
 
-const DropdownLabels = styled(ControlLabels)`
-  max-width: 202px;
-`;
-
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
   formType: "source" | "destination";
-  availableServices: (SourceDefinition | DestinationDefinition)[];
+  availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
   allowChangeConnector?: boolean;
@@ -82,14 +76,36 @@ const ConnectorServiceTypeControl: React.FC<{
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
 
+  // TODO Begin hack
+  // During the Cloud private beta, we let users pick any connector in our catalog.
+  // Later on, we realized we shouldn't have allowed using connectors whose platforms required oauth
+  // But by that point, some users were already leveraging them, so removing them would crash the app for users
+  // instead we'll filter out those connectors from this drop down menu, and retain them in the backend
+  // This way, they will not be available for usage in new connections, but they will be available for users
+  // already leveraging them.
+  // TODO End hack
+  const blacklistedOauthConnectors =
+    // I would prefer to use windowConfigProvider.cloud but that function is async
+    window.CLOUD === "true"
+      ? [
+          "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
+          "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
+          "36c891d9-4bd9-43ac-bad2-10e12756272c", // Hubspot
+          "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // Google Sheets
+          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
+          "d8313939-3782-41b0-be29-b3ca20d8dd3a", // Intercom
+          "ec4b9503-13cb-48ab-a4ab-6ade4be46567", // Freshdesk
+        ]
+      : [];
   const sortedDropDownData = useMemo(
     () =>
       availableServices
-        .map((item: SourceDefinition | DestinationDefinition) => ({
+        .filter((item) => {
+          return !blacklistedOauthConnectors.includes(Connector.id(item));
+        })
+        .map((item) => ({
           label: item.name,
-          value: isSourceDefinition(item)
-            ? item.sourceDefinitionId
-            : item.destinationDefinitionId,
+          value: Connector.id(item),
           img: <ImageBlock img={item.icon} />,
         }))
         .sort(defaultDataItemSort),
@@ -97,13 +113,7 @@ const ConnectorServiceTypeControl: React.FC<{
   );
 
   const selectedService = React.useMemo(
-    () =>
-      availableServices.find(
-        (s) =>
-          (isSourceDefinition(s)
-            ? s.sourceDefinitionId
-            : s.destinationDefinitionId) === field.value
-      ),
+    () => availableServices.find((s) => Connector.id(s) === field.value),
     [field.value, availableServices]
   );
 
@@ -121,7 +131,7 @@ const ConnectorServiceTypeControl: React.FC<{
 
   return (
     <>
-      <DropdownLabels
+      <ControlLabels
         label={formatMessage({
           id: `form.${formType}Type`,
         })}
@@ -141,7 +151,7 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
         />
-      </DropdownLabels>
+      </ControlLabels>
       {selectedService && documentationUrl && (
         <Instruction
           selectedService={selectedService}

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -34,9 +14,16 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class PosthogStream(HttpStream, ABC):
-    url_base = "https://app.posthog.com/api/"
     primary_key = "id"
     data_field = "results"
+
+    def __init__(self, base_url: str, **kwargs):
+        super().__init__(**kwargs)
+        self._url_base = f"{base_url}/api/"
+
+    @property
+    def url_base(self) -> str:
+        return self._url_base
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
@@ -76,8 +63,8 @@ class IncrementalPosthogStream(PosthogStream, ABC):
 
     state_checkpoint_interval = math.inf
 
-    def __init__(self, start_date: str, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, base_url: str, start_date: str, **kwargs):
+        super().__init__(base_url=base_url, **kwargs)
         self._start_date = start_date
         self._initial_state = None  # we need to keep it here because next_page_token doesn't accept state argument
 

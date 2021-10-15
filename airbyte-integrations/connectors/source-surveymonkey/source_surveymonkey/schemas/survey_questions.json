@@ -21,16 +21,16 @@
       "type": "string"
     },
     "layout": {
-      "type": "string"
+      "type": ["object", "null"]
     },
     "sorting": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "required": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "validation": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "forced_ranking": {
       "type": "boolean"

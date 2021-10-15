@@ -1,10 +1,19 @@
-dependencies {
-    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+plugins {
+    id 'java-library'
+    id 'airbyte-integration-test-java'
+}
 
-    implementation project(':airbyte-db')
+dependencies {
+    implementation 'commons-io:commons-io:2.7'
+
+    implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:jooq')
+    implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-json-validation')
-
+    implementation 'com.google.cloud:google-cloud-secretmanager:1.7.2'
     testImplementation "org.testcontainers:postgresql:1.15.1"
+    integrationTestJavaImplementation project(':airbyte-config:persistence')
 }

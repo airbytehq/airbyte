@@ -1,13 +1,12 @@
-import React from "react";
 import userEvent from "@testing-library/user-event";
-import { screen, findByText, waitFor } from "@testing-library/react";
-import { JSONSchema7 } from "json-schema";
+import { findByText, screen, waitFor } from "@testing-library/react";
 
 import ServiceForm from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
+import { AirbyteJSONSchema } from "core/jsonSchema";
 
-const schema: JSONSchema7 = {
+const schema: AirbyteJSONSchema = {
   type: "object",
   properties: {
     host: {
@@ -25,8 +24,7 @@ const schema: JSONSchema7 = {
       airbyte_secret: true,
       type: "string",
       description: "Password associated with the username.",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any, // Because airbyte_secret is not part of json_schema
+    },
     credentials: {
       type: "object",
       oneOf: [
@@ -53,8 +51,7 @@ const schema: JSONSchema7 = {
       type: "string",
       multiline: true,
       title: "Message",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any, // Because multiline is not part of json_schema
+    },
     priceList: {
       type: "array",
       items: {
@@ -97,7 +94,11 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
-          specifications={schema}
+          selectedConnector={{
+            connectionSpecification: schema,
+            sourceDefinitionId: "1",
+            documentationUrl: "",
+          }}
           availableServices={[]}
         />
       );
@@ -189,7 +190,7 @@ describe("Service Form", () => {
     });
   });
 
-  describe("filling service form", () => {
+  describe.skip("filling service form", () => {
     let result: ServiceFormValues;
     let container: HTMLElement;
     beforeEach(() => {
@@ -198,7 +199,11 @@ describe("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          specifications={schema}
+          specifications={{
+            connectionSpecification: schema,
+            sourceDefinitionId: "1",
+            documentationUrl: "",
+          }}
           availableServices={[]}
         />
       );
@@ -311,7 +316,7 @@ describe("Service Form", () => {
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
-    test.skip("change oneOf field value", async () => {
+    test("change oneOf field value", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );
@@ -334,7 +339,7 @@ describe("Service Form", () => {
       expect(uri).toBeInTheDocument();
     });
 
-    test.skip("should fill right values oneOf field", async () => {
+    test("should fill right values oneOf field", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );

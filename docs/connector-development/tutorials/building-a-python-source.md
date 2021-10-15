@@ -171,7 +171,7 @@ As described in the template code, this method takes in the same config object a
 
 ### Step 8: Set up Standard Tests
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../../connector-development/testing-connectors/testing-connectors.md) explains Standard Tests and how to run them.
+The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/source-acceptance-tests-reference.md) explains Standard Tests and how to run them.
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 

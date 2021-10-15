@@ -22,7 +22,7 @@ then follow the interactive prompt. Next, find all `TODO`s in the generated proj
 Additionally, you can follow [this tutorial](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
-See the [overview docs](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/concepts/overview.md) for a tour through what the API offers.
+See the [overview docs](./docs/concepts/overview.md) for a tour through what the API offers.
 
 ### Example Connectors
 

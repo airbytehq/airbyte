@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -36,7 +16,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.bigquery.BigQueryDatabase;
-import io.airbyte.db.bigquery.BigQueryUtils;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
@@ -64,14 +44,17 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   private String quote = "";
   private JsonNode dbConfig;
+  private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
-    return Jsons.jsonNode(ImmutableMap.builder()
+    var conf = ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
-        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText())
-        .put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText())
-        .build());
+        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());
+    if (config.hasNonNull(CONFIG_DATASET_ID)) {
+      conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
+    }
+    return Jsons.jsonNode(conf.build());
   }
 
   @Override
@@ -105,7 +88,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   protected JsonSchemaPrimitive getType(StandardSQLTypeName columnType) {
-    return BigQueryUtils.getType(columnType);
+    return sourceOperations.getType(columnType);
   }
 
   @Override
@@ -114,14 +97,18 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
+  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) throws Exception {
+    return discoverInternal(database, null);
+  }
+
+  @Override
+  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database, String schema) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    String datasetId = getConfigDatasetId(database);
     List<Table> tables =
         (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-        .nameSpace(datasetId)
+        .nameSpace(table.getTableId().getDataset())
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
@@ -156,7 +143,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
         cursorField),
-        BigQueryUtils.getQueryParameter(cursorFieldType, cursor));
+        sourceOperations.getQueryParameter(cursorFieldType, cursor));
   }
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(BigQueryDatabase database, String sqlQuery, QueryParameterValue... params) {
@@ -171,11 +158,12 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   private boolean isDatasetConfigured(SqlDatabase database) {
-    return database.getSourceConfig().hasNonNull(CONFIG_DATASET_ID);
+    JsonNode config = database.getSourceConfig();
+    return config.hasNonNull(CONFIG_DATASET_ID) ? !config.get(CONFIG_DATASET_ID).asText().isEmpty() : false;
   }
 
   private String getConfigDatasetId(SqlDatabase database) {
-    return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : null);
+    return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : "");
   }
 
   public static void main(String[] args) throws Exception {

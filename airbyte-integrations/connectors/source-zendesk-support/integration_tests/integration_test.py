@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -46,14 +26,18 @@ class TestIntegrationZendeskSupport:
 
     def _test_export_stream(self, stream_cls: type):
         stream = stream_cls(**self.prepare_stream_args())
+        stream.page_size = 1
         record_timestamps = {}
         for record in stream.read_records(sync_mode=None):
             # save the first 5 records
             if len(record_timestamps) > 5:
                 break
-            record_timestamps[record["id"]] = record[stream.cursor_field]
+            if stream._last_end_time not in record_timestamps.values():
+                record_timestamps[record["id"]] = stream._last_end_time
+
+        stream.page_size = 10
         for record_id, timestamp in record_timestamps.items():
-            state = {stream.cursor_field: timestamp}
+            state = {"_last_end_time": timestamp}
             for record in stream.read_records(sync_mode=None, stream_state=state):
                 assert record["id"] != record_id
                 break

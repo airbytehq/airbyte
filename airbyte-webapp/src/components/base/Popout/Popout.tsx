@@ -36,7 +36,11 @@ const PopupOpener: React.FC<{
 );
 
 type PopoutProps = DropdownProps & {
-  targetComponent: (props: { onOpen: () => void; value: Value }) => ReactNode;
+  targetComponent: (props: {
+    onOpen: () => void;
+    isOpen: boolean;
+    value: Value;
+  }) => ReactNode;
 };
 
 const selectStyles = {
@@ -68,7 +72,11 @@ const Popout: React.FC<PopoutProps> = ({
       data-testid={props["data-testid"]}
       isOpen={isOpen}
       onClose={toggleOpen}
-      target={targetComponent({ onOpen: toggleOpen, value: props.value })}
+      target={targetComponent({
+        onOpen: toggleOpen,
+        isOpen,
+        value: props.value,
+      })}
     >
       <DropDown
         autoFocus

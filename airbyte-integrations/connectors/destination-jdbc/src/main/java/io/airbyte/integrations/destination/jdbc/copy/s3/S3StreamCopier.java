@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -32,16 +12,24 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -59,24 +47,28 @@ public abstract class S3StreamCopier implements StreamCopier {
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
 
-  private final String s3StagingFile;
-  private final AmazonS3 s3Client;
-  private final S3Config s3Config;
-  private final StreamTransferManager multipartUploadManager;
-  private final MultiPartOutputStream outputStream;
-  private final CSVPrinter csvPrinter;
-  private final String tmpTableName;
+  public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
+  protected final AmazonS3 s3Client;
+  protected final S3Config s3Config;
+  protected final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
-  private final String schemaName;
-  private final String streamName;
-  private final JdbcDatabase db;
+  protected final String schemaName;
+  protected final String streamName;
+  protected final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
+  protected final Set<String> s3StagingFiles = new HashSet<>();
+  private final Map<String, StreamTransferManager> multipartUploadManagers = new HashMap<>();
+  private final Map<String, MultiPartOutputStream> outputStreams = new HashMap<>();
+  private final Map<String, CSVPrinter> csvPrinters = new HashMap<>();
+  private final String s3FileName;
+  protected final String stagingFolder;
 
   public S3StreamCopier(String stagingFolder,
                         DestinationSyncMode destSyncMode,
                         String schema,
                         String streamName,
+                        String s3FileName,
                         AmazonS3 client,
                         JdbcDatabase db,
                         S3Config s3Config,
@@ -85,14 +77,35 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
+    this.s3FileName = s3FileName;
+    this.stagingFolder = stagingFolder;
     this.db = db;
     this.nameTransformer = nameTransformer;
     this.sqlOperations = sqlOperations;
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
+  }
 
-    this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
+  private String prepareS3StagingFile() {
+    return String.join("/", stagingFolder, schemaName, getFilePrefixIndex() + "_" + s3FileName);
+  }
+
+  private Integer getFilePrefixIndex() {
+    int result = 0;
+    if (filePrefixIndexMap.containsKey(s3FileName)) {
+      result = filePrefixIndexMap.get(s3FileName) + 1;
+      filePrefixIndexMap.put(s3FileName, result);
+    } else {
+      filePrefixIndexMap.put(s3FileName, 0);
+    }
+    return result;
+  }
+
+  @Override
+  public String prepareStagingFile() {
+    var name = prepareS3StagingFile();
+    s3StagingFiles.add(name);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
@@ -101,32 +114,39 @@ public abstract class S3StreamCopier implements StreamCopier {
     // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
-    this.multipartUploadManager =
-        new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
-            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .partSize(s3Config.getPartSize());
+    var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
+        .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+        .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+        .partSize(s3Config.getPartSize());
+    multipartUploadManagers.put(name, manager);
+    var outputStream = manager.getMultiPartOutputStreams().get(0);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     // See the above comment.
-    this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
-
+    outputStreams.put(name, outputStream);
     var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
     try {
-      this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+      csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    return name;
   }
 
   @Override
-  public void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception {
-    csvPrinter.printRecord(id, jsonDataString, emittedAt);
+  public void write(UUID id, AirbyteRecordMessage recordMessage, String s3FileName) throws Exception {
+    if (csvPrinters.containsKey(s3FileName)) {
+      csvPrinters.get(s3FileName).printRecord(id,
+          Jsons.serialize(recordMessage.getData()),
+          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+    }
   }
 
   @Override
   public void closeStagingUploader(boolean hasFailed) throws Exception {
     if (hasFailed) {
-      multipartUploadManager.abort();
+      for (var multipartUploadManager : multipartUploadManagers.values()) {
+        multipartUploadManager.abort();
+      }
     }
     closeAndWaitForUpload();
   }
@@ -146,7 +166,9 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
+    s3StagingFiles.forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
+      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
+    }));
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
@@ -161,7 +183,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
+  public String generateMergeStatement(String destTableName) {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
@@ -174,18 +196,21 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-    if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
-      s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
-    }
-    LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
+    s3StagingFiles.forEach(s3StagingFile -> {
+      LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
+      if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
+        s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
+      }
+      LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
+    });
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
+    filePrefixIndexMap.clear();
   }
 
-  private static String getFullS3Path(String s3BucketName, String s3StagingFile) {
+  protected static String getFullS3Path(String s3BucketName, String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
@@ -194,9 +219,15 @@ public abstract class S3StreamCopier implements StreamCopier {
    */
   private void closeAndWaitForUpload() throws IOException {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
-    csvPrinter.close();
-    outputStream.close();
-    multipartUploadManager.complete();
+    for (var csvPrinter : csvPrinters.values()) {
+      csvPrinter.close();
+    }
+    for (var outputStream : outputStreams.values()) {
+      outputStream.close();
+    }
+    for (var multipartUploadManager : multipartUploadManagers.values()) {
+      multipartUploadManager.complete();
+    }
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 

@@ -1,3 +1,6 @@
+# This file is necessary to install dbt-utils with dbt deps
+# the content will be overwritten by the transform function
+
 # Name your package! Package names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
@@ -51,5 +54,6 @@ models:
         +materialized: table
     +materialized: table
 
-vars:
-  dbt_utils_dispatch_list: ['airbyte_utils']
+dispatch:
+  - macro_namespace: dbt_utils
+    search_order: ['airbyte_utils', 'dbt_utils']

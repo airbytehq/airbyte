@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -49,8 +29,13 @@ class GoogleSheetsSource(Source):
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        try:
+            client = GoogleSheetsClient(self.get_credentials(config))
+        except Exception as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Please use valid credentials json file. Error: {e}")
+
         spreadsheet_id = config["spreadsheet_id"]
+
         try:
             # Attempt to get first row of sheet
             client.get(spreadsheetId=spreadsheet_id, includeGridData=False, ranges="1:1")
@@ -66,19 +51,24 @@ class GoogleSheetsSource(Source):
 
         # Check for duplicate headers
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
-        sheet_names = [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
+
+        grid_sheets = Helpers.get_grid_sheets(spreadsheet_metadata)
+
         duplicate_headers_in_sheet = {}
-        for sheet_name in sheet_names:
+        for sheet_name in grid_sheets:
             try:
                 header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                 _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
                 if duplicate_headers:
                     duplicate_headers_in_sheet[sheet_name] = duplicate_headers
             except Exception as err:
-                logger.error(str(err))
-                return AirbyteConnectionStatus(
-                    status=Status.FAILED, message=f"Unable to read the schema of sheet {sheet_name}. Error: {str(err)}"
-                )
+                if str(err).startswith("Expected data for exactly one row for sheet"):
+                    logger.warn(f"Skip empty sheet: {sheet_name}")
+                else:
+                    logger.error(str(err))
+                    return AirbyteConnectionStatus(
+                        status=Status.FAILED, message=f"Unable to read the schema of sheet {sheet_name}. Error: {str(err)}"
+                    )
         if duplicate_headers_in_sheet:
             duplicate_headers_error_message = ", ".join(
                 [
@@ -95,20 +85,23 @@ class GoogleSheetsSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = config["spreadsheet_id"]
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
             spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
-            sheet_names = [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
+            grid_sheets = Helpers.get_grid_sheets(spreadsheet_metadata)
             streams = []
-            for sheet_name in sheet_names:
+            for sheet_name in grid_sheets:
                 try:
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                     stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
                     streams.append(stream)
                 except Exception as err:
-                    logger.error(str(err))
+                    if str(err).startswith("Expected data for exactly one row for sheet"):
+                        logger.warn(f"Skip empty sheet: {sheet_name}")
+                    else:
+                        logger.error(str(err))
             return AirbyteCatalog(streams=streams)
 
         except errors.HttpError as err:
@@ -120,7 +113,7 @@ class GoogleSheetsSource(Source):
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        client = GoogleSheetsClient(json.loads(config["credentials_json"]))
+        client = GoogleSheetsClient(self.get_credentials(config))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]
@@ -160,3 +153,12 @@ class GoogleSheetsSource(Source):
                     if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                         yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
+
+    @staticmethod
+    def get_credentials(config):
+        # backward compatible with old style config
+        if config.get("credentials_json"):
+            credentials = {"auth_type": "Service", "service_account_info": config.get("credentials_json")}
+            return credentials
+
+        return config.get("credentials")

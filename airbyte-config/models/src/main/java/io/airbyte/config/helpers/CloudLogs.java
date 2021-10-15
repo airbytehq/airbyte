@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -59,11 +39,16 @@ public interface CloudLogs {
    * @return true if no cloud logging configuration is set;
    */
   static boolean hasEmptyConfigs(LogConfigs configs) {
-    return !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
+    return !hasMinioConfiguration(configs) && !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
   }
 
   static CloudLogs createCloudLogClient(LogConfigs configs) {
     // check if the configs exists, and pick a client.
+    if (hasMinioConfiguration(configs)) {
+      LOGGER.info("Creating Minio Log Client");
+      return new S3Logs();
+    }
+
     if (hasS3Configuration(configs)) {
       LOGGER.info("Creating AWS Log Client");
       return new S3Logs();
@@ -75,6 +60,11 @@ public interface CloudLogs {
     }
 
     throw new RuntimeException("Error no cloud credentials configured..");
+  }
+
+  private static boolean hasMinioConfiguration(LogConfigs configs) {
+    return !configs.getS3LogBucket().isBlank() && !configs.getAwsAccessKey().isBlank()
+        && !configs.getAwsSecretAccessKey().isBlank() && !configs.getS3MinioEndpoint().isBlank();
   }
 
   private static boolean hasS3Configuration(LogConfigs configs) {

@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-webapp
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webapp.replicaCount }}
+  selector:
+    matchLabels:
+      airbyte: webapp
+  template:
+    metadata:
+      labels:
+        airbyte: webapp
+      {{- if .Values.webapp.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.webapp.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.webapp.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.webapp.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: airbyte-webapp-container
+        image: {{ include "airbyte.webappImage" . }}
+        imagePullPolicy: "{{ .Values.webapp.image.pullPolicy }}"
+        env:
+        - name: AIRBYTE_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AIRBYTE_VERSION
+        - name: API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: API_URL
+        - name: TRACKING_STRATEGY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: TRACKING_STRATEGY
+        - name: FULLSTORY
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: FULLSTORY
+        - name: IS_DEMO
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: IS_DEMO
+        - name: INTERNAL_API_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: INTERNAL_API_HOST
+        {{- if .Values.webapp.extraEnv }}
+        {{ .Values.webapp.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        {{- if .Values.webapp.resources }}
+        resources: {{- toYaml .Values.webapp.resources | nindent 10 }}
+        {{- end }}
