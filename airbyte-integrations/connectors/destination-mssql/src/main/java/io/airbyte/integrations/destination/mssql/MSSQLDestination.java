@@ -91,8 +91,12 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     }
   }
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new MSSQLDestination(), HOST_KEY, PORT_KEY);
+  }
+
   public static void main(String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new MSSQLDestination(), HOST_KEY, PORT_KEY);
+    final Destination destination = MSSQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MSSQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MSSQLDestination.class);

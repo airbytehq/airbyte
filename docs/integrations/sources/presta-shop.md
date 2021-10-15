@@ -64,17 +64,15 @@ This Source is capable of syncing the following core Streams:
 * [Weight Ranges](https://devdocs.prestashop.com/1.7/webservice/resources/weight_ranges/)
 * [Zones](https://devdocs.prestashop.com/1.7/webservice/resources/zones/)
 
-
-
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
 | Feature | Supported? |  |
-| :--- | :--- | :--- 
+| :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes | Addresses, Cart Rules, Carts, Categories, Customer Messages, Customer Threads, Customers, Manufacturers, Messages, Order Carriers, Order Histories, Order Invoices, Order Payments, Order Slip, Orders, Products, Stock Movement Reasons, Stock Movements, Stores, Suppliers, Tax Rule Groups |
-| Replicate Incremental Deletes | Coming soon | |
+| Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes |  |
 | Namespaces | No |  |
 
@@ -92,5 +90,6 @@ By default, the webservice feature is disabled on PrestaShop and needs to be [sw
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.1.0 | 2021-07-02 | [#4465](https://github.com/airbytehq/airbyte/pull/4465) | Initial implementation |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-07-02 | [\#4465](https://github.com/airbytehq/airbyte/pull/4465) | Initial implementation |
+

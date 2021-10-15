@@ -48,11 +48,13 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
-    return Jsons.jsonNode(ImmutableMap.builder()
+    var conf = ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
-        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText())
-        .put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText())
-        .build());
+        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());
+    if (config.hasNonNull(CONFIG_DATASET_ID)) {
+      conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
+    }
+    return Jsons.jsonNode(conf.build());
   }
 
   @Override

@@ -13,24 +13,28 @@ tests:
     - config_path: "secrets/config.json"
     - config_path: "secrets/connected_account_config.json"
   basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/full_refresh_configured_catalog.json"
     # TEST 1 - Reading catalog without invoice_line_items
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/non_invoice_line_items_catalog.json"
       timeout_seconds: 3600
-    # TEST 2 - Reading data from account that has no records for stream Disputes
+#    # TEST 2 - Reading data from account that has no records for stream Disputes
     - config_path: "secrets/connected_account_config.json"
-      configured_catalog_path: "integration_tests/non_disputes_events_catalog.json"
+      configured_catalog_path: "integration_tests/connected_account_configured_catalog.json"
       timeout_seconds: 3600
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/non_invoice_line_items_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
     - config_path: "secrets/connected_account_config.json"
-      configured_catalog_path: "integration_tests/non_disputes_events_catalog.json"
+      configured_catalog_path: "integration_tests/connected_account_configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/non_invoice_line_items_catalog.json"
       timeout_seconds: 3600
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/full_refresh_configured_catalog.json"
     - config_path: "secrets/connected_account_config.json"
-      
+      configured_catalog_path: "integration_tests/connected_account_configured_catalog.json"

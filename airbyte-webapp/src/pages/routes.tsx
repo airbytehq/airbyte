@@ -17,12 +17,12 @@ import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
-import SupportChat from "components/SupportChat";
 
 import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
+import { CompleteOauthRequest } from "./CompleteOauthRequest";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -40,16 +40,23 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
 }
 
 const MainViewRoutes = () => {
   const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
 
   return (
     <MainView>
       <Suspense fallback={<LoadingPage />}>
         <Switch>
+          <Route path={Routes.AuthFlow}>
+            <CompleteOauthRequest />
+          </Route>
           <Route path={Routes.Destination}>
             <DestinationPage />
           </Route>
@@ -67,10 +74,10 @@ const MainViewRoutes = () => {
               <OnboardingPage />
             </Route>
           )}
-          <Route exact path={Routes.Root}>
+          <Route exact path={Routes.Source}>
             <SourcesPage />
           </Route>
-          <Redirect to={Routes.Root} />
+          <Redirect to={mainRedirect} />
         </Switch>
       </Suspense>
     </MainView>
@@ -104,8 +111,6 @@ function useDemo() {
 }
 
 export const Routing: React.FC = () => {
-  const config = useConfig();
-
   useApiHealthPoll();
   useDemo();
 
@@ -122,11 +127,6 @@ export const Routing: React.FC = () => {
             <MainViewRoutes />
           </>
         )}
-        <SupportChat
-          papercupsConfig={config.papercups}
-          customerId={workspace.customerId}
-          onClick={() => window.open(config.ui.slackLink, "_blank")}
-        />
       </Suspense>
     </Router>
   );
