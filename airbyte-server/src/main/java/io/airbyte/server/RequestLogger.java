@@ -101,10 +101,10 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   @VisibleForTesting
   static StringBuilder createLogPrefix(
-      String remoteAddr,
-      String method,
-      int status,
-      String url) {
+                                       String remoteAddr,
+                                       String method,
+                                       int status,
+                                       String url) {
     return new StringBuilder()
         .append("REQ ")
         .append(remoteAddr)
@@ -154,4 +154,5 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     }
     return true;
   }
+
 }

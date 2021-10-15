@@ -75,7 +75,6 @@ public class RequestLoggerTest {
       .createLogPrefix(remoteAddr, method, SUCCESS_CODE, url)
       .toString();
 
-
   static Stream<Arguments> logScenarios() {
     return Stream.of(
         Arguments.of(INVALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, ERROR_CODE, errorPrefix),
@@ -85,8 +84,7 @@ public class RequestLoggerTest {
         Arguments.of(INVALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix),
         Arguments.of(INVALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix),
         Arguments.of(VALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix),
-        Arguments.of(VALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix + " - " + VALID_JSON_OBJECT)
-    );
+        Arguments.of(VALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix + " - " + VALID_JSON_OBJECT));
   }
 
   @ParameterizedTest
@@ -98,7 +96,8 @@ public class RequestLoggerTest {
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
     LogClientSingleton.setJobMdc(jobRoot);
 
-    // We have to instanciate the logger here, because the MDC config has been changed to log in a temporary file.
+    // We have to instanciate the logger here, because the MDC config has been changed to log in a
+    // temporary file.
     requestLogger = new RequestLogger(MDC.getCopyOfContextMap(), mServletRequest);
 
     Mockito.when(mRequestContext.getEntityStream())
@@ -123,4 +122,5 @@ public class RequestLoggerTest {
         .extracting((line) -> line.endsWith(expectedLog) && line.contains(expectedLogLevel))
         .containsOnlyOnce(true);
   }
+
 }
