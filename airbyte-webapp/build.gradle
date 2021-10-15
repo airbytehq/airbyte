@@ -1,6 +1,6 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "2.2.4"
+    id "com.github.node-gradle.node" version "3.1.1"
 }
 
 node {
@@ -33,6 +33,7 @@ build.finalizedBy test
 task copyDocs(type: Copy) {
     from "${System.getProperty("user.dir")}/docs/integrations/getting-started"
     into "${buildDir}/docs/getting-started/"
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
 copyDocs.dependsOn npm_run_build

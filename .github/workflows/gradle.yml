@@ -97,6 +97,15 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
       - name: Generate Template scaffold
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
@@ -231,6 +240,15 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
       - name: Format
         run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
 
@@ -355,6 +373,15 @@ jobs:
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
 
@@ -440,6 +467,15 @@ jobs:
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
 
       - name: Install socat (required for port forwarding)
         run: |
