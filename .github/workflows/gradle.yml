@@ -498,7 +498,7 @@ jobs:
           CI=true ./tools/bin/gcp_acceptance_tests.sh
 
       - name: Run Kubernetes End-to-End Acceptance Tests
-        env: # todo
+        env:
           USER: ubuntu
           HOME: /home/ubuntu
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
