@@ -457,7 +457,7 @@ public abstract class DestinationAcceptanceTest {
     assertEquals(normalizationFromSpec, supportsNormalization());
     boolean normalizationRunnerFactorySupportsDestinationImage;
     try {
-      NormalizationRunnerFactory.create(getImageName(), processFactory);
+      NormalizationRunnerFactory.create(getImageName(), processFactory, "dev");
       normalizationRunnerFactorySupportsDestinationImage = true;
     } catch (IllegalStateException e) {
       normalizationRunnerFactorySupportsDestinationImage = false;
@@ -723,7 +723,8 @@ public abstract class DestinationAcceptanceTest {
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        processFactory));
+        processFactory,
+        "dev"));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -789,7 +790,8 @@ public abstract class DestinationAcceptanceTest {
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        processFactory));
+        processFactory,
+        "dev"));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -972,7 +974,8 @@ public abstract class DestinationAcceptanceTest {
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
-        processFactory);
+        processFactory,
+        "dev");
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),

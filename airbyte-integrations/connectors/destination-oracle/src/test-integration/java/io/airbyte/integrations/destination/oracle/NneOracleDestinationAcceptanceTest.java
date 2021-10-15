@@ -75,4 +75,5 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }
+
 }
