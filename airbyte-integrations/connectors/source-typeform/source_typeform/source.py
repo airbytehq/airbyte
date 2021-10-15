@@ -83,8 +83,13 @@ class TrimForms(TypeformStream):
 
 class TrimFormsMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
-            yield {"form_id": item["id"]}
+        form_ids = self.config.get("form_ids", [])
+        if form_ids:
+            for item in form_ids:
+                yield {"form_id": item}
+        else:
+            for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
+                yield {"form_id": item["id"]}
 
         yield from []
 
@@ -196,10 +201,14 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
 class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            url = f"{TypeformStream.url_base}/forms"
-            auth_headers = {"Authorization": f"Bearer {config['token']}"}
-            session = requests.get(url, headers=auth_headers)
-            session.raise_for_status()
+            form_ids = config.get("form_ids", []).copy()
+            auth = TokenAuthenticator(token=config["token"])
+            # verify if form inputted by user is valid
+            for form in TrimForms(authenticator=auth, **config).read_records(sync_mode=SyncMode.full_refresh):
+                if form.get("id") in form_ids:
+                    form_ids.remove(form.get("id"))
+            if form_ids:
+                return False, f"Cannot find forms with IDs: {form_ids}. Please make sure they are valid form IDs and try again."
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e

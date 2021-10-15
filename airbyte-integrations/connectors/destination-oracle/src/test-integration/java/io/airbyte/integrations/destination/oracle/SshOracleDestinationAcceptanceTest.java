@@ -45,10 +45,11 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected JsonNode getConfig() throws IOException, InterruptedException {
-    return sshBastionContainer.getTunnelConfig(getTunnelMethod(), getBasicOracleDbConfigBuider(db).put("schema", schemaName));
+    return sshBastionContainer.getTunnelConfig(getTunnelMethod(),
+        getBasicOracleDbConfigBuilder(db).put("schema", schemaName));
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(OracleContainer db) {
+  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(OracleContainer db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
@@ -59,7 +60,9 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         .put("port", db.getExposedPorts().get(0))
         .put("sid", db.getSid())
         .put("schemas", List.of("JDBC_SPACE"))
-        .put("ssl", false);
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()));
   }
 
   @Override

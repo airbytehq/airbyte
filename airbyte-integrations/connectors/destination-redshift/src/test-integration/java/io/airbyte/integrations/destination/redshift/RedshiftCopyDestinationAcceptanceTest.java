@@ -31,7 +31,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
-  private JsonNode config;
+  protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
 
   @Override
@@ -133,7 +133,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
   }
 
-  private Database getDatabase() {
+  protected Database getDatabase() {
     return Databases.createDatabase(
         baseConfig.get("username").asText(),
         baseConfig.get("password").asText(),

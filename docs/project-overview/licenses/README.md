@@ -9,6 +9,5 @@ The license for a particular work is defined with following prioritized rules:
 3. First LICENSE found when exploring parent directories up to the project top level directory
 4. Defaults to Elastic License 2.0
 
-If you have any question regarding licenses, just visit our [FAQ](https://airbyte.io/license-faq) or [contact us](mailto:license@airbyte.io). 
-
+If you have any question regarding licenses, just visit our [FAQ](https://airbyte.io/license-faq) or [contact us](mailto:license@airbyte.io).
 
