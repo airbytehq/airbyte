@@ -12,7 +12,7 @@ public class MigrateConfig {
   private final Path outputPath;
   private final String targetVersion;
 
-  public MigrateConfig(Path inputPath, Path outputPath, String targetVersion) {
+  public MigrateConfig(final Path inputPath, final Path outputPath, final String targetVersion) {
     this.inputPath = inputPath;
     this.outputPath = outputPath;
     this.targetVersion = targetVersion;

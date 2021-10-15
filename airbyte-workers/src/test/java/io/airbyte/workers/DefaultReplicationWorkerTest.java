@@ -191,7 +191,7 @@ class DefaultReplicationWorkerTest {
     final Thread workerThread = new Thread(() -> {
       try {
         output.set(worker.run(syncInput, jobRoot));
-      } catch (WorkerException e) {
+      } catch (final WorkerException e) {
         throw new RuntimeException(e);
       }
     });

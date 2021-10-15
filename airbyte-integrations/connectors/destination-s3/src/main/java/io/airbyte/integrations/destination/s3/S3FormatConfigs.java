@@ -17,10 +17,10 @@ public class S3FormatConfigs {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3FormatConfigs.class);
 
-  public static S3FormatConfig getS3FormatConfig(JsonNode config) {
-    JsonNode formatConfig = config.get("format");
+  public static S3FormatConfig getS3FormatConfig(final JsonNode config) {
+    final JsonNode formatConfig = config.get("format");
     LOGGER.info("S3 format config: {}", formatConfig.toString());
-    S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
+    final S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
       case AVRO -> {
