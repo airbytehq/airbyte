@@ -109,16 +109,16 @@ jobs:
 #          df -h
 #          docker system df
 
-      - name: Run GCP End-to-End Acceptance Tests
-        env:
-          USER: ubuntu
-          HOME: /home/ubuntu
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
-          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
-        run: |
-          CI=true ./tools/bin/gcp_acceptance_tests.sh
+#      - name: Run GCP End-to-End Acceptance Tests
+#        env:
+#          USER: ubuntu
+#          HOME: /home/ubuntu
+#          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+#          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+#          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+#          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
+#        run: |
+#          CI=true ./tools/bin/gcp_acceptance_tests.sh
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
