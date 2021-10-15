@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
-  protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+  public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   @Override
   public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {

@@ -41,7 +41,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
     boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
     if (!tls) {
       additionalProperties.add("ssl=false");
-    } else {
+    } else if (!redshiftConfig.has("tls") || redshiftConfig.get("tls").asBoolean()) {
       additionalProperties.add("ssl=true");
       additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
     }

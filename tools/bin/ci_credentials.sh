@@ -34,6 +34,7 @@ write_standard_creds destination-mysql "$MYSQL_SSH_KEY_TEST_CREDS" "ssh-key-conf
 write_standard_creds destination-mysql "$MYSQL_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
 write_standard_creds destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
+write_standard_creds destination-redshift-strict-encrypt "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-dynamodb "$DESTINATION_DYNAMODB_TEST_CREDS"
 write_standard_creds destination-oracle "$AWS_ORACLE_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-s3 "$DESTINATION_S3_INTEGRATION_TEST_CREDS"
