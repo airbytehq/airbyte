@@ -104,7 +104,7 @@ jobs:
 
       - name: Describe kube nodes
         run: |
-         sleep 30
+         kubectl cluster-info --context kind-chart-testing
          kubectl describe nodes
 
       - name: Build Platform Docker Images
