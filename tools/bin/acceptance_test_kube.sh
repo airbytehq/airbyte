@@ -49,7 +49,8 @@ scheduler_logs () { echo "scheduler logs:" && kubectl logs deployment.apps/airby
 pod_sweeper_logs () { echo "pod sweeper logs:" && kubectl logs deployment.apps/airbyte-pod-sweeper; }
 worker_logs () { echo "worker logs:" && kubectl logs deployment.apps/airbyte-worker; }
 describe_pods () { echo "describe pods:" && kubectl describe pods; }
-print_all_logs () { server_logs; scheduler_logs; worker_logs; pod_sweeper_logs; describe_pods; }
+describe_nodes () { echo "describe pods:" && kubectl describe nodes; }
+print_all_logs () { server_logs; scheduler_logs; worker_logs; pod_sweeper_logs; describe_nodes; }
 
 trap "echo 'kube logs:' && print_all_logs" EXIT
 
