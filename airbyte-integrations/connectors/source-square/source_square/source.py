@@ -8,11 +8,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from requests.auth import AuthBase
 from source_square.utils import separate_items_by_count
 
 
@@ -359,7 +361,7 @@ class Orders(SquareStreamPageJson):
 
 
 class Oauth2AuthenticatorSquare(Oauth2Authenticator):
-    def refresh_access_token(self):
+    def refresh_access_token(self) -> Tuple[str, int]:
         """Handle differences in expiration attr:
         from API: "expires_at": "2021-11-05T14:26:57Z"
         expected: "expires_in": number of seconds
@@ -373,11 +375,12 @@ class SourceSquare(AbstractSource):
     api_version = "2021-09-15"  # Latest Stable Release
 
     @staticmethod
-    def get_auth(config):
+    def get_auth(config: Mapping[str, Any]) -> AuthBase:
 
         authorization = config.get("authorization", {})
         auth_type = authorization.get("auth_type")
         if auth_type == "Oauth":
+            # scopes needed for all currently supported streams:
             scopes = [
                 "CUSTOMERS_READ",
                 "EMPLOYEES_READ",
@@ -415,7 +418,7 @@ class SourceSquare(AbstractSource):
 
         return auth
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         headers = {
             "Square-Version": self.api_version,

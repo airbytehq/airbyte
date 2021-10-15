@@ -11,6 +11,7 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+    - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -23,5 +24,4 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog_oauth.json"
+
