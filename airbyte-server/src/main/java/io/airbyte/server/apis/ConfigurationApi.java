@@ -336,7 +336,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceReadList searchSources(SourceSearch sourceSearch) {
+  public SourceReadList searchSources(final SourceSearch sourceSearch) {
     return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
 
@@ -440,7 +440,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationReadList searchDestinations(DestinationSearch destinationSearch) {
+  public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
     return execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
@@ -477,7 +477,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch) {
+  public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
     return execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 

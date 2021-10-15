@@ -14,15 +14,15 @@ public class SpecFetcher {
 
   private final SynchronousSchedulerClient schedulerJobClient;
 
-  public SpecFetcher(SynchronousSchedulerClient schedulerJobClient) {
+  public SpecFetcher(final SynchronousSchedulerClient schedulerJobClient) {
     this.schedulerJobClient = schedulerJobClient;
   }
 
-  public ConnectorSpecification execute(String dockerImage) throws IOException {
+  public ConnectorSpecification execute(final String dockerImage) throws IOException {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
 
-  private static ConnectorSpecification getSpecFromJob(SynchronousResponse<ConnectorSpecification> response) {
+  private static ConnectorSpecification getSpecFromJob(final SynchronousResponse<ConnectorSpecification> response) {
     Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
     Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
 

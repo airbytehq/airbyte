@@ -16,15 +16,15 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
 
   @Override
-  public StreamCopier create(String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             String schema,
-                             String streamName,
-                             Storage storageClient,
-                             JdbcDatabase db,
-                             GcsConfig gcsConfig,
-                             ExtendedNameTransformer nameTransformer,
-                             SqlOperations sqlOperations)
+  public StreamCopier create(final String stagingFolder,
+                             final DestinationSyncMode syncMode,
+                             final String schema,
+                             final String streamName,
+                             final Storage storageClient,
+                             final JdbcDatabase db,
+                             final GcsConfig gcsConfig,
+                             final ExtendedNameTransformer nameTransformer,
+                             final SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeGcsStreamCopier(
         stagingFolder,

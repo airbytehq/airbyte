@@ -78,14 +78,14 @@ public interface SyncWorkflow {
     private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
 
     @Override
-    public StandardSyncOutput run(JobRunConfig jobRunConfig,
-                                  IntegrationLauncherConfig sourceLauncherConfig,
-                                  IntegrationLauncherConfig destinationLauncherConfig,
-                                  StandardSyncInput syncInput) {
+    public StandardSyncOutput run(final JobRunConfig jobRunConfig,
+                                  final IntegrationLauncherConfig sourceLauncherConfig,
+                                  final IntegrationLauncherConfig destinationLauncherConfig,
+                                  final StandardSyncInput syncInput) {
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
       if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
-        for (StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
+        for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
           if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
             final NormalizationInput normalizationInput = new NormalizationInput()
                 .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -132,15 +132,15 @@ public interface SyncWorkflow {
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
+    public ReplicationActivityImpl(final ProcessFactory processFactory, final SecretsHydrator secretsHydrator, final Path workspaceRoot) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory,
-                            SecretsHydrator secretsHydrator,
-                            Path workspaceRoot,
-                            AirbyteConfigValidator validator) {
+    ReplicationActivityImpl(final ProcessFactory processFactory,
+                            final SecretsHydrator secretsHydrator,
+                            final Path workspaceRoot,
+                            final AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -148,10 +148,10 @@ public interface SyncWorkflow {
     }
 
     @Override
-    public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
-                                        IntegrationLauncherConfig sourceLauncherConfig,
-                                        IntegrationLauncherConfig destinationLauncherConfig,
-                                        StandardSyncInput syncInput) {
+    public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
+                                        final IntegrationLauncherConfig sourceLauncherConfig,
+                                        final IntegrationLauncherConfig destinationLauncherConfig,
+                                        final StandardSyncInput syncInput) {
 
       final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
       final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
@@ -180,7 +180,7 @@ public interface SyncWorkflow {
       return standardSyncOutput;
     }
 
-    private static StandardSyncOutput reduceReplicationOutput(ReplicationOutput output) {
+    private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
       final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
       final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
 
@@ -200,10 +200,10 @@ public interface SyncWorkflow {
     }
 
     private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getWorkerFactory(
-                                                                                                      IntegrationLauncherConfig sourceLauncherConfig,
-                                                                                                      IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                      JobRunConfig jobRunConfig,
-                                                                                                      StandardSyncInput syncInput) {
+                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                      final JobRunConfig jobRunConfig,
+                                                                                                      final StandardSyncInput syncInput) {
       return () -> {
         final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
             sourceLauncherConfig.getJobId(),
@@ -257,21 +257,21 @@ public interface SyncWorkflow {
     private final WorkerEnvironment workerEnvironment;
     private final String airbyteVersion;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory,
-                                     SecretsHydrator secretsHydrator,
-                                     Path workspaceRoot,
-                                     WorkerEnvironment workerEnvironment,
-                                     String airbyteVersion) {
+    public NormalizationActivityImpl(final ProcessFactory processFactory,
+                                     final SecretsHydrator secretsHydrator,
+                                     final Path workspaceRoot,
+                                     final WorkerEnvironment workerEnvironment,
+                                     final String airbyteVersion) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, airbyteVersion);
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory,
-                              SecretsHydrator secretsHydrator,
-                              Path workspaceRoot,
-                              AirbyteConfigValidator validator,
-                              WorkerEnvironment workerEnvironment,
-                              String airbyteVersion) {
+    NormalizationActivityImpl(final ProcessFactory processFactory,
+                              final SecretsHydrator secretsHydrator,
+                              final Path workspaceRoot,
+                              final AirbyteConfigValidator validator,
+                              final WorkerEnvironment workerEnvironment,
+                              final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -281,9 +281,9 @@ public interface SyncWorkflow {
     }
 
     @Override
-    public Void normalize(JobRunConfig jobRunConfig,
-                          IntegrationLauncherConfig destinationLauncherConfig,
-                          NormalizationInput input) {
+    public Void normalize(final JobRunConfig jobRunConfig,
+                          final IntegrationLauncherConfig destinationLauncherConfig,
+                          final NormalizationInput input) {
 
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -303,8 +303,8 @@ public interface SyncWorkflow {
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                          JobRunConfig jobRunConfig) {
+    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                          final JobRunConfig jobRunConfig) {
       return () -> new DefaultNormalizationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -338,16 +338,20 @@ public interface SyncWorkflow {
     private final AirbyteConfigValidator validator;
     private final String airbyteVersion;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, String airbyteVersion) {
+    public DbtTransformationActivityImpl(
+                                         final ProcessFactory processFactory,
+                                         final SecretsHydrator secretsHydrator,
+                                         final Path workspaceRoot,
+                                         final String airbyteVersion) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), airbyteVersion);
     }
 
     @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory,
-                                  SecretsHydrator secretsHydrator,
-                                  Path workspaceRoot,
-                                  AirbyteConfigValidator validator,
-                                  String airbyteVersion) {
+    DbtTransformationActivityImpl(final ProcessFactory processFactory,
+                                  final SecretsHydrator secretsHydrator,
+                                  final Path workspaceRoot,
+                                  final AirbyteConfigValidator validator,
+                                  final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -356,10 +360,10 @@ public interface SyncWorkflow {
     }
 
     @Override
-    public Void run(JobRunConfig jobRunConfig,
-                    IntegrationLauncherConfig destinationLauncherConfig,
-                    ResourceRequirements resourceRequirements,
-                    OperatorDbtInput input) {
+    public Void run(final JobRunConfig jobRunConfig,
+                    final IntegrationLauncherConfig destinationLauncherConfig,
+                    final ResourceRequirements resourceRequirements,
+                    final OperatorDbtInput input) {
 
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -379,9 +383,9 @@ public interface SyncWorkflow {
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                        JobRunConfig jobRunConfig,
-                                                                                        ResourceRequirements resourceRequirements) {
+    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                        final JobRunConfig jobRunConfig,
+                                                                                        final ResourceRequirements resourceRequirements) {
       return () -> new DbtTransformationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
