@@ -1,9 +1,9 @@
 -- extensions
- CREATE
+CREATE
     EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- types
- CREATE
+CREATE
     TYPE JOB_STATUS AS ENUM(
         'pending',
         'running',
@@ -31,7 +31,7 @@ CREATE
     );
 
 -- tables
- CREATE
+CREATE
     TABLE
         AIRBYTE_METADATA(
             KEY VARCHAR(255) PRIMARY KEY,
@@ -73,7 +73,7 @@ CREATE
     );
 
 -- entries
- INSERT
+INSERT
     INTO
         AIRBYTE_METADATA
     VALUES(
