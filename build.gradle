@@ -168,7 +168,7 @@ subprojects {
     pmd {
         consoleOutput = true
 
-        rulePriority = 5
+        rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
