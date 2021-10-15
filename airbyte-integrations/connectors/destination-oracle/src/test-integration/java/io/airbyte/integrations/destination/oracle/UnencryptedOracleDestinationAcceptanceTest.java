@@ -59,8 +59,11 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName,
-      String namespace, JsonNode streamSchema) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(
@@ -79,8 +82,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName,
-      String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env,
+                                                     String streamName,
+                                                     String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
@@ -110,8 +114,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
       throws SQLException {
     List<org.jooq.Record> result = getDatabase(config)
         .query(ctx -> ctx.fetch(
-                String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                    OracleDestination.COLUMN_NAME_EMITTED_AT))
+            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
             .collect(Collectors.toList()));
     return result
