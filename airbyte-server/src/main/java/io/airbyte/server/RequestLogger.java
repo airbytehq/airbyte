@@ -24,9 +24,6 @@ import javax.ws.rs.core.Context;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpStatus;
 import org.glassfish.jersey.message.MessageUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -143,16 +140,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
   }
 
   private static boolean isValidJson(String json) {
-    try {
-      new JSONObject(json);
-    } catch (JSONException ex) {
-      try {
-        new JSONArray(json);
-      } catch (JSONException ex1) {
-        return false;
-      }
-    }
-    return true;
+    return Jsons.tryDeserialize(json).isPresent();
   }
 
 }

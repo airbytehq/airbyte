@@ -4,14 +4,12 @@
 
 package io.airbyte.server;
 
-import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -36,9 +34,9 @@ public class RequestLoggerTest {
   private static final String ACCEPTED_CONTENT_TYPE = "application/json";
   private static final String NON_ACCEPTED_CONTENT_TYPE = "application/gzip";
 
-  private static final String method = "POST";
-  private static final String remoteAddr = "123.456.789.101";
-  private static final String url = "/api/v1/test";
+  private static final String METHOD = "POST";
+  private static final String REMOTE_ADDR = "123.456.789.101";
+  private static final String URL = "/api/v1/test";
 
   @Mock
   private HttpServletRequest mServletRequest;
@@ -54,25 +52,25 @@ public class RequestLoggerTest {
   @BeforeEach
   public void init() throws Exception {
     Mockito.when(mRequestContext.getMethod())
-        .thenReturn(method);
+        .thenReturn(METHOD);
 
     Mockito.when(mServletRequest.getMethod())
-        .thenReturn(method);
+        .thenReturn(METHOD);
     Mockito.when(mServletRequest.getRemoteAddr())
-        .thenReturn(remoteAddr);
+        .thenReturn(REMOTE_ADDR);
     Mockito.when(mServletRequest.getRequestURI())
-        .thenReturn(url);
+        .thenReturn(URL);
   }
 
   private static final int ERROR_CODE = 401;
   private static final int SUCCESS_CODE = 200;
 
   private static final String errorPrefix = RequestLogger
-      .createLogPrefix(remoteAddr, method, ERROR_CODE, url)
+      .createLogPrefix(REMOTE_ADDR, METHOD, ERROR_CODE, URL)
       .toString();
 
   private static final String successPrefix = RequestLogger
-      .createLogPrefix(remoteAddr, method, SUCCESS_CODE, url)
+      .createLogPrefix(REMOTE_ADDR, METHOD, SUCCESS_CODE, URL)
       .toString();
 
   static Stream<Arguments> logScenarios() {
@@ -117,10 +115,11 @@ public class RequestLoggerTest {
 
     final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final String logs = IOs.readFile(logPath);
-    final List<String> splitLogs = Lists.newArrayList(logs.split(System.lineSeparator()));
-    Assertions.assertThat(splitLogs)
-        .extracting((line) -> line.endsWith(expectedLog) && line.contains(expectedLogLevel))
-        .containsOnlyOnce(true);
+    final Stream<String> matchingLines = logs.lines()
+        .filter(line -> line.endsWith(expectedLog))
+        .filter(line -> line.contains(expectedLogLevel));
+
+    Assertions.assertThat(matchingLines).hasSize(1);
   }
 
 }

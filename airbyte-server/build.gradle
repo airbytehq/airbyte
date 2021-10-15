@@ -57,7 +57,6 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation "org.flywaydb:flyway-core:7.14.0"
-    implementation 'org.json:json:20210307'
 
     implementation 'com.github.slugify:slugify:2.4'
 
