@@ -14,22 +14,22 @@ public class ExceptionWrappingDatabase implements AutoCloseable {
 
   private final Database database;
 
-  public ExceptionWrappingDatabase(Database database) {
+  public ExceptionWrappingDatabase(final Database database) {
     this.database = database;
   }
 
-  public <T> T query(ContextQueryFunction<T> transform) throws IOException {
+  public <T> T query(final ContextQueryFunction<T> transform) throws IOException {
     try {
       return database.query(transform);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new IOException(e);
     }
   }
 
-  public <T> T transaction(ContextQueryFunction<T> transform) throws IOException {
+  public <T> T transaction(final ContextQueryFunction<T> transform) throws IOException {
     try {
       return database.transaction(transform);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new IOException(e);
     }
   }

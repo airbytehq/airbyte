@@ -37,10 +37,10 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
   private final String[] TEXT_TYPES = {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT"};
 
   @Override
-  public void configure(Properties props) {}
+  public void configure(final Properties props) {}
 
   @Override
-  public void converterFor(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+  public void converterFor(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
     } else if (Arrays.stream(TEXT_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
@@ -48,7 +48,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
     }
   }
 
-  private void registerText(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+  private void registerText(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), x -> {
       if (x == null) {
         if (field.isOptional()) {
@@ -66,7 +66,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
     });
   }
 
-  private void registerDate(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+  private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), x -> {
       if (x == null) {
         if (field.isOptional()) {
@@ -97,7 +97,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
       } else if (x instanceof String) {
         try {
           return LocalDateTime.parse((String) x).toString();
-        } catch (DateTimeParseException e) {
+        } catch (final DateTimeParseException e) {
           LOGGER.warn("Cannot convert value '{}' to LocalDateTime type", x);
           return x.toString();
         }

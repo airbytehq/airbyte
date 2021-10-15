@@ -28,17 +28,17 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
+  public JsonNode toJdbcConfig(final JsonNode redshiftConfig) {
     return getJdbcConfig(redshiftConfig);
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) {
+  public JdbcDatabase getDatabase(final JsonNode config) {
     return getJdbcDatabase(config);
   }
 
-  private static void readSsl(JsonNode redshiftConfig, List<String> additionalProperties) {
-    boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
+  private static void readSsl(final JsonNode redshiftConfig, final List<String> additionalProperties) {
+    final boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
     if (!tls) {
       additionalProperties.add("ssl=false");
     } else {
@@ -47,9 +47,9 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
     }
   }
 
-  public static JdbcDatabase getJdbcDatabase(JsonNode config) {
-    List<String> additionalProperties = new ArrayList<>();
-    var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
+  public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
+    final List<String> additionalProperties = new ArrayList<>();
+    final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
     readSsl(config, additionalProperties);
     return Databases.createJdbcDatabase(
         jdbcConfig.get("username").asText(),
@@ -59,7 +59,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
         additionalProperties.isEmpty() ? "" : String.join(";", additionalProperties));
   }
 
-  public static JsonNode getJdbcConfig(JsonNode redshiftConfig) {
+  public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
 
     return Jsons.jsonNode(ImmutableMap.builder()
