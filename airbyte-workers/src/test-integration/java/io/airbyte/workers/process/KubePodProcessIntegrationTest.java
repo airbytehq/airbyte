@@ -215,8 +215,5 @@ public class KubePodProcessIntegrationTest {
       throw new RuntimeException(e);
     }
   }
-
-  ;
-
 }
 
