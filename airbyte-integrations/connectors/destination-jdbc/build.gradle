@@ -29,3 +29,7 @@ dependencies {
 tasks.withType(Tar) {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
+
+tasks.withType(Zip) {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
