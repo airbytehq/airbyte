@@ -12,7 +12,7 @@ from .api import Pardot
 from .stream import (
     EmailClicks,
     Campaigns,
-    ListMemberships,
+    ListMembership,
     Lists,
     Opportunities,
     ProspectAccounts,
@@ -20,7 +20,7 @@ from .stream import (
     Users,
     Visitors,
     VisitorActivities,
-    Visitors
+    Visits
 )
 
 # Source
@@ -40,17 +40,20 @@ class SourcePardot(AbstractSource):
         pardot = self._get_pardot_object(config)
         auth = TokenAuthenticator(pardot.access_token)
         args = {'authenticator': auth, 'config': config}
+        
+        visitors = Visitors(**args)
+
         return [
             EmailClicks(**args),
             Campaigns(**args),
-            ListMemberships(**args),
+            ListMembership(**args),
             Lists(**args),
             Opportunities(**args),
             ProspectAccounts(**args),
             Prospects(**args),
             Users(**args),
-            # Visit(**args), #TODO: Implement Visit and email stat streams
-            Visitors(**args),
             VisitorActivities(**args),
-            Visitors(**args),
+            visitors,
+            Visits(parent_stream=visitors, **args), 
+            #TODO: Implement Visit and email stat streams
         ]
