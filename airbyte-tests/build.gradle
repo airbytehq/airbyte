@@ -95,3 +95,7 @@ task automaticMigrationAcceptanceTest(type: Test) {
     }
     mustRunAfter test
 }
+
+tasks.withType(Copy) {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
