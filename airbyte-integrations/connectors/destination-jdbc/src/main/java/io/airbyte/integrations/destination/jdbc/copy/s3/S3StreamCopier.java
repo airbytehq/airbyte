@@ -51,6 +51,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
   public static final int DEFAULT_PART = 1000;
+  public static final String UNDERSCORE = "_";
 
   public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
   public final Map<String, Integer> fileNamePartsMap = new HashMap<>();
@@ -99,24 +100,27 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String getS3StagingFileName() {
-    int index = 0;
     String result;
     if (filePrefixIndexMap.containsKey(s3FileName)) {
-      var prefixIndex = filePrefixIndexMap.get(s3FileName);
-      if (fileNamePartsMap.containsKey(prefixIndex + "_" + s3FileName) && fileNamePartsMap.get(prefixIndex + "_" + s3FileName) < DEFAULT_PART) {
-        var partIndex = fileNamePartsMap.get(prefixIndex + "_" + s3FileName) + 1;
-        fileNamePartsMap.put(prefixIndex + "_" + s3FileName, partIndex);
-        result = prefixIndex + "_" + s3FileName;
-      } else {
-        index = prefixIndex + 1;
-        filePrefixIndexMap.put(s3FileName, index);
-        fileNamePartsMap.put(index + "_" + s3FileName, 0);
-        result = index + "_" + s3FileName;
-      }
+      result = getS3StagingFileNamePart(filePrefixIndexMap.get(s3FileName));
     } else {
-      result = 0 + "_" + s3FileName;
+      result = 0 + UNDERSCORE + s3FileName;
       filePrefixIndexMap.put(s3FileName, 0);
-      fileNamePartsMap.put(0 + "_" + s3FileName, 0);
+      fileNamePartsMap.put(result, 0);
+    }
+    return result;
+  }
+
+  private String getS3StagingFileNamePart(Integer prefixIndex) {
+    String result = prefixIndex + UNDERSCORE + s3FileName;
+    if (fileNamePartsMap.containsKey(result) && fileNamePartsMap.get(result) < DEFAULT_PART) {
+      var partIndex = fileNamePartsMap.get(result) + 1;
+      fileNamePartsMap.put(result, partIndex);
+    } else {
+      int index = prefixIndex + 1;
+      result = index + UNDERSCORE + s3FileName;
+      filePrefixIndexMap.put(s3FileName, index);
+      fileNamePartsMap.put(result, 0);
     }
     return result;
   }

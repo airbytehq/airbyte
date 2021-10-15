@@ -46,6 +46,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
   // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
   public static final int DEFAULT_PART = 1000;
+  public static final String UNDERSCORE = "_";
 
   public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
   public final Map<String, Integer> fileNamePartsMap = new HashMap<>();
@@ -90,24 +91,27 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   private String getGcsStagingFileName() {
-    int index = 0;
     String result;
     if (filePrefixIndexMap.containsKey(streamName)) {
-      var prefixIndex = filePrefixIndexMap.get(streamName);
-      if (fileNamePartsMap.containsKey(prefixIndex + "_" + streamName) && fileNamePartsMap.get(prefixIndex + "_" + streamName) < DEFAULT_PART) {
-        var partIndex = fileNamePartsMap.get(prefixIndex + "_" + streamName) + 1;
-        fileNamePartsMap.put(prefixIndex + "_" + streamName, partIndex);
-        result = prefixIndex + "_" + streamName;
-      } else {
-        index = prefixIndex + 1;
-        filePrefixIndexMap.put(streamName, index);
-        fileNamePartsMap.put(index + "_" + streamName, 0);
-        result = index + "_" + streamName;
-      }
+      result = getGcsStagingFileNamePart(filePrefixIndexMap.get(streamName));
     } else {
-      result = 0 + "_" + streamName;
+      result = 0 + UNDERSCORE + streamName;
       filePrefixIndexMap.put(streamName, 0);
-      fileNamePartsMap.put(0 + "_" + streamName, 0);
+      fileNamePartsMap.put(result, 0);
+    }
+    return result;
+  }
+
+  private String getGcsStagingFileNamePart(Integer prefixIndex) {
+    String result = prefixIndex + UNDERSCORE + streamName;
+    if (fileNamePartsMap.containsKey(result) && fileNamePartsMap.get(result) < DEFAULT_PART) {
+      var partIndex = fileNamePartsMap.get(result) + 1;
+      fileNamePartsMap.put(result, partIndex);
+    } else {
+      int index = prefixIndex + 1;
+      result = index + UNDERSCORE + streamName;
+      filePrefixIndexMap.put(streamName, index);
+      fileNamePartsMap.put(result, 0);
     }
     return result;
   }
