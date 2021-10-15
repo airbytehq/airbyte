@@ -100,7 +100,6 @@ jobs:
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
-          echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
           cat > ~/.gradle/gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx8g -Xss4m
           org.gradle.workers.max=8
@@ -244,7 +243,6 @@ jobs:
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
-          echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
           cat > ~/.gradle/gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx8g -Xss4m
           org.gradle.workers.max=8
@@ -378,7 +376,6 @@ jobs:
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
-          echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
           cat > ~/.gradle/gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx8g -Xss4m
           org.gradle.workers.max=8
@@ -474,7 +471,6 @@ jobs:
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
-          echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
           cat > ~/.gradle/gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx8g -Xss4m
           org.gradle.workers.max=8
