@@ -85,12 +85,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
   * API Token
     * Zendesk API Token 
     * Zendesk Email 
-<<<<<<< HEAD
-  * oAuth2
-    * Access Token
-=======
   * oAuth2 \(not implemented\)
->>>>>>> origin
 
 ### Setup guide
 
