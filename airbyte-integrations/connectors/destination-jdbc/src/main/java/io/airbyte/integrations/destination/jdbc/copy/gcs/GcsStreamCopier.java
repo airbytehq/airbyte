@@ -91,11 +91,10 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   private String getGcsStagingFileName() {
-    String result;
+    String result = 0 + UNDERSCORE + streamName;
     if (filePrefixIndexMap.containsKey(streamName)) {
       result = getGcsStagingFileNamePart(filePrefixIndexMap.get(streamName));
     } else {
-      result = 0 + UNDERSCORE + streamName;
       filePrefixIndexMap.put(streamName, 0);
       fileNamePartsMap.put(result, 0);
     }

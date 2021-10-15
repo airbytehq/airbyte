@@ -100,11 +100,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String getS3StagingFileName() {
-    String result;
+    String result = 0 + UNDERSCORE + streamName;
     if (filePrefixIndexMap.containsKey(s3FileName)) {
       result = getS3StagingFileNamePart(filePrefixIndexMap.get(s3FileName));
     } else {
-      result = 0 + UNDERSCORE + s3FileName;
       filePrefixIndexMap.put(s3FileName, 0);
       fileNamePartsMap.put(result, 0);
     }
