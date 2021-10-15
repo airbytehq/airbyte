@@ -72,7 +72,8 @@ class ConfigDumpImporterTest {
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
     when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
 
-    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher);
+    configDumpImporter =
+        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher, true);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();

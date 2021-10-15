@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Iterator, Mapping, Tuple
+from typing import Any, Callable, Iterator, Mapping, Optional, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
@@ -45,15 +45,18 @@ class Client(BaseClient):
             "line_items": CRMObjectStream(entity="line_item", **common_params),
             "owners": OwnerStream(**common_params),
             "products": CRMObjectStream(entity="product", **common_params),
-            "quotes": CRMObjectStream(entity="quote", **common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
             "tickets": CRMObjectStream(entity="ticket", **common_params),
             "workflows": WorkflowStream(**common_params),
         }
 
+        credentials_title = credentials.get("credentials_title")
+        if credentials_title == "API Key Credentials":
+            self._apis["quotes"] = CRMObjectStream(entity="quote", **common_params)
+
         super().__init__(**kwargs)
 
-    def _enumerate_methods(self) -> Mapping[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, Callable]:
         return {name: api.list for name, api in self._apis.items()}
 
     @property
@@ -78,7 +81,7 @@ class Client(BaseClient):
         """Set state of stream with corresponding name"""
         self._apis[name].state = state
 
-    def health_check(self) -> Tuple[bool, str]:
+    def health_check(self) -> Tuple[bool, Optional[str]]:
         alive = True
         error_msg = None
 

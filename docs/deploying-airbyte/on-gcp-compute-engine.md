@@ -11,7 +11,7 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 ![](../.gitbook/assets/gcp_ce_launch.png)
 
 * Configure new instance
-  * For testing out Airbyte, an `e2.medium` instance is likely sufficient.
+  * For testing out Airbyte, an `e2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node. 
   * For long-running Airbyte installations, we recommend a `n1-standard-2` instance.
 
 ![](../.gitbook/assets/gcp_ce_configure.png)
@@ -38,7 +38,7 @@ INSTANCE_NAME=airbyte # or anyother name that you've used
 {% tab title="MacOS" %}
 ```bash
 # In your workstation terminal
-brew cask install google-cloud-sdk
+brew install --cask google-cloud-sdk
 gcloud init # Follow instructions
 ```
 {% endtab %}

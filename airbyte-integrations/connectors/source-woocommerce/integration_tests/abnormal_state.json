@@ -1,0 +1,11 @@
+{
+  "customers": {
+    "date_modified": "2030-07-30T22:16:46"
+  },
+  "orders": {
+    "date_modified": "2050-07-30T22:16:46"
+  },
+  "coupons": {
+    "date_modified": "2060-07-30T22:16:46"
+  }
+}
