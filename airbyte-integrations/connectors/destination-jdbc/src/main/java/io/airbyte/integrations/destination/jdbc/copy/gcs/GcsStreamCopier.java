@@ -41,6 +41,10 @@ import org.slf4j.LoggerFactory;
 public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
+  // It is optimal to write every 10,000,000 records to a new file. This will make it easier to work with files and
+  // speed up the recording of large amounts of data.
+  // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
+  // the records from the file are copied to the staging table.
   public static final int DEFAULT_PART = 1000;
 
   public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();

@@ -47,6 +47,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
+  // It is optimal to write every 10,000,000 records to a new file. This will make it easier to work with files and
+  // speed up the recording of large amounts of data.
+  // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
+  // the records from the file are copied to the staging table.
   public static final int DEFAULT_PART = 1000;
 
   public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
@@ -103,22 +107,18 @@ public abstract class S3StreamCopier implements StreamCopier {
       if (fileNamePartsMap.containsKey(prefixIndex + "_" + s3FileName) && fileNamePartsMap.get(prefixIndex + "_" + s3FileName) < DEFAULT_PART) {
         var partIndex = fileNamePartsMap.get(prefixIndex + "_" + s3FileName) + 1;
         fileNamePartsMap.put(prefixIndex + "_" + s3FileName, partIndex);
-        LOGGER.error("===>> {}", partIndex);
         result = prefixIndex + "_" + s3FileName;
       } else {
         index = prefixIndex + 1;
         filePrefixIndexMap.put(s3FileName, index);
         fileNamePartsMap.put(index + "_" + s3FileName, 0);
-        LOGGER.error("===>> {}", 0);
         result = index + "_" + s3FileName;
       }
     } else {
       result = 0 + "_" + s3FileName;
       filePrefixIndexMap.put(s3FileName, 0);
       fileNamePartsMap.put(0 + "_" + s3FileName, 0);
-      LOGGER.error("===>> {}", 0);
     }
-    LOGGER.error("+++>> {}", result);
     return result;
   }
 
