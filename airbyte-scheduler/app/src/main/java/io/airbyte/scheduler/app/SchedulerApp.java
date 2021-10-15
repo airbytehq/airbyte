@@ -129,7 +129,6 @@ public class SchedulerApp {
           MDC.setContextMap(mdc);
           jobRetrier.run();
           jobScheduler.run();
-          jobSubmitter.run();
         },
         0L,
         SCHEDULING_DELAY.toSeconds(),
