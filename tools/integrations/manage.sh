@@ -39,13 +39,13 @@ cmd_build() {
   local run_tests=$1; shift || run_tests=true
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)" -x test
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
   if [ "$run_tests" = false ] ; then
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
-#    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
