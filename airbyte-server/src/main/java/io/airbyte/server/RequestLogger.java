@@ -6,6 +6,7 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +43,12 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     this.mdc = mdc;
   }
 
+  @VisibleForTesting
+  RequestLogger(Map<String, String> mdc, HttpServletRequest servletRequest) {
+    this.mdc = mdc;
+    this.servletRequest = servletRequest;
+  }
+
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
     if (requestContext.getMethod().equals("POST")) {
@@ -63,21 +70,20 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     String remoteAddr = servletRequest.getRemoteAddr();
     String method = servletRequest.getMethod();
     String url = servletRequest.getRequestURI();
-    boolean isContentTypeGzip =
-        servletRequest.getHeader("Content-Type") != null && servletRequest.getHeader("Content-Type").toLowerCase().contains("application/x-gzip");
+
+    boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
+        servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&
+        isValidJson(requestBody);
+
     int status = responseContext.getStatus();
 
-    StringBuilder logBuilder = new StringBuilder()
-        .append("REQ ")
-        .append(remoteAddr)
-        .append(" ")
-        .append(method)
-        .append(" ")
-        .append(status)
-        .append(" ")
-        .append(url);
+    StringBuilder logBuilder = createLogPrefix(
+        remoteAddr,
+        method,
+        status,
+        url);
 
-    if (method.equals("POST") && requestBody != null && !requestBody.equals("") && !isContentTypeGzip) {
+    if (method.equals("POST") && requestBody != null && !requestBody.equals("") && isPrintable) {
       logBuilder
           .append(" - ")
           .append(redactSensitiveInfo(requestBody));
@@ -88,6 +94,23 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     } else {
       LOGGER.info(logBuilder.toString());
     }
+  }
+
+  @VisibleForTesting
+  static StringBuilder createLogPrefix(
+                                       String remoteAddr,
+                                       String method,
+                                       int status,
+                                       String url) {
+    return new StringBuilder()
+        .append("REQ ")
+        .append(remoteAddr)
+        .append(" ")
+        .append(method)
+        .append(" ")
+        .append(status)
+        .append(" ")
+        .append(url);
   }
 
   private static final Set<String> TOP_LEVEL_SENSITIVE_FIELDS = Set.of(
@@ -114,6 +137,10 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     }
 
     return requestBody;
+  }
+
+  private static boolean isValidJson(String json) {
+    return Jsons.tryDeserialize(json).isPresent();
   }
 
 }
