@@ -27,5 +27,5 @@ dependencies {
 }
 
 tasks.withType(Tar) {
-    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }

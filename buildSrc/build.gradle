@@ -11,5 +11,5 @@ dependencies {
 }
 
 tasks.withType(Jar) {
-    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
