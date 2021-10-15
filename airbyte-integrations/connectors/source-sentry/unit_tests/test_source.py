@@ -5,13 +5,13 @@
 from unittest.mock import MagicMock
 
 from source_sentry.source import SourceSentry
-from source_sentry.streams import ProjectDetail
+from source_sentry.streams import Projects
 
 
 def test_check_connection(mocker):
     source = SourceSentry()
     logger_mock, config_mock = MagicMock(), MagicMock()
-    mocker.patch.object(ProjectDetail, "read_records", return_value=iter([{"id": "1", "name": "test"}]))
+    mocker.patch.object(Projects, "read_records", return_value=iter([{"id": "1", "name": "test"}]))
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 

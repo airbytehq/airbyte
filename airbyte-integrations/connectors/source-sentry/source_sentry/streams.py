@@ -24,10 +24,17 @@ class SentryStream(HttpStream, ABC):
         return self._url_base
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if "next" in response.links and "results" in response.links["next"] and "cursor" in response.links["next"]:
+        """
+        Expect the link header field to always contain the values ​​for `rel`, `results`, and `cursor`.
+        If there is actually the next page, rel="next"; results="true"; cursor="<next-page-token>".
+        """
+        try:
             if response.links["next"]["results"] == "true":
                 return {"cursor": response.links["next"]["cursor"]}
-        return None
+            else:
+                return None
+        except KeyError:
+            return None
 
     def request_params(
         self,
