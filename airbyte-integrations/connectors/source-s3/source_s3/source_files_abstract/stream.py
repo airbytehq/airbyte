@@ -12,7 +12,6 @@ from operator import itemgetter
 from traceback import format_exc
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
@@ -61,7 +60,6 @@ class FileStream(Stream, ABC):
             self._schema = self._parse_user_input_schema(schema)
         self.master_schema = None
         self.storagefile_cache: Optional[List[Tuple[datetime, StorageFile]]] = None
-        self.logger = AirbyteLogger()
         self.logger.info(f"initialised stream with format: {format}")
 
     @staticmethod
@@ -233,7 +231,7 @@ class FileStream(Stream, ABC):
                         # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
-                            self.logger.warn(
+                            self.logger.warning(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
