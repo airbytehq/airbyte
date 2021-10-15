@@ -46,8 +46,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
+  // It is optimal to write every 10,000,000 records to a new file. This will make it easier to work with files and
+  // speed up the recording of large amounts of data.
+  // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
+  // the records from the file are copied to the staging table.
+  public static final int DEFAULT_PART = 1000;
 
   public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
+  public final Map<String, Integer> fileNamePartsMap = new HashMap<>();
+
   protected final AmazonS3 s3Client;
   protected final S3Config s3Config;
   protected final String tmpTableName;
@@ -88,16 +95,28 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String prepareS3StagingFile() {
-    return String.join("/", stagingFolder, schemaName, getFilePrefixIndex() + "_" + s3FileName);
+    return String.join("/", stagingFolder, schemaName, getS3StagingFileName());
   }
 
-  private Integer getFilePrefixIndex() {
-    int result = 0;
+  private String getS3StagingFileName() {
+    int index = 0;
+    String result;
     if (filePrefixIndexMap.containsKey(s3FileName)) {
-      result = filePrefixIndexMap.get(s3FileName) + 1;
-      filePrefixIndexMap.put(s3FileName, result);
+      var prefixIndex = filePrefixIndexMap.get(s3FileName);
+      if (fileNamePartsMap.containsKey(prefixIndex + "_" + s3FileName) && fileNamePartsMap.get(prefixIndex + "_" + s3FileName) < DEFAULT_PART) {
+        var partIndex = fileNamePartsMap.get(prefixIndex + "_" + s3FileName) + 1;
+        fileNamePartsMap.put(prefixIndex + "_" + s3FileName, partIndex);
+        result = prefixIndex + "_" + s3FileName;
+      } else {
+        index = prefixIndex + 1;
+        filePrefixIndexMap.put(s3FileName, index);
+        fileNamePartsMap.put(index + "_" + s3FileName, 0);
+        result = index + "_" + s3FileName;
+      }
     } else {
+      result = 0 + "_" + s3FileName;
       filePrefixIndexMap.put(s3FileName, 0);
+      fileNamePartsMap.put(0 + "_" + s3FileName, 0);
     }
     return result;
   }
@@ -105,29 +124,31 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public String prepareStagingFile() {
     var name = prepareS3StagingFile();
-    s3StagingFiles.add(name);
-    LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
-    // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
-    // have support for streaming multipart uploads;
-    // The alternative is first writing the entire output to disk before loading into S3. This is not
-    // feasible with large tables.
-    // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
-    // configured part size.
-    // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
-    var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
-        .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-        .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-        .partSize(s3Config.getPartSize());
-    multipartUploadManagers.put(name, manager);
-    var outputStream = manager.getMultiPartOutputStreams().get(0);
-    // We only need one output stream as we only have one input stream. This is reasonably performant.
-    // See the above comment.
-    outputStreams.put(name, outputStream);
-    var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-    try {
-      csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (!s3StagingFiles.contains(name)) {
+      s3StagingFiles.add(name);
+      LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
+      // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
+      // have support for streaming multipart uploads;
+      // The alternative is first writing the entire output to disk before loading into S3. This is not
+      // feasible with large tables.
+      // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
+      // configured part size.
+      // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
+      var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
+              .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+              .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+              .partSize(s3Config.getPartSize());
+      multipartUploadManagers.put(name, manager);
+      var outputStream = manager.getMultiPartOutputStreams().get(0);
+      // We only need one output stream as we only have one input stream. This is reasonably performant.
+      // See the above comment.
+      outputStreams.put(name, outputStream);
+      var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+      try {
+        csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
     return name;
   }

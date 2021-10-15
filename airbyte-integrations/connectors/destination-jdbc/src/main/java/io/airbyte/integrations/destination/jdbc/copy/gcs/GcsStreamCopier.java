@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
@@ -40,6 +41,14 @@ import org.slf4j.LoggerFactory;
 public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
+  // It is optimal to write every 10,000,000 records to a new file. This will make it easier to work with files and
+  // speed up the recording of large amounts of data.
+  // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
+  // the records from the file are copied to the staging table.
+  public static final int DEFAULT_PART = 1000;
+
+  public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
+  public final Map<String, Integer> fileNamePartsMap = new HashMap<>();
 
   private final Storage storageClient;
   private final GcsConfig gcsConfig;
@@ -77,25 +86,50 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   private String prepareGcsStagingFile() {
-    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 6) + "_" + streamName);
+    return String.join("/", stagingFolder, schemaName, getGcsStagingFileName());
+  }
+
+  private String getGcsStagingFileName() {
+    int index = 0;
+    String result;
+    if (filePrefixIndexMap.containsKey(streamName)) {
+      var prefixIndex = filePrefixIndexMap.get(streamName);
+      if (fileNamePartsMap.containsKey(prefixIndex + "_" + streamName) && fileNamePartsMap.get(prefixIndex + "_" + streamName) < DEFAULT_PART) {
+        var partIndex = fileNamePartsMap.get(prefixIndex + "_" + streamName) + 1;
+        fileNamePartsMap.put(prefixIndex + "_" + streamName, partIndex);
+        result = prefixIndex + "_" + streamName;
+      } else {
+        index = prefixIndex + 1;
+        filePrefixIndexMap.put(streamName, index);
+        fileNamePartsMap.put(index + "_" + streamName, 0);
+        result = index + "_" + streamName;
+      }
+    } else {
+      result = 0 + "_" + streamName;
+      filePrefixIndexMap.put(streamName, 0);
+      fileNamePartsMap.put(0 + "_" + streamName, 0);
+    }
+    return result;
   }
 
   @Override
   public String prepareStagingFile() {
     var name = prepareGcsStagingFile();
-    gcsStagingFiles.add(name);
-    var blobId = BlobId.of(gcsConfig.getBucketName(), name);
-    var blobInfo = BlobInfo.newBuilder(blobId).build();
-    var blob = storageClient.create(blobInfo);
-    var channel = blob.writer();
-    channels.put(name, channel);
-    OutputStream outputStream = Channels.newOutputStream(channel);
+    if (!gcsStagingFiles.contains(name)) {
+      gcsStagingFiles.add(name);
+      var blobId = BlobId.of(gcsConfig.getBucketName(), name);
+      var blobInfo = BlobInfo.newBuilder(blobId).build();
+      var blob = storageClient.create(blobInfo);
+      var channel = blob.writer();
+      channels.put(name, channel);
+      OutputStream outputStream = Channels.newOutputStream(channel);
 
-    var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-    try {
-      csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+      try {
+        csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
     return name;
   }
