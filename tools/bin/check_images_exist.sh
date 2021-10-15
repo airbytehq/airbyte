@@ -16,6 +16,13 @@ checkPlatformImages() {
   echo "Success! All platform images exist!"
 }
 
+checkNormalizationImages() {
+  local image_version; image_version=$(_get_docker_image_version airbyte-integrations/bases/base-normalization/Dockerfile)
+  echo "Checking normalization images with version $image_version exist..."
+  VERSION=$image_version docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.yaml pull || exit 1
+  echo "Success! All platform images exist!"
+}
+
 checkConnectorImages() {
   echo "Checking connector images exist..."
 
@@ -44,6 +51,7 @@ main() {
   echo "checking images for: $SUBSET"
 
   [[ "$SUBSET" =~ ^(all|platform)$ ]] && checkPlatformImages
+  [[ "$SUBSET" =~ ^(all|platform|connectors)$ ]] && checkNormalizationImages
   [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkConnectorImages
 
   echo "Image check complete."
