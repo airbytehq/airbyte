@@ -58,24 +58,24 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-        '.gradle',
-        'node_modules',
-        '.eggs',
-        '.mypy_cache',
-        '.venv',
-        '*.egg-info',
-        'build',
-        'dbt-project-template',
-        'dbt-project-template-mssql',
-        'dbt-project-template-mysql',
-        'dbt-project-template-oracle',
-        'dbt_data_tests',
-        'dbt_data_tests_tmp',
-        'dbt_schema_tests',
-        'normalization_test_output',
-        'tools',
-        'secrets',
-        'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+            '.gradle',
+            'node_modules',
+            '.eggs',
+            '.mypy_cache',
+            '.venv',
+            '*.egg-info',
+            'build',
+            'dbt-project-template',
+            'dbt-project-template-mssql',
+            'dbt-project-template-mysql',
+            'dbt-project-template-oracle',
+            'dbt_data_tests',
+            'dbt_data_tests_tmp',
+            'dbt_schema_tests',
+            'normalization_test_output',
+            'tools',
+            'secrets',
+            'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -235,6 +235,7 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+        testImplementation 'org.assertj:assertj-core:3.21.0'
     }
 }
 
@@ -268,7 +269,7 @@ task('format') {
 subprojects {
     def pythonFormatTask = project.tasks.findByName('blackFormat')
 
-    if(pythonFormatTask != null) {
+    if (pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
             header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
@@ -284,7 +285,7 @@ subprojects {
         flakeCheck.dependsOn licenseTask
 
         def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
-        if(generateFilesTask != null) {
+        if (generateFilesTask != null) {
             licenseTask.dependsOn generateFilesTask
         }
     }
