@@ -157,6 +157,7 @@ class Campaigns(IterableStream):
 
 
 class CampaignsMetrics(IterableStream):
+    name = "campaigns_metrics"
     primary_key = None
     data_field = None
 
