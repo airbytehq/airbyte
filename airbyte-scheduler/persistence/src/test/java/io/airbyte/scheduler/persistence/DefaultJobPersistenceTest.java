@@ -28,10 +28,8 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -90,7 +88,8 @@ class DefaultJobPersistenceTest {
       .withSync(new JobSyncConfig());
   private static PostgreSQLContainer<?> container;
 
-  private Database database;
+  private Database jobDatabase;
+  private Database configDatabase;
   private Supplier<Instant> timeSupplier;
   private JobPersistence jobPersistence;
 
@@ -158,33 +157,31 @@ class DefaultJobPersistenceTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
     resetDb();
-
-    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
-    jobDbMigrator.createBaseline();
-    jobDbMigrator.migrate();
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
-    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
+    jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase, timeSupplier, 30, 500, 10);
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    jobDatabase.close();
   }
 
   private void resetDb() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
+    jobDatabase.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
+    jobDatabase.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
+    jobDatabase.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
-    return database.query(ctx -> ctx.fetch(DefaultJobPersistence.BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId));
+    return jobDatabase.query(ctx -> ctx.fetch(DefaultJobPersistence.BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId));
   }
 
   @Test
@@ -336,7 +333,7 @@ class DefaultJobPersistenceTest {
         now.plusSeconds(14),
         now.plusSeconds(15),
         now.plusSeconds(16));
-    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
+    jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase, timeSupplier, 30, 500, 10);
     final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
     final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
@@ -439,7 +436,7 @@ class DefaultJobPersistenceTest {
       final var defaultWorkflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
       assertTrue(defaultWorkflowId.isEmpty());
 
-      database.query(ctx -> ctx.execute(
+      jobDatabase.query(ctx -> ctx.execute(
           "UPDATE attempts SET temporal_workflow_id = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
           attemptNumber));
       final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
@@ -1181,7 +1178,7 @@ class DefaultJobPersistenceTest {
     private Job persistJobForJobHistoryTesting(final String scope, final JobConfig jobConfig, final JobStatus status, final LocalDateTime runDate)
         throws IOException, SQLException {
       final String when = runDate.toString();
-      final Optional<Long> id = database.query(
+      final Optional<Long> id = jobDatabase.query(
           ctx -> ctx.fetch(
               "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
                   "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
@@ -1210,7 +1207,7 @@ class DefaultJobPersistenceTest {
           + "  \"sync\": {\n"
           + "    \"output_catalog\": {"
           + "}}}";
-      final Integer attemptNumber = database.query(ctx -> ctx.fetch(
+      final Integer attemptNumber = jobDatabase.query(ctx -> ctx.fetch(
           "INSERT INTO attempts(job_id, attempt_number, log_path, status, created_at, updated_at, output) "
               + "VALUES(?, ?, ?, CAST(? AS ATTEMPT_STATUS), ?, ?, CAST(? as JSONB)) RETURNING attempt_number",
           job.getId(),
@@ -1295,7 +1292,8 @@ class DefaultJobPersistenceTest {
       final String DECOY_SCOPE = UUID.randomUUID().toString();
 
       // Reconfigure constants to test various combinations of tuning knobs and make sure all work.
-      final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database, timeSupplier, ageCutoff, tooManyJobs, recencyCutoff);
+      final DefaultJobPersistence jobPersistence =
+          new DefaultJobPersistence(jobDatabase, configDatabase, timeSupplier, ageCutoff, tooManyJobs, recencyCutoff);
 
       final LocalDateTime fakeNow = LocalDateTime.of(2021, 6, 20, 0, 0);
 

@@ -168,8 +168,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getAndInitialize();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
-    configPersistence.migrateFileConfigs(configs);
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
@@ -184,7 +183,7 @@ public class ServerApp implements ServerRunnable {
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
             .getAndInitialize();
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);
 

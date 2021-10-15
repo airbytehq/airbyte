@@ -8,6 +8,7 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')

@@ -10,6 +10,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -131,7 +132,12 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           configs.getDatabasePassword(),
           configs.getDatabaseUrl())
               .getInitialized();
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+      final Database configDatabase = new ConfigsDatabaseInstance(
+          configs.getConfigDatabaseUser(),
+          configs.getConfigDatabasePassword(),
+          configs.getConfigDatabaseUrl())
+              .getInitialized();
+      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase);
       final String workflowId = workflowIdProvider.get();
       jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
     }

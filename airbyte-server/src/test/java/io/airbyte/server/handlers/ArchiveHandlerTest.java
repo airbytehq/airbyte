@@ -68,7 +68,8 @@ public class ArchiveHandlerTest {
   private static final String VERSION = "0.6.8";
   private static PostgreSQLContainer<?> container;
 
-  private Database database;
+  private Database jobDatabase;
+  private Database configDatabase;
   private JobPersistence jobPersistence;
   private DatabaseConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
@@ -102,11 +103,11 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    jobPersistence = new DefaultJobPersistence(database);
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    jobDatabase = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    configDatabase = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase);
     seedPersistence = YamlSeedConfigPersistence.getDefault();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
@@ -131,7 +132,8 @@ public class ArchiveHandlerTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    jobDatabase.close();
+    configDatabase.close();
   }
 
   /**
