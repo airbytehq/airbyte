@@ -2,7 +2,7 @@ plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
-    id 'com.github.hierynomus.license' version '0.15.0'
+    id 'com.github.hierynomus.license' version '0.16.1'
 }
 
 repositories {
@@ -168,7 +168,7 @@ subprojects {
     pmd {
         consoleOutput = true
 
-        rulePriority = 5
+        rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
@@ -236,6 +236,14 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+    }
+
+    tasks.withType(Tar) {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(Zip) {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 }
 
