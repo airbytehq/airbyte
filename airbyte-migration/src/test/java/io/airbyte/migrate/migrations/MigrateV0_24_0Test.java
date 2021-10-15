@@ -40,7 +40,7 @@ public class MigrateV0_24_0Test {
   private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/input_config";
   private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/output_config";
 
-  private Stream<JsonNode> getResourceStream(String resourcePath) throws IOException {
+  private Stream<JsonNode> getResourceStream(final String resourcePath) throws IOException {
     final ArrayNode nodeArray = (ArrayNode) Yamls
         .deserialize(MoreResources.readResource(resourcePath));
     return StreamSupport

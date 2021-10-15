@@ -26,16 +26,16 @@ public class AvroRecordFactory {
   private final JsonFieldNameUpdater nameUpdater;
   private final JsonAvroConverter converter = new JsonAvroConverter();
 
-  public AvroRecordFactory(Schema schema, JsonFieldNameUpdater nameUpdater) {
+  public AvroRecordFactory(final Schema schema, final JsonFieldNameUpdater nameUpdater) {
     this.schema = schema;
     this.nameUpdater = nameUpdater;
   }
 
-  public GenericData.Record getAvroRecord(UUID id, AirbyteRecordMessage recordMessage) throws JsonProcessingException {
+  public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage) throws JsonProcessingException {
     JsonNode inputData = recordMessage.getData();
     inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
 
-    ObjectNode jsonRecord = MAPPER.createObjectNode();
+    final ObjectNode jsonRecord = MAPPER.createObjectNode();
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     jsonRecord.setAll((ObjectNode) inputData);

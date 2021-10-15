@@ -16,7 +16,7 @@ public class WorkerPodToleration {
   private final String value;
   private final String operator;
 
-  public WorkerPodToleration(String key, String effect, String value, String operator) {
+  public WorkerPodToleration(final String key, final String effect, final String value, final String operator) {
     this.key = key;
     this.effect = effect;
     this.value = value;
@@ -40,14 +40,14 @@ public class WorkerPodToleration {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    WorkerPodToleration that = (WorkerPodToleration) o;
+    final WorkerPodToleration that = (WorkerPodToleration) o;
     return Objects.equals(key, that.key) && Objects.equals(effect, that.effect)
         && Objects.equals(value, that.value) && Objects.equals(operator,
             that.operator);

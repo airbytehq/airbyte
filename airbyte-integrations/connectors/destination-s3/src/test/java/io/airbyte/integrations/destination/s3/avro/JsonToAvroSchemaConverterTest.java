@@ -25,7 +25,7 @@ class JsonToAvroSchemaConverterTest {
 
   @Test
   public void testGetSingleTypes() {
-    JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
+    final JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
     assertEquals(
         Collections.singletonList(JsonSchemaType.NUMBER),
         JsonToAvroSchemaConverter.getTypes("field", input1));
@@ -33,7 +33,7 @@ class JsonToAvroSchemaConverterTest {
 
   @Test
   public void testGetUnionTypes() {
-    JsonNode input2 = Jsons.deserialize("{ \"type\": [\"null\", \"string\"] }");
+    final JsonNode input2 = Jsons.deserialize("{ \"type\": [\"null\", \"string\"] }");
     assertEquals(
         Lists.newArrayList(JsonSchemaType.NULL, JsonSchemaType.STRING),
         JsonToAvroSchemaConverter.getTypes("field", input2));
@@ -41,21 +41,21 @@ class JsonToAvroSchemaConverterTest {
 
   @Test
   public void testNoCombinedRestriction() {
-    JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
+    final JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
     assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input1).isEmpty());
   }
 
   @Test
   public void testWithCombinedRestriction() {
-    JsonNode input2 = Jsons.deserialize("{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }");
+    final JsonNode input2 = Jsons.deserialize("{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }");
     assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input2).isPresent());
   }
 
   public static class GetFieldTypeTestCaseProvider implements ArgumentsProvider {
 
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-      JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_schema_converter/get_field_type.json"));
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+      final JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_schema_converter/get_field_type.json"));
       return MoreIterators.toList(testCases.elements()).stream().map(testCase -> Arguments.of(
           testCase.get("fieldName").asText(),
           testCase.get("jsonFieldSchema"),
@@ -66,8 +66,8 @@ class JsonToAvroSchemaConverterTest {
 
   @ParameterizedTest
   @ArgumentsSource(GetFieldTypeTestCaseProvider.class)
-  public void testGetFieldType(String fieldName, JsonNode jsonFieldSchema, JsonNode avroFieldType) {
-    JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
+  public void testGetFieldType(final String fieldName, final JsonNode jsonFieldSchema, final JsonNode avroFieldType) {
+    final JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
     assertEquals(
         avroFieldType,
         Jsons.deserialize(converter.getNullableFieldTypes(fieldName, jsonFieldSchema).toString()),
@@ -77,8 +77,8 @@ class JsonToAvroSchemaConverterTest {
   public static class GetAvroSchemaTestCaseProvider implements ArgumentsProvider {
 
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-      JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_schema_converter/get_avro_schema.json"));
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+      final JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_schema_converter/get_avro_schema.json"));
       return MoreIterators.toList(testCases.elements()).stream().map(testCase -> Arguments.of(
           testCase.get("schemaName").asText(),
           testCase.get("namespace").asText(),
@@ -91,8 +91,13 @@ class JsonToAvroSchemaConverterTest {
 
   @ParameterizedTest
   @ArgumentsSource(GetAvroSchemaTestCaseProvider.class)
-  public void testGetAvroSchema(String schemaName, String namespace, boolean appendAirbyteFields, JsonNode jsonSchema, JsonNode avroSchema) {
-    JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
+  public void testGetAvroSchema(
+                                final String schemaName,
+                                final String namespace,
+                                final boolean appendAirbyteFields,
+                                final JsonNode jsonSchema,
+                                final JsonNode avroSchema) {
+    final JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
     assertEquals(
         avroSchema,
         Jsons.deserialize(converter.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields).toString()),

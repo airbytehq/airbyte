@@ -44,7 +44,7 @@ public class SlackNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifyJobFailure(String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
+  public boolean notifyJobFailure(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
       throws IOException, InterruptedException {
     return notifyFailure(renderJobData(
         "failure_slack_notification_template.txt",
@@ -55,7 +55,7 @@ public class SlackNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifyJobSuccess(String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
+  public boolean notifyJobSuccess(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
       throws IOException, InterruptedException {
     return notifySuccess(renderJobData(
         "success_slack_notification_template.txt",
@@ -65,13 +65,17 @@ public class SlackNotificationClient extends NotificationClient {
         logUrl));
   }
 
-  private String renderJobData(String templateFile, String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
+  private String renderJobData(final String templateFile,
+                               final String sourceConnector,
+                               final String destinationConnector,
+                               final String jobDescription,
+                               final String logUrl)
       throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, sourceConnector, destinationConnector, jobDescription, logUrl);
   }
 
-  private boolean notify(String message) throws IOException, InterruptedException {
+  private boolean notify(final String message) throws IOException, InterruptedException {
     final ImmutableMap<String, String> body = new Builder<String, String>()
         .put("text", message)
         .build();
@@ -112,7 +116,7 @@ public class SlackNotificationClient extends NotificationClient {
    * Use an integer division to check successful HTTP status codes (i.e., those from 200-299), not
    * just 200. https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    */
-  private static boolean isSuccessfulHttpResponse(int httpStatusCode) {
+  private static boolean isSuccessfulHttpResponse(final int httpStatusCode) {
     return httpStatusCode / 100 == 2;
   }
 

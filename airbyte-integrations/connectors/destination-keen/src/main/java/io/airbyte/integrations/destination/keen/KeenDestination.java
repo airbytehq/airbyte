@@ -41,30 +41,30 @@ public class KeenDestination extends BaseConnector implements Destination {
   static final String INFER_TIMESTAMP = "infer_timestamp";
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final String projectId = config.get(CONFIG_PROJECT_ID).textValue();
       final String apiKey = config.get(CONFIG_API_KEY).textValue();
-      KafkaProducer<String, String> producer = KafkaProducerFactory.create(projectId, apiKey);
+      final KafkaProducer<String, String> producer = KafkaProducerFactory.create(projectId, apiKey);
 
       // throws an AuthenticationException if authentication fails
       producer.partitionsFor("ANYTHING");
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED);
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return new KeenRecordsConsumer(config, catalog, outputRecordCollector);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new KeenDestination();
     LOGGER.info("starting destination: {}", KeenDestination.class);
     new IntegrationRunner(destination).run(args);
@@ -73,11 +73,11 @@ public class KeenDestination extends BaseConnector implements Destination {
 
   public static class KafkaProducerFactory {
 
-    public static KafkaProducer<String, String> create(String projectId, String apiKey) {
-      String jaasConfig = String.format("org.apache.kafka.common.security.plain.PlainLoginModule " +
+    public static KafkaProducer<String, String> create(final String projectId, final String apiKey) {
+      final String jaasConfig = String.format("org.apache.kafka.common.security.plain.PlainLoginModule " +
           "required username=\"%s\" password=\"%s\";", projectId, apiKey);
 
-      Properties props = new Properties();
+      final Properties props = new Properties();
       props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKER);
       props.put(SECURITY_PROTOCOL_CONFIG, SASL_SSL.name());
       props.put(SASL_MECHANISM, PLAIN_MECHANISM);

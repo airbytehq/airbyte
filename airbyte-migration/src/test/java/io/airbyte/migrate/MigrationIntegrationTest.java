@@ -250,21 +250,21 @@ class MigrationIntegrationTest {
     assertThrows(IllegalArgumentException.class, () -> migrate.run(config));
   }
 
-  private static void assertExpectedOutputVersion(Path outputRoot, String version) {
+  private static void assertExpectedOutputVersion(final Path outputRoot, final String version) {
     final Path outputVersionFilePath = outputRoot.resolve(Migrate.VERSION_FILE_NAME);
     assertTrue(Files.exists(outputVersionFilePath));
     assertEquals(version, IOs.readFile(outputVersionFilePath));
   }
 
-  private void assertRecordsInOutput(Map<ResourceId, List<JsonNode>> expectedRecords, int migrationsCount) {
+  private void assertRecordsInOutput(final Map<ResourceId, List<JsonNode>> expectedRecords, final int migrationsCount) {
     assertRecordsInOutput(ResourceType.CONFIG, Enums.valuesAsStrings(MigrationV0_14_0.ConfigKeys.class), expectedRecords, migrationsCount);
     assertRecordsInOutput(ResourceType.JOB, Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class), expectedRecords, migrationsCount);
   }
 
-  private void assertRecordsInOutput(ResourceType resourceType,
-                                     Set<String> resourceNames,
-                                     Map<ResourceId, List<JsonNode>> expectedResourceIdToRecords,
-                                     int migrationsCount) {
+  private void assertRecordsInOutput(final ResourceType resourceType,
+                                     final Set<String> resourceNames,
+                                     final Map<ResourceId, List<JsonNode>> expectedResourceIdToRecords,
+                                     final int migrationsCount) {
     resourceNames.forEach(resourceName -> {
       final ResourceId resourceId = ResourceId.fromConstantCase(resourceType, resourceName);
       final Path resourceFileOutputPath = outputRoot.resolve(resourceType.getDirectoryName()).resolve(resourceName + ".yaml");
@@ -287,7 +287,7 @@ class MigrationIntegrationTest {
     });
   }
 
-  private static Map<ResourceId, List<JsonNode>> addFooBarToAllRecordsExceptMetadata(Map<ResourceId, List<JsonNode>> records) {
+  private static Map<ResourceId, List<JsonNode>> addFooBarToAllRecordsExceptMetadata(final Map<ResourceId, List<JsonNode>> records) {
     return records.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue()
@@ -302,7 +302,7 @@ class MigrationIntegrationTest {
             .collect(Collectors.toList())));
   }
 
-  private static Map<ResourceId, List<JsonNode>> removeSourceDefinitionId(Map<ResourceId, List<JsonNode>> records) {
+  private static Map<ResourceId, List<JsonNode>> removeSourceDefinitionId(final Map<ResourceId, List<JsonNode>> records) {
     return records.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue()
@@ -317,10 +317,10 @@ class MigrationIntegrationTest {
             .collect(Collectors.toList())));
   }
 
-  private static void writeInputs(ResourceType resourceType,
-                                  Set<String> resourceNames,
-                                  Path fileParent,
-                                  Map<ResourceId, List<JsonNode>> resourceToRecords)
+  private static void writeInputs(final ResourceType resourceType,
+                                  final Set<String> resourceNames,
+                                  final Path fileParent,
+                                  final Map<ResourceId, List<JsonNode>> resourceToRecords)
       throws IOException {
     Files.createDirectories(fileParent);
     resourceNames.forEach(resourceName -> {
@@ -331,7 +331,8 @@ class MigrationIntegrationTest {
     });
   }
 
-  private static void writeInputArchive(Path archiveRoot, Map<ResourceId, List<JsonNode>> resourceToRecords, String version) throws IOException {
+  private static void writeInputArchive(final Path archiveRoot, final Map<ResourceId, List<JsonNode>> resourceToRecords, final String version)
+      throws IOException {
     writeInputs(
         ResourceType.CONFIG,
         Enums.valuesAsStrings(MigrationV0_14_0.ConfigKeys.class),
@@ -345,11 +346,11 @@ class MigrationIntegrationTest {
     IOs.writeFile(archiveRoot, Migrate.VERSION_FILE_NAME, version);
   }
 
-  private static Migration createNoOpMigrationWithVersion(String version) {
+  private static Migration createNoOpMigrationWithVersion(final String version) {
     return new NoOpMigration(version, new MigrationV0_14_0().getOutputSchema(), new MigrationV0_14_0().getOutputSchema());
   }
 
-  private static Migration createNoOpMigrationWithOutputSchema(String version, Map<ResourceId, JsonNode> outputSchema) {
+  private static Migration createNoOpMigrationWithOutputSchema(final String version, final Map<ResourceId, JsonNode> outputSchema) {
     return new NoOpMigration(version, new MigrationV0_14_0().getOutputSchema(), outputSchema);
   }
 
@@ -359,7 +360,7 @@ class MigrationIntegrationTest {
     private final Map<ResourceId, JsonNode> inputSchema;
     private final Map<ResourceId, JsonNode> outputSchema;
 
-    public NoOpMigration(String version, Map<ResourceId, JsonNode> inputSchema, Map<ResourceId, JsonNode> outputSchema) {
+    public NoOpMigration(final String version, final Map<ResourceId, JsonNode> inputSchema, final Map<ResourceId, JsonNode> outputSchema) {
       this.version = version;
       this.inputSchema = inputSchema;
       this.outputSchema = outputSchema;
@@ -381,8 +382,8 @@ class MigrationIntegrationTest {
     }
 
     @Override
-    public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
-      for (Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
+    public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+      for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
         final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
         entry.getValue().forEach(recordConsumer);
       }

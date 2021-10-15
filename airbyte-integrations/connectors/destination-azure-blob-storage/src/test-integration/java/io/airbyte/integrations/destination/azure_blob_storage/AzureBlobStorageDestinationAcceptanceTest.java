@@ -36,7 +36,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   protected SpecializedBlobClientBuilder specializedBlobClientBuilder;
   protected StorageSharedKeyCredential credential;
 
-  protected AzureBlobStorageDestinationAcceptanceTest(AzureBlobStorageFormat outputFormat) {
+  protected AzureBlobStorageDestinationAcceptanceTest(final AzureBlobStorageFormat outputFormat) {
     this.outputFormat = outputFormat;
   }
 
@@ -68,14 +68,14 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   @Deprecated
-  protected String getAllSyncedObjects(String streamName) {
-    AppendBlobClient appendBlobClient = specializedBlobClientBuilder
+  protected String getAllSyncedObjects(final String streamName) {
+    final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
         .blobName(streamName)
         .buildAppendBlobClient();
 
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     appendBlobClient.download(outputStream);
-    String result = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+    final String result = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 
     LOGGER.info("All objects: " + result);
     return result;
@@ -90,8 +90,8 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * <li>Construct the Azure Blob client.</li>
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    JsonNode baseConfigJson = getBaseConfigJson();
+  protected void setup(final TestDestinationEnv testEnv) {
+    final JsonNode baseConfigJson = getBaseConfigJson();
 
     configJson = Jsons.jsonNode(ImmutableMap.builder()
         .put("azure_blob_storage_account_name",
@@ -124,14 +124,14 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * Remove all the Container output from the tests.
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    BlobServiceClient storageClient =
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    final BlobServiceClient storageClient =
         new BlobServiceClientBuilder()
             .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
             .credential(credential)
             .buildClient();
 
-    BlobContainerClient blobContainerClient = storageClient
+    final BlobContainerClient blobContainerClient = storageClient
         .getBlobContainerClient(azureBlobStorageDestinationConfig.getContainerName());
 
     if (blobContainerClient.exists()) {

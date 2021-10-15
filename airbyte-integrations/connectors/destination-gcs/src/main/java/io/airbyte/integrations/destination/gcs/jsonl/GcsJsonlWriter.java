@@ -36,14 +36,14 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
   private final MultiPartOutputStream outputStream;
   private final PrintWriter printWriter;
 
-  public GcsJsonlWriter(GcsDestinationConfig config,
-                        AmazonS3 s3Client,
-                        ConfiguredAirbyteStream configuredStream,
-                        Timestamp uploadTimestamp) {
+  public GcsJsonlWriter(final GcsDestinationConfig config,
+                        final AmazonS3 s3Client,
+                        final ConfiguredAirbyteStream configuredStream,
+                        final Timestamp uploadTimestamp) {
     super(config, s3Client, configuredStream);
 
-    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.JSONL);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.JSONL);
+    final String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
@@ -56,8 +56,8 @@ public class GcsJsonlWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) {
-    ObjectNode json = MAPPER.createObjectNode();
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
+    final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());

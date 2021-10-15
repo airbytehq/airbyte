@@ -85,7 +85,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
     db.start();
 
@@ -97,7 +97,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("password", db.getPassword())
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(
+    final JdbcDatabase database = Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:clickhouse://%s:%s/%s",
@@ -117,8 +117,8 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
       connection.createStatement().execute(createTable2);
     });
 
-    String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
-    String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
+    final String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
+    final String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
       connection.createStatement().execute(insertTestData2);
@@ -128,7 +128,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.close();
     db.stop();
 

@@ -25,7 +25,7 @@ public class S3StreamTransferManagerHelper {
   public static final int MAX_ALLOWED_PART_SIZE_MB = 525;
   public static final int DEFAULT_NUM_STREAMS = 1;
 
-  public static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client, Long partSize) {
+  public static StreamTransferManager getDefault(final String bucketName, final String objectKey, final AmazonS3 s3Client, final Long partSize) {
     if (partSize == null) {
       LOGGER.warn(String.format("Part size for StreamTransferManager is not set explicitly. Will use the default one = %sMB. "
           + "Please note server allows up to 10,000 parts to be uploaded for a single object, i.e. 50GB for stream. "
@@ -60,7 +60,7 @@ public class S3StreamTransferManagerHelper {
         .partSize(partSize);
   }
 
-  private static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client) {
+  private static StreamTransferManager getDefault(final String bucketName, final String objectKey, final AmazonS3 s3Client) {
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads. The alternative is first writing the entire
     // output to disk before loading into S3. This is not feasible with large input.

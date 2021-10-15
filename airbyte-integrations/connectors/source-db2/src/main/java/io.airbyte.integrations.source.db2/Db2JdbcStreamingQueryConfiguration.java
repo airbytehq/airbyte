@@ -13,7 +13,7 @@ public class Db2JdbcStreamingQueryConfiguration implements
     JdbcStreamingQueryConfiguration {
 
   @Override
-  public void accept(Connection connection, PreparedStatement preparedStatement)
+  public void accept(final Connection connection, final PreparedStatement preparedStatement)
       throws SQLException {
     connection.setAutoCommit(false);
     preparedStatement.setFetchSize(1000);

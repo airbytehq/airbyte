@@ -93,7 +93,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws InterruptedException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
     container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
@@ -151,12 +151,12 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // solving with a simple while retry loop
     boolean failingToStart = true;
     int retryNum = 0;
-    int maxRetries = 10;
+    final int maxRetries = 10;
     while (failingToStart) {
       try {
         // enabling CDC on each table
-        String[] tables = {STREAM_NAME, STREAM_NAME2};
-        for (String table : tables) {
+        final String[] tables = {STREAM_NAME, STREAM_NAME2};
+        for (final String table : tables) {
           executeQuery(String.format(
               "EXEC sys.sp_cdc_enable_table\n"
                   + "\t@source_schema = N'%s',\n"
@@ -166,7 +166,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
               SCHEMA_NAME, table, CDC_ROLE_NAME));
         }
         failingToStart = false;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (retryNum >= maxRetries) {
           throw e;
         } else {
@@ -183,18 +183,18 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
   }
 
-  private void executeQuery(String query) {
+  private void executeQuery(final String query) {
     try {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

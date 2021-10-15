@@ -84,7 +84,7 @@ class BigQueryDenormalizedDestinationTest {
   private boolean tornDown = true;
 
   @BeforeEach
-  void setup(TestInfo info) throws IOException {
+  void setup(final TestInfo info) throws IOException {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -134,7 +134,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @AfterEach
-  void tearDown(TestInfo info) {
+  void tearDown(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -158,7 +158,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @ParameterizedTest
   @MethodSource("schemaAndDataProvider")
-  void testNestedWrite(JsonNode schema, AirbyteMessage message) throws Exception {
+  void testNestedWrite(final JsonNode schema, final AirbyteMessage message) throws Exception {
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
@@ -211,9 +211,9 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
   }
 
-  private Set<String> extractJsonValues(JsonNode node, String attributeName) {
-    List<JsonNode> valuesNode = node.findValues(attributeName);
-    Set<String> resultSet = new HashSet<>();
+  private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
+    final List<JsonNode> valuesNode = node.findValues(attributeName);
+    final Set<String> resultSet = new HashSet<>();
     valuesNode.forEach(jsonNode -> {
       if (jsonNode.isArray()) {
         jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
@@ -227,8 +227,8 @@ class BigQueryDenormalizedDestinationTest {
     return resultSet;
   }
 
-  private List<JsonNode> retrieveRecordsAsJson(String tableName) throws Exception {
-    QueryJobConfiguration queryConfig =
+  private List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
+    final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
                 String.format("select TO_JSON_STRING(t) as jsonValue from %s.%s t;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))

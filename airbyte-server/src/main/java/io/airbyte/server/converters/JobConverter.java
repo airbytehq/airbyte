@@ -32,13 +32,13 @@ public class JobConverter {
 
   private static final int LOG_TAIL_SIZE = 1000000;
 
-  public static JobInfoRead getJobInfoRead(Job job) {
+  public static JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
         .attempts(job.getAttempts().stream().map(JobConverter::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
-  public static JobWithAttemptsRead getJobWithAttemptsRead(Job job) {
+  public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
@@ -53,13 +53,13 @@ public class JobConverter {
         .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).collect(Collectors.toList()));
   }
 
-  public static AttemptInfoRead getAttemptInfoRead(Attempt attempt) {
+  public static AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {
     return new AttemptInfoRead()
         .attempt(getAttemptRead(attempt))
         .logs(getLogRead(attempt.getLogPath()));
   }
 
-  public static AttemptRead getAttemptRead(Attempt attempt) {
+  public static AttemptRead getAttemptRead(final Attempt attempt) {
     return new AttemptRead()
         .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
@@ -78,20 +78,20 @@ public class JobConverter {
         .endedAt(attempt.getEndedAtInSecond().orElse(null));
   }
 
-  public static LogRead getLogRead(Path logPath) {
+  public static LogRead getLogRead(final Path logPath) {
     try {
-      var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), logPath);
+      final var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), logPath);
       return new LogRead().logLines(logs);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static SynchronousJobRead getSynchronousJobRead(SynchronousResponse<?> response) {
+  public static SynchronousJobRead getSynchronousJobRead(final SynchronousResponse<?> response) {
     return getSynchronousJobRead(response.getMetadata());
   }
 
-  public static SynchronousJobRead getSynchronousJobRead(SynchronousJobMetadata metadata) {
+  public static SynchronousJobRead getSynchronousJobRead(final SynchronousJobMetadata metadata) {
     final JobConfigType configType = Enums.convertTo(metadata.getConfigType(), JobConfigType.class);
 
     return new SynchronousJobRead()

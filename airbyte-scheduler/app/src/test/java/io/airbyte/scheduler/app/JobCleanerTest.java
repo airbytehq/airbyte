@@ -102,7 +102,7 @@ class JobCleanerTest {
     createFile(folder.resolve("2"), "F", 1, 20);
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
-    Job job2 = mock(Job.class);
+    final Job job2 = mock(Job.class);
     when(job2.getId()).thenReturn(2L);
     when(jobPersistence.listJobsWithStatus(JobStatus.RUNNING)).thenReturn(List.of(job2));
 
@@ -118,25 +118,25 @@ class JobCleanerTest {
     assertEquals(expected, after);
   }
 
-  private void createFile(Path subdirectory, String filename, int sizeMb, int daysAgo) throws IOException {
-    long lastModified = JobCleaner.getDateFromDaysAgo(daysAgo).getTime();
-    File subdirFile = subdirectory.toFile();
+  private void createFile(final Path subdirectory, final String filename, final int sizeMb, final int daysAgo) throws IOException {
+    final long lastModified = JobCleaner.getDateFromDaysAgo(daysAgo).getTime();
+    final File subdirFile = subdirectory.toFile();
     if (!subdirFile.exists()) {
       subdirFile.mkdir();
       subdirFile.setLastModified(lastModified);
     }
 
-    File file = subdirectory.resolve(filename).toFile();
+    final File file = subdirectory.resolve(filename).toFile();
     file.createNewFile();
 
-    RandomAccessFile raf = new RandomAccessFile(file, "rw");
+    final RandomAccessFile raf = new RandomAccessFile(file, "rw");
     raf.setLength(sizeMb * 1024 * 1024);
     raf.close();
 
     file.setLastModified(lastModified);
   }
 
-  private Set<String> listFiles(Path dir) throws IOException {
+  private Set<String> listFiles(final Path dir) throws IOException {
     return Files.walk(dir).map(Path::toString).map(x -> x.replace(folder.toString(), "")).collect(Collectors.toSet());
   }
 

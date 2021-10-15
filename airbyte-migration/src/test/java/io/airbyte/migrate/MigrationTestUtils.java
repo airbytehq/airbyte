@@ -17,17 +17,18 @@ import java.util.stream.Stream;
 
 public class MigrationTestUtils {
 
-  public static Map<ResourceId, Stream<JsonNode>> convertListsToValues(Map<ResourceId, List<JsonNode>> map) {
+  public static Map<ResourceId, Stream<JsonNode>> convertListsToValues(final Map<ResourceId, List<JsonNode>> map) {
     return map.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().stream().map(Jsons::clone)));
   }
 
-  public static Map<ResourceId, ListConsumer<JsonNode>> createOutputConsumer(Set<ResourceId> resourceIds) {
+  public static Map<ResourceId, ListConsumer<JsonNode>> createOutputConsumer(final Set<ResourceId> resourceIds) {
     return resourceIds.stream().collect(Collectors.toMap(v -> v, v -> new ListConsumer<>()));
   }
 
-  public static Map<ResourceId, List<JsonNode>> createExpectedOutput(Set<ResourceId> resourceIds, Map<ResourceId, List<JsonNode>> overrides) {
+  public static Map<ResourceId, List<JsonNode>> createExpectedOutput(final Set<ResourceId> resourceIds,
+                                                                     final Map<ResourceId, List<JsonNode>> overrides) {
     return resourceIds.stream().collect(Collectors.toMap(v -> v, v -> {
       if (overrides.containsKey(v)) {
         return overrides.get(v);
@@ -37,7 +38,7 @@ public class MigrationTestUtils {
     }));
   }
 
-  public static Map<ResourceId, List<JsonNode>> collectConsumersToList(Map<ResourceId, ListConsumer<JsonNode>> input) {
+  public static Map<ResourceId, List<JsonNode>> collectConsumersToList(final Map<ResourceId, ListConsumer<JsonNode>> input) {
     return input.entrySet()
         .stream()
         .collect(Collectors.toMap(

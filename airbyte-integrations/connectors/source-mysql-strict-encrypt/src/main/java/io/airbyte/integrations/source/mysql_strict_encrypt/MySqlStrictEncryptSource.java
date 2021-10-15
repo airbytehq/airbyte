@@ -36,7 +36,7 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
     return spec;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new MySqlStrictEncryptSource();
     LOGGER.info("starting source: {}", MySqlStrictEncryptSource.class);
     new IntegrationRunner(source).run(args);

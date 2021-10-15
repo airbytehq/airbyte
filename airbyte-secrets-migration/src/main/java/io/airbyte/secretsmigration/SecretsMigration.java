@@ -29,7 +29,7 @@ public class SecretsMigration {
   final ConfigPersistence readFromPersistence;
   final ConfigPersistence writeToPersistence;
 
-  public SecretsMigration(ConfigPersistence readFromPersistence, ConfigPersistence writeToPersistence, boolean dryRun) {
+  public SecretsMigration(final ConfigPersistence readFromPersistence, final ConfigPersistence writeToPersistence, final boolean dryRun) {
     this.readFromPersistence = readFromPersistence;
     this.writeToPersistence = writeToPersistence;
     this.dryRun = dryRun;
@@ -54,7 +54,7 @@ public class SecretsMigration {
     LOGGER.info("Migration run complete.");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
     final ConfigPersistence readFromPersistence = new DatabaseConfigPersistence(new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),

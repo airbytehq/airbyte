@@ -50,10 +50,10 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
   public void testCheckConnectionInvalidCredentials() {}
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
     final Optional<Path> streamOutput = allOutputs.stream()
@@ -69,12 +69,12 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     // no op
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     // no op
   }
 

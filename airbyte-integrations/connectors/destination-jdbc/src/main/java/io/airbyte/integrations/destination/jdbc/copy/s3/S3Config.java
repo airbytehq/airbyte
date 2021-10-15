@@ -15,7 +15,13 @@ public class S3Config {
   private final String region;
   private final Integer partSize;
 
-  public S3Config(String endpoint, String bucketName, String accessKeyId, String secretAccessKey, String region, Integer partSize) {
+  public S3Config(
+                  final String endpoint,
+                  final String bucketName,
+                  final String accessKeyId,
+                  final String secretAccessKey,
+                  final String region,
+                  final Integer partSize) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.accessKeyId = accessKeyId;
@@ -48,7 +54,7 @@ public class S3Config {
     return partSize;
   }
 
-  public static S3Config getS3Config(JsonNode config) {
+  public static S3Config getS3Config(final JsonNode config) {
     var partSize = S3StreamCopier.DEFAULT_PART_SIZE_MB;
     if (config.get("part_size") != null) {
       partSize = config.get("part_size").asInt();

@@ -59,8 +59,8 @@ public class MigrationV0_14_1 implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
-    for (Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+    for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
       entry.getValue().forEach(r -> {

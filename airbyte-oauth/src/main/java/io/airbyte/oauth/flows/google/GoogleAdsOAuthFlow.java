@@ -18,12 +18,12 @@ public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
   @VisibleForTesting
   static final String SCOPE_URL = "https://www.googleapis.com/auth/adwords";
 
-  public GoogleAdsOAuthFlow(ConfigRepository configRepository) {
+  public GoogleAdsOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  GoogleAdsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  GoogleAdsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
@@ -33,21 +33,21 @@ public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
   }
 
   @Override
-  protected String getClientIdUnsafe(JsonNode config) {
+  protected String getClientIdUnsafe(final JsonNode config) {
     // the config object containing client ID and secret is nested inside the "credentials" object
     Preconditions.checkArgument(config.hasNonNull("credentials"));
     return super.getClientIdUnsafe(config.get("credentials"));
   }
 
   @Override
-  protected String getClientSecretUnsafe(JsonNode config) {
+  protected String getClientSecretUnsafe(final JsonNode config) {
     // the config object containing client ID and secret is nested inside the "credentials" object
     Preconditions.checkArgument(config.hasNonNull("credentials"));
     return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+  protected Map<String, Object> extractRefreshToken(final JsonNode data) throws IOException {
     // the config object containing refresh token is nested inside the "credentials" object
     return Map.of("credentials", super.extractRefreshToken(data));
   }

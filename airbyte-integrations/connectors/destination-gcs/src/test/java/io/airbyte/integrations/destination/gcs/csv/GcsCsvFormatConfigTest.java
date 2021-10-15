@@ -30,7 +30,7 @@ public class GcsCsvFormatConfigTest {
     assertEquals(Flattening.ROOT_LEVEL, Flattening.fromValue("root level flattening"));
     try {
       Flattening.fromValue("invalid flattening value");
-    } catch (Exception e) {
+    } catch (final Exception e) {
       assertTrue(e instanceof IllegalArgumentException);
     }
   }
@@ -38,45 +38,45 @@ public class GcsCsvFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"CSV\",\n"
         + "  \"flattening\": \"Root level flattening\",\n"
         + "  \"part_size_mb\": 6\n"
         + "}"));
 
-    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
+    final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
     assertEquals("CSV", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
-    StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         gcsDestinationConfig.getBucketName(), "objectKey", null,
         gcsDestinationConfig.getFormatConfig().getPartSize());
 
-    Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"CSV\",\n"
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         gcsDestinationConfig.getBucketName(), "objectKey", null,
         gcsDestinationConfig.getFormatConfig().getPartSize());
 
-    Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
 

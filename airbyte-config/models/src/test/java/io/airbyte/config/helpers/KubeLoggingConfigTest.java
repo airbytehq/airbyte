@@ -32,7 +32,7 @@ public class KubeLoggingConfigTest {
     if (logPath != null) {
       try {
         LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         // Ignore Minio delete error.
       }
     }
@@ -47,12 +47,12 @@ public class KubeLoggingConfigTest {
    */
   @Test
   public void testLoggingConfiguration() throws IOException, InterruptedException {
-    var randPath = Strings.addRandomSuffix("-", "", 5);
+    final var randPath = Strings.addRandomSuffix("-", "", 5);
     // This mirrors our Log4j2 set up. See log4j2.xml.
     LogClientSingleton.setJobMdc(Path.of(randPath));
 
-    var toLog = List.of("line 1", "line 2", "line 3");
-    for (String l : toLog) {
+    final var toLog = List.of("line 1", "line 2", "line 3");
+    for (final String l : toLog) {
       LOGGER.info(l);
     }
     // So we don't publish anything else.
@@ -64,11 +64,11 @@ public class KubeLoggingConfigTest {
     logPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve the
     // log file.
-    var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(logPath));
+    final var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
     // other log lines from the system running. Join all the lines to simplify assertions.
-    var logsLine = Strings.join(logs, " ");
-    for (String l : toLog) {
+    final var logsLine = Strings.join(logs, " ");
+    for (final String l : toLog) {
       assertTrue(logsLine.contains(l));
     }
   }

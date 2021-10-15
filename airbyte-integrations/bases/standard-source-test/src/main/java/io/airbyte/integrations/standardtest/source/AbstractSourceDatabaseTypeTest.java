@@ -75,7 +75,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   protected abstract void initTests();
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     setupDatabaseInternal();
   }
 
@@ -92,21 +92,21 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    */
   @Test
   public void testDataTypes() throws Exception {
-    ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
-    List<AirbyteMessage> allMessages = runRead(catalog);
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final List<AirbyteMessage> allMessages = runRead(catalog);
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
-    Map<String, List<String>> expectedValues = new HashMap<>();
+    final Map<String, List<String>> expectedValues = new HashMap<>();
     testDataHolders.forEach(testDataHolder -> {
       if (!testDataHolder.getExpectedValues().isEmpty())
         expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
     });
 
-    for (AirbyteMessage msg : recordMessages) {
-      String streamName = msg.getRecord().getStream();
-      List<String> expectedValuesForStream = expectedValues.get(streamName);
+    for (final AirbyteMessage msg : recordMessages) {
+      final String streamName = msg.getRecord().getStream();
+      final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
-        var a = msg.getRecord().getData().get(getTestColumnName());
-        String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
+        final var a = msg.getRecord().getData().get(getTestColumnName());
+        final String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
         assertTrue(expectedValuesForStream.contains(value),
             "Returned value '" + value + "' by streamer " + streamName
                 + " should be in the expected list: " + expectedValuesForStream);
@@ -118,7 +118,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         "The streamer " + streamName + " should return all expected values. Missing values: " + values));
   }
 
-  protected String getValueFromJsonNode(JsonNode jsonNode) throws IOException {
+  protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
     if (jsonNode != null) {
       if (jsonNode.isArray()) {
         return jsonNode.toString();
@@ -138,11 +138,11 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    *         scripts failed.
    */
   private void setupDatabaseInternal() throws Exception {
-    Database database = setupDatabase();
+    final Database database = setupDatabase();
 
     initTests();
 
-    for (TestDataHolder test : testDataHolders) {
+    for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSqlQuery());
         LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
@@ -186,7 +186,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    *
    * @param test comprehensive data type test
    */
-  public void addDataTypeTestData(TestDataHolder test) {
+  public void addDataTypeTestData(final TestDataHolder test) {
     testDataHolders.add(test);
     test.setTestNumber(testDataHolders.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
     test.setNameSpace(getNameSpace());
@@ -194,7 +194,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     test.setTestColumnName(getTestColumnName());
   }
 
-  private String formatCollection(Collection<String> collection) {
+  private String formatCollection(final Collection<String> collection) {
     return collection.stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
   }
 
@@ -205,7 +205,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * @return formatted list of test cases
    */
   public String getMarkdownTestTable() {
-    StringBuilder table = new StringBuilder()
+    final StringBuilder table = new StringBuilder()
         .append("|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n")
         .append("|----|----|----|----|----|\n");
 

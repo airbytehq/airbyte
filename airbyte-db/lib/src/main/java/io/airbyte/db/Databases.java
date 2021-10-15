@@ -24,14 +24,14 @@ public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
 
-  public static Database createPostgresDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createPostgresDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  public static Database createPostgresDatabaseWithRetry(String username,
-                                                         String password,
-                                                         String jdbcConnectionString,
-                                                         Function<Database, Boolean> isDbReady) {
+  public static Database createPostgresDatabaseWithRetry(final String username,
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final Function<Database, Boolean> isDbReady) {
     Database database = null;
 
     while (database == null) {
@@ -44,7 +44,7 @@ public class Databases {
           database = null;
           Exceptions.toRuntime(() -> Thread.sleep(5000));
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
         LOGGER.warn("Ignoring exception while trying to request database:", e);
         database = null;
@@ -56,19 +56,19 @@ public class Databases {
     return database;
   }
 
-  public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
+  public static JdbcDatabase createRedshiftDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
   }
 
-  public static Database createMySqlDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createMySqlDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
-  public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createSqlServerDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
   }
 
-  public static Database createOracleDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createOracleDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
   }
 

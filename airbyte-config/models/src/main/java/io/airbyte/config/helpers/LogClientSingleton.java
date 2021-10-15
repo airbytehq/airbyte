@@ -132,7 +132,7 @@ public class LogClientSingleton {
   public static void setJobMdc(final Path path) {
     // setJobMdc is referenced from TemporalAttemptExecution without input parameters, so hard to pass
     // this in.
-    Configs configs = new EnvConfigs();
+    final Configs configs = new EnvConfigs();
     if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       LOGGER.debug("Setting docker job mdc");
       MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
@@ -157,7 +157,7 @@ public class LogClientSingleton {
     }
   }
 
-  private static boolean shouldUseLocalLogs(WorkerEnvironment workerEnvironment) {
+  private static boolean shouldUseLocalLogs(final WorkerEnvironment workerEnvironment) {
     return workerEnvironment.equals(WorkerEnvironment.DOCKER);
   }
 

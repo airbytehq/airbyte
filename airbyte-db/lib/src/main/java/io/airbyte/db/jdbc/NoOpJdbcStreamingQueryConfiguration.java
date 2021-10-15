@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class NoOpJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
   @Override
-  public void accept(Connection connection, PreparedStatement preparedStatement)
+  public void accept(final Connection connection, final PreparedStatement preparedStatement)
       throws SQLException {
 
   }

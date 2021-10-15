@@ -22,7 +22,7 @@ public class SnowflakeDatabase {
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
 
-  public static Connection getConnection(JsonNode config) throws SQLException {
+  public static Connection getConnection(final JsonNode config) throws SQLException {
     final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
 
     final Properties properties = new Properties();
@@ -46,7 +46,7 @@ public class SnowflakeDatabase {
     return DriverManager.getConnection(connectUrl, properties);
   }
 
-  public static JdbcDatabase getDatabase(JsonNode config) {
+  public static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(new SnowflakeConnectionSupplier(config));
   }
 
@@ -54,7 +54,7 @@ public class SnowflakeDatabase {
 
     private final JsonNode config;
 
-    public SnowflakeConnectionSupplier(JsonNode config) {
+    public SnowflakeConnectionSupplier(final JsonNode config) {
       this.config = config;
     }
 

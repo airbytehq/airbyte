@@ -28,9 +28,9 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected final AirbyteStream stream;
   protected final DestinationSyncMode syncMode;
 
-  protected BaseAzureBlobStorageWriter(AzureBlobStorageDestinationConfig config,
-                                       AppendBlobClient appendBlobClient,
-                                       ConfiguredAirbyteStream configuredStream) {
+  protected BaseAzureBlobStorageWriter(final AzureBlobStorageDestinationConfig config,
+                                       final AppendBlobClient appendBlobClient,
+                                       final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
@@ -41,7 +41,7 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
    * Log and close the write.
    */
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
       closeWhenFail();

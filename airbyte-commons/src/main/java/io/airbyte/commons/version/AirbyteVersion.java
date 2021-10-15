@@ -97,7 +97,7 @@ public class AirbyteVersion {
    * not handle version string with different digits correctly. For example:
    * {@code "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
    */
-  private static int compareVersion(String v1, String v2) {
+  private static int compareVersion(final String v1, final String v2) {
     return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));
   }
 
@@ -132,8 +132,8 @@ public class AirbyteVersion {
         '}';
   }
 
-  public static AirbyteVersion versionWithoutPatch(AirbyteVersion airbyteVersion) {
-    String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
+  public static AirbyteVersion versionWithoutPatch(final AirbyteVersion airbyteVersion) {
+    final String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
         + "."
         + airbyteVersion.getMinorVersion()
         + ".0-"
@@ -141,7 +141,7 @@ public class AirbyteVersion {
     return new AirbyteVersion(versionWithoutPatch);
   }
 
-  public static AirbyteVersion versionWithoutPatch(String airbyteVersion) {
+  public static AirbyteVersion versionWithoutPatch(final String airbyteVersion) {
     return versionWithoutPatch(new AirbyteVersion(airbyteVersion));
   }
 

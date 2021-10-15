@@ -48,11 +48,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final Properties properties;
   private final ConfiguredAirbyteCatalog catalog;
 
-  public DebeziumRecordPublisher(Properties properties,
-                                 JsonNode config,
-                                 ConfiguredAirbyteCatalog catalog,
-                                 AirbyteFileOffsetBackingStore offsetManager,
-                                 Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+  public DebeziumRecordPublisher(final Properties properties,
+                                 final JsonNode config,
+                                 final ConfiguredAirbyteCatalog catalog,
+                                 final AirbyteFileOffsetBackingStore offsetManager,
+                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
@@ -65,7 +65,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     this.engineLatch = new CountDownLatch(1);
   }
 
-  public void start(Queue<ChangeEvent<String, String>> queue) {
+  public void start(final Queue<ChangeEvent<String, String>> queue) {
     engine = DebeziumEngine.create(Json.class)
         .using(getDebeziumProperties())
         .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
@@ -177,7 +177,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   }
 
   @VisibleForTesting
-  public static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
+  public static String getTableWhitelist(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)

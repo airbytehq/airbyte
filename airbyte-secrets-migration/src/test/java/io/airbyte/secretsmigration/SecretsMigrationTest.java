@@ -84,7 +84,8 @@ class SecretsMigrationTest {
   @BeforeEach
   public void setup() throws Exception {}
 
-  public static void failOnDifferingConfigurations(Map<String, Stream<JsonNode>> leftConfigs, Map<String, Stream<JsonNode>> rightConfigs) {
+  public static void failOnDifferingConfigurations(final Map<String, Stream<JsonNode>> leftConfigs,
+                                                   final Map<String, Stream<JsonNode>> rightConfigs) {
     // Check that both sets have exactly the same keys. If they don't, we already know we're failing the
     // diff.
     if (!leftConfigs.keySet().containsAll(rightConfigs.keySet()) && rightConfigs.keySet().containsAll(leftConfigs.keySet())) {
@@ -92,13 +93,13 @@ class SecretsMigrationTest {
     }
     // Now we know that the keys exactly match, so we can compare the values with a single pass,
     // presuming consistent ordering.
-    for (String configSchemaName : leftConfigs.keySet()) {
-      List<JsonNode> leftNodes = leftConfigs.get(configSchemaName).collect(Collectors.toList());
-      List<JsonNode> rightNodes = rightConfigs.get(configSchemaName).collect(Collectors.toList());
-      for (JsonNode left : leftNodes) {
+    for (final String configSchemaName : leftConfigs.keySet()) {
+      final List<JsonNode> leftNodes = leftConfigs.get(configSchemaName).collect(Collectors.toList());
+      final List<JsonNode> rightNodes = rightConfigs.get(configSchemaName).collect(Collectors.toList());
+      for (final JsonNode left : leftNodes) {
         assertTrue(rightNodes.contains(left), "Missing left node from right collectin: " + left);
       }
-      for (JsonNode right : rightNodes) {
+      for (final JsonNode right : rightNodes) {
         assertTrue(leftNodes.contains(right), "Missing right node from left collection: " + right);
       }
     }

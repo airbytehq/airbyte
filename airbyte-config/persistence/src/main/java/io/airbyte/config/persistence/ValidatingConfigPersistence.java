@@ -38,22 +38,22 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz) throws JsonValidationException, IOException {
     final List<T> configs = decoratedPersistence.listConfigs(configType, clazz);
-    for (T config : configs) {
+    for (final T config : configs) {
       validateJson(config, configType);
     }
     return configs;
   }
 
   @Override
-  public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException {
+  public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
     validateJson(Jsons.jsonNode(config), configType);
     decoratedPersistence.writeConfig(configType, configId, config);
   }
 
   @Override
-  public void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+  public void deleteConfig(final AirbyteConfig configType, final String configId) throws ConfigNotFoundException, IOException {
     decoratedPersistence.deleteConfig(configType, configId);
   }
 
@@ -69,12 +69,12 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(ConfigPersistence seedPersistence) throws IOException {
+  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     decoratedPersistence.loadData(seedPersistence);
   }
 
-  private <T> void validateJson(T config, AirbyteConfig configType) throws JsonValidationException {
-    JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
+  private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {
+    final JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 

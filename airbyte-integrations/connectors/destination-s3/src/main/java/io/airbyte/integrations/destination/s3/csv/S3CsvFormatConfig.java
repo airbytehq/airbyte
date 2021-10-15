@@ -21,13 +21,13 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
     private final String value;
 
-    Flattening(String value) {
+    Flattening(final String value) {
       this.value = value;
     }
 
     @JsonCreator
-    public static Flattening fromValue(String value) {
-      for (Flattening f : Flattening.values()) {
+    public static Flattening fromValue(final String value) {
+      for (final Flattening f : Flattening.values()) {
         if (f.value.equalsIgnoreCase(value)) {
           return f;
         }
@@ -44,7 +44,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
   private final Flattening flattening;
   private final Long partSize;
 
-  public S3CsvFormatConfig(JsonNode formatConfig) {
+  public S3CsvFormatConfig(final JsonNode formatConfig) {
     this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
     this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null;
   }

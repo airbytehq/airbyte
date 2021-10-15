@@ -36,8 +36,8 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
    */
 
   @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                          List<TableInfo<CommonField<JDBCType>>> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
+                                                          final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
             tableInfo -> sourceOperations
@@ -45,14 +45,14 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
             tableInfo -> {
               try {
                 return database.resultSetQuery(connection -> {
-                  String sql = "SELECT name FROM system.columns WHERE database = ? AND  table = ? AND is_in_primary_key = 1";
-                  PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                  final String sql = "SELECT name FROM system.columns WHERE database = ? AND  table = ? AND is_in_primary_key = 1";
+                  final PreparedStatement preparedStatement = connection.prepareStatement(sql);
                   preparedStatement.setString(1, tableInfo.getNameSpace());
                   preparedStatement.setString(2, tableInfo.getName());
                   return preparedStatement.executeQuery();
 
                 }, resultSet -> resultSet.getString("name")).collect(Collectors.toList());
-              } catch (SQLException e) {
+              } catch (final SQLException e) {
                 throw new RuntimeException(e);
               }
             }));
@@ -72,7 +72,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
@@ -88,7 +88,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
     return Collections.singleton("system");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new ClickHouseSource();
     LOGGER.info("starting source: {}", ClickHouseSource.class);
     new IntegrationRunner(source).run(args);

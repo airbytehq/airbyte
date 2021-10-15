@@ -22,7 +22,7 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
 
   @Test
   public void testEncryption() throws SQLException {
-    String algorithm = "AES256";
+    final String algorithm = "AES256";
 
     final JsonNode config = getConfig();
     ((ObjectNode) config).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
@@ -30,7 +30,7 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
         .put("encryption_algorithm", algorithm)
         .build()));
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -41,8 +41,9 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
             "oracle.net.encryption_types_client=( "
             + algorithm + " )");
 
-    String network_service_banner = "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final String network_service_banner =
+        "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
+    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
         equals("Oracle Advanced Security: " + algorithm + " encryption"));
@@ -56,10 +57,10 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
         .put("encryption_algorithm", "AES256")
         .build()));
 
-    String algorithm = clone.get("encryption")
+    final String algorithm = clone.get("encryption")
         .get("encryption_algorithm").asText();
 
-    JdbcDatabase database = Databases.createJdbcDatabase(clone.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(clone.get("username").asText(),
         clone.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             clone.get("host").asText(),
@@ -70,8 +71,8 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
             "oracle.net.encryption_types_client=( "
             + algorithm + " )");
 
-    String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }

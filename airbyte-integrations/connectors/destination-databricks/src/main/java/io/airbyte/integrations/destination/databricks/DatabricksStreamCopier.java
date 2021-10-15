@@ -57,16 +57,16 @@ public class DatabricksStreamCopier implements StreamCopier {
   private final String destTableLocation;
   private final String stagingFolder;
 
-  public DatabricksStreamCopier(String stagingFolder,
-                                String schema,
-                                ConfiguredAirbyteStream configuredStream,
-                                AmazonS3 s3Client,
-                                JdbcDatabase database,
-                                DatabricksDestinationConfig databricksConfig,
-                                ExtendedNameTransformer nameTransformer,
-                                SqlOperations sqlOperations,
-                                S3WriterFactory writerFactory,
-                                Timestamp uploadTime)
+  public DatabricksStreamCopier(final String stagingFolder,
+                                final String schema,
+                                final ConfiguredAirbyteStream configuredStream,
+                                final AmazonS3 s3Client,
+                                final JdbcDatabase database,
+                                final DatabricksDestinationConfig databricksConfig,
+                                final ExtendedNameTransformer nameTransformer,
+                                final SqlOperations sqlOperations,
+                                final S3WriterFactory writerFactory,
+                                final Timestamp uploadTime)
       throws Exception {
     this.schemaName = schema;
     this.streamName = configuredStream.getStream().getName();
@@ -81,7 +81,7 @@ public class DatabricksStreamCopier implements StreamCopier {
     this.destTableName = nameTransformer.getIdentifier(streamName);
     this.stagingFolder = stagingFolder;
 
-    S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
+    final S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
     this.parquetWriter = (S3ParquetWriter) writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
 
     this.tmpTableLocation = String.format("s3://%s/%s",
@@ -103,12 +103,12 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName) throws Exception {
     parquetWriter.write(id, recordMessage);
   }
 
   @Override
-  public void closeStagingUploader(boolean hasFailed) throws Exception {
+  public void closeStagingUploader(final boolean hasFailed) throws Exception {
     parquetWriter.close(hasFailed);
   }
 
@@ -123,7 +123,7 @@ public class DatabricksStreamCopier implements StreamCopier {
     LOGGER.info("[Stream {}] Creating tmp table {} from staging file: {}", streamName, tmpTableName, tmpTableLocation);
 
     sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
-    String createTmpTable = String.format("CREATE TABLE %s.%s USING parquet LOCATION '%s';", schemaName, tmpTableName, tmpTableLocation);
+    final String createTmpTable = String.format("CREATE TABLE %s.%s USING parquet LOCATION '%s';", schemaName, tmpTableName, tmpTableLocation);
     LOGGER.info(createTmpTable);
     database.execute(createTmpTable);
   }
@@ -138,12 +138,12 @@ public class DatabricksStreamCopier implements StreamCopier {
   public String createDestinationTable() throws Exception {
     LOGGER.info("[Stream {}] Creating destination table if it does not exist: {}", streamName, destTableName);
 
-    String createStatement = destinationSyncMode == DestinationSyncMode.OVERWRITE
+    final String createStatement = destinationSyncMode == DestinationSyncMode.OVERWRITE
         // "create or replace" is the recommended way to replace existing table
         ? "CREATE OR REPLACE TABLE"
         : "CREATE TABLE IF NOT EXISTS";
 
-    String createTable = String.format(
+    final String createTable = String.format(
         "%s %s.%s " +
             "USING delta " +
             "LOCATION '%s' " +
@@ -165,8 +165,8 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) {
-    String copyData = String.format(
+  public String generateMergeStatement(final String destTableName) {
+    final String copyData = String.format(
         "COPY INTO %s.%s " +
             "FROM '%s' " +
             "FILEFORMAT = PARQUET " +
@@ -193,7 +193,7 @@ public class DatabricksStreamCopier implements StreamCopier {
    * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
    * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
-  static S3DestinationConfig getStagingS3DestinationConfig(S3DestinationConfig config, String stagingFolder) {
+  static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
     return new S3DestinationConfig(
         config.getEndpoint(),
         config.getBucketName(),

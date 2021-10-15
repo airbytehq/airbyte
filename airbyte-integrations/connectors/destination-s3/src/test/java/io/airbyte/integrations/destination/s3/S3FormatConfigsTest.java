@@ -23,16 +23,16 @@ public class S3FormatConfigsTest {
   @Test
   @DisplayName("When CSV format is specified, it returns CSV format config")
   public void testGetCsvS3FormatConfig() {
-    ObjectNode stubFormatConfig = mapper.createObjectNode();
+    final ObjectNode stubFormatConfig = mapper.createObjectNode();
     stubFormatConfig.put("format_type", S3Format.CSV.toString());
     stubFormatConfig.put("flattening", Flattening.ROOT_LEVEL.getValue());
 
-    ObjectNode stubConfig = mapper.createObjectNode();
+    final ObjectNode stubConfig = mapper.createObjectNode();
     stubConfig.set("format", stubFormatConfig);
-    S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(stubConfig);
+    final S3FormatConfig formatConfig = S3FormatConfigs.getS3FormatConfig(stubConfig);
     assertEquals(formatConfig.getFormat(), S3Format.CSV);
     assertTrue(formatConfig instanceof S3CsvFormatConfig);
-    S3CsvFormatConfig csvFormatConfig = (S3CsvFormatConfig) formatConfig;
+    final S3CsvFormatConfig csvFormatConfig = (S3CsvFormatConfig) formatConfig;
     assertEquals(csvFormatConfig.getFlattening(), Flattening.ROOT_LEVEL);
   }
 

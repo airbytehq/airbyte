@@ -72,7 +72,7 @@ class TemporalAttemptExecutionTest {
             .getAndInitialize();
 
     // make sure schema is up-to-date
-    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
+    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
     jobDbMigrator.createBaseline();
     jobDbMigrator.migrate();
   }

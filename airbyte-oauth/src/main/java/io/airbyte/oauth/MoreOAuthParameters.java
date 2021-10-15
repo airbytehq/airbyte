@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 public class MoreOAuthParameters {
 
   public static Optional<SourceOAuthParameter> getSourceOAuthParameter(
-                                                                       Stream<SourceOAuthParameter> stream,
-                                                                       UUID workspaceId,
-                                                                       UUID sourceDefinitionId) {
+                                                                       final Stream<SourceOAuthParameter> stream,
+                                                                       final UUID workspaceId,
+                                                                       final UUID sourceDefinitionId) {
     return stream
         .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
         .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
@@ -26,9 +26,9 @@ public class MoreOAuthParameters {
   }
 
   public static Optional<DestinationOAuthParameter> getDestinationOAuthParameter(
-                                                                                 Stream<DestinationOAuthParameter> stream,
-                                                                                 UUID workspaceId,
-                                                                                 UUID destinationDefinitionId) {
+                                                                                 final Stream<DestinationOAuthParameter> stream,
+                                                                                 final UUID workspaceId,
+                                                                                 final UUID destinationDefinitionId) {
     return stream
         .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
         .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))

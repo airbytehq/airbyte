@@ -12,7 +12,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 
 public class ConfigTestUtils {
 
-  public static JsonNode getBaseConfig(JsonNode formatConfig) {
+  public static JsonNode getBaseConfig(final JsonNode formatConfig) {
     return Jsons.deserialize("{\n"
         + "  \"gcs_bucket_name\": \"test-bucket-name\",\n"
         + "  \"gcs_bucket_path\": \"test_path\",\n"
@@ -27,7 +27,7 @@ public class ConfigTestUtils {
 
   }
 
-  public static void assertBaseConfig(GcsDestinationConfig gcsDestinationConfig) {
+  public static void assertBaseConfig(final GcsDestinationConfig gcsDestinationConfig) {
     assertEquals("test-bucket-name", gcsDestinationConfig.getBucketName());
     assertEquals("test_path", gcsDestinationConfig.getBucketPath());
     assertEquals("us-east-2", gcsDestinationConfig.getBucketRegion());

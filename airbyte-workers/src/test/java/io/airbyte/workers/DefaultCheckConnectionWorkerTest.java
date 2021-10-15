@@ -112,7 +112,7 @@ public class DefaultCheckConnectionWorkerTest {
 
   @Test
   public void testCancel() throws WorkerException {
-    DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
 
     worker.cancel();

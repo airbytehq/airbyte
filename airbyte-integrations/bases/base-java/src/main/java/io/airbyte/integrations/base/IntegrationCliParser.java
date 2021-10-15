@@ -61,7 +61,7 @@ public class IntegrationCliParser {
     return parseOptions(args, command);
   }
 
-  private static Command parseCommand(String[] args) {
+  private static Command parseCommand(final String[] args) {
     final CommandLineParser parser = new RelaxedParser();
     final HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -72,13 +72,13 @@ public class IntegrationCliParser {
       final CommandLine parsed = parser.parse(options, args);
       return Command.valueOf(parsed.getOptions()[0].getLongOpt().toUpperCase());
       // if discover, then validate, etc...
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       helpFormatter.printHelp("java-base", options);
       throw new IllegalArgumentException(e);
     }
   }
 
-  private static IntegrationConfig parseOptions(String[] args, Command command) {
+  private static IntegrationConfig parseOptions(final String[] args, final Command command) {
 
     final Options options = new Options();
     options.addOptionGroup(COMMAND_GROUP); // so that the parser does not throw an exception when encounter command args.
@@ -139,13 +139,13 @@ public class IntegrationCliParser {
     }
   }
 
-  private static CommandLine runParse(Options options, String[] args, Command command) {
+  private static CommandLine runParse(final Options options, final String[] args, final Command command) {
     final CommandLineParser parser = new DefaultParser();
     final HelpFormatter helpFormatter = new HelpFormatter();
 
     try {
       return parser.parse(options, args);
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       helpFormatter.printHelp(command.toString().toLowerCase(), options);
       throw new IllegalArgumentException(e);
     }

@@ -14,7 +14,7 @@ class StringsTest {
 
     private final int id;
 
-    public JoinClass(int id) {
+    public JoinClass(final int id) {
       this.id = id;
     }
 

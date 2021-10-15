@@ -103,7 +103,7 @@ class BigQueryGcsDestinationTest {
   private boolean tornDown = true;
 
   @BeforeEach
-  void setup(TestInfo info) throws IOException {
+  void setup(final TestInfo info) throws IOException {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -143,14 +143,14 @@ class BigQueryGcsDestinationTest {
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
 
-    JsonNode credentialFromSecretFile = credentialsGcsJson.get(BigQueryConsts.CREDENTIAL);
-    JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode credentialFromSecretFile = credentialsGcsJson.get(BigQueryConsts.CREDENTIAL);
+    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.CREDENTIAL_TYPE, credentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
         .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
         .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
         .build());
 
-    JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
         .put(BigQueryConsts.KEEP_GCS_FILES, BigQueryConsts.KEEP_GCS_FILES_VAL)
         .put(BigQueryConsts.GCS_BUCKET_NAME, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_NAME))
@@ -167,7 +167,7 @@ class BigQueryGcsDestinationTest {
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
-    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
@@ -184,7 +184,7 @@ class BigQueryGcsDestinationTest {
   }
 
   @AfterEach
-  void tearDown(TestInfo info) {
+  void tearDown(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -197,22 +197,22 @@ class BigQueryGcsDestinationTest {
    * Remove all the GCS output from the tests.
    */
   protected void tearDownGcs() {
-    JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
-    String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
-    String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
+    final JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
+    final String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+    final String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
 
-    List<KeyVersion> keysToDelete = new LinkedList<>();
-    List<S3ObjectSummary> objects = s3Client
+    final List<KeyVersion> keysToDelete = new LinkedList<>();
+    final List<S3ObjectSummary> objects = s3Client
         .listObjects(gcsBucketName, gcs_bucket_path)
         .getObjectSummaries();
-    for (S3ObjectSummary object : objects) {
+    for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
       LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
       // Google Cloud Storage doesn't accept request to delete multiple objects
-      for (KeyVersion keyToDelete : keysToDelete) {
+      for (final KeyVersion keyToDelete : keysToDelete) {
         s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
       }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
@@ -326,7 +326,7 @@ class BigQueryGcsDestinationTest {
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
-  private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
+  private void assertTmpTablesNotPresent(final List<String> tableNames) throws InterruptedException {
     final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
     final Set<String> finalTableNames = tableNames.stream().map(name -> name + "_raw").collect(Collectors.toSet());
     // search for table names that have the tmp table prefix but are not raw tables.
@@ -336,8 +336,8 @@ class BigQueryGcsDestinationTest {
         .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private List<JsonNode> retrieveRecords(String tableName) throws Exception {
-    QueryJobConfiguration queryConfig =
+  private List<JsonNode> retrieveRecords(final String tableName) throws Exception {
+    final QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 

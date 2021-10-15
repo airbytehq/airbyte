@@ -106,7 +106,7 @@ public class GoogleAdsOAuthFlowIntegrationTest {
     private String paramValue;
     private boolean succeeded;
 
-    public ServerHandler(String expectedParam) {
+    public ServerHandler(final String expectedParam) {
       this.expectedParam = expectedParam;
       this.paramValue = "";
       this.succeeded = false;
@@ -121,7 +121,7 @@ public class GoogleAdsOAuthFlowIntegrationTest {
     }
 
     @Override
-    public void handle(HttpExchange t) {
+    public void handle(final HttpExchange t) {
       final String query = t.getRequestURI().getQuery();
       LOGGER.info("Received query: '{}'", query);
       final Map<String, String> data;
@@ -142,18 +142,18 @@ public class GoogleAdsOAuthFlowIntegrationTest {
         final OutputStream os = t.getResponseBody();
         os.write(response.getBytes());
         os.close();
-      } catch (RuntimeException | IOException e) {
+      } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);
       }
     }
 
-    private static Map<String, String> deserialize(String query) {
+    private static Map<String, String> deserialize(final String query) {
       if (query == null) {
         return null;
       }
       final Map<String, String> result = new HashMap<>();
-      for (String param : query.split("&")) {
-        String[] entry = param.split("=");
+      for (final String param : query.split("&")) {
+        final String[] entry = param.split("=");
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {

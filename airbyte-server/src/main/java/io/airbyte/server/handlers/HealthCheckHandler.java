@@ -15,7 +15,7 @@ public class HealthCheckHandler {
 
   private final ConfigRepository configRepository;
 
-  public HealthCheckHandler(ConfigRepository configRepository) {
+  public HealthCheckHandler(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
 
@@ -25,7 +25,7 @@ public class HealthCheckHandler {
     try {
       configRepository.listStandardWorkspaces(true);
       databaseHealth = true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("database health check failed.");
     }
 

@@ -21,8 +21,8 @@ class SnowflakeDestinationTest {
     // schema
     // this connector should be updated with multiple credentials, each with a clear purpose (valid,
     // invalid: insufficient permissions, invalid: wrong password, etc..)
-    JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/config.json"))));
-    AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    final JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/config.json"))));
+    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
   }
 

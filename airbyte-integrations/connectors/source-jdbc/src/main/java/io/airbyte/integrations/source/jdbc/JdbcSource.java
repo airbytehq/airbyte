@@ -22,7 +22,7 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     return config;
   }
 
@@ -31,7 +31,7 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new JdbcSource();
     LOGGER.info("starting source: {}", JdbcSource.class);
     new IntegrationRunner(source).run(args);

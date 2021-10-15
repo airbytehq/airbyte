@@ -61,7 +61,7 @@ class DefaultAutoCloseableIteratorTest {
     iterator.close(); // still allowed to close again.
   }
 
-  private void assertNext(Iterator<String> iterator, String value) {
+  private void assertNext(final Iterator<String> iterator, final String value) {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }

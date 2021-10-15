@@ -11,7 +11,7 @@ import java.io.IOException;
 public abstract class AbstractJobsDatabaseTest extends AbstractDatabaseTest {
 
   @Override
-  public Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+  public Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
     return new JobsDatabaseInstance(username, password, connectionString).getAndInitialize();
   }
 

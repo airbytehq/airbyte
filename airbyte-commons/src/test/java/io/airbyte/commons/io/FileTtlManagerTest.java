@@ -23,7 +23,7 @@ class FileTtlManagerTest {
   @BeforeEach
 
   void setup() throws IOException {
-    Path testRoot = Files.createTempDirectory(Path.of("/tmp"), "ttl_test");
+    final Path testRoot = Files.createTempDirectory(Path.of("/tmp"), "ttl_test");
     file1 = Files.createFile(testRoot.resolve("file1"));
     file2 = Files.createFile(testRoot.resolve("file2"));
     file3 = Files.createFile(testRoot.resolve("file3"));

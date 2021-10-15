@@ -64,7 +64,7 @@ public class JobHistoryHandlerTest {
   private JobPersistence jobPersistence;
   private JobHistoryHandler jobHistoryHandler;
 
-  private static JobRead toJobInfo(Job job) {
+  private static JobRead toJobInfo(final Job job) {
     return new JobRead().id(job.getId())
         .configId(job.getScope())
         .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
@@ -74,14 +74,14 @@ public class JobHistoryHandlerTest {
 
   }
 
-  private static List<AttemptInfoRead> toAttemptInfoList(List<Attempt> attempts) {
+  private static List<AttemptInfoRead> toAttemptInfoList(final List<Attempt> attempts) {
     final List<AttemptRead> attemptReads = attempts.stream().map(JobHistoryHandlerTest::toAttemptRead).collect(Collectors.toList());
 
     final Function<AttemptRead, AttemptInfoRead> toAttemptInfoRead = (AttemptRead a) -> new AttemptInfoRead().attempt(a).logs(EMPTY_LOG_READ);
     return attemptReads.stream().map(toAttemptInfoRead).collect(Collectors.toList());
   }
 
-  private static AttemptRead toAttemptRead(Attempt a) {
+  private static AttemptRead toAttemptRead(final Attempt a) {
     return new AttemptRead()
         .id(a.getId())
         .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.AttemptStatus.class))
@@ -90,7 +90,7 @@ public class JobHistoryHandlerTest {
         .endedAt(a.getEndedAtInSecond().orElse(null));
   }
 
-  private static Attempt createSuccessfulAttempt(long jobId, long timestamps) {
+  private static Attempt createSuccessfulAttempt(final long jobId, final long timestamps) {
     return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, timestamps, timestamps, timestamps);
   }
 

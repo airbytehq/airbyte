@@ -25,17 +25,17 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v11.0/oauth/access_token";
 
-  public FacebookMarketingOAuthFlow(ConfigRepository configRepository) {
+  public FacebookMarketingOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  FacebookMarketingOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  FacebookMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("www.facebook.com")
@@ -49,13 +49,13 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
         .addParameter("scope", "ads_management,ads_read,read_insights");
     try {
       return builder.build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("code")) {
       return (String) queryParams.get("code");
     } else {
@@ -69,7 +69,10 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
@@ -80,7 +83,7 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+  protected Map<String, Object> extractRefreshToken(final JsonNode data) throws IOException {
     // Facebook does not have refresh token but calls it "long lived access token" instead:
     // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
     if (data.has("access_token")) {

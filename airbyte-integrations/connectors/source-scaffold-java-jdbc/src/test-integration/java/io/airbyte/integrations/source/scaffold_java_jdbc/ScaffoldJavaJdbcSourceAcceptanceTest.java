@@ -20,7 +20,7 @@ public class ScaffoldJavaJdbcSourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv testEnv) {
+  protected void setupEnvironment(final TestDestinationEnv testEnv) {
     // TODO create new container. Ex: "new OracleContainer("epiclabs/docker-oracle-xe-11g");"
     // TODO make container started. Ex: "container.start();"
     // TODO init JsonNode config
@@ -30,7 +30,7 @@ public class ScaffoldJavaJdbcSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     // TODO close container that was initialized in setup() method. Ex: "container.close();"
   }
 

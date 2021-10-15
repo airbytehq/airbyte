@@ -23,7 +23,7 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
     super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new SnowflakeSource();
     LOGGER.info("starting source: {}", SnowflakeSource.class);
     new IntegrationRunner(source).run(args);
@@ -31,7 +31,7 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", String.format("jdbc:snowflake://%s/",
             config.get("host").asText()))

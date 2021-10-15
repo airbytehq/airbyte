@@ -32,7 +32,7 @@ public class KafkaSource extends BaseConnector implements Source {
   public KafkaSource() {}
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
@@ -44,7 +44,7 @@ public class KafkaSource extends BaseConnector implements Source {
         LOGGER.info("Successfully connected to Kafka brokers for topic '{}'.", config.get("test_topic").asText());
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the Kafka brokers: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -53,10 +53,10 @@ public class KafkaSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
 
-    Set<String> topicsToSubscribe = KafkaSourceConfig.getKafkaSourceConfig(config).getTopicsToSubscribe();
-    List<AirbyteStream> streams = topicsToSubscribe.stream().map(topic -> CatalogHelpers
+    final Set<String> topicsToSubscribe = KafkaSourceConfig.getKafkaSourceConfig(config).getTopicsToSubscribe();
+    final List<AirbyteStream> streams = topicsToSubscribe.stream().map(topic -> CatalogHelpers
         .createAirbyteStream(topic, Field.of("value", JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
         .collect(Collectors.toList());
@@ -64,7 +64,8 @@ public class KafkaSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+      throws Exception {
     final AirbyteConnectionStatus check = check(config);
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
@@ -72,9 +73,9 @@ public class KafkaSource extends BaseConnector implements Source {
 
     final KafkaSourceConfig kafkaSourceConfig = KafkaSourceConfig.getKafkaSourceConfig(config);
     final KafkaConsumer<String, JsonNode> consumer = kafkaSourceConfig.getConsumer();
-    List<ConsumerRecord<String, JsonNode>> recordsList = new ArrayList<>();
+    final List<ConsumerRecord<String, JsonNode>> recordsList = new ArrayList<>();
 
-    int retry = config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
+    final int retry = config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
     int pollCount = 0;
     while (true) {
       final ConsumerRecords<String, JsonNode> consumerRecords = consumer.poll(Duration.of(100, ChronoUnit.MILLIS));
@@ -93,14 +94,14 @@ public class KafkaSource extends BaseConnector implements Source {
       consumer.commitAsync();
     }
     consumer.close();
-    Iterator<ConsumerRecord<String, JsonNode>> iterator = recordsList.iterator();
+    final Iterator<ConsumerRecord<String, JsonNode>> iterator = recordsList.iterator();
 
     return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
 
       @Override
       protected AirbyteMessage computeNext() {
         if (iterator.hasNext()) {
-          ConsumerRecord<String, JsonNode> record = iterator.next();
+          final ConsumerRecord<String, JsonNode> record = iterator.next();
           return new AirbyteMessage()
               .withType(AirbyteMessage.Type.RECORD)
               .withRecord(new AirbyteRecordMessage()
@@ -115,7 +116,7 @@ public class KafkaSource extends BaseConnector implements Source {
     });
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new KafkaSource();
     LOGGER.info("Starting source: {}", KafkaSource.class);
     new IntegrationRunner(source).run(args);

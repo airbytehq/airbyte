@@ -12,12 +12,12 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
 
   private final ConnectionSearch search;
 
-  public ConnectionMatcher(ConnectionSearch search) {
+  public ConnectionMatcher(final ConnectionSearch search) {
     this.search = search;
   }
 
   @Override
-  public ConnectionRead match(ConnectionRead query) {
+  public ConnectionRead match(final ConnectionRead query) {
     if (search == null) {
       return query;
     }

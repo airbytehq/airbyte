@@ -50,7 +50,7 @@ public class VersionMismatchServerTest {
     "/api/v1/health",
     "/random_path"
   })
-  public void testIt(String relativePath) throws Exception {
+  public void testIt(final String relativePath) throws Exception {
     final URL url = rootUri.resolve(relativePath).toURL();
     final HttpURLConnection http = (HttpURLConnection) url.openConnection();
 

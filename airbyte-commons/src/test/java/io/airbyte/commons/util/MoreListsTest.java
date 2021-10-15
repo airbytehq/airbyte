@@ -19,7 +19,7 @@ class MoreListsTest {
     assertEquals(Optional.of(3), MoreLists.last(List.of(1, 2, 3)));
     assertEquals(Optional.empty(), MoreLists.last(List.of()));
 
-    List<Integer> ints = new ArrayList<>();
+    final List<Integer> ints = new ArrayList<>();
     ints.add(1);
     ints.add(2);
     ints.add(null);

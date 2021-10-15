@@ -31,7 +31,7 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
   private final String schemaDumpFile;
 
-  protected FlywayMigrationDatabase(String schemaDumpFile) {
+  protected FlywayMigrationDatabase(final String schemaDumpFile) {
     this.schemaDumpFile = schemaDumpFile;
   }
 
@@ -48,7 +48,7 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     if (connection == null) {
       try {
         createInternalConnection();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException("Failed to launch postgres container and run migration", e);
       }
     }
@@ -61,14 +61,14 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
       dockerImage = DEFAULT_DOCKER_IMAGE;
     }
 
-    PostgreSQLContainer<?> container = new PostgreSQLContainer<>(dockerImage)
+    final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(dockerImage)
         .withDatabaseName("jooq_airbyte_configs")
         .withUsername("jooq_generator")
         .withPassword("jooq_generator");
     container.start();
 
-    Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    DatabaseMigrator migrator = getDatabaseMigrator(database);
+    final Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    final DatabaseMigrator migrator = getDatabaseMigrator(database);
     migrator.migrate();
 
     connection = database.getDataSource().getConnection();

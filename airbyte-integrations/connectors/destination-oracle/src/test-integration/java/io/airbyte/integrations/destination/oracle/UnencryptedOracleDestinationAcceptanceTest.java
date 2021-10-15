@@ -28,7 +28,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
-  private ExtendedNameTransformer namingResolver = new OracleNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
   private static OracleContainer db;
   private static JsonNode config;
   private final String schemaName = "TEST_ORCL";
@@ -38,7 +38,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     return "airbyte/destination-oracle:dev";
   }
 
-  private JsonNode getConfig(OracleContainer db) {
+  private JsonNode getConfig(final OracleContainer db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
@@ -59,10 +59,10 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -82,11 +82,11 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env,
-                                                     String streamName,
-                                                     String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
+                                                     final String streamName,
+                                                     final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
@@ -98,7 +98,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -110,9 +110,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName)
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    List<org.jooq.Record> result = getDatabase(config)
+    final List<org.jooq.Record> result = getDatabase(config)
         .query(ctx -> ctx.fetch(
             String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
                 OracleDestination.COLUMN_NAME_EMITTED_AT))
@@ -125,7 +125,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
         .collect(Collectors.toList());
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -138,7 +138,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     db = new OracleContainer()
         .withUsername("test")
@@ -159,16 +159,16 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }
 
   @Test
   public void testNoneEncryption() throws SQLException {
-    JsonNode config = getConfig();
+    final JsonNode config = getConfig();
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -176,8 +176,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver");
 
-    String network_service_banner = "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final String network_service_banner =
+        "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
+    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
 
     assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
         .contains("Oracle Advanced Security: encryption"));

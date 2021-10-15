@@ -21,21 +21,26 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StreamCopier.class);
   private static final int FILE_PREFIX_LENGTH = 5;
 
-  public SnowflakeS3StreamCopier(String stagingFolder,
-                                 DestinationSyncMode destSyncMode,
-                                 String schema,
-                                 String streamName,
-                                 AmazonS3 client,
-                                 JdbcDatabase db,
-                                 S3Config s3Config,
-                                 ExtendedNameTransformer nameTransformer,
-                                 SqlOperations sqlOperations) {
+  public SnowflakeS3StreamCopier(final String stagingFolder,
+                                 final DestinationSyncMode destSyncMode,
+                                 final String schema,
+                                 final String streamName,
+                                 final AmazonS3 client,
+                                 final JdbcDatabase db,
+                                 final S3Config s3Config,
+                                 final ExtendedNameTransformer nameTransformer,
+                                 final SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
         client, db, s3Config, nameTransformer, sqlOperations);
   }
 
   @Override
-  public void copyS3CsvFileIntoTable(JdbcDatabase database, String s3FileLocation, String schema, String tableName, S3Config s3Config)
+  public void copyS3CsvFileIntoTable(
+                                     final JdbcDatabase database,
+                                     final String s3FileLocation,
+                                     final String schema,
+                                     final String tableName,
+                                     final S3Config s3Config)
       throws SQLException {
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "

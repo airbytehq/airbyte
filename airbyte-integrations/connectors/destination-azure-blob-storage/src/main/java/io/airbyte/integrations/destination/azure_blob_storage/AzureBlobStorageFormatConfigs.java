@@ -16,10 +16,10 @@ public class AzureBlobStorageFormatConfigs {
   protected static final Logger LOGGER = LoggerFactory
       .getLogger(AzureBlobStorageFormatConfigs.class);
 
-  public static AzureBlobStorageFormatConfig getAzureBlobStorageFormatConfig(JsonNode config) {
-    JsonNode formatConfig = config.get("format");
+  public static AzureBlobStorageFormatConfig getAzureBlobStorageFormatConfig(final JsonNode config) {
+    final JsonNode formatConfig = config.get("format");
     LOGGER.info("Azure Blob Storage format config: {}", formatConfig.toString());
-    AzureBlobStorageFormat formatType = AzureBlobStorageFormat
+    final AzureBlobStorageFormat formatType = AzureBlobStorageFormat
         .valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {

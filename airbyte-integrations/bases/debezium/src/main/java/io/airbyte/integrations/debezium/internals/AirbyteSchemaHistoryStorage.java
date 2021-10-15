@@ -49,18 +49,18 @@ public class AirbyteSchemaHistoryStorage {
    * {@link io.debezium.relational.history.FileDatabaseHistory#recoverRecords(Consumer)}
    */
   public String read() {
-    StringBuilder fileAsString = new StringBuilder();
+    final StringBuilder fileAsString = new StringBuilder();
     try {
-      for (String line : Files.readAllLines(path, UTF8)) {
+      for (final String line : Files.readAllLines(path, UTF8)) {
         if (line != null && !line.isEmpty()) {
-          Document record = reader.read(line);
-          String recordAsString = writer.write(record);
+          final Document record = reader.read(line);
+          final String recordAsString = writer.write(record);
           fileAsString.append(recordAsString);
           fileAsString.append(System.lineSeparator());
         }
       }
       return fileAsString.toString();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -79,21 +79,21 @@ public class AirbyteSchemaHistoryStorage {
         }
         try {
           Files.createFile(path);
-        } catch (FileAlreadyExistsException e) {
+        } catch (final FileAlreadyExistsException e) {
           // do nothing
         }
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new IllegalStateException(
           "Unable to create history file at " + path + ": " + e.getMessage(), e);
     }
   }
 
-  public void persist(Optional<JsonNode> schemaHistory) {
+  public void persist(final Optional<JsonNode> schemaHistory) {
     if (schemaHistory.isEmpty()) {
       return;
     }
-    String fileAsString = Jsons.object(schemaHistory.get(), String.class);
+    final String fileAsString = Jsons.object(schemaHistory.get(), String.class);
 
     if (fileAsString == null || fileAsString.isEmpty()) {
       return;
@@ -110,33 +110,33 @@ public class AirbyteSchemaHistoryStorage {
    *
    * @param fileAsString Represents the contents of the file saved in state from previous syncs
    */
-  private void writeToFile(String fileAsString) {
+  private void writeToFile(final String fileAsString) {
     try {
-      String[] split = fileAsString.split(System.lineSeparator());
-      for (String element : split) {
-        Document read = reader.read(element);
-        String line = writer.write(read);
+      final String[] split = fileAsString.split(System.lineSeparator());
+      for (final String element : split) {
+        final Document read = reader.read(element);
+        final String line = writer.write(read);
 
-        try (BufferedWriter historyWriter = Files
+        try (final BufferedWriter historyWriter = Files
             .newBufferedWriter(path, StandardOpenOption.APPEND)) {
           try {
             historyWriter.append(line);
             historyWriter.newLine();
-          } catch (IOException e) {
+          } catch (final IOException e) {
             throw new RuntimeException(e);
           }
         }
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static AirbyteSchemaHistoryStorage initializeDBHistory(Optional<JsonNode> schemaHistory) {
+  public static AirbyteSchemaHistoryStorage initializeDBHistory(final Optional<JsonNode> schemaHistory) {
     final Path dbHistoryWorkingDir;
     try {
       dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     final Path dbHistoryFilePath = dbHistoryWorkingDir.resolve("dbhistory.dat");

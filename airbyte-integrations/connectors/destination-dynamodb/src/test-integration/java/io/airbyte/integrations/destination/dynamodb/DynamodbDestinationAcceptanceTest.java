@@ -53,8 +53,8 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    JsonNode baseJson = getBaseConfigJson();
-    JsonNode failCheckJson = Jsons.clone(baseJson);
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode failCheckJson = Jsons.clone(baseJson);
     // invalid credential
     ((ObjectNode) failCheckJson).put("access_key_id", "fake-key");
     ((ObjectNode) failCheckJson).put("secret_access_key", "fake-secret");
@@ -64,45 +64,45 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
-  protected List<Item> getAllSyncedObjects(String streamName, String namespace) {
-    var dynamodb = new DynamoDB(this.client);
-    var tableName = DynamodbOutputTableHelper.getOutputTableName(this.config.getTableName(), streamName, namespace);
-    var table = dynamodb.getTable(tableName);
-    List<Item> items = new ArrayList<Item>();
-    List<Item> resultItems = new ArrayList<Item>();
+  protected List<Item> getAllSyncedObjects(final String streamName, final String namespace) {
+    final var dynamodb = new DynamoDB(this.client);
+    final var tableName = DynamodbOutputTableHelper.getOutputTableName(this.config.getTableName(), streamName, namespace);
+    final var table = dynamodb.getTable(tableName);
+    final List<Item> items = new ArrayList<Item>();
+    final List<Item> resultItems = new ArrayList<Item>();
     Long maxSyncTime = 0L;
 
     try {
-      ItemCollection<ScanOutcome> scanItems = table.scan(new ScanSpec());
+      final ItemCollection<ScanOutcome> scanItems = table.scan(new ScanSpec());
 
-      Iterator<Item> iter = scanItems.iterator();
+      final Iterator<Item> iter = scanItems.iterator();
       while (iter.hasNext()) {
 
-        Item item = iter.next();
+        final Item item = iter.next();
         items.add(item);
         maxSyncTime = Math.max(maxSyncTime, ((BigDecimal) item.get("sync_time")).longValue());
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error(e.getMessage());
     }
 
-    Long finalMaxSyncTime = maxSyncTime;
+    final Long finalMaxSyncTime = maxSyncTime;
     items.sort(Comparator.comparingLong(o -> ((BigDecimal) o.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)).longValue()));
 
     return items;
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws IOException {
-    List<Item> items = getAllSyncedObjects(streamName, namespace);
-    List<JsonNode> jsonRecords = new LinkedList<>();
+    final List<Item> items = getAllSyncedObjects(streamName, namespace);
+    final List<JsonNode> jsonRecords = new LinkedList<>();
 
-    for (var item : items) {
-      var itemJson = item.toJSON();
+    for (final var item : items) {
+      final var itemJson = item.toJSON();
       jsonRecords.add(Jsons.deserialize(itemJson).get(JavaBaseConstants.COLUMN_NAME_DATA));
     }
 
@@ -110,19 +110,19 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    JsonNode baseConfigJson = getBaseConfigJson();
+  protected void setup(final TestDestinationEnv testEnv) {
+    final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
-    JsonNode configJson = Jsons.clone(baseConfigJson);
+    final JsonNode configJson = Jsons.clone(baseConfigJson);
     this.configJson = configJson;
     this.config = DynamodbDestinationConfig.getDynamodbDestinationConfig(configJson);
 
-    var endpoint = config.getEndpoint();
-    var region = config.getRegion();
-    var accessKeyId = config.getAccessKeyId();
-    var secretAccessKey = config.getSecretAccessKey();
+    final var endpoint = config.getEndpoint();
+    final var region = config.getRegion();
+    final var accessKeyId = config.getAccessKeyId();
+    final var secretAccessKey = config.getSecretAccessKey();
 
-    var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    final var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
     if (endpoint.isEmpty()) {
       this.client = AmazonDynamoDBClientBuilder.standard()
@@ -131,7 +131,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
           .build();
 
     } else {
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
       this.client = AmazonDynamoDBClientBuilder
@@ -144,22 +144,22 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    var dynamodb = new DynamoDB(this.client);
-    List<String> tables = new ArrayList<String>();
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    final var dynamodb = new DynamoDB(this.client);
+    final List<String> tables = new ArrayList<String>();
     dynamodb.listTables().forEach(o -> {
       if (o.getTableName().startsWith(this.config.getTableName()))
         tables.add(o.getTableName());
     });
 
     try {
-      for (var tableName : tables) {
-        Table table = dynamodb.getTable(tableName);
+      for (final var tableName : tables) {
+        final Table table = dynamodb.getTable(tableName);
         table.delete();
         table.waitForDelete();
         LOGGER.info(String.format("Delete table %s", tableName));
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error(e.getMessage());
     }
   }

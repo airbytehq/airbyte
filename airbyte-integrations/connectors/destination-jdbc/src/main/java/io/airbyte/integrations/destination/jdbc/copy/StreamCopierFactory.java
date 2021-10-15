@@ -19,7 +19,7 @@ public interface StreamCopierFactory<T> {
                       JdbcDatabase db,
                       SqlOperations sqlOperations);
 
-  static String getSchema(String namespace, String configuredSchema, ExtendedNameTransformer nameTransformer) {
+  static String getSchema(final String namespace, final String configuredSchema, final ExtendedNameTransformer nameTransformer) {
     if (namespace != null) {
       return nameTransformer.convertStreamName(namespace);
     } else {

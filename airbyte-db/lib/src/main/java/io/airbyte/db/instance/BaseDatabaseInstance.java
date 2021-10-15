@@ -38,13 +38,13 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
    * @param isDatabaseReady a function to check if the database has been initialized and ready for
    *        consumption
    */
-  protected BaseDatabaseInstance(String username,
-                                 String password,
-                                 String connectionString,
-                                 String initialSchema,
-                                 String databaseName,
-                                 Set<String> tableNames,
-                                 Function<Database, Boolean> isDatabaseReady) {
+  protected BaseDatabaseInstance(final String username,
+                                 final String password,
+                                 final String connectionString,
+                                 final String initialSchema,
+                                 final String databaseName,
+                                 final Set<String> tableNames,
+                                 final Function<Database, Boolean> isDatabaseReady) {
     this.username = username;
     this.password = password;
     this.connectionString = connectionString;
@@ -56,7 +56,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
   @Override
   public boolean isInitialized() throws IOException {
-    Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
@@ -80,14 +80,14 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
     // When we need to setup the database, it means the database will be initialized after
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
-    Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
         isDatabaseConnected(databaseName));
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
-      boolean hasTables = tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName));
+      final boolean hasTables = tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName));
       if (hasTables) {
         LOGGER.info("The {} database has been initialized", databaseName);
         return null;
@@ -103,7 +103,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   /**
    * @return true if the table exists.
    */
-  protected static boolean hasTable(DSLContext ctx, String tableName) {
+  protected static boolean hasTable(final DSLContext ctx, final String tableName) {
     return ctx.fetchExists(select()
         .from("information_schema.tables")
         .where(DSL.field("table_name").eq(tableName)
@@ -113,16 +113,16 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   /**
    * @return true if the table has data.
    */
-  protected static boolean hasData(DSLContext ctx, String tableName) {
+  protected static boolean hasData(final DSLContext ctx, final String tableName) {
     return ctx.fetchExists(select().from(tableName));
   }
 
-  protected static Function<Database, Boolean> isDatabaseConnected(String databaseName) {
+  protected static Function<Database, Boolean> isDatabaseConnected(final String databaseName) {
     return database -> {
       try {
         LOGGER.info("Testing {} database connection...", databaseName);
         return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         return false;
       }
     };

@@ -41,11 +41,11 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   @Override
-  public Stream<AirbyteMessage> create(BufferedReader bufferedReader) {
+  public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
         .map(s -> {
-          Optional<JsonNode> j = Jsons.tryDeserialize(s);
+          final Optional<JsonNode> j = Jsons.tryDeserialize(s);
           if (j.isEmpty()) {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
@@ -58,14 +58,14 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .map(Optional::get)
         // filter invalid messages
         .filter(j -> {
-          boolean res = protocolValidator.test(j);
+          final boolean res = protocolValidator.test(j);
           if (!res) {
             logger.error("Validation failed: {}", Jsons.serialize(j));
           }
           return res;
         })
         .map(j -> {
-          Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
+          final Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
           if (m.isEmpty()) {
             logger.error("Deserialization failed: {}", Jsons.serialize(j));
           }
@@ -75,7 +75,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .map(Optional::get)
         // filter logs
         .filter(m -> {
-          boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
+          final boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
           if (isLog) {
             internalLog(m.getLog());
           }
@@ -83,7 +83,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         });
   }
 
-  private void internalLog(AirbyteLogMessage logMessage) {
+  private void internalLog(final AirbyteLogMessage logMessage) {
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(logMessage.getMessage());
       case WARN -> logger.warn(logMessage.getMessage());

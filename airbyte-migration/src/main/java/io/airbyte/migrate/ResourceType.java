@@ -13,7 +13,7 @@ public enum ResourceType {
 
   private final Path directoryName;
 
-  private ResourceType(Path directoryName) {
+  private ResourceType(final Path directoryName) {
     this.directoryName = directoryName;
   }
 

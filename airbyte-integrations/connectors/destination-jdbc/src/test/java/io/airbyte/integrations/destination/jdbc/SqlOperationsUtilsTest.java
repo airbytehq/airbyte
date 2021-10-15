@@ -44,7 +44,7 @@ class SqlOperationsUtilsTest {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
-    JsonNode config = createConfig();
+    final JsonNode config = createConfig();
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),

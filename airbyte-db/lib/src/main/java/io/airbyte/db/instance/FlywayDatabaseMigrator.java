@@ -39,27 +39,27 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
    * @param migrationFileLocations Example: "classpath:db/migration". See:
    *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
    */
-  protected FlywayDatabaseMigrator(Database database,
-                                   String dbIdentifier,
-                                   String migrationRunner,
-                                   String migrationFileLocations) {
+  protected FlywayDatabaseMigrator(final Database database,
+                                   final String dbIdentifier,
+                                   final String migrationRunner,
+                                   final String migrationFileLocations) {
     this(database, getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load());
   }
 
   @VisibleForTesting
-  public FlywayDatabaseMigrator(Database database, Flyway flyway) {
+  public FlywayDatabaseMigrator(final Database database, final Flyway flyway) {
     this.database = database;
     this.flyway = flyway;
   }
 
-  private static String getDefaultMigrationFileLocation(String dbIdentifier) {
+  private static String getDefaultMigrationFileLocation(final String dbIdentifier) {
     return String.format("classpath:io/airbyte/db/instance/%s/migrations", dbIdentifier);
   }
 
-  private static FluentConfiguration getConfiguration(Database database,
-                                                      String dbIdentifier,
-                                                      String migrationRunner,
-                                                      String migrationFileLocations) {
+  private static FluentConfiguration getConfiguration(final Database database,
+                                                      final String dbIdentifier,
+                                                      final String migrationRunner,
+                                                      final String migrationFileLocations) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
@@ -72,21 +72,21 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public MigrateResult migrate() {
-    MigrateResult result = flyway.migrate();
+    final MigrateResult result = flyway.migrate();
     result.warnings.forEach(LOGGER::warn);
     return result;
   }
 
   @Override
   public List<MigrationInfo> list() {
-    MigrationInfoService result = flyway.info();
+    final MigrationInfoService result = flyway.info();
     result.getInfoResult().warnings.forEach(LOGGER::warn);
     return Arrays.asList(result.all());
   }
 
   @Override
   public BaselineResult createBaseline() {
-    BaselineResult result = flyway.baseline();
+    final BaselineResult result = flyway.baseline();
     result.warnings.forEach(LOGGER::warn);
     return result;
   }

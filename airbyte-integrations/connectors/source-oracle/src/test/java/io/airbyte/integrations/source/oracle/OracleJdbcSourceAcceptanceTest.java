@@ -104,8 +104,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       final ResultSet resultSet =
           conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
-        String tableName = resultSet.getString("TABLE_NAME");
-        String tableNameProcessed = tableName.contains(" ") ? sourceOperations
+        final String tableName = resultSet.getString("TABLE_NAME");
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }

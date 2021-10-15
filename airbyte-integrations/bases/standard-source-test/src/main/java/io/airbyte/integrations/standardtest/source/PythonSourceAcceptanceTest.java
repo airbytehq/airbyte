@@ -70,13 +70,13 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     runExecutableVoid(Command.TEARDOWN);
   }
 
@@ -90,19 +90,19 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
     TEARDOWN
   }
 
-  private <T> T runExecutable(Command cmd, Class<T> klass) throws IOException {
+  private <T> T runExecutable(final Command cmd, final Class<T> klass) throws IOException {
     return Jsons.object(runExecutable(cmd), klass);
   }
 
-  private JsonNode runExecutable(Command cmd) throws IOException {
+  private JsonNode runExecutable(final Command cmd) throws IOException {
     return Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME));
   }
 
-  private void runExecutableVoid(Command cmd) throws IOException {
+  private void runExecutableVoid(final Command cmd) throws IOException {
     runExecutableInternal(cmd);
   }
 
-  private Path runExecutableInternal(Command cmd) throws IOException {
+  private Path runExecutableInternal(final Command cmd) throws IOException {
     LOGGER.info("testRoot = " + testRoot);
     final List<String> dockerCmd =
         Lists.newArrayList(
@@ -127,7 +127,7 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
-    int exitCode = process.exitValue();
+    final int exitCode = process.exitValue();
     if (exitCode != 0) {
       throw new RuntimeException("python execution failed");
     }

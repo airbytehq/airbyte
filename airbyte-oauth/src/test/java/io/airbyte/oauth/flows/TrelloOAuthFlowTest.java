@@ -45,12 +45,12 @@ public class TrelloOAuthFlowTest {
     transport = new MockHttpTransport() {
 
       @Override
-      public LowLevelHttpRequest buildRequest(String method, String url) throws IOException {
+      public LowLevelHttpRequest buildRequest(final String method, final String url) throws IOException {
         return new MockLowLevelHttpRequest() {
 
           @Override
           public LowLevelHttpResponse execute() throws IOException {
-            MockLowLevelHttpResponse response = new MockLowLevelHttpResponse();
+            final MockLowLevelHttpResponse response = new MockLowLevelHttpResponse();
             response.setStatusCode(200);
             response.setContentType("application/x-www-form-urlencoded");
             response.setContent("oauth_token=test_token&oauth_token_secret=test_secret&oauth_callback_confirmed=true");

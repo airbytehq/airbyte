@@ -32,7 +32,7 @@ class AirbyteFileOffsetBackingStoreTest {
     final Path writeFilePath = testRoot.resolve("offset.dat");
 
     final AirbyteFileOffsetBackingStore offsetStore = new AirbyteFileOffsetBackingStore(templateFilePath);
-    Map<String, String> offset = offsetStore.read();
+    final Map<String, String> offset = offsetStore.read();
 
     final JsonNode asJson = Jsons.jsonNode(offset);
 

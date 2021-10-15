@@ -23,11 +23,11 @@ public class Database implements AutoCloseable {
     this.dialect = dialect;
   }
 
-  public <T> T query(ContextQueryFunction<T> transform) throws SQLException {
+  public <T> T query(final ContextQueryFunction<T> transform) throws SQLException {
     return transform.query(DSL.using(ds, dialect));
   }
 
-  public <T> T transaction(ContextQueryFunction<T> transform) throws SQLException {
+  public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
     return DSL.using(ds, dialect).transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
 

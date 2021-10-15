@@ -44,7 +44,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() {
-    var config = getConfigFromSecretsFile();
+    final var config = getConfigFromSecretsFile();
     ((ObjectNode) config).put("database", schemaName);
     return config;
   }
@@ -92,8 +92,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
                                                      final String streamName,
                                                      final String namespace)
       throws Exception {
-    var tableName = namingResolver.getIdentifier(streamName);
-    String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
+    final var tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
@@ -119,8 +119,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
             config.get("port").asText()));
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws Exception {
-    var schema = schemaName == null ? this.schemaName : schemaName;
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+    final var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
         getConfig(),
         MySQLDestination.HOST_KEY,
@@ -139,7 +139,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
-    var config = getConfig();
+    final var config = getConfig();
     SshTunnel.sshWrap(
         config,
         MySQLDestination.HOST_KEY,
@@ -160,7 +160,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
         });
   }
 
-  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
       // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
       assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());

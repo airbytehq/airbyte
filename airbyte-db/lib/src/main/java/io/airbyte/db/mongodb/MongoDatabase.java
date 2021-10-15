@@ -42,12 +42,12 @@ public class MongoDatabase extends AbstractDatabase {
   private final com.mongodb.client.MongoDatabase database;
   private final MongoClient mongoClient;
 
-  public MongoDatabase(String connectionString, String databaseName) {
+  public MongoDatabase(final String connectionString, final String databaseName) {
     try {
       this.connectionString = new ConnectionString(connectionString);
       mongoClient = MongoClients.create(this.connectionString);
       database = mongoClient.getDatabase(databaseName);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);
     }
@@ -67,7 +67,7 @@ public class MongoDatabase extends AbstractDatabase {
   }
 
   public Set<String> getCollectionNames() {
-    MongoIterable<String> collectionNames = database.listCollectionNames();
+    final MongoIterable<String> collectionNames = database.listCollectionNames();
     if (collectionNames == null) {
       return Collections.EMPTY_SET;
     }
@@ -75,13 +75,13 @@ public class MongoDatabase extends AbstractDatabase {
         .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX)).collect(Collectors.toSet());
   }
 
-  public MongoCollection<Document> getCollection(String collectionName) {
+  public MongoCollection<Document> getCollection(final String collectionName) {
     return database.getCollection(collectionName)
         .withReadConcern(ReadConcern.MAJORITY);
   }
 
-  public MongoCollection<Document> getOrCreateNewCollection(String collectionName) {
-    Set<String> collectionNames = MoreIterators.toSet(database.listCollectionNames().iterator());
+  public MongoCollection<Document> getOrCreateNewCollection(final String collectionName) {
+    final Set<String> collectionNames = MoreIterators.toSet(database.listCollectionNames().iterator());
     if (!collectionNames.contains(collectionName)) {
       database.createCollection(collectionName);
     }
@@ -89,7 +89,7 @@ public class MongoDatabase extends AbstractDatabase {
   }
 
   @VisibleForTesting
-  public MongoCollection<Document> createCollection(String name) {
+  public MongoCollection<Document> createCollection(final String name) {
     database.createCollection(name);
     return database.getCollection(name);
   }
@@ -99,7 +99,7 @@ public class MongoDatabase extends AbstractDatabase {
     return database.getName();
   }
 
-  public Stream<JsonNode> read(String collectionName, List<String> columnNames, Optional<Bson> filter) {
+  public Stream<JsonNode> read(final String collectionName, final List<String> columnNames, final Optional<Bson> filter) {
     try {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final MongoCursor<Document> cursor = collection
@@ -111,30 +111,30 @@ public class MongoDatabase extends AbstractDatabase {
           .onClose(() -> {
             try {
               cursor.close();
-            } catch (Exception e) {
+            } catch (final Exception e) {
               throw new RuntimeException();
             }
           });
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to read data from collection: ", collectionName, e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-  private Stream<JsonNode> getStream(MongoCursor<Document> cursor, CheckedFunction<Document, JsonNode, Exception> mapper) {
+  private Stream<JsonNode> getStream(final MongoCursor<Document> cursor, final CheckedFunction<Document, JsonNode, Exception> mapper) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
-      public boolean tryAdvance(Consumer<? super JsonNode> action) {
+      public boolean tryAdvance(final Consumer<? super JsonNode> action) {
         try {
-          Document document = cursor.tryNext();
+          final Document document = cursor.tryNext();
           if (document == null) {
             return false;
           }
           action.accept(mapper.apply(document));
           return true;
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new RuntimeException(e);
         }
       }
