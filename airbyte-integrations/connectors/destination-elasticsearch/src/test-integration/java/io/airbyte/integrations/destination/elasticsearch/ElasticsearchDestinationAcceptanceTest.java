@@ -75,7 +75,7 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
 
-    final String tableName = ElasticsearchDestination.streamToIndexName(namespace, streamName);
+    final String tableName = ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(namespace, streamName);
 
     ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     return connection.getRecords(tableName);

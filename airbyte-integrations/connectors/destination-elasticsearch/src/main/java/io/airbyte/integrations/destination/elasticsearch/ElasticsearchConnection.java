@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.elasticsearch;
 import co.elastic.clients.base.RestClientTransport;
 import co.elastic.clients.base.Transport;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._core.BulkRequest;
+import co.elastic.clients.elasticsearch._core.BulkResponse;
 import co.elastic.clients.elasticsearch._core.CreateResponse;
 import co.elastic.clients.elasticsearch._core.SearchResponse;
 import co.elastic.clients.elasticsearch._core.search.Hit;
@@ -14,7 +16,6 @@ import co.elastic.clients.elasticsearch._core.search.HitsMetadata;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,11 +23,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.client.Node;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,12 +122,24 @@ public class ElasticsearchConnection {
     return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
-  public void writeRecord(String index, String id, JsonNode data) throws Exception {
+  public CreateResponse writeRecord(String index, String id, JsonNode data) throws Exception {
     CreateResponse createResponse = client.create(builder ->
             builder.id(id).document(data).index(index));
     log.debug("wrote record: {}", createResponse.result());
+    return createResponse;
   }
 
+
+  public BulkResponse writeBulk(String index, List<AirbyteRecordMessage> records) throws IOException {
+    var bulkRequest = new BulkRequest.Builder<>();
+    bulkRequest.index(index);
+    for (var doc : records) {
+      bulkRequest.addDocument(doc);
+    }
+    return client.bulk(bulkRequest.build());
+  }
+
+  // returns the first 10k records of a given index
   public List<JsonNode> getRecords(String index) throws IOException {
     log.info("getting records for index: {}", index);
     SearchResponse<JsonNode> search = client.search(s -> s.index(index).size(MAX_HITS), JsonNode.class);
@@ -159,4 +171,5 @@ public class ElasticsearchConnection {
     return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
             .withMessage(e.getMessage());
   }
+
 }

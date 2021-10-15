@@ -27,12 +27,12 @@ public class ElasticsearchDestinationTest {
     private ObjectMapper mapper = new ObjectMapper();
 
     private static ElasticsearchContainer container;
-    private static final String SCHEMA_NAME = "public";
+    private static final String NAMESPACE = "public";
     private static final String STREAM_NAME = "id_and_name";
     private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
             CatalogHelpers.createConfiguredAirbyteStream(
                     STREAM_NAME,
-                    SCHEMA_NAME,
+                    NAMESPACE,
                     Field.of("id", JsonSchemaPrimitive.NUMBER),
                     Field.of("name", JsonSchemaPrimitive.STRING))));
 
@@ -80,16 +80,17 @@ public class ElasticsearchDestinationTest {
         });
         consumer.accept(new AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
+                .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(NAMESPACE + "." + STREAM_NAME, 10)))));
         consumer.close();
 
         final var connection = new ElasticsearchConnection(ConnectorConfiguration.FromJsonNode(config));
 
-        final List<JsonNode> actualRecords = connection.getRecords(ElasticsearchDestination.streamToIndexName(SCHEMA_NAME, STREAM_NAME));
+        final List<JsonNode> actualRecords =
+                connection.getRecords(ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(NAMESPACE, STREAM_NAME));
 
         assertEquals(
                 expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
-                actualRecords.stream().map(o -> o.get("_airbyte_data").asText()).map(Jsons::deserialize).collect(Collectors.toList()));
+                actualRecords);
     }
 
     // generate some messages. Taken from the postgres destination test
@@ -100,7 +101,7 @@ public class ElasticsearchDestinationTest {
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(new AirbyteRecordMessage()
                                 .withStream(STREAM_NAME)
-                                .withNamespace(SCHEMA_NAME)
+                                .withNamespace(NAMESPACE)
                                 .withEmittedAt(Instant.now().toEpochMilli())
                                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
                 .collect(Collectors.toList());

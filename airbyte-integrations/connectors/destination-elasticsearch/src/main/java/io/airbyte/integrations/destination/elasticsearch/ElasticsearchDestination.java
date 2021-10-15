@@ -6,16 +6,22 @@ package io.airbyte.integrations.destination.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.concurrency.VoidCallable;
+import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -61,10 +67,9 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     final ConnectorConfiguration configObject = convertConfig(config);
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
 
-    final Map<String, String> writeConfigs = new HashMap<>();
+    final Map<String, ElasticsearchWriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : configuredCatalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = streamToIndexName(stream.getStream().getNamespace(), streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
         throw new IllegalStateException("Undefined destination sync mode");
@@ -73,23 +78,16 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
       if (isAppendMode) {
         // TODO
       }
-      LOGGER.info("adding write config. stream: {}, table: {}, syncMode: {}", streamName, tableName, syncMode);
-      writeConfigs.put(stream.getStream().getName(), tableName);
-      connection.createIndexIfMissing(tableName);
+      LOGGER.info("adding write config. stream: {}, syncMode: {}", streamName, syncMode);
+      writeConfigs.put(stream.getStream().getName(), new ElasticsearchWriteConfig()
+              .setSyncMode(syncMode).setNamespace(stream.getStream().getNamespace()));
     }
-    return new ElasticsearchAirbyteMessageConsumer(connection, configuredCatalog, writeConfigs);
+
+    return ElasticsearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);
   }
 
   private ConnectorConfiguration convertConfig(JsonNode config) {
     return mapper.convertValue(config, ConnectorConfiguration.class);
-  }
-
-  protected static String streamToIndexName(String namespace, String streamName) {
-    String prefix = "";
-    if (Objects.nonNull(namespace) && !namespace.isEmpty()) {
-      prefix = String.format("%s_", namespace);
-    }
-    return String.format("%s%s", prefix, namingResolver.getIdentifier(streamName));
   }
 
 }
