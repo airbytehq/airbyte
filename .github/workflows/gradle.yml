@@ -463,6 +463,7 @@ jobs:
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.2.0
         with:
+          node_image: kindest/node:v1.21.2
           config: /tmp/kind-config.yaml
         # In case of self-hosted EC2 errors, remove this env block.
         env:
