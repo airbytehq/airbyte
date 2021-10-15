@@ -14,12 +14,12 @@ import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.GenericContainer;
 
-public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "default";
-  private ClickHouseContainer db;
+  private GenericContainer db;
   private JsonNode config;
 
   @Override
@@ -76,16 +76,15 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
+    db = new GenericContainer("airbyte/clickhouse-with-ssl:dev").withExposedPorts(8443);
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("ssl", false)
+        .put("username", "default")
+        .put("password", "")
         .build());
 
     super.setup();

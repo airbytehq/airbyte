@@ -35,6 +35,10 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
+  public static final List<String> SSL_PARAMETERS = List.of(
+      "ssl=true",
+      "sslmode=none");
+
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
                                                           List<TableInfo<CommonField<JDBCType>>> tableInfos) {
@@ -73,13 +77,20 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText()));
+
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+    }
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()))
+        .put("jdbc_url", jdbcUrl.toString())
         .build());
   }
 
