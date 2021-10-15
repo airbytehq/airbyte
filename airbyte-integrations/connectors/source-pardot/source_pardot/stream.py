@@ -12,7 +12,7 @@ class PardotStream(HttpStream, ABC):
     url_base = "https://pi.pardot.com/api/"
     api_version = "4"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
-    primary_key = None
+    primary_key = "id"
 
     def __init__(self, config: Dict, **kwargs):
         super().__init__(**kwargs)
@@ -55,6 +55,9 @@ class PardotStream(HttpStream, ABC):
     ) -> str:
         return f"{self.object_name}/version/{self.api_version}/do/query"
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         if stream_state:
             for record in records_slice:
@@ -62,9 +65,9 @@ class PardotStream(HttpStream, ABC):
                     yield record
         else:
             yield from records_slice
-        
+
+# PardotIdReplicationStreams        
 class PardotIdReplicationStream(PardotStream):
-    primary_key = "id"
     cursor_field = "id"
     filter_param = "id_greater_than"
 
@@ -78,33 +81,50 @@ class VisitorActivities(PardotIdReplicationStream):
     object_name = "visitorActivity"
     data_key = "visitor_activity"
 
-class Campaigns(PardotStream):
+class Campaigns(PardotIdReplicationStream):
     object_name = "campaign"
-    
+    data_key = "campaign"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update({"sort_by": "id"})
+        return params
+
+# PardotUpdatedAtReplicationStreams
+class PardotUpdatedAtReplicationStream(PardotStream):
+    cursor_field = "updated_at"
+    filter_param = "updated_after"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update({"sort_by": "updated_at","sort_order": "ascending"})
+        return params
+
+class ProspectAccounts(PardotUpdatedAtReplicationStream):
+    object_name = "prospectAccount"
+    data_key = "prospectAccount"
+
+class Lists(PardotUpdatedAtReplicationStream):
+    object_name = "list"
+    data_key = "list"
+class Prospects(PardotUpdatedAtReplicationStream):
+    object_name = "prospect"
+    data_key = "prospect"
+
+class Visitors(PardotUpdatedAtReplicationStream):
+    object_name = "visitor"
+    data_key = "visitor"
+
+ 
 class ListMemberships(PardotStream):
     object_name = "listMembership"
     
-class Lists(PardotStream):
-    object_name = "list"
-    
 class Opportunities(PardotStream):
     object_name = "opportunity"
-    
-class ProspectAccounts(PardotStream):
-    object_name = "prospectAccount"
-    
-class Prospects(PardotStream):
-    object_name = "prospect"
     
 class Users(PardotStream):
     object_name = "user"
     
 class Visits(PardotStream):
     object_name = "visit"
-    
-class Visitors(PardotStream):
-    object_name = "visitor"
-    
-class Visitors(PardotStream):
-    object_name = "visitor"
     
