@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
+    <title>Coverage for airbyte_cdk/logger.py: 61%</title>
+    <link rel="icon" sizes="32x32" href="favicon_32.png">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="jquery.isonscreen.js"></script>
+    <script type="text/javascript" src="coverage_html.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(coverage.pyfile_ready);
+    </script>
+</head>
+<body class="pyfile">
+<div id="header">
+    <div class="content">
+        <h1>Coverage for <b>airbyte_cdk/logger.py</b> :
+            <span class="pc_cov">61%</span>
+        </h1>
+        <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
+        <h2 class="stats">
+            33 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">20 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">13 missing</button>
+            <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
+        </h2>
+    </div>
+</div>
+<div class="help_panel">
+    <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
+    <p class="legend">Hot-keys on this page</p>
+    <div>
+    <p class="keyhelp">
+        <span class="key">r</span>
+        <span class="key">m</span>
+        <span class="key">x</span>
+        <span class="key">p</span> &nbsp; toggle line displays
+    </p>
+    <p class="keyhelp">
+        <span class="key">j</span>
+        <span class="key">k</span> &nbsp; next/prev highlighted chunk
+    </p>
+    <p class="keyhelp">
+        <span class="key">0</span> &nbsp; (zero) top of page
+    </p>
+    <p class="keyhelp">
+        <span class="key">1</span> &nbsp; (one) first highlighted chunk
+    </p>
+    </div>
+</div>
+<div id="source">
+    <p id="t1" class="pln"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="com">#</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t2" class="pln"><span class="n"><a href="#t2">2</a></span><span class="t"><span class="com"># Copyright (c) 2021 Airbyte, Inc., all rights reserved.</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t"><span class="com">#</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t4" class="pln"><span class="n"><a href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t5" class="pln"><span class="n"><a href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="run"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">import</span> <span class="nam">traceback</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t7" class="pln"><span class="n"><a href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="run"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="nam">airbyte_cdk</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AirbyteLogMessage</span><span class="op">,</span> <span class="nam">AirbyteMessage</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t10" class="pln"><span class="n"><a href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t11" class="run"><span class="n"><a href="#t11">11</a></span><span class="t"><span class="key">class</span> <span class="nam">AirbyteLogger</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t12" class="run"><span class="n"><a href="#t12">12</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="run"><span class="n"><a href="#t13">13</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">valid_log_types</span> <span class="op">=</span> <span class="op">[</span><span class="str">"FATAL"</span><span class="op">,</span> <span class="str">"ERROR"</span><span class="op">,</span> <span class="str">"WARN"</span><span class="op">,</span> <span class="str">"INFO"</span><span class="op">,</span> <span class="str">"DEBUG"</span><span class="op">,</span> <span class="str">"TRACE"</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t14" class="pln"><span class="n"><a href="#t14">14</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t15" class="run"><span class="n"><a href="#t15">15</a></span><span class="t">    <span class="key">def</span> <span class="nam">log_by_prefix</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">,</span> <span class="nam">default_level</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t16" class="mis show_mis"><span class="n"><a href="#t16">16</a></span><span class="t">        <span class="nam">split_line</span> <span class="op">=</span> <span class="nam">message</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t17" class="mis show_mis"><span class="n"><a href="#t17">17</a></span><span class="t">        <span class="nam">first_word</span> <span class="op">=</span> <span class="nam">next</span><span class="op">(</span><span class="nam">iter</span><span class="op">(</span><span class="nam">split_line</span><span class="op">)</span><span class="op">,</span> <span class="key">None</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t18" class="mis show_mis"><span class="n"><a href="#t18">18</a></span><span class="t">        <span class="key">if</span> <span class="nam">first_word</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">valid_log_types</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t19" class="mis show_mis"><span class="n"><a href="#t19">19</a></span><span class="t">            <span class="nam">log_level</span> <span class="op">=</span> <span class="nam">first_word</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t20" class="mis show_mis"><span class="n"><a href="#t20">20</a></span><span class="t">            <span class="nam">rendered_message</span> <span class="op">=</span> <span class="str">" "</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">split_line</span><span class="op">[</span><span class="num">1</span><span class="op">:</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t21" class="pln"><span class="n"><a href="#t21">21</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t22" class="mis show_mis"><span class="n"><a href="#t22">22</a></span><span class="t">            <span class="nam">log_level</span> <span class="op">=</span> <span class="nam">default_level</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t23" class="mis show_mis"><span class="n"><a href="#t23">23</a></span><span class="t">            <span class="nam">rendered_message</span> <span class="op">=</span> <span class="nam">message</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t24" class="mis show_mis"><span class="n"><a href="#t24">24</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="nam">log_level</span><span class="op">,</span> <span class="nam">rendered_message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t25" class="pln"><span class="n"><a href="#t25">25</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t26" class="run"><span class="n"><a href="#t26">26</a></span><span class="t">    <span class="key">def</span> <span class="nam">log</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">level</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t27" class="run"><span class="n"><a href="#t27">27</a></span><span class="t">        <span class="nam">log_record</span> <span class="op">=</span> <span class="nam">AirbyteLogMessage</span><span class="op">(</span><span class="nam">level</span><span class="op">=</span><span class="nam">level</span><span class="op">,</span> <span class="nam">message</span><span class="op">=</span><span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t28" class="run"><span class="n"><a href="#t28">28</a></span><span class="t">        <span class="nam">log_message</span> <span class="op">=</span> <span class="nam">AirbyteMessage</span><span class="op">(</span><span class="nam">type</span><span class="op">=</span><span class="str">"LOG"</span><span class="op">,</span> <span class="nam">log</span><span class="op">=</span><span class="nam">log_record</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t29" class="run"><span class="n"><a href="#t29">29</a></span><span class="t">        <span class="nam">print</span><span class="op">(</span><span class="nam">log_message</span><span class="op">.</span><span class="nam">json</span><span class="op">(</span><span class="nam">exclude_unset</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t30" class="pln"><span class="n"><a href="#t30">30</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t31" class="run"><span class="n"><a href="#t31">31</a></span><span class="t">    <span class="key">def</span> <span class="nam">fatal</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t32" class="mis show_mis"><span class="n"><a href="#t32">32</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="str">"FATAL"</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t33" class="pln"><span class="n"><a href="#t33">33</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t34" class="run"><span class="n"><a href="#t34">34</a></span><span class="t">    <span class="key">def</span> <span class="nam">exception</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t35" class="mis show_mis"><span class="n"><a href="#t35">35</a></span><span class="t">        <span class="nam">message</span> <span class="op">=</span> <span class="str">f"{message}\n{traceback.format_exc()}"</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t36" class="mis show_mis"><span class="n"><a href="#t36">36</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">error</span><span class="op">(</span><span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t37" class="pln"><span class="n"><a href="#t37">37</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t38" class="run"><span class="n"><a href="#t38">38</a></span><span class="t">    <span class="key">def</span> <span class="nam">error</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t39" class="run"><span class="n"><a href="#t39">39</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="str">"ERROR"</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t40" class="pln"><span class="n"><a href="#t40">40</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t41" class="run"><span class="n"><a href="#t41">41</a></span><span class="t">    <span class="key">def</span> <span class="nam">warn</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t42" class="run"><span class="n"><a href="#t42">42</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="str">"WARN"</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t43" class="pln"><span class="n"><a href="#t43">43</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t44" class="run"><span class="n"><a href="#t44">44</a></span><span class="t">    <span class="key">def</span> <span class="nam">info</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t45" class="run"><span class="n"><a href="#t45">45</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="str">"INFO"</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t46" class="pln"><span class="n"><a href="#t46">46</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t47" class="run"><span class="n"><a href="#t47">47</a></span><span class="t">    <span class="key">def</span> <span class="nam">debug</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t48" class="mis show_mis"><span class="n"><a href="#t48">48</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="str">"DEBUG"</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t49" class="pln"><span class="n"><a href="#t49">49</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t50" class="run"><span class="n"><a href="#t50">50</a></span><span class="t">    <span class="key">def</span> <span class="nam">trace</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t51" class="mis show_mis"><span class="n"><a href="#t51">51</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="str">"TRACE"</span><span class="op">,</span> <span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+</div>
+<div id="footer">
+    <div class="content">
+        <p>
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
+            created at 2021-10-01 10:39 +0300
+        </p>
+    </div>
+</div>
+</body>
+</html>

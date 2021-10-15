@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
+    <title>Coverage for airbyte_cdk/sources/deprecated/client.py: 0%</title>
+    <link rel="icon" sizes="32x32" href="favicon_32.png">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="jquery.isonscreen.js"></script>
+    <script type="text/javascript" src="coverage_html.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(coverage.pyfile_ready);
+    </script>
+</head>
+<body class="pyfile">
+<div id="header">
+    <div class="content">
+        <h1>Coverage for <b>airbyte_cdk/sources/deprecated/client.py</b> :
+            <span class="pc_cov">0%</span>
+        </h1>
+        <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
+        <h2 class="stats">
+            56 statements &nbsp;
+            <button type="button" class="run shortkey_r button_toggle_run" title="Toggle lines run">0 run</button>
+            <button type="button" class="mis show_mis shortkey_m button_toggle_mis" title="Toggle lines missing">56 missing</button>
+            <button type="button" class="exc show_exc shortkey_x button_toggle_exc" title="Toggle lines excluded">0 excluded</button>
+        </h2>
+    </div>
+</div>
+<div class="help_panel">
+    <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
+    <p class="legend">Hot-keys on this page</p>
+    <div>
+    <p class="keyhelp">
+        <span class="key">r</span>
+        <span class="key">m</span>
+        <span class="key">x</span>
+        <span class="key">p</span> &nbsp; toggle line displays
+    </p>
+    <p class="keyhelp">
+        <span class="key">j</span>
+        <span class="key">k</span> &nbsp; next/prev highlighted chunk
+    </p>
+    <p class="keyhelp">
+        <span class="key">0</span> &nbsp; (zero) top of page
+    </p>
+    <p class="keyhelp">
+        <span class="key">1</span> &nbsp; (one) first highlighted chunk
+    </p>
+    </div>
+</div>
+<div id="source">
+    <p id="t1" class="pln"><span class="n"><a href="#t1">1</a></span><span class="t"><span class="com">#</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t2" class="pln"><span class="n"><a href="#t2">2</a></span><span class="t"><span class="com"># Copyright (c) 2021 Airbyte, Inc., all rights reserved.</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t3" class="pln"><span class="n"><a href="#t3">3</a></span><span class="t"><span class="com">#</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t4" class="pln"><span class="n"><a href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t5" class="pln"><span class="n"><a href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t6" class="mis show_mis"><span class="n"><a href="#t6">6</a></span><span class="t"><span class="key">import</span> <span class="nam">inspect</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t7" class="mis show_mis"><span class="n"><a href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">abc</span> <span class="key">import</span> <span class="nam">ABC</span><span class="op">,</span> <span class="nam">abstractmethod</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t8" class="mis show_mis"><span class="n"><a href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="nam">typing</span> <span class="key">import</span> <span class="nam">Any</span><span class="op">,</span> <span class="nam">Callable</span><span class="op">,</span> <span class="nam">Dict</span><span class="op">,</span> <span class="nam">Generator</span><span class="op">,</span> <span class="nam">List</span><span class="op">,</span> <span class="nam">Mapping</span><span class="op">,</span> <span class="nam">Tuple</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t9" class="pln"><span class="n"><a href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t10" class="mis show_mis"><span class="n"><a href="#t10">10</a></span><span class="t"><span class="key">from</span> <span class="nam">airbyte_cdk</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AirbyteStream</span><span class="op">,</span> <span class="nam">ConfiguredAirbyteCatalog</span><span class="op">,</span> <span class="nam">ConfiguredAirbyteStream</span><span class="op">,</span> <span class="nam">SyncMode</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t11" class="mis show_mis"><span class="n"><a href="#t11">11</a></span><span class="t"><span class="key">from</span> <span class="nam">airbyte_cdk</span><span class="op">.</span><span class="nam">sources</span><span class="op">.</span><span class="nam">utils</span><span class="op">.</span><span class="nam">schema_helpers</span> <span class="key">import</span> <span class="nam">ResourceSchemaLoader</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t12" class="pln"><span class="n"><a href="#t12">12</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t13" class="pln"><span class="n"><a href="#t13">13</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t14" class="mis show_mis"><span class="n"><a href="#t14">14</a></span><span class="t"><span class="key">def</span> <span class="nam">package_name_from_class</span><span class="op">(</span><span class="nam">cls</span><span class="op">:</span> <span class="nam">object</span><span class="op">)</span> <span class="op">-></span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t15" class="pln"><span class="n"><a href="#t15">15</a></span><span class="t">    <span class="str">"""Find the package name given a class name"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t16" class="mis show_mis"><span class="n"><a href="#t16">16</a></span><span class="t">    <span class="nam">module</span><span class="op">:</span> <span class="nam">Any</span> <span class="op">=</span> <span class="nam">inspect</span><span class="op">.</span><span class="nam">getmodule</span><span class="op">(</span><span class="nam">cls</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t17" class="mis show_mis"><span class="n"><a href="#t17">17</a></span><span class="t">    <span class="key">return</span> <span class="nam">module</span><span class="op">.</span><span class="nam">__name__</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">"."</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t18" class="pln"><span class="n"><a href="#t18">18</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t19" class="pln"><span class="n"><a href="#t19">19</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t20" class="mis show_mis"><span class="n"><a href="#t20">20</a></span><span class="t"><span class="key">class</span> <span class="nam">StreamStateMixin</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t21" class="mis show_mis"><span class="n"><a href="#t21">21</a></span><span class="t">    <span class="key">def</span> <span class="nam">get_stream_state</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">name</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="nam">Any</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t22" class="pln"><span class="n"><a href="#t22">22</a></span><span class="t">        <span class="str">"""Get state of stream with corresponding name"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t23" class="mis show_mis"><span class="n"><a href="#t23">23</a></span><span class="t">        <span class="key">raise</span> <span class="nam">NotImplementedError</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t24" class="pln"><span class="n"><a href="#t24">24</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t25" class="mis show_mis"><span class="n"><a href="#t25">25</a></span><span class="t">    <span class="key">def</span> <span class="nam">set_stream_state</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span> <span class="nam">state</span><span class="op">:</span> <span class="nam">Any</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t26" class="pln"><span class="n"><a href="#t26">26</a></span><span class="t">        <span class="str">"""Set state of stream with corresponding name"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t27" class="mis show_mis"><span class="n"><a href="#t27">27</a></span><span class="t">        <span class="key">raise</span> <span class="nam">NotImplementedError</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t28" class="pln"><span class="n"><a href="#t28">28</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t29" class="mis show_mis"><span class="n"><a href="#t29">29</a></span><span class="t">    <span class="key">def</span> <span class="nam">stream_has_state</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">name</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="nam">bool</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t30" class="pln"><span class="n"><a href="#t30">30</a></span><span class="t">        <span class="str">"""Tell if stream supports incremental sync"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t31" class="mis show_mis"><span class="n"><a href="#t31">31</a></span><span class="t">        <span class="key">return</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t32" class="pln"><span class="n"><a href="#t32">32</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t33" class="pln"><span class="n"><a href="#t33">33</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t34" class="mis show_mis"><span class="n"><a href="#t34">34</a></span><span class="t"><span class="key">class</span> <span class="nam">BaseClient</span><span class="op">(</span><span class="nam">StreamStateMixin</span><span class="op">,</span> <span class="nam">ABC</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t35" class="pln"><span class="n"><a href="#t35">35</a></span><span class="t">    <span class="str">"""Base client for API"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t36" class="pln"><span class="n"><a href="#t36">36</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t37" class="mis show_mis"><span class="n"><a href="#t37">37</a></span><span class="t">    <span class="nam">schema_loader_class</span> <span class="op">=</span> <span class="nam">ResourceSchemaLoader</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t38" class="pln"><span class="n"><a href="#t38">38</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t39" class="mis show_mis"><span class="n"><a href="#t39">39</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t40" class="mis show_mis"><span class="n"><a href="#t40">40</a></span><span class="t">        <span class="nam">package_name</span> <span class="op">=</span> <span class="nam">package_name_from_class</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">__class__</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t41" class="mis show_mis"><span class="n"><a href="#t41">41</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">_schema_loader</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">schema_loader_class</span><span class="op">(</span><span class="nam">package_name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t42" class="mis show_mis"><span class="n"><a href="#t42">42</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">_stream_methods</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_enumerate_methods</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t43" class="pln"><span class="n"><a href="#t43">43</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t44" class="mis show_mis"><span class="n"><a href="#t44">44</a></span><span class="t">    <span class="key">def</span> <span class="nam">_enumerate_methods</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">Mapping</span><span class="op">[</span><span class="nam">str</span><span class="op">,</span> <span class="nam">Callable</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t45" class="pln"><span class="n"><a href="#t45">45</a></span><span class="t">        <span class="str">"""Detect available streams and return mapping"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t46" class="mis show_mis"><span class="n"><a href="#t46">46</a></span><span class="t">        <span class="nam">prefix</span> <span class="op">=</span> <span class="str">"stream__"</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t47" class="mis show_mis"><span class="n"><a href="#t47">47</a></span><span class="t">        <span class="nam">mapping</span> <span class="op">=</span> <span class="op">{</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t48" class="mis show_mis"><span class="n"><a href="#t48">48</a></span><span class="t">        <span class="nam">methods</span> <span class="op">=</span> <span class="nam">inspect</span><span class="op">.</span><span class="nam">getmembers</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">__class__</span><span class="op">,</span> <span class="nam">predicate</span><span class="op">=</span><span class="nam">inspect</span><span class="op">.</span><span class="nam">isfunction</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t49" class="mis show_mis"><span class="n"><a href="#t49">49</a></span><span class="t">        <span class="key">for</span> <span class="nam">name</span><span class="op">,</span> <span class="nam">method</span> <span class="key">in</span> <span class="nam">methods</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t50" class="mis show_mis"><span class="n"><a href="#t50">50</a></span><span class="t">            <span class="key">if</span> <span class="nam">name</span><span class="op">.</span><span class="nam">startswith</span><span class="op">(</span><span class="nam">prefix</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t51" class="mis show_mis"><span class="n"><a href="#t51">51</a></span><span class="t">                <span class="nam">mapping</span><span class="op">[</span><span class="nam">name</span><span class="op">[</span><span class="nam">len</span><span class="op">(</span><span class="nam">prefix</span><span class="op">)</span> <span class="op">:</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="nam">getattr</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t52" class="pln"><span class="n"><a href="#t52">52</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t53" class="mis show_mis"><span class="n"><a href="#t53">53</a></span><span class="t">        <span class="key">return</span> <span class="nam">mapping</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t54" class="pln"><span class="n"><a href="#t54">54</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t55" class="mis show_mis"><span class="n"><a href="#t55">55</a></span><span class="t">    <span class="op">@</span><span class="nam">staticmethod</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t56" class="mis show_mis"><span class="n"><a href="#t56">56</a></span><span class="t">    <span class="key">def</span> <span class="nam">_get_fields_from_stream</span><span class="op">(</span><span class="nam">stream</span><span class="op">:</span> <span class="nam">AirbyteStream</span><span class="op">)</span> <span class="op">-></span> <span class="nam">List</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t57" class="mis show_mis"><span class="n"><a href="#t57">57</a></span><span class="t">        <span class="key">return</span> <span class="nam">list</span><span class="op">(</span><span class="nam">stream</span><span class="op">.</span><span class="nam">json_schema</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">"properties"</span><span class="op">,</span> <span class="op">{</span><span class="op">}</span><span class="op">)</span><span class="op">.</span><span class="nam">keys</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t58" class="pln"><span class="n"><a href="#t58">58</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t59" class="mis show_mis"><span class="n"><a href="#t59">59</a></span><span class="t">    <span class="key">def</span> <span class="nam">_get_stream_method</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">name</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="nam">Callable</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t60" class="mis show_mis"><span class="n"><a href="#t60">60</a></span><span class="t">        <span class="nam">method</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_stream_methods</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="nam">name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t61" class="mis show_mis"><span class="n"><a href="#t61">61</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">method</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t62" class="mis show_mis"><span class="n"><a href="#t62">62</a></span><span class="t">            <span class="key">raise</span> <span class="nam">ValueError</span><span class="op">(</span><span class="str">f"Client does not know how to read stream `{name}`"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t63" class="mis show_mis"><span class="n"><a href="#t63">63</a></span><span class="t">        <span class="key">return</span> <span class="nam">method</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t64" class="pln"><span class="n"><a href="#t64">64</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t65" class="mis show_mis"><span class="n"><a href="#t65">65</a></span><span class="t">    <span class="key">def</span> <span class="nam">read_stream</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">stream</span><span class="op">:</span> <span class="nam">AirbyteStream</span><span class="op">)</span> <span class="op">-></span> <span class="nam">Generator</span><span class="op">[</span><span class="nam">Dict</span><span class="op">[</span><span class="nam">str</span><span class="op">,</span> <span class="nam">Any</span><span class="op">]</span><span class="op">,</span> <span class="key">None</span><span class="op">,</span> <span class="key">None</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t66" class="pln"><span class="n"><a href="#t66">66</a></span><span class="t">        <span class="str">"""Yield records from stream"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t67" class="mis show_mis"><span class="n"><a href="#t67">67</a></span><span class="t">        <span class="nam">method</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_get_stream_method</span><span class="op">(</span><span class="nam">stream</span><span class="op">.</span><span class="nam">name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t68" class="mis show_mis"><span class="n"><a href="#t68">68</a></span><span class="t">        <span class="nam">fields</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_get_fields_from_stream</span><span class="op">(</span><span class="nam">stream</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t69" class="pln"><span class="n"><a href="#t69">69</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t70" class="mis show_mis"><span class="n"><a href="#t70">70</a></span><span class="t">        <span class="key">for</span> <span class="nam">message</span> <span class="key">in</span> <span class="nam">method</span><span class="op">(</span><span class="nam">fields</span><span class="op">=</span><span class="nam">fields</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t71" class="mis show_mis"><span class="n"><a href="#t71">71</a></span><span class="t">            <span class="key">yield</span> <span class="nam">dict</span><span class="op">(</span><span class="nam">message</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t72" class="pln"><span class="n"><a href="#t72">72</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t73" class="mis show_mis"><span class="n"><a href="#t73">73</a></span><span class="t">    <span class="op">@</span><span class="nam">property</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t74" class="mis show_mis"><span class="n"><a href="#t74">74</a></span><span class="t">    <span class="key">def</span> <span class="nam">streams</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">Generator</span><span class="op">[</span><span class="nam">AirbyteStream</span><span class="op">,</span> <span class="key">None</span><span class="op">,</span> <span class="key">None</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t75" class="pln"><span class="n"><a href="#t75">75</a></span><span class="t">        <span class="str">"""List of available streams"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t76" class="mis show_mis"><span class="n"><a href="#t76">76</a></span><span class="t">        <span class="key">for</span> <span class="nam">name</span><span class="op">,</span> <span class="nam">method</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_stream_methods</span><span class="op">.</span><span class="nam">items</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t77" class="mis show_mis"><span class="n"><a href="#t77">77</a></span><span class="t">            <span class="nam">supported_sync_modes</span> <span class="op">=</span> <span class="op">[</span><span class="nam">SyncMode</span><span class="op">.</span><span class="nam">full_refresh</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t78" class="mis show_mis"><span class="n"><a href="#t78">78</a></span><span class="t">            <span class="nam">source_defined_cursor</span> <span class="op">=</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t79" class="mis show_mis"><span class="n"><a href="#t79">79</a></span><span class="t">            <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">stream_has_state</span><span class="op">(</span><span class="nam">name</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t80" class="mis show_mis"><span class="n"><a href="#t80">80</a></span><span class="t">                <span class="nam">supported_sync_modes</span> <span class="op">+=</span> <span class="op">[</span><span class="nam">SyncMode</span><span class="op">.</span><span class="nam">incremental</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t81" class="mis show_mis"><span class="n"><a href="#t81">81</a></span><span class="t">                <span class="nam">source_defined_cursor</span> <span class="op">=</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t82" class="pln"><span class="n"><a href="#t82">82</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t83" class="mis show_mis"><span class="n"><a href="#t83">83</a></span><span class="t">            <span class="key">yield</span> <span class="nam">AirbyteStream</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t84" class="pln"><span class="n"><a href="#t84">84</a></span><span class="t">                <span class="nam">name</span><span class="op">=</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t85" class="pln"><span class="n"><a href="#t85">85</a></span><span class="t">                <span class="nam">json_schema</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">_schema_loader</span><span class="op">.</span><span class="nam">get_schema</span><span class="op">(</span><span class="nam">name</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t86" class="pln"><span class="n"><a href="#t86">86</a></span><span class="t">                <span class="nam">supported_sync_modes</span><span class="op">=</span><span class="nam">supported_sync_modes</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t87" class="pln"><span class="n"><a href="#t87">87</a></span><span class="t">                <span class="nam">source_defined_cursor</span><span class="op">=</span><span class="nam">source_defined_cursor</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t88" class="pln"><span class="n"><a href="#t88">88</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t89" class="pln"><span class="n"><a href="#t89">89</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t90" class="mis show_mis"><span class="n"><a href="#t90">90</a></span><span class="t">    <span class="op">@</span><span class="nam">abstractmethod</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t91" class="mis show_mis"><span class="n"><a href="#t91">91</a></span><span class="t">    <span class="key">def</span> <span class="nam">health_check</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">Tuple</span><span class="op">[</span><span class="nam">bool</span><span class="op">,</span> <span class="nam">str</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t92" class="pln"><span class="n"><a href="#t92">92</a></span><span class="t">        <span class="str">"""Check if service is up and running"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t93" class="pln"><span class="n"><a href="#t93">93</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t94" class="pln"><span class="n"><a href="#t94">94</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t95" class="mis show_mis"><span class="n"><a href="#t95">95</a></span><span class="t"><span class="key">def</span> <span class="nam">configured_catalog_from_client</span><span class="op">(</span><span class="nam">client</span><span class="op">:</span> <span class="nam">BaseClient</span><span class="op">)</span> <span class="op">-></span> <span class="nam">ConfiguredAirbyteCatalog</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t96" class="pln"><span class="n"><a href="#t96">96</a></span><span class="t">    <span class="str">"""Helper to generate configured catalog for testing"""</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t97" class="mis show_mis"><span class="n"><a href="#t97">97</a></span><span class="t">    <span class="nam">catalog</span> <span class="op">=</span> <span class="nam">ConfiguredAirbyteCatalog</span><span class="op">(</span><span class="nam">streams</span><span class="op">=</span><span class="op">[</span><span class="nam">ConfiguredAirbyteStream</span><span class="op">(</span><span class="nam">stream</span><span class="op">=</span><span class="nam">stream</span><span class="op">)</span> <span class="key">for</span> <span class="nam">stream</span> <span class="key">in</span> <span class="nam">client</span><span class="op">.</span><span class="nam">streams</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p id="t98" class="pln"><span class="n"><a href="#t98">98</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p id="t99" class="mis show_mis"><span class="n"><a href="#t99">99</a></span><span class="t">    <span class="key">return</span> <span class="nam">catalog</span>&nbsp;</span><span class="r"></span></p>
+</div>
+<div id="footer">
+    <div class="content">
+        <p>
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.5</a>,
+            created at 2021-10-01 10:39 +0300
+        </p>
+    </div>
+</div>
+</body>
+</html>

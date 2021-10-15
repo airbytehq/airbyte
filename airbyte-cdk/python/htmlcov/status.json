@@ -1,0 +1,287 @@
+{
+  "format": 2,
+  "version": "5.5",
+  "globals": "4b3991522445e05182e3473f138a5882",
+  "files": {
+    "airbyte_cdk___init___py": {
+      "hash": "e22bfb833e6d116b8da499744f1769d3",
+      "index": {
+        "nums": [1, 4, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk___init___py.html",
+        "relative_filename": "airbyte_cdk/__init__.py"
+      }
+    },
+    "airbyte_cdk_connector_py": {
+      "hash": "3dde2da58b07c0fda93683f8919f0826",
+      "index": {
+        "nums": [1, 36, 0, 6, 0, 0, 0],
+        "html_filename": "airbyte_cdk_connector_py.html",
+        "relative_filename": "airbyte_cdk/connector.py"
+      }
+    },
+    "airbyte_cdk_destinations___init___py": {
+      "hash": "51e020ab6292a537437e0d464bcb03b0",
+      "index": {
+        "nums": [1, 2, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_destinations___init___py.html",
+        "relative_filename": "airbyte_cdk/destinations/__init__.py"
+      }
+    },
+    "airbyte_cdk_destinations_destination_py": {
+      "hash": "4410ad7c38412547bff4720d6c3a6b81",
+      "index": {
+        "nums": [1, 69, 0, 6, 0, 0, 0],
+        "html_filename": "airbyte_cdk_destinations_destination_py.html",
+        "relative_filename": "airbyte_cdk/destinations/destination.py"
+      }
+    },
+    "airbyte_cdk_entrypoint_py": {
+      "hash": "8e43f7809e239a7d2c939831022713a0",
+      "index": {
+        "nums": [1, 76, 0, 15, 0, 0, 0],
+        "html_filename": "airbyte_cdk_entrypoint_py.html",
+        "relative_filename": "airbyte_cdk/entrypoint.py"
+      }
+    },
+    "airbyte_cdk_logger_py": {
+      "hash": "e4e3c0a341c5fde97e99b9211b6f484b",
+      "index": {
+        "nums": [1, 33, 0, 13, 0, 0, 0],
+        "html_filename": "airbyte_cdk_logger_py.html",
+        "relative_filename": "airbyte_cdk/logger.py"
+      }
+    },
+    "airbyte_cdk_models___init___py": {
+      "hash": "2df6982bbf3c0c792c673af57f1ac442",
+      "index": {
+        "nums": [1, 1, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_models___init___py.html",
+        "relative_filename": "airbyte_cdk/models/__init__.py"
+      }
+    },
+    "airbyte_cdk_models_airbyte_protocol_py": {
+      "hash": "6bfb913db56d16778c3e1127df73465d",
+      "index": {
+        "nums": [1, 110, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_models_airbyte_protocol_py.html",
+        "relative_filename": "airbyte_cdk/models/airbyte_protocol.py"
+      }
+    },
+    "airbyte_cdk_sources___init___py": {
+      "hash": "9aa677e1b4a23897d5ba3013dc26b08c",
+      "index": {
+        "nums": [1, 3, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_abstract_source_py": {
+      "hash": "e0dc16b7bb4aed81743ab30025a5979c",
+      "index": {
+        "nums": [1, 116, 0, 4, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_abstract_source_py.html",
+        "relative_filename": "airbyte_cdk/sources/abstract_source.py"
+      }
+    },
+    "airbyte_cdk_sources_deprecated___init___py": {
+      "hash": "8f59a7e9210db62370cd600c1c607645",
+      "index": {
+        "nums": [1, 0, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_deprecated___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/deprecated/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_deprecated_base_source_py": {
+      "hash": "6b98c7fdc0e7f9194340e36fdf539ac8",
+      "index": {
+        "nums": [1, 50, 0, 50, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_deprecated_base_source_py.html",
+        "relative_filename": "airbyte_cdk/sources/deprecated/base_source.py"
+      }
+    },
+    "airbyte_cdk_sources_deprecated_client_py": {
+      "hash": "0edd8d05dde87eb7ce4e1021deefe61f",
+      "index": {
+        "nums": [1, 56, 0, 56, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_deprecated_client_py.html",
+        "relative_filename": "airbyte_cdk/sources/deprecated/client.py"
+      }
+    },
+    "airbyte_cdk_sources_singer___init___py": {
+      "hash": "639d7a35bcbe5cc1172bc002ebd5e897",
+      "index": {
+        "nums": [1, 3, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_singer___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/singer/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_singer_singer_helpers_py": {
+      "hash": "98b350bb40d49c42df62d3236c5bd948",
+      "index": {
+        "nums": [1, 172, 0, 94, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_singer_singer_helpers_py.html",
+        "relative_filename": "airbyte_cdk/sources/singer/singer_helpers.py"
+      }
+    },
+    "airbyte_cdk_sources_singer_source_py": {
+      "hash": "7e3aed53eb1757a051aaab87a5b5f37f",
+      "index": {
+        "nums": [1, 85, 0, 33, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_singer_source_py.html",
+        "relative_filename": "airbyte_cdk/sources/singer/source.py"
+      }
+    },
+    "airbyte_cdk_sources_source_py": {
+      "hash": "3c4dc4cc9ea4c41c1595999994a39c20",
+      "index": {
+        "nums": [1, 20, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_source_py.html",
+        "relative_filename": "airbyte_cdk/sources/source.py"
+      }
+    },
+    "airbyte_cdk_sources_streams___init___py": {
+      "hash": "91db2881a17d914791726c5a1fa5067b",
+      "index": {
+        "nums": [1, 2, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_core_py": {
+      "hash": "c8dfb53bd8cfa60fb4c258e8e740d073",
+      "index": {
+        "nums": [1, 68, 0, 5, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_core_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/core.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http___init___py": {
+      "hash": "d2ec100cc98102a9fe12411a2e776669",
+      "index": {
+        "nums": [1, 3, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_auth___init___py": {
+      "hash": "c253dc4efbae3c3af6125782ad35623e",
+      "index": {
+        "nums": [1, 4, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_auth___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/auth/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_auth_core_py": {
+      "hash": "c9589b09766e00b088169818ea500530",
+      "index": {
+        "nums": [1, 11, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_auth_core_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/auth/core.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_auth_oauth_py": {
+      "hash": "8c12b5f2daccb3e891846da98ea7d7d6",
+      "index": {
+        "nums": [1, 40, 0, 2, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_auth_oauth_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/auth/oauth.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_auth_token_py": {
+      "hash": "ff0ccb086136183a7bd0b665b668dfb3",
+      "index": {
+        "nums": [1, 21, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_auth_token_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/auth/token.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_exceptions_py": {
+      "hash": "3ed5b10a54254cb20df3b11b9eaec3c5",
+      "index": {
+        "nums": [1, 11, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_exceptions_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/exceptions.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_http_py": {
+      "hash": "6be3e8a674edf0dee0ed3a85f4a4a702",
+      "index": {
+        "nums": [1, 129, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_http_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/http.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_rate_limiting_py": {
+      "hash": "97b8d6f4c9acdf7db72a7bb673fa1c6f",
+      "index": {
+        "nums": [1, 29, 0, 1, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_rate_limiting_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/rate_limiting.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_requests_native_auth___init___py": {
+      "hash": "e477fa5371d82963eff52390d4ca66a9",
+      "index": {
+        "nums": [1, 3, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_requests_native_auth___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/requests_native_auth/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_requests_native_auth_oauth_py": {
+      "hash": "881ca8831b887d95256839cf59b5f12f",
+      "index": {
+        "nums": [1, 42, 0, 2, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_requests_native_auth_oauth_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/requests_native_auth/oauth.py"
+      }
+    },
+    "airbyte_cdk_sources_streams_http_requests_native_auth_token_py": {
+      "hash": "9fb16669328d946f816de02125b1d14d",
+      "index": {
+        "nums": [1, 17, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_streams_http_requests_native_auth_token_py.html",
+        "relative_filename": "airbyte_cdk/sources/streams/http/requests_native_auth/token.py"
+      }
+    },
+    "airbyte_cdk_sources_utils___init___py": {
+      "hash": "906ebbef8c62361ab96795cb511646b7",
+      "index": {
+        "nums": [1, 0, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_utils___init___py.html",
+        "relative_filename": "airbyte_cdk/sources/utils/__init__.py"
+      }
+    },
+    "airbyte_cdk_sources_utils_casing_py": {
+      "hash": "5cd13f8e8476c89eee8525d2ac123af6",
+      "index": {
+        "nums": [1, 4, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_utils_casing_py.html",
+        "relative_filename": "airbyte_cdk/sources/utils/casing.py"
+      }
+    },
+    "airbyte_cdk_sources_utils_catalog_helpers_py": {
+      "hash": "815e6ae957f032ac5bfa5beed4e847c0",
+      "index": {
+        "nums": [1, 10, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_utils_catalog_helpers_py.html",
+        "relative_filename": "airbyte_cdk/sources/utils/catalog_helpers.py"
+      }
+    },
+    "airbyte_cdk_sources_utils_schema_helpers_py": {
+      "hash": "b39c0625127aa67fa4a5e8197a790560",
+      "index": {
+        "nums": [1, 74, 0, 4, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_utils_schema_helpers_py.html",
+        "relative_filename": "airbyte_cdk/sources/utils/schema_helpers.py"
+      }
+    },
+    "airbyte_cdk_sources_utils_transform_py": {
+      "hash": "0b928421506d11b9d93d028548ae33f5",
+      "index": {
+        "nums": [1, 79, 0, 0, 0, 0, 0],
+        "html_filename": "airbyte_cdk_sources_utils_transform_py.html",
+        "relative_filename": "airbyte_cdk/sources/utils/transform.py"
+      }
+    }
+  }
+}

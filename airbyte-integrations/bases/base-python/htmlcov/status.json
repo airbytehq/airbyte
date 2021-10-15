@@ -1,0 +1,191 @@
+{
+  "format": 2,
+  "version": "5.5",
+  "globals": "7f3678b59086218a8cb5924cfaeee62c",
+  "files": {
+    "base_python___init___py": {
+      "hash": "70c717caf1cda4432add7ad97ced6943",
+      "index": {
+        "nums": [1, 13, 0, 0, 0, 0, 0],
+        "html_filename": "base_python___init___py.html",
+        "relative_filename": "base_python/__init__.py"
+      }
+    },
+    "base_python_catalog_helpers_py": {
+      "hash": "d7d4dba37269044c10252beba3862940",
+      "index": {
+        "nums": [1, 10, 0, 6, 0, 0, 0],
+        "html_filename": "base_python_catalog_helpers_py.html",
+        "relative_filename": "base_python/catalog_helpers.py"
+      }
+    },
+    "base_python_cdk___init___py": {
+      "hash": "9f2997cbb53485d1fb54390ab2a9d405",
+      "index": {
+        "nums": [1, 0, 0, 0, 0, 0, 0],
+        "html_filename": "base_python_cdk___init___py.html",
+        "relative_filename": "base_python/cdk/__init__.py"
+      }
+    },
+    "base_python_cdk_abstract_source_py": {
+      "hash": "29fcaf75634c7fcd5fd850e3782b526a",
+      "index": {
+        "nums": [1, 83, 0, 59, 0, 0, 0],
+        "html_filename": "base_python_cdk_abstract_source_py.html",
+        "relative_filename": "base_python/cdk/abstract_source.py"
+      }
+    },
+    "base_python_cdk_streams___init___py": {
+      "hash": "310fda56522eb16daa076c82d0aa4e3f",
+      "index": {
+        "nums": [1, 0, 0, 0, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams___init___py.html",
+        "relative_filename": "base_python/cdk/streams/__init__.py"
+      }
+    },
+    "base_python_cdk_streams_auth___init___py": {
+      "hash": "0f75499eb9f5f7e17a36b718da5a3bfe",
+      "index": {
+        "nums": [1, 0, 0, 0, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_auth___init___py.html",
+        "relative_filename": "base_python/cdk/streams/auth/__init__.py"
+      }
+    },
+    "base_python_cdk_streams_auth_core_py": {
+      "hash": "035fadefe4789d6ab3ac326a97eac985",
+      "index": {
+        "nums": [1, 8, 0, 1, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_auth_core_py.html",
+        "relative_filename": "base_python/cdk/streams/auth/core.py"
+      }
+    },
+    "base_python_cdk_streams_auth_jwt_py": {
+      "hash": "cf72cade2ec5c882a5d1daf0923334ed",
+      "index": {
+        "nums": [1, 5, 0, 5, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_auth_jwt_py.html",
+        "relative_filename": "base_python/cdk/streams/auth/jwt.py"
+      }
+    },
+    "base_python_cdk_streams_auth_oauth_py": {
+      "hash": "8cf28fdbd81b9f948a9adcd0d16a6105",
+      "index": {
+        "nums": [1, 37, 0, 26, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_auth_oauth_py.html",
+        "relative_filename": "base_python/cdk/streams/auth/oauth.py"
+      }
+    },
+    "base_python_cdk_streams_auth_token_py": {
+      "hash": "ceef5e6d2bedc41578af0599c7b0e858",
+      "index": {
+        "nums": [1, 9, 0, 4, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_auth_token_py.html",
+        "relative_filename": "base_python/cdk/streams/auth/token.py"
+      }
+    },
+    "base_python_cdk_streams_core_py": {
+      "hash": "d8fb534547700f10fff88e02010850ff",
+      "index": {
+        "nums": [1, 63, 0, 32, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_core_py.html",
+        "relative_filename": "base_python/cdk/streams/core.py"
+      }
+    },
+    "base_python_cdk_streams_exceptions_py": {
+      "hash": "658672d2a5b90660dfa666bb81028c25",
+      "index": {
+        "nums": [1, 10, 0, 2, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_exceptions_py.html",
+        "relative_filename": "base_python/cdk/streams/exceptions.py"
+      }
+    },
+    "base_python_cdk_streams_http_py": {
+      "hash": "f5552700cb5e55619e8630108b3c5375",
+      "index": {
+        "nums": [1, 67, 0, 33, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_http_py.html",
+        "relative_filename": "base_python/cdk/streams/http.py"
+      }
+    },
+    "base_python_cdk_streams_rate_limiting_py": {
+      "hash": "ef4051f2f0c815096d231fb0597269c8",
+      "index": {
+        "nums": [1, 30, 0, 14, 0, 0, 0],
+        "html_filename": "base_python_cdk_streams_rate_limiting_py.html",
+        "relative_filename": "base_python/cdk/streams/rate_limiting.py"
+      }
+    },
+    "base_python_cdk_utils___init___py": {
+      "hash": "906ebbef8c62361ab96795cb511646b7",
+      "index": {
+        "nums": [1, 0, 0, 0, 0, 0, 0],
+        "html_filename": "base_python_cdk_utils___init___py.html",
+        "relative_filename": "base_python/cdk/utils/__init__.py"
+      }
+    },
+    "base_python_cdk_utils_casing_py": {
+      "hash": "5cd13f8e8476c89eee8525d2ac123af6",
+      "index": {
+        "nums": [1, 4, 0, 0, 0, 0, 0],
+        "html_filename": "base_python_cdk_utils_casing_py.html",
+        "relative_filename": "base_python/cdk/utils/casing.py"
+      }
+    },
+    "base_python_client_py": {
+      "hash": "c9c4db4f48ff0a85ff96afa2828322e4",
+      "index": {
+        "nums": [1, 56, 0, 33, 0, 0, 0],
+        "html_filename": "base_python_client_py.html",
+        "relative_filename": "base_python/client.py"
+      }
+    },
+    "base_python_entrypoint_py": {
+      "hash": "5776ce4c8093a61f4403e0f5cba83464",
+      "index": {
+        "nums": [1, 70, 0, 56, 0, 0, 0],
+        "html_filename": "base_python_entrypoint_py.html",
+        "relative_filename": "base_python/entrypoint.py"
+      }
+    },
+    "base_python_integration_py": {
+      "hash": "0ca1ec5713277824bf3df06021ecb302",
+      "index": {
+        "nums": [1, 52, 0, 25, 0, 0, 0],
+        "html_filename": "base_python_integration_py.html",
+        "relative_filename": "base_python/integration.py"
+      }
+    },
+    "base_python_logger_py": {
+      "hash": "841e12a1f032fc11470d64805e534a13",
+      "index": {
+        "nums": [1, 33, 0, 19, 0, 0, 0],
+        "html_filename": "base_python_logger_py.html",
+        "relative_filename": "base_python/logger.py"
+      }
+    },
+    "base_python_schema_helpers_py": {
+      "hash": "d81f41449026af3eb0577e692bb8d65a",
+      "index": {
+        "nums": [1, 56, 0, 41, 0, 0, 0],
+        "html_filename": "base_python_schema_helpers_py.html",
+        "relative_filename": "base_python/schema_helpers.py"
+      }
+    },
+    "base_python_source_py": {
+      "hash": "16aa8f5b46ec4d4e2500d02b18ecbf45",
+      "index": {
+        "nums": [1, 51, 0, 34, 0, 0, 0],
+        "html_filename": "base_python_source_py.html",
+        "relative_filename": "base_python/source.py"
+      }
+    },
+    "main_dev_py": {
+      "hash": "6f6faa5015f71cd10efab192a0062721",
+      "index": {
+        "nums": [1, 3, 0, 3, 0, 0, 0],
+        "html_filename": "main_dev_py.html",
+        "relative_filename": "main_dev.py"
+      }
+    }
+  }
+}
