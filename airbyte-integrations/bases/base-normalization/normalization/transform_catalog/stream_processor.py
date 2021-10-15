@@ -94,6 +94,7 @@ class StreamProcessor(object):
         self.is_nested_array: bool = False
         self.default_schema: str = default_schema
         self.airbyte_emitted_at = "_airbyte_emitted_at"
+        self.airbyte_unique_key = "_airbyte_unique_key"
 
     @staticmethod
     def create_from_parent(
@@ -232,7 +233,10 @@ class StreamProcessor(object):
                 where_clause = "\nand _airbyte_active_row = 1"
 
             from_table = self.add_to_outputs(
-                self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
+                self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
+                is_intermediate=False,
+                column_count=column_count,
+                unique_key=self.get_unique_key(),
             )
             # TODO generate yaml file to dbt test final table where primary keys should be unique
         else:
@@ -345,6 +349,9 @@ where 1 = 1
 
     def get_emitted_at(self, in_jinja: bool = False):
         return self.name_transformer.normalize_column_name(self.airbyte_emitted_at, in_jinja, False)
+
+    def get_unique_key(self, in_jinja: bool = False):
+        return self.name_transformer.normalize_column_name(self.airbyte_unique_key, in_jinja, False)
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
@@ -587,16 +594,21 @@ select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
   {%- endif %}
+  {{ '{{' }} dbt_utils.surrogate_key([
+      {%- for primary_key in primary_keys %}
+        {{ primary_key }},
+      {%- endfor %}
+  ]) {{ '}}' }} as {{ unique_key }},
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
   {{ cursor_field }} as {{ airbyte_start_at }},
   lag({{ cursor_field }}) over (
-    partition by {{ primary_key }}
+    partition by {{ primary_key_partition | join(", ") }}
     order by {{ cursor_field }} {{ order_null }}, {{ cursor_field }} desc, {{ col_emitted_at }} desc
   ) as {{ airbyte_end_at }},
   case when lag({{ cursor_field }}) over (
-    partition by {{ primary_key }}
+    partition by {{ primary_key_partition | join(", ") }}
     order by {{ cursor_field }} {{ order_null }}, {{ cursor_field }} desc, {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
   ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
   {{ col_emitted_at }},
@@ -637,7 +649,9 @@ where 1 = 1
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
             cursor_field=self.get_cursor_field(column_names),
-            primary_key=self.get_primary_key(column_names),
+            primary_keys=self.list_primary_keys(column_names),
+            primary_key_partition=self.get_primary_key_partition(column_names),
+            unique_key=self.get_unique_key(),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
@@ -660,9 +674,18 @@ where 1 = 1
 
         return cursor
 
-    def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def list_primary_keys(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+        primary_keys = []
+        for key_path in self.primary_key:
+            if len(key_path) == 1:
+                primary_keys.append(column_names[key_path[0]][1])
+            else:
+                raise ValueError(f"Unsupported nested path {'.'.join(key_path)} for stream {self.stream_name}")
+        return primary_keys
+
+    def get_primary_key_partition(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         if self.primary_key and len(self.primary_key) > 0:
-            return ", ".join([self.get_primary_key_from_path(column_names, path) for path in self.primary_key])
+            return [self.get_primary_key_from_path(column_names, path) for path in self.primary_key]
         else:
             raise ValueError(f"No primary key specified for stream {self.stream_name}")
 
@@ -688,13 +711,16 @@ where 1 = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> str:
         template = Template(
             """
 -- Final base SQL model
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
+  {%- endif %}
+  {%- if unique_key %}
+    {{ unique_key }},
   {%- endif %}
   {%- for field in fields %}
     {{ field }},
@@ -713,6 +739,7 @@ where 1 = 1
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+            unique_key=unique_key,
         )
         return sql
 
@@ -734,7 +761,7 @@ and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}
     def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
-    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
+    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "", unique_key: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
         truncate_name = self.destination_type == DestinationType.MYSQL
@@ -754,21 +781,29 @@ and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}
                 sql = self.add_incremental_clause(sql)
             else:
                 output = os.path.join("airbyte_tables", self.schema, file)
-        tags = self.get_model_tags(is_intermediate)
-        # The alias() macro configs a model's final table name.
+        config = {}
         if file_name != table_name:
-            header = jinja_call(f'config(alias="{table_name}", schema="{schema}", tags=[{tags}])')
+            # The alias() macro configs a model's final table name.
+            config["alias"] = table_name
+        if self.destination_type == DestinationType.ORACLE:
+            # oracle does not allow changing schemas
+            config["schema"] = self.default_schema
         else:
-            if self.destination_type == DestinationType.ORACLE:
-                header = jinja_call(f'config(schema="{self.default_schema}", tags=[{tags}])')
-            else:
-                header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
-        self.sql_outputs[
-            output
-        ] = f"""
-{header}
-{sql}
-"""
+            config["schema"] = schema
+        if unique_key:
+            config["unique_key"] = unique_key
+        template = Template(
+            """
+{{ '{{' }} config(
+{%- for key in config %}
+    {{ key }} = "{{ config[key] }}",
+{%- endfor %}
+    tags = [ {{ tags }} ]
+) {{ '}}' }}
+{{ sql }}
+    """
+        )
+        self.sql_outputs[output] = template.render(config=config, sql=sql, tags=self.get_model_tags(is_intermediate))
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
         return ref_table(file_name)

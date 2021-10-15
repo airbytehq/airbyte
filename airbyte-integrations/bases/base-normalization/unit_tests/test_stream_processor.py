@@ -96,7 +96,10 @@ def test_primary_key(
         from_table="",
     )
     try:
-        assert stream_processor.get_primary_key(column_names=stream_processor.extract_column_names()) == expected_final_primary_key_string
+        assert (
+            ", ".join(stream_processor.get_primary_key_partition(column_names=stream_processor.extract_column_names()))
+            == expected_final_primary_key_string
+        )
     except ValueError as e:
         if not expecting_exception:
             raise e

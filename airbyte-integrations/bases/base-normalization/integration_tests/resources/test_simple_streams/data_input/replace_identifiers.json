@@ -20,7 +20,12 @@
   "postgres": [],
   "snowflake": [
     { "HKD@SPÉÇIÄL & CHARACTERS": "HKD@spéçiäl & characters" },
-    { "TMP_TEST_DATA_CHECK_ROW_COUNTS": "tmp_test_data_check_row_counts" }
+    {
+      "SIMPLE_STREAMS_FIRST_RUN_ROW_COUNTS": "simple_streams_first_run_row_counts"
+    },
+    {
+      "SIMPLE_STREAMS_SECOND_RUN_ROW_COUNTS": "simple_streams_second_run_row_counts"
+    }
   ],
   "redshift": [],
   "mysql": [

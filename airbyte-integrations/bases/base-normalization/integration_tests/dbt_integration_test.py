@@ -298,7 +298,7 @@ class DbtIntegrationTest(object):
         else:
             return "airbyte/normalization:dev"
 
-    def dbt_run(self, destination_type: DestinationType, test_root_dir: str):
+    def dbt_run(self, destination_type: DestinationType, test_root_dir: str, output_dir: str = "final", force_full_refresh: bool = False):
         """
         Run the dbt CLI to perform transformations on the test raw data in the destination
         """
@@ -306,13 +306,15 @@ class DbtIntegrationTest(object):
         # Perform sanity check on dbt project settings
         assert self.run_check_dbt_command(normalization_image, "debug", test_root_dir)
         assert self.run_check_dbt_command(normalization_image, "deps", test_root_dir)
-        final_sql_files = os.path.join(test_root_dir, "final")
+        final_sql_files = os.path.join(test_root_dir, output_dir)
         shutil.rmtree(final_sql_files, ignore_errors=True)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
-        assert self.run_check_dbt_command(normalization_image, "run", test_root_dir)
+        assert self.run_check_dbt_command(normalization_image, "run", test_root_dir, output_dir, force_full_refresh)
 
     @staticmethod
-    def run_check_dbt_command(normalization_image: str, command: str, cwd: str) -> bool:
+    def run_check_dbt_command(
+        normalization_image: str, command: str, cwd: str, output_dir: str = "final", force_full_refresh: bool = False
+    ) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
@@ -327,7 +329,7 @@ class DbtIntegrationTest(object):
             "-v",
             f"{cwd}/build:/build",
             "-v",
-            f"{cwd}/final:/build/run/airbyte_utils/models/generated",
+            f"{cwd}/{output_dir}:/build/run/airbyte_utils/models/generated",
             "-v",
             "/tmp:/tmp",
             "--network",
@@ -340,6 +342,9 @@ class DbtIntegrationTest(object):
             "--profiles-dir=/workspace",
             "--project-dir=/workspace",
         ]
+        if force_full_refresh:
+            commands.append("--full-refresh")
+            command = f"{command} --full-refresh"
         print("Executing: ", " ".join(commands))
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
         with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:

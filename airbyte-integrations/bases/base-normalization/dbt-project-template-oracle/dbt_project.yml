@@ -40,6 +40,7 @@ quoting:
 # are materialized, and more!
 models:
   airbyte_utils:
+    +materialized: table
     generated:
       airbyte_ctes:
         +tags: airbyte_internal_cte
@@ -53,7 +54,6 @@ models:
       airbyte_views:
         +tags: airbyte_internal_views
         +materialized: view
-    +materialized: table
 
 vars:
   dbt_utils_dispatch_list: ['airbyte_utils']

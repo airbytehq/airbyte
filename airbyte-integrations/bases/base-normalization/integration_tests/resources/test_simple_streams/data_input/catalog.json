@@ -150,7 +150,7 @@
         "source_defined_cursor": true,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
