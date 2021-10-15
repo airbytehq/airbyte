@@ -27,14 +27,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.slf4j.LoggerFactory;
 
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
+// Must have a timeout on this class because it tests child processes that may misbehave; otherwise this can hang forever during failures.
+@Timeout(value = 5, unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(KubePodProcessIntegrationTest.class);
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
@@ -76,9 +83,11 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
+    LOGGER.info("Got process with simple echo commands: " + process.info());
     process.waitFor();
 
     // the pod should be dead and in a good state
+    LOGGER.info("After waitFor on process with simple echo commands: " + process.info());
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
@@ -89,11 +98,13 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
+    LOGGER.info("Got process with simple echo commands, testing output: " + process.info());
     var output = new String(process.getInputStream().readAllBytes());
     assertEquals("h\"i\nhi2\n", output);
     process.waitFor();
 
     // the pod should be dead and in a good state
+    LOGGER.info("After waitFor on process with simple echo commands, testing output: " + process.info());
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
@@ -104,9 +115,11 @@ public class KubePodProcessIntegrationTest {
     // start a process that has a pipe in the entrypoint
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo hi | cat");
+    LOGGER.info("Got process with simple pipe: " + process.info());
     process.waitFor();
 
     // the pod should be dead and in a good state
+    LOGGER.info("After process with simple pipe: " + process.info());
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
@@ -117,9 +130,11 @@ public class KubePodProcessIntegrationTest {
     // start a process that requests
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("exit 10");
+    LOGGER.info("Got process with exit code: " + process.info());
     process.waitFor();
 
     // the pod should be dead with the correct error code
+    LOGGER.info("After waitFor process with exit code: " + process.info());
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(10, process.exitValue());
@@ -130,9 +145,11 @@ public class KubePodProcessIntegrationTest {
     // start a process with an entrypoint that doesn't exist
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess(null);
+    LOGGER.info("Got process with null entrypoint: " + process.info());
     process.waitFor();
 
     // the pod should be dead and in an error state
+    LOGGER.info("After waitFor process with null entrypoint: " + process.info());
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(127, process.exitValue());
@@ -143,12 +160,14 @@ public class KubePodProcessIntegrationTest {
     // start an infinite process
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
+    LOGGER.info("Got process with infinite loop: " + process.info());
 
     // kill the heartbeat server
     server.stop();
 
     // waiting for process
-    process.waitFor();
+    process.waitFor(2, TimeUnit.MINUTES);
+    LOGGER.info("After waitFor process with infinite loop: " + process.info());
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
@@ -213,3 +232,4 @@ public class KubePodProcessIntegrationTest {
   };
 
 }
+
