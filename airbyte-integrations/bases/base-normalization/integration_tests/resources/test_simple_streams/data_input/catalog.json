@@ -97,9 +97,6 @@
             "name": {
               "type": ["string", "null"]
             },
-            "column`_'with\"_quotes": {
-              "type": ["string", "null"]
-            },
             "_ab_cdc_lsn": {
               "type": ["null", "number"]
             },
