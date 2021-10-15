@@ -20,7 +20,7 @@ checkNormalizationImages() {
   local image_version; image_version=$(_get_docker_image_version airbyte-integrations/bases/base-normalization/Dockerfile)
   echo "Checking normalization images with version $image_version exist..."
   VERSION=$image_version docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.yaml pull || exit 1
-  echo "Success! All platform images exist!"
+  echo "Success! All normalization images exist!"
 }
 
 checkConnectorImages() {
