@@ -19,13 +19,11 @@ class SourceSentry(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
-            project_detail_stream = ProjectDetail(
+            projects_stream = Projects(
                 authenticator=TokenAuthenticator(token=config["auth_token"]),
                 hostname=config.get("hostname", self.DEFAULT_HOST),
-                organization=config["organization"],
-                project=config["project"],
             )
-            next(project_detail_stream.read_records(sync_mode=SyncMode.full_refresh))
+            next(projects_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, e
