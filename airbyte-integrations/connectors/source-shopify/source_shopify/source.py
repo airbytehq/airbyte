@@ -329,7 +329,7 @@ class Locations(ShopifyStream):
 
     """
     The location API does not support any form of filtering.
-    https://shopify.dev/api/admin-rest/2021-10/resources/location#top
+    https://shopify.dev/api/admin-rest/2021-07/resources/location
 
     Therefore, only FULL_REFRESH mode is supported.
     """
@@ -346,7 +346,6 @@ class InventoryLevels(ChildSubstream):
     slice_key = "location_id"
 
     data_field = "inventory_levels"
-    cursor_field = "updated_at"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         location_id = stream_slice["location_id"]
