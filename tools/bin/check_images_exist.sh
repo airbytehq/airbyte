@@ -17,7 +17,9 @@ checkPlatformImages() {
 }
 
 checkNormalizationImages() {
-  local image_version; image_version=$(_get_docker_image_version airbyte-integrations/bases/base-normalization/Dockerfile)
+  # the only way to know what version of normalization the platform is using is looking in NormalizationRunnerFactory.
+  local image_version;
+  image_version=$(cat airbyte-workers/src/main/java/io/airbyte/workers/normalization/NormalizationRunnerFactory.java | grep 'NORMALIZATION_VERSION =' | cut -d"=" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
   echo "Checking normalization images with version $image_version exist..."
   VERSION=$image_version docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.yaml pull || exit 1
   echo "Success! All normalization images exist!"
