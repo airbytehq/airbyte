@@ -8,6 +8,7 @@ import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
+from functools import lru_cache
 from operator import itemgetter
 from traceback import format_exc
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -21,6 +22,8 @@ from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
+
+LOGGER = AirbyteLogger()
 
 
 class ConfigurationError(Exception):
@@ -59,9 +62,7 @@ class FileStream(Stream, ABC):
         if schema:
             self._schema = self._parse_user_input_schema(schema)
         self.master_schema = None
-        self.time_ordered_filepath_cache: Optional[List[Tuple[datetime, str]]] = None
-        self.logger = AirbyteLogger()
-        self.logger.info(f"initialised stream with format: {format}")
+        LOGGER.info(f"initialised stream with format: {format}")
 
     @staticmethod
     def _parse_user_input_schema(schema: str) -> Mapping[str, str]:
@@ -142,7 +143,8 @@ class FileStream(Stream, ABC):
             if globmatch(filepath, self._path_pattern, flags=GLOBSTAR | SPLIT):
                 yield filepath
 
-    def time_ordered_filepath_iterator(self) -> Iterable[Tuple[datetime, str]]:
+    @lru_cache(maxsize=None)
+    def get_time_ordered_filepaths(self) -> Iterable[Tuple[datetime, str]]:
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring last_modified property of each file to return in time ascending order.
         Uses concurrent.futures to thread this asynchronously in order to improve performance when there are many files (network I/O)
@@ -150,29 +152,25 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
-
         def get_storagefile_with_lastmod(filepath: str) -> Tuple[datetime, str]:
             fc = self.storagefile_class(filepath, self._provider)
             return (fc.last_modified, filepath)
 
-        if self.time_ordered_filepath_cache is None:
-            storagefiles = []
-            # use concurrent future threads to parallelise grabbing last_modified from all the files
-            # TODO: don't hardcode max_workers like this
-            with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
+        storagefiles = []
+        # use concurrent future threads to parallelise grabbing last_modified from all the files
+        # TODO: don't hardcode max_workers like this
+        with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
 
-                filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator())
+            filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator())
 
-                futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
+            futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
 
-                for future in concurrent.futures.as_completed(futures):
-                    # this will failfast on any errors
-                    storagefiles.append(future.result())
+            for future in concurrent.futures.as_completed(futures):
+                # this will failfast on any errors
+                storagefiles.append(future.result())
 
-            # The array storagefiles contain tuples of (last_modified, filepath), so sort by last_modified
-            self.time_ordered_filepath_cache = sorted(storagefiles, key=itemgetter(0))
-
-        return self.time_ordered_filepath_cache
+        # The array storagefiles contain tuples of (last_modified, filepath), so sort by last_modified
+        return sorted(storagefiles, key=itemgetter(0))
 
     def _get_schema_map(self) -> Mapping[str, Any]:
         if self._schema != {}:
@@ -201,7 +199,7 @@ class FileStream(Stream, ABC):
         """
         In order to auto-infer a schema across many files and/or allow for additional properties (columns),
             we need to determine the superset of schemas across all relevant files.
-        This method iterates through time_ordered_filepath_iterator() obtaining the inferred schema (process implemented per file format),
+        This method iterates through get_time_ordered_filepaths() obtaining the inferred schema (process implemented per file format),
             to build up this superset schema (master_schema).
         This runs datatype checks to Warn or Error if we find incompatible schemas (e.g. same column is 'date' in one file but 'float' in another).
         This caches the master_schema after first run in order to avoid repeated compute and network calls to infer schema on all files.
@@ -218,7 +216,7 @@ class FileStream(Stream, ABC):
 
             file_reader = self.fileformatparser_class(self._format)
 
-            for last_mod, filepath in self.time_ordered_filepath_iterator():
+            for last_mod, filepath in self.get_time_ordered_filepaths():
                 # skip this file if it's earlier than min_datetime
                 if (min_datetime is not None) and (last_mod < min_datetime):
                     continue
@@ -239,7 +237,7 @@ class FileStream(Stream, ABC):
                         # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
-                            self.logger.warn(
+                            LOGGER.warn(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
@@ -258,7 +256,7 @@ class FileStream(Stream, ABC):
                     if col not in master_schema.keys():
                         master_schema[col] = datatype
 
-            self.logger.info(f"determined master schema: {master_schema}")
+            LOGGER.info(f"determined master schema: {master_schema}")
             self.master_schema = master_schema
 
         return self.master_schema
@@ -268,18 +266,20 @@ class FileStream(Stream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This builds full-refresh stream_slices regardless of sync_mode param.
-        1 file == 1 stream_slice.
+        For full refresh, 1 file == 1 stream_slice.
+        The structure of a stream slice is [ {file}, ... ].
+        In incremental mode, a stream slice may have more than one file so we mirror that format here.
         Incremental stream_slices are implemented in the IncrementalFileStream child class.
         """
 
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
-        for last_mod, filepath in self.time_ordered_filepath_iterator():
+        for last_mod, filepath in self.get_time_ordered_filepaths():
             storagefile = self.storagefile_class(filepath, self._provider)
             yield [{"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile}]
-        # in case we have no files
-        yield from [None]
+        # # in case we have no files
+        # yield from [None]
 
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
         """
@@ -345,7 +345,7 @@ class FileStream(Stream, ABC):
                         },
                     )
                     yield complete_record
-        self.logger.info("finished reading a stream slice")
+        LOGGER.info("finished reading a stream slice")
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
@@ -412,7 +412,7 @@ class IncrementalFileStream(FileStream, ABC):
         An incremental stream_slice is a group of all files with the exact same last_modified timestamp.
         This ensures we only update the cursor state to a given timestamp after ALL files with that timestamp have been successfully read.
 
-        Slight nuance: as we iterate through time_ordered_filepath_iterator(),
+        Slight nuance: as we iterate through get_time_ordered_filepaths(),
         we yield the stream_slice containing file(s) up to and EXcluding the file on the current iteration.
         The stream_slice is then cleared (if we yielded it) and this iteration's file appended to the (next) stream_slice
         """
@@ -429,7 +429,7 @@ class IncrementalFileStream(FileStream, ABC):
             prev_file_last_mod = None  # init variable to hold previous iterations last modified
             stream_slice = []
 
-            for last_mod, filepath in self.time_ordered_filepath_iterator():
+            for last_mod, filepath in self.get_time_ordered_filepaths():
                 # skip this file if last_mod is earlier than our cursor value from state
                 if (
                     stream_state is not None
