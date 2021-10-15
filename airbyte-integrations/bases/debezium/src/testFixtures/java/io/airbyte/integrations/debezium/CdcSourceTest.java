@@ -245,7 +245,9 @@ public abstract class CdcSourceTest {
     assertExpectedRecords(expectedRecords, actualRecords, actualRecords.stream().map(AirbyteRecordMessage::getStream).collect(Collectors.toSet()));
   }
 
-  private void assertExpectedRecords(final Set<JsonNode> expectedRecords, final Set<AirbyteRecordMessage> actualRecords, final Set<String> cdcStreams) {
+  private void assertExpectedRecords(final Set<JsonNode> expectedRecords,
+                                     final Set<AirbyteRecordMessage> actualRecords,
+                                     final Set<String> cdcStreams) {
     assertExpectedRecords(expectedRecords, actualRecords, cdcStreams, STREAM_NAMES);
   }
 

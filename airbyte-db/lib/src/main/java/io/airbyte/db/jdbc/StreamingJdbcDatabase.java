@@ -26,7 +26,9 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   private final JdbcDatabase database;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public StreamingJdbcDatabase(final DataSource dataSource, final JdbcDatabase database, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+  public StreamingJdbcDatabase(final DataSource dataSource,
+                               final JdbcDatabase database,
+                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this(dataSource, database, jdbcStreamingQueryConfiguration, database.sourceOperations);
   }
 

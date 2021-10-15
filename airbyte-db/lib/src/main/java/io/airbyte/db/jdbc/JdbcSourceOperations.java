@@ -291,7 +291,8 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
     return JdbcUtils.getFullyQualifiedTableName(schemaName, tableName);
   }
 
-  public String getFullyQualifiedTableNameWithQuoting(final Connection connection, final String schemaName, final String tableName) throws SQLException {
+  public String getFullyQualifiedTableNameWithQuoting(final Connection connection, final String schemaName, final String tableName)
+      throws SQLException {
     final String quotedTableName = enquoteIdentifier(connection, tableName);
     return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }

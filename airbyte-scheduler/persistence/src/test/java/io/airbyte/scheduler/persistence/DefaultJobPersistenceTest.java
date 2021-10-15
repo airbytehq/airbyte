@@ -137,7 +137,12 @@ class DefaultJobPersistenceTest {
   }
 
   private static Job createJob(
-      final long id, final JobConfig jobConfig, final JobStatus status, final List<Attempt> attempts, final long time, final String scope) {
+                               final long id,
+                               final JobConfig jobConfig,
+                               final JobStatus status,
+                               final List<Attempt> attempts,
+                               final long time,
+                               final String scope) {
     return new Job(
         id,
         jobConfig.getConfigType(),
@@ -364,7 +369,8 @@ class DefaultJobPersistenceTest {
     final int newSyncJobAttemptNumber1 = jobPersistence.createAttempt(newSyncJobId, newSyncJobSecondAttemptLogPath);
     jobPersistence.succeedAttempt(newSyncJobId, newSyncJobAttemptNumber1);
 
-    final Long maxEndedAtTimestamp = jobs.get(0).getAttempts().stream().map(c -> c.getEndedAtInSecond().orElseThrow()).max(Long::compareTo).orElseThrow();
+    final Long maxEndedAtTimestamp =
+        jobs.get(0).getAttempts().stream().map(c -> c.getEndedAtInSecond().orElseThrow()).max(Long::compareTo).orElseThrow();
 
     final List<Job> secondQueryJobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.ofEpochSecond(maxEndedAtTimestamp));
     assertEquals(secondQueryJobs.size(), 2);

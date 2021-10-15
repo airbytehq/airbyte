@@ -18,7 +18,9 @@ public class WebBackendDestinationsHandler {
   private final DestinationHandler destinationHandler;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public WebBackendDestinationsHandler(final DestinationHandler destinationHandler, final ConfigRepository configRepository, final TrackingClient trackingClient) {
+  public WebBackendDestinationsHandler(final DestinationHandler destinationHandler,
+                                       final ConfigRepository configRepository,
+                                       final TrackingClient trackingClient) {
     this.destinationHandler = destinationHandler;
     oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
   }

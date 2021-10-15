@@ -84,7 +84,8 @@ class SecretsMigrationTest {
   @BeforeEach
   public void setup() throws Exception {}
 
-  public static void failOnDifferingConfigurations(final Map<String, Stream<JsonNode>> leftConfigs, final Map<String, Stream<JsonNode>> rightConfigs) {
+  public static void failOnDifferingConfigurations(final Map<String, Stream<JsonNode>> leftConfigs,
+                                                   final Map<String, Stream<JsonNode>> rightConfigs) {
     // Check that both sets have exactly the same keys. If they don't, we already know we're failing the
     // diff.
     if (!leftConfigs.keySet().containsAll(rightConfigs.keySet()) && rightConfigs.keySet().containsAll(leftConfigs.keySet())) {

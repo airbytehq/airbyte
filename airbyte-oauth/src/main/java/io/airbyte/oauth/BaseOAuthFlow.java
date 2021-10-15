@@ -40,7 +40,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   @Override
-  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
@@ -72,7 +73,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-      final UUID workspaceId, final UUID sourceDefinitionId, final Map<String, Object> queryParams, final String redirectUrl)
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -96,7 +100,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         redirectUrl);
   }
 
-  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) throws IOException {
+  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
+      throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(getAccessTokenUrl()))

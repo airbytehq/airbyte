@@ -28,7 +28,8 @@ public abstract class AbstractConfigsDatabaseTest extends AbstractDatabaseTest {
   public static final Field<OffsetDateTime> UPDATED_AT = field("updated_at", OffsetDateTime.class);
 
   public Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
-    final Database database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final Database database =
+        new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
 
     // The configs database is considered ready only if there are some seed records.
     // So we need to create at least one record here.

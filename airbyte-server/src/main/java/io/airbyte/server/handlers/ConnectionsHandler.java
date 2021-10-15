@@ -104,7 +104,8 @@ public class ConnectionsHandler {
     }
   }
 
-  public ConnectionRead createConnection(final ConnectionCreate connectionCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // Validate source and destination
     configRepository.getSourceConnection(connectionCreate.getSourceId());
     configRepository.getDestinationConnection(connectionCreate.getDestinationId());
@@ -193,7 +194,8 @@ public class ConnectionsHandler {
     return metadata;
   }
 
-  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
+  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve and update sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
 
@@ -318,7 +320,8 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
-  public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
+  public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionRead connectionRead = getConnection(connectionIdRequestBody);
     deleteConnection(connectionRead);
   }

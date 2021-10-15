@@ -24,7 +24,11 @@ public class EntrypointEnvChecker {
    * @return the entrypoint in the env variable AIRBYTE_ENTRYPOINT
    * @throws RuntimeException if there is ambiguous output from the container
    */
-  public static String getEntrypointEnvVariable(final ProcessFactory processFactory, final String jobId, final int jobAttempt, final Path jobRoot, final String imageName)
+  public static String getEntrypointEnvVariable(final ProcessFactory processFactory,
+                                                final String jobId,
+                                                final int jobAttempt,
+                                                final Path jobRoot,
+                                                final String imageName)
       throws IOException, InterruptedException, WorkerException {
     final Process process = processFactory.create(
         jobId,

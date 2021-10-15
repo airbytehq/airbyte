@@ -262,7 +262,8 @@ public abstract class DestinationAcceptanceTest {
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -948,7 +949,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private List<AirbyteMessage> runSync(
-      final JsonNode config, final List<AirbyteMessage> messages, final ConfiguredAirbyteCatalog catalog, final boolean runNormalization)
+                                       final JsonNode config,
+                                       final List<AirbyteMessage> messages,
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final boolean runNormalization)
       throws Exception {
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
@@ -987,7 +991,9 @@ public abstract class DestinationAcceptanceTest {
     return destinationOutput;
   }
 
-  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog, final List<AirbyteMessage> messages, final String defaultSchema)
+  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
+                                                         final List<AirbyteMessage> messages,
+                                                         final String defaultSchema)
       throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
@@ -1004,7 +1010,9 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // ignores emitted at.
-  protected void assertSameMessages(final List<AirbyteMessage> expected, final List<AirbyteRecordMessage> actual, final boolean pruneAirbyteInternalFields) {
+  protected void assertSameMessages(final List<AirbyteMessage> expected,
+                                    final List<AirbyteRecordMessage> actual,
+                                    final boolean pruneAirbyteInternalFields) {
     final List<JsonNode> expectedProcessed = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)

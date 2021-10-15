@@ -162,7 +162,9 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
    *
    * See {@link CancellationHandler} for more info.
    */
-  private Runnable getCancellationChecker(final Worker<INPUT, OUTPUT> worker, final Thread workerThread, final CompletableFuture<OUTPUT> outputFuture) {
+  private Runnable getCancellationChecker(final Worker<INPUT, OUTPUT> worker,
+                                          final Thread workerThread,
+                                          final CompletableFuture<OUTPUT> outputFuture) {
     final var cancelled = new AtomicBoolean(false);
     return () -> {
       try {

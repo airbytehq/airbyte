@@ -112,7 +112,8 @@ public class OAuthHandler {
     return result;
   }
 
-  public void setSourceInstancewideOauthParams(final SetInstancewideSourceOauthParamsRequestBody requestBody) throws JsonValidationException, IOException {
+  public void setSourceInstancewideOauthParams(final SetInstancewideSourceOauthParamsRequestBody requestBody)
+      throws JsonValidationException, IOException {
     final SourceOAuthParameter param = configRepository
         .getSourceOAuthParamByDefinitionIdOptional(null, requestBody.getSourceDefinitionId())
         .orElseGet(() -> new SourceOAuthParameter().withOauthParameterId(UUID.randomUUID()))

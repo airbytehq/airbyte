@@ -32,7 +32,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   private final JobTracker jobTracker;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultSynchronousSchedulerClient(final TemporalClient temporalClient, final JobTracker jobTracker, final OAuthConfigSupplier oAuthConfigSupplier) {
+  public DefaultSynchronousSchedulerClient(final TemporalClient temporalClient,
+                                           final JobTracker jobTracker,
+                                           final OAuthConfigSupplier oAuthConfigSupplier) {
     this.temporalClient = temporalClient;
     this.jobTracker = jobTracker;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
@@ -133,7 +135,12 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   /**
    * @param connectorDefinitionId either source or destination definition id
    */
-  private <T> void track(final UUID jobId, final ConfigType configType, final UUID connectorDefinitionId, final UUID workspaceId, final JobState jobState, final T value) {
+  private <T> void track(final UUID jobId,
+                         final ConfigType configType,
+                         final UUID connectorDefinitionId,
+                         final UUID workspaceId,
+                         final JobState jobState,
+                         final T value) {
     switch (configType) {
       case CHECK_CONNECTION_SOURCE -> jobTracker.trackCheckConnectionSource(
           jobId,

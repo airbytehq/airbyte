@@ -984,7 +984,8 @@ public class AcceptanceTests {
         getDestinationDbConfig());
   }
 
-  private DestinationRead createDestination(final String name, final UUID workspaceId, final UUID destinationDefId, final JsonNode destinationConfig) throws ApiException {
+  private DestinationRead createDestination(final String name, final UUID workspaceId, final UUID destinationDefId, final JsonNode destinationConfig)
+      throws ApiException {
     final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()
             .name(name)
@@ -1071,7 +1072,8 @@ public class AcceptanceTests {
     }
   }
 
-  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema) throws UnknownHostException {
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+      throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
     if (IS_KUBE) {
@@ -1110,7 +1112,8 @@ public class AcceptanceTests {
         getSourceDbConfig());
   }
 
-  private SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig) throws ApiException {
+  private SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)
+      throws ApiException {
     final SourceRead source = apiClient.getSourceApi().createSource(new SourceCreate()
         .name(name)
         .sourceDefinitionId(sourceDefId)
@@ -1176,7 +1179,8 @@ public class AcceptanceTests {
   }
 
   @SuppressWarnings("BusyWait")
-  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses) throws InterruptedException, ApiException {
+  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
+      throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
     while (count < 200 && jobStatuses.contains(job.getStatus())) {
@@ -1190,7 +1194,8 @@ public class AcceptanceTests {
   }
 
   @SuppressWarnings("BusyWait")
-  private static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId) throws ApiException, InterruptedException {
+  private static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
+      throws ApiException, InterruptedException {
     ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {

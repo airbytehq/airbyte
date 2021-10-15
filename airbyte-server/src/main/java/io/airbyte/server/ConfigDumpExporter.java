@@ -158,7 +158,8 @@ public class ConfigDumpExporter {
     return dump;
   }
 
-  private void exportConfigsDatabase(final Path parentFolder, final UUID workspaceId) throws IOException, JsonValidationException, ConfigNotFoundException {
+  private void exportConfigsDatabase(final Path parentFolder, final UUID workspaceId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     final Collection<SourceConnection> sourceConnections = writeConfigsToArchive(
         parentFolder,
         ConfigSchema.SOURCE_CONNECTION.name(),

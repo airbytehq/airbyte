@@ -331,7 +331,8 @@ class MigrationIntegrationTest {
     });
   }
 
-  private static void writeInputArchive(final Path archiveRoot, final Map<ResourceId, List<JsonNode>> resourceToRecords, final String version) throws IOException {
+  private static void writeInputArchive(final Path archiveRoot, final Map<ResourceId, List<JsonNode>> resourceToRecords, final String version)
+      throws IOException {
     writeInputs(
         ResourceType.CONFIG,
         Enums.valuesAsStrings(MigrationV0_14_0.ConfigKeys.class),

@@ -339,7 +339,10 @@ public interface SyncWorkflow {
     private final String airbyteVersion;
 
     public DbtTransformationActivityImpl(
-        final ProcessFactory processFactory, final SecretsHydrator secretsHydrator, final Path workspaceRoot, final String airbyteVersion) {
+                                         final ProcessFactory processFactory,
+                                         final SecretsHydrator secretsHydrator,
+                                         final Path workspaceRoot,
+                                         final String airbyteVersion) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), airbyteVersion);
     }
 

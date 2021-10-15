@@ -190,7 +190,10 @@ public class KubePodProcess extends Process {
     return containerBuilder.build();
   }
 
-  private static void copyFilesToKubeConfigVolume(final ApiClient officialClient, final String podName, final String namespace, final Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolume(final ApiClient officialClient,
+                                                  final String podName,
+                                                  final String namespace,
+                                                  final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed

@@ -62,7 +62,9 @@ public class OAuthConfigSupplier {
     }
   }
 
-  public JsonNode injectDestinationOAuthParameters(final UUID destinationDefinitionId, final UUID workspaceId, final JsonNode destinationConnectorConfig)
+  public JsonNode injectDestinationOAuthParameters(final UUID destinationDefinitionId,
+                                                   final UUID workspaceId,
+                                                   final JsonNode destinationConnectorConfig)
       throws IOException {
     try {
       final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionId);

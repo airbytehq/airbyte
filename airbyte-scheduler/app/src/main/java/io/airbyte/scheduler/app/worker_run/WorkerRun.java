@@ -36,7 +36,9 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
     return new WorkerRun(jobRoot, workerRun, airbyteVersionOrWarnings);
   }
 
-  public WorkerRun(final Path jobRoot, final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun, final String airbyteVersionOrWarnings) {
+  public WorkerRun(final Path jobRoot,
+                   final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun,
+                   final String airbyteVersionOrWarnings) {
     this.jobRoot = jobRoot;
     this.workerRun = workerRun;
     this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;

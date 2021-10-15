@@ -100,7 +100,8 @@ public class AutoCloseableIterators {
    * @param <T> output type
    * @return mapped autocloseable iterator
    */
-  public static <F, T> AutoCloseableIterator<T> transform(final AutoCloseableIterator<F> fromIterator, final Function<? super F, ? extends T> function) {
+  public static <F, T> AutoCloseableIterator<T> transform(final AutoCloseableIterator<F> fromIterator,
+                                                          final Function<? super F, ? extends T> function) {
     return new DefaultAutoCloseableIterator<>(Iterators.transform(fromIterator, function::apply), fromIterator::close);
   }
 

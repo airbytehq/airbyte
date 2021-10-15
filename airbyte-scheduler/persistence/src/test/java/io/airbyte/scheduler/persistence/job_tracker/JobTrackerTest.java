@@ -340,7 +340,8 @@ class JobTrackerTest {
     return job;
   }
 
-  private Job getJobWithAttemptsMock(final ConfigType configType, final long jobId) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private Job getJobWithAttemptsMock(final ConfigType configType, final long jobId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final Job job = getJobMock(configType, jobId);
     final Attempt attempt = mock(Attempt.class);
     final JobOutput jobOutput = mock(JobOutput.class);
@@ -418,7 +419,9 @@ class JobTrackerTest {
    *        on the job tracker with it. if testing discover, it calls trackDiscover, etc.
    * @param expectedMetadata - expected metadata (except job state).
    */
-  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer, final Map<String, Object> expectedMetadata, final boolean workspaceSet) {
+  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer,
+                                                final Map<String, Object> expectedMetadata,
+                                                final boolean workspaceSet) {
     jobStateConsumer.accept(JobState.STARTED);
     assertCorrectMessageForStartedState(expectedMetadata);
     jobStateConsumer.accept(JobState.SUCCEEDED);

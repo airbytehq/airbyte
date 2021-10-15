@@ -52,7 +52,12 @@ public class DbtTransformationRunner implements AutoCloseable {
    * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
    * provided by the user to execute whatever extra transformation has been implemented.
    */
-  public boolean run(final String jobId, final int attempt, final Path jobRoot, final JsonNode config, final ResourceRequirements resourceRequirements, final OperatorDbt dbtConfig)
+  public boolean run(final String jobId,
+                     final int attempt,
+                     final Path jobRoot,
+                     final JsonNode config,
+                     final ResourceRequirements resourceRequirements,
+                     final OperatorDbt dbtConfig)
       throws Exception {
     if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
       return false;
@@ -60,7 +65,12 @@ public class DbtTransformationRunner implements AutoCloseable {
     return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
-  public boolean transform(final String jobId, final int attempt, final Path jobRoot, final JsonNode config, final ResourceRequirements resourceRequirements, final OperatorDbt dbtConfig)
+  public boolean transform(final String jobId,
+                           final int attempt,
+                           final Path jobRoot,
+                           final JsonNode config,
+                           final ResourceRequirements resourceRequirements,
+                           final OperatorDbt dbtConfig)
       throws Exception {
     try {
       final Map<String, String> files = ImmutableMap.of(

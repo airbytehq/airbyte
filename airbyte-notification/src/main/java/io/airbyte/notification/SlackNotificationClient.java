@@ -65,7 +65,11 @@ public class SlackNotificationClient extends NotificationClient {
         logUrl));
   }
 
-  private String renderJobData(final String templateFile, final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  private String renderJobData(final String templateFile,
+                               final String sourceConnector,
+                               final String destinationConnector,
+                               final String jobDescription,
+                               final String logUrl)
       throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, sourceConnector, destinationConnector, jobDescription, logUrl);

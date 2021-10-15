@@ -27,7 +27,8 @@ public class MigrationTestUtils {
     return resourceIds.stream().collect(Collectors.toMap(v -> v, v -> new ListConsumer<>()));
   }
 
-  public static Map<ResourceId, List<JsonNode>> createExpectedOutput(final Set<ResourceId> resourceIds, final Map<ResourceId, List<JsonNode>> overrides) {
+  public static Map<ResourceId, List<JsonNode>> createExpectedOutput(final Set<ResourceId> resourceIds,
+                                                                     final Map<ResourceId, List<JsonNode>> overrides) {
     return resourceIds.stream().collect(Collectors.toMap(v -> v, v -> {
       if (overrides.containsKey(v)) {
         return overrides.get(v);

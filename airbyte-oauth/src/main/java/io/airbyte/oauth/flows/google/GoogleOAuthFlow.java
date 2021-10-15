@@ -78,7 +78,10 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)

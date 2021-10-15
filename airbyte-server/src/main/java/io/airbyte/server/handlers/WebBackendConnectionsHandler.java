@@ -107,12 +107,14 @@ public class WebBackendConnectionsHandler {
     return sourceHandler.getSource(sourceIdRequestBody);
   }
 
-  private DestinationRead getDestinationRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private DestinationRead getDestinationRead(final ConnectionRead connectionRead)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId());
     return destinationHandler.getDestination(destinationIdRequestBody);
   }
 
-  private OperationReadList getOperationReadList(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private OperationReadList getOperationReadList(final ConnectionRead connectionRead)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     return operationsHandler.listOperationsForConnection(connectionIdRequestBody);
   }

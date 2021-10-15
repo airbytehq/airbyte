@@ -52,7 +52,9 @@ public class TemporalClient {
 
   }
 
-  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(final UUID jobId, final int attempt, final JobCheckConnectionConfig config) {
+  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(final UUID jobId,
+                                                                               final int attempt,
+                                                                               final JobCheckConnectionConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())

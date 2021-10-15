@@ -197,7 +197,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   @VisibleForTesting
   int insertConfigRecord(
-      final DSLContext ctx, final OffsetDateTime timestamp, final String configType, final JsonNode configJson, @Nullable final String idFieldName) {
+                         final DSLContext ctx,
+                         final OffsetDateTime timestamp,
+                         final String configType,
+                         final JsonNode configJson,
+                         @Nullable final String idFieldName) {
     final String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
@@ -222,7 +226,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * @return the number of updated records.
    */
   @VisibleForTesting
-  int updateConfigRecord(final DSLContext ctx, final OffsetDateTime timestamp, final String configType, final JsonNode configJson, final String configId) {
+  int updateConfigRecord(final DSLContext ctx,
+                         final OffsetDateTime timestamp,
+                         final String configType,
+                         final JsonNode configJson,
+                         final String configId) {
     LOGGER.info("Updating {} record {}", configType, configId);
 
     final int updateCount = ctx.update(AIRBYTE_CONFIGS)

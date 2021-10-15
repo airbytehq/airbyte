@@ -49,7 +49,8 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     this.transport = transport;
   }
 
-  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
@@ -79,7 +80,10 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
   }
 
   public Map<String, Object> completeSourceOAuth(
-      final UUID workspaceId, final UUID sourceDefinitionId, final Map<String, Object> queryParams, final String redirectUrl)
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
 
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);

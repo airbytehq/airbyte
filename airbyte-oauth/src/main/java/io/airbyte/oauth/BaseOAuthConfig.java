@@ -41,7 +41,8 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
     }
   }
 
-  protected JsonNode getDestinationOAuthParamConfig(final UUID workspaceId, final UUID destinationDefinitionId) throws IOException, ConfigNotFoundException {
+  protected JsonNode getDestinationOAuthParamConfig(final UUID workspaceId, final UUID destinationDefinitionId)
+      throws IOException, ConfigNotFoundException {
     try {
       final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
           configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);

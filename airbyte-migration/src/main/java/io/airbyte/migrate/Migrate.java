@@ -154,7 +154,8 @@ public class Migrate {
     return resourceIdToInputStreams;
   }
 
-  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreamsForResourceType(final Path migrationInputRoot, final ResourceType resourceType) {
+  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreamsForResourceType(final Path migrationInputRoot,
+                                                                                             final ResourceType resourceType) {
     final List<Path> inputFilePaths = FileUtils.listFiles(migrationInputRoot.resolve(resourceType.getDirectoryName()).toFile(), null, false)
         .stream()
         .map(File::toPath)

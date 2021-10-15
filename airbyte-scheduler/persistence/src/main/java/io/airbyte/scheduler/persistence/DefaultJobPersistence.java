@@ -183,7 +183,11 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private void updateJobStatusIfNotInTerminalState(
-      final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now, final RuntimeException e) {
+                                                   final DSLContext ctx,
+                                                   final long jobId,
+                                                   final JobStatus newStatus,
+                                                   final LocalDateTime now,
+                                                   final RuntimeException e) {
     final Job job = getJob(ctx, jobId);
     if (!job.isJobInTerminalState()) {
       updateJobStatus(ctx, jobId, newStatus, now);
@@ -211,14 +215,16 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.transaction(ctx -> {
       final Job job = getJob(ctx, jobId);
       if (job.isJobInTerminalState()) {
-        final var errMsg = String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
-            job.getStatus(), job.getScope());
+        final var errMsg =
+            String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
+                job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
       if (job.hasRunningAttempt()) {
-        final var errMsg = String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
-            job.getStatus(), job.getScope());
+        final var errMsg =
+            String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
+                job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 

@@ -97,7 +97,7 @@ public interface CheckConnectionWorkflow {
     }
 
     private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
-        final IntegrationLauncherConfig launcherConfig) {
+                                                                                                                             final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
             launcherConfig.getJobId(),

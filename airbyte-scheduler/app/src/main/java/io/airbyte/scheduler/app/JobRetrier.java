@@ -27,7 +27,10 @@ public class JobRetrier implements Runnable {
   private final JobNotifier jobNotifier;
   private final int maxSyncJobAttempts;
 
-  public JobRetrier(final JobPersistence jobPersistence, final Supplier<Instant> timeSupplier, final JobNotifier jobNotifier, final int maxSyncJobAttempts) {
+  public JobRetrier(final JobPersistence jobPersistence,
+                    final Supplier<Instant> timeSupplier,
+                    final JobNotifier jobNotifier,
+                    final int maxSyncJobAttempts) {
     this.persistence = jobPersistence;
     this.timeSupplier = timeSupplier;
     this.jobNotifier = jobNotifier;

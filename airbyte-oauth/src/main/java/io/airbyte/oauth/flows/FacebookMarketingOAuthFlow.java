@@ -69,7 +69,10 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)

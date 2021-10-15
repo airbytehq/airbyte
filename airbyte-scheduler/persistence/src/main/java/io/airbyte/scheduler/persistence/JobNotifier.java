@@ -39,7 +39,10 @@ public class JobNotifier {
   private final TrackingClient trackingClient;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(final String webappUrl, final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper, final TrackingClient trackingClient) {
+  public JobNotifier(final String webappUrl,
+                     final ConfigRepository configRepository,
+                     final WorkspaceHelper workspaceHelper,
+                     final TrackingClient trackingClient) {
     this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);

@@ -230,7 +230,8 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     writeConfigInternal(configType, configId, config, configRoot);
   }
 
-  private <T> void writeConfigInternal(final AirbyteConfig configType, final String configId, final T config, final Path storageRoot) throws IOException {
+  private <T> void writeConfigInternal(final AirbyteConfig configType, final String configId, final T config, final Path storageRoot)
+      throws IOException {
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.createDirectories(configPath.getParent());
 
