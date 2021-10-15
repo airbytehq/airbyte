@@ -28,10 +28,10 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.SNOWFLAKE))
           .build();
 
-  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory, String airbyteVersion) {
+  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory, final String airbyteVersion) {
     final String imageNameWithoutTag = imageName.split(":")[0];
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      var valuePair = NORMALIZATION_MAPPING.get(imageNameWithoutTag);
+      final var valuePair = NORMALIZATION_MAPPING.get(imageNameWithoutTag);
       return new DefaultNormalizationRunner(
           valuePair.getRight(),
           processFactory,

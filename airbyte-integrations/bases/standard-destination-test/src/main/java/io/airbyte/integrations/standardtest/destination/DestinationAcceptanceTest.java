@@ -145,7 +145,7 @@ public abstract class DestinationAcceptanceTest {
    * @param config - integration-specific configuration returned by {@link #getConfig()}.
    * @return the default schema, if applicatble.
    */
-  protected String getDefaultSchema(JsonNode config) throws Exception {
+  protected String getDefaultSchema(final JsonNode config) throws Exception {
     if (config.get("schema") == null) {
       return null;
     }
@@ -262,7 +262,8 @@ public abstract class DestinationAcceptanceTest {
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -285,7 +286,7 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     result.add(identifier);
     return result;
@@ -293,7 +294,7 @@ public abstract class DestinationAcceptanceTest {
 
   @BeforeEach
   void setUpInternal() throws Exception {
-    Path testDir = Path.of("/tmp/airbyte_tests/");
+    final Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
@@ -344,7 +345,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSync(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSync(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
@@ -362,7 +363,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithLargeRecordBatch(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSyncWithLargeRecordBatch(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
@@ -459,7 +460,7 @@ public abstract class DestinationAcceptanceTest {
     try {
       NormalizationRunnerFactory.create(getImageName(), processFactory, "dev");
       normalizationRunnerFactorySupportsDestinationImage = true;
-    } catch (IllegalStateException e) {
+    } catch (final IllegalStateException e) {
       normalizationRunnerFactorySupportsDestinationImage = false;
     }
     assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
@@ -528,7 +529,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     if (!normalizationFromSpec()) {
       return;
     }
@@ -541,7 +542,7 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
-    String defaultSchema = getDefaultSchema(config);
+    final String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
   }
@@ -694,7 +695,7 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
-  private String generateBigString(int addExtraCharacters) {
+  private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
     return new Random()
         .ints('a', 'z' + 1)
@@ -857,8 +858,8 @@ public abstract class DestinationAcceptanceTest {
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
     final var namespace2 = "diff_source_namespace";
     final var mapper = MoreMappers.initMapper();
-    for (AirbyteStream stream : catalog.getStreams()) {
-      var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
+    for (final AirbyteStream stream : catalog.getStreams()) {
+      final var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
       clonedStream.setNamespace(namespace2);
       diffNamespaceStreams.add(clonedStream);
     }
@@ -914,7 +915,7 @@ public abstract class DestinationAcceptanceTest {
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private StandardCheckConnectionOutput runCheck(JsonNode config) throws WorkerException {
+  private StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
@@ -923,10 +924,10 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
-  protected void runSyncAndVerifyStateOutput(JsonNode config,
-                                             List<AirbyteMessage> messages,
-                                             ConfiguredAirbyteCatalog catalog,
-                                             boolean runNormalization)
+  protected void runSyncAndVerifyStateOutput(final JsonNode config,
+                                             final List<AirbyteMessage> messages,
+                                             final ConfiguredAirbyteCatalog catalog,
+                                             final boolean runNormalization)
       throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog, runNormalization);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
@@ -947,7 +948,11 @@ public abstract class DestinationAcceptanceTest {
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
-  private List<AirbyteMessage> runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+  private List<AirbyteMessage> runSync(
+                                       final JsonNode config,
+                                       final List<AirbyteMessage> messages,
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final boolean runNormalization)
       throws Exception {
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
@@ -961,7 +966,7 @@ public abstract class DestinationAcceptanceTest {
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
     destination.notifyEndOfStream();
 
-    List<AirbyteMessage> destinationOutput = new ArrayList<>();
+    final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
       destination.attemptRead().ifPresent(destinationOutput::add);
     }
@@ -986,13 +991,15 @@ public abstract class DestinationAcceptanceTest {
     return destinationOutput;
   }
 
-  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema)
+  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
+                                                         final List<AirbyteMessage> messages,
+                                                         final String defaultSchema)
       throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
+      final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
           .collect(Collectors.toList());
@@ -1003,7 +1010,9 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // ignores emitted at.
-  protected void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
+  protected void assertSameMessages(final List<AirbyteMessage> expected,
+                                    final List<AirbyteRecordMessage> actual,
+                                    final boolean pruneAirbyteInternalFields) {
     final List<JsonNode> expectedProcessed = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
@@ -1020,7 +1029,7 @@ public abstract class DestinationAcceptanceTest {
     assertSameData(expectedProcessed, actualProcessed);
   }
 
-  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+  private void assertSameData(final List<JsonNode> expected, final List<JsonNode> actual) {
     LOGGER.info("Expected data {}", expected);
     LOGGER.info("Actual data   {}", actual);
     assertEquals(expected.size(), actual.size());
@@ -1038,7 +1047,7 @@ public abstract class DestinationAcceptanceTest {
         final JsonNode expectedValue = expectedEntry.getValue();
         JsonNode actualValue = null;
         String key = expectedEntry.getKey();
-        for (String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
+        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
           actualValue = actualData.get(tmpKey);
           if (actualValue != null) {
             key = tmpKey;
@@ -1053,17 +1062,17 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // Allows subclasses to implement custom comparison asserts
-  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
   }
 
-  protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
+  protected List<AirbyteRecordMessage> retrieveNormalizedRecords(final AirbyteCatalog catalog, final String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
 
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
 
-      List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
+      final List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
           .collect(Collectors.toList());
@@ -1079,7 +1088,7 @@ public abstract class DestinationAcceptanceTest {
    * @param record - record that will be pruned.
    * @return pruned json node.
    */
-  private AirbyteRecordMessage safePrune(AirbyteRecordMessage record) {
+  private AirbyteRecordMessage safePrune(final AirbyteRecordMessage record) {
     final AirbyteRecordMessage clone = Jsons.clone(record);
     pruneMutate(clone.getData());
     return clone;
@@ -1092,7 +1101,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @param json - json that will be pruned. will be mutated in place!
    */
-  private void pruneMutate(JsonNode json) {
+  private void pruneMutate(final JsonNode json) {
     for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
@@ -1126,7 +1135,7 @@ public abstract class DestinationAcceptanceTest {
 
     private final Path localRoot;
 
-    public TestDestinationEnv(Path localRoot) {
+    public TestDestinationEnv(final Path localRoot) {
       this.localRoot = localRoot;
     }
 
@@ -1164,7 +1173,7 @@ public abstract class DestinationAcceptanceTest {
     final String NAME = "name";
 
     // generate schema\catalogs
-    List<AirbyteStream> configuredAirbyteStreams = new ArrayList<>();
+    final List<AirbyteStream> configuredAirbyteStreams = new ArrayList<>();
     for (int i = 0; i < streamsSize; i++) {
       configuredAirbyteStreams
           .add(CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME + i,
@@ -1186,18 +1195,18 @@ public abstract class DestinationAcceptanceTest {
     // Start destination
     destination.start(destinationConfig, jobRoot);
 
-    AtomicInteger currentStreamNumber = new AtomicInteger(0);
-    AtomicInteger currentRecordNumberForStream = new AtomicInteger(0);
+    final AtomicInteger currentStreamNumber = new AtomicInteger(0);
+    final AtomicInteger currentRecordNumberForStream = new AtomicInteger(0);
 
     // this is just a current state logger. Useful when running long hours tests to see the progress
-    Thread countPrinter = new Thread(() -> {
+    final Thread countPrinter = new Thread(() -> {
       while (true) {
         System.out.println(
             "currentStreamNumber=" + currentStreamNumber + ", currentRecordNumberForStream="
                 + currentRecordNumberForStream + ", " + DateTime.now());
         try {
           Thread.sleep(10000);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           e.printStackTrace();
         }
       }
@@ -1211,7 +1220,7 @@ public abstract class DestinationAcceptanceTest {
       // iterate through msm inside a particular stream
       // Generate messages and put it to stream
       for (int msgCounter = 0; msgCounter < messagesNumber; msgCounter++) {
-        AirbyteMessage msg = new AirbyteMessage()
+        final AirbyteMessage msg = new AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME + streamCounter)
                 .withData(
@@ -1222,7 +1231,7 @@ public abstract class DestinationAcceptanceTest {
                 .withEmittedAt(Instant.now().toEpochMilli()));
         try {
           destination.accept(msg);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.error("Failed to write a RECORD message: " + e);
           throw new RuntimeException(e);
         }
@@ -1231,14 +1240,14 @@ public abstract class DestinationAcceptanceTest {
       }
 
       // send state message here, it's required
-      AirbyteMessage msgState = new AirbyteMessage()
+      final AirbyteMessage msgState = new AirbyteMessage()
           .withType(AirbyteMessage.Type.STATE)
           .withState(new AirbyteStateMessage()
               .withData(
                   Jsons.jsonNode(ImmutableMap.builder().put("start_date", "2020-09-02").build())));
       try {
         destination.accept(msgState);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error("Failed to write a STATE message: " + e);
         throw new RuntimeException(e);
       }

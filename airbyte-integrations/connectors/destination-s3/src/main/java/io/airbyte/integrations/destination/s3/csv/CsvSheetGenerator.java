@@ -22,7 +22,7 @@ public interface CsvSheetGenerator {
 
   final class Factory {
 
-    public static CsvSheetGenerator create(JsonNode jsonSchema, S3CsvFormatConfig formatConfig) {
+    public static CsvSheetGenerator create(final JsonNode jsonSchema, final S3CsvFormatConfig formatConfig) {
       if (formatConfig.getFlattening() == Flattening.NO) {
         return new NoFlatteningSheetGenerator();
       } else if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {

@@ -16,12 +16,12 @@ public class HeartbeatMonitor {
   private final Supplier<Instant> nowSupplier;
   private final AtomicReference<Instant> lastBeat;
 
-  public HeartbeatMonitor(Duration heartBeatFreshDuration) {
+  public HeartbeatMonitor(final Duration heartBeatFreshDuration) {
     this(heartBeatFreshDuration, Instant::now);
   }
 
   @VisibleForTesting
-  public HeartbeatMonitor(Duration heartBeatFreshDuration, Supplier<Instant> nowSupplier) {
+  public HeartbeatMonitor(final Duration heartBeatFreshDuration, final Supplier<Instant> nowSupplier) {
     this.heartBeatFreshDuration = heartBeatFreshDuration;
     this.nowSupplier = nowSupplier;
     this.lastBeat = new AtomicReference<>(null);
