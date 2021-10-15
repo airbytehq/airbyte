@@ -93,7 +93,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  //@Test
+  @Test
   public void testSuccessfulSpawningWithQuotes() throws Exception {
     // start a finite process
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -110,7 +110,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  //@Test
+  @Test
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -125,7 +125,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  //@Test
+  @Test
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -140,7 +140,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(10, process.exitValue());
   }
 
-  //@Test
+  @Test
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
     var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
