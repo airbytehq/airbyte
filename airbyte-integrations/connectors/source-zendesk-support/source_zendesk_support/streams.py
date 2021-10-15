@@ -446,7 +446,7 @@ class TicketComments(IncrementalSortedPageStream):
         elif response.status_code == 404:
             ticket_id = stream_slice["id"]
             # skip 404 errors for not found tickets
-            self.logger.info(f"ticket {ticket_id} is not exists. It could have been removed earlier.")
+            self.logger.info(f"ticket {ticket_id} not found (404 error). It could have been deleted.")
         else:
             response.raise_for_status()
 
