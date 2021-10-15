@@ -32,7 +32,10 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 

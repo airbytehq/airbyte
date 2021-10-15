@@ -56,7 +56,11 @@ public class RedshiftStreamCopier extends S3StreamCopier {
 
   @Override
   public void copyS3CsvFileIntoTable(
-      final JdbcDatabase database, final String s3FileLocation, final String schema, final String tableName, final S3Config s3Config) {
+                                     final JdbcDatabase database,
+                                     final String s3FileLocation,
+                                     final String schema,
+                                     final String tableName,
+                                     final S3Config s3Config) {
     throw new RuntimeException("Redshift Stream Copier should not copy individual files without use of a manifest");
   }
 

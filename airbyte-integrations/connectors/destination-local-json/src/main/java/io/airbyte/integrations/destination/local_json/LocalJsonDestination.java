@@ -126,7 +126,9 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public JsonConsumer(final Map<String, WriteConfig> writeConfigs, final ConfiguredAirbyteCatalog catalog, final Consumer<AirbyteMessage> outputRecordCollector) {
+    public JsonConsumer(final Map<String, WriteConfig> writeConfigs,
+                        final ConfiguredAirbyteCatalog catalog,
+                        final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       LOGGER.info("initializing consumer.");
       this.catalog = catalog;

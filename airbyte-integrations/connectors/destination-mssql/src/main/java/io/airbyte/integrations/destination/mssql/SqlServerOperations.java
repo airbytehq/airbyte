@@ -59,7 +59,11 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tempTableName) throws SQLException {
+  public void insertRecords(final JdbcDatabase database,
+                            final List<AirbyteRecordMessage> records,
+                            final String schemaName,
+                            final String tempTableName)
+      throws SQLException {
     // MSSQL has a limitation of 2100 parameters used in a query
     // Airbyte inserts data with 3 columns (raw table) this limits to 700 records.
     // Limited the variable to 500 records to
@@ -83,7 +87,10 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String sourceTableName, final String destinationTableName) {
+  public String copyTableQuery(final JdbcDatabase database,
+                               final String schemaName,
+                               final String sourceTableName,
+                               final String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 

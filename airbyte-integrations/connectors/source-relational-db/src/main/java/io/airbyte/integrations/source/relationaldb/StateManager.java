@@ -51,7 +51,8 @@ public class StateManager {
         new ImmutableMap.Builder<AirbyteStreamNameNamespacePair, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(final DbState serialized, final ConfiguredAirbyteCatalog catalog) {
+  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(final DbState serialized,
+                                                                                     final ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)

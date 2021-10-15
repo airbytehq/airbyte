@@ -92,7 +92,11 @@ class JsonToAvroSchemaConverterTest {
   @ParameterizedTest
   @ArgumentsSource(GetAvroSchemaTestCaseProvider.class)
   public void testGetAvroSchema(
-      final String schemaName, final String namespace, final boolean appendAirbyteFields, final JsonNode jsonSchema, final JsonNode avroSchema) {
+                                final String schemaName,
+                                final String namespace,
+                                final boolean appendAirbyteFields,
+                                final JsonNode jsonSchema,
+                                final JsonNode avroSchema) {
     final JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
     assertEquals(
         avroSchema,

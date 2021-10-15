@@ -37,7 +37,11 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace, final JsonNode streamSchema) throws Exception {
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);

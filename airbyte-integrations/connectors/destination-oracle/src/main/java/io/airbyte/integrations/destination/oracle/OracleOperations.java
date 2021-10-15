@@ -93,7 +93,10 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tempTableName)
+  public void insertRecords(final JdbcDatabase database,
+                            final List<AirbyteRecordMessage> records,
+                            final String schemaName,
+                            final String tempTableName)
       throws Exception {
     final String tableName = String.format("%s.%s", schemaName, tempTableName);
     final String columns = String.format("(%s, %s, %s)",
@@ -148,7 +151,10 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String sourceTableName, final String destinationTableName) {
+  public String copyTableQuery(final JdbcDatabase database,
+                               final String schemaName,
+                               final String sourceTableName,
+                               final String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 

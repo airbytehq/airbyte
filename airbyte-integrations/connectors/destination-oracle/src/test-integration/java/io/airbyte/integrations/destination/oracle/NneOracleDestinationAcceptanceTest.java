@@ -41,7 +41,8 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
             "oracle.net.encryption_types_client=( "
             + algorithm + " )");
 
-    final String network_service_banner = "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
+    final String network_service_banner =
+        "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
     final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),

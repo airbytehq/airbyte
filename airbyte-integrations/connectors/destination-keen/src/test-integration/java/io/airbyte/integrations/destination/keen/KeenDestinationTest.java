@@ -58,7 +58,11 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace, final JsonNode streamSchema) throws Exception {
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
     final String accentStrippedStreamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
     collectionsToDelete.add(accentStrippedStreamName);
 

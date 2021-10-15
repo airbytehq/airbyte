@@ -131,7 +131,9 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(final Map<String, WriteConfig> writeConfigs, final ConfiguredAirbyteCatalog catalog, final Consumer<AirbyteMessage> outputRecordCollector) {
+    public CsvConsumer(final Map<String, WriteConfig> writeConfigs,
+                       final ConfiguredAirbyteCatalog catalog,
+                       final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");

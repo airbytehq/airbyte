@@ -34,7 +34,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tmpTableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 

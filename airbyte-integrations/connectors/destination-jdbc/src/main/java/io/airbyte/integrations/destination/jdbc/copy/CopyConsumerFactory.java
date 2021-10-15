@@ -112,7 +112,10 @@ public class CopyConsumerFactory {
     };
   }
 
-  private static void closeAsOneTransaction(final List<StreamCopier> streamCopiers, boolean hasFailed, final JdbcDatabase db, final SqlOperations sqlOperations)
+  private static void closeAsOneTransaction(final List<StreamCopier> streamCopiers,
+                                            boolean hasFailed,
+                                            final JdbcDatabase db,
+                                            final SqlOperations sqlOperations)
       throws Exception {
     Exception firstException = null;
     try {

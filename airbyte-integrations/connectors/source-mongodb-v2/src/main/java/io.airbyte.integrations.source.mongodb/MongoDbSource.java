@@ -175,7 +175,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
-  private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database, final List<String> columnNames, final String tableName, final Bson filter) {
+  private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,
+                                                     final List<String> columnNames,
+                                                     final String tableName,
+                                                     final Bson filter) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));

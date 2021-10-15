@@ -44,7 +44,8 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void startTracked() throws Exception {
 
     final var endpoint = dynamodbDestinationConfig.getEndpoint();
-    final AWSCredentials awsCreds = new BasicAWSCredentials(dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
+    final AWSCredentials awsCreds =
+        new BasicAWSCredentials(dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
     AmazonDynamoDB amazonDynamodb = null;
 
     if (endpoint.isEmpty()) {

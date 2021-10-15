@@ -114,7 +114,9 @@ public class JdbcBufferedConsumerFactory {
     return defaultDestSchema;
   }
 
-  private static OnStartFunction onStartFunction(final JdbcDatabase database, final SqlOperations sqlOperations, final List<WriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(final JdbcDatabase database,
+                                                 final SqlOperations sqlOperations,
+                                                 final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -148,7 +150,9 @@ public class JdbcBufferedConsumerFactory {
     };
   }
 
-  private static OnCloseFunction onCloseFunction(final JdbcDatabase database, final SqlOperations sqlOperations, final List<WriteConfig> writeConfigs) {
+  private static OnCloseFunction onCloseFunction(final JdbcDatabase database,
+                                                 final SqlOperations sqlOperations,
+                                                 final List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
       // copy data
       if (!hasFailed) {

@@ -122,7 +122,8 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(final BigQueryDatabase database, final List<TableInfo<CommonField<StandardSQLTypeName>>> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(final BigQueryDatabase database,
+                                                          final List<TableInfo<CommonField<StandardSQLTypeName>>> tableInfos) {
     return Collections.emptyMap();
   }
 
@@ -146,7 +147,9 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         sourceOperations.getQueryParameter(cursorFieldType, cursor));
   }
 
-  private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database, final String sqlQuery, final QueryParameterValue... params) {
+  private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,
+                                                               final String sqlQuery,
+                                                               final QueryParameterValue... params) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery, params);
