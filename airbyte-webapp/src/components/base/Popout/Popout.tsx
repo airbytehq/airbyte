@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import styled from "styled-components";
+import styled, { CSSObject } from "styled-components";
 import { useToggle } from "react-use";
 import { ActionMeta } from "react-select";
 
@@ -43,10 +43,6 @@ type PopoutProps = DropdownProps & {
   }) => ReactNode;
 };
 
-const selectStyles = {
-  control: (provided: Value) => ({ ...provided, minWidth: 240, marginTop: 8 }),
-};
-
 const Popout: React.FC<PopoutProps> = ({
   onChange,
   targetComponent,
@@ -86,7 +82,18 @@ const Popout: React.FC<PopoutProps> = ({
         isClearable={false}
         menuIsOpen
         placeholder={null}
-        styles={selectStyles}
+        styles={{
+          control: (provided: Value) => ({
+            ...provided,
+            minWidth: 240,
+            marginTop: 8,
+          }),
+          menuPortal: (base: CSSObject): CSSObject => ({
+            ...base,
+            ...(!props.isSearchable ? { transform: "translateY(-37px)" } : {}),
+            zIndex: 9999,
+          }),
+        }}
         tabSelectsValue={false}
         {...props}
         onChange={onSelectChange}

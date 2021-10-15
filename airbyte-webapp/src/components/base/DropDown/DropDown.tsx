@@ -55,14 +55,13 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}
-      {...props}
       styles={{
         menuPortal: (base: CSSObject) => ({
           ...base,
           zIndex: 9999,
-          ...(!props.isSearchable ? { transform: "translateY(-35px)" } : {}),
         }),
       }}
+      {...props}
       value={currentValue}
       components={components}
     />
