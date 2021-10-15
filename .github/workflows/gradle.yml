@@ -103,8 +103,14 @@ jobs:
           HOME: /home/ubuntu
           CHANGE_MINIKUBE_NONE_USER: true
 
+      - name: Describe kube nodes
+        run: kubectl describe nodes
+
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+
+      - name: Describe kube nodes
+        run: kubectl describe nodes
 
 #      - name: Run Logging Tests
 #        run: ./tools/bin/cloud_storage_logging_test.sh
