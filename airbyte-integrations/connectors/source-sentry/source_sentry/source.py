@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import Events, Issues, ProjectDetail
+from .streams import Events, Issues, ProjectDetail, Projects
 
 
 # Source
@@ -34,7 +34,15 @@ class SourceSentry(AbstractSource):
         stream_args = {
             "authenticator": TokenAuthenticator(token=config["auth_token"]),
             "hostname": config.get("hostname", self.DEFAULT_HOST),
+        }
+        project_stream_args = {
+            **stream_args,
             "organization": config["organization"],
             "project": config["project"],
         }
-        return [Events(**stream_args), Issues(**stream_args)]
+        return [
+            Events(**project_stream_args),
+            Issues(**project_stream_args),
+            ProjectDetail(**project_stream_args),
+            Projects(**stream_args),
+        ]

@@ -15,11 +15,9 @@ class SentryStream(HttpStream, ABC):
     URL_TEMPLATE = "https://{hostname}/api/{api_version}/"
     primary_key = "id"
 
-    def __init__(self, hostname: str, organization: str, project: str, **kwargs):
+    def __init__(self, hostname: str, **kwargs):
         super().__init__(**kwargs)
         self._url_base = self.URL_TEMPLATE.format(hostname=hostname, api_version=self.API_VERSION)
-        self._organization = organization
-        self._project = project
 
     @property
     def url_base(self) -> str:
@@ -44,6 +42,11 @@ class SentryStream(HttpStream, ABC):
 
 
 class Events(SentryStream):
+    def __init__(self, organization: str, project: str, **kwargs):
+        super().__init__(**kwargs)
+        self._organization = organization
+        self._project = project
+
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -62,6 +65,11 @@ class Events(SentryStream):
 
 
 class Issues(SentryStream):
+    def __init__(self, organization: str, project: str, **kwargs):
+        super().__init__(**kwargs)
+        self._organization = organization
+        self._project = project
+
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -80,6 +88,11 @@ class Issues(SentryStream):
 
 
 class ProjectDetail(SentryStream):
+    def __init__(self, organization: str, project: str, **kwargs):
+        super().__init__(**kwargs)
+        self._organization = organization
+        self._project = project
+
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -90,3 +103,13 @@ class ProjectDetail(SentryStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
+
+
+class Projects(SentryStream):
+    def path(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return "projects/"

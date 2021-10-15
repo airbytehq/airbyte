@@ -5,7 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_sentry.streams import Events, Issues, ProjectDetail, SentryStream
+from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStream
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
 
@@ -14,12 +14,11 @@ INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "te
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(SentryStream, "path", "test_endpoint")
-    mocker.patch.object(SentryStream, "primary_key", "test_primary_key")
     mocker.patch.object(SentryStream, "__abstractmethods__", set())
 
 
 def test_next_page_token(patch_base_class):
-    stream = SentryStream(**INIT_ARGS)
+    stream = SentryStream(hostname="sentry.io")
     resp = MagicMock()
     cursor = "next_page_num"
     resp.links = {"next": {"results": "true", "cursor": cursor}}
@@ -43,7 +42,7 @@ def next_page_token_inputs():
 
 @pytest.mark.parametrize("response", next_page_token_inputs())
 def test_next_page_token_is_none(patch_base_class, response):
-    stream = SentryStream(**INIT_ARGS)
+    stream = SentryStream(hostname="sentry.io")
     inputs = {"response": response}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
@@ -64,4 +63,10 @@ def test_issues_path():
 def test_project_detail_path():
     stream = ProjectDetail(**INIT_ARGS)
     expected = "projects/test-org/test-project/"
+    assert stream.path() == expected
+
+
+def test_projects_path():
+    stream = Projects(hostname="sentry.io")
+    expected = "projects/"
     assert stream.path() == expected
