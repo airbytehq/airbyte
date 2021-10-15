@@ -5,6 +5,7 @@
 package io.airbyte.workers;
 
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -48,17 +49,23 @@ public class WorkerApp {
   private final SecretsHydrator secretsHydrator;
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
+  private final WorkerEnvironment workerEnvironment;
+  private final String airbyteVersion;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
                    SecretsHydrator secretsHydrator,
                    WorkflowServiceStubs temporalService,
-                   MaxWorkersConfig maxWorkers) {
+                   MaxWorkersConfig maxWorkers,
+                   WorkerEnvironment workerEnvironment,
+                   String airbyteVersion) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
+    this.workerEnvironment = workerEnvironment;
+    this.airbyteVersion = airbyteVersion;
   }
 
   public void start() {
@@ -94,9 +101,8 @@ public class WorkerApp {
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot));
-
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, airbyteVersion),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, airbyteVersion));
     factory.start();
   }
 
@@ -107,7 +113,7 @@ public class WorkerApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, configs.getTemporalWorkerPorts());
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -140,7 +146,14 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
-    new WorkerApp(workspaceRoot, processFactory, secretsHydrator, temporalService, configs.getMaxWorkers()).start();
+    new WorkerApp(
+        workspaceRoot,
+        processFactory,
+        secretsHydrator,
+        temporalService,
+        configs.getMaxWorkers(),
+        configs.getWorkerEnvironment(),
+        configs.getAirbyteVersion()).start();
   }
 
 }
