@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class SentryStream(HttpStream, ABC):
     API_VERSION = "0"
     URL_TEMPLATE = "https://{hostname}/api/{api_version}/"
+    primary_key = "id"
 
     def __init__(self, hostname: str, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
@@ -43,8 +44,6 @@ class SentryStream(HttpStream, ABC):
 
 
 class Events(SentryStream):
-    primary_key = "id"
-
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -63,8 +62,6 @@ class Events(SentryStream):
 
 
 class Issues(SentryStream):
-    primary_key = "id"
-
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -83,8 +80,6 @@ class Issues(SentryStream):
 
 
 class ProjectDetail(SentryStream):
-    primary_key = "id"
-
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
