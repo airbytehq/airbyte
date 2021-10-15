@@ -103,15 +103,19 @@ jobs:
           HOME: /home/ubuntu
 
       - name: Describe kube nodes
-        run: |
-         kubectl cluster-info --context kind-chart-testing
-         kubectl describe nodes
+        run: kubectl describe nodes
+        env:
+          USER: ubuntu
+          HOME: /home/ubuntu
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
 
       - name: Describe kube nodes
         run: kubectl describe nodes
+        env:
+          USER: ubuntu
+          HOME: /home/ubuntu
 
 #      - name: Run Logging Tests
 #        run: ./tools/bin/cloud_storage_logging_test.sh
