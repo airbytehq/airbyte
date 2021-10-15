@@ -55,20 +55,20 @@ This Source is capable of syncing the following core Streams:
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| :--------------- | :----------- | :---- |
+| `string`         | `string`     |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Debuped + History Sync | Yes | Enabled according to type of destination |
-| Namespaces | No |  |
+| Feature                              | Supported?\(Yes/No\) | Notes                                    |
+| :----------------------------------- | :------------------- | :--------------------------------------- |
+| Full Refresh Sync                    | Yes                  |                                          |
+| Incremental - Append Sync            | Yes                  |                                          |
+| Incremental - Debuped + History Sync | Yes                  | Enabled according to type of destination |
+| Namespaces                           | No                   |                                          |
 
 ### Performance considerations
 
@@ -85,12 +85,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
   * API Token
     * Zendesk API Token 
     * Zendesk Email 
-<<<<<<< HEAD
-  * oAuth2
-    * Access Token
-=======
   * oAuth2 \(not implemented\)
->>>>>>> origin
 
 ### Setup guide
 
@@ -100,14 +95,10 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ### CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-<<<<<<< HEAD
-| :------ | :--------  | :-----       | :------ |
-| `0.1.2` | 2021-10-01 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2 access tocken |
+| Version | Date       | Pull Request                                           | Subject                                                |
+| :------ | :--------- | :----------------------------------------------------- | :----------------------------------------------------- |
+| `0.1.3` | 2021-10-01 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2                                         |
+| `0.1.2` | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | fixed comments stream                                  |
 | `0.1.1` | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787) | fixed incremental logic for the ticket_comments stream |
-=======
-| :--- | :--- | :--- | :--- |
-| `0.1.1` | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787) | fixed incremental logic for the ticket\_comments stream |
->>>>>>> origin
-| `0.1.0` | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861) | created CDK native zendesk connector |
+| `0.1.0` | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861) | created CDK native zendesk connector                   |
 
