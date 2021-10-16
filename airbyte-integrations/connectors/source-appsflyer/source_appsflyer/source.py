@@ -193,6 +193,8 @@ class RawDataMixin:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_datetime_string()
         params["to"] = stream_slice.get(self.cursor_field + '_end').to_datetime_string()
+        # use currency set in the app settings to align with aggregate api currency. 
+        params["currency"] = "preferred"
 
         return params
 

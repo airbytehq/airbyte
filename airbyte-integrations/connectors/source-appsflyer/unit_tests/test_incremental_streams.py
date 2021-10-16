@@ -56,22 +56,30 @@ def test_cursor_field(patch_incremental_base_class, mocker, class_, expected_cur
 
 
 @pytest.mark.parametrize(
-    ("class_", "cursor_field", "date_only", "additional_fields", "retargeting"),
+    ("class_", "cursor_field", "date_only", "additional_fields", "retargeting", "currency"),
     [
-        (InAppEvents, "event_time", False, fields.raw_data.additional_fields, None),
-        (RetargetingInAppEvents, "event_time", False, fields.raw_data.additional_fields, True),
-        (UninstallEvents, "event_time", False, fields.uninstall_events.additional_fields, None),
-        (Installs, "install_time", False, fields.raw_data.additional_fields, None),
-        (RetargetingConversions, "install_time", False, fields.raw_data.additional_fields, True),
-        (PartnersReport, "date", True, None, None),
-        (DailyReport, "date", True, None, None),
-        (GeoReport, "date", True, None, None),
-        (RetargetingPartnersReport, "date", True, None, True),
-        (RetargetingDailyReport, "date", True, None, True),
-        (RetargetingGeoReport, "date", True, None, True),
+        (InAppEvents, "event_time", False, fields.raw_data.additional_fields, None, "preferred"),
+        (RetargetingInAppEvents, "event_time", False, fields.raw_data.additional_fields, True, "preferred"),
+        (UninstallEvents, "event_time", False, fields.uninstall_events.additional_fields, None, "preferred"),
+        (Installs, "install_time", False, fields.raw_data.additional_fields, None, "preferred"),
+        (RetargetingConversions, "install_time", False, fields.raw_data.additional_fields, True, "preferred"),
+        (PartnersReport, "date", True, None, None, None),
+        (DailyReport, "date", True, None, None, None),
+        (GeoReport, "date", True, None, None, None),
+        (RetargetingPartnersReport, "date", True, None, True, None),
+        (RetargetingDailyReport, "date", True, None, True, None),
+        (RetargetingGeoReport, "date", True, None, True, None),
     ],
 )
-def test_request_params(mocker, class_, cursor_field, date_only, additional_fields, retargeting):
+def test_request_params(
+    mocker,
+    class_,
+    cursor_field,
+    date_only,
+    additional_fields,
+    retargeting,
+    currency
+):
     timezone = "UTC"
     def __init__(self):
         self.api_token = "secret"
@@ -103,6 +111,8 @@ def test_request_params(mocker, class_, cursor_field, date_only, additional_fiel
         expected_params["additional_fields"] = (",").join(additional_fields)
     if retargeting:
         expected_params["reattr"] = retargeting
+    if currency:
+        expected_params["currency"] = currency
     assert stream.request_params(**inputs) == expected_params
 
 
