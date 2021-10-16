@@ -119,19 +119,19 @@
       "type": ["null", "string"]
     },
     "is_do_not_email": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "is_do_not_call": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "opted_out": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "is_reviewed": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "is_starred": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "created_at": {
       "type": ["null", "string"],

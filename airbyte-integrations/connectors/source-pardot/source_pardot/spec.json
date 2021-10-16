@@ -42,12 +42,6 @@
         "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false.",
         "type": "boolean",
         "default": false
-      },
-      "api_type": {
-        "description": "Unless you know that you are transferring a very small amount of data, prefer using the BULK API. This will help avoid using up all of your API call quota with Salesforce. Valid values are BULK or REST.",
-        "type": "string",
-        "enum": ["BULK", "REST"],
-        "default": "BULK"
       }
     }
   }

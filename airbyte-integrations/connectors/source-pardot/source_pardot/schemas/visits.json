@@ -15,30 +15,7 @@
       "type": ["null", "integer"]
     },
     "visitor_page_views": {
-      "type": ["null", "object"],
-      "properties": {
-        "visitor_page_view": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "object"],
-            "properties": {
-              "url": {
-                "type": ["null", "string"]
-              },
-              "created_at": {
-                "type": ["null", "string"],
-                "format": "date-time"
-              },
-              "id": {
-                "type": ["integer"]
-              },
-              "title": {
-                "type": ["null", "string"]
-              }
-            }
-          }
-        }
-      }
+      "type": ["null", "object"]
     },
     "first_visitor_page_view_at": {
       "type": ["null", "string"],

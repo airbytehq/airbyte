@@ -12,7 +12,7 @@
       "type": ["integer"]
     },
     "opted_out": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "created_at": {
       "type": ["null", "string"],

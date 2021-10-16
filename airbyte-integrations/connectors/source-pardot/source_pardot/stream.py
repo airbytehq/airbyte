@@ -24,7 +24,9 @@ class PardotStream(HttpStream, ABC):
         results = response.json().get('result', {})
         record_count = results.get('total_results')
         if record_count and record_count > 0:
-            return {self.filter_param: results[self.data_key][-1][self.cursor_field]}
+            # The result may be a dict if one record is returned
+            if isinstance(results[self.data_key], list):
+                return {self.filter_param: results[self.data_key][-1][self.cursor_field]}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -50,7 +52,10 @@ class PardotStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         results = response.json().get('result', {})
         record_count = results.get('total_results')
-        if record_count and record_count > 0 and self.data_key in results:
+        # The result may be a dict if one record is returned
+        if self.data_key in results and isinstance(results[self.data_key], dict):
+            yield results[self.data_key]
+        elif record_count and record_count > 0 and self.data_key in results:
             yield from results[self.data_key]
     
     def path(
@@ -133,6 +138,7 @@ class ListMembership(PardotUpdatedAtReplicationStream):
         params.update({'sort_by': 'id', 'sort_order': 'ascending'})
         return params
     
+# PardotFullReplicationStreams
 class Opportunities(PardotStream):
     object_name = "opportunity"
     data_key = "opportunity"
@@ -145,16 +151,24 @@ class Users(PardotStream):
     filter_param = "created_after"
     cursor_field = "created_at"
 
+# PardotChildStreams
 class PardotChildStream(PardotStream):
+    max_ids_per_request = 200
     def __init__(self, parent_stream: PardotStream, **kwargs):
         super().__init__(**kwargs)
         self.parent_stream = parent_stream
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        id_list = []
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             records = self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
             ids = [str(record['id']) for record in records]
+            id_list.extend(ids)
+
+        while id_list:
+            ids = id_list[:self.max_ids_per_request]
             yield ','.join(ids)
+            id_list = id_list[self.max_ids_per_request:]
 
 class Visits(PardotChildStream):
     object_name = "visit"
@@ -165,11 +179,7 @@ class Visits(PardotChildStream):
     is_integer_state = True
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        results = response.json().get('result', {})
-        record_count = results.get('total_results')
-        if self.data_key in results:
-            self.offset += 200
-            return {'offset': self.offset}
+        return {}
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)

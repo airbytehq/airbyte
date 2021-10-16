@@ -17,43 +17,7 @@
       "format": "date-time"
     },
     "assigned_to": {
-      "type": ["null", "object"],
-      "properties": {
-        "user": {
-          "type": ["null", "object"],
-          "properties": {
-            "role": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "email": {
-              "type": ["null", "string"]
-            },
-            "last_name": {
-              "type": ["null", "string"]
-            },
-            "account": {
-              "type": ["null", "integer"]
-            },
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "job_tile": {
-              "type": ["null", "string"]
-            },
-            "first_name": {
-              "type": ["null", "string"]
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        }
-      }
+      "type": ["null", "object"]
     }
   }
 }
