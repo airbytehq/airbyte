@@ -89,6 +89,7 @@
         "description": "The Access Key ID of the AWS IAM Role to use for pulling messages",
         "type": "string",
         "examples": ["xxxxxHRNxxx3TBxxxxxx"],
+        "airbyte_secret": true,
         "order": 7
       },
       "secret_key": {
@@ -96,6 +97,7 @@
         "description": "The Secret Key of the AWS IAM Role to use for pulling messages",
         "type": "string",
         "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
+        "airbyte_secret": true,
         "order": 8
       }
     }
