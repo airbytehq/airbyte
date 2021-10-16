@@ -10,6 +10,8 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +19,7 @@ import java.util.function.Consumer;
 
 public class ElasticsearchAirbyteMessageConsumerFactory {
 
+    private static final Logger log = LoggerFactory.getLogger(ElasticsearchAirbyteMessageConsumerFactory.class);
     private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
     private static final int MAX_BATCH_SIZE = 10000;
 
@@ -28,13 +31,14 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
         return new BufferedStreamConsumer(
                 outputRecordCollector,
                 onStartFunction(connection, writeConfigs),
-                recordWriterFunction(connection, writeConfigs),
+                recordWriterAppendFunction(connection, writeConfigs),
                 onCloseFunction(connection),
                 catalog,
                 isValidFunction(connection),
                 MAX_BATCH_SIZE);
     }
 
+    // is there any json node that wont fit in the index?
     private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(ElasticsearchConnection connection) {
         return jsonNode -> {
             return true;
@@ -45,9 +49,15 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
         return aBoolean -> connection.close();
     }
 
-    private static RecordWriter recordWriterFunction(ElasticsearchConnection connection, Map<String, ElasticsearchWriteConfig> writeConfigs) {
+    private static RecordWriter recordWriterAppendFunction(ElasticsearchConnection connection, Map<String, ElasticsearchWriteConfig> writeConfigs) {
         return (pair, records) -> {
-            connection.writeBulk(streamToIndexName(pair.getNamespace(), pair.getName()), records);
+            log.info("writing {} records in bulk operation", records.size());
+            var result = connection.createDocuments(streamToIndexName(pair.getNamespace(), pair.getName()), records);
+            if (result.errors()){
+                log.error("failed to write bulk records");
+            } else {
+                log.info("bulk write took: {}ms", result.ingestTook());
+            }
         };
     }
 

@@ -1,13 +1,14 @@
 package io.airbyte.integrations.destination.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -23,8 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ElasticsearchDestinationTest {
 
     private static final Logger log = LoggerFactory.getLogger(ElasticsearchDestinationTest.class);
-
-    private ObjectMapper mapper = new ObjectMapper();
 
     private static ElasticsearchContainer container;
     private static final String NAMESPACE = "public";
@@ -88,6 +87,10 @@ public class ElasticsearchDestinationTest {
         final List<JsonNode> actualRecords =
                 connection.getRecords(ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(NAMESPACE, STREAM_NAME));
 
+        for (var record :
+                actualRecords) {
+            log.info("actual record: {}", record);
+        }
         assertEquals(
                 expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
                 actualRecords);

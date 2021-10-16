@@ -18,8 +18,14 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'org.projectlombok:lombok:1.18.20'
 
-    //testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    //testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+    // https://eclipse-ee4j.github.io/jsonp/
+    implementation 'jakarta.json:jakarta.json-api:2.0.1'
+
+    // Needed even if using Jackson to have an implementation of the Jsonp object model
+    // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+    // https://github.com/eclipse-ee4j/jsonp
+    implementation 'org.glassfish:jakarta.json:2.0.1'
 
     // MIT
     // https://www.testcontainers.org/
