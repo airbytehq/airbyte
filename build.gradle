@@ -121,7 +121,6 @@ allprojects {
                 ":airbyte-config:init",
                 ":airbyte-db:lib",
                 ":airbyte-migration",
-                ":airbyte-integrations:bases:base-normalization",
                 ":airbyte-scheduler:app",
                 ":airbyte-workers",
                 ":airbyte-server",
