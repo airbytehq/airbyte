@@ -560,3 +560,9 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-hiring
   sourceType: api
+- sourceDefinitionId: eaf2379c-94b3-45ee-93f3-ab8d5e25a8c0
+  name: Azure Table Storage
+  dockerRepository: airbyte/source-azure-table
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/azure-table
+  sourceType: database
