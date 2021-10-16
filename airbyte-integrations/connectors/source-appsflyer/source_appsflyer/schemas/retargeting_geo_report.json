@@ -116,7 +116,7 @@
                 "number"
             ]
         },
-        "account_login_sales_in_usd": {
+        "account_login_sales": {
             "type": [
                 "null",
                 "number"
@@ -134,7 +134,7 @@
                 "number"
             ]
         },
-        "af_complete_registration_sales_in_usd": {
+        "af_complete_registration_sales": {
             "type": [
                 "null",
                 "number"
@@ -152,7 +152,7 @@
                 "number"
             ]
         },
-        "checkout_success_sales_in_usd": {
+        "checkout_success_sales": {
             "type": [
                 "null",
                 "number"
@@ -170,7 +170,7 @@
                 "number"
             ]
         },
-        "create_product_complete_sales_in_usd": {
+        "create_product_complete_sales": {
             "type": [
                 "null",
                 "number"
@@ -188,7 +188,7 @@
                 "number"
             ]
         },
-        "init_appsflyer_id_sales_in_usd": {
+        "init_appsflyer_id_sales": {
             "type": [
                 "null",
                 "number"
