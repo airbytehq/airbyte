@@ -5,8 +5,8 @@
 import json
 from typing import Any, Dict, Mapping
 
-import pytest
 import pendulum
+import pytest
 from airbyte_cdk import AirbyteLogger
 from source_zuora.source import (
     SourceZuora,
@@ -18,7 +18,6 @@ from source_zuora.source import (
     ZuoraSubmitJob,
 )
 from source_zuora.zuora_auth import ZuoraAuthenticator
-from source_zuora.zuora_endpoint import get_url_base
 from source_zuora.zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
@@ -34,15 +33,9 @@ def client(config: Dict):
     """
     Create client by extending config dict with authenticator and url_base
     """
-    url_base = get_url_base(config["tenant_endpoint"])
-    authenticator = ZuoraAuthenticator(
-        token_refresh_endpoint=f"{url_base}/oauth/token",
-        client_id=config["client_id"],
-        client_secret=config["client_secret"],
-        refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
-    )
-    config["authenticator"] = authenticator
-    config["url_base"] = url_base
+    auth = ZuoraAuthenticator(config)
+    config["authenticator"] = auth.get_auth()
+    config["url_base"] = auth.url_base
     return config
 
 
@@ -106,15 +99,15 @@ class TestZuora:
         connection = SourceZuora.check_connection(self, logger=AirbyteLogger, config=self.config)
         assert connection == (True, None)
 
-    @pytest.mark.parametrize("config", [(config),(unlimited_config)], ids=["LIVE", "UNLIMITED"])
+    @pytest.mark.parametrize("config", [(config), (unlimited_config)], ids=["LIVE", "UNLIMITED"])
     def test_list_all_zuora_objects(self, config):
         """
         Test retrieves all the objects (streams) available from Zuora Account and checks if test_stream is in the list.
         """
         zuora_objects_list = ZuoraListObjects(config).read_records(sync_mode=None)
         assert self.test_stream in zuora_objects_list
-    
-    @pytest.mark.parametrize("config", [(config),(unlimited_config)], ids=["LIVE", "UNLIMITED"])
+
+    @pytest.mark.parametrize("config", [(config), (unlimited_config)], ids=["LIVE", "UNLIMITED"])
     def test_excluded_streams_are_not_in_the_list(self, config):
         """
         Test retrieves all the objects (streams) available from Zuora Account and checks if excluded streams are not in the list.
@@ -128,7 +121,7 @@ class TestZuora:
         for excluded_stream in ZUORA_EXCLUDED_STREAMS:
             assert False if excluded_stream in generated_stream_class_names else True
 
-    @pytest.mark.parametrize("config", [(config),(unlimited_config)], ids=["LIVE", "UNLIMITED"])
+    @pytest.mark.parametrize("config", [(config), (unlimited_config)], ids=["LIVE", "UNLIMITED"])
     def test_get_json_schema(self, config):
         """
         Test of getting schema from Zuora endpoint, check converted JsonSchema Types are correct.
@@ -183,7 +176,7 @@ class TestZuora:
         # If the query is correctly build using connector class return True
         assert example_query == test_query
 
-    @pytest.mark.parametrize("config", [(config),(unlimited_config)], ids=["LIVE", "UNLIMITED"])
+    @pytest.mark.parametrize("config", [(config), (unlimited_config)], ids=["LIVE", "UNLIMITED"])
     def test_submit_job(self, config):
         """
         Test submits the job to the server and returns the `job_id` as confirmation that the job was submitted successfully.
@@ -201,7 +194,7 @@ class TestZuora:
         # Return True if we have submited job_id
         assert len(list(job_id)) > 0
 
-    @pytest.mark.parametrize("config", [(config),(unlimited_config)], ids=["LIVE", "UNLIMITED"])
+    @pytest.mark.parametrize("config", [(config), (unlimited_config)], ids=["LIVE", "UNLIMITED"])
     def test_check_job_status(self, config):
         """
         Test checks submited job for status, if status is "completed" job_data_url will contain URL for jsonl dataFile,
@@ -224,7 +217,7 @@ class TestZuora:
         # Return True if there is a URL leading to a file
         assert "https://" in list(job_data_url)[0]
 
-    @pytest.mark.parametrize("config", [(config),(unlimited_config)], ids=["LIVE", "UNLIMITED"])
+    @pytest.mark.parametrize("config", [(config), (unlimited_config)], ids=["LIVE", "UNLIMITED"])
     def test_get_job_result(self, config):
         """
         Test reads the dataFile from URL of submited, checked and successfully completed job.

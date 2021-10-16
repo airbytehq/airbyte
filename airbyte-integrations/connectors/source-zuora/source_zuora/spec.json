@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zuora Connector Configuration",
     "type": "object",
-    "required": ["start_date", "client_id", "client_secret", "tenant_endpoint", "data_query"],
+    "required": ["start_date", "tenant_endpoint", "data_query", "authorization"],
     "properties": {
       "start_date": {
         "type": "string",
@@ -18,21 +18,6 @@
         "default": 90,
         "minimum": 1,
         "maximum": 364
-      },
-      "client_id": {
-        "type": "string",
-        "description": "Client ID",
-        "airbyte_secret": true
-      },
-      "client_secret": {
-        "type": "string",
-        "description": "Client Secret",
-        "airbyte_secret": true
-      },
-      "access_token": {
-        "type": "string",
-        "description": "(Optional) If you already have the access_token generated previously, use it here",
-        "airbyte_secret": true
       },
       "tenant_endpoint": {
         "title": "Tenant Endpoint Location",
@@ -59,13 +44,75 @@
           "Unlimited"
         ],
         "default": "Live"
+      },
+      "authorization": {
+        "title": "Zuora Authorization Method",
+        "type": "object",
+        "default": "auth_app_creds",
+        "oneOf": [
+          {
+            "title": "OAuth 2.0",
+            "type": "object",
+            "required": ["client_id","client_secret","access_token"],
+            "properties": {
+              "authorization": {
+                "type": "string",
+                "const": "oauth2.0",
+                "default": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "description": "Client ID",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "description": "Client Secret",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Client ID & Client Secret",
+            "type": "object",
+            "required": ["client_id", "client_secret"],
+            "properties": {
+              "authorization": {
+                "type": "string",
+                "const": "auth_app_creds",
+                "default": "auth_app_creds",
+                "enum": ["auth_app_creds"],
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "Your OAuth user Client ID",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "Your OAuth user Client Secret",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       }
     }
   },
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": [],
+      "rootObject": ["authorization", 0],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["access_token"]]
     }

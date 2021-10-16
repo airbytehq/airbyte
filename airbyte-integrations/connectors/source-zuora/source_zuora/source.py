@@ -16,7 +16,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .zuora_auth import ZuoraAuthenticator
-from .zuora_endpoint import get_url_base
 from .zuora_errors import (
     ZOQLQueryCannotProcessObject,
     ZOQLQueryFailed,
@@ -500,16 +499,11 @@ class SourceZuora(AbstractSource):
         """
         Testing connection availability for the connector by granting the token.
         """
+        # Define authentication method from user's input
+        auth = ZuoraAuthenticator(config).get_auth()
 
-        # Define the endpoint from user's config
-        url_base = get_url_base(config["tenant_endpoint"])
         try:
-            ZuoraAuthenticator(
-                token_refresh_endpoint=f"{url_base}/oauth/token",
-                client_id=config["client_id"],
-                client_secret=config["client_secret"],
-                refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
-            ).get_auth_header()
+            auth.get_auth_header()
             return True, None
         except Exception as e:
             return False, e
@@ -519,20 +513,11 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run by building stream classes dynamically.
         """
+        # Define authentication method from user's input
+        auth = ZuoraAuthenticator(config)
 
-        # Define the endpoint from user's config
-        url_base = get_url_base(config["tenant_endpoint"])
-
-        # Get Authotization Header with Access Token
-        authenticator = ZuoraAuthenticator(
-            token_refresh_endpoint=f"{url_base}/oauth/token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
-        )
-
-        config["authenticator"] = authenticator
-        config["url_base"] = url_base
+        config["authenticator"] = auth.get_auth()
+        config["url_base"] = auth.url_base
 
         # List available objects (streams) names from Zuora
         # Example: zuora_stream_names = ["account", "country", "user"]
