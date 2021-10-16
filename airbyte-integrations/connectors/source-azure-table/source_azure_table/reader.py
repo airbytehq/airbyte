@@ -12,7 +12,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 from azure.data.tables import TableClient, TableServiceClient
 
-from . import constants
+from source_azure_table.constants import constants
 
 
 class Reader:
