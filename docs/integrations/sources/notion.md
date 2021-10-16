@@ -57,6 +57,6 @@ Please register on Notion and follow this [docs](https://developers.notion.com/d
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2021-10-17 | [9999](https://github.com/airbytehq/airbyte/pull/9999) | Initial Release |
+| 0.1.0 | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092) | Initial Release |
 
 
