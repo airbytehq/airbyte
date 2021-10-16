@@ -111,7 +111,7 @@ definitions:
       message:
         type: string
   AirbyteCatalog:
-    description: Airbyte stream schema catalog
+    description: A collection of each AirbyteStream in a Source.
     type: object
     additionalProperties: true
     required:
@@ -122,6 +122,15 @@ definitions:
         items:
           "$ref": "#/definitions/AirbyteStream"
   AirbyteStream:
+    description:
+      'This struct represents "facts" about the data. It describes the schema and metadata about how the
+      data can be synced (e.g. can this stream be replicated incrementally?). It is a "read-only" struct insofar as it
+      is describes the data schema, but does not represent any choices the end user has made on how to configure the
+      sync. That happens in the ConfiguredAirbyteStream.
+
+      Note: all fields in this struct that refer to a field in the data schema are represented as arrays. This is because
+      each describes a path into the data. e.g. if the data looks like { "a": { "b": "c" } and b was the field we
+      wanted to reference, we would do so as: ["a", "b"].'
     type: object
     additionalProperties: true
     required:
@@ -131,36 +140,54 @@ definitions:
       # - supported_sync_modes
     properties:
       name:
+        description: Stream name
         type: string
-        description: Stream's name.
       json_schema:
-        description: Stream schema using Json Schema specs.
+        description: The schema of the data in the stream, represented as JSONSchema (https://json-schema.org/)
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       supported_sync_modes:
+        description: The sync modes that this stream is compatible with
         type: array
         items:
           "$ref": "#/definitions/SyncMode"
       source_defined_cursor:
-        description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
+        description:
+          "If the implementation of the source defines the cursor field, then any other cursor field inputs
+          will be ignored. If it does not, either the user-provided one is used, or the default one is used as a backup.
+          Reference: https://docs.airbyte.io/understanding-airbyte/catalog#logic-for-resolving-the-cursor-field for
+          more information on cursor field logic."
         type: boolean
       default_cursor_field:
-        description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+        description:
+          "Path to the field that will be used to determine if a record is new or modified since the last
+          sync. If the user provides a cursor_field or if source_defined_cursor is true, this field will be ignored.
+          If source_defined_cursor is false and default_cursor_field is not set, then a user will be required to set
+          their own cursor field when trying to replicate this stream incrementally.
+          Reference: https://docs.airbyte.io/understanding-airbyte/catalog#logic-for-resolving-the-cursor-field for
+          more information on cursor field logic."
         type: array
         items:
           type: string
       source_defined_primary_key:
-        description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+        description:
+          If empy or not set, the source does not define the primary key. If this value is non-empty the
+          source defines the primary key. Each element in the top-level array refers to a single field in the data--
+          this allows for composite primary keys. Each field is then represented by its own array (see the note in
+          description of AirbyteStream for more information). If not provided by the source, the end user will have to
+          specify the primary key themself.
         type: array
         items:
           type: array
           items:
             type: string
       namespace:
-        description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
+        description:
+          Optional Source-defined namespace. Use for grouping streams by a namspace. This is primarily used
+          by database sources to group tables by schema.
         type: string
   ConfiguredAirbyteCatalog:
-    description: Airbyte stream schema catalog
+    description: A collection of ConfiguredAirbyteStreams for a Connection.
     type: object
     additionalProperties: true
     required:
@@ -171,6 +198,11 @@ definitions:
         items:
           "$ref": "#/definitions/ConfiguredAirbyteStream"
   ConfiguredAirbyteStream:
+    description:
+      'While the AirbyteStream represents "facts" about the data, the ConfiguredAirbyteStream, encapsulates
+      the full configuration for "how" the data will be synced. While AirbyteStream told us whether a Stream supported
+      incremental replication or not, the ConfiguredAirbyteStream is where we specify whether we will sync the Stream as
+      incremental or full refresh. It wraps an AirbyteStream, which it uses as reference.'
     type: object
     additionalProperties: true
     required:
@@ -179,20 +211,33 @@ definitions:
       - destination_sync_mode
     properties:
       stream:
+        description: The stream to which this configuration is being applied
         "$ref": "#/definitions/AirbyteStream"
       sync_mode:
+        description: The sync mode that will be used to pull data from the source. (e.g. incremetnal or full refresh)
         "$ref": "#/definitions/SyncMode"
         default: full_refresh
       cursor_field:
-        description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+        description:
+          "Path to the field that will be used to determine if a record is new or modified since the last
+          sync. This field is REQUIRED if `sync_mode` is `incremental` and default_cursor_field and
+          source_defined_cursor_field are falsey. This field will override default_cursor_field. If
+          source_defined_cursor_field is true, this field will be ignored.
+          Reference: https://docs.airbyte.io/understanding-airbyte/catalog#logic-for-resolving-the-cursor-field for more
+          information on cursor field logic."
         type: array
         items:
           type: string
       destination_sync_mode:
+        description:
+          The sync mode that will be used to write data to the destination. (e.g. append, overwrite,
+          append_dedupe)
         "$ref": "#/definitions/DestinationSyncMode"
         default: append
       primary_key:
-        description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+        description:
+          Paths to the fields that will be used as primary key. This field is REQUIRED if
+          `destination_sync_mode` is `*_dedup` and source_defined_primary_key is not set. Otherwise it is ignored.
         type: array
         items:
           type: array
