@@ -338,6 +338,7 @@ class SourceAppsflyer(AbstractSource):
         return start_date
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config["timezone"] = config.get("timezone", "UTC")
         timezone = pendulum.timezone(config.get("timezone", "UTC"))
         earliest_date = pendulum.today(timezone) - timedelta(days=90)
         start_date = parse_date(config.get("start_date") or pendulum.today(timezone), timezone)
