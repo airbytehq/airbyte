@@ -310,8 +310,7 @@ public interface SyncWorkflow {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           NormalizationRunnerFactory.create(
               destinationLauncherConfig.getDockerImage(),
-              processFactory,
-              airbyteVersion),
+              processFactory),
           workerEnvironment);
     }
 
@@ -393,8 +392,7 @@ public interface SyncWorkflow {
           new DbtTransformationRunner(
               processFactory, NormalizationRunnerFactory.create(
                   destinationLauncherConfig.getDockerImage(),
-                  processFactory,
-                  airbyteVersion)));
+                  processFactory)));
     }
 
   }
