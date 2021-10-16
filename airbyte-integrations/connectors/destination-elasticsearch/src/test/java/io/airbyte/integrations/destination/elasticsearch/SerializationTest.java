@@ -23,22 +23,19 @@ public class SerializationTest {
     String indexPrefix = "data";
     String apiKeyId = "foo";
     String apiKeySecret = "bar";
-    boolean ssl = false;
 
     node
         .put("host", host)
         .put("port", port)
         .put("indexPrefix", indexPrefix)
         .put("apiKeyId", apiKeyId)
-        .put("apiKeySecret", apiKeySecret)
-        .put("ssl", ssl);
+        .put("apiKeySecret", apiKeySecret);
 
     ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
     Assertions.assertEquals(host, config.getHost());
     Assertions.assertEquals(port, config.getPort());
     Assertions.assertEquals(apiKeyId, config.getApiKeyId());
     Assertions.assertEquals(apiKeySecret, config.getApiKeySecret());
-    Assertions.assertEquals(ssl, config.isSsl());
   }
 
 }
