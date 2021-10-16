@@ -2,17 +2,15 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
+
 import re
-from datetime import datetime
 from typing import Dict, Iterable, List
-from uuid import UUID
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 from azure.data.tables import TableClient, TableServiceClient
 
-from source_azure_table.constants import constants
+from .constants import constants
 
 
 class Reader:

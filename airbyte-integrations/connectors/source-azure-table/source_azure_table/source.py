@@ -20,7 +20,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 
-from source_azure_table.reader import Reader
+from .reader import Reader
 
 
 class SourceAzureTable(Source):
