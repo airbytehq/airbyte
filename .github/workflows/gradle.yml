@@ -119,7 +119,7 @@ jobs:
         env:
           USER: ubuntu
           HOME: /home/ubuntu
-# rerun to induce failure 3
+# rerun to induce failure 4
 #      - name: Run Logging Tests
 #        run: ./tools/bin/cloud_storage_logging_test.sh
 #        env:
