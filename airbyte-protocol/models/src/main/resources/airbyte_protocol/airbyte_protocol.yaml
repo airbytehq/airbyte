@@ -126,11 +126,7 @@ definitions:
       'This struct represents "facts" about the data. It describes the schema and metadata about how the
       data can be synced (e.g. can this stream be replicated incrementally?). It is a "read-only" struct insofar as it
       is describes the data schema, but does not represent any choices the end user has made on how to configure the
-      sync. That happens in the ConfiguredAirbyteStream.
-
-      Note: all fields in this struct that refer to a field in the data schema are represented as arrays. This is because
-      each describes a path into the data. e.g. if the data looks like { "a": { "b": "c" } and b was the field we
-      wanted to reference, we would do so as: ["a", "b"].'
+      sync. That happens in the ConfiguredAirbyteStream.'
     type: object
     additionalProperties: true
     required:
@@ -166,9 +162,7 @@ definitions:
           their own cursor field when trying to replicate this stream incrementally.
           Reference: https://docs.airbyte.io/understanding-airbyte/catalog#logic-for-resolving-the-cursor-field for
           more information on cursor field logic."
-        type: array
-        items:
-          type: string
+        "$ref": "#/definitions/StreamField"
       source_defined_primary_key:
         description:
           If empy or not set, the source does not define the primary key. If this value is non-empty the
@@ -178,9 +172,7 @@ definitions:
           specify the primary key themself.
         type: array
         items:
-          type: array
-          items:
-            type: string
+          "$ref": "#/definitions/StreamField"
       namespace:
         description:
           Optional Source-defined namespace. Use for grouping streams by a namspace. This is primarily used
@@ -225,9 +217,7 @@ definitions:
           source_defined_cursor_field is true, this field will be ignored.
           Reference: https://docs.airbyte.io/understanding-airbyte/catalog#logic-for-resolving-the-cursor-field for more
           information on cursor field logic."
-        type: array
-        items:
-          type: string
+        "$ref": "#/definitions/StreamField"
       destination_sync_mode:
         description:
           The sync mode that will be used to write data to the destination. (e.g. append, overwrite,
@@ -240,9 +230,15 @@ definitions:
           `destination_sync_mode` is `*_dedup` and source_defined_primary_key is not set. Otherwise it is ignored.
         type: array
         items:
-          type: array
-          items:
-            type: string
+          "$ref": "#/definitions/StreamField"
+  StreamField:
+    description:
+      'All fields in this struct that refer to a field in the data schema are represented as arrays. This is
+      because each describes a path into the data. e.g. if the data looks like { "a": { "b": "c" } } and b was the
+      field we wanted to reference, we would do so as: [ "a", "b" ].'
+    type: array
+    items:
+      type: string
   SyncMode:
     type: string
     enum:
@@ -270,9 +266,7 @@ definitions:
           If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials']
           If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
           "
-        type: array
-        items:
-          type: string
+        "$ref": "#/definitions/StreamField"
       oauthFlowInitParameters:
         description:
           "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
@@ -284,9 +278,7 @@ definitions:
         type: array
         items:
           description: A list of strings denoting a pointer into the rootObject for where to find this property
-          type: array
-          items:
-            type: string
+          "$ref": "#/definitions/StreamField"
       oauthFlowOutputParameters:
         description:
           "Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters.
@@ -295,9 +287,7 @@ definitions:
         type: array
         items:
           description: A list of strings denoting a pointer into the rootObject for where to find this property
-          type: array
-          items:
-            type: string
+          "$ref": "#/definitions/StreamField"
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object
