@@ -1,0 +1,92 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+import json
+import re
+from datetime import datetime
+from typing import Dict, Iterable, List
+from uuid import UUID
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteStream
+from azure.data.tables import TableClient, TableServiceClient
+
+from . import constants
+
+
+class Reader:
+    """ This reader reads data from given table """
+
+    def __init__(self, logger: AirbyteLogger, config: dict):
+        self.logger = logger
+        self.account_name = config[constants.azure_storage_account_name_key_name]
+        self.access_key = config[constants.azure_storage_access_key_key_name]
+        self.endpoint_suffix = config[constants.azure_storage_endpoint_suffix_key_name]
+        self.endpoint = "{}.table.{}".format(self.account_name, self.endpoint_suffix)
+        self.connection_string = "DefaultEndpointsProtocol=https;AccountName={};AccountKey={};EndpointSuffix={}".format(
+            self.account_name, self.access_key, self.endpoint_suffix
+        )
+
+    def get_table_service(self) -> TableServiceClient:
+        try:
+            return TableServiceClient.from_connection_string(conn_str=self.connection_string)
+        except Exception as e:
+            raise Exception(f"An exception occurred: {str(e)}")
+
+    def get_table_client(self, table_name: str) -> TableClient:
+        try:
+            if not table_name:
+                raise Exception("An exception occurred: table name is not valid.")
+            return TableClient.from_connection_string(self.connection_string, table_name=table_name)
+        except Exception as e:
+            raise Exception(f"An exception occurred: {str(e)}")
+
+    def get_streams(self) -> List[AirbyteStream]:
+        try:
+            streams = []
+            teable_client = self.get_table_service()
+            tables_iterator = teable_client.list_tables(results_per_page=constants.results_per_page)
+            for table in tables_iterator:
+                stream_name = table.name
+                stream = AirbyteStream(name=stream_name, json_schema=self.get_typed_schema)
+                stream.supported_sync_modes = ["full_refresh"]
+                streams.append(stream)
+            self.logger.info(f"Total {streams.count} streams found.")
+            return streams
+        except Exception as e:
+            raise Exception(f"An exception occurred: {str(e)}")
+
+    @property
+    def get_typed_schema(self) -> object:
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {"data": {"type": "object"}, "additionalProperties": {"type": "boolean"}},
+        }
+
+    @property
+    def stream_name(self) -> str:
+        return str(self._client.table_name)
+
+    @property
+    def stream_url(self) -> str:
+        return str(self._client.url)
+
+    def read(self, client: TableClient, filter_query=None, parameters=None) -> Iterable:
+        if filter_query is None:
+            return client.list_entities()
+        else:
+            return client.query_entities(filter=filter_query, results_per_page=constants.results_per_page)
+
+    def get_filter_query(self, stream_name: str, state: Dict[str, any]) -> str:
+        watermark = state["stream_name"]
+        if watermark is None or watermark is dict:
+            return None
+        else:
+            return f"Timestamp gt datetime'{watermark}'"
+
+    @staticmethod
+    def is_table_name_valid(self, name: str) -> bool:
+        """Validates the tables name against regex - https://docs.microsoft.com/en-us/rest/api/storageservices/Understanding-the-Table-Service-Data-Model?redirectedfrom=MSDN#characters-disallowed-in-key-fields"""
+        return re.match(constants.table_name_regex, name)
