@@ -43,15 +43,11 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self._url_base = config["url_base"]
-        self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
-        self.source_data = config["data_query"]
         self._config = config
 
     @property
     def url_base(self) -> str:
-        return self._url_base
+        return self._config["url_base"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """ Abstractmethod HTTPStream CDK dependency """
@@ -61,12 +57,12 @@ class ZuoraStream(HttpStream, ABC):
         """ Abstractmethod HTTPStream CDK dependency """
         return {}
 
-    def base_query_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def base_query_params(self) -> MutableMapping[str, Any]:
         """
         Returns base query parameters for default CDK request_json_body method
         """
         params = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
-        if self.source_data == "Unlimited":
+        if self._config["data_query"] == "Unlimited":
             params["sourceData"] = "DATAHUB"
         return params
 
@@ -160,7 +156,7 @@ class ZuoraObjectsBase(ZuoraBase):
 
     @property
     def state_checkpoint_interval(self) -> int:
-        return self.window_in_days
+        return self._config["window_in_days"]
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
@@ -242,20 +238,20 @@ class ZuoraObjectsBase(ZuoraBase):
             ...
         """
 
-        start_date = pendulum.parse(self.start_date).astimezone()
+        start_date = pendulum.parse(self._config["start_date"]).astimezone()
         end_date = pendulum.now().astimezone()
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
             state = stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field))
-            start_date = pendulum.parse(state) if state else self.start_date
+            start_date = pendulum.parse(state) if state else self._config["start_date"]
 
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, end_date)
         date_slices = []
 
         while start_date <= end_date:
-            end_date_slice = start_date.add(days=self.window_in_days)
+            end_date_slice = start_date.add(days=self._config["window_in_days"])
             date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
             start_date = end_date_slice
 
@@ -357,7 +353,7 @@ class ZuoraSubmitJob(ZuoraStream):
         """
         Override of default CDK method to return SQL-like query and use it in _send_request method.
         """
-        params = self.base_query_params(stream_state=None)
+        params = self.base_query_params()
         params["query"] = self.query
         return params
 
