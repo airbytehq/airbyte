@@ -2,6 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+        "email_id": {"type": "integer"},
         "sent": {"type": "integer"},
         "delivered": {"type": "integer"},
         "total_clicks": {"type": "integer"},
