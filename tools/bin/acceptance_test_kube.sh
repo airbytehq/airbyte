@@ -51,7 +51,7 @@ pod_sweeper_logs () { echo "pod sweeper logs:" && kubectl logs deployment.apps/a
 worker_logs () { echo "worker logs:" && kubectl logs deployment.apps/airbyte-worker; }
 describe_pods () { echo "describe pods:" && kubectl describe pods; }
 describe_nodes () { echo "describe nodes:" && kubectl describe nodes; }
-print_all_logs () { server_logs; scheduler_logs; worker_logs; pod_sweeper_logs; describe_nodes; }
+print_all_logs () { server_logs; scheduler_logs; worker_logs; pod_sweeper_logs; describe_nodes; describe_pods; }
 
 trap "echo 'kube logs:' && print_all_logs" EXIT
 
