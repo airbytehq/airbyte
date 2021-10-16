@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -31,6 +31,9 @@ class ZuoraStream(HttpStream, ABC):
     Parent class for all other classes, except of SourceZuora.
     """
 
+    # Instance of native CDK logger
+    logger = AirbyteLogger()
+
     # Define primary key
     primary_key = "id"
 
@@ -40,10 +43,10 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self.logger = AirbyteLogger()
         self._url_base = config["url_base"]
         self.start_date = config["start_date"]
         self.window_in_days = config["window_in_days"]
+        self.source_data = config["data_query"]
         self._config = config
 
     @property
@@ -62,7 +65,10 @@ class ZuoraStream(HttpStream, ABC):
         """
         Returns base query parameters for default CDK request_json_body method
         """
-        return {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
+        params = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
+        if self.source_data == "Unlimited":
+            params["sourceData"] = "DATAHUB"
+        return params
 
 
 class ZuoraBase(ZuoraStream):

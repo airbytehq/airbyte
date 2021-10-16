@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zuora Connector Configuration",
     "type": "object",
-    "required": ["start_date", "client_id", "client_secret", "tenant_endpoint"],
+    "required": ["start_date", "client_id", "client_secret", "tenant_endpoint", "data_query"],
     "properties": {
       "start_date": {
         "type": "string",
@@ -29,6 +29,11 @@
         "description": "Client Secret",
         "airbyte_secret": true
       },
+      "access_token": {
+        "type": "string",
+        "description": "(Optional) If you already have the access_token generated previously, use it here",
+        "airbyte_secret": true
+      },
       "tenant_endpoint": {
         "title": "Tenant Endpoint Location",
         "type": "string",
@@ -44,15 +49,25 @@
           "EU API Sandbox",
           "EU Central Sandbox"
         ]
+      },
+      "data_query": {
+        "title": "Data Query Type",
+        "type": "string",
+        "description": "Choose between `Live`, or `Unlimited` - the optimized, replicated database at 12 hours freshness for high volume extraction <a href=\"https://knowledgecenter.zuora.com/Central_Platform/Query/Data_Query/A_Overview_of_Data_Query#Query_Processing_Limitations\">Link</a>",
+        "enum": [
+          "Live",
+          "Unlimited"
+        ],
+        "default": "Live"
       }
-    },
-    "authSpecification": {
-      "auth_type": "oauth2.0",
-      "oauth2Specification": {
-        "rootObject": [],
-        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-        "oauthFlowOutputParameters": [["client_id"], ["client_secret"]]
-      }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"]]
     }
   }
 }

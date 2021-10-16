@@ -6,7 +6,7 @@
 import sys
 
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
 
 
 class Error(Exception):
