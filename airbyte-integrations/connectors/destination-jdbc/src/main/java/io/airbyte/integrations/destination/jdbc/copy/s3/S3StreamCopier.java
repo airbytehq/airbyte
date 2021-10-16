@@ -46,15 +46,14 @@ public abstract class S3StreamCopier implements StreamCopier {
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
-  // It is optimal to write every 10,000,000 records to a new file. This will make it easier to work with files and
-  // speed up the recording of large amounts of data.
+  // It is optimal to write every 10,000,000 records (BUTCH_SIZE * DEFAULT_PART) to a new file.
+  // The average size of such a file will be about 1 GB.
+  // This will make it easier to work with files and speed up the recording of large amounts of data.
   // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
-  public static final int DEFAULT_PART = 1000;
-  public static final String UNDERSCORE = "_";
-
-  public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
-  public final Map<String, Integer> fileNamePartsMap = new HashMap<>();
+  public static final int MAX_PER_FILE_PART_COUNT = 1000;
+  private int currentFileSuffix = 0;
+  private int currentFileSuffixPartCount = 0;
 
   protected final AmazonS3 s3Client;
   protected final S3Config s3Config;
@@ -100,28 +99,17 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   private String getS3StagingFileName() {
-    String result = 0 + UNDERSCORE + streamName;
-    if (filePrefixIndexMap.containsKey(s3FileName)) {
-      result = getS3StagingFileNamePart(filePrefixIndexMap.get(s3FileName));
+    if (currentFileSuffixPartCount < MAX_PER_FILE_PART_COUNT) {
+      // when the number of parts for the file has not reached the max,
+      // keep using the same file (i.e. keep the suffix)
+      currentFileSuffixPartCount += 1;
     } else {
-      filePrefixIndexMap.put(s3FileName, 0);
-      fileNamePartsMap.put(result, 0);
+      // otherwise, reset the part counter, and use a different file
+      // (i.e. update the suffix)
+      currentFileSuffix += 1;
+      currentFileSuffixPartCount = 0;
     }
-    return result;
-  }
-
-  private String getS3StagingFileNamePart(Integer prefixIndex) {
-    String result = prefixIndex + UNDERSCORE + s3FileName;
-    if (fileNamePartsMap.containsKey(result) && fileNamePartsMap.get(result) < DEFAULT_PART) {
-      var partIndex = fileNamePartsMap.get(result) + 1;
-      fileNamePartsMap.put(result, partIndex);
-    } else {
-      int index = prefixIndex + 1;
-      result = index + UNDERSCORE + s3FileName;
-      filePrefixIndexMap.put(s3FileName, index);
-      fileNamePartsMap.put(result, 0);
-    }
-    return result;
+    return String.format("%s_%05d", s3FileName, currentFileSuffix);
   }
 
   @Override
@@ -231,7 +219,6 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
-    filePrefixIndexMap.clear();
   }
 
   protected static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {

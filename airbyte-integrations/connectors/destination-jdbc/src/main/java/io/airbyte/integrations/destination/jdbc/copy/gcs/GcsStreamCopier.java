@@ -11,13 +11,17 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,26 +34,20 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
-  // It is optimal to write every 10,000,000 records to a new file. This will make it easier to work with files and
-  // speed up the recording of large amounts of data.
+  // It is optimal to write every 10,000,000 records (BUTCH_SIZE * DEFAULT_PART) to a new file.
+  // The average size of such a file will be about 1 GB.
+  // This will make it easier to work with files and speed up the recording of large amounts of data.
   // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
-  public static final int DEFAULT_PART = 1000;
-  public static final String UNDERSCORE = "_";
-
-  public final Map<String, Integer> filePrefixIndexMap = new HashMap<>();
-  public final Map<String, Integer> fileNamePartsMap = new HashMap<>();
+  public static final int MAX_PER_FILE_PART_COUNT = 1000;
+  private int currentFileSuffix = 0;
+  private int currentFileSuffixPartCount = 0;
 
   private final Storage storageClient;
   private final GcsConfig gcsConfig;
@@ -91,28 +89,17 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   private String getGcsStagingFileName() {
-    String result = 0 + UNDERSCORE + streamName;
-    if (filePrefixIndexMap.containsKey(streamName)) {
-      result = getGcsStagingFileNamePart(filePrefixIndexMap.get(streamName));
+    if (currentFileSuffixPartCount < MAX_PER_FILE_PART_COUNT) {
+      // when the number of parts for the file has not reached the max,
+      // keep using the same file (i.e. keep the suffix)
+      currentFileSuffixPartCount += 1;
     } else {
-      filePrefixIndexMap.put(streamName, 0);
-      fileNamePartsMap.put(result, 0);
+      // otherwise, reset the part counter, and use a different file
+      // (i.e. update the suffix)
+      currentFileSuffix += 1;
+      currentFileSuffixPartCount = 0;
     }
-    return result;
-  }
-
-  private String getGcsStagingFileNamePart(Integer prefixIndex) {
-    String result = prefixIndex + UNDERSCORE + streamName;
-    if (fileNamePartsMap.containsKey(result) && fileNamePartsMap.get(result) < DEFAULT_PART) {
-      var partIndex = fileNamePartsMap.get(result) + 1;
-      fileNamePartsMap.put(result, partIndex);
-    } else {
-      int index = prefixIndex + 1;
-      result = index + UNDERSCORE + streamName;
-      filePrefixIndexMap.put(streamName, index);
-      fileNamePartsMap.put(result, 0);
-    }
-    return result;
+    return String.format("%s_%05d", streamName, currentFileSuffix);
   }
 
   @Override
