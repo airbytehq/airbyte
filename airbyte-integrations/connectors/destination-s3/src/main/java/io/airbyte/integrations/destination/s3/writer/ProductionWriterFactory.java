@@ -34,6 +34,8 @@ public class ProductionWriterFactory implements S3WriterFactory {
 
     if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       final AirbyteStream stream = configuredStream.getStream();
+      LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
+
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
       final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
