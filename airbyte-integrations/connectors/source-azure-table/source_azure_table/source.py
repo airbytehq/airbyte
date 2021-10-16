@@ -102,7 +102,7 @@ class SourceAzureTable(Source):
                     reader = Reader(logger, config)
                     table_client = reader.get_table_client(stream_name)
                     logger.info(f"Reading data from stream '{stream_name}'")
-                    
+
                     for row in reader.read(table_client, None):
                         # Timestamp property is in metadata object
                         # row.metadata.timestamp
