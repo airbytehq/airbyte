@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": false,
+  "properties": {
+    "start": { "type": "string" },
+    "end": { "type": ["null", "string"] }
+  }
+}
+
+

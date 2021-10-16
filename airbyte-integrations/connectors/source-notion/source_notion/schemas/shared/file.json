@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "enum": ["file", "external"]
+    },
+    "caption": {
+      "type": "array",
+      "items": {
+        "$ref": "rich_text.json"
+      }
+    },
+    "external": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "expiry_time": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
+

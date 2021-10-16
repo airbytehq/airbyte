@@ -89,6 +89,7 @@
     * [Mixpanel](integrations/sources/mixpanel.md)
     * [Mongo DB](integrations/sources/mongodb-v2.md)
     * [MySQL](integrations/sources/mysql.md)
+    * [Notion](integrations/sources/notion.md)
     * [Okta](integrations/sources/okta.md)
     * [Oracle DB](integrations/sources/oracle.md)
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
