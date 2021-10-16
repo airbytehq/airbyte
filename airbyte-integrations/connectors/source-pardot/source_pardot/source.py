@@ -20,7 +20,8 @@ from .stream import (
     Users,
     Visitors,
     VisitorActivities,
-    Visits
+    Visits,
+    EmailStats
 )
 
 # Source
@@ -42,6 +43,7 @@ class SourcePardot(AbstractSource):
         args = {'authenticator': auth, 'config': config}
         
         visitors = Visitors(**args)
+        visitor_activities = VisitorActivities(**args)
 
         return [
             EmailClicks(**args),
@@ -52,8 +54,8 @@ class SourcePardot(AbstractSource):
             ProspectAccounts(**args),
             Prospects(**args),
             Users(**args),
-            VisitorActivities(**args),
+            visitor_activities,
             visitors,
-            Visits(parent_stream=visitors, **args), 
-            #TODO: Implement Visit and email stat streams
+            Visits(parent_stream=visitors, **args),
+            EmailStats(parent_stream=visitor_activities, **args)
         ]

@@ -22,8 +22,8 @@
         "default_cursor_field": ["id"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -42,8 +42,8 @@
         "default_cursor_field": ["id"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -55,7 +55,7 @@
             "id": { "type": ["integer"] },
             "list_id": { "type": ["integer"] },
             "prospect_id": { "type": ["integer"] },
-            "opted_out": { "type": ["null", "integer"] },
+            "opted_out": { "type": ["null", "boolean"] },
             "created_at": { "type": ["null", "string"], "format": "date-time" },
             "updated_at": { "type": ["null", "string"], "format": "date-time" }
           }
@@ -65,8 +65,8 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -91,8 +91,8 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -119,8 +119,8 @@
         "default_cursor_field": ["created_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -133,31 +133,7 @@
             "name": { "type": ["null", "string"] },
             "updated_at": { "type": ["null", "string"], "format": "date-time" },
             "created_at": { "type": ["null", "string"], "format": "date-time" },
-            "assigned_to": {
-              "type": ["null", "object"],
-              "properties": {
-                "user": {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "role": { "type": ["null", "string"] },
-                    "created_at": {
-                      "type": ["null", "string"],
-                      "format": "date-time"
-                    },
-                    "email": { "type": ["null", "string"] },
-                    "last_name": { "type": ["null", "string"] },
-                    "account": { "type": ["null", "integer"] },
-                    "id": { "type": ["null", "integer"] },
-                    "job_tile": { "type": ["null", "string"] },
-                    "first_name": { "type": ["null", "string"] },
-                    "updated_at": {
-                      "type": ["null", "string"],
-                      "format": "date-time"
-                    }
-                  }
-                }
-              }
-            }
+            "assigned_to": { "type": ["null", "object"] }
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -165,8 +141,8 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -219,11 +195,11 @@
               "format": "date-time"
             },
             "crm_url": { "type": ["null", "string"] },
-            "is_do_not_email": { "type": ["null", "boolean"] },
-            "is_do_not_call": { "type": ["null", "boolean"] },
-            "opted_out": { "type": ["null", "boolean"] },
-            "is_reviewed": { "type": ["null", "boolean"] },
-            "is_starred": { "type": ["null", "boolean"] },
+            "is_do_not_email": { "type": ["null", "integer"] },
+            "is_do_not_call": { "type": ["null", "integer"] },
+            "opted_out": { "type": ["null", "integer"] },
+            "is_reviewed": { "type": ["null", "integer"] },
+            "is_starred": { "type": ["null", "integer"] },
             "created_at": { "type": ["null", "string"], "format": "date-time" },
             "updated_at": { "type": ["null", "string"], "format": "date-time" }
           }
@@ -233,8 +209,8 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -258,8 +234,8 @@
         "default_cursor_field": ["created_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -296,8 +272,8 @@
         "default_cursor_field": ["id"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -324,8 +300,8 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -338,26 +314,7 @@
             "visitor_id": { "type": ["null", "integer"] },
             "prospect_id": { "type": ["null", "integer"] },
             "visitor_page_view_count": { "type": ["null", "integer"] },
-            "visitor_page_views": {
-              "type": ["null", "object"],
-              "properties": {
-                "visitor_page_view": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "url": { "type": ["null", "string"] },
-                      "created_at": {
-                        "type": ["null", "string"],
-                        "format": "date-time"
-                      },
-                      "id": { "type": ["integer"] },
-                      "title": { "type": ["null", "string"] }
-                    }
-                  }
-                }
-              }
-            },
+            "visitor_page_views": { "type": ["null", "object"] },
             "first_visitor_page_view_at": {
               "type": ["null", "string"],
               "format": "date-time"
@@ -381,8 +338,40 @@
         "default_cursor_field": ["id"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "email_stats",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "sent": { "type": "integer" },
+            "delivered": { "type": "integer" },
+            "total_clicks": { "type": "integer" },
+            "unique_clicks": { "type": "integer" },
+            "soft_bounced": { "type": "integer" },
+            "hard_bounced": { "type": "integer" },
+            "opt_outs": { "type": "integer" },
+            "spam_complaints": { "type": "integer" },
+            "opens": { "type": "integer" },
+            "unique_opens": { "type": "integer" },
+            "delivery_rate": { "type": "string" },
+            "opens_rate": { "type": "string" },
+            "click_through_rate": { "type": "string" },
+            "unique_click_through_rate": { "type": "string" },
+            "click_open_ratio": { "type": "string" },
+            "opt_out_rate": { "type": "string" },
+            "spam_complaint_rate": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
