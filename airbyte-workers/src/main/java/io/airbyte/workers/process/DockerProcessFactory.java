@@ -38,7 +38,7 @@ public class DockerProcessFactory implements ProcessFactory {
   private final String networkName;
   private final Path imageExistsScriptPath;
 
-  public DockerProcessFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
+  public DockerProcessFactory(final Path workspaceRoot, final String workspaceMountSource, final String localMountSource, final String networkName) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
@@ -55,14 +55,14 @@ public class DockerProcessFactory implements ProcessFactory {
         throw new RuntimeException(String.format("Could not set %s to executable", scriptPath));
       }
       return scriptPath;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public Process create(String jobId,
-                        int attempt,
+  public Process create(final String jobId,
+                        final int attempt,
                         final Path jobRoot,
                         final String imageName,
                         final boolean usesStdin,
@@ -81,7 +81,7 @@ public class DockerProcessFactory implements ProcessFactory {
         Files.createDirectory(jobRoot);
       }
 
-      for (Map.Entry<String, String> file : files.entrySet()) {
+      for (final Map.Entry<String, String> file : files.entrySet()) {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
@@ -127,7 +127,7 @@ public class DockerProcessFactory implements ProcessFactory {
       LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd));
 
       return new ProcessBuilder(cmd).start();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new WorkerException(e.getMessage(), e);
     }
   }
@@ -138,7 +138,7 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @VisibleForTesting
-  boolean checkImageExists(String imageName) throws WorkerException {
+  boolean checkImageExists(final String imageName) throws WorkerException {
     try {
       final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -151,7 +151,7 @@ public class DockerProcessFactory implements ProcessFactory {
       } else {
         return process.exitValue() == 0;
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

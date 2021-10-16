@@ -63,10 +63,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
@@ -90,9 +90,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
@@ -103,7 +104,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -115,7 +116,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws SQLException, InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException, InterruptedException {
     return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
         connection -> connection.createStatement()
             .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
@@ -124,7 +125,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
@@ -137,7 +138,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
   }

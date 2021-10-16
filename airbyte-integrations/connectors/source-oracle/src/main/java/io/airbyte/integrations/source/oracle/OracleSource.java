@@ -52,10 +52,10 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
-    List<String> additionalParameters = new ArrayList<>();
+  public JsonNode toDatabaseConfig(final JsonNode config) {
+    final List<String> additionalParameters = new ArrayList<>();
 
-    Protocol protocol = config.has("encryption")
+    final Protocol protocol = config.has("encryption")
         ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
         : Protocol.TCP;
     final String connectionString = String.format(
@@ -82,21 +82,21 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       }
     }
     if (!additionalParameters.isEmpty()) {
-      String connectionParams = String.join(";", additionalParameters);
+      final String connectionParams = String.join(";", additionalParameters);
       configBuilder.put("connection_properties", connectionParams);
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private Protocol obtainConnectionProtocol(JsonNode encryption, List<String> additionalParameters) {
-    String encryptionMethod = encryption.get("encryption_method").asText();
+  private Protocol obtainConnectionProtocol(final JsonNode encryption, final List<String> additionalParameters) {
+    final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {
         return Protocol.TCP;
       }
       case "client_nne" -> {
-        String algorithm = encryption.get("encryption_algorithm").asText();
+        final String algorithm = encryption.get("encryption_algorithm").asText();
         additionalParameters.add("oracle.net.encryption_client=REQUIRED");
         additionalParameters.add("oracle.net.encryption_types_client=( " + algorithm + " )");
         return Protocol.TCP;
@@ -104,7 +104,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       case "encrypted_verify_certificate" -> {
         try {
           convertAndImportCertificate(encryption.get("ssl_certificate").asText());
-        } catch (IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException e) {
           throw new RuntimeException("Failed to import certificate into Java Keystore");
         }
         additionalParameters.add("javax.net.ssl.trustStore=" + KEY_STORE_FILE_PATH);
@@ -117,9 +117,9 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         "Failed to obtain connection protocol from config " + encryption.asText());
   }
 
-  private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -128,8 +128,8 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
@@ -137,14 +137,14 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
-    List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-    for (String schema : schemas) {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+    for (final String schema : schemas) {
       LOGGER.debug("Discovering schema: {}", schema);
       internals.addAll(super.discoverInternal(database, schema));
     }
 
-    for (TableInfo<CommonField<JDBCType>> info : internals) {
+    for (final TableInfo<CommonField<JDBCType>> info : internals) {
       LOGGER.debug("Found table: {}", info.getName());
     }
 
@@ -160,7 +160,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     return Set.of();
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = OracleSource.sshWrappedSource();
     LOGGER.info("starting source: {}", OracleSource.class);
     new IntegrationRunner(source).run(args);

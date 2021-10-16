@@ -42,12 +42,12 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) {
+  public AirbyteCatalog discover(final JsonNode config) {
     return Jsons.clone(CATALOG);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final Predicate<Long> anotherRecordPredicate =
         config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
 
