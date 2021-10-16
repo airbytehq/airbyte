@@ -1,7 +1,10 @@
-from typing import Any, List, Mapping, Optional, Tuple
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 
 import requests
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
+
 
 class Pardot:
     def __init__(
@@ -26,7 +29,7 @@ class Pardot:
         self.is_sandbox = is_sandbox is True or (isinstance(is_sandbox, str) and is_sandbox.lower() == "true")
         self.start_date = start_date
         self.pardot_business_unit_id = pardot_business_unit_id
-    
+
     def login(self):
         login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
         login_body = {
