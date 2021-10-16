@@ -1,21 +1,34 @@
 # Elasticsearch
 
-TODO: update this doc
-
 ## Sync overview
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
+Elasticsearch is a Lucene based search engine that's a type of NoSql storage.  
+Documents are created in an `index`, similar to a `table`in a relation database.
+
+The output schema matches the input schema of a source. 
+Each source `stream` becomes a destination `index`.  
+For example, in with a relational database source -  
+The DB table name is mapped to the destination index. 
+The DB table columns become fields in the destination document.  
+Each row becomes a document in the destination index.  
 
 ### Data type mapping
 
+[See Elastic documentation for detailed information about the field types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
 
 | Integration Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
+| text | string | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html)
+| date | date-time | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
+| object | object | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/object.html)
+| array | array | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/array.html)
+| boolean | boolean | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/boolean.html)
+| numeric | integer | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
+| numeric | number | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
 
 
 ### Features
@@ -24,29 +37,31 @@ This section should contain a table with the following format:
 
 | Feature | Supported?(Yes/No) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
+| Full Refresh Sync | no | does not support overwriting yet |
+| Incremental Sync | yes |  |
+| Replicate Incremental Deletes | no |  |
+| SSL connection | yes |  |
+| SSH Tunnel Support | ?? |  |
 
 ### Performance considerations
 
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+Batch/bulk writes are performed. Large records may impact performance.  
+The connector should be enhanced to support variable batch sizes.
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+* Elasticsearch >= 7.x
+* Configuration 
+  * Host name
+  * Port number [defaults to 9002]
+  * Api key ID [optional]
+  * Api key secret [optional]
+* If authentication is used, the user should have permission to create an index if it doesn't exist, and/or be able to `create` documents
+
 
 ### Setup guide
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
-
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+Enter the hostname and/or other configuration information ... 
+#### TODO: more info, screenshots, etc...

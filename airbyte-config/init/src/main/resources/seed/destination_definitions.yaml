@@ -95,3 +95,8 @@
   dockerRepository: airbyte/destination-mongodb
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
+- destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
+  name: Elasticsearch
+  dockerRepository: airbyte/destination-elasticsearch
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/elasticsearch

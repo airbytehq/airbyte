@@ -13,7 +13,6 @@ public class ConnectorConfiguration {
     private int port;
     private String apiKeyId;
     private String apiKeySecret;
-    private boolean ssl;
 
     public ConnectorConfiguration() {}
     public static ConnectorConfiguration FromJsonNode(JsonNode config) {
@@ -36,10 +35,6 @@ public class ConnectorConfiguration {
         return this.apiKeySecret;
     }
 
-    public boolean isSsl() {
-        return this.ssl;
-    }
-
     public void setHost(String host) {
         this.host = host;
     }
@@ -54,10 +49,6 @@ public class ConnectorConfiguration {
 
     public void setApiKeySecret(String apiKeySecret) {
         this.apiKeySecret = apiKeySecret;
-    }
-
-    public void setSsl(boolean ssl) {
-        this.ssl = ssl;
     }
 
     public boolean equals(final Object o) {
@@ -75,7 +66,7 @@ public class ConnectorConfiguration {
         final Object this$password = this.getApiKeySecret();
         final Object other$password = other.getApiKeySecret();
         if (!Objects.equals(this$password, other$password)) return false;
-        return this.isSsl() == other.isSsl();
+        return true;
     }
 
     protected boolean canEqual(final Object other) {
@@ -92,11 +83,10 @@ public class ConnectorConfiguration {
         result = result * PRIME + ($username == null ? 43 : $username.hashCode());
         final Object $password = this.getApiKeySecret();
         result = result * PRIME + ($password == null ? 43 : $password.hashCode());
-        result = result * PRIME + (this.isSsl() ? 79 : 97);
         return result;
     }
 
     public String toString() {
-        return "ConnectorConfiguration(host=" + this.getHost() + ", port=" + this.getPort() + ", username=" + this.getApiKeyId() + ", ssl=" + this.isSsl() + ")";
+        return "ConnectorConfiguration(host=" + this.getHost() + ", port=" + this.getPort() + ", username=" + this.getApiKeyId() + ")";
     }
 }
