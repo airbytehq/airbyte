@@ -12,7 +12,7 @@ public class JdbcUtils {
     return defaultSourceOperations;
   }
 
-  public static String getFullyQualifiedTableName(String schemaName, String tableName) {
+  public static String getFullyQualifiedTableName(final String schemaName, final String tableName) {
     return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 

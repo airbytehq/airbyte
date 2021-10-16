@@ -35,10 +35,10 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
   private final BlobOutputStream blobOutputStream;
   private final PrintWriter printWriter;
 
-  public AzureBlobStorageJsonlWriter(AzureBlobStorageDestinationConfig config,
-                                     AppendBlobClient appendBlobClient,
-                                     ConfiguredAirbyteStream configuredStream,
-                                     boolean isNewlyCreatedBlob) {
+  public AzureBlobStorageJsonlWriter(final AzureBlobStorageDestinationConfig config,
+                                     final AppendBlobClient appendBlobClient,
+                                     final ConfiguredAirbyteStream configuredStream,
+                                     final boolean isNewlyCreatedBlob) {
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
     this.blobOutputStream = appendBlobClient.getBlobOutputStream();
@@ -46,8 +46,8 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) {
-    ObjectNode json = MAPPER.createObjectNode();
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
+    final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());

@@ -59,7 +59,7 @@ public class DefaultJobCreatorTest {
     final UUID sourceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
 
-    JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
         .put("apiKey", "123-abc")
         .put("hostname", "airbyte.io")
         .build());

@@ -55,15 +55,15 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
   private final String stagingFolder;
 
-  public GcsStreamCopier(String stagingFolder,
-                         DestinationSyncMode destSyncMode,
-                         String schema,
-                         String streamName,
-                         Storage storageClient,
-                         JdbcDatabase db,
-                         GcsConfig gcsConfig,
-                         ExtendedNameTransformer nameTransformer,
-                         SqlOperations sqlOperations) {
+  public GcsStreamCopier(final String stagingFolder,
+                         final DestinationSyncMode destSyncMode,
+                         final String schema,
+                         final String streamName,
+                         final Storage storageClient,
+                         final JdbcDatabase db,
+                         final GcsConfig gcsConfig,
+                         final ExtendedNameTransformer nameTransformer,
+                         final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -82,26 +82,26 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public String prepareStagingFile() {
-    var name = prepareGcsStagingFile();
+    final var name = prepareGcsStagingFile();
     gcsStagingFiles.add(name);
-    var blobId = BlobId.of(gcsConfig.getBucketName(), name);
-    var blobInfo = BlobInfo.newBuilder(blobId).build();
-    var blob = storageClient.create(blobInfo);
-    var channel = blob.writer();
+    final var blobId = BlobId.of(gcsConfig.getBucketName(), name);
+    final var blobInfo = BlobInfo.newBuilder(blobId).build();
+    final var blob = storageClient.create(blobInfo);
+    final var channel = blob.writer();
     channels.put(name, channel);
-    OutputStream outputStream = Channels.newOutputStream(channel);
+    final OutputStream outputStream = Channels.newOutputStream(channel);
 
-    var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+    final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
     try {
       csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     return name;
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage, String gcsFileName) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String gcsFileName) throws Exception {
     if (csvPrinters.containsKey(gcsFileName)) {
       csvPrinters.get(gcsFileName).printRecord(id,
           Jsons.serialize(recordMessage.getData()),
@@ -110,12 +110,12 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void closeStagingUploader(boolean hasFailed) throws Exception {
+  public void closeStagingUploader(final boolean hasFailed) throws Exception {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
-    for (var csvPrinter : csvPrinters.values()) {
+    for (final var csvPrinter : csvPrinters.values()) {
       csvPrinter.close();
     }
-    for (var channel : channels.values()) {
+    for (final var channel : channels.values()) {
       channel.close();
     }
     LOGGER.info("All data for {} stream uploaded.", streamName);
@@ -124,7 +124,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}.", tmpTableName, streamName, schemaName);
-    for (var gcsStagingFile : gcsStagingFiles) {
+    for (final var gcsStagingFile : gcsStagingFiles) {
       copyGcsCsvFileIntoTable(db, getFullGcsPath(gcsConfig.getBucketName(), gcsStagingFile), schemaName, tmpTableName, gcsConfig);
     }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
@@ -132,9 +132,9 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    for (var gcsStagingFile : gcsStagingFiles) {
+    for (final var gcsStagingFile : gcsStagingFiles) {
       LOGGER.info("Begin cleaning gcs staging file {}.", gcsStagingFile);
-      var blobId = BlobId.of(gcsConfig.getBucketName(), gcsStagingFile);
+      final var blobId = BlobId.of(gcsConfig.getBucketName(), gcsStagingFile);
       if (storageClient.get(blobId).exists()) {
         storageClient.delete(blobId);
       }
@@ -160,7 +160,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
 
   @Override
   public String createDestinationTable() throws Exception {
-    var destTableName = nameTransformer.getRawTableName(streamName);
+    final var destTableName = nameTransformer.getRawTableName(streamName);
     LOGGER.info("Preparing table {} in destination.", destTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
     LOGGER.info("Table {} in destination prepared.", tmpTableName);
@@ -169,9 +169,9 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
+  public String generateMergeStatement(final String destTableName) throws Exception {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
-    var queries = new StringBuilder();
+    final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.", destTableName, schemaName);
@@ -180,28 +180,28 @@ public abstract class GcsStreamCopier implements StreamCopier {
     return queries.toString();
   }
 
-  private static String getFullGcsPath(String bucketName, String stagingFile) {
+  private static String getFullGcsPath(final String bucketName, final String stagingFile) {
     // this is intentionally gcs:/ not gcs:// since the join adds the additional slash
     return String.join("/", "gcs:/", bucketName, stagingFile);
   }
 
-  public static void attemptWriteToPersistence(GcsConfig gcsConfig) throws IOException {
+  public static void attemptWriteToPersistence(final GcsConfig gcsConfig) throws IOException {
     final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteGcsObject(GcsConfig gcsConfig, String outputTableName) throws IOException {
-    var storage = getStorageClient(gcsConfig);
-    var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
-    var blobInfo = BlobInfo.newBuilder(blobId).build();
+  private static void attemptWriteAndDeleteGcsObject(final GcsConfig gcsConfig, final String outputTableName) throws IOException {
+    final var storage = getStorageClient(gcsConfig);
+    final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
+    final var blobInfo = BlobInfo.newBuilder(blobId).build();
 
     storage.create(blobInfo, "".getBytes());
     storage.delete(blobId);
   }
 
-  public static Storage getStorageClient(GcsConfig gcsConfig) throws IOException {
-    InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
-    GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
+  public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
+    final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+    final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
     return StorageOptions.newBuilder()
         .setCredentials(credentials)
         .setProjectId(gcsConfig.getProjectId())

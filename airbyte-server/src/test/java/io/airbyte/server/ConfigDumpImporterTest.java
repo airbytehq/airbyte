@@ -93,7 +93,7 @@ class ConfigDumpImporterTest {
         .withName("test-source")
         .withTombstone(false)
         .withWorkspaceId(workspaceId);
-    when(configRepository.listStandardSources())
+    when(configRepository.listStandardSourceDefinitions())
         .thenReturn(List.of(standardSourceDefinition));
     when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
@@ -230,31 +230,31 @@ class ConfigDumpImporterTest {
 
   @Test
   public void testReplaceDeploymentMetadata() throws Exception {
-    UUID oldDeploymentUuid = UUID.randomUUID();
-    UUID newDeploymentUuid = UUID.randomUUID();
+    final UUID oldDeploymentUuid = UUID.randomUUID();
+    final UUID newDeploymentUuid = UUID.randomUUID();
 
-    JsonNode airbyteVersion = Jsons.deserialize("{\"key\":\"airbyte_version\",\"value\":\"dev\"}");
-    JsonNode serverUuid = Jsons.deserialize("{\"key\":\"server_uuid\",\"value\":\"e895a584-7dbf-48ce-ace6-0bc9ea570c34\"}");
-    JsonNode date = Jsons.deserialize("{\"key\":\"date\",\"value\":\"1956-08-17\"}");
-    JsonNode oldDeploymentId = Jsons.deserialize(
+    final JsonNode airbyteVersion = Jsons.deserialize("{\"key\":\"airbyte_version\",\"value\":\"dev\"}");
+    final JsonNode serverUuid = Jsons.deserialize("{\"key\":\"server_uuid\",\"value\":\"e895a584-7dbf-48ce-ace6-0bc9ea570c34\"}");
+    final JsonNode date = Jsons.deserialize("{\"key\":\"date\",\"value\":\"1956-08-17\"}");
+    final JsonNode oldDeploymentId = Jsons.deserialize(
         String.format("{\"key\":\"%s\",\"value\":\"%s\"}", DefaultJobPersistence.DEPLOYMENT_ID_KEY, oldDeploymentUuid));
-    JsonNode newDeploymentId = Jsons.deserialize(
+    final JsonNode newDeploymentId = Jsons.deserialize(
         String.format("{\"key\":\"%s\",\"value\":\"%s\"}", DefaultJobPersistence.DEPLOYMENT_ID_KEY, newDeploymentUuid));
 
-    JobPersistence jobPersistence = mock(JobPersistence.class);
+    final JobPersistence jobPersistence = mock(JobPersistence.class);
 
     // when new deployment id does not exist, the old deployment id is removed
     when(jobPersistence.getDeployment()).thenReturn(Optional.empty());
-    Stream<JsonNode> inputStream1 = Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
-    Stream<JsonNode> outputStream1 = ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream1);
-    Stream<JsonNode> expectedStream1 = Stream.of(airbyteVersion, serverUuid, date);
+    final Stream<JsonNode> inputStream1 = Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
+    final Stream<JsonNode> outputStream1 = ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream1);
+    final Stream<JsonNode> expectedStream1 = Stream.of(airbyteVersion, serverUuid, date);
     assertEquals(expectedStream1.collect(Collectors.toList()), outputStream1.collect(Collectors.toList()));
 
     // when new deployment id exists, the old deployment id is replaced with the new one
     when(jobPersistence.getDeployment()).thenReturn(Optional.of(newDeploymentUuid));
-    Stream<JsonNode> inputStream2 = Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
-    Stream<JsonNode> outputStream2 = ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream2);
-    Stream<JsonNode> expectedStream2 = Stream.of(airbyteVersion, serverUuid, date, newDeploymentId);
+    final Stream<JsonNode> inputStream2 = Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
+    final Stream<JsonNode> outputStream2 = ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream2);
+    final Stream<JsonNode> expectedStream2 = Stream.of(airbyteVersion, serverUuid, date, newDeploymentId);
     assertEquals(expectedStream2.collect(Collectors.toList()), outputStream2.collect(Collectors.toList()));
   }
 

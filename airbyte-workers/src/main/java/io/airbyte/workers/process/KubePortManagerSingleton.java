@@ -28,9 +28,9 @@ public class KubePortManagerSingleton {
   private static KubePortManagerSingleton instance;
 
   private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
-  private BlockingQueue<Integer> workerPorts;
+  private final BlockingQueue<Integer> workerPorts;
 
-  private KubePortManagerSingleton(Set<Integer> ports) {
+  private KubePortManagerSingleton(final Set<Integer> ports) {
     workerPorts = new LinkedBlockingDeque<>(ports);
   }
 
@@ -52,7 +52,7 @@ public class KubePortManagerSingleton {
    *
    * @return
    */
-  public static synchronized void init(Set<Integer> ports) {
+  public static synchronized void init(final Set<Integer> ports) {
     if (instance != null) {
       throw new RuntimeException("Cannot initialize twice!");
     }
@@ -63,7 +63,7 @@ public class KubePortManagerSingleton {
     return workerPorts.poll(10, TimeUnit.MINUTES);
   }
 
-  public void offer(Integer port) {
+  public void offer(final Integer port) {
     if (!workerPorts.contains(port)) {
       workerPorts.add(port);
     }

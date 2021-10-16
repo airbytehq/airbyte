@@ -67,20 +67,20 @@ public class JobScheduler implements Runnable {
       scheduleSyncJobs();
 
       LOGGER.debug("Completed Job-Scheduler...");
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
   }
 
   private void scheduleSyncJobs() throws IOException {
     int jobsScheduled = 0;
-    var start = System.currentTimeMillis();
+    final var start = System.currentTimeMillis();
     final List<StandardSync> activeConnections = getAllActiveConnections();
-    var queryEnd = System.currentTimeMillis();
+    final var queryEnd = System.currentTimeMillis();
     LOGGER.debug("Total active connections: {}", activeConnections.size());
     LOGGER.debug("Time to retrieve all connections: {} ms", queryEnd - start);
 
-    for (StandardSync connection : activeConnections) {
+    for (final StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
 
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
@@ -89,7 +89,7 @@ public class JobScheduler implements Runnable {
         SchedulerApp.PENDING_JOBS.getAndIncrement();
       }
     }
-    var end = System.currentTimeMillis();
+    final var end = System.currentTimeMillis();
     LOGGER.debug("Time taken to schedule jobs: {} ms", end - start);
 
     if (jobsScheduled > 0) {
@@ -103,7 +103,7 @@ public class JobScheduler implements Runnable {
           .stream()
           .filter(sync -> sync.getStatus() == Status.ACTIVE)
           .collect(Collectors.toList());
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+    } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

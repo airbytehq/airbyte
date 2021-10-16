@@ -20,7 +20,7 @@ public class RedshiftDestinationTest {
   @Test
   @DisplayName("When given S3 credentials should use COPY")
   public void useCopyStrategyTest() {
-    var stubConfig = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.put("s3_bucket_name", "fake-bucket");
     stubConfig.put("s3_bucket_region", "fake-region");
     stubConfig.put("access_key_id", "test");
@@ -32,7 +32,7 @@ public class RedshiftDestinationTest {
   @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() {
-    var stubConfig = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     assertFalse(RedshiftDestination.isCopy(stubConfig));
   }
 
