@@ -100,7 +100,7 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
 
   private void prepareLocalFilePersistence() throws Exception {
     Files.createDirectories(ROOT_PATH.resolve(FileSystemConfigPersistence.CONFIG_DIR));
-    ConfigPersistence filePersistence = new FileSystemConfigPersistence(ROOT_PATH);
+    final ConfigPersistence filePersistence = new FileSystemConfigPersistence(ROOT_PATH);
     writeSource(filePersistence, SOURCE_GITHUB);
     writeDestination(filePersistence, DESTINATION_S3);
   }

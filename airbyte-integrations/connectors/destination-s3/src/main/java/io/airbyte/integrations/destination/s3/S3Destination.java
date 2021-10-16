@@ -25,16 +25,16 @@ public class S3Destination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3Destination.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new S3Destination()).run(args);
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config), config.get("s3_bucket_path").asText());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the S3 bucket: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -44,10 +44,10 @@ public class S3Destination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    S3WriterFactory formatterFactory = new ProductionWriterFactory();
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final S3WriterFactory formatterFactory = new ProductionWriterFactory();
     return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 

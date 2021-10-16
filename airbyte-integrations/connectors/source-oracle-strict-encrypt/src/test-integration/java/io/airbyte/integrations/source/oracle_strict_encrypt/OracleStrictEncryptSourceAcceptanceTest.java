@@ -35,7 +35,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
   protected JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
     container.start();
 
@@ -52,7 +52,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .build()))
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -78,7 +78,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

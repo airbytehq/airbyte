@@ -42,7 +42,7 @@ class MySqlStressTest extends JdbcStressTest {
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
-    Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
+    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
