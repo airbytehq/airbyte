@@ -23,11 +23,40 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import Source
 
 
+class UnsupportedDataTypeException(Exception):
+    pass
+
+
 class SourceElasticsearch(Source):
+    system_indices = [
+        ".kibana_1",
+        ".opendistro_security",
+    ]
+
+    es_to_json_type_mapping = {
+        # TODO: support objects, arrays, etc
+        # ES data types: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
+        # JSON data types: http://json-schema.org/understanding-json-schema/reference/type.html
+        "boolean": "boolean",
+        "text": "string",
+        "date": "string",
+        "date_nanos": "string",
+        "long": "integer",
+        "unsigned_long": "integer",
+        "integer": "integer",
+        "short": "integer",
+        "byte": "integer",
+        "double": "number",
+        "float": "number",
+        "half_float": "number",
+        "scaled_float": "number",
+    }
+
     def _get_es_client(self, config: json) -> Elasticsearch:
         """
         Returns an ElasticSearch client using the config.
         """
+        # TODO: support SSL
         return Elasticsearch(
             hosts=[config["host"]],
             http_auth=(config["username"], config["password"]),
@@ -53,9 +82,7 @@ class SourceElasticsearch(Source):
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+        Returns an AirbyteCatalog where each stream corresponds to an index in the ElasticSearch domain.
 
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
@@ -69,18 +96,49 @@ class SourceElasticsearch(Source):
             by their names and types)
         """
         streams = []
+        es = self._get_es_client(config)
+        indices = self._get_indices(es)
+        for index_name in indices.keys():
+            json_schema = {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": self._get_index_json_properties(es, index_name),
+            }
+            streams.append(AirbyteStream(name=index_name, json_schema=json_schema))
+        return AirbyteCatalog(streams=streams)
 
-        stream_name = "TableName"  # Example
-        json_schema = {  # Example
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"columnName": {"type": "string"}},
+    def _get_indices(self, es: Elasticsearch) -> dict:
+        """
+        Returns all non-system indices in the domain.
+        """
+        return {
+            key: value for key, value in es.indices.get("*").items()
+            if key not in SourceElasticsearch.system_indices
         }
 
-        # Not Implemented
+    def _get_index_json_properties(self, es: Elasticsearch, index: str) -> dict:
+        """
+        Returns JSON-formatted properties for the index.
 
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
-        return AirbyteCatalog(streams=streams)
+        Raises UnsupportedDataTypeException if the index contain an unsupported data type.
+        """
+        json_properties = {}
+        es_properties = es.indices.get_mapping(index=index)[index]["mappings"]["properties"]
+        for property_name, property_attributes in es_properties.items():
+            # TODO: handle nested fields
+            if "properties" in property_attributes:
+                # If property_attributes contains a `properties` key, then we're dealing with a nested field.
+                # Ignore this field until we handle nested objects.
+                continue
+            try:
+                json_properties[property_name] = {
+                    "type": SourceElasticsearch.es_to_json_type_mapping[property_attributes["type"]]
+                }
+            except KeyError:
+                raise UnsupportedDataTypeException(
+                    f"Unsupported data type: {property_attributes['type']}"
+                )
+        return json_properties
 
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
