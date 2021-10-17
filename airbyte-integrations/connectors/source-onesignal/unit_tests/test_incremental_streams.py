@@ -48,13 +48,14 @@ def test_get_updated_state(stream):
         "current_stream_state": { "updated_at": 1580510247 },
         "latest_record": { "updated_at": 1580510248 }
     }
-    expected_state = { "updated_at": 1580510248 }
+    expected_state = { "updated_at": 1580510247 } # note state shouldn't change
     assert stream.get_updated_state(**inputs) == expected_state
 
     inputs = {
         "current_stream_state": { "updated_at": 1580510248 },
         "latest_record": { "updated_at": 1580510247 }
     }
+    expected_state = { "updated_at": 1580510248 } # note state shouldn't change
     assert stream.get_updated_state(**inputs) == expected_state
 
 

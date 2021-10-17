@@ -106,6 +106,12 @@ class IncrementalOnesignalStream(ChildStreamMixin, OnesignalStream, ABC):
 
     cursor_field = "updated_at"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # largest time in cursor field across all stream slices
+        self.max_cursor_time = self.start_date
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
@@ -145,9 +151,11 @@ class IncrementalOnesignalStream(ChildStreamMixin, OnesignalStream, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        state_date = current_stream_state.get(self.cursor_field, self.start_date)
+        # we don't update state here, just keep a record of maximum cursor field
+        # time, state will be updated after syncing the whole stream
         record_date = latest_record.get(self.cursor_field, self.start_date)
-        return { self.cursor_field: max(state_date, record_date) }
+        self.max_cursor_time = max(self.max_cursor_time, record_date)
+        return current_stream_state
 
 
 class Apps(OnesignalStream):
