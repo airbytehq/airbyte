@@ -12,7 +12,7 @@ def test_get_indices(mocker):
         ".kibana_1": "foo",
         "other_index": "bar",
     }
-    assert SourceElasticsearch()._get_indices(mocked_es) == {
+    assert SourceElasticsearch._get_indices(mocked_es) == {
         "other_index": "bar"
     }
 
@@ -39,7 +39,7 @@ def test_get_index_json_properties_happy_path(mocker):
             }
         }
     }
-    assert SourceElasticsearch()._get_index_json_properties(mocked_es, "index_name") == {
+    assert SourceElasticsearch._get_index_json_properties(mocked_es, "index_name") == {
         "text_property": {
             "type": "string"
         },
@@ -69,4 +69,4 @@ def test_get_index_json_properties_unsupported_tyoe(mocker):
         }
     }
     with pytest.raises(UnsupportedDataTypeException):
-        SourceElasticsearch()._get_index_json_properties(mocked_es, "index_name")
+        SourceElasticsearch._get_index_json_properties(mocked_es, "index_name")

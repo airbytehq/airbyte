@@ -107,7 +107,8 @@ class SourceElasticsearch(Source):
             streams.append(AirbyteStream(name=index_name, json_schema=json_schema))
         return AirbyteCatalog(streams=streams)
 
-    def _get_indices(self, es: Elasticsearch) -> dict:
+    @staticmethod
+    def _get_indices(es: Elasticsearch) -> dict:
         """
         Returns all non-system indices in the domain.
         """
@@ -116,7 +117,8 @@ class SourceElasticsearch(Source):
             if key not in SourceElasticsearch.system_indices
         }
 
-    def _get_index_json_properties(self, es: Elasticsearch, index: str) -> dict:
+    @staticmethod
+    def _get_index_json_properties(es: Elasticsearch, index: str) -> dict:
         """
         Returns JSON-formatted properties for the index.
 
