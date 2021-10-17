@@ -7,6 +7,8 @@ import json
 from datetime import datetime
 from typing import Dict, Generator
 
+from elasticsearch import Elasticsearch
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -22,11 +24,19 @@ from airbyte_cdk.sources import Source
 
 
 class SourceElasticsearch(Source):
+    def _get_es_client(self, config: json) -> Elasticsearch:
+        """
+        Returns an ElasticSearch client using the config.
+        """
+        return Elasticsearch(
+            hosts=[config["host"]],
+            http_auth=(config["username"], config["password"]),
+        )
+
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
-
+        Creates an ES client and tries to ping it.
+        
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
@@ -34,12 +44,12 @@ class SourceElasticsearch(Source):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        try:
-            # Not Implemented
-
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+        es = self._get_es_client(config)
+        if not es.ping():
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"Connection failed"
+            )
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
