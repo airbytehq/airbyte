@@ -7,6 +7,8 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    # elasticsearch >= 7.14 does not support non-official clusters (e.g. AWS)
+    "elasticsearch<7.14",
 ]
 
 TEST_REQUIREMENTS = [
