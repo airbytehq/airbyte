@@ -4,12 +4,21 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Elasticsearch Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": ["host", "username", "password"],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "host": {
         "type": "string",
-        "description": "describe me"
+        "description": "ElasticSearch host"
+      },
+      "username": {
+        "type": "string",
+        "description": "Username with access to the ElasticSearch cluster"
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for the username",
+        "airbyte_secret": true
       }
     }
   }
