@@ -10,25 +10,26 @@ import co.elastic.clients.elasticsearch._core.BulkRequest;
 import co.elastic.clients.elasticsearch._core.BulkResponse;
 import co.elastic.clients.elasticsearch._core.CreateResponse;
 import co.elastic.clients.elasticsearch._core.SearchResponse;
+import co.elastic.clients.elasticsearch._core.bulk.Operation;
 import co.elastic.clients.elasticsearch._core.search.Hit;
 import co.elastic.clients.elasticsearch._core.search.HitsMetadata;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import jakarta.json.JsonValue;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
+import org.elasticsearch.client.Node;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -58,11 +59,19 @@ public class ElasticsearchConnection {
         httpHost = new HttpHost(config.getHost(), config.getPort());
         RestClient restClient = RestClient.builder(httpHost)
                 .setDefaultHeaders(configureHeaders(config))
+                .setFailureListener(new failureListener())
                 .build();
         // Create the transport that provides JSON and http services to API clients
         Transport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
         // And create our API client
         client = new ElasticsearchClient(transport);
+    }
+
+    static class failureListener extends RestClient.FailureListener {
+        @Override
+        public void onFailure(Node node) {
+            log.error("RestClient failure: {}", node);
+        }
     }
 
     /**
@@ -120,19 +129,80 @@ public class ElasticsearchConnection {
      * @return the response of the bulk operation
      * @throws IOException if there is server connection problem, or a non-successful operation on the server
      */
-    public BulkResponse createDocuments(String index, List<AirbyteRecordMessage> records) throws IOException {
+    public BulkResponse createDocuments(String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder<>();
-        bulkRequest.index(index);
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
-            bulkRequest.addOperation(b -> b.create(d -> d)).addDocument(doc.getData());
+            bulkRequest.addOperation(
+                    b -> b.index(
+                            c -> c.index(index).id(extractPrimaryKey(doc, config))))
+                    .addDocument(doc.getData()).refresh(JsonValue.TRUE);
         }
 
         try {
-            return client.bulk(bulkRequest.build());
+            return client.bulk(b -> bulkRequest);
         } catch (ApiException e) {
             throw unwrappedApiException("failed write operation", e);
         }
+    }
+    /**
+     * Bulk operation to update multiple documents in an Elasticsearch server index
+     * Attempts to extract a primary key value from the record
+     *
+     * @param index   The index to add the documents to
+     * @param records The collection of records to update documents from
+     * @param config write configuration for this stream
+     * @return the response of the bulk operation
+     * @throws IOException if there is server connection problem, or a non-successful operation on the server
+     */
+    public BulkResponse updateDocuments(String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config) throws IOException {
+        var bulkRequest = new BulkRequest.Builder<>();
+        for (var doc : records) {
+            log.debug("adding record to bulk create: {}", doc.getData());
+            bulkRequest.addOperation(
+                    b -> b.update(
+                            d -> d.index(index).id(extractPrimaryKey(doc, config))))
+                    .addDocument(jsonNodeToDocUpdateObject(doc.getData()));
+        }
+
+        try {
+            return client.bulk(b -> bulkRequest);
+        } catch (ApiException e) {
+            throw unwrappedApiException("failed write operation", e);
+        }
+    }
+
+    private JsonNode jsonNodeToDocUpdateObject(JsonNode data) {
+        Map<String, Object> doc = new HashMap<>();
+        doc.put("doc", data);
+        return mapper.valueToTree(doc);
+    }
+
+    // TODO: Can we do something like this?
+    private String extractPrimaryKey(AirbyteRecordMessage doc, ElasticsearchWriteConfig config) {
+        if (!config.hasPrimaryKey()) {
+            return UUID.randomUUID().toString();
+        }
+        var optFirst = config.getPrimaryKey().stream().findFirst();
+        StringBuilder sb = new StringBuilder();
+        if (optFirst.isPresent()) {
+            log.debug("trying to extract primary key using {}", optFirst.get());
+            optFirst.get().stream().forEach(s -> {
+                sb.append(String.format("%s.", s));
+            });
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length()-1);
+            }
+        }
+        if (sb.length() > 0) {
+            JsonPointer ptr = JsonPointer.valueOf(sb.toString());
+            var pkNode = doc.getData().at(ptr);
+            if (!pkNode.isMissingNode() && pkNode.isValueNode()) {
+                return pkNode.asText();
+            }
+        }
+        log.warn("unable to extract primary key");
+        return UUID.randomUUID().toString();
     }
 
     /**
@@ -179,6 +249,14 @@ public class ElasticsearchConnection {
         } catch (IOException e) {
             log.error("failed to create index: {}", e.getMessage());
             throw e;
+        }
+    }
+
+    public void deleteIndex(String indexName) throws Exception {
+        try {
+            client.delete(b -> b.id("*").index(indexName));
+        } catch (ApiException e) {
+            throw unwrappedApiException("failed to delete index", e);
         }
     }
 

@@ -67,11 +67,13 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
             }
             final boolean unsupportedMode = syncMode != DestinationSyncMode.APPEND;
             if (unsupportedMode) {
-                LOGGER.error("records can only be appended at this time");
+                LOGGER.warn("upserting records");
             }
             LOGGER.info("adding write config. stream: {}, syncMode: {}", streamName, syncMode);
             writeConfigs.put(stream.getStream().getName(), new ElasticsearchWriteConfig()
-                    .setSyncMode(syncMode).setNamespace(stream.getStream().getNamespace()));
+                    .setSyncMode(syncMode)
+                    .setNamespace(stream.getStream().getNamespace())
+                    .setPrimaryKey(stream.getPrimaryKey()));
         }
 
         return ElasticsearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);

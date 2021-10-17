@@ -7,6 +7,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.*;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -28,12 +29,7 @@ public class ElasticsearchDestinationTest {
     private static ElasticsearchContainer container;
     private static final String NAMESPACE = "public";
     private static final String STREAM_NAME = "id_and_name";
-    private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-            CatalogHelpers.createConfiguredAirbyteStream(
-                    STREAM_NAME,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaPrimitive.NUMBER),
-                    Field.of("name", JsonSchemaPrimitive.STRING))));
+    private static final String INDEX_NAME = ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(NAMESPACE, STREAM_NAME);
 
     private static JsonNode config;
 
@@ -59,14 +55,41 @@ public class ElasticsearchDestinationTest {
         container.close();
     }
 
+    @AfterEach
+    public void afterEach() throws Exception {
+        final var connection = new ElasticsearchConnection(ConnectorConfiguration.FromJsonNode(config));
+        //connection.deleteIndex(INDEX_NAME);
+    }
+
     @Test
-    public void e2e() throws Exception {
+    public void withAppend() throws Exception {
+        e2e(getCatalog(DestinationSyncMode.APPEND));
+    }
+
+    @Test
+    public void withOverwrite() throws Exception {
+       // e2e(getCatalog(DestinationSyncMode.OVERWRITE));
+    }
+
+    private ConfiguredAirbyteCatalog getCatalog(DestinationSyncMode destinationSyncMode) {
+        return new ConfiguredAirbyteCatalog().withStreams(List.of(
+                        CatalogHelpers.createConfiguredAirbyteStream(
+                                        STREAM_NAME,
+                                        NAMESPACE,
+                                        Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                        Field.of("name", JsonSchemaPrimitive.STRING))
+                                .withDestinationSyncMode(destinationSyncMode)
+                )
+        );
+    }
+
+    private void e2e(ConfiguredAirbyteCatalog catalog) throws Exception {
         var destination = new ElasticsearchDestination();
 
         var check = destination.check(config);
         log.info("check status: {}", check);
 
-        final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
         final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
         consumer.start();
@@ -85,7 +108,7 @@ public class ElasticsearchDestinationTest {
         final var connection = new ElasticsearchConnection(ConnectorConfiguration.FromJsonNode(config));
 
         final List<JsonNode> actualRecords =
-                connection.getRecords(ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(NAMESPACE, STREAM_NAME));
+                connection.getRecords(INDEX_NAME);
 
         for (var record :
                 actualRecords) {
