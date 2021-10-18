@@ -84,7 +84,7 @@ class BigQueryDenormalizedDestinationTest {
   private boolean tornDown = true;
 
   @BeforeEach
-  void setup(TestInfo info) throws IOException {
+  void setup(final TestInfo info) throws IOException {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -134,7 +134,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @AfterEach
-  void tearDown(TestInfo info) {
+  void tearDown(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -158,7 +158,7 @@ class BigQueryDenormalizedDestinationTest {
 
   @ParameterizedTest
   @MethodSource("schemaAndDataProvider")
-  void testNestedWrite(JsonNode schema, AirbyteMessage message) throws Exception {
+  void testNestedWrite(final JsonNode schema, final AirbyteMessage message) throws Exception {
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
@@ -197,7 +197,8 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
     assertEquals(extractJsonValues(resultJson, "date_of_birth"), extractJsonValues(expectedUsersJson, "date_of_birth"));
 
-    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't expect to receive the value we sent.
+    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
+    // expect to receive the value we sent.
     assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2018-08-19T12:11:35.220"));
 
     final Schema expectedSchema = Schema.of(
@@ -205,15 +206,14 @@ class BigQueryDenormalizedDestinationTest {
         Field.of("date_of_birth", StandardSQLTypeName.DATE),
         Field.of("updated_at", StandardSQLTypeName.DATETIME),
         Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP)
-    );
+        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
   }
 
-  private Set<String> extractJsonValues(JsonNode node, String attributeName) {
-    List<JsonNode> valuesNode = node.findValues(attributeName);
-    Set<String> resultSet = new HashSet<>();
+  private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
+    final List<JsonNode> valuesNode = node.findValues(attributeName);
+    final Set<String> resultSet = new HashSet<>();
     valuesNode.forEach(jsonNode -> {
       if (jsonNode.isArray()) {
         jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
@@ -227,8 +227,8 @@ class BigQueryDenormalizedDestinationTest {
     return resultSet;
   }
 
-  private List<JsonNode> retrieveRecordsAsJson(String tableName) throws Exception {
-    QueryJobConfiguration queryConfig =
+  private List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
+    final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
                 String.format("select TO_JSON_STRING(t) as jsonValue from %s.%s t;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))

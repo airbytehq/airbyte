@@ -20,8 +20,8 @@ public class CorsFilter implements ContainerResponseFilter {
       HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
 
   @Override
-  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
-    for (Map.Entry<String, String> entry : MAP.entrySet()) {
+  public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext) {
+    for (final Map.Entry<String, String> entry : MAP.entrySet()) {
       responseContext.getHeaders().add(entry.getKey(), entry.getValue());
     }
   }

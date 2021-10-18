@@ -19,7 +19,7 @@ import org.testcontainers.utility.DockerImageName;
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     db = new MSSQLServerContainer<>(DockerImageName
         .parse("airbyte/mssql_ssltest:dev")
         .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
@@ -51,7 +51,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
     ((ObjectNode) config).put("database", dbName);
   }
 
-  private static Database getDatabase(JsonNode baseConfig) {
+  private static Database getDatabase(final JsonNode baseConfig) {
     return Databases.createDatabase(
         baseConfig.get("username").asText(),
         baseConfig.get("password").asText(),

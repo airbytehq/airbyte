@@ -4,6 +4,7 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -17,12 +18,12 @@ public class WebBackendSourcesHandler {
   private final SourceHandler sourceHandler;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public WebBackendSourcesHandler(SourceHandler sourceHandler, ConfigRepository configRepository) {
+  public WebBackendSourcesHandler(final SourceHandler sourceHandler, final ConfigRepository configRepository, final TrackingClient trackingClient) {
     this.sourceHandler = sourceHandler;
-    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
   }
 
-  public SourceRead webBackendCreateSource(SourceCreate sourceCreate) throws JsonValidationException, ConfigNotFoundException, IOException {
+  public SourceRead webBackendCreateSource(final SourceCreate sourceCreate) throws JsonValidationException, ConfigNotFoundException, IOException {
     sourceCreate.connectionConfiguration(
         oAuthConfigSupplier.injectSourceOAuthParameters(
             sourceCreate.getSourceDefinitionId(),

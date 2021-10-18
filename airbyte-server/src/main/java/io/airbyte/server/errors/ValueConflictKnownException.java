@@ -6,11 +6,11 @@ package io.airbyte.server.errors;
 
 public class ValueConflictKnownException extends KnownException {
 
-  public ValueConflictKnownException(String message) {
+  public ValueConflictKnownException(final String message) {
     super(message);
   }
 
-  public ValueConflictKnownException(String message, Throwable cause) {
+  public ValueConflictKnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

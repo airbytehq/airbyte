@@ -17,7 +17,7 @@ public class KnownExceptionMapper implements ExceptionMapper<KnownException> {
   private static final Logger LOGGER = LoggerFactory.getLogger(KnownExceptionMapper.class);
 
   @Override
-  public Response toResponse(KnownException e) {
+  public Response toResponse(final KnownException e) {
     LOGGER.info("Known exception", e.getKnownExceptionInfo());
     return Response.status(e.getHttpCode())
         .entity(Jsons.serialize(e.getKnownExceptionInfo()))

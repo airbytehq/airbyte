@@ -62,8 +62,8 @@ class MongodbDestinationTest {
 
   @ParameterizedTest
   @MethodSource("configAndDataProvider")
-  void testGetConnectionString(JsonNode config, String expected) throws Exception {
-    var actual = mongodbDestination.getConnectionString(config);
+  void testGetConnectionString(final JsonNode config, final String expected) throws Exception {
+    final var actual = mongodbDestination.getConnectionString(config);
     assertEquals(expected, actual);
   }
 
@@ -101,16 +101,16 @@ class MongodbDestinationTest {
             "mongodb+srv://cluster.shard.url/dbName?authSource=dbName&retryWrites=true&w=majority&tls=true"),
         // older versions support
         arguments(Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", "localhost")
-                .put("port", "27017")
-                .put("database", "dbName")
-                .put("auth_type", authConfig).build()),
+            .put("host", "localhost")
+            .put("port", "27017")
+            .put("database", "dbName")
+            .put("auth_type", authConfig).build()),
             "mongodb://user:pass@localhost:27017/?authSource=dbName&ssl=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", "localhost")
-                .put("port", "27017")
-                .put("database", "dbName")
-                .put("auth_type", noneAuthConfig).build()),
+            .put("host", "localhost")
+            .put("port", "27017")
+            .put("database", "dbName")
+            .put("auth_type", noneAuthConfig).build()),
             "mongodb://localhost:27017/?authSource=dbName&ssl=false"));
   }
 

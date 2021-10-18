@@ -9,16 +9,16 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 public class S3NameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String applyDefaultCase(String input) {
+  protected String applyDefaultCase(final String input) {
     return super.convertStreamName(input).toLowerCase();
   }
 
   @Override
-  public String getIdentifier(String name) {
+  public String getIdentifier(final String name) {
     return checkFirsCharInStreamName(convertStreamName(name));
   }
 
-  private String checkFirsCharInStreamName(String name) {
+  private String checkFirsCharInStreamName(final String name) {
     if (name.substring(0, 1).matches("[A-Za-z_]")) {
       return name;
     } else {

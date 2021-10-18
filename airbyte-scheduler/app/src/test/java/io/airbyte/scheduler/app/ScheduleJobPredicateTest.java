@@ -38,7 +38,7 @@ class ScheduleJobPredicateTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() {
-    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    final Supplier<Instant> timeSupplier = mock(Supplier.class);
     scheduleJobPredicate = new ScheduleJobPredicate(timeSupplier);
     job = mock(Job.class);
     when(job.getId()).thenReturn(10L);
@@ -71,7 +71,7 @@ class ScheduleJobPredicateTest {
   @EnumSource(value = JobStatus.class,
               mode = Mode.EXCLUDE,
               names = {"PENDING", "RUNNING", "INCOMPLETE"})
-  public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
+  public void testShouldScheduleBasedOnPreviousJobStatus(final JobStatus status) {
     when(job.getStatus()).thenReturn(status);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
@@ -82,7 +82,7 @@ class ScheduleJobPredicateTest {
   @EnumSource(value = JobStatus.class,
               mode = Mode.EXCLUDE,
               names = {"FAILED", "SUCCEEDED", "CANCELLED"})
-  public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(JobStatus status) {
+  public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(final JobStatus status) {
     when(job.getStatus()).thenReturn(status);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 

@@ -72,7 +72,7 @@ class JobConverterTest {
   @BeforeEach
   public void setUp() {
     job = mock(Job.class);
-    Attempt attempt = mock(Attempt.class);
+    final Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getConfigType()).thenReturn(JOB_CONFIG.getConfigType());
     when(job.getScope()).thenReturn(JOB_CONFIG_ID);
