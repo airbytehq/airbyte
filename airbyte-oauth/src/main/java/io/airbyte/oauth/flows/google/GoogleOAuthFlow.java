@@ -64,15 +64,6 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   protected abstract String getScope();
 
   @Override
-  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
-    if (queryParams.containsKey("code")) {
-      return (String) queryParams.get("code");
-    } else {
-      throw new IOException("Undefined 'code' from consent redirected url.");
-    }
-  }
-
-  @Override
   protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
   }
