@@ -25,12 +25,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-instance-tags: >
-          [
-            {"Key": "BuildType", "Value": "oss"},
-            {"Key": "Repository", "Value": "${{ github.repository }}"},
-            {"Key": "Branch", "Value": "${{ github.ref }}"}
-          ]
 
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
