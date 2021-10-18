@@ -9,28 +9,39 @@
     "properties": {
       "domain_url": {
         "type": "string",
+        "title": "Domain Url",
         "description": "Your Marketo Base URL. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
         "examples": ["https://000-AAA-000.mktorest.com"],
         "airbyte_secret": true
       },
       "client_id": {
         "type": "string",
+        "title": "Client Id",
         "description": "Your Marketo client_id. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
         "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
+        "title": "Client Secret",
         "description": "Your Marketo client secret. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
+        "airbyte_secret": true
+      },
+      "access_token": {
+        "type": "string",
+        "title": "Access Token",
+        "description": "Access token generated using client_id, and client_secret.",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
+        "title": "Start Date",
         "description": "Data generated in Marketo after this date will be replicated. This date must be specified in the format YYYY-MM-DDT00:00:00Z.",
         "examples": ["2020-09-25T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
       "window_in_days": {
         "type": "integer",
+        "title": "Window In Days",
         "description": "The amount of days for each data-chunk begining from start_date. (Min=1, as for a Day; Max=30, as for a Month).",
         "examples": [1, 5, 10, 15, 30],
         "default": 30
