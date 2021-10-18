@@ -76,16 +76,18 @@ const Popout: React.FC<PopoutProps> = ({
     }),
   };
 
+  const target = targetComponent({
+    onOpen: toggleOpen,
+    isOpen,
+    value: props.value,
+  });
+
   return (
     <PopupOpener
       data-testid={props["data-testid"]}
       isOpen={isOpen}
       onClose={toggleOpen}
-      target={targetComponent({
-        onOpen: toggleOpen,
-        isOpen,
-        value: props.value,
-      })}
+      target={target}
     >
       <DropDown
         autoFocus
