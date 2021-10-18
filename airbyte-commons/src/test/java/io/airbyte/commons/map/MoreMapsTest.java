@@ -14,8 +14,8 @@ class MoreMapsTest {
 
   @Test
   void testMerge() {
-    Map<String, Integer> map1 = ImmutableMap.of("a", 3, "b", 2);
-    Map<String, Integer> map2 = ImmutableMap.of("a", 1);
+    final Map<String, Integer> map1 = ImmutableMap.of("a", 3, "b", 2);
+    final Map<String, Integer> map2 = ImmutableMap.of("a", 1);
 
     assertEquals(ImmutableMap.of("a", 1, "b", 2), MoreMaps.merge(map1, map2));
   }

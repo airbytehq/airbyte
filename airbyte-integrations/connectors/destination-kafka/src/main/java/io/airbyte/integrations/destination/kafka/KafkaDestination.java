@@ -41,7 +41,7 @@ public class KafkaDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
@@ -61,7 +61,7 @@ public class KafkaDestination extends BaseConnector implements Destination {
         LOGGER.info("Successfully connected to Kafka brokers for topic '{}'.", metadata.topic());
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the Kafka brokers: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -70,16 +70,16 @@ public class KafkaDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return new KafkaRecordConsumer(KafkaDestinationConfig.getKafkaDestinationConfig(config),
         catalog,
         outputRecordCollector,
         namingResolver);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new KafkaDestination();
     LOGGER.info("Starting destination: {}", KafkaDestination.class);
     new IntegrationRunner(destination).run(args);

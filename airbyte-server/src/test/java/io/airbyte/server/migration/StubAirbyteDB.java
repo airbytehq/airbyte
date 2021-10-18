@@ -27,7 +27,7 @@ public class StubAirbyteDB implements AutoCloseable {
             .withPassword("docker");
     container.start();
 
-    String jobsDatabaseSchema = MoreResources.readResource("migration/schema.sql");
+    final String jobsDatabaseSchema = MoreResources.readResource("migration/schema.sql");
     database = new JobsDatabaseInstance(
         container.getUsername(),
         container.getPassword(),

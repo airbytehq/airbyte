@@ -1,5 +1,8 @@
 {
   "shop": "SHOP_NAME",
   "start_date": "2020-11-01",
-  "api_password": "API_PASSWORD"
+  "auth_method": {
+    "auth_method": "api_password",
+    "api_password": "SOME_API_PASSWORD"
+  }
 }

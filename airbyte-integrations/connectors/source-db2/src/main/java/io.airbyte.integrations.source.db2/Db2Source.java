@@ -23,7 +23,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
     super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new Db2Source();
     LOGGER.info("starting source: {}", Db2Source.class);
     new IntegrationRunner(source).run(args);
@@ -31,7 +31,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", String.format("jdbc:db2://%s:%s/%s",
             config.get("host").asText(),

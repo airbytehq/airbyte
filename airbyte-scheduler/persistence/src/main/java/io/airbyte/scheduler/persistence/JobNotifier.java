@@ -39,7 +39,10 @@ public class JobNotifier {
   private final TrackingClient trackingClient;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+  public JobNotifier(final String webappUrl,
+                     final ConfigRepository configRepository,
+                     final WorkspaceHelper workspaceHelper,
+                     final TrackingClient trackingClient) {
     this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
@@ -75,7 +78,7 @@ public class JobNotifier {
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
-      for (Notification notification : workspace.getNotifications()) {
+      for (final Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
@@ -101,11 +104,11 @@ public class JobNotifier {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
         }
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
     }
   }
@@ -122,7 +125,7 @@ public class JobNotifier {
     return NotificationClient.createNotificationClient(notification);
   }
 
-  private static String formatDurationPart(long durationPart, String timeUnit) {
+  private static String formatDurationPart(final long durationPart, final String timeUnit) {
     if (durationPart == 1) {
       return String.format(" %s %s", durationPart, timeUnit);
     } else if (durationPart > 1) {

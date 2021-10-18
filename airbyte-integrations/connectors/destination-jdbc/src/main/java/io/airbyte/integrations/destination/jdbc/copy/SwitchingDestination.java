@@ -38,7 +38,7 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   private final Function<JsonNode, T> configToType;
   private final Map<T, Destination> typeToDestination;
 
-  public SwitchingDestination(Class<T> enumClass, Function<JsonNode, T> configToType, Map<T, Destination> typeToDestination) {
+  public SwitchingDestination(final Class<T> enumClass, final Function<JsonNode, T> configToType, final Map<T, Destination> typeToDestination) {
     final Set<T> allEnumConstants = new HashSet<>(Arrays.asList(enumClass.getEnumConstants()));
     final Set<T> supportedEnumConstants = typeToDestination.keySet();
 
@@ -50,14 +50,16 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
     return typeToDestination.get(destinationType).check(config);
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());

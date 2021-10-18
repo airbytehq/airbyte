@@ -17,7 +17,7 @@ public class OAuthImplementationFactory {
 
   private final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING;
 
-  public OAuthImplementationFactory(ConfigRepository configRepository) {
+  public OAuthImplementationFactory(final ConfigRepository configRepository) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
         .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
@@ -27,7 +27,7 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(String imageName) {
+  public OAuthFlowImplementation create(final String imageName) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {
