@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
-PROPERTIES_PARAM_MAX_LENGTH = 1500
+PROPERTIES_PARAM_MAX_LENGTH = 15000
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530

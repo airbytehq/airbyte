@@ -4,7 +4,7 @@
 
 
 import pytest
-from source_hubspot.api import API
+from source_hubspot.api import API, split_properties
 from source_hubspot.client import Client
 
 
@@ -101,3 +101,69 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
 
     # match logged expected logged warning message with output given from preudo-output
     assert expected_warining_message
+
+
+def test_splitting_properties(requests_mock, some_credentials):
+    """
+    Check working stream `companies` with large list of properties using new functionality with splitting properties
+    """
+    # Define stream name
+    stream_name = "companies"
+    number_of_properties = 2000
+
+    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
+    api = API(some_credentials)
+
+    properties_list = [f"property_number_{i}" for i in range(number_of_properties)]
+    parsed_properties = list(split_properties(properties_list))
+
+    # Check that properties are split into multiple arrays
+    assert len(parsed_properties) > 1
+
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in properties_list
+            ],
+            "status_code": 200,
+        },
+    ]
+    requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+
+    # Create test_stream instance
+    test_stream = client._apis.get(stream_name)
+
+    for property_slice in parsed_properties:
+        record_responses = [
+            {
+                "json": {
+                    "results": [
+                        {
+                            "id": id,
+                            "properties": {p: "fake_data" for p in property_slice},
+                            "createdAt": "2020-12-10T07:58:09.554Z",
+                            "updatedAt": "2021-07-31T08:18:58.954Z",
+                            "archived": False,
+                        }
+                        for id in ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
+                    ],
+                    "paging": {},
+                },
+                "status_code": 200,
+            }
+        ]
+        requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
+
+    # Mock the getter method that handles requests.
+    def get(url=test_stream.url, params=None):
+        response = api._session.get(api.BASE_URL + url, params=params)
+        return api._parse_and_handle_errors(response)
+
+    # Read preudo-output from generator object read(), based on real scenario
+    stream_records = list(test_stream.read(getter=get))
+
+    # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
+    assert len(stream_records) == 5
+    for record in stream_records:
+        assert len(record["properties"]) == number_of_properties
