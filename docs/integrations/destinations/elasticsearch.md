@@ -37,7 +37,7 @@ This section should contain a table with the following format:
 
 | Feature | Supported?(Yes/No) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | no | does not support overwriting yet |
+| Full Refresh Sync | yes |  |
 | Incremental Sync | yes |  |
 | Replicate Incremental Deletes | no |  |
 | SSL connection | yes |  |
@@ -54,8 +54,10 @@ The connector should be enhanced to support variable batch sizes.
 
 * Elasticsearch >= 7.x
 * Configuration 
-  * Host name
+  * Endpoint URL [ex. https://elasticsearch.savantly.net:9423]
   * Port number [defaults to 9002]
+  * Username [optional] (basic auth)
+  * Password [optional] (basic auth)
   * Api key ID [optional]
   * Api key secret [optional]
 * If authentication is used, the user should have permission to create an index if it doesn't exist, and/or be able to `create` documents
@@ -64,4 +66,4 @@ The connector should be enhanced to support variable batch sizes.
 ### Setup guide
 
 Enter the hostname and/or other configuration information ... 
-#### TODO: more info, screenshots, etc...
+#### TODO: more info, screenshots?, etc...

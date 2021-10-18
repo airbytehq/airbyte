@@ -7,7 +7,9 @@ The documents are structured with fields that may contain nested complex structu
 [Read more about Elastic](https://elasticsearch.org/)  
 
 This connector maps an incoming `stream` to an Elastic `index`.  
-It currently works as an `append` only destination, but should be improved to handle overwriting and de-duping.  
+When using destination sync mode `append` and `append_dedup`, an `upsert` operation is performed against the Elasticsearch index.  
+When using `overwrite`, the records/docs are place in a temp index, then cloned to the target index. 
+The target index is deleted first, if it exists before the sync.
 
 The [ElasticsearchConnection.java](./src/main/java/io/airbyte/integrations/destination/elasticsearch/ElasticsearchConnection.java) 
 handles the communication with the Elastic server. 
@@ -21,7 +23,9 @@ The `namespace` and stream `name` are used to generate an index name.
 The index is created if it doesn't exist, but no other index configuration is done at this time.  
 
 Elastic will determine the type of data by detection.  
-You can create an index ahead of time for field type customization. 
+You can create an index ahead of time for field type customization.
+
+Basic authentication and API key authentication are supported.
 
 ## Development 
 See the Elasticsearch client tests for examples on how to use the library.  
