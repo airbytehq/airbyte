@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 import { components } from "react-select";
 import { FormattedMessage } from "react-intl";
@@ -106,12 +106,14 @@ const WorkspacePopout: React.FC<{
   const { selectWorkspace, currentWorkspaceId } = useWorkspaceService();
   const { data: workspace } = useGetWorkspace(currentWorkspaceId || "");
 
-  const options = workspaces
-    ?.filter((w) => w.workspaceId !== workspace.workspaceId)
-    .map((workspace) => ({
-      value: workspace.workspaceId,
-      label: workspace.name,
-    }));
+  const options = useMemo(() => {
+    return workspaces
+      ?.filter((w) => w.workspaceId !== workspace.workspaceId)
+      .map((workspace) => ({
+        value: workspace.workspaceId,
+        label: workspace.name,
+      }));
+  }, [workspaces, workspace]);
 
   return (
     <Popout
