@@ -37,7 +37,7 @@ runs:
       with:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-        aws-region: "us-east-2"
+        aws-region: us-east-2
     - name: Start EC2 runner
       id: start-ec2-runner
       uses: machulav/ec2-github-runner@v2.2.1
