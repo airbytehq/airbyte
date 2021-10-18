@@ -24,9 +24,13 @@ public class EntrypointEnvChecker {
    * @return the entrypoint in the env variable AIRBYTE_ENTRYPOINT
    * @throws RuntimeException if there is ambiguous output from the container
    */
-  public static String getEntrypointEnvVariable(ProcessFactory processFactory, String jobId, int jobAttempt, Path jobRoot, String imageName)
+  public static String getEntrypointEnvVariable(final ProcessFactory processFactory,
+                                                final String jobId,
+                                                final int jobAttempt,
+                                                final Path jobRoot,
+                                                final String imageName)
       throws IOException, InterruptedException, WorkerException {
-    Process process = processFactory.create(
+    final Process process = processFactory.create(
         jobId,
         jobAttempt,
         jobRoot,
@@ -37,7 +41,7 @@ public class EntrypointEnvChecker {
         WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
         Collections.emptyMap());
 
-    BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    final BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
     String outputLine = null;
 
@@ -51,7 +55,7 @@ public class EntrypointEnvChecker {
     process.waitFor();
 
     if (outputLine != null) {
-      String[] splits = outputLine.split("=", 2);
+      final String[] splits = outputLine.split("=", 2);
       if (splits.length != 2) {
         throw new RuntimeException("String could not be split into multiple segments: " + outputLine);
       } else {

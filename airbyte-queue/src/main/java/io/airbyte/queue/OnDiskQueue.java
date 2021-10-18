@@ -29,18 +29,18 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
   private final AtomicBoolean closed = new AtomicBoolean(false);
   private final Path persistencePath;
 
-  public OnDiskQueue(Path persistencePath, String queueName) throws IOException {
+  public OnDiskQueue(final Path persistencePath, final String queueName) throws IOException {
     this.persistencePath = persistencePath;
     queue = new BigQueueImpl(persistencePath.toString(), queueName);
   }
 
   @Override
-  public boolean offer(byte[] bytes) {
+  public boolean offer(final byte[] bytes) {
     Preconditions.checkState(!closed.get());
     try {
       queue.enqueue(bytes);
       return true;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -50,7 +50,7 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
     Preconditions.checkState(!closed.get());
     try {
       return queue.dequeue();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -60,7 +60,7 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
     Preconditions.checkState(!closed.get());
     try {
       return queue.peek();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

@@ -21,12 +21,12 @@ public abstract class CommitOnStateAirbyteMessageConsumer extends FailureTrackin
 
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
-  public CommitOnStateAirbyteMessageConsumer(Consumer<AirbyteMessage> outputRecordCollector) {
+  public CommitOnStateAirbyteMessageConsumer(final Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
   }
 
   @Override
-  public void accept(AirbyteMessage message) throws Exception {
+  public void accept(final AirbyteMessage message) throws Exception {
     if (message.getType() == Type.STATE) {
       commit();
       outputRecordCollector.accept(message);

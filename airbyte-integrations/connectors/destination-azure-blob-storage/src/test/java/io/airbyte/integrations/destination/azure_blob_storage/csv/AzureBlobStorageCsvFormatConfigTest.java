@@ -21,7 +21,7 @@ public class AzureBlobStorageCsvFormatConfigTest {
     assertEquals(Flattening.ROOT_LEVEL, Flattening.fromValue("root level flattening"));
     try {
       Flattening.fromValue("invalid flattening value");
-    } catch (Exception e) {
+    } catch (final Exception e) {
       assertTrue(e instanceof IllegalArgumentException);
     }
   }

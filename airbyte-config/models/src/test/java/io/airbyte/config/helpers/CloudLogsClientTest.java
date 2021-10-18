@@ -18,7 +18,7 @@ public class CloudLogsClientTest {
 
     @Test
     public void testMinio() {
-      var configs = Mockito.mock(LogConfigs.class);
+      final var configs = Mockito.mock(LogConfigs.class);
       // Mising bucket.
       Mockito.when(configs.getS3MinioEndpoint()).thenReturn("minio-endpoint");
       Mockito.when(configs.getAwsAccessKey()).thenReturn("access-key");
@@ -31,7 +31,7 @@ public class CloudLogsClientTest {
 
     @Test
     public void testAws() {
-      var configs = Mockito.mock(LogConfigs.class);
+      final var configs = Mockito.mock(LogConfigs.class);
       // Missing bucket and access key.
       Mockito.when(configs.getS3MinioEndpoint()).thenReturn("");
       Mockito.when(configs.getAwsAccessKey()).thenReturn("");
@@ -44,7 +44,7 @@ public class CloudLogsClientTest {
 
     @Test
     public void testGcs() {
-      var configs = Mockito.mock(LogConfigs.class);
+      final var configs = Mockito.mock(LogConfigs.class);
       Mockito.when(configs.getAwsAccessKey()).thenReturn("");
       Mockito.when(configs.getAwsSecretAccessKey()).thenReturn("");
       Mockito.when(configs.getS3LogBucket()).thenReturn("");
@@ -61,7 +61,7 @@ public class CloudLogsClientTest {
 
   @Test
   public void createCloudLogClientTestMinio() {
-    var configs = Mockito.mock(LogConfigs.class);
+    final var configs = Mockito.mock(LogConfigs.class);
     Mockito.when(configs.getS3MinioEndpoint()).thenReturn("minio-endpoint");
     Mockito.when(configs.getAwsAccessKey()).thenReturn("access-key");
     Mockito.when(configs.getAwsSecretAccessKey()).thenReturn("access-key-secret");
@@ -73,7 +73,7 @@ public class CloudLogsClientTest {
 
   @Test
   public void createCloudLogClientTestAws() {
-    var configs = Mockito.mock(LogConfigs.class);
+    final var configs = Mockito.mock(LogConfigs.class);
     Mockito.when(configs.getS3MinioEndpoint()).thenReturn("");
     Mockito.when(configs.getAwsAccessKey()).thenReturn("access-key");
     Mockito.when(configs.getAwsSecretAccessKey()).thenReturn("access-key-secret");
@@ -85,7 +85,7 @@ public class CloudLogsClientTest {
 
   @Test
   public void createCloudLogClientTestGcs() {
-    var configs = Mockito.mock(LogConfigs.class);
+    final var configs = Mockito.mock(LogConfigs.class);
     Mockito.when(configs.getAwsAccessKey()).thenReturn("");
     Mockito.when(configs.getAwsSecretAccessKey()).thenReturn("");
     Mockito.when(configs.getS3LogBucket()).thenReturn("");
