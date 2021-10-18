@@ -85,7 +85,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    db = new GenericContainer("airbyte/clickhouse-with-ssl:dev").withExposedPorts(8443);
+    db = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
