@@ -10,7 +10,6 @@ import co.elastic.clients.elasticsearch._core.BulkRequest;
 import co.elastic.clients.elasticsearch._core.BulkResponse;
 import co.elastic.clients.elasticsearch._core.CreateResponse;
 import co.elastic.clients.elasticsearch._core.SearchResponse;
-import co.elastic.clients.elasticsearch._core.bulk.Operation;
 import co.elastic.clients.elasticsearch._core.search.Hit;
 import co.elastic.clients.elasticsearch._core.search.HitsMetadata;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
@@ -53,12 +52,13 @@ public class ElasticsearchConnection {
      */
     public ElasticsearchConnection(ConnectorConfiguration config) {
         log.info(String.format(
-                "creating ElasticsearchConnection: %s:%s", config.getHost(), config.getPort()));
+                "creating ElasticsearchConnection: %s", config.getEndpoint()));
 
         // Create the low-level client
-        httpHost = new HttpHost(config.getHost(), config.getPort());
+        httpHost = HttpHost.create(config.getEndpoint());
         RestClient restClient = RestClient.builder(httpHost)
                 .setDefaultHeaders(configureHeaders(config))
+                .setHttpClientConfigCallback(new ElasticsearchHttpClientConfigCallback(config))
                 .setFailureListener(new failureListener())
                 .build();
         // Create the transport that provides JSON and http services to API clients
@@ -83,7 +83,7 @@ public class ElasticsearchConnection {
     private Header[] configureHeaders(ConnectorConfiguration config) {
         var headerList = new ArrayList<Header>();
         // add Authorization header if credentials are present
-        if (Objects.nonNull(config.getApiKeyId()) && Objects.nonNull(config.getApiKeySecret())) {
+        if (config.isUsingApiKey()) {
             var bytes = (config.getApiKeyId() + ":" + config.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
             var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
             headerList.add(new BasicHeader("Authorization", header));
@@ -129,13 +129,13 @@ public class ElasticsearchConnection {
      * @return the response of the bulk operation
      * @throws IOException if there is server connection problem, or a non-successful operation on the server
      */
-    public BulkResponse createDocuments(String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config) throws IOException {
+    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder<>();
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
             bulkRequest.addOperation(
-                    b -> b.index(
-                            c -> c.index(index).id(extractPrimaryKey(doc, config))))
+                            b -> b.index(
+                                    c -> c.index(index).id(extractPrimaryKey(doc, config))))
                     .addDocument(doc.getData()).refresh(JsonValue.TRUE);
         }
 
@@ -144,38 +144,6 @@ public class ElasticsearchConnection {
         } catch (ApiException e) {
             throw unwrappedApiException("failed write operation", e);
         }
-    }
-    /**
-     * Bulk operation to update multiple documents in an Elasticsearch server index
-     * Attempts to extract a primary key value from the record
-     *
-     * @param index   The index to add the documents to
-     * @param records The collection of records to update documents from
-     * @param config write configuration for this stream
-     * @return the response of the bulk operation
-     * @throws IOException if there is server connection problem, or a non-successful operation on the server
-     */
-    public BulkResponse updateDocuments(String index, List<AirbyteRecordMessage> records, ElasticsearchWriteConfig config) throws IOException {
-        var bulkRequest = new BulkRequest.Builder<>();
-        for (var doc : records) {
-            log.debug("adding record to bulk create: {}", doc.getData());
-            bulkRequest.addOperation(
-                    b -> b.update(
-                            d -> d.index(index).id(extractPrimaryKey(doc, config))))
-                    .addDocument(jsonNodeToDocUpdateObject(doc.getData()));
-        }
-
-        try {
-            return client.bulk(b -> bulkRequest);
-        } catch (ApiException e) {
-            throw unwrappedApiException("failed write operation", e);
-        }
-    }
-
-    private JsonNode jsonNodeToDocUpdateObject(JsonNode data) {
-        Map<String, Object> doc = new HashMap<>();
-        doc.put("doc", data);
-        return mapper.valueToTree(doc);
     }
 
     // TODO: Can we do something like this?
@@ -188,11 +156,8 @@ public class ElasticsearchConnection {
         if (optFirst.isPresent()) {
             log.debug("trying to extract primary key using {}", optFirst.get());
             optFirst.get().stream().forEach(s -> {
-                sb.append(String.format("%s.", s));
+                sb.append(String.format("/%s", s));
             });
-            if (sb.length() > 0) {
-                sb.deleteCharAt(sb.length()-1);
-            }
         }
         if (sb.length() > 0) {
             JsonPointer ptr = JsonPointer.valueOf(sb.toString());
@@ -252,14 +217,58 @@ public class ElasticsearchConnection {
         }
     }
 
-    public void deleteIndex(String indexName) throws Exception {
+    /**
+     * Deletes an index if present, suppressing any exceptions
+     * @param indexName The index to delete
+     */
+    public void deleteIndexIfPresent(String indexName) {
         try {
-            client.delete(b -> b.id("*").index(indexName));
+            var exists = client.indices().exists(b -> b.index(indexName));
+            if (exists.value()) {
+                client.indices().delete(b -> b.index(indexName));
+            }
         } catch (ApiException e) {
-            throw unwrappedApiException("failed to delete index", e);
+            log.warn("", unwrappedApiException("failed to delete index", e));
+        } catch (IOException e) {
+            log.warn("unknown exception", e);
         }
     }
 
+    /**
+     * Clones a source index to a destination index.
+     * If the destination index already exists, it deletes it before cloning
+     * @param sourceIndexName The index to clone
+     * @param destinationIndexName The destination index name to clone to.
+     */
+    public void replaceIndex(String sourceIndexName, String destinationIndexName) {
+        // delete the destination if it exists
+        deleteIndexIfPresent(destinationIndexName);
+        try {
+            // make the source index read-only before cloning
+            // I think theres a bug in the client
+            // https://github.com/elastic/elasticsearch-java/issues/37
+            // client.indices().addBlock(b -> b.index(sourceIndexName).block(IndicesBlockOptions.Write));
+            // so we need to do it a different way
+            client.indices().putSettings(b -> b.index(sourceIndexName).settings(s -> s.blocks(w -> w.write(true))));
+
+            // clone to the destination
+            client.indices().clone(c -> c.index(sourceIndexName).target(destinationIndexName));
+
+            // enable writing on new index
+            client.indices().putSettings(b -> b.index(destinationIndexName).settings(s -> s.blocks(w -> w.write(false))));
+        } catch (ApiException e) {
+            throw unwrappedApiException("failed to delete index", e);
+        } catch (IOException e) {
+            throw new RuntimeException("unknown exception", e);
+        }
+    }
+
+    /**
+     * Unwraps a rest client ApiException, so we can log the details
+     * @param message message to add to the log entry
+     * @param e source ApiException
+     * @return a new RuntimeException with the ApiException as the source
+     */
     private RuntimeException unwrappedApiException(String message, ApiException e) {
         log.error(message);
         if (Objects.isNull(e) || Objects.isNull(e.error())) {

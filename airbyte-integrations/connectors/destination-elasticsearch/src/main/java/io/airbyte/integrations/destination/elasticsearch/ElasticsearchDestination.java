@@ -32,11 +32,13 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     @Override
     public AirbyteConnectionStatus check(JsonNode config) {
         final ConnectorConfiguration configObject = convertConfig(config);
-        if (Objects.isNull(configObject.getHost())) {
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("host must not be empty");
+        if (Objects.isNull(configObject.getEndpoint())) {
+            return new AirbyteConnectionStatus()
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
         }
-        if (configObject.getPort() == 0) {
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("port must be set");
+        if (configObject.isUsingApiKey() && configObject.isUsingBasicAuth()) {
+            return new AirbyteConnectionStatus()
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("only one authentication method can be used.");
         }
 
         final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);

@@ -22,14 +22,17 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
     private ObjectMapper mapper = new ObjectMapper();
-    //private JsonNode configJson;
     private static ElasticsearchContainer container;
 
     @BeforeAll
     public static void beforeAll() {
-        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
-                .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+                .withEnv("ES_JAVA_OPTS", "-Xms512m -Xms512m")
                 .withEnv("discovery.type", "single-node")
+                .withEnv("network.host", "0.0.0.0")
+                .withEnv("logger.org.elasticsearch", "INFO")
+                .withEnv("ingest.geoip.downloader.enabled", "false")
+                .withEnv("xpack.security.enabled", "false")
                 .withExposedPorts(9200)
                 .withStartupTimeout(Duration.ofSeconds(60));
         container.start();
@@ -52,10 +55,14 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
     }
 
     @Override
+    protected boolean implementsNamespaces() {
+        return true;
+    }
+
+    @Override
     protected JsonNode getConfig() {
         var configJson = mapper.createObjectNode();
-        configJson.put("host", container.getHost());
-        configJson.put("port", container.getMappedPort(9200));
+        configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
         return configJson;
     }
 
@@ -82,12 +89,10 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
 
     @Override
     protected void setup(TestDestinationEnv testEnv) {
-
     }
 
     @Override
     protected void tearDown(TestDestinationEnv testEnv) {
-
     }
 
 }

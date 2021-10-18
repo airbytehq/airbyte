@@ -17,7 +17,12 @@ Configuration:
         additivity: false
         AppenderRef:
           ref: STDOUT
-      - name: io.airbyte.integrations.destination.elasticsearch
+      - name: co.elastic
+        level: debug
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+      - name: io.airbyte.integrations
         level: debug
         additivity: false
         AppenderRef:

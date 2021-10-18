@@ -16,6 +16,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,7 +36,7 @@ public class ElasticsearchDestinationTest {
 
     @BeforeAll
     public static void beforeAll() {
-        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.12.1")
+        container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
                 .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
                 .withEnv("discovery.type", "single-node")
                 .withEnv("network.host", "0.0.0.0")
@@ -43,9 +44,7 @@ public class ElasticsearchDestinationTest {
                 .withStartupTimeout(Duration.ofSeconds(60));
         container.start();
         config = Jsons.jsonNode(ImmutableMap.builder()
-                .put("host", container.getHost())
-                .put("port", container.getMappedPort(9200))
-                .put("indexPrefix", "ab")
+                .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
                 .build());
     }
 
@@ -58,7 +57,7 @@ public class ElasticsearchDestinationTest {
     @AfterEach
     public void afterEach() throws Exception {
         final var connection = new ElasticsearchConnection(ConnectorConfiguration.FromJsonNode(config));
-        //connection.deleteIndex(INDEX_NAME);
+        //connection.deleteIndexIfPresent(INDEX_NAME);
     }
 
     @Test
@@ -68,10 +67,17 @@ public class ElasticsearchDestinationTest {
 
     @Test
     public void withOverwrite() throws Exception {
-       // e2e(getCatalog(DestinationSyncMode.OVERWRITE));
+       e2e(getCatalog(DestinationSyncMode.OVERWRITE));
+    }
+
+    @Test
+    public void withAppendDedup() throws Exception {
+        e2e(getCatalog(DestinationSyncMode.APPEND_DEDUP));
     }
 
     private ConfiguredAirbyteCatalog getCatalog(DestinationSyncMode destinationSyncMode) {
+        var primaryKey = new ArrayList<List<String>>();
+        primaryKey.add(List.of("id"));
         return new ConfiguredAirbyteCatalog().withStreams(List.of(
                         CatalogHelpers.createConfiguredAirbyteStream(
                                         STREAM_NAME,
@@ -79,6 +85,7 @@ public class ElasticsearchDestinationTest {
                                         Field.of("id", JsonSchemaPrimitive.NUMBER),
                                         Field.of("name", JsonSchemaPrimitive.STRING))
                                 .withDestinationSyncMode(destinationSyncMode)
+                                .withPrimaryKey(primaryKey)
                 )
         );
     }

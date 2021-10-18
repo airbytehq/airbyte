@@ -11,31 +11,28 @@ import org.junit.jupiter.api.Test;
 
 public class SerializationTest {
 
-  private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper();
 
-  @Test
-  public void test() {
+    @Test
+    public void test() {
 
-    ObjectNode node = mapper.createObjectNode();
+        ObjectNode node = mapper.createObjectNode();
 
-    String host = "localhost";
-    int port = 123;
-    String indexPrefix = "data";
-    String apiKeyId = "foo";
-    String apiKeySecret = "bar";
+        String endpoint = "http://localhost:123";
+        String indexPrefix = "data";
+        String apiKeyId = "foo";
+        String apiKeySecret = "bar";
 
-    node
-        .put("host", host)
-        .put("port", port)
-        .put("indexPrefix", indexPrefix)
-        .put("apiKeyId", apiKeyId)
-        .put("apiKeySecret", apiKeySecret);
+        node
+                .put("endpoint", endpoint)
+                .put("indexPrefix", indexPrefix)
+                .put("apiKeyId", apiKeyId)
+                .put("apiKeySecret", apiKeySecret);
 
-    ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
-    Assertions.assertEquals(host, config.getHost());
-    Assertions.assertEquals(port, config.getPort());
-    Assertions.assertEquals(apiKeyId, config.getApiKeyId());
-    Assertions.assertEquals(apiKeySecret, config.getApiKeySecret());
-  }
+        ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
+        Assertions.assertEquals(endpoint, config.getEndpoint());
+        Assertions.assertEquals(apiKeyId, config.getApiKeyId());
+        Assertions.assertEquals(apiKeySecret, config.getApiKeySecret());
+    }
 
 }
