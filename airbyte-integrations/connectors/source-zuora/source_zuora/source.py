@@ -40,7 +40,6 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self.logger = AirbyteLogger()
         self._url_base = config["url_base"]
         self.start_date = config["start_date"]
         self.window_in_days = config["window_in_days"]
