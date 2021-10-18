@@ -24,7 +24,6 @@
     },
     "user": {
       "type": ["null", "object"],
-      "required": ["username", "name", "ip_address", "email", "data", "id"],
       "properties": {
         "username": {
           "type": ["null", "string"]

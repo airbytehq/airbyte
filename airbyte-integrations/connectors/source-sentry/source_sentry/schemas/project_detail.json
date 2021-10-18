@@ -1,48 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": [
-    "allowedDomains",
-    "avatar",
-    "color",
-    "dataScrubber",
-    "dataScrubberDefaults",
-    "dateCreated",
-    "defaultEnvironment",
-    "digestsMaxDelay",
-    "digestsMinDelay",
-    "features",
-    "firstEvent",
-    "hasAccess",
-    "id",
-    "isBookmarked",
-    "isInternal",
-    "isMember",
-    "isPublic",
-    "latestRelease",
-    "name",
-    "options",
-    "organization",
-    "platform",
-    "platforms",
-    "processingIssues",
-    "relayPiiConfig",
-    "resolveAge",
-    "safeFields",
-    "scrapeJavaScript",
-    "scrubIPAddresses",
-    "securityToken",
-    "securityTokenHeader",
-    "sensitiveFields",
-    "slug",
-    "status",
-    "storeCrashReports",
-    "subjectPrefix",
-    "subjectTemplate",
-    "team",
-    "teams",
-    "verifySSL"
-  ],
   "properties": {
     "allowedDomains": {
       "type": "array",
@@ -111,25 +69,6 @@
     },
     "latestRelease": {
       "type": ["null", "object"],
-      "required": [
-        "authors",
-        "commitCount",
-        "data",
-        "dateCreated",
-        "dateReleased",
-        "deployCount",
-        "firstEvent",
-        "lastCommit",
-        "lastDeploy",
-        "lastEvent",
-        "newGroups",
-        "owner",
-        "projects",
-        "ref",
-        "shortVersion",
-        "url",
-        "version"
-      ],
       "properties": {
         "authors": {
           "type": "array",
@@ -237,16 +176,6 @@
     },
     "organization": {
       "type": "object",
-      "required": [
-        "avatar",
-        "dateCreated",
-        "id",
-        "isEarlyAdopter",
-        "name",
-        "require2FA",
-        "slug",
-        "status"
-      ],
       "properties": {
         "avatar": {
           "type": "object",
@@ -280,7 +209,6 @@
         },
         "status": {
           "type": "object",
-          "required": ["id", "name"],
           "properties": {
             "id": {
               "type": "string"
@@ -305,22 +233,6 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "assets",
-          "canDisable",
-          "contexts",
-          "doc",
-          "enabled",
-          "hasConfiguration",
-          "id",
-          "isTestable",
-          "metadata",
-          "name",
-          "shortName",
-          "slug",
-          "status",
-          "type"
-        ],
         "properties": {
           "assets": {
             "type": "array",
@@ -454,7 +366,6 @@
     },
     "team": {
       "type": "object",
-      "required": ["id", "name", "slug"],
       "properties": {
         "id": {
           "type": "string"
@@ -471,7 +382,6 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "slug"],
         "properties": {
           "id": {
             "type": "string"

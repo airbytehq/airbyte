@@ -48,7 +48,6 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["filename", "type", "value"],
           "properties": {
             "filename": {
               "type": "string"
@@ -63,7 +62,6 @@
         },
         {
           "type": "object",
-          "required": ["title"],
           "properties": {
             "title": {
               "type": "string"

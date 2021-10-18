@@ -52,16 +52,6 @@
     },
     "organization": {
       "type": "object",
-      "required": [
-        "avatar",
-        "dateCreated",
-        "id",
-        "isEarlyAdopter",
-        "name",
-        "require2FA",
-        "slug",
-        "status"
-      ],
       "properties": {
         "avatar": {
           "type": "object",
@@ -95,7 +85,6 @@
         },
         "status": {
           "type": "object",
-          "required": ["id", "name"],
           "properties": {
             "id": {
               "type": "string"
