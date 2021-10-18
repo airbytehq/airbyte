@@ -13,7 +13,7 @@ import javax.ws.rs.ext.Provider;
 public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseException> {
 
   @Override
-  public Response toResponse(JsonParseException e) {
+  public Response toResponse(final JsonParseException e) {
     return Response.status(422)
         .entity(KnownException.infoFromThrowableWithMessage(e, "Invalid json. " + e.getMessage() + " " + e.getOriginalMessage()))
         .type("application/json")

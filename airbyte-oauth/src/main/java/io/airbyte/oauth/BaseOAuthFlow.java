@@ -8,12 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -25,14 +21,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
-public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
+/*
+ * Class implementing generic oAuth 2.0 flow.
+ */
+public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   public UUID getWorkspaceId() {
     return workspaceId;
@@ -62,15 +60,18 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final ConfigRepository configRepository;
+  private final HttpClient httpClient;
   private final Supplier<String> stateSupplier;
   private UUID workspaceId;
 
 
 
-  public BaseOAuthFlow(ConfigRepository configRepository) {
+  public BaseOAuthFlow(final ConfigRepository configRepository) {
     this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
   }
 
+  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+    super(configRepository);
   public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     this(configRepository,
             HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
@@ -90,13 +91,14 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   @Override
-  public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
   @Override
-  public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
+  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
@@ -153,7 +155,11 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   @Override
-  public Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
+  public Map<String, Object> completeSourceOAuth(
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -164,10 +170,10 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   @Override
-  public Map<String, Object> completeDestinationOAuth(UUID workspaceId,
-                                                      UUID destinationDefinitionId,
-                                                      Map<String, Object> queryParams,
-                                                      String redirectUrl)
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return completeOAuthFlow(
@@ -177,7 +183,8 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         redirectUrl);
   }
 
-  protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String authCode, String redirectUrl) throws IOException {
+  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
+      throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(getAccessTokenUrl()))
@@ -187,7 +194,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()));
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
   }
@@ -247,7 +254,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   private static String urlEncode(String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -282,7 +289,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
   protected static String toUrlEncodedString(final Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
-    for (var entry : body.entrySet()) {
+    for (final var entry : body.entrySet()) {
       if (result.length() > 0) {
         result.append("&");
       }

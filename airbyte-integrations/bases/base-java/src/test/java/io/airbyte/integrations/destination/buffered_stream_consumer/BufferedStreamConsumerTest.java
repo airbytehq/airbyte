@@ -300,21 +300,21 @@ public class BufferedStreamConsumerTest {
     verify(onClose).accept(false);
   }
 
-  private static void consumeRecords(BufferedStreamConsumer consumer, Collection<AirbyteMessage> records) {
+  private static void consumeRecords(final BufferedStreamConsumer consumer, final Collection<AirbyteMessage> records) {
     records.forEach(m -> {
       try {
         consumer.accept(m);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  private static List<AirbyteMessage> getNRecords(int endExclusive) {
+  private static List<AirbyteMessage> getNRecords(final int endExclusive) {
     return getNRecords(0, endExclusive);
   }
 
-  private static List<AirbyteMessage> getNRecords(int startInclusive, int endExclusive) {
+  private static List<AirbyteMessage> getNRecords(final int startInclusive, final int endExclusive) {
     return IntStream.range(startInclusive, endExclusive)
         .boxed()
         .map(i -> new AirbyteMessage()
@@ -327,7 +327,7 @@ public class BufferedStreamConsumerTest {
         .collect(Collectors.toList());
   }
 
-  private void verifyRecords(String streamName, String namespace, Collection<AirbyteMessage> expectedRecords) throws Exception {
+  private void verifyRecords(final String streamName, final String namespace, final Collection<AirbyteMessage> expectedRecords) throws Exception {
     verify(recordWriter).accept(
         new AirbyteStreamNameNamespacePair(streamName, namespace),
         expectedRecords.stream().map(AirbyteMessage::getRecord).collect(Collectors.toList()));

@@ -41,8 +41,8 @@ public interface ProcessFactory {
                  final String... args)
       throws WorkerException;
 
-  default Process create(String jobId,
-                         int attempt,
+  default Process create(final String jobId,
+                         final int attempt,
                          final Path jobPath,
                          final String imageName,
                          final boolean usesStdin,

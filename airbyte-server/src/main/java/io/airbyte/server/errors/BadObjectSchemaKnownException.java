@@ -6,11 +6,11 @@ package io.airbyte.server.errors;
 
 public class BadObjectSchemaKnownException extends KnownException {
 
-  public BadObjectSchemaKnownException(String message) {
+  public BadObjectSchemaKnownException(final String message) {
     super(message);
   }
 
-  public BadObjectSchemaKnownException(String message, Throwable cause) {
+  public BadObjectSchemaKnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

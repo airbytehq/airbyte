@@ -21,6 +21,7 @@ import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -83,7 +84,7 @@ class DestinationHandlerTest {
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
 
-    DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
         standardDestinationDefinition.getDestinationDefinitionId());
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
@@ -213,7 +214,7 @@ class DestinationHandlerTest {
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -251,7 +252,7 @@ class DestinationHandlerTest {
 
   @Test
   void testListDestinationForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -273,6 +274,36 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead.getDestinations().get(0));
     verify(secretsProcessor)
         .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+  }
+
+  @Test
+  void testSearchDestinations() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final DestinationRead expectedDestinationRead = new DestinationRead()
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
+        .connectionConfiguration(destinationConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
+
+    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
+    when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
+    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
+    when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
+        .thenReturn(destinationConnection.getConfiguration());
+
+    when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(true);
+    DestinationReadList actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
+    assertEquals(1, actualDestinationRead.getDestinations().size());
+    assertEquals(expectedDestinationRead, actualDestinationRead.getDestinations().get(0));
+    verify(secretsProcessor)
+        .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+
+    when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(false);
+    actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
+    assertEquals(0, actualDestinationRead.getDestinations().size());
   }
 
 }
