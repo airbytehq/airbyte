@@ -8,7 +8,7 @@ import time
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -16,6 +16,8 @@ import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+
+PROPERTIES_PARAM_MAX_LENGTH = 1500
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -47,6 +49,22 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+
+
+def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
+    summary_length = 0
+    local_properties = []
+    for property_ in properties_list:
+        if len(property_) + summary_length >= PROPERTIES_PARAM_MAX_LENGTH:
+            yield local_properties
+            local_properties = []
+            summary_length = 0
+
+        local_properties.append(property_)
+        summary_length += len(property_)
+
+    if local_properties:
+        yield local_properties
 
 
 def retry_connection_handler(**kwargs):
@@ -315,23 +333,23 @@ class Stream(ABC):
                 #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
                 #  According to Hubspot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
                 #  and the official documentation, this does not exist at the moment.
-                properties_length = 500
                 stream_records = []
 
-                for property_index in range(0, len(properties_list), properties_length):
-                    params.update({"properties": ",".join(properties_list[property_index : property_index + properties_length])})
+                for properties in split_properties(properties_list):
+                    params.update({"properties": ",".join(properties)})
                     response = getter(params=params)
                     if stream_records:
-                        for counter, record in enumerate(self.parse_response(response)):
-                            if counter <= len(stream_records) and stream_records[counter].get("properties"):
-                                stream_records[counter]["properties"].update(record.get("properties", {}))
+                        for record in self._transform(self.parse_response(response)):
+                            index = next((i for i, item in enumerate(stream_records) if item.get("id") == record.get("id")), -1)
+                            if index != -1 and stream_records[index].get("properties"):
+                                stream_records[index]["properties"].update(record.get("properties", {}))
                     else:
-                        stream_records = list(self.parse_response(response))
+                        stream_records = list(self._transform(self.parse_response(response)))
 
                 yield from stream_records
             else:
                 response = getter(params=params)
-                yield from self.parse_response(response)
+                yield from self._transform(self.parse_response(response))
 
             next_page_token = self.next_page_token(response)
             if not next_page_token:
@@ -340,7 +358,7 @@ class Stream(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
+        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):
@@ -670,13 +688,13 @@ class EngagementStream(Stream):
 
 
 class FormStream(Stream):
-    """Marketing Forms, API v2
+    """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
     """
 
     entity = "form"
-    url = "/forms/v2/forms"
+    url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
