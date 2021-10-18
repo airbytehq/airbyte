@@ -46,7 +46,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
         source.getWorkspaceId(),
-        source.getConfiguration());
+        source.getConfiguration(),
+        getConnectorSpec(dockerImage));
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
@@ -82,7 +83,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
         source.getWorkspaceId(),
-        source.getConfiguration());
+        source.getConfiguration(),
+        getConnectorSpec(dockerImage));
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
@@ -130,6 +132,21 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.FAILED, null);
       throw e;
     }
+  }
+
+  /**
+   * Run docker container for image with spec command or use cache in case if this is instance of
+   * SpecCachingSynchronousSchedulerClient and return connector's spec response.
+   *
+   * @param dockerImage connector's docker image name
+   * @return Connector's spec response
+   */
+  private ConnectorSpecification getConnectorSpec(final String dockerImage) throws IOException {
+    final SynchronousResponse<ConnectorSpecification> specResponse = createGetSpecJob(dockerImage);
+    if (!specResponse.isSuccess()) {
+      throw new IOException("Couldn't fetch spec for " + dockerImage);
+    }
+    return specResponse.getOutput();
   }
 
   /**

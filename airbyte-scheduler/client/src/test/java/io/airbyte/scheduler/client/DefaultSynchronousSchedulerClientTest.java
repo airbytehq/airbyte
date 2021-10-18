@@ -78,7 +78,7 @@ class DefaultSynchronousSchedulerClientTest {
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
     schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
 
-    when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
+    when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION), any())).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
   }
 
@@ -166,6 +166,8 @@ class DefaultSynchronousSchedulerClientTest {
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
+      when(temporalClient.submitGetSpec(any(UUID.class), eq(0), any()))
+          .thenReturn(new TemporalResponse<>(new ConnectorSpecification(), createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
@@ -194,6 +196,8 @@ class DefaultSynchronousSchedulerClientTest {
       final AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
       when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))
           .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
+      when(temporalClient.submitGetSpec(any(UUID.class), eq(0), any()))
+          .thenReturn(new TemporalResponse<>(new ConnectorSpecification(), createMetadata(true)));
       final SynchronousResponse<AirbyteCatalog> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }

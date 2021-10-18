@@ -300,7 +300,8 @@ public class SchedulerHandler {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         sourceConnection.getSourceDefinitionId(),
         sourceConnection.getWorkspaceId(),
-        sourceConnection.getConfiguration());
+        sourceConnection.getConfiguration(),
+        getSpecFromSourceDefinitionId(sourceConnection.getSourceDefinitionId()));
     sourceConnection.withConfiguration(sourceConfiguration);
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
         destinationConnection.getDestinationDefinitionId(),

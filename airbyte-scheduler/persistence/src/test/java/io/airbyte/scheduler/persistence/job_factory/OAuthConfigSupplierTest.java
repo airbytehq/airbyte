@@ -23,6 +23,9 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.AuthSpecification;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.OAuth2Specification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -55,7 +58,8 @@ public class OAuthConfigSupplierTest {
   public void testInjectEmptyOAuthParameters() throws IOException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
-    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode actualConfig =
+        oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), new ConnectorSpecification());
     assertEquals(config, actualConfig);
     assertNoTracking();
   }
@@ -76,7 +80,10 @@ public class OAuthConfigSupplierTest {
             .withSourceDefinitionId(UUID.randomUUID())
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
-    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final ConnectorSpecification spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification().withOauthFlowInitParameters(List.of(List.of("api_secret"), List.of("api_client")))))
+        .withConnectionSpecification(Jsons.deserialize("{}"));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), spec);
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
     for (final String key : oauthParameters.keySet()) {
       expectedConfig.set(key, Jsons.jsonNode(oauthParameters.get(key)));
@@ -106,7 +113,10 @@ public class OAuthConfigSupplierTest {
                 .put("api_secret", "my secret workspace")
                 .put("api_client", Map.of("anyOf", List.of(Map.of("id", "id"), Map.of("service", "account"))))
                 .build()))));
-    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final ConnectorSpecification spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification().withOauthFlowInitParameters(List.of(List.of("api_secret"), List.of("api_client")))))
+        .withConnectionSpecification(Jsons.deserialize("{}"));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), spec);
     final ObjectNode expectedConfig = (ObjectNode) Jsons.clone(config);
     expectedConfig.set("api_secret", Jsons.jsonNode("my secret workspace"));
     expectedConfig.set("api_client", Jsons.jsonNode(Map.of("anyOf", List.of(
@@ -137,7 +147,10 @@ public class OAuthConfigSupplierTest {
             .withSourceDefinitionId(UUID.randomUUID())
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
-    final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final ConnectorSpecification spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification().withOauthFlowInitParameters(List.of(List.of("api_secret"), List.of("api_client")))))
+        .withConnectionSpecification(Jsons.deserialize("{}"));
+    final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), spec);
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
     for (final String key : oauthParameters.keySet()) {
       expectedConfig.set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
@@ -146,10 +159,87 @@ public class OAuthConfigSupplierTest {
     assertNoTracking();
   }
 
+  @Test
+  void testInjectMaskedOAuthParametersNestedConfig() throws JsonValidationException, IOException {
+    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
+
+    final JsonNode config = Jsons.jsonNode(Map.of("root", Map.of("credentials", generateJsonConfig())));
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, String> oauthParameters = generateOAuthParameters();
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(oauthParameters)),
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
+    final ConnectorSpecification spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification()
+            .withOauthFlowInitParameters(List.of(List.of("root", "credentials", "api_secret"), List.of("root", "credentials", "api_client")))))
+        .withConnectionSpecification(Jsons.deserialize("{}"));
+    final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), spec);
+    final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
+    for (final String key : oauthParameters.keySet()) {
+      ((ObjectNode) expectedConfig.get("root").get("credentials"))
+          .set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
+    }
+    assertEquals(expectedConfig, actualConfig);
+    assertNoTracking();
+  }
+
+  @Test
+  void testInjectMaskedOAuthParametersRootObject() throws JsonValidationException, IOException {
+    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
+
+    final JsonNode config = Jsons.jsonNode(Map.of("credentials", generateJsonConfig()));
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, String> oauthParameters = generateOAuthParameters();
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(oauthParameters)),
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
+    ConnectorSpecification spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification()
+            .withRootObject(List.of("credentials", "0"))
+            .withOauthFlowInitParameters(List.of(List.of("api_secret"), List.of("api_client")))))
+        .withConnectionSpecification(Jsons.deserialize(
+            "{\"properties\":{\"credentials\":{\"oneOf\":[{\"properties\":{\"option_title\":{\"const\":\"this one\"}}},{\"properties\":{\"option_title\":{\"const\":\"wrong one\"}}}]}}}"));
+    JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), spec);
+    ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
+    for (final String key : oauthParameters.keySet()) {
+      ((ObjectNode) expectedConfig.get("credentials")).set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
+    }
+    assertEquals(expectedConfig, actualConfig);
+    assertNoTracking();
+
+    // Root object index pointing to another oneOf object
+    spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification()
+            .withRootObject(List.of("credentials", "1"))
+            .withOauthFlowInitParameters(List.of(List.of("api_secret"), List.of("api_client")))))
+        .withConnectionSpecification(Jsons.deserialize(
+            "{\"properties\":{\"credentials\":{\"oneOf\":[{\"properties\":{\"option_title\":{\"const\":\"this one\"}}},{\"properties\":{\"option_title\":{\"const\":\"wrong one\"}}}]}}}"));
+    actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config), spec);
+    assertEquals(config, actualConfig);
+    assertNoTracking();
+  }
+
   private ObjectNode generateJsonConfig() {
     return (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
         .put("apiSecret", "123")
         .put("client", "testing")
+        .put("option_title", "this one")
         .build());
   }
 

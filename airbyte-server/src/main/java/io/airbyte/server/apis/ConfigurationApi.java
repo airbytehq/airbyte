@@ -188,7 +188,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient);
+    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient, specFetcher);
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository, trackingClient);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(

@@ -15,6 +15,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -43,7 +44,8 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
           sourceConnection.getSourceDefinitionId(),
           sourceConnection.getWorkspaceId(),
-          sourceConnection.getConfiguration());
+          sourceConnection.getConfiguration(),
+          new ConnectorSpecification());
       sourceConnection.withConfiguration(sourceConfiguration);
       final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
           destinationConnection.getDestinationDefinitionId(),

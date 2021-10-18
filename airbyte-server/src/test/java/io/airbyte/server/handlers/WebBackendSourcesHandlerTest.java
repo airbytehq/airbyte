@@ -22,7 +22,11 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.AuthSpecification;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.OAuth2Specification;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -37,17 +41,23 @@ class WebBackendSourcesHandlerTest {
   private ConfigRepository configRepository;
   private WebBackendSourcesHandler webBackendSourcesHandler;
   private TrackingClient trackingClient;
+  private SpecFetcher specFetcher;
 
   @BeforeEach
   public void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
     sourceHandler = mock(SourceHandler.class);
     configRepository = mock(ConfigRepository.class);
     trackingClient = mock(TrackingClient.class);
-    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient);
+    specFetcher = mock(SpecFetcher.class);
+    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient, specFetcher);
     when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
         .withName("test")
         .withDockerImageTag("dev"));
+    final ConnectorSpecification spec = new ConnectorSpecification().withAuthSpecification(new AuthSpecification().withOauth2Specification(
+        new OAuth2Specification().withOauthFlowInitParameters(List.of(List.of("api_secret"), List.of("api_client")))))
+        .withConnectionSpecification(Jsons.deserialize("{}"));
+    when(specFetcher.execute(any())).thenReturn(spec);
   }
 
   @Test
