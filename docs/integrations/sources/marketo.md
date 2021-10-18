@@ -91,6 +91,6 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| `0.1.1` | 2021-10-11 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Annotate Oauth2 flow initialization parameters in connector spec |
+| `0.1.1` | 2021-10-11 | [6943](https://github.com/airbytehq/airbyte/pull/6943) | Annotate Oauth2 flow initialization parameters in connector spec |
 | `0.1.0` | 2021-09-06 | [5863](https://github.com/airbytehq/airbyte/pull/5863) | Release Marketo CDK Connector |
 
