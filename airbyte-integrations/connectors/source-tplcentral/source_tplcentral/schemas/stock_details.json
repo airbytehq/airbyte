@@ -10,7 +10,15 @@
       "type": "integer"
     },
     "item_identifier": {
-      "$ref": "generic_models_item_identifier.json"
+      "type": "object",
+      "properties": {
+        "sku": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "description": {
       "type": "string"
@@ -75,19 +83,109 @@
       ]
     },
     "supplier_identifier": {
-      "$ref": "generic_models_contact_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "location_identifier": {
-      "$ref": "generic_models_location_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name_key": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "facility_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "pallet_identifier": {
-      "$ref": "generic_models_pallet_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name_key": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "facility_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "inventory_unit_of_measure_identifier": {
-      "$ref": "generic_models_unit_of_measure_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "secondary_unit_of_measure_identifier": {
-      "$ref": "generic_models_unit_of_measure_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "inventory_units_per_secondary_unit": {
       "type": [
@@ -114,7 +212,17 @@
     "saved_elements": {
       "type": "array",
       "items": {
-        "$ref": "generic_models_saved_element.json"
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
       }
     },
     "weight_imperial": {

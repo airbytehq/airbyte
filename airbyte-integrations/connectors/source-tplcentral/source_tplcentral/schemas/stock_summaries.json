@@ -4,7 +4,15 @@
   "additionalProperties": false,
   "properties": {
     "item_identifier": {
-      "$ref": "generic_models_item_identifier.json"
+      "type": "object",
+      "properties": {
+        "sku": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "qualifier": {
       "type": "string"

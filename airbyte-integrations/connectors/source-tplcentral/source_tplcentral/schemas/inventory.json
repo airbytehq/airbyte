@@ -17,13 +17,44 @@
       "type": "integer"
     },
     "customer_identifier": {
-      "$ref": "generic_models_customer_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "external_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "facility_identifier": {
-      "$ref": "generic_models_facility_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "item_identifier": {
-      "$ref": "generic_models_item_identifier.json"
+      "type": "object",
+      "properties": {
+        "sku": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "item_description": {
       "type": "string"
@@ -39,10 +70,30 @@
       "type": "string"
     },
     "inventory_unit_of_measure_identifier": {
-      "$ref": "generic_models_unit_of_measure_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "secondary_unit_of_measure_identifier": {
-      "$ref": "generic_models_unit_of_measure_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "inventory_units_per_secondary_unit": {
       "type": [
@@ -125,7 +176,17 @@
     "saved_elements": {
       "type": "array",
       "items": {
-        "$ref": "generic_models_saved_element.json"
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
       }
     },
     "lot_number": {
@@ -148,13 +209,83 @@
       ]
     },
     "supplier_identifier": {
-      "$ref": "generic_models_contact_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "location_identifier": {
-      "$ref": "generic_models_location_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name_key": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "facility_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "pallet_identifier": {
-      "$ref": "generic_models_pallet_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name_key": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "facility_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "on_hold": {
       "type": "boolean"
@@ -170,7 +301,17 @@
       "format": "date-time"
     },
     "on_hold_user_identifier": {
-      "$ref": "generic_models_user_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "quarantined": {
       "type": "boolean"

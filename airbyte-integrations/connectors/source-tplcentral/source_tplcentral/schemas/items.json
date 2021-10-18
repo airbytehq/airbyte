@@ -7,7 +7,57 @@
       "format": "date-time"
     },
     "read_only": {
-      "$ref": "customer_models_item_read_only.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "customer_identifier": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "external_id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "item_id": {
+          "type": "integer"
+        },
+        "creation_date": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "last_modified_date": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "deactivated": {
+          "type": "boolean"
+        },
+        "last_price_change": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "has_storage_rates": {
+          "type": "boolean"
+        }
+      }
     },
     "item_id": {
       "type": "integer"
@@ -28,7 +78,17 @@
       "type": "string"
     },
     "classification_identifier": {
-      "$ref": "generic_models_item_classification_identifier.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     },
     "nmfc": {
       "type": "string"
@@ -54,20 +114,489 @@
     "qualifiers": {
       "type": "array",
       "items": {
-        "$ref": "customer_models_item_qualifier.json"
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "qualifier": {
+            "type": "string"
+          }
+        }
       }
     },
     "qualifier_renamers": {
       "type": "array",
       "items": {
-        "$ref": "customer_models_qualifier_renamer.json"
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "qualifier": {
+            "type": "string"
+          },
+          "renames": {
+            "type": "string"
+          }
+        }
       }
     },
     "kit": {
-      "$ref": "customer_models_kit.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "material_notes": {
+          "type": "string"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "item_identifier": {
+                "type": "object",
+                "properties": {
+                  "sku": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "qualifier": {
+                "type": "string"
+              },
+              "qty": {
+                "type": "integer"
+              },
+              "non_sku_material": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
     },
     "options": {
-      "$ref": "customer_models_item_options.json"
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "inventory_unit": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "unit_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "minimum_stock": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "maximum_stock": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "reorder_quantity": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "inventory_method": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3
+              ],
+              "description": "1: FIFO; 2: LIFO; 3: FEFO"
+            }
+          }
+        },
+        "secondary_unit": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "inventory_also": {
+              "type": "boolean"
+            },
+            "upc": {
+              "type": "string"
+            },
+            "unit_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "inventory_units_per_unit": {
+              "type": "number"
+            }
+          }
+        },
+        "package_unit": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "imperial": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "net_weight": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "lenght": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "height": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "weight": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                }
+              }
+            },
+            "metric": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "net_weight": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "lenght": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "height": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "weight": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                }
+              }
+            },
+            "upc": {
+              "type": "string"
+            },
+            "unit_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "inventory_units_per_unit": {
+              "type": "number"
+            }
+          }
+        },
+        "track_bys": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "track_lot_number": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ],
+              "description": "0: disallow; 1: allow; 2: require"
+            },
+            "track_serial_number": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "description": "0: disallow; 1: allow; 2: allow_unique; 3: require; 4: require_unique"
+            },
+            "track_expiration_date": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ],
+              "description": "0: disallow; 1: allow; 2: require"
+            },
+            "outbound_mobile_serialization_behavior": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ],
+              "description": "0: disable; 1: ignore_quantity_mismatches; 2: disallow_quantity_mismatches"
+            },
+            "auto_hold_expiration_days_threshold": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "is_pick_lot_number_required": {
+              "type": "boolean"
+            },
+            "is_pick_serial_number_required": {
+              "type": "boolean"
+            },
+            "is_pick_expiration_date_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "pallets": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "tie": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "high": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "qty": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "imperial": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "metric": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "upc": {
+              "type": "string"
+            }
+          }
+        },
+        "haz_mat": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "is_haz_mat": {
+              "type": "boolean"
+            },
+            "id": {
+              "type": "string"
+            },
+            "shipping_name": {
+              "type": "string"
+            },
+            "hazard_class": {
+              "type": "string"
+            },
+            "packing_group": {
+              "type": "string"
+            },
+            "flash_point": {
+              "type": "string"
+            },
+            "label_code": {
+              "type": "string"
+            },
+            "flag": {
+              "type": "string"
+            }
+          }
+        },
+        "directed_put_away": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "location_zones": {
+              "type": "string"
+            },
+            "pallet_location_zones": {
+              "type": "string"
+            },
+            "over_alloc_location_zones": {
+              "type": "string"
+            },
+            "preferred_location_identifier": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name_key": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "facility_identifier": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "id": {
+                  "type": "integer"
+                }
+              }
+            },
+            "force_into_preferred_location": {
+              "type": "boolean"
+            },
+            "allow_mixed_item_storage": {
+              "type": "boolean"
+            },
+            "allow_mixed_lot_storage": {
+              "type": "boolean"
+            },
+            "mixed_expiration_days_threshold": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            }
+          }
+        },
+        "days_between_counts": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "auto_hold_on_receive": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }
