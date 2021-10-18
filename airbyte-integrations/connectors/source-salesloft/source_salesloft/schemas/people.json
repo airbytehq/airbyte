@@ -128,13 +128,13 @@
     "tags": {
       "type": ["null", "array"],
       "items": {
-          "type": ["null", "string"]
+        "type": ["null", "string"]
       }
     },
     "contact_restrictions": {
       "type": ["null", "array"],
       "items": {
-          "type": ["null", "string"]
+        "type": ["null", "string"]
       }
     },
     "counts": {

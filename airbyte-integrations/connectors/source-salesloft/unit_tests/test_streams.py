@@ -33,6 +33,17 @@ def test_next_page_token(patch_base_class):
     assert stream.next_page_token(**inputs) == expected_token
 
 
+def test_next_page_token_invalid(patch_base_class):
+    stream = SalesloftStream(authenticator=MagicMock())
+    response = MagicMock()
+    response.json.return_value = {"metadata": {"paginfffg": {"next_pagaae": 2}}}
+    inputs = {"response": response}
+    with pytest.raises(KeyError) as ex:
+        stream.next_page_token(inputs)
+    assert isinstance(ex.value, KeyError)
+
+
+
 def test_parse_response(patch_base_class):
     stream = SalesloftStream(authenticator=MagicMock())
     response = MagicMock()

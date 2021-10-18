@@ -29,16 +29,19 @@ class SalesloftStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+      try:
         next_page = response.json()["metadata"]["paging"].get("next_page")
         return None if not next_page else {"page": next_page}
+      except:
+        raise KeyError("error parsing next_page token")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        the_params = {"per_page": 100, "page": 1}
+        params = {"per_page": 100, "page": 1}
         if next_page_token and "page" in next_page_token:
-            the_params["page"] = next_page_token["page"]
-        return the_params
+            params["page"] = next_page_token["page"]
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json().get("data")
@@ -65,19 +68,17 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        the_params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if self.cursor_field in stream_state:
-            the_params["updated_at[gte]"] = stream_state[self.cursor_field]
-        return the_params
+            params["updated_at[gte]"] = stream_state[self.cursor_field]
+        return params
 
 
 class Users(SalesloftStream):
     primary_key = "id"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "users.json"
+    def path(self, **kwargs) -> str:
+        return "users"
 
 
 class People(IncrementalSalesloftStream):
@@ -85,7 +86,7 @@ class People(IncrementalSalesloftStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "people.json"
+        return "people"
 
 
 class Cadences(IncrementalSalesloftStream):
@@ -93,7 +94,7 @@ class Cadences(IncrementalSalesloftStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "cadences.json"
+        return "cadences"
 
 
 class CadenceMemberships(IncrementalSalesloftStream):
@@ -101,7 +102,7 @@ class CadenceMemberships(IncrementalSalesloftStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "cadence_memberships.json"
+        return "cadence_memberships"
 
 
 # Source
