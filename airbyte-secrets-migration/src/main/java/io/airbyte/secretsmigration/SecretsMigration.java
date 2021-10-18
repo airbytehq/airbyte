@@ -25,13 +25,11 @@ public class SecretsMigration {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final Logger LOGGER = LoggerFactory.getLogger(SecretsMigration.class);
-  final Configs configs;
   final boolean dryRun;
   final ConfigPersistence readFromPersistence;
   final ConfigPersistence writeToPersistence;
 
-  public SecretsMigration(Configs envConfigs, ConfigPersistence readFromPersistence, ConfigPersistence writeToPersistence, boolean dryRun) {
-    this.configs = envConfigs;
+  public SecretsMigration(final ConfigPersistence readFromPersistence, final ConfigPersistence writeToPersistence, final boolean dryRun) {
     this.readFromPersistence = readFromPersistence;
     this.writeToPersistence = writeToPersistence;
     this.dryRun = dryRun;
@@ -56,7 +54,7 @@ public class SecretsMigration {
     LOGGER.info("Migration run complete.");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
     final ConfigPersistence readFromPersistence = new DatabaseConfigPersistence(new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
@@ -64,7 +62,7 @@ public class SecretsMigration {
         configs.getConfigDatabaseUrl())
             .getInitialized()).withValidation();
     final ConfigPersistence writeToPersistence = new FileSystemConfigPersistence(TEST_ROOT);
-    final SecretsMigration migration = new SecretsMigration(configs, readFromPersistence, writeToPersistence, false);
+    final SecretsMigration migration = new SecretsMigration(readFromPersistence, writeToPersistence, false);
     LOGGER.info("starting: {}", SecretsMigration.class);
     migration.run();
     LOGGER.info("completed: {}", SecretsMigration.class);

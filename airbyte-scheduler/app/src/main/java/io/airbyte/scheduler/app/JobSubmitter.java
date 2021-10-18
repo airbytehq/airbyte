@@ -55,15 +55,15 @@ public class JobSubmitter implements Runnable {
   public void run() {
     try {
       LOGGER.debug("Running job-submitter...");
-      var start = System.currentTimeMillis();
+      final var start = System.currentTimeMillis();
 
       final Optional<Job> nextJob = persistence.getNextJob();
 
       nextJob.ifPresent(attemptJobSubmit());
 
-      var end = System.currentTimeMillis();
+      final var end = System.currentTimeMillis();
       LOGGER.debug("Completed Job-Submitter. Time taken: {} ms", end - start);
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
   }
@@ -89,7 +89,7 @@ public class JobSubmitter implements Runnable {
         runningJobs.add(job.getId());
         trackSubmission(job);
         submitJob(job);
-        var pending = SchedulerApp.PENDING_JOBS.decrementAndGet();
+        final var pending = SchedulerApp.PENDING_JOBS.decrementAndGet();
         LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
         LOGGER.debug("Pending jobs: {}", pending);
       } else {
@@ -100,7 +100,7 @@ public class JobSubmitter implements Runnable {
   }
 
   @VisibleForTesting
-  void submitJob(Job job) {
+  void submitJob(final Job job) {
     final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
@@ -145,17 +145,17 @@ public class JobSubmitter implements Runnable {
         .build());
   }
 
-  private void assertSameIds(long expectedAttemptId, long actualAttemptId) {
+  private void assertSameIds(final long expectedAttemptId, final long actualAttemptId) {
     if (expectedAttemptId != actualAttemptId) {
       throw new IllegalStateException("Created attempt was not the expected attempt");
     }
   }
 
-  private void trackSubmission(Job job) {
+  private void trackSubmission(final Job job) {
     jobTracker.trackSync(job, JobState.STARTED);
   }
 
-  private void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
+  private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
   }
 
