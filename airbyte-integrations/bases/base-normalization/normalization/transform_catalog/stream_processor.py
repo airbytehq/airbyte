@@ -789,6 +789,7 @@ and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "", unique_key: str = "") -> str:
+        config = {}
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
         truncate_name = self.destination_type == DestinationType.MYSQL
@@ -806,24 +807,24 @@ and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}
             if self.source_sync_mode.value == SyncMode.incremental.value:
                 output = os.path.join("airbyte_incremental", self.schema, file)
                 sql = self.add_incremental_clause(sql)
+                config["full_refresh"] = "need_normalization_full_refresh()"
             else:
                 output = os.path.join("airbyte_tables", self.schema, file)
-        config = {}
         if file_name != table_name:
             # The alias() macro configs a model's final table name.
-            config["alias"] = table_name
+            config["alias"] = f'"{table_name}"'
         if self.destination_type == DestinationType.ORACLE:
             # oracle does not allow changing schemas
-            config["schema"] = self.default_schema
+            config["schema"] = f'"{self.default_schema}"'
         else:
-            config["schema"] = schema
+            config["schema"] = f'"{schema}"'
         if unique_key:
-            config["unique_key"] = unique_key
+            config["unique_key"] = f'"{unique_key}"'
         template = Template(
             """
 {{ '{{' }} config(
 {%- for key in config %}
-    {{ key }} = "{{ config[key] }}",
+    {{ key }} = {{ config[key] }},
 {%- endfor %}
     tags = [ {{ tags }} ]
 ) {{ '}}' }}
