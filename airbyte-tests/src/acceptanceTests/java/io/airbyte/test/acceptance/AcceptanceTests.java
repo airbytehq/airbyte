@@ -1183,7 +1183,7 @@ public class AcceptanceTests {
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
-    while (count < 200 && jobStatuses.contains(job.getStatus())) {
+    while (count < 400 && jobStatuses.contains(job.getStatus())) {
       sleep(1000);
       count++;
 
