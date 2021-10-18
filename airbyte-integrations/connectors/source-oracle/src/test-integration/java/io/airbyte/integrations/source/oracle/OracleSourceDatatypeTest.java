@@ -174,7 +174,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("BINARY_DOUBLE")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("126.45d", "2.22507485850720E-308", "TO_BINARY_DOUBLE('1.79769313486231E+308')", "BINARY_DOUBLE_INFINITY")
+            .addInsertValues("126.45d", "2.22507485850720E-308", "1.79769313486231E+308d", "BINARY_DOUBLE_INFINITY")
             .addExpectedValues("126.45", "0.0", "1.79769313486231E308", "Infinity")
             .build());
 
