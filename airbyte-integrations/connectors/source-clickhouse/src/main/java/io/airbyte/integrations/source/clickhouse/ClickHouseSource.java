@@ -80,7 +80,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -103,7 +103,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
     return Collections.singleton("system");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = ClickHouseSource.getWrappedSource();
     LOGGER.info("starting source: {}", ClickHouseSource.class);
     new IntegrationRunner(source).run(args);
