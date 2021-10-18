@@ -1,11 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "read_only": {
       "description": "these fields are not updatable by the API client",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "customer_id": {
           "type": "integer"
@@ -26,6 +28,7 @@
       "description": "customer.contact1",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "contact_id": {
           "type": [
@@ -82,6 +85,7 @@
       "description": "customer.customercontacts where contact type is primary",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "contact_id": {
           "type": [
@@ -140,6 +144,7 @@
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
+        "additionalProperties": false,
         "properties": {
           "type": {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -264,6 +269,7 @@
       "description": "assemblage of all manner of capabilities the system allows for this customer, scraped together from multiple database sources",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "alerts": {
           "$schema": "http://json-schema.org/draft-07/schema#",

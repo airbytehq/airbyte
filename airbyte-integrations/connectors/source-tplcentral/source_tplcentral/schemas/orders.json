@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "cursor": {
       "type": "string",
@@ -9,6 +10,7 @@
     "read_only": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "order_id": {
           "type": "integer"
@@ -176,6 +178,7 @@
           "items": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "package_id": {
                 "type": "integer"
@@ -271,6 +274,7 @@
                 "items": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "package_content_id": {
                       "type": "integer"
@@ -327,9 +331,12 @@
           "items": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "item_identifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "sku": {
                     "type": "string"
@@ -504,10 +511,12 @@
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
+        "additionalProperties": false,
         "properties": {
           "read_only": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "order_item_id": {
                 "type": "integer"
@@ -574,6 +583,7 @@
                 "items": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "receive_item_id": {
                       "type": "integer"
@@ -594,6 +604,7 @@
                       "description": "null unless requested by including AllocationsWithDetail in OrderItemChildren",
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "item_traits": {
                           "description": "unique identifying characteristics of an item in a location",
@@ -602,7 +613,9 @@
                           "additionalProperties": false,
                           "properties": {
                             "item_identifier": {
+                              "$schema": "http://json-schema.org/draft-07/schema#",
                               "type": "object",
+                              "additionalProperties": false,
                               "properties": {
                                 "sku": {
                                   "type": "string"
@@ -721,7 +734,9 @@
             }
           },
           "item_identifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "sku": {
                 "type": "string"
@@ -827,8 +842,8 @@
             "type": "array",
             "items": {
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
               "description": "A manual allocation.",
+              "type": "object",
               "additionalProperties": false,
               "properties": {
                 "receive_item_id": {
@@ -846,6 +861,7 @@
             "items": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "package_number": {
                   "description": "use the same number on multiple OrderItemInPackages to add package content to the same package",
@@ -1012,6 +1028,7 @@
     "fulfill_inv_info": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "fulfill_inv_shipping_and_handling": {
           "type": [
@@ -1042,6 +1059,7 @@
     "routing_info": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "is_cod": {
           "type": "boolean"
@@ -1331,6 +1349,7 @@
       "description": "if not found, creates new soldto contact",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "same_as": {
           "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
@@ -1426,6 +1445,7 @@
       "description": "if not found, creates new billto contact",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "same_as": {
           "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
@@ -1536,6 +1556,7 @@
     "parcel_option": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "order_id": {
           "type": "integer"

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "cursor": {
       "type": "string",
@@ -46,7 +47,9 @@
       }
     },
     "item_identifier": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "sku": {
           "type": "string"
