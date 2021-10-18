@@ -25,7 +25,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-instance-tags: "[{'Key': 'BuildType', 'Value': 'oss'}, {'Key': 'Repository', 'Value': '${{ github.repository }}'}, {'Key': 'Branch', 'Value': ${{ github.ref }}'}]"
 
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
@@ -171,7 +170,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-instance-tags: "[{'Key': 'BuildType', 'Value': 'oss'}, {'Key': 'Repository', 'Value': '${{ github.repository }}'}, {'Key': 'Branch', 'Value': ${{ github.ref }}'}]"
   platform-build:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-build-runner # required to start the main job when the runner is ready
@@ -321,7 +319,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-instance-tags: "[{'Key': 'BuildType', 'Value': 'oss'}, {'Key': 'Repository', 'Value': '${{ github.repository }}'}, {'Key': 'Branch', 'Value': ${{ github.ref }}'}]"
   frontend-test:
     needs: start-frontend-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
@@ -404,7 +401,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-instance-tags: "[{'Key': 'BuildType', 'Value': 'oss'}, {'Key': 'Repository', 'Value': '${{ github.repository }}'}, {'Key': 'Branch', 'Value': ${{ github.ref }}'}]"
   kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
