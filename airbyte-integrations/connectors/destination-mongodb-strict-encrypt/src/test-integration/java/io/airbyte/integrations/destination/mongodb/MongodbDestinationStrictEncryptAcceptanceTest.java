@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoDatabase;
@@ -104,6 +109,13 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
         config.get(DATABASE).asText());
 
     mongoDatabase = new MongoDatabase(connectionString, config.get(DATABASE).asText());
+
+    MongoCollection<Document> collection = mongoDatabase.createCollection("acc_dest_test");
+    var doc1 = new Document("id", "0001").append("name", "Test");
+    var doc2 = new Document("id", "0002").append("name", "Mongo");
+    var doc3 = new Document("id", "0003").append("name", "Source");
+
+    collection.insertMany(List.of(doc1, doc2, doc3));
   }
 
   @Override
