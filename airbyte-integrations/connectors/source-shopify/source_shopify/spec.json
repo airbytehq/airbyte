@@ -24,7 +24,7 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["client_id","client_secret","access_token"],
+            "required": ["client_id", "client_secret", "access_token"],
             "properties": {
               "auth_method": {
                 "type": "string",
@@ -71,7 +71,7 @@
           }
         ]
       }
-    } 
+    }
   },
   "authSpecification": {
     "auth_type": "oauth2.0",
