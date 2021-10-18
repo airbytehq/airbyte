@@ -50,4 +50,9 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
-        aws-resource-tags: ${{ inputs.ec2-instance-tags }}
+        aws-resource-tags: >
+          [
+            {"Key": "BuildType", "Value": "oss"},
+            {"Key": "Repository", "Value": "${{ github.repository }}"},
+            {"Key": "Branch", "Value": "${{ github.ref }}"}
+          ]
