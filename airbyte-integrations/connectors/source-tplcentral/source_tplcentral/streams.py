@@ -113,6 +113,9 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         return {self.cursor_field: self.start_date}
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        if stream_state is None:
+            stream_state = {}
+
         return [{
             self.cursor_field: stream_state.get(self.cursor_field, self.start_date)
         }]
