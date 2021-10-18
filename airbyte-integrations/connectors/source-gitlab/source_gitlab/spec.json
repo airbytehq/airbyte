@@ -10,8 +10,7 @@
       "api_url": {
         "type": "string",
         "examples": ["gitlab.com"],
-        "description": "Please enter your basic URL from Gitlab instance",
-        "pattern": "^gitlab[a-zA-Z0-9._-]*\\.com$"
+        "description": "Please enter your basic URL from Gitlab instance"
       },
       "private_token": {
         "type": "string",

@@ -296,7 +296,7 @@
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/gitlab
   sourceType: api
 - sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
