@@ -151,7 +151,12 @@ export class GoogleAuthService implements AuthService {
   }
 
   async sendEmailVerifiedLink(): Promise<void> {
-    return sendEmailVerification(this.getCurrentUser()!).catch((err) => {
+    const currentUser = this.getCurrentUser();
+
+    if (!currentUser) {
+      throw new Error("User is not set");
+    }
+    return sendEmailVerification(currentUser).catch((err) => {
       // switch (err.code) {
       //   case "auth/email-already-in-use":
       //     throw new FieldError("email", ErrorCodes.Duplicate);
