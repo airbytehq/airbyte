@@ -94,7 +94,6 @@ const ConnectorServiceTypeControl: React.FC<{
           "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // Google Sheets
           "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
           "d8313939-3782-41b0-be29-b3ca20d8dd3a", // Intercom
-          "ec4b9503-13cb-48ab-a4ab-6ade4be46567", // Freshdesk
         ]
       : [];
   const sortedDropDownData = useMemo(
