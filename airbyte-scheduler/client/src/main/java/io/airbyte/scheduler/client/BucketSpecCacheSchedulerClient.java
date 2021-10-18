@@ -105,7 +105,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     jsonSchemaValidator.ensure(specJsonSchema, json);
   }
 
-  private static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
+  public static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
                                                                                final String bucketName,
                                                                                final String dockerImage) {
     final String[] dockerImageComponents = dockerImage.split(":");
