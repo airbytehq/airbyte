@@ -10,7 +10,6 @@ import java.util.Objects;
 public class ConnectorConfiguration {
 
     private String endpoint;
-    private int port;
     private String username;
     private String password;
     private String apiKeyId;
@@ -78,41 +77,29 @@ public class ConnectorConfiguration {
                 !this.apiKeySecret.isEmpty();
     }
 
-
-    public boolean equals(final Object o) {
-        if (o == this) return true;
-        if (!(o instanceof ConnectorConfiguration)) return false;
-        final ConnectorConfiguration other = (ConnectorConfiguration) o;
-        if (!other.canEqual(this)) return false;
-        final Object this$host = this.getEndpoint();
-        final Object other$host = other.getEndpoint();
-        if (!Objects.equals(this$host, other$host)) return false;
-        final Object this$username = this.getApiKeyId();
-        final Object other$username = other.getApiKeyId();
-        if (!Objects.equals(this$username, other$username)) return false;
-        final Object this$password = this.getApiKeySecret();
-        final Object other$password = other.getApiKeySecret();
-        if (!Objects.equals(this$password, other$password)) return false;
-        return true;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConnectorConfiguration that = (ConnectorConfiguration) o;
+        return Objects.equals(endpoint, that.endpoint) &&
+                Objects.equals(username, that.username) &&
+                Objects.equals(password, that.password) &&
+                Objects.equals(apiKeyId, that.apiKeyId) &&
+                Objects.equals(apiKeySecret, that.apiKeySecret);
     }
 
-    protected boolean canEqual(final Object other) {
-        return other instanceof ConnectorConfiguration;
-    }
-
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $host = this.getEndpoint();
-        result = result * PRIME + ($host == null ? 43 : $host.hashCode());
-        final Object $username = this.getApiKeyId();
-        result = result * PRIME + ($username == null ? 43 : $username.hashCode());
-        final Object $password = this.getApiKeySecret();
-        result = result * PRIME + ($password == null ? 43 : $password.hashCode());
-        return result;
+        return Objects.hash(endpoint, username, password, apiKeyId, apiKeySecret);
     }
 
+    @Override
     public String toString() {
-        return "ConnectorConfiguration(endpoint=" + this.getEndpoint() + ", username=" + this.getApiKeyId() + ")";
+        return "ConnectorConfiguration{" +
+                "endpoint='" + endpoint + '\'' +
+                ", username='" + username + '\'' +
+                ", apiKeyId='" + apiKeyId + '\'' +
+                '}';
     }
 }
