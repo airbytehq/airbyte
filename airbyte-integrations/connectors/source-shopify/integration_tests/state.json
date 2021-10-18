@@ -49,5 +49,8 @@
   },
   "fulfillment_orders": {
     "id": 123
-  }  
+  },
+  "fulfillments": {
+    "updated_at": "2021-09-10T06:48:10-07:00"
+  }
 }

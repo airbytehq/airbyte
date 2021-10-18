@@ -383,14 +383,14 @@ class FulfillmentOrders(ChildSubstream):
 
 class Fulfillments(ChildSubstream):
 
-    parent_stream_class: object = FulfillmentOrders
-    slice_key = "fulfillment_order_id"
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
 
     data_field = "fulfillments"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        fulfillment_order_id = stream_slice[self.slice_key]
-        return f"fulfillment_orders/{fulfillment_order_id}/{self.data_field}.json"
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
 
 
 class SourceShopify(AbstractSource):
@@ -436,4 +436,5 @@ class SourceShopify(AbstractSource):
             Locations(config),
             InventoryLevels(config),
             FulfillmentOrders(config),
+            Fulfillments(config),
         ]
