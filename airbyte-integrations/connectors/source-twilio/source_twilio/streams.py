@@ -21,7 +21,7 @@ class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
     page_size = 100
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @property
     def data_field(self):
@@ -65,6 +65,20 @@ class TwilioStream(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
         return params
+
+    @transformer.registerCustomTransform
+    def custom_transform_function(original_value: Any, field_schema: Mapping[str, Any]) -> Any:
+        if original_value and "format" in field_schema and field_schema["format"] == "date-time":
+            try:
+                return pendulum.from_format(original_value, "ddd, D MMM YYYY HH:mm:ss ZZ").in_timezone('UTC').to_iso8601_string()
+            except ValueError:
+                # Twilio API returns datetime in two formats:
+                #   - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";
+                #   - ISO8601, like "2020-12-11T04:29:09Z".
+                # If `ValueError` exception was raised this means that datetime was already in ISO8601 format and there
+                # is no need in transforming anything.
+                pass
+        return original_value
 
 
 class IncrementalTwilioStream(TwilioStream, ABC):

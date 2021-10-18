@@ -13,9 +13,11 @@
       "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "end_conference_on_exit": {

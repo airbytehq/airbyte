@@ -4,10 +4,12 @@
       "type": ["null", "string"]
     },
     "date_created": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "date_updated": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "friendly_name": {
       "type": ["null", "string"]
