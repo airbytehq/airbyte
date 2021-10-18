@@ -9,18 +9,18 @@
       "type": ["null", "string"]
     },
     "createdAt": {
-      "type": ["null", "integer"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
-      "type": ["null", "integer"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
       "type": ["null", "boolean"]
     },
     "deletedAt": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "fieldGroups": {
       "type": ["null", "array"],
