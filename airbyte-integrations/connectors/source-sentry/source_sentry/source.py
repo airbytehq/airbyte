@@ -15,13 +15,11 @@ from .streams import Events, Issues, ProjectDetail, Projects
 
 # Source
 class SourceSentry(AbstractSource):
-    DEFAULT_HOST = "sentry.io"
-
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             projects_stream = Projects(
                 authenticator=TokenAuthenticator(token=config["auth_token"]),
-                hostname=config.get("hostname", self.DEFAULT_HOST),
+                hostname=config.get("hostname"),
             )
             next(projects_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
@@ -31,7 +29,7 @@ class SourceSentry(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_args = {
             "authenticator": TokenAuthenticator(token=config["auth_token"]),
-            "hostname": config.get("hostname", self.DEFAULT_HOST),
+            "hostname": config.get("hostname"),
         }
         project_stream_args = {
             **stream_args,
