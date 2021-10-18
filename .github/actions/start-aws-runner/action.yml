@@ -23,6 +23,8 @@ inputs:
     required: false
   ec2-instance-id:
     required: false
+  ec2-instance-tags:
+    required: false
 outputs:
   label:
     value: ${{ steps.start-ec2-runner.outputs.label }}
@@ -48,9 +50,4 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
-        aws-resource-tags: >
-          [
-            {"Key": "BuildType", "Value": "oss-build"},
-            {"Key": "Repository", "Value": "${{ github.repository }}"},
-            {"Key": "Branch", "Value": "${{ github.ref }}"}
-          ]
+        aws-resource-tags: ${{ inputs.ec2-instance-tags }}
