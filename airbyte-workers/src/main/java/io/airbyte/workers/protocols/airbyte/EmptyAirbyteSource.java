@@ -26,7 +26,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
+  public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     // no op.
   }
 

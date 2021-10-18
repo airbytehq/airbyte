@@ -41,7 +41,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private int i;
   private boolean hasClosed;
 
-  CompositeIterator(List<AutoCloseableIterator<T>> iterators) {
+  CompositeIterator(final List<AutoCloseableIterator<T>> iterators) {
     Preconditions.checkNotNull(iterators);
 
     this.iterators = iterators;
@@ -63,7 +63,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     while (!currentIterator().hasNext()) {
       try {
         currentIterator().close();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
 
@@ -86,10 +86,10 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     hasClosed = true;
 
     final List<Exception> exceptions = new ArrayList<>();
-    for (AutoCloseableIterator<T> iterator : iterators) {
+    for (final AutoCloseableIterator<T> iterator : iterators) {
       try {
         iterator.close();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error("exception while closing", e);
         exceptions.add(e);
       }

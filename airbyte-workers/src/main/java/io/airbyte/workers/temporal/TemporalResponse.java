@@ -12,11 +12,11 @@ public class TemporalResponse<T> {
   private final T output;
   private final JobMetadata metadata;
 
-  public static <T> TemporalResponse<T> error(JobMetadata metadata) {
+  public static <T> TemporalResponse<T> error(final JobMetadata metadata) {
     return new TemporalResponse<>(null, metadata);
   }
 
-  public static <T> TemporalResponse<T> success(T output, JobMetadata metadata) {
+  public static <T> TemporalResponse<T> success(final T output, final JobMetadata metadata) {
     return new TemporalResponse<>(output, metadata);
   }
 

@@ -16,21 +16,21 @@ public class GracefulShutdownHandler extends Thread {
   private final Duration terminateWaitDuration;
   private final ExecutorService[] threadPools;
 
-  public GracefulShutdownHandler(Duration terminateWaitDuration, final ExecutorService... threadPools) {
+  public GracefulShutdownHandler(final Duration terminateWaitDuration, final ExecutorService... threadPools) {
     this.terminateWaitDuration = terminateWaitDuration;
     this.threadPools = threadPools;
   }
 
   @Override
   public void run() {
-    for (ExecutorService threadPool : threadPools) {
+    for (final ExecutorService threadPool : threadPools) {
       threadPool.shutdown();
 
       try {
         if (!threadPool.awaitTermination(terminateWaitDuration.getSeconds(), TimeUnit.SECONDS)) {
           LOGGER.error("Unable to kill threads by shutdown timeout.");
         }
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         LOGGER.error("Wait for graceful thread shutdown interrupted.", e);
       }
     }
