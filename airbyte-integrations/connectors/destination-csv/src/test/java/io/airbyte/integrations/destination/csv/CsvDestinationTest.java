@@ -92,7 +92,7 @@ class CsvDestinationTest {
   }
 
   private CsvDestination getDestination() {
-    CsvDestination result = spy(CsvDestination.class);
+    final CsvDestination result = spy(CsvDestination.class);
     doReturn(destinationPath).when(result).getDestinationPath(any());
     return result;
   }
@@ -117,7 +117,7 @@ class CsvDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
-    CsvDestination destination = spy(CsvDestination.class);
+    final CsvDestination destination = spy(CsvDestination.class);
     doReturn(looksLikeADirectoryButIsAFile).when(destination).getDestinationPath(any());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final AirbyteConnectionStatus actual = destination.check(config);
@@ -201,7 +201,7 @@ class CsvDestinationTest {
     assertEquals(Collections.emptySet(), actualFilenames);
   }
 
-  private List<JsonNode> csvToJson(Path csvPath) throws IOException {
+  private List<JsonNode> csvToJson(final Path csvPath) throws IOException {
     final Reader in = new FileReader(csvPath.toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)

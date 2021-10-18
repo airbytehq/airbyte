@@ -140,7 +140,7 @@
 - sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   name: Google Analytics v4
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -161,7 +161,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -174,20 +174,20 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   sourceType: api
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/redshift
   icon: redshift.svg
   sourceType: database
 - sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   name: Twilio
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/twilio
   sourceType: api
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
@@ -200,7 +200,7 @@
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
@@ -214,7 +214,7 @@
 - sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
@@ -311,10 +311,16 @@
   dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/tempo
   sourceType: api
+- sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
+  name: TikTok Marketing
+  dockerRepository: airbyte/source-tiktok-marketing
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
+  sourceType: api
 - sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   name: Trello
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/trello
   sourceType: api
 - sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
@@ -344,7 +350,7 @@
 - sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   name: Iterable
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   sourceType: api
 - sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968

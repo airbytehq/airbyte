@@ -50,7 +50,7 @@ public class AirbyteMessageUtils {
     return createRecordMessage(tableName, Jsons.jsonNode(record), Instant.EPOCH);
   }
 
-  public static AirbyteMessage createStateMessage(String key, String value) {
+  public static AirbyteMessage createStateMessage(final String key, final String value) {
     return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));

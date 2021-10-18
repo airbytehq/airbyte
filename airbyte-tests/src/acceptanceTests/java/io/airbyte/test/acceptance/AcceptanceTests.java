@@ -245,7 +245,7 @@ public class AcceptanceTests {
       final Database database = getSourceDatabase();
       final Path path = Path.of(Resources.getResource("postgres_init.sql").toURI());
       final StringBuilder query = new StringBuilder();
-      for (String line : java.nio.file.Files.readAllLines(path, UTF8)) {
+      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
         if (line != null && !line.isEmpty()) {
           query.append(line);
         }
@@ -264,18 +264,18 @@ public class AcceptanceTests {
       destinationPsql.stop();
     }
 
-    for (UUID sourceId : sourceIds) {
+    for (final UUID sourceId : sourceIds) {
       deleteSource(sourceId);
     }
 
-    for (UUID connectionId : connectionIds) {
+    for (final UUID connectionId : connectionIds) {
       disableConnection(connectionId);
     }
 
-    for (UUID destinationId : destinationIds) {
+    for (final UUID destinationId : destinationIds) {
       deleteDestination(destinationId);
     }
-    for (UUID operationId : operationIds) {
+    for (final UUID operationId : operationIds) {
       deleteOperation(operationId);
     }
   }
@@ -286,7 +286,7 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
-    DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
+    final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
@@ -297,7 +297,7 @@ public class AcceptanceTests {
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testFailedGet404() {
-    var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
+    final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID())));
     assertEquals(404, e.getCode());
   }
@@ -308,7 +308,7 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
-    SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
+    final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
         .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
     assertEquals(sourceDefId, spec.getSourceDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
@@ -485,7 +485,7 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
 
-    var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+    final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
@@ -768,7 +768,7 @@ public class AcceptanceTests {
 
     boolean hasRedacted = false;
 
-    for (String line : serverLogLines) {
+    for (final String line : serverLogLines) {
       assertFalse(line.contains(SOURCE_PASSWORD));
 
       if (line.contains("REDACTED")) {
@@ -839,7 +839,7 @@ public class AcceptanceTests {
 
     int expectedMessageNumber = 0;
     final int max = 10_000;
-    for (String logLine : attemptInfoRead.getLogs().getLogLines()) {
+    for (final String logLine : attemptInfoRead.getLogs().getLogLines()) {
       if (expectedMessageNumber > max) {
         break;
       }
@@ -853,11 +853,11 @@ public class AcceptanceTests {
     }
   }
 
-  private AirbyteCatalog discoverSourceSchema(UUID sourceId) throws ApiException {
+  private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
   }
 
-  private void assertSourceAndDestinationDbInSync(boolean withScdTable) throws Exception {
+  private void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
@@ -867,7 +867,7 @@ public class AcceptanceTests {
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
 
-    for (SchemaTableNamePair pair : sourceTables) {
+    for (final SchemaTableNamePair pair : sourceTables) {
       final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
       assertRawDestinationContains(sourceRecords, pair);
     }
@@ -887,27 +887,27 @@ public class AcceptanceTests {
     return getDatabase(destinationPsql);
   }
 
-  private Database getDatabase(PostgreSQLContainer db) {
+  private Database getDatabase(final PostgreSQLContainer db) {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<SchemaTableNamePair> listAllTables(Database database) throws SQLException {
+  private Set<SchemaTableNamePair> listAllTables(final Database database) throws SQLException {
     return database.query(
         context -> {
-          Result<Record> fetch =
+          final Result<Record> fetch =
               context.fetch(
                   "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
               .map(record -> {
-                var schemaName = (String) record.get("schemaname");
-                var tableName = (String) record.get("tablename");
+                final var schemaName = (String) record.get("schemaname");
+                final var tableName = (String) record.get("tablename");
                 return new SchemaTableNamePair(schemaName, tableName);
               })
               .collect(Collectors.toSet());
         });
   }
 
-  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(boolean withScdTable, Set<SchemaTableNamePair> sourceTables) {
+  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(final boolean withScdTable, final Set<SchemaTableNamePair> sourceTables) {
     return sourceTables.stream().flatMap(x -> {
       final String cleanedNameStream = x.tableName.replace(".", "_");
       final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
@@ -922,14 +922,14 @@ public class AcceptanceTests {
     }).collect(Collectors.toSet());
   }
 
-  private void assertRawDestinationContains(List<JsonNode> sourceRecords, SchemaTableNamePair pair) throws Exception {
+  private void assertRawDestinationContains(final List<JsonNode> sourceRecords, final SchemaTableNamePair pair) throws Exception {
     final Set<JsonNode> destinationRecords = new HashSet<>(retrieveRawDestinationRecords(pair));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s, \nsource records %s \ndestination records: %s",
             destinationRecords.size(), sourceRecords.size(), sourceRecords, destinationRecords));
 
-    for (JsonNode sourceStreamRecord : sourceRecords) {
+    for (final JsonNode sourceStreamRecord : sourceRecords) {
       assertTrue(destinationRecords.contains(sourceStreamRecord),
           String.format("destination does not contain record:\n %s \n destination contains:\n %s\n",
               sourceStreamRecord, destinationRecords));
@@ -944,7 +944,7 @@ public class AcceptanceTests {
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
 
-    for (JsonNode sourceStreamRecord : sourceRecords) {
+    for (final JsonNode sourceStreamRecord : sourceRecords) {
       assertTrue(
           destinationRecords.stream()
               .anyMatch(r -> r.get(COLUMN_NAME).asText().equals(sourceStreamRecord.get(COLUMN_NAME).asText())
@@ -953,12 +953,12 @@ public class AcceptanceTests {
     }
   }
 
-  private ConnectionRead createConnection(String name,
-                                          UUID sourceId,
-                                          UUID destinationId,
-                                          List<UUID> operationIds,
-                                          AirbyteCatalog catalog,
-                                          ConnectionSchedule schedule)
+  private ConnectionRead createConnection(final String name,
+                                          final UUID sourceId,
+                                          final UUID destinationId,
+                                          final List<UUID> operationIds,
+                                          final AirbyteCatalog catalog,
+                                          final ConnectionSchedule schedule)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -984,7 +984,8 @@ public class AcceptanceTests {
         getDestinationDbConfig());
   }
 
-  private DestinationRead createDestination(String name, UUID workspaceId, UUID destinationDefId, JsonNode destinationConfig) throws ApiException {
+  private DestinationRead createDestination(final String name, final UUID workspaceId, final UUID destinationDefId, final JsonNode destinationConfig)
+      throws ApiException {
     final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()
             .name(name)
@@ -996,7 +997,7 @@ public class AcceptanceTests {
   }
 
   private OperationRead createOperation() throws ApiException {
-    OperatorConfiguration normalizationConfig = new OperatorConfiguration()
+    final OperatorConfiguration normalizationConfig = new OperatorConfiguration()
         .operatorType(OperatorType.NORMALIZATION).normalization(new OperatorNormalization().option(
             OptionEnum.BASIC));
 
@@ -1004,7 +1005,7 @@ public class AcceptanceTests {
         .workspaceId(workspaceId)
         .name("AccTestDestination-" + UUID.randomUUID()).operatorConfiguration(normalizationConfig);
 
-    OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
+    final OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
     operationIds.add(operation.getOperationId());
     return operation;
   }
@@ -1018,7 +1019,7 @@ public class AcceptanceTests {
         .getDestinationDefinitionId();
   }
 
-  private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
+  private List<JsonNode> retrieveSourceRecords(final Database database, final String table) throws SQLException {
     return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
@@ -1026,7 +1027,7 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
+  private List<JsonNode> retrieveDestinationRecords(final Database database, final String table) throws SQLException {
     return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
@@ -1038,7 +1039,7 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRawDestinationRecords(SchemaTableNamePair pair) throws Exception {
+  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
@@ -1061,17 +1062,18 @@ public class AcceptanceTests {
     return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
   }
 
-  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema, Type connectorType) {
+  private JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
     try {
       final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
           : localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Map<Object, Object> localConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) throws UnknownHostException {
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+      throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
     if (IS_KUBE) {
@@ -1110,7 +1112,8 @@ public class AcceptanceTests {
         getSourceDbConfig());
   }
 
-  private SourceRead createSource(String name, UUID workspaceId, UUID sourceDefId, JsonNode sourceConfig) throws ApiException {
+  private SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)
+      throws ApiException {
     final SourceRead source = apiClient.getSourceApi().createSource(new SourceCreate()
         .name(name)
         .sourceDefinitionId(sourceDefId)
@@ -1132,7 +1135,7 @@ public class AcceptanceTests {
   private void clearSourceDbData() throws SQLException {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
-    for (SchemaTableNamePair pair : pairs) {
+    for (final SchemaTableNamePair pair : pairs) {
       database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
@@ -1140,16 +1143,16 @@ public class AcceptanceTests {
   private void clearDestinationDbData() throws SQLException {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
-    for (SchemaTableNamePair pair : pairs) {
+    for (final SchemaTableNamePair pair : pairs) {
       database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
-  private void deleteSource(UUID sourceId) throws ApiException {
+  private void deleteSource(final UUID sourceId) throws ApiException {
     apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceId));
   }
 
-  private void disableConnection(UUID connectionId) throws ApiException {
+  private void disableConnection(final UUID connectionId) throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
         new ConnectionUpdate()
@@ -1162,21 +1165,22 @@ public class AcceptanceTests {
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
-  private void deleteDestination(UUID destinationId) throws ApiException {
+  private void deleteDestination(final UUID destinationId) throws ApiException {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
-  private void deleteOperation(UUID destinationId) throws ApiException {
+  private void deleteOperation(final UUID destinationId) throws ApiException {
     apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
-  private static void waitForSuccessfulJob(JobsApi jobsApi, JobRead originalJob) throws InterruptedException, ApiException {
+  private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
     final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
   @SuppressWarnings("BusyWait")
-  private static JobRead waitForJob(JobsApi jobsApi, JobRead originalJob, Set<JobStatus> jobStatuses) throws InterruptedException, ApiException {
+  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
+      throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
     while (count < 200 && jobStatuses.contains(job.getStatus())) {
@@ -1190,7 +1194,8 @@ public class AcceptanceTests {
   }
 
   @SuppressWarnings("BusyWait")
-  private static ConnectionState waitForConnectionState(AirbyteApiClient apiClient, UUID connectionId) throws ApiException, InterruptedException {
+  private static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
+      throws ApiException, InterruptedException {
     ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {

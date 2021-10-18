@@ -31,7 +31,6 @@
       "type": ["null", "string"]
     },
     "price": {
-      "multipleOf": 1e-8,
       "type": ["null", "number"]
     },
     "price_unit": {
@@ -47,7 +46,7 @@
       "type": ["null", "string"]
     },
     "error_code": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "uri": {
       "type": ["null", "string"]
