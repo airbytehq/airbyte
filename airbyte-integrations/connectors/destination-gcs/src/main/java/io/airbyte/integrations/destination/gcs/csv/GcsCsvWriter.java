@@ -34,7 +34,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final CsvSheetGenerator csvSheetGenerator;
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
-  private final CSVPrinter csvPrinter;
+  public final CSVPrinter csvPrinter;
   private final String gcsCsvFileLocation; // this used in destination-bigquery (GCS upload type)
 
   public GcsCsvWriter(final GcsDestinationConfig config,
