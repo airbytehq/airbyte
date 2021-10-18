@@ -88,10 +88,10 @@ class Projects(SearchMetricsStream):
     primary_key = "project_id"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -168,6 +168,11 @@ class Tags(ProjectsChildStream, SearchMetricsStream):
 class BenchmarkRankingsS7(ProjectsChildStream, SearchMetricsStream):
     def path(self, **kwargs) -> str:
         return "ProjectOrganicGetListBenchmarkRankingsS7.json"
+
+
+class CountDomainKeyword(ProjectsChildStream, SearchMetricsStream):
+    def path(self, **kwargs) -> str:
+        return "ResearchOrganicGetCountDomainKeyword.json"
 
 
 class CompetitorRankingsS7(ProjectsChildStream, SearchMetricsStream):
@@ -332,6 +337,7 @@ class SourceSearchMetrics(AbstractSource):
         return [
             BenchmarkRankingsS7(config),
             CompetitorRankingsS7(config),
+            CountDomainKeyword(config),
             DistributionKeywordsS7(config),
             KeywordPotentialsS7(config),
             ListCompetitors(config),
