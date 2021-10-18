@@ -2,11 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import functools
 import json
 from typing import List, Mapping, Optional
 
+import dpath.util
 import icdiff
 import py
 from pprintpp import pformat
@@ -68,10 +68,14 @@ class DictWithHash(dict):
         return hash(self) == hash(other)
 
 
-def serialize(value, exclude_fields=None) -> str:
+def serialize(value, exclude_fields: List = None) -> str:
     """Simplify comparison of nested dicts/lists"""
-    print(value)
     if isinstance(value, Mapping):
+        # If value is Mapping, some fields can be excluded
+        if exclude_fields:
+            for field in exclude_fields:
+                if dpath.util.search(value, field):
+                    dpath.util.delete(value, field)
         return DictWithHash(value)
     if isinstance(value, List):
         return sorted([serialize(v) for v in value])

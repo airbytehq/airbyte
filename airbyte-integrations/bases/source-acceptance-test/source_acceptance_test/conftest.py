@@ -10,7 +10,7 @@ import os
 from logging import Logger
 from pathlib import Path
 from subprocess import run
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, List, MutableMapping, Optional
 
 import pytest
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type

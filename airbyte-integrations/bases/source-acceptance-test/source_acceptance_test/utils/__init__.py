@@ -14,5 +14,5 @@ __all__ = [
     "ConnectorRunner",
     "diff_dicts",
     "serialize",
-    "verify_records_schema"
+    "verify_records_schema",
 ]

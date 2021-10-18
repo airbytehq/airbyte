@@ -84,8 +84,8 @@ class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
     timeout_seconds: int = timeout_seconds
-    # ignored fields doesn't support nested fields so far
-    ignored_fields: Optional[List[str]] = Field(description="List of fields for ignoring in sequential reads test")
+    # Ignored fields doesn't support splitting by stream so far. The specified fields will be searched in all streams.
+    ignored_fields: Optional[List[str]] = Field(description="List of fields path for ignoring in sequential reads test")
 
 
 class IncrementalConfig(BaseConfig):

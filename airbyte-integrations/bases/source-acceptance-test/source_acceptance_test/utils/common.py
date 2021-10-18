@@ -5,10 +5,9 @@
 
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Iterable, List, Mapping
+from typing import Iterable, List
 
 import pytest
-from airbyte_cdk.models import Type
 from yaml import load
 
 try:
