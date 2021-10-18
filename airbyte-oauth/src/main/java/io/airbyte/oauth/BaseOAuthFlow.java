@@ -5,6 +5,8 @@
 package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -13,6 +15,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -24,24 +27,64 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
-  private final HttpClient httpClient;
+  public UUID getWorkspaceId() {
+    return workspaceId;
+  }
+
+  @Override
+  public void setWorkspaceId(UUID workspaceId) {
+    this.workspaceId = workspaceId;
+  }
+
+
+  public enum TOKEN_REQUEST_CONTENT_TYPE {
+    URL_ENCODED ("application/x-www-form-urlencoded", BaseOAuthFlow::toUrlEncodedString),
+    JSON ("application/json", BaseOAuthFlow::toJson);
+
+    String contentType;
+    Function<Map<String, String>, String> converter;
+
+    TOKEN_REQUEST_CONTENT_TYPE(String contentType, Function<Map<String, String>, String> converter) {
+      this.contentType = contentType;
+      this.converter = converter;
+    }
+  }
+
+  protected final HttpClient httpClient;
+  private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final ConfigRepository configRepository;
   private final Supplier<String> stateSupplier;
+  private UUID workspaceId;
+
+
 
   public BaseOAuthFlow(ConfigRepository configRepository) {
     this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
   }
 
+  public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
+    this(configRepository,
+            HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
+            BaseOAuthFlow::generateRandomState,
+            tokenReqContentType);
+  }
+
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+    this(configRepository, httpClient, stateSupplier, TOKEN_REQUEST_CONTENT_TYPE.URL_ENCODED);
+  }
+
+  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
+    this.tokenReqContentType = tokenReqContentType;
   }
 
   @Override
@@ -57,8 +100,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
-  protected String formatConsentUrl(UUID definitionId,
-                                    String clientId,
+  protected String formatConsentUrl(String clientId,
                                     String redirectUrl,
                                     String host,
                                     String path,
@@ -125,11 +167,19 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         redirectUrl);
   }
 
-  private Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String authCode, String redirectUrl) throws IOException {
+  /**
+   * Override to set the correct content type used to post the request to get the access/refresh_token
+   * @return the content type for the access token flow POST
+   */
+  protected String getOAuthCompleteContentType() {
+    return "application/x-www-form-urlencoded";
+  }
+
+  protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String authCode, String redirectUrl) throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
-        .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+        .POST(HttpRequest.BodyPublishers.ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(getAccessTokenUrl()))
-        .header("Content-Type", "application/x-www-form-urlencoded")
+        .header("Content-Type", tokenReqContentType.contentType)
         .build();
     // TODO: Handle error response to report better messages
     try {
@@ -138,6 +188,20 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
+  }
+
+  /**
+   *
+   * @return the method to encode the content on access token flow POST
+   */
+  private Function<Map<String, String>, String> getEncodingFunction() {
+    Function<Map<String, String>, String> encodingFunction;
+    if (getOAuthCompleteContentType().equals("application/json")) {
+      encodingFunction = BaseOAuthFlow::toJson;
+    } else {
+      encodingFunction = BaseOAuthFlow::toUrlEncodedString;
+    }
+    return encodingFunction;
   }
 
   protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
@@ -204,7 +268,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
    * parse the config differently.
    *
-   * @return
+   * @return The client Id from the OAuthConfig
    */
   protected String getClientIdUnsafe(JsonNode oauthConfig) {
     if (oauthConfig.get("client_id") != null) {
@@ -218,7 +282,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
    * parse the config differently.
    *
-   * @return
+   * @return The Client Secret from the OAuthConfiguration
    */
   protected String getClientSecretUnsafe(JsonNode oauthConfig) {
     if (oauthConfig.get("client_secret") != null) {
@@ -228,7 +292,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  private static String toUrlEncodedString(Map<String, String> body) {
+  protected static String toUrlEncodedString(Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
     for (var entry : body.entrySet()) {
       if (result.length() > 0) {
@@ -237,6 +301,12 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       result.append(entry.getKey()).append("=").append(urlEncode(entry.getValue()));
     }
     return result.toString();
+  }
+
+  protected static String toJson(Map<String, String> body) {
+    final Gson gson = new Gson();
+    Type gsonType = new TypeToken<Map<String, String>>(){}.getType();
+    return gson.toJson(body, gsonType);
   }
 
 }

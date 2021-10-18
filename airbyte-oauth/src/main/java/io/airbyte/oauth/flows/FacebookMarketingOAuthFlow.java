@@ -34,7 +34,7 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
-    return formatConsentUrl(null, clientId, redirectUrl, "www.facebook.com",
+    return formatConsentUrl(clientId, redirectUrl, "www.facebook.com",
         "v11.0/dialog/oauth", "ads_management,ads_read,read_insights", "code");
   }
 

@@ -12,6 +12,7 @@ import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.zendesk.ZendeskOAuthFlow;
 import java.util.Map;
+import java.util.UUID;
 
 public class OAuthImplementationFactory {
 
@@ -27,12 +28,14 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(String imageName) {
+
+  public OAuthFlowImplementation create(String imageName, UUID workspaceId) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      return OAUTH_FLOW_MAPPING.get(imageName);
+      var impl =  OAUTH_FLOW_MAPPING.get(imageName);
+      impl.setWorkspaceId(workspaceId);
+      return impl;
     } else {
-      throw new IllegalStateException(
-          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
+      throw new IllegalStateException(String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
     }
   }
 
