@@ -226,7 +226,7 @@ class StreamProcessor(object):
             suffix="ab3",
             unique_key=self.get_ab_id(),
         )
-        if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
+        if self.destination_sync_mode == DestinationSyncMode.append_dedup:
             from_table = self.add_to_outputs(
                 self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4", unique_key=self.get_ab_id()
             )
@@ -366,6 +366,8 @@ where 1 = 1
         return sql
 
     def get_ab_id(self, in_jinja: bool = False):
+        # this is also tied to dbt-project-template/macros/should_full_refresh.sql
+        # as it is needed by the macro should_full_refresh
         return self.name_transformer.normalize_column_name(self.airbyte_ab_id, in_jinja, False)
 
     def get_emitted_at(self, in_jinja: bool = False):
@@ -774,14 +776,12 @@ where 1 = 1
         template = Template(
             """
 {{ sql_query }}
-{{ '{% if is_incremental() %}' }}
-and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}' }})
-{{ '{% endif %}' }}
+{{'{{'}} incremental_clause({{ col_emitted_at }}) {{'}}'}}
     """
         )
         sql = template.render(
             sql_query=sql_query,
-            col_emitted_at=self.get_emitted_at(),
+            col_emitted_at=self.get_emitted_at(in_jinja=True),
         )
         return sql
 
@@ -804,10 +804,9 @@ and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ '{{ this }}
                 # if ephemeral is used with large number of columns, use views instead
                 output = os.path.join("airbyte_views", self.schema, file)
         else:
-            if self.source_sync_mode.value == SyncMode.incremental.value:
+            if self.source_sync_mode == SyncMode.incremental:
                 output = os.path.join("airbyte_incremental", self.schema, file)
                 sql = self.add_incremental_clause(sql)
-                config["full_refresh"] = "need_normalization_full_refresh()"
             else:
                 output = os.path.join("airbyte_tables", self.schema, file)
         if file_name != table_name:
