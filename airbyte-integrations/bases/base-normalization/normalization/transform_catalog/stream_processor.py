@@ -93,6 +93,7 @@ class StreamProcessor(object):
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
         self.default_schema: str = default_schema
+        self.airbyte_ab_id = "_airbyte_ab_id"
         self.airbyte_emitted_at = "_airbyte_emitted_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
 
@@ -208,15 +209,27 @@ class StreamProcessor(object):
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
-        from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
         from_table = self.add_to_outputs(
-            self.generate_column_typing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab2"
+            self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1", unique_key=self.get_ab_id()
         )
         from_table = self.add_to_outputs(
-            self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab3"
+            self.generate_column_typing_model(from_table, column_names),
+            is_intermediate=True,
+            column_count=column_count,
+            suffix="ab2",
+            unique_key=self.get_ab_id(),
+        )
+        from_table = self.add_to_outputs(
+            self.generate_id_hashing_model(from_table, column_names),
+            is_intermediate=True,
+            column_count=column_count,
+            suffix="ab3",
+            unique_key=self.get_ab_id(),
         )
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
-            from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
+            from_table = self.add_to_outputs(
+                self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4", unique_key=self.get_ab_id()
+            )
             if self.destination_type == DestinationType.ORACLE:
                 where_clause = '\nand "_AIRBYTE_ROW_NUM" = 1'
             else:
@@ -226,6 +239,7 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 column_count=column_count,
                 suffix="scd",
+                unique_key=self.get_ab_id(),
             )
             if self.destination_type == DestinationType.ORACLE:
                 where_clause = '\nand "_AIRBYTE_ACTIVE_ROW" = 1'
@@ -238,10 +252,12 @@ class StreamProcessor(object):
                 column_count=column_count,
                 unique_key=self.get_unique_key(),
             )
-            # TODO generate yaml file to dbt test final table where primary keys should be unique
         else:
             from_table = self.add_to_outputs(
-                self.generate_final_model(from_table, column_names), is_intermediate=False, column_count=column_count
+                self.generate_final_model(from_table, column_names),
+                is_intermediate=False,
+                column_count=column_count,
+                unique_key=self.get_ab_id(),
             )
         return self.find_children_streams(from_table, column_names)
 
@@ -326,6 +342,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
+    {{ col_ab_id }},
     {{ col_emitted_at }}
 from {{ from_table }} {{ table_alias }}
 {{ sql_table_comment }}
@@ -335,6 +352,7 @@ where 1 = 1
 """
         )
         sql = template.render(
+            col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
             table_alias=table_alias,
             unnesting_before_query=self.unnesting_before_query(),
@@ -346,6 +364,9 @@ where 1 = 1
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
+
+    def get_ab_id(self, in_jinja: bool = False):
+        return self.name_transformer.normalize_column_name(self.airbyte_ab_id, in_jinja, False)
 
     def get_emitted_at(self, in_jinja: bool = False):
         return self.name_transformer.normalize_column_name(self.airbyte_emitted_at, in_jinja, False)
@@ -390,6 +411,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
+    {{ col_ab_id }},
     {{ col_emitted_at }}
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -397,6 +419,7 @@ where 1 = 1
     """
         )
         sql = template.render(
+            col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.cast_property_types(column_names),
@@ -611,6 +634,7 @@ select
     partition by {{ primary_key_partition | join(", ") }}
     order by {{ cursor_field }} {{ order_null }}, {{ cursor_field }} desc, {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
   ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
+  {{ col_ab_id }},
   {{ col_emitted_at }},
   {{ hash_id }}
 from {{ from_table }}
@@ -645,6 +669,7 @@ where 1 = 1
             airbyte_end_at=self.name_transformer.normalize_column_name("_airbyte_end_at"),
             active_row=self.name_transformer.normalize_column_name("_airbyte_active_row"),
             lag_emitted_at=self.get_emitted_at(in_jinja=True),
+            col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
@@ -725,6 +750,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
+    {{ col_ab_id }},
     {{ col_emitted_at }},
     {{ hash_id }}
 from {{ from_table }}
@@ -733,6 +759,7 @@ where 1 = 1
     """
         )
         sql = template.render(
+            col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
