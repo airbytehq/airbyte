@@ -227,7 +227,7 @@ definitions:
           "
         type: array
         items:
-          type: string
+          type: [string, integer]
       oauthFlowInitParameters:
         description:
           "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
