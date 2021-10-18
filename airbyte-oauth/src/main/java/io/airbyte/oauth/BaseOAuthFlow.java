@@ -167,14 +167,6 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         redirectUrl);
   }
 
-  /**
-   * Override to set the correct content type used to post the request to get the access/refresh_token
-   * @return the content type for the access token flow POST
-   */
-  protected String getOAuthCompleteContentType() {
-    return "application/x-www-form-urlencoded";
-  }
-
   protected Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String authCode, String redirectUrl) throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
@@ -188,20 +180,6 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     } catch (InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
-  }
-
-  /**
-   *
-   * @return the method to encode the content on access token flow POST
-   */
-  private Function<Map<String, String>, String> getEncodingFunction() {
-    Function<Map<String, String>, String> encodingFunction;
-    if (getOAuthCompleteContentType().equals("application/json")) {
-      encodingFunction = BaseOAuthFlow::toJson;
-    } else {
-      encodingFunction = BaseOAuthFlow::toUrlEncodedString;
-    }
-    return encodingFunction;
   }
 
   protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
