@@ -20,16 +20,15 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ArgumentsSource;
-
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -144,17 +143,20 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
   }
 
+  /**
+   * This test is disabled because it is very slow, and should only be run manually for now.
+   */
   @Disabled
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithBillionRecords(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSyncWithBillionRecords(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-            .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-
-    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+    final List<AirbyteMessage> largeNumberRecords =
+        Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);

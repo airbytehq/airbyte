@@ -17,6 +17,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -46,14 +47,14 @@ public abstract class S3StreamCopier implements StreamCopier {
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
-  // It is optimal to write every 10,000,000 records (BUTCH_SIZE * DEFAULT_PART) to a new file.
+  // It is optimal to write every 10,000,000 records (BATCH_SIZE * DEFAULT_PART) to a new file.
+  // The BATCH_SIZE is defined in CopyConsumerFactory.
   // The average size of such a file will be about 1 GB.
   // This will make it easier to work with files and speed up the recording of large amounts of data.
-  // In addition, for a large number of records, we will not get a drop in the copy request to QUERY_TIMEOUT when
+  // In addition, for a large number of records, we will not get a drop in the copy request to
+  // QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
-  public static final int MAX_PER_FILE_PART_COUNT = 1000;
-  private int currentFileSuffix = 0;
-  private int currentFileSuffixPartCount = 0;
+  public static final int MAX_PARTS_PER_FILE = 1000;
 
   protected final AmazonS3 s3Client;
   protected final S3Config s3Config;
@@ -70,6 +71,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final Map<String, CSVPrinter> csvPrinters = new HashMap<>();
   private final String s3FileName;
   protected final String stagingFolder;
+  private final StagingFilenameGenerator filenameGenerator;
 
   public S3StreamCopier(final String stagingFolder,
                         final DestinationSyncMode destSyncMode,
@@ -92,24 +94,11 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
+    this.filenameGenerator = new StagingFilenameGenerator(streamName, MAX_PARTS_PER_FILE);
   }
 
   private String prepareS3StagingFile() {
-    return String.join("/", stagingFolder, schemaName, getS3StagingFileName());
-  }
-
-  private String getS3StagingFileName() {
-    if (currentFileSuffixPartCount < MAX_PER_FILE_PART_COUNT) {
-      // when the number of parts for the file has not reached the max,
-      // keep using the same file (i.e. keep the suffix)
-      currentFileSuffixPartCount += 1;
-    } else {
-      // otherwise, reset the part counter, and use a different file
-      // (i.e. update the suffix)
-      currentFileSuffix += 1;
-      currentFileSuffixPartCount = 0;
-    }
-    return String.format("%s_%05d", s3FileName, currentFileSuffix);
+    return String.join("/", stagingFolder, schemaName, filenameGenerator.getStagingFilename());
   }
 
   @Override
@@ -126,9 +115,9 @@ public abstract class S3StreamCopier implements StreamCopier {
       // configured part size.
       // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
       final var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
-              .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-              .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-              .partSize(s3Config.getPartSize());
+          .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+          .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+          .partSize(s3Config.getPartSize());
       multipartUploadManagers.put(name, manager);
       final var outputStream = manager.getMultiPartOutputStreams().get(0);
       // We only need one output stream as we only have one input stream. This is reasonably performant.
@@ -137,7 +126,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
       try {
         csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     }
