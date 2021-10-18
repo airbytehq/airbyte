@@ -298,7 +298,7 @@ class DbtIntegrationTest(object):
         else:
             return "airbyte/normalization:dev"
 
-    def dbt_run(self, destination_type: DestinationType, test_root_dir: str, output_dir: str = "final", force_full_refresh: bool = False):
+    def dbt_check(self, destination_type: DestinationType, test_root_dir: str):
         """
         Run the dbt CLI to perform transformations on the test raw data in the destination
         """
@@ -306,6 +306,12 @@ class DbtIntegrationTest(object):
         # Perform sanity check on dbt project settings
         assert self.run_check_dbt_command(normalization_image, "debug", test_root_dir)
         assert self.run_check_dbt_command(normalization_image, "deps", test_root_dir)
+
+    def dbt_run(self, destination_type: DestinationType, test_root_dir: str, output_dir: str = "final", force_full_refresh: bool = False):
+        """
+        Run the dbt CLI to perform transformations on the test raw data in the destination
+        """
+        normalization_image: str = self.get_normalization_image(destination_type)
         final_sql_files = os.path.join(test_root_dir, output_dir)
         shutil.rmtree(final_sql_files, ignore_errors=True)
         # Compile dbt models files into destination sql dialect, then run the transformation queries

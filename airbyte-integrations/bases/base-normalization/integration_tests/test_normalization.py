@@ -28,10 +28,10 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
-    for integration_type in [d.value for d in DestinationType]:
-        if integration_type in destinations_to_test:
-            test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
-            shutil.rmtree(test_root_dir, ignore_errors=True)
+    # for integration_type in [d.value for d in DestinationType]:
+    #     if integration_type in destinations_to_test:
+    #         test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
+    #         shutil.rmtree(test_root_dir, ignore_errors=True)
     if os.getenv("RANDOM_TEST_SCHEMA"):
         target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
         dbt_test_utils.set_target_schema(target_schema)
@@ -97,6 +97,7 @@ def run_first_normalization(destination_type: DestinationType, test_resource_nam
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
     # Setup test resources and models
     setup_dbt_test(destination_type, test_resource_name, test_root_dir)
+    dbt_test_utils.dbt_check(destination_type, test_root_dir)
     # Run dbt process
     dbt_test_utils.dbt_run(destination_type, test_root_dir, output_dir="first_output", force_full_refresh=True)
     # Verify dbt process
@@ -109,8 +110,24 @@ def run_incremental_normalization(destination_type: DestinationType, test_resour
     # setup new test files
     setup_dbt_incremental_test(destination_type, test_resource_name, test_root_dir)
     # Run dbt process
-    dbt_test_utils.dbt_run(destination_type, test_root_dir, output_dir="second_output")
+    dbt_test_utils.dbt_run(destination_type, test_root_dir, output_dir="second_output_tmp")
+    dbt_normalize_second_output(test_root_dir)
+
+    if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
+        pytest.skip(f"{destination_type} does not support incremental yet")
     dbt_test(destination_type, test_root_dir)
+
+
+def dbt_normalize_second_output(test_root_dir: str):
+    tmp_dir = os.path.join(test_root_dir, "second_output_tmp")
+    output_dir = os.path.join(test_root_dir, "second_output")
+    shutil.rmtree(output_dir, ignore_errors=True)
+
+    def copy_replace_dbt_tmp(src, dst):
+        dbt_test_utils.copy_replace(src, dst, "__dbt_tmp[0-9]+", "__dbt_tmp")
+
+    shutil.copytree(tmp_dir, output_dir, copy_function=copy_replace_dbt_tmp)
+    shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -> str:

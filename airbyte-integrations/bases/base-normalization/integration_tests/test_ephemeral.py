@@ -99,6 +99,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     generate_dbt_models(destination_type, test_root_dir, column_count)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
+    dbt_test_utils.dbt_check(destination_type, test_root_dir)
     if expected_exception_message:
         with pytest.raises(AssertionError):
             dbt_test_utils.dbt_run(destination_type, test_root_dir)

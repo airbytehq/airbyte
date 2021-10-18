@@ -49,7 +49,9 @@ models:
         +materialized: ephemeral
       airbyte_incremental:
         +tags: incremental_tables
-        +materialized: incremental
+        # incremental is not enabled for MySql yet
+        #+materialized: incremental
+        +materialized: table
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table
