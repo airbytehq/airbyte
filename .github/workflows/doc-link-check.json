@@ -44,6 +44,10 @@
     {
       "reason": "Test only scaffold connector",
       "pattern": "destinations/scaffold-"
+    },
+    {
+      "reason": "Archived articles aren't actively maintained.",
+      "pattern": "archive/"
     }
   ],
   "retryOn429": false,
