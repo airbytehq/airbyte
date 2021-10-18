@@ -32,7 +32,7 @@ build.finalizedBy test
 
 task copyDocs(type: Copy) {
     from "${System.getProperty("user.dir")}/docs/integrations"
-    into "${buildDir}/docs/"
+    into "${buildDir}/docs/integrations"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
