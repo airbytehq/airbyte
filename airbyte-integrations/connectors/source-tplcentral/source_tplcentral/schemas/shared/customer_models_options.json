@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "alerts": {
+      "$ref": "customer_models_alerts.json"
+    },
+    "storage": {
+      "$ref": "customer_models_storage.json"
+    },
+    "edi": {
+      "$ref": "customer_models_edi.json"
+    },
+    "receiving": {
+      "$ref": "customer_models_receiving.json"
+    },
+    "shipping": {
+      "$ref": "customer_models_shipping.json"
+    },
+    "packaging": {
+      "$ref": "customer_models_packaging.json"
+    },
+    "other_system_behaviors": {
+      "$ref": "customer_models_other_system_behaviors.json"
+    },
+    "user_interface": {
+      "$ref": "customer_models_user_interface.json"
+    },
+    "saved_elements": {
+      "description": "UI assistance for adding saved elements to a transaction and its line items. Since it is merely a UI assistance, it is up to a UI to decide if, how and when it will verify requiredness. In other words, business logic doesn't care.",
+      "$ref": "customer_models_saved_element_defs.json"
+    }
+  }
+}

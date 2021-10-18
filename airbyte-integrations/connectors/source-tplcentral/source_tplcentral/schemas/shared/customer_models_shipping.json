@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "next_master_bol_id": {
+      "description": "Readonly value; see NextMasterBolIdOverride",
+      "type": "integer"
+    },
+    "next_master_bol_id_override": {
+      "description": "To override the system-generated NextMasterBolId",
+      "type": ["null", "integer"]
+    },
+    "bol_num_as_trans_num": {
+      "type": "boolean"
+    },
+    "auto_confirm_order_on_tracking_update": {
+      "type": "boolean"
+    },
+    "fulfillment_invoicing": {
+      "$ref": "common_enum_fulfillment_invoicing.json"
+    },
+    "order_queue": {
+      "type": "boolean"
+    },
+    "auto_print_carton_label_default": {
+      "description": "Sets default on or off for Smart Pack's Auto-print labels checkbox",
+      "type": "boolean"
+    },
+    "smart_pack_scale_enabled": {
+      "type": "boolean"
+    },
+    "require_tracking_number": {
+      "type": "boolean"
+    },
+    "ups_account_number": {
+      "type": "string"
+    },
+    "ups_account_zip": {
+      "type": "string"
+    },
+    "fed_ex_account_number": {
+      "type": "string"
+    },
+    "prepopulate_carrier_info": {
+      "$ref": "common_enum_prepopulate_carrier_info.json"
+    },
+    "packing_list_logo_url": {
+      "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
+      "type": "string"
+    },
+    "packing_list_footer_url": {
+      "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
+      "type": "string"
+    },
+    "roundupto_full_mu": {
+      "type": "boolean"
+    },
+    "quick_books_payment_terms": {
+      "type": "string"
+    },
+    "asn_pre_check": {
+      "$ref": "customer_models_asn_pre_check.json"
+    }
+  }
+}

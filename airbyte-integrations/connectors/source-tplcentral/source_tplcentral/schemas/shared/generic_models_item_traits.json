@@ -9,23 +9,18 @@
     "qualifier": {
       "type": "string"
     },
-    "total_received": {
-      "type": "number"
+    "lot_number": {
+      "type": "string"
     },
-    "allocated": {
-      "type": "number"
+    "serial_number": {
+      "type": "string"
     },
-    "available": {
-      "type": "number"
+    "expiration_date": {
+      "type": "string",
+      "format": "date-time"
     },
-    "on_hold": {
-      "type": "number"
-    },
-    "on_hand": {
-      "type": "number"
-    },
-    "facility_id": {
-      "type": "integer"
+    "pallet_identifier": {
+      "$ref": "generic_models_pallet_identifier.json"
     }
   }
 }

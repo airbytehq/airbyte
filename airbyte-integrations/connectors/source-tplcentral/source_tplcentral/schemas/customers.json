@@ -4,21 +4,21 @@
   "properties": {
     "read_only": {
       "description": "these fields are not updatable by the API client",
-      "$ref": "customer/models/customer_read_only.json"
+      "$ref": "customer_models_customer_read_only.json"
     },
     "company_info": {
       "description": "customer.contact1",
-      "$ref": "generic/models/contact_info.json"
+      "$ref": "generic_models_contact_info.json"
     },
     "primary_contact": {
       "description": "customer.customercontacts where contact type is primary",
-      "$ref": "generic/models/contact_info.json"
+      "$ref": "generic_models_contact_info.json"
     },
     "other_contacts": {
       "description": "customer.customercontacts where contact type is other than primary",
       "type": "array",
       "items": {
-        "$ref": "generic/models/other_contact_info.json"
+        "$ref": "generic_models_other_contact_info.json"
       }
     },
     "web_site": {
@@ -40,16 +40,16 @@
       "description": "list of facilities this customer's items are stored in, the first is the primary facility",
       "type": "array",
       "items": {
-        "$ref": "generic/models/facility_identifier.json"
+        "$ref": "generic_models_facility_identifier.json"
       }
     },
     "primary_facility_identifier": {
       "description": "same as the first in Facilities; populated by GET, ignored by POST and PUT",
-      "$ref": "generic/models/facility_identifier.json"
+      "$ref": "generic_models_facility_identifier.json"
     },
     "options": {
       "description": "assemblage of all manner of capabilities the system allows for this customer, scraped together from multiple database sources",
-      "$ref": "customer/models/options.json"
+      "$ref": "customer_models_options.json"
     }
   }
 }

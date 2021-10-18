@@ -7,12 +7,12 @@
       "format": "date-time"
     },
     "read_only": {
-      "$ref": "order/models/order_read_only.json"
+      "$ref": "order_models_order_read_only.json"
     },
     "order_items": {
       "type": "array",
       "items": {
-        "$ref": "order/models/order_item.json"
+        "$ref": "order_models_order_item.json"
       }
     },
     "reference_num": {
@@ -52,7 +52,7 @@
       ]
     },
     "unit1_identifier": {
-      "$ref": "generic/models/unit_of_measure_identifier.json"
+      "$ref": "generic_models_unit_of_measure_identifier.json"
     },
     "num_units2": {
       "type": [
@@ -61,7 +61,7 @@
       ]
     },
     "unit2_identifier": {
-      "$ref": "generic/models/unit_of_measure_identifier.json"
+      "$ref": "generic_models_unit_of_measure_identifier.json"
     },
     "total_weight": {
       "type": [
@@ -101,7 +101,7 @@
     },
     "export_channel_identifier": {
       "description": "A reference to the channel used to export an Advance Shipping Notice or RoutingRequest; must specify Id (Name alone will fail)",
-      "$ref": "generic/models/channel_identifier.json"
+      "$ref": "generic_models_channel_identifier.json"
     },
     "route_pickup_date": {
       "type": [
@@ -120,35 +120,35 @@
       "type": "string"
     },
     "fulfill_inv_info": {
-      "$ref": "order/models/fulfill_inv_info.json"
+      "$ref": "order_models_fulfill_inv_info.json"
     },
     "routing_info": {
-      "$ref": "order/models/routing_info.json"
+      "$ref": "order_models_routing_info.json"
     },
     "billing": {
       "description": "PUT: set to null to make no changes to billing",
-      "$ref": "generic/models/billing.json"
+      "$ref": "generic_models_billing.json"
     },
     "ship_to": {
       "description": "if not found, creates new shipto contact",
-      "$ref": "generic/models/order_ship_to_info.json"
+      "$ref": "generic_models_order_ship_to_info.json"
     },
     "sold_to": {
       "description": "if not found, creates new soldto contact",
-      "$ref": "generic/models/order_contact_info.json"
+      "$ref": "generic_models_order_contact_info.json"
     },
     "bill_to": {
       "description": "if not found, creates new billto contact",
-      "$ref": "generic/models/order_contact_info.json"
+      "$ref": "generic_models_order_contact_info.json"
     },
     "saved_elements": {
       "type": "array",
       "items": {
-        "$ref": "generic/models/saved_element.json"
+        "$ref": "generic_models_saved_element.json"
       }
     },
     "parcel_option": {
-      "$ref": "order/models/parcel_option.json"
+      "$ref": "order_models_parcel_option.json"
     }
   }
 }

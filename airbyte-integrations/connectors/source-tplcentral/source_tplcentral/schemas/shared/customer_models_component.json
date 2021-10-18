@@ -9,23 +9,11 @@
     "qualifier": {
       "type": "string"
     },
-    "total_received": {
-      "type": "number"
-    },
-    "allocated": {
-      "type": "number"
-    },
-    "available": {
-      "type": "number"
-    },
-    "on_hold": {
-      "type": "number"
-    },
-    "on_hand": {
-      "type": "number"
-    },
-    "facility_id": {
+    "qty": {
       "type": "integer"
+    },
+    "non_sku_material": {
+      "type": "string"
     }
   }
 }

@@ -7,7 +7,7 @@
       "format": "date-time"
     },
     "read_only": {
-      "$ref": "customer/models/item_read_only.json"
+      "$ref": "customer_models_item_read_only.json"
     },
     "item_id": {
       "type": "integer"
@@ -28,7 +28,7 @@
       "type": "string"
     },
     "classification_identifier": {
-      "$ref": "generic/models/item_classification_identifier.json"
+      "$ref": "generic_models_item_classification_identifier.json"
     },
     "nmfc": {
       "type": "string"
@@ -54,20 +54,20 @@
     "qualifiers": {
       "type": "array",
       "items": {
-        "$ref": "customer/models/item_qualifier.json"
+        "$ref": "customer_models_item_qualifier.json"
       }
     },
     "qualifier_renamers": {
       "type": "array",
       "items": {
-        "$ref": "customer/models/qualifier_renamer.json"
+        "$ref": "customer_models_qualifier_renamer.json"
       }
     },
     "kit": {
-      "$ref": "customer/models/kit.json"
+      "$ref": "customer_models_kit.json"
     },
     "options": {
-      "$ref": "customer/models/item_options.json"
+      "$ref": "customer_models_item_options.json"
     }
   }
 }

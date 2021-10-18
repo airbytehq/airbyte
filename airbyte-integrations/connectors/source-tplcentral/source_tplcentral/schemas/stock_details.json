@@ -10,7 +10,7 @@
       "type": "integer"
     },
     "item_identifier": {
-      "$ref": "generic/models/item_identifier.json"
+      "$ref": "generic_models_item_identifier.json"
     },
     "description": {
       "type": "string"
@@ -75,19 +75,19 @@
       ]
     },
     "supplier_identifier": {
-      "$ref": "generic/models/contact_identifier.json"
+      "$ref": "generic_models_contact_identifier.json"
     },
     "location_identifier": {
-      "$ref": "generic/models/location_identifier.json"
+      "$ref": "generic_models_location_identifier.json"
     },
     "pallet_identifier": {
-      "$ref": "generic/models/pallet_identifier.json"
+      "$ref": "generic_models_pallet_identifier.json"
     },
     "inventory_unit_of_measure_identifier": {
-      "$ref": "generic/models/unit_of_measure_identifier.json"
+      "$ref": "generic_models_unit_of_measure_identifier.json"
     },
     "secondary_unit_of_measure_identifier": {
-      "$ref": "generic/models/unit_of_measure_identifier.json"
+      "$ref": "generic_models_unit_of_measure_identifier.json"
     },
     "inventory_units_per_secondary_unit": {
       "type": [
@@ -114,7 +114,7 @@
     "saved_elements": {
       "type": "array",
       "items": {
-        "$ref": "generic/models/saved_element.json"
+        "$ref": "generic_models_saved_element.json"
       }
     },
     "weight_imperial": {

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "billing_charges": {
+      "description": "PUT: set to NULL or empty to delete all charges",
+      "type": "array",
+      "items": {
+        "$ref": "generic_models_billing_charge.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "is_cod": {
+      "type": "boolean"
+    },
+    "is_insurance": {
+      "type": "boolean"
+    },
+    "requires_delivery_conf": {
+      "type": "boolean"
+    },
+    "requires_return_receipt": {
+      "type": "boolean"
+    },
+    "scac_code": {
+      "type": "string"
+    },
+    "carrier": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "account": {
+      "type": "string"
+    },
+    "ship_point_zip": {
+      "type": "string"
+    },
+    "capacity_type_identifier": {
+      "$ref": "generic_models_capacity_type_identifier.json"
+    },
+    "load_number": {
+      "type": "string"
+    },
+    "bill_of_lading": {
+      "type": "string"
+    },
+    "tracking_number": {
+      "type": "string"
+    },
+    "trailer_number": {
+      "type": "string"
+    },
+    "seal_number": {
+      "type": "string"
+    },
+    "door_number": {
+      "type": "string"
+    },
+    "pickup_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

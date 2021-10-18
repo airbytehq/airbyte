@@ -17,13 +17,13 @@
       "type": "integer"
     },
     "customer_identifier": {
-      "$ref": "generic/models/customer_identifier.json"
+      "$ref": "generic_models_customer_identifier.json"
     },
     "facility_identifier": {
-      "$ref": "generic/models/facility_identifier.json"
+      "$ref": "generic_models_facility_identifier.json"
     },
     "item_identifier": {
-      "$ref": "generic/models/item_identifier.json"
+      "$ref": "generic_models_item_identifier.json"
     },
     "item_description": {
       "type": "string"
@@ -39,10 +39,10 @@
       "type": "string"
     },
     "inventory_unit_of_measure_identifier": {
-      "$ref": "generic/models/unit_of_measure_identifier.json"
+      "$ref": "generic_models_unit_of_measure_identifier.json"
     },
     "secondary_unit_of_measure_identifier": {
-      "$ref": "generic/models/unit_of_measure_identifier.json"
+      "$ref": "generic_models_unit_of_measure_identifier.json"
     },
     "inventory_units_per_secondary_unit": {
       "type": [
@@ -125,7 +125,7 @@
     "saved_elements": {
       "type": "array",
       "items": {
-        "$ref": "generic/models/saved_element.json"
+        "$ref": "generic_models_saved_element.json"
       }
     },
     "lot_number": {
@@ -148,13 +148,13 @@
       ]
     },
     "supplier_identifier": {
-      "$ref": "generic/models/contact_identifier.json"
+      "$ref": "generic_models_contact_identifier.json"
     },
     "location_identifier": {
-      "$ref": "generic/models/location_identifier.json"
+      "$ref": "generic_models_location_identifier.json"
     },
     "pallet_identifier": {
-      "$ref": "generic/models/pallet_identifier.json"
+      "$ref": "generic_models_pallet_identifier.json"
     },
     "on_hold": {
       "type": "boolean"
@@ -170,7 +170,7 @@
       "format": "date-time"
     },
     "on_hold_user_identifier": {
-      "$ref": "generic/models/user_identifier.json"
+      "$ref": "generic_models_user_identifier.json"
     },
     "quarantined": {
       "type": "boolean"
