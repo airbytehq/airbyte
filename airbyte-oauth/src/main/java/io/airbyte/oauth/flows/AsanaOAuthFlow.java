@@ -54,6 +54,7 @@ public class AsanaOAuthFlow extends BaseOAuthFlow {
     return ACCESS_TOKEN_URL;
   }
 
+  @Override
   protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))

@@ -20,12 +20,12 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(final ConfigRepository configRepository) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
+        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
         .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
-        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
         .build();
   }
 
