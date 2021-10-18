@@ -65,6 +65,10 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
   public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
 
+  public static Source getWrappedSource() {
+    return new ClickHouseSource();
+  }
+
   /**
    * The reason we use NoOpJdbcStreamingQueryConfiguration(not setting auto commit to false and not
    * setting fetch size to 1000) for ClickHouse is cause method
@@ -100,7 +104,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new ClickHouseSource();
+    final Source source = ClickHouseSource.getWrappedSource();
     LOGGER.info("starting source: {}", ClickHouseSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ClickHouseSource.class);
