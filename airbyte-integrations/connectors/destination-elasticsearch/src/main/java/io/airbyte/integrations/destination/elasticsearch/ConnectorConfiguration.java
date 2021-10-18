@@ -9,38 +9,51 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConnectorConfiguration {
 
-    private String host;
+    private String endpoint;
     private int port;
+    private String username;
+    private String password;
     private String apiKeyId;
     private String apiKeySecret;
 
-    public ConnectorConfiguration() {}
+    public ConnectorConfiguration() {
+    }
+
     public static ConnectorConfiguration FromJsonNode(JsonNode config) {
         return new ObjectMapper().convertValue(config, ConnectorConfiguration.class);
     }
 
-    public String getHost() {
-        return this.host;
-    }
-
-    public int getPort() {
-        return this.port;
+    public String getEndpoint() {
+        return this.endpoint;
     }
 
     public String getApiKeyId() {
         return this.apiKeyId;
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
     public String getApiKeySecret() {
         return this.apiKeySecret;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setApiKeyId(String apiKeyId) {
@@ -51,15 +64,29 @@ public class ConnectorConfiguration {
         this.apiKeySecret = apiKeySecret;
     }
 
+    public boolean isUsingBasicAuth() {
+        return Objects.nonNull(this.username) &&
+                !this.username.isEmpty() &&
+                Objects.nonNull(this.password) &&
+                !this.password.isEmpty();
+    }
+
+    public boolean isUsingApiKey() {
+        return Objects.nonNull(this.apiKeyId) &&
+                !this.apiKeyId.isEmpty() &&
+                Objects.nonNull(this.apiKeySecret) &&
+                !this.apiKeySecret.isEmpty();
+    }
+
+
     public boolean equals(final Object o) {
         if (o == this) return true;
         if (!(o instanceof ConnectorConfiguration)) return false;
         final ConnectorConfiguration other = (ConnectorConfiguration) o;
         if (!other.canEqual(this)) return false;
-        final Object this$host = this.getHost();
-        final Object other$host = other.getHost();
+        final Object this$host = this.getEndpoint();
+        final Object other$host = other.getEndpoint();
         if (!Objects.equals(this$host, other$host)) return false;
-        if (this.getPort() != other.getPort()) return false;
         final Object this$username = this.getApiKeyId();
         final Object other$username = other.getApiKeyId();
         if (!Objects.equals(this$username, other$username)) return false;
@@ -76,9 +103,8 @@ public class ConnectorConfiguration {
     public int hashCode() {
         final int PRIME = 59;
         int result = 1;
-        final Object $host = this.getHost();
+        final Object $host = this.getEndpoint();
         result = result * PRIME + ($host == null ? 43 : $host.hashCode());
-        result = result * PRIME + this.getPort();
         final Object $username = this.getApiKeyId();
         result = result * PRIME + ($username == null ? 43 : $username.hashCode());
         final Object $password = this.getApiKeySecret();
@@ -87,6 +113,6 @@ public class ConnectorConfiguration {
     }
 
     public String toString() {
-        return "ConnectorConfiguration(host=" + this.getHost() + ", port=" + this.getPort() + ", username=" + this.getApiKeyId() + ")";
+        return "ConnectorConfiguration(endpoint=" + this.getEndpoint() + ", username=" + this.getApiKeyId() + ")";
     }
 }

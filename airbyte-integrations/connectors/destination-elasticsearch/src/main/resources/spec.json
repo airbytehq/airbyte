@@ -1,47 +1,51 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch",
-  "supportsIncremental": false,
+  "supportsIncremental": true,
   "supportsNormalization": false,
+  "supportsNamespaces": true,
   "supportsDBT": false,
-  "supported_destination_sync_modes": ["append"],
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Elasticsearch Connection Configuration",
     "type": "object",
     "required": [
-      "host"
+      "endpoint"
     ],
     "additionalProperties": false,
     "properties": {
-      "host": {
-        "title": "Host",
+      "endpoint": {
+        "title": "Server Endpoint",
         "type": "string",
-        "description": "The host name of the Elasticsearch server",
-        "examples": ["elastic"],
+        "description": "The full url of the Elasticsearch server",
+        "examples": ["http://localhost:9200", "https://elasticsearch.savantly.net:9243"],
         "order": 0
       },
-      "port": {
-        "title": "Port",
-        "type": "integer",
-        "description": "The port of the server.",
-        "minimum": 0,
-        "maximum": 65536,
-        "examples": ["9200"],
-        "default": 9200,
-        "order": 1
+      "username": {
+        "title": "Username",
+        "description": "Basic auth username to access a secure Elasticsearch server",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "description": "Basic auth password to access a secure Elasticsearch server",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
       },
       "apiKeyId": {
         "title": "API Key ID",
         "description": "The Key ID to used when accessing an enterprise Elasticsearch instance.",
         "type": "string",
-        "order": 3
+        "order": 5
       },
       "apiKeySecret": {
         "title": "API Key Secret",
         "description": "The secret associated with the API Key ID.",
         "type": "string",
         "airbyte_secret": true,
-        "order": 4
+        "order": 6
       }
     }
   }
