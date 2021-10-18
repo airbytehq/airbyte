@@ -36,11 +36,7 @@
           {
             "title": "Authenticate via Google (Oauth)",
             "type": "object",
-            "required": [
-              "client_id",
-              "client_secret",
-              "refresh_token"
-            ],
+            "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -105,14 +101,8 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [
-        ["client_id"],
-        ["client_secret"]
-      ],
-      "oauthFlowOutputParameters": [
-        ["access_token"],
-        ["refresh_token"]
-      ]
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }
