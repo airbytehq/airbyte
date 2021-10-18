@@ -27,15 +27,6 @@ public class ZendeskOAuthFlow extends BaseOAuthFlow {
   }
 
 
-  protected String getSubdomainUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("subdomain") != null) {
-      return oauthConfig.get("subdomain").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'subdomain' necessary for the Zendesk OAuth Flow.");
-    }
-  }
-
-
   /**
    * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
    * especially in the query parameters to be provided. This function should generate such consent URL

@@ -43,7 +43,9 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     this.workspaceId = workspaceId;
   }
 
-
+  /**
+   * Simple enum of content type strings and their respective encoding functions used for POSTing the access token request
+   */
   public enum TOKEN_REQUEST_CONTENT_TYPE {
     URL_ENCODED ("application/x-www-form-urlencoded", BaseOAuthFlow::toUrlEncodedString),
     JSON ("application/json", BaseOAuthFlow::toJson);
@@ -121,6 +123,14 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       return builder.build().toString();
     } catch (URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
+    }
+  }
+
+  protected String getSubdomainUnsafe(JsonNode oauthConfig) {
+    if (oauthConfig.get("subdomain") != null) {
+      return oauthConfig.get("subdomain").asText();
+    } else {
+      throw new IllegalArgumentException("Undefined parameter 'subdomain' necessary for the Zendesk OAuth Flow.");
     }
   }
 
@@ -270,7 +280,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     }
   }
 
-  protected static String toUrlEncodedString(Map<String, String> body) {
+  protected static String toUrlEncodedString(final Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
     for (var entry : body.entrySet()) {
       if (result.length() > 0) {
@@ -281,7 +291,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     return result.toString();
   }
 
-  protected static String toJson(Map<String, String> body) {
+  protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
     Type gsonType = new TypeToken<Map<String, String>>(){}.getType();
     return gson.toJson(body, gsonType);
