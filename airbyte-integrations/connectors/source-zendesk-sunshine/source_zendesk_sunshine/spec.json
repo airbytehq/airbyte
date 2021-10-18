@@ -74,7 +74,7 @@
         "title": "Start Date",
         "type": "string",
         "description": "The date from which you'd like to replicate the data",
-        "format": "date",
+        "format": "date-time",
         "examples": [
           "2021-01-01T00:00:00.000000Z"
         ]
