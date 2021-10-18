@@ -278,8 +278,6 @@ class FileStream(Stream, ABC):
         for last_mod, filepath in self.get_time_ordered_filepaths():
             storagefile = self.storagefile_class(filepath, self._provider)
             yield [{"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile}]
-        # # in case we have no files
-        # yield from [None]
 
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
         """
