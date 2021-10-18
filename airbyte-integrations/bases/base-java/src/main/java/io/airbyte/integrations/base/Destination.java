@@ -29,7 +29,7 @@ public interface Destination extends Integration {
                                      Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception;
 
-  static void defaultOutputRecordCollector(AirbyteMessage message) {
+  static void defaultOutputRecordCollector(final AirbyteMessage message) {
     System.out.println(Jsons.serialize(message));
   }
 

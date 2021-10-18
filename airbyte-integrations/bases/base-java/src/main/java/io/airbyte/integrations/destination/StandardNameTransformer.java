@@ -18,21 +18,21 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   private static final String NON_JSON_PATH_CHARACTERS_PATTERN = "['\"`]";
 
   @Override
-  public String getIdentifier(String name) {
+  public String getIdentifier(final String name) {
     return convertStreamName(name);
   }
 
   @Override
-  public String getRawTableName(String streamName) {
+  public String getRawTableName(final String streamName) {
     return convertStreamName("_airbyte_raw_" + streamName);
   }
 
   @Override
-  public String getTmpTableName(String streamName) {
+  public String getTmpTableName(final String streamName) {
     return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
   }
 
-  protected String convertStreamName(String input) {
+  protected String convertStreamName(final String input) {
     return Names.toAlphanumericAndUnderscore(input);
   }
 
@@ -42,16 +42,16 @@ public class StandardNameTransformer implements NamingConventionTransformer {
    * their json extract functions have limitations on how such special characters are parsed. These
    * naming rules may be different to schema/table/column naming conventions.
    */
-  public static JsonNode formatJsonPath(JsonNode root) {
+  public static JsonNode formatJsonPath(final JsonNode root) {
     if (root.isObject()) {
       final Map<String, JsonNode> properties = new HashMap<>();
-      var keys = Jsons.keys(root);
-      for (var key : keys) {
+      final var keys = Jsons.keys(root);
+      for (final var key : keys) {
         final JsonNode property = root.get(key);
         // keep original key
         properties.put(key, formatJsonPath(property));
       }
-      for (var key : keys) {
+      for (final var key : keys) {
         final JsonNode property = root.get(key);
         final String formattedKey = key.replaceAll(NON_JSON_PATH_CHARACTERS_PATTERN, "_");
         if (!properties.containsKey(formattedKey)) {

@@ -25,7 +25,7 @@ public class WorkerHeartbeatServer {
   private final int port;
   private Server server;
 
-  public WorkerHeartbeatServer(int port) {
+  public WorkerHeartbeatServer(final int port) {
     this.port = port;
   }
 
@@ -45,8 +45,8 @@ public class WorkerHeartbeatServer {
   }
 
   protected Server getServer() {
-    Server server = new Server(port);
-    ServletContextHandler handler = new ServletContextHandler();
+    final Server server = new Server(port);
+    final ServletContextHandler handler = new ServletContextHandler();
     handler.addServlet(WorkerHeartbeatServlet.class, "/*");
     server.setHandler(handler);
 
@@ -55,20 +55,20 @@ public class WorkerHeartbeatServer {
 
   public static class WorkerHeartbeatServlet extends HttpServlet {
 
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.serveDefaultRequest(response);
     }
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.serveDefaultRequest(response);
     }
 
-    public void doOptions(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doOptions(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.addCorsHeaders(response);
     }
 
-    private void serveDefaultRequest(HttpServletResponse response) throws IOException {
-      var outputMap = ImmutableMap.of("up", true);
+    private void serveDefaultRequest(final HttpServletResponse response) throws IOException {
+      final var outputMap = ImmutableMap.of("up", true);
 
       this.addCorsHeaders(response);
 
@@ -77,8 +77,8 @@ public class WorkerHeartbeatServer {
       response.getWriter().println(Jsons.serialize(outputMap));
     }
 
-    private void addCorsHeaders(HttpServletResponse response) {
-      for (Map.Entry<String, String> entry : CORS_FILTER_MAP.entrySet()) {
+    private void addCorsHeaders(final HttpServletResponse response) {
+      for (final Map.Entry<String, String> entry : CORS_FILTER_MAP.entrySet()) {
         response.setHeader(entry.getKey(), entry.getValue());
       }
     }

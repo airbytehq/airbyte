@@ -55,7 +55,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
-  private StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -89,22 +89,23 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected String getDefaultSchema(JsonNode config) {
+  protected String getDefaultSchema(final JsonNode config) {
     return config.get(CONFIG_DATASET_ID).asText();
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
@@ -114,14 +115,14 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     result.add(identifier);
     result.add(namingResolver.getIdentifier(identifier));
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
@@ -129,15 +130,15 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .setUseLegacySql(false).build();
 
-    TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
-    FieldList fields = queryResults.getSchema().getFields();
+    final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final FieldList fields = queryResults.getSchema().getFields();
 
     return StreamSupport
         .stream(queryResults.iterateAll().spliterator(), false)
         .map(row -> {
-          Map<String, Object> jsonMap = Maps.newHashMap();
-          for (Field field : fields) {
-            Object value = getTypedFieldValue(row, field);
+          final Map<String, Object> jsonMap = Maps.newHashMap();
+          for (final Field field : fields) {
+            final Object value = getTypedFieldValue(row, field);
             jsonMap.put(field.getName(), value);
           }
           return jsonMap;
@@ -146,8 +147,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
         .collect(Collectors.toList());
   }
 
-  private Object getTypedFieldValue(FieldValueList row, Field field) {
-    FieldValue fieldValue = row.get(field.getName());
+  private Object getTypedFieldValue(final FieldValueList row, final Field field) {
+    final FieldValue fieldValue = row.get(field.getName());
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
@@ -162,7 +163,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
@@ -180,14 +181,14 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
-    JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
-    JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
+    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
         .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
         .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
         .build());
 
-    JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
         .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
@@ -227,7 +228,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     // gcs tmp files are supposed to be removed automatically by consumer
     tearDownBigQuery();
   }
@@ -248,13 +249,13 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
   // BigQueryDestination.
-  private static ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
+  private static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
-  private static ImmutablePair<Job, String> executeQuery(Job queryJob) {
+  private static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       throw new RuntimeException("Job no longer exists");
@@ -267,10 +268,10 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
     return ImmutablePair.of(completedJob, null);
   }
 
-  private static Job waitForQuery(Job queryJob) {
+  private static Job waitForQuery(final Job queryJob) {
     try {
       return queryJob.waitFor();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

@@ -5,6 +5,7 @@
 
 import argparse
 import importlib
+import logging
 import os.path
 import sys
 import tempfile
@@ -15,11 +16,13 @@ from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
+logger = init_logger("airbyte")
+
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         self.source = source
-        self.logger = init_logger(getattr(source, "name", "source"))
+        self.logger = logging.getLogger(f"source.{getattr(source, 'name', '')}")
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         # set up parent parsers
@@ -72,7 +75,8 @@ class AirbyteEntrypoint(object):
                 # Remove internal flags from config before validating so
                 # jsonschema's additionalProperties flag wont fail the validation
                 config, internal_config = split_config(config)
-                check_config_against_spec_or_exit(config, source_spec, self.logger)
+                if self.source.check_config_against_spec or cmd == "check":
+                    check_config_against_spec_or_exit(config, source_spec, self.logger)
                 # Put internal flags back to config dict
                 config.update(internal_config.dict())
 

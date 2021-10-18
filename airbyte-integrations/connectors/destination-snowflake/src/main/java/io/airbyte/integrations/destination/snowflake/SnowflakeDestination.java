@@ -27,7 +27,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     super(DestinationType.class, SnowflakeDestination::getTypeFromConfig, getTypeToDestination());
   }
 
-  public static DestinationType getTypeFromConfig(JsonNode config) {
+  public static DestinationType getTypeFromConfig(final JsonNode config) {
     if (isS3Copy(config)) {
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
@@ -37,11 +37,11 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     }
   }
 
-  public static boolean isS3Copy(JsonNode config) {
+  public static boolean isS3Copy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
   }
 
-  public static boolean isGcsCopy(JsonNode config) {
+  public static boolean isGcsCopy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
@@ -56,7 +56,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
         DestinationType.COPY_GCS, copyGcsDestination);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     LOGGER.info("starting destination: {}", SnowflakeDestination.class);
     new IntegrationRunner(destination).run(args);
