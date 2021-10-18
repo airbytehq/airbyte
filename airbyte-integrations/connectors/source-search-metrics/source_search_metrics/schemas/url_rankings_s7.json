@@ -8,10 +8,10 @@
         "type": ["null", "object"],
         "properties": {
           "position": {
-            "type": ["null", "string"]
+            "type": ["null", "integer", "string"]
           },
           "page": {
-            "type": ["null", "string"]
+            "type": ["null", "integer", "string"]
           },
           "directory": {
             "type": ["null", "string"]
@@ -20,37 +20,37 @@
             "type": ["null", "string"]
           },
           "visibility": {
-            "type": ["null", "string"]
+            "type": ["null", "integer", "string"]
           },
           "traffic": {
-            "type": ["null", "integer"]
+            "type": ["null", "integer", "string"]
           },
           "ad_budget": {
-            "type": ["null", "integer"]
+            "type": ["null", "number", "string"]
           },
           "title": {
             "type": ["null", "string"]
           },
           "traffic_volume": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "cpc": {
             "type": ["null", "number"]
           },
           "delta_traffic": {
-            "type": ["null", "string"]
+            "type": ["null", "integer", "string"]
           },
           "trend": {
             "type": ["null", "object"],
             "properties": {
               "trend": {
-                "type": ["null", "string"]
+                "type": ["null", "integer", "string"]
               },
               "abs": {
-                "type": ["null", "string"]
+                "type": ["null", "integer", "string"]
               },
               "per": {
-                "type": ["null", "string"]
+                "type": ["null", "number", "string"]
               }
             }
           },

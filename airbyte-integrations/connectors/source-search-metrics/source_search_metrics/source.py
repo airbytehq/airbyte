@@ -17,15 +17,15 @@ from .utils import to_datetime_str
 
 
 class SearchMetricsStream(HttpStream, ABC):
+    primary_key = None
+    page_size = 250
+    url_base = "https://api.searchmetrics.com/v4/"
+
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
         self.window_in_days = config["window_in_days"]
-
-    primary_key = None
-    page_size = 250
-    url_base = "https://api.searchmetrics.com/v4/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -85,7 +85,15 @@ class ChildStreamMixin:
 
 
 class Projects(SearchMetricsStream):
-    primary_key = "id"
+    primary_key = "project_id"
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
 
     def path(self, **kwargs) -> str:
         return "AdminStatusGetListProjects.json"
@@ -95,7 +103,7 @@ class ProjectsChildStream(ChildStreamMixin):
     parent_stream_class = Projects
 
 
-class IncrementalSearchMetricsStream(SearchMetricsStream):
+class IncrementalSearchMetricsStream(ProjectsChildStream, SearchMetricsStream):
     cursor_field = "date"
 
     def request_params(
@@ -227,17 +235,17 @@ class ListLosersS7(ProjectsChildStream, SearchMetricsStream):
         return "ProjectOrganicGetListLosersS7.json"
 
 
-class ListMarketShareS7(ProjectsChildStream, IncrementalSearchMetricsStream):
+class ListMarketShareS7(IncrementalSearchMetricsStream):
     def path(self, **kwargs) -> str:
         return "ProjectOrganicGetListMarketShareS7.json"
 
 
-class ListPositionSpreadHistoricS7(ProjectsChildStream, IncrementalSearchMetricsStream):
+class ListPositionSpreadHistoricS7(IncrementalSearchMetricsStream):
     def path(self, **kwargs) -> str:
         return "ProjectOrganicGetListPositionSpreadHistoricS7.json"
 
 
-class ListSeoVisibilityHistoricS7(ProjectsChildStream, IncrementalSearchMetricsStream):
+class ListSeoVisibilityHistoricS7(IncrementalSearchMetricsStream):
     def path(self, **kwargs) -> str:
         return "ProjectOrganicGetListSeoVisibilityHistoricS7.json"
 

@@ -18,10 +18,10 @@
       "type": ["null", "integer"]
     },
     "traffic_2": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "costs": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "total_kw_count": {
       "type": ["null", "string"]

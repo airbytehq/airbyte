@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "visibility": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "domain": {
       "type": ["null", "string"]

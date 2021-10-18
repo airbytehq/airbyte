@@ -9,7 +9,7 @@
           "type": ["null", "integer"]
         },
         "abs": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "per": {
           "type": ["null", "number"]
