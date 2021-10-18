@@ -14,13 +14,13 @@ import io.airbyte.integrations.debezium.CdcMetadataInjector;
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
   @Override
-  public void addMetaData(ObjectNode event, JsonNode source) {
+  public void addMetaData(final ObjectNode event, final JsonNode source) {
     event.put(CDC_LOG_FILE, source.get("file").asText());
     event.put(CDC_LOG_POS, source.get("pos").asLong());
   }
 
   @Override
-  public String namespace(JsonNode source) {
+  public String namespace(final JsonNode source) {
     return source.get("db").asText();
   }
 

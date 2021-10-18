@@ -27,14 +27,14 @@ public enum JsonSchemaType {
   private final String jsonSchemaType;
   private final StandardSQLTypeName bigQueryType;
 
-  JsonSchemaType(int order, String jsonSchemaType, StandardSQLTypeName bigQueryType) {
+  JsonSchemaType(final int order, final String jsonSchemaType, final StandardSQLTypeName bigQueryType) {
     this.order = order;
     this.jsonSchemaType = jsonSchemaType;
     this.bigQueryType = bigQueryType;
   }
 
-  public static JsonSchemaType fromJsonSchemaType(String value) {
-    for (JsonSchemaType type : values()) {
+  public static JsonSchemaType fromJsonSchemaType(final String value) {
+    for (final JsonSchemaType type : values()) {
       if (value.equals(type.jsonSchemaType)) {
         return type;
       }

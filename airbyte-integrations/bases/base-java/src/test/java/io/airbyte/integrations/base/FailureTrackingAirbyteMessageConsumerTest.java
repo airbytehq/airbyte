@@ -72,12 +72,12 @@ class FailureTrackingAirbyteMessageConsumerTest {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage s) {
+    protected void acceptTracked(final AirbyteMessage s) {
 
     }
 
     @Override
-    protected void close(boolean hasFailed) {
+    protected void close(final boolean hasFailed) {
 
     }
 

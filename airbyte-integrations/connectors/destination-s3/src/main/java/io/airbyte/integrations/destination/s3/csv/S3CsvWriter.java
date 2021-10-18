@@ -34,19 +34,19 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
-  public S3CsvWriter(S3DestinationConfig config,
-                     AmazonS3 s3Client,
-                     ConfiguredAirbyteStream configuredStream,
-                     Timestamp uploadTimestamp)
+  public S3CsvWriter(final S3DestinationConfig config,
+                     final AmazonS3 s3Client,
+                     final ConfiguredAirbyteStream configuredStream,
+                     final Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
+    final String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
@@ -61,7 +61,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 

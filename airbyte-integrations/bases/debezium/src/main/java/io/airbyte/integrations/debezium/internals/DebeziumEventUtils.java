@@ -19,7 +19,9 @@ public class DebeziumEventUtils {
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
-  public static AirbyteMessage toAirbyteMessage(ChangeEvent<String, String> event, CdcMetadataInjector cdcMetadataInjector, Instant emittedAt) {
+  public static AirbyteMessage toAirbyteMessage(final ChangeEvent<String, String> event,
+                                                final CdcMetadataInjector cdcMetadataInjector,
+                                                final Instant emittedAt) {
     final JsonNode debeziumRecord = Jsons.deserialize(event.value());
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
@@ -41,11 +43,14 @@ public class DebeziumEventUtils {
   }
 
   // warning mutates input args.
-  private static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source, CdcMetadataInjector cdcMetadataInjector) {
+  private static JsonNode formatDebeziumData(final JsonNode before,
+                                             final JsonNode after,
+                                             final JsonNode source,
+                                             final CdcMetadataInjector cdcMetadataInjector) {
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
-    long transactionMillis = source.get("ts_ms").asLong();
-    String transactionTimestamp = new Timestamp(transactionMillis).toInstant().toString();
+    final long transactionMillis = source.get("ts_ms").asLong();
+    final String transactionTimestamp = new Timestamp(transactionMillis).toInstant().toString();
 
     base.put(CDC_UPDATED_AT, transactionTimestamp);
     cdcMetadataInjector.addMetaData(base, source);
