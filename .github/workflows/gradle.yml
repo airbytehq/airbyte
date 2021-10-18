@@ -16,6 +16,8 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -42,9 +44,6 @@ jobs:
     name: "Connectors Base: Build"
     timeout-minutes: 90
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
       - name: Pip Caching
         uses: actions/cache@v2
         with:
