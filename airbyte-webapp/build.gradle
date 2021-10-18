@@ -31,8 +31,8 @@ assemble.dependsOn npm_run_build
 build.finalizedBy test
 
 task copyDocs(type: Copy) {
-    from "${System.getProperty("user.dir")}/docs/integrations/getting-started"
-    into "${buildDir}/docs/getting-started/"
+    from "${System.getProperty("user.dir")}/docs/integrations"
+    into "${buildDir}/docs/integrations"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
