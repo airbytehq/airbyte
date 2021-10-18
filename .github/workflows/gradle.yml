@@ -509,6 +509,9 @@ jobs:
 
       - name: Describe kube nodes
         run: kubectl describe nodes
+        env:
+          USER: root
+          HOME: /home/runner
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
