@@ -1,0 +1,59 @@
+{
+            "properties": {
+                "caption": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "csname": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fix_comments": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "hotfix_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "install_date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "installed_by": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "installed_on": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+}

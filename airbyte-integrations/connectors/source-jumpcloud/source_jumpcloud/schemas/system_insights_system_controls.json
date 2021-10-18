@@ -1,0 +1,32 @@
+{
+  "properties": {
+    "collection_time": {
+      "type": "string"
+    },
+    "config_value": {
+      "type": ["string", "null"]
+    },
+    "current_value": {
+      "type": ["string", "null"]
+    },
+    "field_name": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "oid": {
+      "type": ["string", "null"]
+    },
+    "subsystem": {
+      "type": ["string", "null"]
+    },
+    "system_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": ["string", "null"]
+    }
+  },
+  "type": "object"
+}

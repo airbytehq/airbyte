@@ -1,0 +1,95 @@
+{
+             "properties": {
+                "active": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "autoupdate": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "creator": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "disabled": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "location": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "path": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source_url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "uid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "visible": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

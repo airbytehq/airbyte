@@ -1,0 +1,137 @@
+{
+    "type": "object",
+    "properties": {
+        "collection_time": {
+            "type": "string"
+        },
+        "disabled": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "groupname": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "inetd_compatibility": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "keep_alive": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "label": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "on_demand": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "path": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "process_type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "program": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "program_arguments": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "queue_directories": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "root_directory": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "run_at_load": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "start_interval": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "start_on_mount": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "stderr_path": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "stdout_path": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "username": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "watch_paths": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "working_directory": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

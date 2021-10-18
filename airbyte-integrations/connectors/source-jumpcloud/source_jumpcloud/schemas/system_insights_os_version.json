@@ -1,0 +1,71 @@
+{
+            "properties": {
+                "build": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "codename": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "install_date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "major": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "minor": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "patch": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "platform": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "platform_like": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

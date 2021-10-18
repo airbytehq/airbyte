@@ -1,0 +1,71 @@
+{
+            "properties": {
+                "author": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "developer_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "path": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sdk": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "update_url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

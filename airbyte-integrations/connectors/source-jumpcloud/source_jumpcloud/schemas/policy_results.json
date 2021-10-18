@@ -1,0 +1,54 @@
+{
+    "title": "PolicyResult",
+    "properties": {
+      "detail": {
+        "description": "Details pertaining to the policy result.",
+        "type": "string"
+      },
+      "endedAt": {
+        "description": "The end of the policy application.",
+        "format": "date-time",
+        "type": "string"
+      },
+      "exitStatus": {
+        "description": "The 32-bit unsigned exit status from the applying the policy.",
+        "type": "integer",
+        "format": "uint32"
+      },
+      "id": {
+        "description": "ObjectId uniquely identifying a Policy Result.",
+        "type": "string"
+      },
+      "policyID": {
+        "description": "ObjectId uniquely identifying the parent Policy.",
+        "type": "string"
+      },
+      "startedAt": {
+        "description": "The start of the policy application.",
+        "format": "date-time",
+        "type": "string"
+      },
+      "state": {
+        "description": "Enumeration describing the state of the policy. Success, failed, or pending.",
+        "type": "string"
+      },
+      "stdErr": {
+        "description": "The STDERR output from applying the policy.",
+        "type": "string"
+      },
+      "stdOut": {
+        "description": "The STDOUT output from applying the policy.",
+        "type": "string"
+      },
+      "success": {
+        "description": "True if the policy was successfully applied; false otherwise.",
+        "type": "boolean"
+      },
+      "systemID": {
+        "description": "ObjectId uniquely identifying the parent System.",
+        "type": "string"
+      }
+    },
+    "type": "object",
+    "$schema": "http://json-schema.org/schema#"
+  }

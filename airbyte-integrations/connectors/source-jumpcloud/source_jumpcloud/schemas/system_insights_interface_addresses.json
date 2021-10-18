@@ -1,0 +1,53 @@
+{
+            "properties": {
+                "address": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "broadcast": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "friendly_name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "interface": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "mask": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "point_to_point": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

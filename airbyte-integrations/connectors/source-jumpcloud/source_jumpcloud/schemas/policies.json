@@ -1,0 +1,87 @@
+{
+    "title": "Policy",
+    "description": "An instance of a policy template.",
+    "properties": {
+      "id": {
+        "description": "ObjectId uniquely identifying a Policy.",
+        "type": "string"
+      },
+      "name": {
+        "description": "The description for this specific Policy.",
+        "type": "string"
+      },
+      "template": {
+        "title": "PolicyTemplate",
+        "description": "The shallow information about a Policy Template.",
+        "properties": {
+          "activation": {
+            "description": "Requirements before the policy can be activated.",
+            "type": "string"
+          },
+          "behavior": {
+            "description": "Specifics about the behavior of the policy.",
+            "type": "string"
+          },
+          "deliveryTypes": {
+            "description": "The supported delivery mechanisms for this policy template.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "mdm"
+              ],
+              "default": "agent"
+            }
+          },
+          "description": {
+            "description": "The default description for the Policy.",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "The default display name for the Policy.",
+            "type": "string"
+          },
+          "id": {
+            "description": "ObjectId uniquely identifying a Policy Template.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The unique name for the Policy Template.",
+            "type": "string"
+          },
+          "osMetaFamily": {
+            "enum": [
+              "linux",
+              "darwin",
+              "windows",
+              "ios"
+            ],
+            "type": "string"
+          },
+          "state": {
+            "default": "",
+            "description": "String describing the release status of the policy template.",
+            "type": "string"
+          },
+          "alert": {
+            "description": "Text to describe any risk associated with this policy.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference": {
+            "description": "URL to visit for further information.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      }
+    },
+    "type": "object",
+    "$schema": "http://json-schema.org/schema#"
+  }

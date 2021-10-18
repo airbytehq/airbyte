@@ -1,0 +1,65 @@
+{
+            "properties": {
+                "collection_time": {
+                    "type": "string"
+                },
+                "identifying_number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "install_date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "install_location": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "install_source": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "language": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "publisher": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "uninstall_string": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

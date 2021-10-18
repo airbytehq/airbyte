@@ -1,0 +1,53 @@
+{
+            "properties": {
+                "collection_time": {
+                    "type": "string"
+                },
+                "encrypted": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "encryption_status": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "uid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "user_uuid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "uuid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

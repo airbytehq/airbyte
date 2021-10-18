@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    }
+  },
+
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object"
+}

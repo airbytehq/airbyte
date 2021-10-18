@@ -1,0 +1,47 @@
+{
+            "properties": {
+                "collection_time": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pid": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "tty": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "user": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+        }

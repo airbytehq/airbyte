@@ -1,0 +1,101 @@
+{
+    "properties": {
+        "collection_time": {
+            "type": "string"
+        },
+        "computer_name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cpu_brand": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cpu_logical_cores": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cpu_microcode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cpu_physical_cores": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "cpu_subtype": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cpu_type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hardware_model": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hardware_serial": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hardware_vendor": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hardware_version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hostname": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "local_hostname": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "physical_memory": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "uuid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

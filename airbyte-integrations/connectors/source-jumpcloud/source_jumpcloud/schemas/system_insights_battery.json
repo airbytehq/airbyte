@@ -1,0 +1,65 @@
+{
+  "type": "object",
+  "properties": {
+    "amperage": {
+      "type": ["integer", "null"]
+    },
+    "charged": {
+      "type": ["integer", "null"]
+    },
+    "charging": {
+      "type": ["integer", "null"]
+    },
+    "collection_time": {
+      "type": "string"
+    },
+    "condition": {
+      "type": ["string", "null"]
+    },
+    "current_capacity": {
+      "type": ["integer", "null"]
+    },
+    "cycle_count": {
+      "type": ["integer", "null"]
+    },
+    "designed_capacity": {
+      "type": ["integer", "null"]
+    },
+    "health": {
+      "type": ["string", "null"]
+    },
+    "manufacture_date": {
+      "type": ["integer", "null"]
+    },
+    "manufacturer": {
+      "type": ["string", "null"]
+    },
+    "max_capacity": {
+      "type": ["integer", "null"]
+    },
+    "minutes_to_full_charge": {
+      "type": ["integer", "null"]
+    },
+    "minutes_until_empty": {
+      "type": ["integer", "null"]
+    },
+    "model": {
+      "type": ["string", "null"]
+    },
+    "percent_remaining": {
+      "type": ["integer", "null"]
+    },
+    "serial_number": {
+      "type": ["string", "null"]
+    },
+    "state": {
+      "type": ["string", "null"]
+    },
+    "system_id": {
+      "type": "string"
+    },
+    "voltage": {
+      "type": ["integer", "null"]
+    }
+  }
+}

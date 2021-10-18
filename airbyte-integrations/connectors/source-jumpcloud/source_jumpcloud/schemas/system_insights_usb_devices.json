@@ -1,0 +1,83 @@
+{
+    "properties": {
+        "class": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "collection_time": {
+            "type": "string"
+        },
+        "model": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "model_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "protocol": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "removable": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "serial": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "subclass": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "usb_address": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "usb_port": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "vendor": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "vendor_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

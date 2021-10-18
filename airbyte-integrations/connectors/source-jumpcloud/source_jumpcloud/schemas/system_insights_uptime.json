@@ -1,0 +1,41 @@
+{
+    "properties": {
+        "collection_time": {
+            "type": "string"
+        },
+        "days": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "hours": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "minutes": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "seconds": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "total_seconds": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

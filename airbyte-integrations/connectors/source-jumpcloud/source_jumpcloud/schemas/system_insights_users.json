@@ -1,0 +1,113 @@
+{
+    "type": "object",
+    "properties": {
+        "collection_time": {
+            "type": "string"
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "directory": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "gid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "gid_signed": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "shell": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "uid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "uid_signed": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "username": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "uuid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "real_user": {
+            "type": [
+                "boolean",
+                "null"
+            ],
+            "description": "Indicates this account represents an interactive user account vs. a system or daemon account"
+        },
+        "admin": {
+            "type": [
+                "boolean",
+                "null"
+            ],
+            "description": "Indicates this account has local administrator privileges"
+        },
+        "suspended": {
+            "type": [
+                "boolean",
+                "null"
+            ],
+            "description": "Indicates this account is suspended or locked out"
+        },
+        "managed": {
+            "type": [
+                "boolean",
+                "null"
+            ],
+            "description": "Indicates this account belongs to a JumpCloud-managed user"
+        },
+        "last_login": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "A Unix timestamp showing the last time this user logged in"
+        },
+        "ad_managed": {
+            "type": [
+                "boolean",
+                "null"
+            ],
+            "description": "Indicates this account belongs to a AD-managed user"
+        }
+    }
+}

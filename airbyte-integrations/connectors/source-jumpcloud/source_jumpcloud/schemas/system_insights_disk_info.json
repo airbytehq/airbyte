@@ -1,0 +1,77 @@
+{
+            "properties": {
+                "collection_time": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "disk_index": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "disk_size": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "hardware_model": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "manufacturer": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "partitions": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "pnp_device_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "serial": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

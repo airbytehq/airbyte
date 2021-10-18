@@ -1,0 +1,77 @@
+{
+            "properties": {
+                "blocks": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "blocks_available": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "blocks_free": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "blocks_size": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "device": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "device_alias": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "flags": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inodes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inodes_free": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "path": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

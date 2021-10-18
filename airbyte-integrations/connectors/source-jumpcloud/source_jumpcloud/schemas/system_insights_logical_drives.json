@@ -1,0 +1,47 @@
+{
+            "properties": {
+                "boot_partition": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "file_system": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "free_space": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "size": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+}

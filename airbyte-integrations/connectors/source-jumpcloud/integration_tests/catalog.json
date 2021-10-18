@@ -1,0 +1,223 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "system_insights_apps",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["name"], ["path"]]
+      },
+      {
+        "name": "system_insights_battery",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_bitlocker_info",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["drive_letter"]]
+      },
+      {
+        "name": "system_insights_browser_plugins",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["name"], ["version"]]
+      },
+      {
+        "name": "system_insights_chrome_extensions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["identifier"]]
+      },
+      {
+        "name": "system_insights_crashes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_disk_encryption",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["name"]]
+      },
+      {
+        "name": "system_insights_disk_info",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["id"]]
+      },
+      {
+        "name": "system_insights_etc_hosts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["hostnames"]]
+      },
+      {
+        "name": "system_insights_firefox_addons",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["identifier"]]
+      },
+      {
+        "name": "system_insights_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["gid"]]
+      },
+      {
+        "name": "system_insights_ie_extensions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["registry_path"]]
+      },
+      {
+        "name": "system_insights_interface_addresses",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["address"]]
+      },
+      {
+        "name": "system_insights_kernel_info",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_launchd",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["name"], ["path"]]
+      },
+      {
+        "name": "system_insights_logged_in_users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["pid"], ["tty"]]
+      },
+      {
+        "name": "system_insights_logical_drives",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["device_id"]]
+      },
+      {
+        "name": "system_insights_mounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["path"], ["device"]]
+      },
+      {
+        "name": "system_insights_os_version",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_patches",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["hotfix_id"]]
+      },
+      {
+        "name": "system_insights_programs",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_safari_extensions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["uid"], ["version"]]
+      },
+      {
+        "name": "system_insights_system_info",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_system_controls",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_uptime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_usb_devices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_user_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["system_id"]]
+      },
+      {
+        "name": "system_insights_users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["collection_time"],
+        "source_defined_primary_key": [["system_id"], ["uid"]]
+      }
+    ]
+  }
+}

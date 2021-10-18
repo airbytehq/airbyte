@@ -1,0 +1,133 @@
+{
+    "title": "AppleMDM",
+    "type": "object",
+    "properties": {
+      "apnsPushTopic": {
+        "description": "The push topic assigned to this enrollment by Apple after uploading the Signed CSR plist.",
+        "type": "string"
+      },
+      "depServerTokenState": {
+        "description": "The state of the dep server token, presence and expiry.",
+        "enum": [
+          "unknown",
+          "missing",
+          "valid",
+          "expired"
+        ],
+        "type": "string"
+      },
+      "id": {
+        "description": "ObjectId uniquely identifying an MDM Enrollment,",
+        "type": "string"
+      },
+      "name": {
+        "description": "A friendly name to identify this enrollment.  Not required to be unique.",
+        "maxLength": 255,
+        "type": "string"
+      },
+      "apnsCertExpiry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The expiration date and time for the APNS Certificate."
+      },
+      "depAccessTokenExpiry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The expiration date and time for the DEP Access Token. This aligns with the DEP Server Token State."
+      },
+      "defaultSystemGroupID": {
+        "description": "ObjectId uniquely identifying the MDM default System Group.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "dep": {
+        "title": "DEP",
+        "type": "object",
+        "properties": {
+          "welcomeScreen": {
+            "title": "DEPWelcomeScreen",
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255,
+                "description": "The title to display on the DEP Welcome Screen."
+              },
+              "paragraph": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 1024,
+                "description": "A message to display on the DEP Welcome Screen."
+              },
+              "button": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 64,
+                "description": "Text to display on the button on the DEP Welcome Screen."
+              }
+            }
+          },
+          "setupAssistantOptions": {
+            "items": {
+              "title": "DEP Setup Assistant Option",
+              "properties": {
+                "option": {
+                  "title": "Setup Assistant Option",
+                  "description": "Options to skip screens during MacOS setup:\n* `accessibility` - Skips the Accessibility pane, only if the Mac is connected to Ethernet and the cloud config is downloaded.\n* `appearance` - Skips the Choose Your Look screen.\n* `appleID` - Skips Apple ID setup.\n* `biometric` - Skips biometric setup.\n* `diagnostics` - Skips the App Analytics pane.\n* `displayTone` - Skips display tone setup.\n* `fileVault` - Skips FileVault setup assistant screen.\n* `icloudDiagnostics` - Skips iCloud analytics screen.\n* `icloudStorage` - Skips iCloud documents and desktop screen.\n* `location` - Skips location services setup.\n* `payment` - Skips Apple Pay setup.\n* `privacy` - Skips the Privacy setup.\n* `restore` - Skips restoring from backup.\n* `screenTime` - Skips screen time setup.\n* `siri` - Skips Siri setup.\n* `tos` - Skips terms and conditions.\n",
+                  "enum": [
+                    "accessibility",
+                    "appearance",
+                    "appleID",
+                    "biometric",
+                    "diagnostics",
+                    "displayTone",
+                    "fileVault",
+                    "icloudDiagnostics",
+                    "icloudStorage",
+                    "location",
+                    "payment",
+                    "privacy",
+                    "restore",
+                    "screenTime",
+                    "siri",
+                    "tos"
+                  ],
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "enableZeroTouchEnrollment": {
+            "description": "A toggle to determine if DEP registered devices should go through JumpCloud Zero Touch Enrollment.",
+            "type": "boolean"
+          }
+        }
+      },
+      "allowMobileUserEnrollment": {
+        "description": "A toggle to allow mobile device enrollment for an organization.",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "$schema": "http://json-schema.org/schema#"
+  }

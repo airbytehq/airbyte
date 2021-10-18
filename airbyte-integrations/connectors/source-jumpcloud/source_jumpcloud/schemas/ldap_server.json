@@ -1,0 +1,27 @@
+{
+  "title": "LDAP Server Output",
+
+  "properties": {
+    "id": {
+      "description": "Unique identifier of this LDAP server",
+      "type": "string"
+    }
+  },
+
+  "name": {
+    "description": "The name of this LDAP server",
+    "type": "string"
+  },
+  "userLockoutAction": {
+    "description": "action to take; one of 'remove' or 'disable'",
+    "enum": ["disable", "remove"],
+    "type": "string"
+  },
+  "userPasswordExpirationAction": {
+    "description": "action to take; one of 'remove' or 'disable'",
+    "enum": ["disable", "remove"],
+    "type": "string"
+  },
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object"
+}

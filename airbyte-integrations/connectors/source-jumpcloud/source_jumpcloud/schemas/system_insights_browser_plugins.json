@@ -1,0 +1,71 @@
+{
+    "type": "object",
+    "properties": {
+        "collection_time": {
+            "type": "string"
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "development_region": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "disabled": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "identifier": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "native": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "path": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sdk": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "uid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

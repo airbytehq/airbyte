@@ -1,0 +1,125 @@
+{
+    "properties": {
+        "applescript_enabled": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundle_executable": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundle_identifier": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundle_name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundle_package_type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundle_short_version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundle_version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "category": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "collection_time": {
+            "type": "string"
+        },
+        "compiler": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "copyright": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "development_region": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "display_name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "element": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "environment": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "info_string": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "last_opened_time": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "minimum_system_version": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "path": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        }
+    },
+    "type": "object"
+}

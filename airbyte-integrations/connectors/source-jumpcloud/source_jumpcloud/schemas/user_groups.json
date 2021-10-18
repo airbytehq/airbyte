@@ -1,0 +1,171 @@
+{
+  "properties": {
+    "attributes": {
+      "allOf": [
+        {
+          "additionalProperties": true,
+          "type": ["object", "null"]
+        },
+        {
+          "properties": {
+            "ldapGroups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "type": ["object", "null"]
+        },
+        {
+          "properties": {
+            "posixGroups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "type": ["object", "null"]
+        },
+        {
+          "properties": {
+            "radius": {
+              "type": ["object", "null"],
+              "properties": {
+                "reply": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "value"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "type": ["object", "null"]
+        },
+        {
+          "properties": {
+            "sambaEnabled": {
+              "type": "boolean"
+            }
+          },
+          "type": ["object", "null"]
+        }
+      ],
+      "type": ["object", "null"]
+    },
+    "email": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "memberQuery": {
+      "allOf": [
+        {
+          "discriminator": "queryType",
+          "properties": {
+            "queryType": {
+              "type": "string",
+              "enum": ["FilterQuery"]
+            }
+          },
+          "required": ["queryType"],
+          "type": ["object", "null"]
+        },
+        {
+          "type": ["object", "null"],
+          "properties": {
+            "filters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "enum": [
+                      "eq",
+                      "ne",
+                      "gt",
+                      "ge",
+                      "lt",
+                      "le",
+                      "between",
+                      "search",
+                      "in"
+                    ],
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": ["field", "operator", "value"]
+              }
+            }
+          },
+          "x-stoplight": {
+            "id": "FilterQuery",
+            "name": "FilterQuery",
+            "public": true
+          }
+        }
+      ]
+    },
+    "memberSuggestionsNotify": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "suggestionCounts": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "integer"
+        },
+        "remove": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "type": {
+      "enum": ["user_group"],
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

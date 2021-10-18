@@ -560,3 +560,9 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-hiring
   sourceType: api
+- sourceDefinitionId: 926208fe-024e-4a54-a618-50d56822b571
+  name: Jumpcloud
+  dockerRepository: airbyte/source-jumpcloud
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
+  sourceType: api

@@ -1,0 +1,107 @@
+{
+            "properties": {
+                "collection_time": {
+                    "type": "string"
+                },
+                "crash_path": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "crashed_thread": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "datetime": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "exception_codes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "exception_notes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "exception_type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "parent": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "path": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "registers": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "responsible": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "stack_trace": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "uid": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": "object"
+        }

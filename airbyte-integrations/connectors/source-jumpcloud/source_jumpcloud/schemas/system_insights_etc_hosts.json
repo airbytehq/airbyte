@@ -1,0 +1,23 @@
+{
+            "properties": {
+                "address": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "collection_time": {
+                    "type": "string"
+                },
+                "hostnames": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+}

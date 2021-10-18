@@ -1,0 +1,41 @@
+{
+            "properties": {
+                "collection_time": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "gid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "gid_signed": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "group_sid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "groupname": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "system_id": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+}

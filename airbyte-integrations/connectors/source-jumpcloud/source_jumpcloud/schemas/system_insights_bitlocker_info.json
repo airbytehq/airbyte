@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "collection_time": {
+      "type": "string"
+    },
+    "conversion_status": {
+      "type": ["integer", "null"]
+    },
+    "device_id": {
+      "type": ["string", "null"]
+    },
+    "drive_letter": {
+      "type": ["string", "null"]
+    },
+    "encryption_method": {
+      "type": ["string", "null"]
+    },
+    "persistent_volume_id": {
+      "type": ["string", "null"]
+    },
+    "protection_status": {
+      "type": ["integer", "null"]
+    },
+    "system_id": {
+      "type": "string"
+    }
+  }
+}

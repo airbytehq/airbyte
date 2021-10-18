@@ -1,0 +1,23 @@
+{
+    "properties": {
+        "collection_time": {
+            "type": "string"
+        },
+        "gid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "system_id": {
+            "type": "string"
+        },
+        "uid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}
