@@ -104,7 +104,8 @@
         "in_transit",
         "out_for_delivery",
         "delivered",
-        "failure"
+        "failure",
+        null
       ]
     },
     "status": {
@@ -118,7 +119,8 @@
         "success",
         "cancelled",
         "error",
-        "failure"
+        "failure",
+        null
       ]
     },
     "tracking_company": {
@@ -298,7 +300,7 @@
           "total_discount": {
             "type": [
               "null",
-              "integer"
+              "string"
             ]
           },
           "fulfillment_status": {

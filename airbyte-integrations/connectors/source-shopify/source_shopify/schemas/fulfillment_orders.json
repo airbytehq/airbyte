@@ -8,7 +8,7 @@
       ]
     },
     "destination": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": [
@@ -106,7 +106,8 @@
             "none",
             "pick_up",
             "retail",
-            "shipping"
+            "shipping",
+            null
           ]
         }
       }
@@ -231,7 +232,8 @@
         "cancellation_requested",
         "cancellation_accepted",
         "cancellation_rejected",
-        "closed"
+        "closed",
+        null
       ]
     },
     "shop_id": {
@@ -252,7 +254,8 @@
         "cancelled",
         "on_hold",
         "incomplete",
-        "closed"
+        "closed",
+        null
       ]
     },
     "supported_actions": {
