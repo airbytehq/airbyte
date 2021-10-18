@@ -13,7 +13,7 @@ public enum SeedType {
   // ID field name
   final String idName;
 
-  SeedType(String resourcePath, String idName) {
+  SeedType(final String resourcePath, final String idName) {
     this.resourcePath = resourcePath;
     this.idName = idName;
   }

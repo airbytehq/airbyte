@@ -23,11 +23,11 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
 
   private final ConfigRepository configRepository;
 
-  public BaseOAuthConfig(ConfigRepository configRepository) {
+  public BaseOAuthConfig(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
 
-  protected JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
+  protected JsonNode getSourceOAuthParamConfig(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
     try {
       final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
           configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
@@ -36,12 +36,13 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
       } else {
         throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
       }
-    } catch (JsonValidationException e) {
+    } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
     }
   }
 
-  protected JsonNode getDestinationOAuthParamConfig(UUID workspaceId, UUID destinationDefinitionId) throws IOException, ConfigNotFoundException {
+  protected JsonNode getDestinationOAuthParamConfig(final UUID workspaceId, final UUID destinationDefinitionId)
+      throws IOException, ConfigNotFoundException {
     try {
       final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
           configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
@@ -50,7 +51,7 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
       } else {
         throw new ConfigNotFoundException(ConfigSchema.DESTINATION_OAUTH_PARAM, "Undefined OAuth Parameter.");
       }
-    } catch (JsonValidationException e) {
+    } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
     }
   }
@@ -61,7 +62,7 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
    *
    * @return
    */
-  protected String getClientIdUnsafe(JsonNode oauthConfig) {
+  protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_id") != null) {
       return oauthConfig.get("client_id").asText();
     } else {
@@ -75,7 +76,7 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
    *
    * @return
    */
-  protected String getClientSecretUnsafe(JsonNode oauthConfig) {
+  protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_secret") != null) {
       return oauthConfig.get("client_secret").asText();
     } else {

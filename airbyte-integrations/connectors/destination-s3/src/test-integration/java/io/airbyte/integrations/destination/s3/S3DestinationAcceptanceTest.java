@@ -50,7 +50,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   protected S3DestinationConfig config;
   protected AmazonS3 s3Client;
 
-  protected S3DestinationAcceptanceTest(S3Format outputFormat) {
+  protected S3DestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
   }
 
@@ -70,8 +70,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    JsonNode baseJson = getBaseConfigJson();
-    JsonNode failCheckJson = Jsons.clone(baseJson);
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode failCheckJson = Jsons.clone(baseJson);
     // invalid credential
     ((ObjectNode) failCheckJson).put("access_key_id", "fake-key");
     ((ObjectNode) failCheckJson).put("secret_access_key", "fake-secret");
@@ -81,10 +81,10 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
-  protected List<S3ObjectSummary> getAllSyncedObjects(String streamName, String namespace) {
-    String outputPrefix = S3OutputPathHelper
+  protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
+    final String outputPrefix = S3OutputPathHelper
         .getOutputPrefix(config.getBucketPath(), namespace, streamName);
-    List<S3ObjectSummary> objectSummaries = s3Client
+    final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
@@ -105,11 +105,11 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * <li>Construct the S3 client.</li>
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    JsonNode baseConfigJson = getBaseConfigJson();
+  protected void setup(final TestDestinationEnv testEnv) {
+    final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
-    JsonNode configJson = Jsons.clone(baseConfigJson);
-    String testBucketPath = String.format(
+    final JsonNode configJson = Jsons.clone(baseConfigJson);
+    final String testBucketPath = String.format(
         "%s_test_%s",
         outputFormat.name().toLowerCase(Locale.ROOT),
         RandomStringUtils.randomAlphanumeric(5));
@@ -127,19 +127,19 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * Remove all the S3 output from the tests.
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    List<KeyVersion> keysToDelete = new LinkedList<>();
-    List<S3ObjectSummary> objects = s3Client
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    final List<KeyVersion> keysToDelete = new LinkedList<>();
+    final List<S3ObjectSummary> objects = s3Client
         .listObjects(config.getBucketName(), config.getBucketPath())
         .getObjectSummaries();
-    for (S3ObjectSummary object : objects) {
+    for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
       LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
           config.getBucketPath());
-      DeleteObjectsResult result = s3Client
+      final DeleteObjectsResult result = s3Client
           .deleteObjects(new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }

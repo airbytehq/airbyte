@@ -62,9 +62,9 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
@@ -108,7 +108,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return result;
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
@@ -134,7 +134,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    var schema = schemaName == null ? this.schemaName : schemaName;
+    final var schema = schemaName == null ? this.schemaName : schemaName;
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,

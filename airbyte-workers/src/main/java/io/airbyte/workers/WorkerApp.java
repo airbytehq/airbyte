@@ -52,13 +52,13 @@ public class WorkerApp {
   private final WorkerEnvironment workerEnvironment;
   private final String airbyteVersion;
 
-  public WorkerApp(Path workspaceRoot,
-                   ProcessFactory processFactory,
-                   SecretsHydrator secretsHydrator,
-                   WorkflowServiceStubs temporalService,
-                   MaxWorkersConfig maxWorkers,
-                   WorkerEnvironment workerEnvironment,
-                   String airbyteVersion) {
+  public WorkerApp(final Path workspaceRoot,
+                   final ProcessFactory processFactory,
+                   final SecretsHydrator secretsHydrator,
+                   final WorkflowServiceStubs temporalService,
+                   final MaxWorkersConfig maxWorkers,
+                   final WorkerEnvironment workerEnvironment,
+                   final String airbyteVersion) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -69,13 +69,13 @@ public class WorkerApp {
   }
 
   public void start() {
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
     Executors.newSingleThreadExecutor().submit(
         () -> {
           MDC.setContextMap(mdc);
           try {
             new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         });
@@ -106,7 +106,7 @@ public class WorkerApp {
     factory.start();
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -123,13 +123,13 @@ public class WorkerApp {
     }
   }
 
-  private static WorkerOptions getWorkerOptions(int max) {
+  private static WorkerOptions getWorkerOptions(final int max) {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
         .build();
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
 
     LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));

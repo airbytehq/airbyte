@@ -32,9 +32,9 @@ public class CockroachDbSource extends AbstractJdbcSource {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
 
-    List<String> additionalParameters = new ArrayList<>();
+    final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
@@ -67,9 +67,9 @@ public class CockroachDbSource extends AbstractJdbcSource {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config,
-                                                    ConfiguredAirbyteCatalog catalog,
-                                                    JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
       throws Exception {
     final AirbyteConnectionStatus check = check(config);
 
@@ -80,7 +80,7 @@ public class CockroachDbSource extends AbstractJdbcSource {
     return super.read(config, catalog, state);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new CockroachDbSource();
     LOGGER.info("starting source: {}", CockroachDbSource.class);
     new IntegrationRunner(source).run(args);

@@ -20,7 +20,7 @@ public class ConfigSchemaMigrationSupport {
   public static final Map<String, String> CONFIG_SCHEMA_ID_FIELD_NAMES;
 
   static {
-    Map<String, String> currentConfigSchemaIdNames = Arrays.stream(ConfigSchema.values())
+    final Map<String, String> currentConfigSchemaIdNames = Arrays.stream(ConfigSchema.values())
         .filter(configSchema -> configSchema.getIdFieldName() != null)
         .collect(Collectors.toMap(Enum::name, ConfigSchema::getIdFieldName));
     CONFIG_SCHEMA_ID_FIELD_NAMES = new ImmutableMap.Builder<String, String>()
