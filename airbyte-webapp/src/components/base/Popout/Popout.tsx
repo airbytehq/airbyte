@@ -63,6 +63,19 @@ const Popout: React.FC<PopoutProps> = ({
     [props.components]
   );
 
+  const selectStyles = {
+    control: (provided: Value) => ({
+      ...provided,
+      minWidth: 240,
+      marginTop: 8,
+    }),
+    menuPortal: (base: CSSObject): CSSObject => ({
+      ...base,
+      ...(!props.isSearchable ? { transform: "translateY(-37px)" } : {}),
+      zIndex: 9999,
+    }),
+  };
+
   return (
     <PopupOpener
       data-testid={props["data-testid"]}
@@ -82,18 +95,7 @@ const Popout: React.FC<PopoutProps> = ({
         isClearable={false}
         menuIsOpen
         placeholder={null}
-        styles={{
-          control: (provided: Value) => ({
-            ...provided,
-            minWidth: 240,
-            marginTop: 8,
-          }),
-          menuPortal: (base: CSSObject): CSSObject => ({
-            ...base,
-            ...(!props.isSearchable ? { transform: "translateY(-37px)" } : {}),
-            zIndex: 9999,
-          }),
-        }}
+        styles={selectStyles}
         tabSelectsValue={false}
         {...props}
         onChange={onSelectChange}
