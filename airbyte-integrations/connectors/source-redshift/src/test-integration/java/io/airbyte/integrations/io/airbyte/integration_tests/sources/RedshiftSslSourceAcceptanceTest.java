@@ -13,7 +13,7 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTest {
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
@@ -35,13 +35,13 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
 
     streamName = "customer";
     final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
-    String createTestTable =
+    final String createTestTable =
         String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(createTestTable);
     });
 
-    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });

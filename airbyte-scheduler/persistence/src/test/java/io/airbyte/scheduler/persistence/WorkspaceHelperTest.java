@@ -116,7 +116,7 @@ class WorkspaceHelperTest {
 
   @Test
   public void testSource() throws IOException, JsonValidationException {
-    configRepository.writeStandardSource(SOURCE_DEF);
+    configRepository.writeStandardSourceDefinition(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE, emptyConnectorSpec);
 
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(SOURCE_ID);
@@ -144,7 +144,7 @@ class WorkspaceHelperTest {
 
   @Test
   public void testConnection() throws IOException, JsonValidationException {
-    configRepository.writeStandardSource(SOURCE_DEF);
+    configRepository.writeStandardSourceDefinition(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE, emptyConnectorSpec);
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
     configRepository.writeDestinationConnection(DEST, emptyConnectorSpec);
@@ -184,7 +184,7 @@ class WorkspaceHelperTest {
 
   @Test
   public void testConnectionAndJobs() throws IOException, JsonValidationException {
-    configRepository.writeStandardSource(SOURCE_DEF);
+    configRepository.writeStandardSourceDefinition(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE, emptyConnectorSpec);
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
     configRepository.writeDestinationConnection(DEST, emptyConnectorSpec);

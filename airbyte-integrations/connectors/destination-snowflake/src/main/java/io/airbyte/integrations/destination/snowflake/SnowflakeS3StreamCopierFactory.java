@@ -16,15 +16,15 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 public class SnowflakeS3StreamCopierFactory extends S3StreamCopierFactory {
 
   @Override
-  public StreamCopier create(String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             String schema,
-                             String streamName,
-                             AmazonS3 s3Client,
-                             JdbcDatabase db,
-                             S3Config s3Config,
-                             ExtendedNameTransformer nameTransformer,
-                             SqlOperations sqlOperations)
+  public StreamCopier create(final String stagingFolder,
+                             final DestinationSyncMode syncMode,
+                             final String schema,
+                             final String streamName,
+                             final AmazonS3 s3Client,
+                             final JdbcDatabase db,
+                             final S3Config s3Config,
+                             final ExtendedNameTransformer nameTransformer,
+                             final SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeS3StreamCopier(stagingFolder, syncMode, schema, streamName, s3Client, db, s3Config, nameTransformer, sqlOperations);
   }

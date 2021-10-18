@@ -27,12 +27,13 @@ public abstract class AbstractConfigsDatabaseTest extends AbstractDatabaseTest {
   public static final Field<OffsetDateTime> CREATED_AT = field("created_at", OffsetDateTime.class);
   public static final Field<OffsetDateTime> UPDATED_AT = field("updated_at", OffsetDateTime.class);
 
-  public Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
-    Database database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+  public Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
+    final Database database =
+        new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
 
     // The configs database is considered ready only if there are some seed records.
     // So we need to create at least one record here.
-    OffsetDateTime timestamp = OffsetDateTime.now();
+    final OffsetDateTime timestamp = OffsetDateTime.now();
     new ExceptionWrappingDatabase(database).transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
         .set(CONFIG_ID, UUID.randomUUID().toString())
         .set(CONFIG_TYPE, "STANDARD_SOURCE_DEFINITION")

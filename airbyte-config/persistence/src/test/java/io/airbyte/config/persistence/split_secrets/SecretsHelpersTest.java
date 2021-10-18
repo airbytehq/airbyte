@@ -60,7 +60,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource("provideTestCases")
-  public void validateTestCases(SecretsTestCase testCase) throws JsonValidationException {
+  public void validateTestCases(final SecretsTestCase testCase) throws JsonValidationException {
     final var validator = new JsonSchemaValidator();
     final var spec = testCase.getSpec().getConnectionSpecification();
     validator.ensure(spec, testCase.getFullConfig());
@@ -69,7 +69,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource("provideTestCases")
-  void testSplit(SecretsTestCase testCase) {
+  void testSplit(final SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
     final var inputConfig = testCase.getFullConfig();
     final var inputConfigCopy = inputConfig.deepCopy();
@@ -103,7 +103,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource("provideTestCases")
-  void testSplitUpdate(SecretsTestCase testCase) {
+  void testSplitUpdate(final SecretsTestCase testCase) {
     final var uuidIterator = UUIDS.iterator();
     final var inputPartialConfig = testCase.getPartialConfig();
     final var inputUpdateConfig = testCase.getUpdateConfig();
@@ -111,7 +111,7 @@ public class SecretsHelpersTest {
     final var inputUpdateConfigCopy = inputUpdateConfig.deepCopy();
     final var secretPersistence = new MemorySecretPersistence();
 
-    for (Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
+    for (final Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
@@ -133,7 +133,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource("provideTestCases")
-  void testCombine(SecretsTestCase testCase) {
+  void testCombine(final SecretsTestCase testCase) {
     final var secretPersistence = new MemorySecretPersistence();
     testCase.getPersistenceUpdater().accept(secretPersistence);
 
@@ -173,7 +173,7 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
 
-    for (Map.Entry<SecretCoordinate, String> entry : splitConfig.getCoordinateToPayload().entrySet()) {
+    for (final Map.Entry<SecretCoordinate, String> entry : splitConfig.getCoordinateToPayload().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
@@ -188,7 +188,7 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
 
-    for (Map.Entry<SecretCoordinate, String> entry : updatedSplit1.getCoordinateToPayload().entrySet()) {
+    for (final Map.Entry<SecretCoordinate, String> entry : updatedSplit1.getCoordinateToPayload().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 

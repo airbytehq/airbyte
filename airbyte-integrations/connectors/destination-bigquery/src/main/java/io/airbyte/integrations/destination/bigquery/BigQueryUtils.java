@@ -30,13 +30,13 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
 
-  static ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
+  static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
-  static ImmutablePair<Job, String> executeQuery(Job queryJob) {
+  static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       LOGGER.error("Job no longer exists:" + queryJob);
@@ -50,21 +50,21 @@ public class BigQueryUtils {
     return ImmutablePair.of(completedJob, null);
   }
 
-  static Job waitForQuery(Job queryJob) {
+  static Job waitForQuery(final Job queryJob) {
     try {
       return queryJob.waitFor();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
     }
   }
 
-  static void createSchemaAndTableIfNeeded(BigQuery bigquery,
-                                           Set<String> existingSchemas,
-                                           String schemaName,
-                                           String tmpTableName,
-                                           String datasetLocation,
-                                           Schema schema) {
+  static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
+                                           final Set<String> existingSchemas,
+                                           final String schemaName,
+                                           final String tmpTableName,
+                                           final String datasetLocation,
+                                           final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
@@ -72,7 +72,7 @@ public class BigQueryUtils {
     BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
   }
 
-  static void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
+  static void createSchemaTable(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
     final Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
@@ -81,7 +81,7 @@ public class BigQueryUtils {
   }
 
   // https://cloud.google.com/bigquery/docs/tables#create-table
-  static void createTable(BigQuery bigquery, String datasetName, String tableName, Schema schema) {
+  static void createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
     try {
 
       final TableId tableId = TableId.of(datasetName, tableName);
@@ -90,14 +90,14 @@ public class BigQueryUtils {
 
       bigquery.create(tableInfo);
       LOGGER.info("Table: {} created successfully", tableId);
-    } catch (BigQueryException e) {
+    } catch (final BigQueryException e) {
       LOGGER.info("Table was not created. \n", e);
     }
   }
 
-  public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
-    JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+  public static JsonNode getGcsJsonNodeConfig(final JsonNode config) {
+    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
@@ -112,7 +112,7 @@ public class BigQueryUtils {
     return gcsJsonNode;
   }
 
-  public static String getDatasetLocation(JsonNode config) {
+  public static String getDatasetLocation(final JsonNode config) {
     if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
       return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
     } else {
@@ -120,7 +120,7 @@ public class BigQueryUtils {
     }
   }
 
-  static TableDefinition getTableDefinition(BigQuery bigquery, String datasetName, String tableName) {
+  static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
     final TableId tableId = TableId.of(datasetName, tableName);
     return bigquery.getTable(tableId).getDefinition();
   }

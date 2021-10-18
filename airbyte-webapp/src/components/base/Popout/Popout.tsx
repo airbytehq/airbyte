@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import styled from "styled-components";
+import styled, { CSSObject } from "styled-components";
 import { useToggle } from "react-use";
 import { ActionMeta } from "react-select";
 
@@ -43,10 +43,6 @@ type PopoutProps = DropdownProps & {
   }) => ReactNode;
 };
 
-const selectStyles = {
-  control: (provided: Value) => ({ ...provided, minWidth: 240, marginTop: 8 }),
-};
-
 const Popout: React.FC<PopoutProps> = ({
   onChange,
   targetComponent,
@@ -67,16 +63,31 @@ const Popout: React.FC<PopoutProps> = ({
     [props.components]
   );
 
+  const selectStyles = {
+    control: (provided: Value) => ({
+      ...provided,
+      minWidth: 240,
+      marginTop: 8,
+    }),
+    menuPortal: (base: CSSObject): CSSObject => ({
+      ...base,
+      ...(!props.isSearchable ? { transform: "translateY(-37px)" } : {}),
+      zIndex: 9999,
+    }),
+  };
+
+  const target = targetComponent({
+    onOpen: toggleOpen,
+    isOpen,
+    value: props.value,
+  });
+
   return (
     <PopupOpener
       data-testid={props["data-testid"]}
       isOpen={isOpen}
       onClose={toggleOpen}
-      target={targetComponent({
-        onOpen: toggleOpen,
-        isOpen,
-        value: props.value,
-      })}
+      target={target}
     >
       <DropDown
         autoFocus

@@ -14,7 +14,7 @@ import javax.ws.rs.ext.Provider;
 public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMappingException> {
 
   @Override
-  public Response toResponse(JsonMappingException e) {
+  public Response toResponse(final JsonMappingException e) {
     return Response.status(422)
         .entity(
             Jsons.serialize(KnownException.infoFromThrowableWithMessage(e, "Invalid json input. " + e.getMessage() + " " + e.getOriginalMessage())))
