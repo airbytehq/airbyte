@@ -47,9 +47,7 @@ class MondayStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        graphql_params = {
-            'newest_first': 'true'
-        }
+        graphql_params = {}
         if next_page_token:
             graphql_params.update(next_page_token)
 
@@ -73,6 +71,10 @@ class Items(MondayStream):
     API Documentation: https://api.developer.monday.com/docs/items-queries
     """
 
+class Boards(MondayStream):
+    """
+    API Documentation: https://api.developer.monday.com/docs/groups-queries#groups-queries
+    """
 
 # Source
 class SourceMonday(AbstractSource):
@@ -90,4 +92,7 @@ class SourceMonday(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config['api_token'])
-        return [Items(authenticator=auth)]
+        return [
+            Items(authenticator=auth),
+            Boards(authenticator=auth)
+        ]

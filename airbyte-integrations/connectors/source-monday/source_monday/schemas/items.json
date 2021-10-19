@@ -24,13 +24,7 @@
             "value": { "type": "string" }
           }
         },
-        "created_at": { "type": "date" },
-        "creator": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
+        "created_at": { "type": "timestamp" },
         "creator_id": { "type": "integer" },
         "group": {
           "type": "object",
@@ -53,7 +47,7 @@
             "id": { "type": "integer" }
           }
         },
-        "updated_at": { "type": "date" },
+        "updated_at": { "type": "timestamp" },
         "updates": {
           "type": "object",
           "properties": {

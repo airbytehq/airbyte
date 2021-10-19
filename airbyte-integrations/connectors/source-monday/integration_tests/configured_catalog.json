@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "items",
+        "name": "boards",
         "json_schema": {
           "stream": {
             "name": "visitor_activities",
