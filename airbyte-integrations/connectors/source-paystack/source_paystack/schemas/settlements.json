@@ -4,29 +4,25 @@
     "integration": {
       "type": ["null", "integer"]
     },
-    "first_name": {
-      "type": ["null", "string"]
-    },
-    "last_name": {
-      "type": ["null", "string"]
-    },
-    "email": {
-      "type": ["null", "string"]
-    },
-    "phone": {
-      "type": ["null", "string"]
-    },
-    "metadata": {
+    "subaccount": {
       "type": ["null", "object"],
       "properties": {}
+    },
+    "settled_by": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "settlement_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "domain": {
       "type": ["null", "string"]
     },
-    "customer_code": {
-      "type": ["null", "string"]
+    "total_amount": {
+      "type": ["null", "integer"]
     },
-    "risk_action": {
+    "status": {
       "type": ["null", "string"]
     },
     "id": {
@@ -40,5 +36,5 @@
       "type": ["null", "string"],
       "format": "date-time"
     }
-  }          
+  }
 }

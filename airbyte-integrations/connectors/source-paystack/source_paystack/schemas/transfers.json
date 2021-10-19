@@ -4,29 +4,28 @@
     "integration": {
       "type": ["null", "integer"]
     },
-    "first_name": {
-      "type": ["null", "string"]
-    },
-    "last_name": {
-      "type": ["null", "string"]
-    },
-    "email": {
-      "type": ["null", "string"]
-    },
-    "phone": {
-      "type": ["null", "string"]
-    },
-    "metadata": {
-      "type": ["null", "object"],
-      "properties": {}
-    },
     "domain": {
       "type": ["null", "string"]
     },
-    "customer_code": {
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
       "type": ["null", "string"]
     },
-    "risk_action": {
+    "source": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "recipient": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "transfer_code": {
       "type": ["null", "string"]
     },
     "id": {
@@ -40,5 +39,5 @@
       "type": ["null", "string"],
       "format": "date-time"
     }
-  }          
+  }
 }
