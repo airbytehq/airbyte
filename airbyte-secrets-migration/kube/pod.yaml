@@ -11,38 +11,38 @@ spec:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: stage-database-password
+              name: prod-database-password
               key: DATABASE_PASSWORD
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: stage-airbyte-secrets
+              name: prod-airbyte-secrets
               key: DATABASE_URL
         - name: DATABASE_USER
           valueFrom:
             secretKeyRef:
-              name: stage-airbyte-secrets
+              name: prod-airbyte-secrets
               key: DATABASE_USER
         - name: TEMPORAL_HOST
           valueFrom:
             secretKeyRef:
-              name: stage-airbyte-secrets
+              name: prod-airbyte-secrets
               key: TEMPORAL_HOST
         - name: WORKSPACE_ROOT
           valueFrom:
             secretKeyRef:
-              name: stage-airbyte-secrets
+              name: prod-airbyte-secrets
               key: WORKSPACE_ROOT
         - name: SECRET_PERSISTENCE
           value: GOOGLE_SECRET_MANAGER
         - name: SECRET_STORE_GCP_PROJECT_ID
           valueFrom:
             secretKeyRef:
-              name: stage-airbyte-secrets
+              name: prod-airbyte-secrets
               key: SECRET_STORE_GCP_PROJECT_ID
         - name: SECRET_STORE_GCP_CREDENTIALS
           valueFrom:
             secretKeyRef:
-              name: stage-secret-store-gcp-credential
+              name: prod-secret-store-gcp-credential
               key: SECRET_STORE_GCP_CREDENTIALS
   restartPolicy: Never
