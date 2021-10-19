@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import os
 from pathlib import Path
 from typing import Any, List, Mapping
@@ -248,5 +249,31 @@ class TestCsvParser(AbstractTestParser):
                 "inferred_schema": {},
                 "line_checks": {},
                 "fails": ["test_get_inferred_schema", "test_stream_records"],
+            },
+            {
+                # no header test
+                "test_alias": "no header csv file",
+                "AbstractFileParser": CsvParser(
+                    format={
+                        "filetype": "csv",
+                        "advanced_options": json.dumps({
+                            "column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]
+                        })
+                    },
+                    master_schema={}
+                ),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_8_no_header.csv"),
+                "num_records": 8,
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {},
+                "fails": [],
             },
         ]
