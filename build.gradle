@@ -251,7 +251,7 @@ task composeBuild {
     def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
     def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
     def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
-    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build.m1.yaml' : 'docker-compose.build.yaml'
+    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
     doFirst {
         exec {
             workingDir rootDir
