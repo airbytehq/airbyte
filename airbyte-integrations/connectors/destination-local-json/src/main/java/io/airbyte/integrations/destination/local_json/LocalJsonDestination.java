@@ -51,10 +51,10 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       FileUtils.forceMkdir(getDestinationPath(config).toFile());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -67,9 +67,9 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
@@ -102,7 +102,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
    * @param config - config object
    * @return absolute path where to write files.
    */
-  protected Path getDestinationPath(JsonNode config) {
+  protected Path getDestinationPath(final JsonNode config) {
     Path destinationPath = Paths.get(config.get(DESTINATION_PATH_FIELD).asText());
     Preconditions.checkNotNull(destinationPath);
 
@@ -126,7 +126,9 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public JsonConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+    public JsonConsumer(final Map<String, WriteConfig> writeConfigs,
+                        final ConfiguredAirbyteCatalog catalog,
+                        final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       LOGGER.info("initializing consumer.");
       this.catalog = catalog;
@@ -139,7 +141,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage message) throws Exception {
+    protected void acceptTracked(final AirbyteMessage message) throws Exception {
       if (message.getType() != Type.RECORD) {
         return;
       }
@@ -162,7 +164,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
 
     @Override
     public void commit() throws Exception {
-      for (WriteConfig writeConfig : writeConfigs.values()) {
+      for (final WriteConfig writeConfig : writeConfigs.values()) {
         writeConfig.getWriter().flush();
       }
     }
@@ -175,7 +177,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
         try {
           entries.getValue().getWriter().flush();
           entries.getValue().getWriter().close();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           hasFailed = true;
           LOGGER.error("failed to close writer for: {}.", entries.getKey());
         }
@@ -208,7 +210,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
     private final Path tmpPath;
     private final Path finalPath;
 
-    public WriteConfig(Writer writer, Path tmpPath, Path finalPath) {
+    public WriteConfig(final Writer writer, final Path tmpPath, final Path finalPath) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
@@ -228,7 +230,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
 
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new LocalJsonDestination()).run(args);
   }
 

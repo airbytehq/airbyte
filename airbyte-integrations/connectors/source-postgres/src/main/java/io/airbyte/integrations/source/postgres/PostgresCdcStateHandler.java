@@ -21,15 +21,15 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcStateHandler.class);
   private final StateManager stateManager;
 
-  public PostgresCdcStateHandler(StateManager stateManager) {
+  public PostgresCdcStateHandler(final StateManager stateManager) {
     this.stateManager = stateManager;
   }
 
   @Override
-  public AirbyteMessage saveState(Map<String, String> offset, String dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
     final JsonNode asJson = Jsons.jsonNode(offset);
     LOGGER.info("debezium state: {}", asJson);
-    CdcState cdcState = new CdcState().withState(asJson);
+    final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
     final AirbyteStateMessage stateMessage = stateManager.emit();
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);

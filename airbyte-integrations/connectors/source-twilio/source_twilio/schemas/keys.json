@@ -1,8 +1,5 @@
 {
   "properties": {
-    "account_sid": {
-      "type": ["null", "string"]
-    },
     "date_created": {
       "format": "date-time",
       "type": ["null", "string"]

@@ -29,7 +29,7 @@ LOGGING_CONFIG = {
 }
 
 
-def init_logger(name: str):
+def init_logger(name: str = None):
     """Initial set up of logger"""
     logging.setLoggerClass(AirbyteNativeLogger)
     logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")

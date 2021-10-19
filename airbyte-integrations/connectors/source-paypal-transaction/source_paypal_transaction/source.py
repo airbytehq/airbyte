@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
@@ -69,7 +70,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         minimum_allowed_start_date = now - timedelta(**self.start_date_min)
         if start_date < minimum_allowed_start_date:
             self.logger.log(
-                "WARN",
+                logging.WARN,
                 f'Stream {self.name}: start_date "{start_date.isoformat()}" is too old. '
                 + f'Reset start_date to the minimum_allowed_start_date "{minimum_allowed_start_date.isoformat()}"',
             )
@@ -78,7 +79,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         self.maximum_allowed_start_date = min(now, self.end_date)
         if start_date > self.maximum_allowed_start_date:
             self.logger.log(
-                "WARN",
+                logging.WARN,
                 f'Stream {self.name}: start_date "{start_date.isoformat()}" is too recent. '
                 + f'Reset start_date to the maximum_allowed_start_date "{self.maximum_allowed_start_date.isoformat()}"',
             )

@@ -21,20 +21,20 @@ class MigrationDevHelperTest {
 
   @Test
   public void testGetAirbyteVersion() {
-    MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
-    AirbyteVersion airbyteVersion = MigrationDevHelper.getAirbyteVersion(migrationVersion);
+    final MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
+    final AirbyteVersion airbyteVersion = MigrationDevHelper.getAirbyteVersion(migrationVersion);
     assertEquals("0.11.3", airbyteVersion.getVersion());
   }
 
   @Test
   public void testFormatAirbyteVersion() {
-    AirbyteVersion airbyteVersion = new AirbyteVersion("0.11.3-alpha");
+    final AirbyteVersion airbyteVersion = new AirbyteVersion("0.11.3-alpha");
     assertEquals("0_11_3", MigrationDevHelper.formatAirbyteVersion(airbyteVersion));
   }
 
   @Test
   public void testGetMigrationId() {
-    MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
+    final MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
     assertEquals("010", MigrationDevHelper.getMigrationId(migrationVersion));
   }
 

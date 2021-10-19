@@ -17,12 +17,12 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
 
   private final Supplier<Instant> timeSupplier;
 
-  public ScheduleJobPredicate(Supplier<Instant> timeSupplier) {
+  public ScheduleJobPredicate(final Supplier<Instant> timeSupplier) {
     this.timeSupplier = timeSupplier;
   }
 
   @Override
-  public boolean test(Optional<Job> previousJobOptional, StandardSync standardSync) {
+  public boolean test(final Optional<Job> previousJobOptional, final StandardSync standardSync) {
     // if manual scheduler, then we never programmatically schedule.
     if (standardSync.getManual()) {
       return false;
@@ -33,7 +33,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean shouldSchedule(Optional<Job> previousJobOptional, boolean timeForJobNewJob) {
+  private boolean shouldSchedule(final Optional<Job> previousJobOptional, final boolean timeForJobNewJob) {
     if (previousJobOptional.isEmpty()) {
       return true;
     }
@@ -47,7 +47,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean isTimeForNewJob(Optional<Job> previousJobOptional, StandardSync standardSync) {
+  private boolean isTimeForNewJob(final Optional<Job> previousJobOptional, final StandardSync standardSync) {
     // if non-manual scheduler, and there has never been a previous run, always schedule.
     if (previousJobOptional.isEmpty()) {
       return true;
@@ -60,8 +60,8 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
       return false;
     }
 
-    long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
-    long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
+    final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
+    final long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
     return nextRunStart < timeSupplier.get().getEpochSecond();
   }
 

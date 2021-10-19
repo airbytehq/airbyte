@@ -109,11 +109,11 @@ public class DefaultJobPersistence implements JobPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  DefaultJobPersistence(Database database,
-                        Supplier<Instant> timeSupplier,
-                        int minimumAgeInDays,
-                        int excessiveNumberOfJobs,
-                        int minimumRecencyCount) {
+  DefaultJobPersistence(final Database database,
+                        final Supplier<Instant> timeSupplier,
+                        final int minimumAgeInDays,
+                        final int excessiveNumberOfJobs,
+                        final int minimumRecencyCount) {
     this.database = new ExceptionWrappingDatabase(database);
     this.timeSupplier = timeSupplier;
     JOB_HISTORY_MINIMUM_AGE_IN_DAYS = minimumAgeInDays;
@@ -121,16 +121,16 @@ public class DefaultJobPersistence implements JobPersistence {
     JOB_HISTORY_MINIMUM_RECENCY = minimumRecencyCount;
   }
 
-  public DefaultJobPersistence(Database database) {
+  public DefaultJobPersistence(final Database database) {
     this(database, Instant::now, 30, 500, 10);
   }
 
   @Override
-  public Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException {
+  public Optional<Long> enqueueJob(final String scope, final JobConfig jobConfig) throws IOException {
     LOGGER.info("enqueuing pending job for scope: {}", scope);
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    String queueingRequest = Job.REPLICATION_TYPES.contains(jobConfig.getConfigType())
+    final String queueingRequest = Job.REPLICATION_TYPES.contains(jobConfig.getConfigType())
         ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE config_type IN (%s) AND scope = '%s' AND status NOT IN (%s)) ",
             Job.REPLICATION_TYPES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")),
             scope,
@@ -155,7 +155,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void resetJob(long jobId) throws IOException {
+  public void resetJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     database.query(ctx -> {
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.PENDING, now,
@@ -165,7 +165,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void cancelJob(long jobId) throws IOException {
+  public void cancelJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     database.query(ctx -> {
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.CANCELLED, now);
@@ -174,7 +174,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void failJob(long jobId) throws IOException {
+  public void failJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     database.query(ctx -> {
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.FAILED, now);
@@ -182,7 +182,12 @@ public class DefaultJobPersistence implements JobPersistence {
     });
   }
 
-  private void updateJobStatusIfNotInTerminalState(DSLContext ctx, long jobId, JobStatus newStatus, LocalDateTime now, RuntimeException e) {
+  private void updateJobStatusIfNotInTerminalState(
+                                                   final DSLContext ctx,
+                                                   final long jobId,
+                                                   final JobStatus newStatus,
+                                                   final LocalDateTime now,
+                                                   final RuntimeException e) {
     final Job job = getJob(ctx, jobId);
     if (!job.isJobInTerminalState()) {
       updateJobStatus(ctx, jobId, newStatus, now);
@@ -191,11 +196,11 @@ public class DefaultJobPersistence implements JobPersistence {
     }
   }
 
-  private void updateJobStatusIfNotInTerminalState(DSLContext ctx, long jobId, JobStatus newStatus, LocalDateTime now) {
+  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     updateJobStatusIfNotInTerminalState(ctx, jobId, newStatus, now, null);
   }
 
-  private void updateJobStatus(DSLContext ctx, long jobId, JobStatus newStatus, LocalDateTime now) {
+  private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
         Sqls.toSqlName(newStatus),
@@ -204,20 +209,22 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public int createAttempt(long jobId, Path logPath) throws IOException {
+  public int createAttempt(final long jobId, final Path logPath) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     return database.transaction(ctx -> {
       final Job job = getJob(ctx, jobId);
       if (job.isJobInTerminalState()) {
-        var errMsg = String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
-            job.getStatus(), job.getScope());
+        final var errMsg =
+            String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
+                job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
       if (job.hasRunningAttempt()) {
-        var errMsg = String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
-            job.getStatus(), job.getScope());
+        final var errMsg =
+            String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
+                job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
@@ -241,7 +248,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void failAttempt(long jobId, int attemptNumber) throws IOException {
+  public void failAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     database.transaction(ctx -> {
       // do not overwrite terminal states.
@@ -259,7 +266,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void succeedAttempt(long jobId, int attemptNumber) throws IOException {
+  public void succeedAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     database.transaction(ctx -> {
       // override any other terminal statuses if we are now succeeded.
@@ -277,7 +284,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
+  public void setAttemptTemporalWorkflowId(final long jobId, final int attemptNumber, final String temporalWorkflowId) throws IOException {
     database.query(ctx -> ctx.execute(
         " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
         temporalWorkflowId,
@@ -286,8 +293,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
-    var result = database.query(ctx -> ctx.fetch(
+  public Optional<String> getAttemptTemporalWorkflowId(final long jobId, final int attemptNumber) throws IOException {
+    final var result = database.query(ctx -> ctx.fetch(
         " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
         jobId,
         attemptNumber)).stream().findFirst();
@@ -300,7 +307,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException {
+  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     database.query(
@@ -313,25 +320,25 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Job getJob(long jobId) throws IOException {
+  public Job getJob(final long jobId) throws IOException {
     return database.query(ctx -> getJob(ctx, jobId));
   }
 
-  private Job getJob(DSLContext ctx, long jobId) {
+  private Job getJob(final DSLContext ctx, final long jobId) {
     return getJobOptional(ctx, jobId).orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
   }
 
-  private Optional<Job> getJobOptional(DSLContext ctx, long jobId) {
+  private Optional<Job> getJobOptional(final DSLContext ctx, final long jobId) {
     return getJobFromResult(ctx.fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId));
   }
 
   @Override
-  public List<Job> listJobs(ConfigType configType, String configId, int pagesize, int offset) throws IOException {
+  public List<Job> listJobs(final ConfigType configType, final String configId, final int pagesize, final int offset) throws IOException {
     return listJobs(Set.of(configType), configId, pagesize, offset);
   }
 
   @Override
-  public List<Job> listJobs(Set<ConfigType> configTypes, String configId, int pagesize, int offset) throws IOException {
+  public List<Job> listJobs(final Set<ConfigType> configTypes, final String configId, final int pagesize, final int offset) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx.fetch(
         BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " " +
@@ -342,12 +349,12 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobsWithStatus(JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(final JobStatus status) throws IOException {
     return listJobsWithStatus(Sets.newHashSet(ConfigType.values()), status);
   }
 
   @Override
-  public List<Job> listJobsWithStatus(Set<ConfigType> configTypes, JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(final Set<ConfigType> configTypes, final JobStatus status) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
@@ -357,12 +364,12 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobsWithStatus(ConfigType configType, JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(final ConfigType configType, final JobStatus status) throws IOException {
     return listJobsWithStatus(Sets.newHashSet(configType), status);
   }
 
   @Override
-  public Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException {
+  public Optional<Job> getLastReplicationJob(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
@@ -377,7 +384,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<State> getCurrentState(UUID connectionId) throws IOException {
+  public Optional<State> getCurrentState(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
@@ -411,7 +418,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException {
+  public List<Job> listJobs(final ConfigType configType, final Instant attemptEndedAtTimestamp) throws IOException {
     final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
@@ -420,11 +427,11 @@ public class DefaultJobPersistence implements JobPersistence {
             timeConvertedIntoLocalDateTime)));
   }
 
-  private static List<Job> getJobsFromResult(Result<Record> result) {
+  private static List<Job> getJobsFromResult(final Result<Record> result) {
     // keeps results strictly in order so the sql query controls the sort
-    List<Job> jobs = new ArrayList<Job>();
+    final List<Job> jobs = new ArrayList<Job>();
     Job currentJob = null;
-    for (Record entry : result) {
+    for (final Record entry : result) {
       if (currentJob == null || currentJob.getId() != entry.get("job_id", Long.class)) {
         currentJob = new Job(entry.get("job_id", Long.class),
             Enums.toEnum(entry.get("config_type", String.class), ConfigType.class).orElseThrow(),
@@ -456,11 +463,11 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @VisibleForTesting
-  static Optional<Job> getJobFromResult(Result<Record> result) {
+  static Optional<Job> getJobFromResult(final Result<Record> result) {
     return getJobsFromResult(result).stream().findFirst();
   }
 
-  private static long getEpoch(Record record, String fieldName) {
+  private static long getEpoch(final Record record, final String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
@@ -474,7 +481,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void setVersion(String airbyteVersion) throws IOException {
+  public void setVersion(final String airbyteVersion) throws IOException {
     database.query(ctx -> ctx.execute(String.format(
         "INSERT INTO %s(%s, %s) VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
         AIRBYTE_METADATA_TABLE,
@@ -499,7 +506,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void setDeployment(UUID deployment) throws IOException {
+  public void setDeployment(final UUID deployment) throws IOException {
     // if an existing deployment id already exists, on conflict, return it so we can log it.
     final UUID committedDeploymentId = database.query(ctx -> ctx.fetch(String.format(
         "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO NOTHING RETURNING (SELECT %s FROM %s WHERE %s='%s') as existing_deployment_id",
@@ -540,7 +547,7 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public Map<String, Stream<JsonNode>> dump() throws IOException {
     final Map<String, Stream<JsonNode>> result = new HashMap<>();
-    for (String schema : listSchemas()) {
+    for (final String schema : listSchemas()) {
       final List<String> tables = listAllTables(schema);
 
       for (final String table : tables) {
@@ -586,16 +593,16 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @VisibleForTesting
-  public void purgeJobHistory(LocalDateTime asOfDate) {
+  public void purgeJobHistory(final LocalDateTime asOfDate) {
     try {
-      String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
+      final String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
       // interval '?' days cannot use a ? bind, so we're using %d instead.
-      String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
+      final String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
       final Integer rows = database.query(ctx -> ctx.execute(sql,
           asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
           JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
           JOB_HISTORY_MINIMUM_RECENCY));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -644,7 +651,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private void importDatabase(final String airbyteVersion,
                               final String targetSchema,
                               final Map<JobsDatabaseSchema, Stream<JsonNode>> data,
-                              boolean incrementalImport)
+                              final boolean incrementalImport)
       throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
@@ -681,7 +688,7 @@ public class DefaultJobPersistence implements JobPersistence {
   /**
    * TODO: we need version specific importers to copy data to the database. Issue: #5682.
    */
-  private static void importTable(DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+  private static void importTable(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
@@ -752,7 +759,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private static List<Field<?>> getFields(final JsonNode jsonSchema) {
     final List<Field<?>> result = new ArrayList<>();
     final JsonNode properties = jsonSchema.get("properties");
-    for (Iterator<String> it = properties.fieldNames(); it.hasNext();) {
+    for (final Iterator<String> it = properties.fieldNames(); it.hasNext();) {
       final String fieldName = it.next();
       result.add(DSL.field(fieldName));
     }
