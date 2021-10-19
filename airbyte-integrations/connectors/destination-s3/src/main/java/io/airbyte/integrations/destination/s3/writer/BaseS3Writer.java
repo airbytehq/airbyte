@@ -42,9 +42,9 @@ public abstract class BaseS3Writer implements S3Writer {
   protected final DestinationSyncMode syncMode;
   protected final String outputPrefix;
 
-  protected BaseS3Writer(S3DestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream) {
+  protected BaseS3Writer(final S3DestinationConfig config,
+                         final AmazonS3 s3Client,
+                         final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -62,7 +62,7 @@ public abstract class BaseS3Writer implements S3Writer {
    */
   @Override
   public void initialize() {
-    String bucket = config.getBucketName();
+    final String bucket = config.getBucketName();
     if (!s3Client.doesBucketExistV2(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
@@ -71,17 +71,17 @@ public abstract class BaseS3Writer implements S3Writer {
 
     if (syncMode == DestinationSyncMode.OVERWRITE) {
       LOGGER.info("Overwrite mode");
-      List<KeyVersion> keysToDelete = new LinkedList<>();
-      List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
+      final List<KeyVersion> keysToDelete = new LinkedList<>();
+      final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
           .getObjectSummaries();
-      for (S3ObjectSummary object : objects) {
+      for (final S3ObjectSummary object : objects) {
         keysToDelete.add(new KeyVersion(object.getKey()));
       }
 
       if (keysToDelete.size() > 0) {
         LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
             stream.getName());
-        DeleteObjectsResult result = s3Client
+        final DeleteObjectsResult result = s3Client
             .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
         LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
             stream.getName());
@@ -93,7 +93,7 @@ public abstract class BaseS3Writer implements S3Writer {
    * Log and close the write.
    */
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
       closeWhenFail();
@@ -120,8 +120,8 @@ public abstract class BaseS3Writer implements S3Writer {
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>
-  public static String getOutputFilename(Timestamp timestamp, S3Format format) {
-    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+  public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
+    final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
         "%s_%d_0.%s",

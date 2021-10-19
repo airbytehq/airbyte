@@ -27,19 +27,19 @@ public class DataAdapter {
    * @param valueNodeAdapter - transformation function which returns adapted value node
    */
   public DataAdapter(
-                     Predicate<JsonNode> filterValueNode,
-                     Function<JsonNode, JsonNode> valueNodeAdapter) {
+                     final Predicate<JsonNode> filterValueNode,
+                     final Function<JsonNode, JsonNode> valueNodeAdapter) {
     this.filterValueNode = filterValueNode;
     this.valueNodeAdapter = valueNodeAdapter;
   }
 
-  public void adapt(JsonNode messageData) {
+  public void adapt(final JsonNode messageData) {
     if (messageData != null) {
       adaptAllValueNodes(messageData);
     }
   }
 
-  private void adaptAllValueNodes(JsonNode rootNode) {
+  private void adaptAllValueNodes(final JsonNode rootNode) {
     adaptValueNodes(null, rootNode, null);
   }
 
@@ -52,10 +52,10 @@ public class DataAdapter {
    * @param node Json node
    * @param parentNode Parent json node
    */
-  private void adaptValueNodes(String fieldName, JsonNode node, JsonNode parentNode) {
+  private void adaptValueNodes(final String fieldName, final JsonNode node, final JsonNode parentNode) {
     if (node.isValueNode() && filterValueNode.test(node)) {
       if (fieldName != null) {
-        var adaptedNode = valueNodeAdapter.apply(node);
+        final var adaptedNode = valueNodeAdapter.apply(node);
         ((ObjectNode) parentNode).set(fieldName, adaptedNode);
       } else
         throw new RuntimeException("Unexpected value node without fieldName. Node: " + node);

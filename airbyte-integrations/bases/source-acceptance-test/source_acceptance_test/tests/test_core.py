@@ -201,7 +201,7 @@ class TestBasicRead(BaseTest):
         for stream_name, errors in streams_errors.items():
             errors = map(str, errors.values())
             str_errors = f"\n{bar}\n".join(errors)
-            logging.error(f"The {stream_name} stream has the following schema errors:\n{str_errors}")
+            logging.error(f"\nThe {stream_name} stream has the following schema errors:\n{str_errors}")
 
         if streams_errors:
             pytest.fail(f"Please check your json_schema in selected streams {tuple(streams_errors.keys())}.")

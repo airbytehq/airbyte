@@ -95,7 +95,7 @@ public abstract class JdbcStressTest {
    */
   public abstract AbstractJdbcSource getSource();
 
-  protected String createTableQuery(String tableName, String columnClause) {
+  protected String createTableQuery(final String tableName, final String columnClause) {
     return String.format("CREATE TABLE %s(%s)",
         tableName, columnClause);
   }
@@ -109,7 +109,7 @@ public abstract class JdbcStressTest {
     config = getConfig();
 
     final JsonNode jdbcConfig = source.toDatabaseConfig(config);
-    JdbcDatabase database = Databases.createJdbcDatabase(
+    final JdbcDatabase database = Databases.createJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
@@ -124,7 +124,7 @@ public abstract class JdbcStressTest {
         LOGGER.info("writing batch: " + i);
       final List<String> insert = new ArrayList<>();
       for (int j = 0; j < BATCH_SIZE; j++) {
-        int recordNumber = (i * BATCH_SIZE) + j;
+        final int recordNumber = (i * BATCH_SIZE) + j;
         insert.add(String.format(INSERT_STATEMENT, recordNumber, recordNumber));
       }
 
@@ -152,7 +152,7 @@ public abstract class JdbcStressTest {
     runTest(getConfiguredCatalogIncremental(), "incremental");
   }
 
-  private void runTest(ConfiguredAirbyteCatalog configuredCatalog, String testName) throws Exception {
+  private void runTest(final ConfiguredAirbyteCatalog configuredCatalog, final String testName) throws Exception {
     LOGGER.info("running stress test for: " + testName);
     final Iterator<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
     final long actualCount = MoreStreams.toStream(read)
@@ -173,12 +173,12 @@ public abstract class JdbcStressTest {
   }
 
   // each is roughly 106 bytes.
-  private void assertExpectedMessage(AirbyteMessage actualMessage) {
-    long recordNumber = actualMessage.getRecord().getData().get(COL_ID).asLong();
+  private void assertExpectedMessage(final AirbyteMessage actualMessage) {
+    final long recordNumber = actualMessage.getRecord().getData().get(COL_ID).asLong();
     bitSet.set((int) recordNumber);
     actualMessage.getRecord().setEmittedAt(null);
 
-    Number expectedRecordNumber =
+    final Number expectedRecordNumber =
         getDriverClass().toLowerCase().contains("oracle") ? new BigDecimal(recordNumber)
             : recordNumber;
 
@@ -209,7 +209,7 @@ public abstract class JdbcStressTest {
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   }
 
-  private String prepareInsertStatement(List<String> inserts) {
+  private String prepareInsertStatement(final List<String> inserts) {
     if (getDriverClass().toLowerCase().contains("oracle")) {
       return String.format("INSERT ALL %s SELECT * FROM dual", Strings.join(inserts, " "));
     }

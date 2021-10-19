@@ -34,7 +34,7 @@ public class Archives {
     Files.walk(sourceFolder)
         .filter(Files::isRegularFile)
         .forEach(file -> {
-          Path targetFile = sourceFolder.relativize(file);
+          final Path targetFile = sourceFolder.relativize(file);
           Exceptions.toRuntime(() -> compressFile(file, targetFile, archive));
         });
     archive.close();
@@ -70,7 +70,7 @@ public class Archives {
     }
   }
 
-  private static Path zipSlipProtect(ArchiveEntry entry, Path destinationFolder)
+  private static Path zipSlipProtect(final ArchiveEntry entry, final Path destinationFolder)
       throws IOException {
     final Path targetDirResolved = destinationFolder.resolve(entry.getName());
     // make sure normalized file still has destinationFolder as its prefix,

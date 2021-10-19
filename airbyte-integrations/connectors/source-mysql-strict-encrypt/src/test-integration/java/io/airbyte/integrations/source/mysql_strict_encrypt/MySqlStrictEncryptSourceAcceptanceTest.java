@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -39,7 +40,7 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   protected JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
@@ -75,18 +76,18 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mysql:dev";
+    return "airbyte/source-mysql-strict-encrypt:dev";
   }
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
+    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
   }
 
   @Override

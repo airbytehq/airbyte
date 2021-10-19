@@ -39,7 +39,7 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
   @VisibleForTesting
   protected final Migration previousMigration;
 
-  public MigrationV0_26_0(Migration previousMigration) {
+  public MigrationV0_26_0(final Migration previousMigration) {
     super(previousMigration);
     this.previousMigration = previousMigration;
   }
@@ -53,25 +53,25 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    JsonNode schemaFromResourcePath = MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, STANDARD_SYNC_OPERATION_RESOURCE_ID);
+    final JsonNode schemaFromResourcePath = MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, STANDARD_SYNC_OPERATION_RESOURCE_ID);
 
-    HashMap<ResourceId, JsonNode> resourceIdJsonNodeHashMap = new HashMap<>(previousMigration.getOutputSchema());
+    final HashMap<ResourceId, JsonNode> resourceIdJsonNodeHashMap = new HashMap<>(previousMigration.getOutputSchema());
     resourceIdJsonNodeHashMap.put(STANDARD_SYNC_OPERATION_RESOURCE_ID, schemaFromResourcePath);
 
     return resourceIdJsonNodeHashMap;
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData,
-                      Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData,
+                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
 
-    Set<String> destinationIds = new HashSet<>();
+    final Set<String> destinationIds = new HashSet<>();
 
     inputData.getOrDefault(DESTINATION_CONNECTION_RESOURCE_ID, Stream.empty())
         .forEach(destinationConnection -> {
-          JsonNode configuration = destinationConnection.get("configuration");
+          final JsonNode configuration = destinationConnection.get("configuration");
           if (configuration.get("basic_normalization") != null) {
-            boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
+            final boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
                 .asBoolean();
             ((ObjectNode) destinationConnection).set("configuration", configuration);
             if (basicNormalization) {
@@ -95,8 +95,8 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
       inputEntry.getValue().forEach(jsonNode -> {
         if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID) && destinationIds
             .contains(jsonNode.get("destinationId").asText())) {
-          Map<String, Object> standardSyncOperation = new LinkedHashMap<>();
-          String operationId = uuid();
+          final Map<String, Object> standardSyncOperation = new LinkedHashMap<>();
+          final String operationId = uuid();
           standardSyncOperation.put("operationId", operationId);
           standardSyncOperation.put("name", "default-normalization");
           standardSyncOperation.put("operatorType", "normalization");
@@ -104,12 +104,12 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
               .put("operatorNormalization", Jsons.jsonNode(ImmutableMap.of("option", "basic")));
           standardSyncOperation
               .put("tombstone", false);
-          JsonNode standardSyncOperationAsJson = Jsons.jsonNode(standardSyncOperation);
+          final JsonNode standardSyncOperationAsJson = Jsons.jsonNode(standardSyncOperation);
           outputData.get(STANDARD_SYNC_OPERATION_RESOURCE_ID).accept(standardSyncOperationAsJson);
           if (jsonNode.get("operationIds") == null) {
             ((ObjectNode) jsonNode).put("operationIds", Jsons.jsonNode(Collections.singletonList(operationId)));
           } else {
-            List<String> operationIds = Jsons
+            final List<String> operationIds = Jsons
                 .object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
             operationIds.add(operationId);
             ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));

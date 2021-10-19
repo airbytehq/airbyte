@@ -62,7 +62,7 @@ public class ConfigDumpExporter {
   private final JobPersistence jobPersistence;
   private final WorkspaceHelper workspaceHelper;
 
-  public ConfigDumpExporter(ConfigRepository configRepository, JobPersistence jobPersistence, WorkspaceHelper workspaceHelper) {
+  public ConfigDumpExporter(final ConfigRepository configRepository, final JobPersistence jobPersistence, final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.workspaceHelper = workspaceHelper;
@@ -78,22 +78,22 @@ public class ConfigDumpExporter {
 
       Archives.createArchive(tempFolder, dump.toPath());
       return dump;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void exportVersionFile(Path tempFolder) throws IOException {
+  private void exportVersionFile(final Path tempFolder) throws IOException {
     final String version = jobPersistence.getVersion().orElseThrow();
     final File versionFile = Files.createFile(tempFolder.resolve(VERSION_FILE_NAME)).toFile();
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
   }
 
-  private void dumpJobsDatabase(Path parentFolder) throws Exception {
+  private void dumpJobsDatabase(final Path parentFolder) throws Exception {
     final Map<String, Stream<JsonNode>> tables = jobPersistence.exportDatabase().entrySet().stream()
         .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
-    for (Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
+    for (final Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
       final Path tablePath = buildTablePath(parentFolder, table.getKey());
       writeTableToArchive(tablePath, table.getValue());
     }
@@ -113,8 +113,8 @@ public class ConfigDumpExporter {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  private void dumpConfigsDatabase(Path parentFolder) throws IOException {
-    for (Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
+  private void dumpConfigsDatabase(final Path parentFolder) throws IOException {
+    for (final Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }
@@ -148,7 +148,7 @@ public class ConfigDumpExporter {
         .resolve(String.format("%s.yaml", schemaType));
   }
 
-  public File exportWorkspace(UUID workspaceId) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public File exportWorkspace(final UUID workspaceId) throws JsonValidationException, IOException, ConfigNotFoundException {
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
     final File dump = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
     exportVersionFile(tempFolder);
@@ -158,7 +158,8 @@ public class ConfigDumpExporter {
     return dump;
   }
 
-  private void exportConfigsDatabase(Path parentFolder, UUID workspaceId) throws IOException, JsonValidationException, ConfigNotFoundException {
+  private void exportConfigsDatabase(final Path parentFolder, final UUID workspaceId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     final Collection<SourceConnection> sourceConnections = writeConfigsToArchive(
         parentFolder,
         ConfigSchema.SOURCE_CONNECTION.name(),
@@ -184,7 +185,7 @@ public class ConfigDumpExporter {
         (operation) -> workspaceId.equals(operation.getWorkspaceId()));
 
     final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+    for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (workspaceHelper != null &&
           workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()))) {
         standardSyncs.add(standardSync);
@@ -193,20 +194,20 @@ public class ConfigDumpExporter {
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SYNC.name(), standardSyncs.stream().map(Jsons::jsonNode));
   }
 
-  private <T> Collection<T> writeConfigsToArchive(Path parentFolder,
-                                                  String configSchemaName,
-                                                  ListConfigCall<T> listConfigCall,
-                                                  Function<T, Boolean> filterConfigCall)
+  private <T> Collection<T> writeConfigsToArchive(final Path parentFolder,
+                                                  final String configSchemaName,
+                                                  final ListConfigCall<T> listConfigCall,
+                                                  final Function<T, Boolean> filterConfigCall)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Collection<T> configs = listConfigCall.apply().stream().filter(filterConfigCall::apply).collect(Collectors.toList());
     writeConfigsToArchive(parentFolder, configSchemaName, configs.stream().map(Jsons::jsonNode));
     return configs;
   }
 
-  private Collection<StandardSourceDefinition> listSourceDefinition(Collection<SourceConnection> sourceConnections)
+  private Collection<StandardSourceDefinition> listSourceDefinition(final Collection<SourceConnection> sourceConnections)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, StandardSourceDefinition> sourceDefinitionMap = new HashMap<>();
-    for (SourceConnection sourceConnection : sourceConnections) {
+    for (final SourceConnection sourceConnection : sourceConnections) {
       if (!sourceDefinitionMap.containsKey(sourceConnection.getSourceDefinitionId())) {
         sourceDefinitionMap
             .put(sourceConnection.getSourceDefinitionId(),
@@ -216,10 +217,10 @@ public class ConfigDumpExporter {
     return sourceDefinitionMap.values();
   }
 
-  private Collection<StandardDestinationDefinition> listDestinationDefinition(Collection<DestinationConnection> destinationConnections)
+  private Collection<StandardDestinationDefinition> listDestinationDefinition(final Collection<DestinationConnection> destinationConnections)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, StandardDestinationDefinition> destinationDefinitionMap = new HashMap<>();
-    for (DestinationConnection destinationConnection : destinationConnections) {
+    for (final DestinationConnection destinationConnection : destinationConnections) {
       if (!destinationDefinitionMap.containsKey(destinationConnection.getDestinationDefinitionId())) {
         destinationDefinitionMap
             .put(destinationConnection.getDestinationDefinitionId(),
