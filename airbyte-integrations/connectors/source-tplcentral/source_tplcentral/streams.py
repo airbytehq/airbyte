@@ -7,7 +7,7 @@ import arrow
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from source_tplcentral.util import normalize
+from source_tplcentral.util import normalize, deep_get
 
 
 class TplcentralStream(HttpStream, ABC):
@@ -22,6 +22,8 @@ class TplcentralStream(HttpStream, ABC):
         self.start_date = config.get('start_date')
 
         self.total_results_field = "TotalResults"
+
+    primary_key = "_id"
 
     @property
     def page_size(self):
@@ -56,12 +58,20 @@ class TplcentralStream(HttpStream, ABC):
         return next_page_token
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return normalize(response.json()[self.collection_field])
+        records = normalize(response.json()[self.collection_field])
+
+        for record in records:
+            if hasattr(self, 'upstream_primary_key'):
+                record[self.primary_key] = deep_get(record, self.upstream_primary_key)
+            if hasattr(self, 'upstream_cursor_field'):
+                record[self.cursor_field] = deep_get(record, self.upstream_cursor_field)
+
+        return records
 
 
 class StockSummaries(TplcentralStream):
     collection_field = "Summaries"
-    primary_key = ["facility_id", ["item_identifier", "id"]]
+    primary_key = ["facility_id", "_item_identifier_id"]
     page_size = 500
 
     def path(
@@ -69,10 +79,18 @@ class StockSummaries(TplcentralStream):
     ) -> str:
         return "inventory/stocksummaries"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = super().parse_response(response, **kwargs)
+
+        for record in records:
+            record["_item_identifier_id"] = deep_get(record, "ItemIdentifier.Id")
+
+        return records
+
 
 class Customers(TplcentralStream):
+    upstream_primary_key = "ReadOnly.CustomerId"
     collection_field = "ResourceList"
-    primary_key = [["read_only", "customer_id"]]
     page_size = 100
 
     def path(
@@ -84,26 +102,9 @@ class Customers(TplcentralStream):
 class IncrementalTplcentralStream(TplcentralStream, ABC):
     state_checkpoint_interval = 10
 
-    @staticmethod
-    @abstractmethod
-    def cursor_value(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
-        and define a cursor field.
-        """
-        pass
+    cursor_field = "_cursor"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-
         current = current_stream_state.get(self.cursor_field)
         latest = latest_record.get(self.cursor_field)
 
@@ -131,23 +132,11 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
         return params or {}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response = super().parse_response(response, **kwargs)
-        return [{
-            **record,
-            self.cursor_field: self.__class__.cursor_value(record)
-        } for record in response]
-
 
 class Items(IncrementalTplcentralStream):
-    cursor_field = "cursor"
+    upstream_primary_key = "ItemId"
+    upstream_cursor_field = "ReadOnly.LastModifiedDate"
     collection_field = "ResourceList"
-
-    primary_key = "cursor"
-
-    @staticmethod
-    def cursor_value(record) -> str:
-        return record["read_only"]["last_modified_date"]
 
     def path(self, **kwargs) -> str:
         return f"customers/{self.customer_id}/items"
@@ -161,23 +150,18 @@ class Items(IncrementalTplcentralStream):
             next_page_token=next_page_token,
         )
 
-        params.update({"sort": "ReadOnly.LastModifiedDate"})
+        params.update({"sort": self.upstream_cursor_field})
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
-            params.update({"rql": f"ReadOnly.LastModifiedDate=ge={cursor}"})
+            params.update({"rql": f"{self.upstream_cursor_field}=ge={cursor}"})
 
         return params
 
 
 class StockDetails(IncrementalTplcentralStream):
-    cursor_field = "cursor"
+    upstream_primary_key = "ReceiveItemId"
+    upstream_cursor_field = "ReceivedDate"
     collection_field = "ResourceList"
-
-    primary_key = "cursor"
-
-    @staticmethod
-    def cursor_value(record) -> str:
-        return record["received_date"]
 
     def path(self, **kwargs) -> str:
         return "inventory/stockdetails"
@@ -194,24 +178,19 @@ class StockDetails(IncrementalTplcentralStream):
         params.update({
             "customerid": self.customer_id,
             "facilityid": self.facility_id,
-            "sort": "ReceivedDate",
+            "sort": self.upstream_cursor_field,
         })
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
-            params.update({"rql": f"ReceivedDate=ge={cursor}"})
+            params.update({"rql": f"{self.upstream_cursor_field}=ge={cursor}"})
 
         return params
 
 
 class Inventory(IncrementalTplcentralStream):
-    cursor_field = "cursor"
+    upstream_primary_key = "ReceiveItemId"
+    upstream_cursor_field = "ReceivedDate"
     collection_field = "ResourceList"
-
-    primary_key = "cursor"
-
-    @staticmethod
-    def cursor_value(record) -> str:
-        return record["received_date"]
 
     def path(self, **kwargs) -> str:
         return "inventory"
@@ -226,7 +205,7 @@ class Inventory(IncrementalTplcentralStream):
         )
 
         params.update({
-            "sort": "ReceivedDate",
+            "sort": self.upstream_cursor_field,
             "rql": ";".join([
                 f"CustomerIdentifier.Id=={self.customer_id}",
                 f"FacilityIdentifier.Id=={self.facility_id}",
@@ -237,7 +216,7 @@ class Inventory(IncrementalTplcentralStream):
             params.update({
                 "rql": ";".join([
                     params["rql"],
-                    f"ReceivedDate=ge={cursor}",
+                    f"{self.upstream_cursor_field}=ge={cursor}",
                 ])
             })
 
@@ -245,14 +224,9 @@ class Inventory(IncrementalTplcentralStream):
 
 
 class Orders(IncrementalTplcentralStream):
-    cursor_field = "cursor"
+    upstream_primary_key = "ReadOnly.OrderId"
+    upstream_cursor_field = "ReadOnly.LastModifiedDate"
     collection_field = "ResourceList"
-
-    primary_key = "cursor"
-
-    @staticmethod
-    def cursor_value(record) -> str:
-        return record["read_only"]["last_modified_date"]
 
     def path(self, **kwargs) -> str:
         return "orders"
@@ -267,7 +241,7 @@ class Orders(IncrementalTplcentralStream):
         )
 
         params.update({
-            "sort": "ReadOnly.LastModifiedDate",
+            "sort": self.upstream_cursor_field,
             "rql": ";".join([
                 f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
                 f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
@@ -278,7 +252,7 @@ class Orders(IncrementalTplcentralStream):
             params.update({
                 "rql": ";".join([
                     params["rql"],
-                    f"ReadOnly.LastModifiedDate=ge={cursor}",
+                    f"{self.upstream_cursor_field}=ge={cursor}",
                 ])
             })
 

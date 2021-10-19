@@ -1,4 +1,5 @@
 from collections import abc
+from typing import Any, Mapping
 from airbyte_cdk.sources.utils.casing import camel_to_snake
 
 def deep_map(function, d):
@@ -22,3 +23,9 @@ def _normalizer(d):
         if not k == '_links':
             out[camel_to_snake(k)] = v
     return out
+
+def deep_get(mapping: Mapping[str, Any], key: str) -> Any:
+    key = key.split('.')
+    while len(key):
+        mapping = mapping[camel_to_snake(key.pop(0))]
+    return mapping

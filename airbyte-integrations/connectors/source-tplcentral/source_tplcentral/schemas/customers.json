@@ -3,6 +3,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "_id": {
+      "type": "integer"
+    },
     "read_only": {
       "description": "these fields are not updatable by the API client",
       "$schema": "http://json-schema.org/draft-07/schema#",
