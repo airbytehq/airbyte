@@ -39,9 +39,10 @@ if [ "$FOLLOW_SYMLINKS" == "true" ]; then
   # to use as the build context
   tar cL "${exclusions[@]}" . | docker build - "${args[@]}"
 else
+  JDK_VERSION="${JDK_VERSION:-14.0.2}"
   if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
-    docker build . "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" . "${args[@]}"
   else
-    docker build --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
   fi
 fi

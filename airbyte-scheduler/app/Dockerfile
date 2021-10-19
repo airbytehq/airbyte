@@ -1,4 +1,5 @@
-FROM openjdk:14.0.2-slim AS scheduler
+ARG JDK_VERSION=14.0.2
+FROM openjdk:${JDK_VERSION}-slim AS scheduler
 
 ENV APPLICATION airbyte-scheduler
 

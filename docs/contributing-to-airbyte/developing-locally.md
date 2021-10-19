@@ -33,6 +33,15 @@ To compile and build just the platform \(not all the connectors\):
 SUB_BUILD=PLATFORM ./gradlew build
 ```
 
+On Mac M1\(Apple Silicon\) machines\
+```bash
+export DOCKER_BUILD_PLATFORM=linux/arm64
+export DOCKER_BUILD_ARCH=arm64
+export JDK_VERSION=17
+export NODE_VERSION=16.11.1
+SUB_BUILD=PLATFORM ./gradlew build
+```
+
 This will build all the code and run all the unit tests.
 
 `SUB_BUILD=PLATFORM ./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.

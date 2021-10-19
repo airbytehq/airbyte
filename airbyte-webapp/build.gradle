@@ -3,9 +3,11 @@ plugins {
     id "com.github.node-gradle.node" version "3.1.1"
 }
 
+def nodeVersion = System.getenv('NODE_VERSION') ?: '14.11.0'
+
 node {
     download = true
-    version = "14.11.0"
+    version = nodeVersion
 }
 
 npm_run_build {
