@@ -62,7 +62,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
-  private final ConfigRepository configRepository;
   private final Supplier<String> stateSupplier;
   private UUID workspaceId;
 
@@ -85,7 +84,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
                        HttpClient httpClient,
                        Supplier<String> stateSupplier,
                        TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
-    this.configRepository = configRepository;
+    super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
     this.tokenReqContentType = tokenReqContentType;
