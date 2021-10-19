@@ -6,16 +6,27 @@ package io.airbyte.secretsmigration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.storage.StorageOptions;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.converters.SpecFetcher;
+import io.airbyte.server.handlers.DestinationHandler;
+import io.airbyte.server.handlers.SourceHandler;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -26,57 +37,54 @@ import org.slf4j.LoggerFactory;
 
 public class SecretsMigration {
 
-  private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
-  private static final Logger LOGGER = LoggerFactory.getLogger(SecretsMigration.class);
-  final boolean dryRun;
-  final ConfigRepository readFrom;
-  final ConfigRepository writeTo;
-
-  public SecretsMigration(final ConfigRepository readFrom, final ConfigRepository writeTo, final boolean dryRun) {
-    this.readFrom = readFrom;
-    this.writeTo = writeTo;
-    this.dryRun = dryRun;
-  }
-
-  public void run() throws IOException {
-    LOGGER.info("Starting migration run.");
-
-    LOGGER.info("... Dry Run: deserializing configurations and writing to the new store...");
-    Map<String, Stream<JsonNode>> configurations = readFrom.dumpConfigs();
-    writeTo.replaceAllConfigsDeserializing(configurations, true);
-
-    LOGGER.info("... With dryRun=" + dryRun + ": deserializing configurations and writing to the new store...");
-    configurations = readFrom.dumpConfigs();
-    writeTo.replaceAllConfigsDeserializing(configurations, dryRun);
-
-    LOGGER.info("Migration run complete.");
-  }
-
   public static void main(final String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
     final Database database = new ConfigsDatabaseInstance(
-        "docker", // configs.getConfigDatabaseUser(),
-        "docker", // configs.getConfigDatabasePassword(),
-        "jdbc:postgresql://localhost:8011/airbyte") // configs.getConfigDatabaseUrl())
-            .getInitialized();
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+        .getInitialized();
 
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(database).withValidation();
 
     final ConfigRepository configRepository =
         new ConfigRepository(
             configPersistence,
-            new RealSecretsHydrator(new LocalTestingSecretPersistence(database)),
-            Optional.of(new LocalTestingSecretPersistence(database)),
-            Optional.of(new LocalTestingSecretPersistence(database)));
+            SecretPersistence.getSecretsHydrator(configs),
+            SecretPersistence.getLongLived(configs),
+            SecretPersistence.getEphemeral(configs));
 
-    configRepository.setSpecFetcher(dockerImage -> BucketSpecCacheSchedulerClient
-        .attemptToFetchSpecFromBucket(StorageOptions.getDefaultInstance().getService(), "io-airbyte-cloud-spec-cache", dockerImage).get());
+    final SpecFetcher specFetcher = new SimpleSpecFetcher();
 
-    final SecretsMigration migration = new SecretsMigration(configRepository, configRepository, false);
-    LOGGER.info("starting: {}", SecretsMigration.class);
-    migration.run();
-    LOGGER.info("completed: {}", SecretsMigration.class);
+    configRepository.setSpecFetcher(image -> Exceptions.toRuntime(() -> specFetcher.execute(image)));
+
+    for (final SourceConnection source : configRepository.listSourceConnectionWithSecrets()) {
+      System.out.println("source: " + source.getSourceId());
+      final var definition = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+      final var connectorSpec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, definition);
+      configRepository.writeSourceConnection(source, connectorSpec);
+    }
+
+    for (final DestinationConnection destination : configRepository.listDestinationConnectionWithSecrets()) {
+      System.out.println("destination: " + destination.getDestinationId());
+      final var definition = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+      final var connectorSpec = DestinationHandler.getSpec(specFetcher, definition);
+      configRepository.writeDestinationConnection(destination, connectorSpec);
+    }
+  }
+
+  private static class SimpleSpecFetcher extends SpecFetcher {
+
+    public SimpleSpecFetcher() {
+      super(null);
+    }
+
+    @Override
+    public ConnectorSpecification execute(final String dockerImage) throws IOException {
+      return BucketSpecCacheSchedulerClient
+          .attemptToFetchSpecFromBucket(StorageOptions.getDefaultInstance().getService(), "io-airbyte-cloud-spec-cache", dockerImage).get();
+    }
   }
 
 }

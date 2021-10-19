@@ -10,6 +10,14 @@ application {
 
 dependencies {
     implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-scheduler:client')
+    implementation project(':airbyte-scheduler:persistence')
+    implementation project(':airbyte-server')
+    implementation project(':airbyte-workers')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-scheduler:client')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
