@@ -193,8 +193,7 @@ public class DefaultJobPersistence implements JobPersistence {
     });
   }
 
-  private void updateJobStatusIfNotInTerminalState(
-                                                   final DSLContext ctx,
+  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx,
                                                    final long jobId,
                                                    final JobStatus newStatus,
                                                    final LocalDateTime now,
@@ -226,16 +225,16 @@ public class DefaultJobPersistence implements JobPersistence {
     return jobDatabase.transaction(ctx -> {
       final Job job = getJob(ctx, jobId);
       if (job.isJobInTerminalState()) {
-        final var errMsg =
-            String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
-                job.getStatus(), job.getScope());
+        final var errMsg = String.format(
+            "Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s",
+            job.getId(), job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
       if (job.hasRunningAttempt()) {
-        final var errMsg =
-            String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
-                job.getStatus(), job.getScope());
+        final var errMsg = String.format(
+            "Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s",
+            job.getId(), job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
@@ -798,5 +797,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private static Table<Record> getTable(final String schema, final String tableName) {
     return DSL.table(String.format("%s.%s", schema, tableName));
   }
+
+  // TODO: add a method to update attempt state in job database, and another in config database
 
 }
