@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
+class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageConsumer.class);
 
@@ -22,7 +22,7 @@ public class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsu
 
     private final Map<AirbyteStreamNameNamespacePair, CassandraStreamConfig> cassandraStreams;
 
-    private CassandraCqlProvider cassandraCqlProvider;
+    private final CassandraCqlProvider cassandraCqlProvider;
 
     private AirbyteMessage lastMessage = null;
 
@@ -48,7 +48,7 @@ public class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsu
     @Override
     protected void startTracked() {
         cassandraStreams.forEach((k, v) -> {
-            cassandraCqlProvider.createKeySpaceIfNotExists(v.getKeyspace(), cassandraConfig.getReplicationFactor());
+            cassandraCqlProvider.createKeySpaceIfNotExists(v.getKeyspace(), cassandraConfig.getReplication());
             cassandraCqlProvider.createTableIfNotExists(v.getKeyspace(), v.getTempTableName());
         });
     }
@@ -72,35 +72,26 @@ public class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsu
 
     @Override
     protected void close(boolean hasFailed) {
-        if (!hasFailed) {
-            cassandraStreams.forEach((k, v) -> {
-                createTable(v.getKeyspace(), v.getTableName());
-                switch (v.getDestinationSyncMode()) {
-                    case APPEND, APPEND_DEDUP -> copyAppend(v.getKeyspace(), v.getTempTableName(), v.getTableName());
-                    case OVERWRITE -> copyOverwrite(v.getKeyspace(), v.getTempTableName(), v.getTableName());
-                    default -> throw new UnsupportedOperationException();
-                }
-            });
-            outputRecordCollector.accept(lastMessage);
+        try {
+            if (!hasFailed) {
+                cassandraStreams.forEach((k, v) -> {
+                    cassandraCqlProvider.createTableIfNotExists(v.getKeyspace(), v.getTableName());
+                    switch (v.getDestinationSyncMode()) {
+                        case APPEND, APPEND_DEDUP -> {
+                            cassandraCqlProvider.copy(v.getKeyspace(), v.getTempTableName(), v.getTableName());
+                        }
+                        case OVERWRITE -> {
+                            cassandraCqlProvider.truncate(v.getKeyspace(), v.getTableName());
+                            cassandraCqlProvider.copy(v.getKeyspace(), v.getTempTableName(), v.getTableName());
+                        }
+                        default -> throw new UnsupportedOperationException();
+                    }
+                });
+                outputRecordCollector.accept(lastMessage);
+            }
+        } finally {
+            cassandraStreams.forEach(
+                (k, v) -> cassandraCqlProvider.dropTableIfExists(v.getKeyspace(), v.getTempTableName()));
         }
-        cassandraStreams.forEach((k, v) -> dropTable(v.getKeyspace(), v.getTempTableName()));
     }
-
-    private void copyAppend(String keyspace, String source, String destination) {
-        cassandraCqlProvider.copy(keyspace, source, destination);
-    }
-
-    private void copyOverwrite(String keyspace, String source, String destination) {
-        cassandraCqlProvider.truncate(keyspace, destination);
-        cassandraCqlProvider.copy(keyspace, source, destination);
-    }
-
-    private void createTable(String keyspace, String table) {
-        cassandraCqlProvider.createTableIfNotExists(keyspace, table);
-    }
-
-    private void dropTable(String keyspace, String table) {
-        cassandraCqlProvider.dropTableIfExists(keyspace, table);
-    }
-
 }

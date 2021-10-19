@@ -344,7 +344,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  @Disabled
   public void testSync(String messagesFilename, String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
@@ -363,7 +362,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  @Disabled
   public void testSyncWithLargeRecordBatch(String messagesFilename, String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
@@ -529,7 +527,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  @Disabled
   public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
     if (!normalizationFromSpec()) {
       return;

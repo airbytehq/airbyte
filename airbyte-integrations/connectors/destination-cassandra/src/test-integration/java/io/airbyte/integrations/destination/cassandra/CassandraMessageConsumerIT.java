@@ -1,9 +1,5 @@
 package io.airbyte.integrations.destination.cassandra;
 
-import static io.airbyte.integrations.destination.cassandra.TestDataFactory.createAirbyteMessage;
-import static io.airbyte.integrations.destination.cassandra.TestDataFactory.createAirbyteStream;
-import static io.airbyte.integrations.destination.cassandra.TestDataFactory.createConfiguredAirbyteCatalog;
-import static io.airbyte.integrations.destination.cassandra.TestDataFactory.createConfiguredAirbyteStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 

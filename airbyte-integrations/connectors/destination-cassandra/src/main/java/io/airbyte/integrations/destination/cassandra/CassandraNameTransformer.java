@@ -4,7 +4,7 @@ import com.google.common.base.CharMatcher;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class CassandraNameTransformer extends StandardNameTransformer {
+class CassandraNameTransformer extends StandardNameTransformer {
 
     private final CassandraConfig cassandraConfig;
 
@@ -13,7 +13,7 @@ public class CassandraNameTransformer extends StandardNameTransformer {
     }
 
     String outputKeyspace(String namespace) {
-        if (cassandraConfig.isNamespacesEnabled()) {
+        if (cassandraConfig.isNamespaces()) {
             return namespace != null
                 ? CharMatcher.is('_').trimLeadingFrom(Names.toAlphanumericAndUnderscore(namespace)) :
                 cassandraConfig.getKeyspace();

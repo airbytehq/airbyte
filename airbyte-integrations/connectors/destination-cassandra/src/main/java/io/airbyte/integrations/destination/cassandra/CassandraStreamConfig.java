@@ -2,7 +2,10 @@ package io.airbyte.integrations.destination.cassandra;
 
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-public class CassandraStreamConfig {
+/*
+ * Immutable configuration class for storing destination stream config.
+ * */
+class CassandraStreamConfig {
 
     private final String keyspace;
 

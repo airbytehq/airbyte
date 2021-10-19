@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,11 +23,15 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
 
     private CassandraNameTransformer cassandraNameTransformer;
 
-    CassandraContainerInitializr.ConfiguredCassandraContainer cassandraContainer;
+    private static CassandraContainerInitializr.ConfiguredCassandraContainer cassandraContainer;
+
+    @BeforeAll
+    static void initContainer() {
+        cassandraContainer = CassandraContainerInitializr.initContainer();
+    }
 
     @Override
     protected void setup(TestDestinationEnv testEnv) {
-        cassandraContainer = CassandraContainerInitializr.initContainer();
         configJson = TestDataFactory.createJsonConfig(
             cassandraContainer.getUsername(),
             cassandraContainer.getPassword(),
@@ -40,18 +45,10 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
 
     @Override
     protected void tearDown(TestDestinationEnv testEnv) {
-
-    }
-
-    @Override
-    protected String getDefaultSchema(JsonNode config) {
-        return "";
-    }
-
-    @Override
-    protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName,
-                                                       String namespace) {
-        return retrieveRecords(testEnv, streamName, namespace, null);
+        cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
+            var keyspace = meta.getKeyspace();
+            meta.getTables().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));
+        });
     }
 
     @Override
@@ -84,8 +81,8 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
                                              String streamName,
                                              String namespace,
                                              JsonNode streamSchema) {
-        var table = cassandraNameTransformer.outputTable(streamName);
         var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
+        var table = cassandraNameTransformer.outputTable(streamName);
         return cassandraCqlProvider.select(keyspace, table).stream()
             .map(tableRecord -> Jsons.jsonNode(tableRecord.getData()))
             .collect(Collectors.toList());

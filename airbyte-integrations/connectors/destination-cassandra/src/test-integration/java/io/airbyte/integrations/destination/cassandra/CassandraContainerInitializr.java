@@ -13,6 +13,8 @@ class CassandraContainerInitializr {
     public static ConfiguredCassandraContainer initContainer() {
         if (cassandraContainer == null) {
             cassandraContainer = new ConfiguredCassandraContainer();
+            // max heap size
+            // cassandraContainer.addEnv("MAX_HEAP_SIZE", "2048");
         }
         cassandraContainer.start();
         return cassandraContainer;

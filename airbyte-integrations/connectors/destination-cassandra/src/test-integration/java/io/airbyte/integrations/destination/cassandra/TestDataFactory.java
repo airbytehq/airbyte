@@ -14,6 +14,10 @@ import java.util.List;
 
 public class TestDataFactory {
 
+    private TestDataFactory() {
+
+    }
+
     static CassandraConfig createCassandraConfig(String username, String password, String address, int port) {
         return new CassandraConfig(
             "default_keyspace",
@@ -22,8 +26,8 @@ public class TestDataFactory {
             address,
             port,
             "datacenter1",
-            2,
-            true
+            1,
+            false
         );
     }
 
@@ -35,6 +39,8 @@ public class TestDataFactory {
             .put("address", address)
             .put("port", port)
             .put("datacenter", "datacenter1")
+            .put("namespaces", true)
+            .put("replication", 1)
             .build());
     }
 

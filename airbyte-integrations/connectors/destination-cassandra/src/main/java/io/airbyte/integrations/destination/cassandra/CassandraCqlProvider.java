@@ -5,13 +5,12 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.now;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.metadata.TokenMap;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import java.io.Closeable;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,14 +18,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CassandraCqlProvider {
-
-    // should manage cassandra sessiosn (session manager/pool)
-
-    //restrict number of session to 4
+class CassandraCqlProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraCqlProvider.class);
 
@@ -41,7 +38,7 @@ public class CassandraCqlProvider {
     private final String columnTimestamp;
 
     public CassandraCqlProvider(CassandraConfig cassandraConfig) {
-        this.cqlSession = new CassandraSession(cassandraConfig).session();
+        this.cqlSession = SessionManager.initSession(cassandraConfig);
         var nameTransformer = new CassandraNameTransformer(cassandraConfig);
         this.columnId = nameTransformer.outputColumn(JavaBaseConstants.COLUMN_NAME_AB_ID);
         this.columnData = nameTransformer.outputColumn(JavaBaseConstants.COLUMN_NAME_DATA);
@@ -83,7 +80,6 @@ public class CassandraCqlProvider {
         cqlSession.execute(query);
     }
 
-    // used for test assertions
     public List<TableRecord> select(String keyspace, String tableName) {
         var query = QueryBuilder.selectFrom(keyspace, tableName)
             .columns(columnId, columnData, columnTimestamp)
@@ -103,11 +99,6 @@ public class CassandraCqlProvider {
         cqlSession.execute(query);
     }
 
-    /*
-     * Method used for copying data from source to destination table in the same keyspace
-     * the method retrieves records for different key ranges in the cluster and submits them to a
-     * thread pool for parallel processing and better memory efficiency.
-     * */
     public void copy(String keyspace, String sourceTable, String destinationTable) {
         var metadata = cqlSession.getMetadata();
 
@@ -115,11 +106,12 @@ public class CassandraCqlProvider {
             .map(TokenMap::getTokenRanges)
             .orElseThrow(IllegalStateException::new);
 
+        // query for retrieving data from different token ranges in parallel
         var pStatement = cqlSession.prepare(
             "SELECT * FROM " + keyspace + "." + sourceTable +
                 " WHERE token(" + columnId + ") > ? AND token(" + columnId + ") <= ?");
 
-        //explore datastax 4.x async api as an alternative for async processing
+        // explore datastax 4.x async api as an alternative for async processing
         ranges.stream()
             .map(range -> pStatement.bind(range.getStart(), range.getEnd()))
             .map(bStatement -> executorService.submit(() -> executeQuery(bStatement, keyspace, destinationTable)))
@@ -127,11 +119,24 @@ public class CassandraCqlProvider {
 
     }
 
+    public List<MetadataTuple> retrieveMetadata() {
+        Function<KeyspaceMetadata, MetadataTuple> metaMapper = keyspace -> new MetadataTuple(
+            keyspace.getName().toString(),
+            keyspace.getTables().values().stream()
+                .map(table -> table.getName().toString())
+                .collect(Collectors.toList())
+        );
+
+        var metadata = cqlSession.getMetadata();
+
+        return metadata.getKeyspaces().values().stream()
+            .map(metaMapper)
+            .collect(Collectors.toList());
+    }
+
     private void executeQuery(BoundStatement statement, String keyspace, String destinationTable) {
         var resultSet = cqlSession.execute(statement);
         resultSet.forEach(result -> {
-            // cassandra is highly performant/optimized for heavy writes
-            // check if batch/bulk inserts make sense nevertheless
             var query = QueryBuilder.insertInto(keyspace, destinationTable)
                 .value(columnId, QueryBuilder.literal(result.get(columnId, UUID.class)))
                 .value(columnData, QueryBuilder.literal(result.get(columnData, String.class)))

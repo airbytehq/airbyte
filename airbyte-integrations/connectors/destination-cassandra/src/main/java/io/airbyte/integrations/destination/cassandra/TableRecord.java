@@ -3,7 +3,7 @@ package io.airbyte.integrations.destination.cassandra;
 import java.time.Instant;
 import java.util.UUID;
 
-public class TableRecord {
+class TableRecord {
 
     private final UUID id;
 

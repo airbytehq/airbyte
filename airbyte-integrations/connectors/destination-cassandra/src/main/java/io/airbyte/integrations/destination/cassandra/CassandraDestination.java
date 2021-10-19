@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CassandraDestination extends BaseConnector implements Destination {
+class CassandraDestination extends BaseConnector implements Destination {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraDestination.class);
 
@@ -35,7 +35,7 @@ public class CassandraDestination extends BaseConnector implements Destination {
             cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
             // check connection and write permissions
             cassandraCqlProvider.createKeySpaceIfNotExists(cassandraConfig.getKeyspace(),
-                cassandraConfig.getReplicationFactor());
+                cassandraConfig.getReplication());
             cassandraCqlProvider.createTableIfNotExists(cassandraConfig.getKeyspace(), tableName);
             cassandraCqlProvider.insert(cassandraConfig.getKeyspace(), tableName, "{}");
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);

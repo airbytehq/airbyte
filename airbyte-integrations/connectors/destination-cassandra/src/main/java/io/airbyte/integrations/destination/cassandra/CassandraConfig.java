@@ -1,11 +1,12 @@
 package io.airbyte.integrations.destination.cassandra;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Objects;
 
 /*
  * Immutable configuration class for storing cassandra related config.
  * */
-public class CassandraConfig {
+class CassandraConfig {
 
     private final String keyspace;
 
@@ -19,20 +20,20 @@ public class CassandraConfig {
 
     private final String datacenter;
 
-    private int replicationFactor = 2;
+    private final int replication;
 
-    private boolean namespacesEnabled = true;
+    private final boolean namespaces;
 
     public CassandraConfig(String keyspace, String username, String password, String address, int port,
-                           String datacenter, int replicationFactor, boolean namespacesEnabled) {
+                           String datacenter, int replication, boolean namespaces) {
         this.keyspace = keyspace;
         this.username = username;
         this.password = password;
         this.address = address;
         this.port = port;
         this.datacenter = datacenter;
-        this.replicationFactor = replicationFactor;
-        this.namespacesEnabled = namespacesEnabled;
+        this.replication = replication;
+        this.namespaces = namespaces;
     }
 
     public CassandraConfig(JsonNode config) {
@@ -41,7 +42,9 @@ public class CassandraConfig {
         this.password = config.get("password").asText();
         this.address = config.get("address").asText();
         this.port = config.get("port").asInt();
-        this.datacenter = config.get("datacenter").asText();
+        this.datacenter = config.get("datacenter").asText("datacenter1");
+        this.replication = config.get("replication").asInt(1);
+        this.namespaces = config.get("namespaces").asBoolean(false);
     }
 
     public String getKeyspace() {
@@ -68,25 +71,29 @@ public class CassandraConfig {
         return datacenter;
     }
 
-    public int getReplicationFactor() {
-        return replicationFactor;
+    public int getReplication() {
+        return replication;
     }
 
-    public boolean isNamespacesEnabled() {
-        return namespacesEnabled;
+    public boolean isNamespaces() {
+        return namespaces;
     }
 
     @Override
-    public String toString() {
-        return "CassandraConfig{" +
-            "keyspace='" + keyspace + '\'' +
-            ", username='" + username + '\'' +
-            ", password='" + password + '\'' +
-            ", address='" + address + '\'' +
-            ", port=" + port +
-            ", datacenter='" + datacenter + '\'' +
-            ", replicationFactor=" + replicationFactor +
-            ", namespacesEnabled=" + namespacesEnabled +
-            '}';
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        CassandraConfig that = (CassandraConfig) o;
+        return port == that.port && keyspace.equals(that.keyspace) && username.equals(that.username) &&
+            password.equals(that.password) && address.equals(that.address) && datacenter.equals(that.datacenter);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(keyspace, username, password, address, port, datacenter);
     }
 }
