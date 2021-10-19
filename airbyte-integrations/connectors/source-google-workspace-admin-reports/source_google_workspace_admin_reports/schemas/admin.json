@@ -47,41 +47,9 @@
     },
     "events": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "parameters": {
-              "type": "array",
-              "items": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    },
-                    "intValue": {
-                      "type": "string"
-                    },
-                    "boolValue": {
-                      "type": "string"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
+      "items": {
+        "type": "object"
+      }
     },
     "time": {
       "type": "string"

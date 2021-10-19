@@ -21,7 +21,12 @@
           "type": "string"
         }
       },
-      "required": ["time", "uniqueQualifier", "applicationName", "customerId"]
+      "required": [
+        "time",
+        "uniqueQualifier",
+        "applicationName",
+        "customerId"
+      ]
     },
     "etag": {
       "type": "string"
@@ -36,73 +41,18 @@
           "type": "string"
         }
       },
-      "required": ["email", "profileId"]
+      "required": [
+        "email"
+      ]
     },
     "ipAddress": {
       "type": "string"
     },
     "events": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "parameters": {
-              "type": "array",
-              "items": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "multiValue": {
-                      "type": "array",
-                      "items": [
-                        {
-                          "type": "string"
-                        }
-                      ]
-                    }
-                  },
-                  "required": ["name", "multiValue"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "boolValue": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": ["name", "boolValue"]
-                }
-              ]
-            }
-          },
-          "required": ["type", "name", "parameters"]
-        }
-      ]
+      "items": {
+        "type": "object"
+      }
     },
     "time": {
       "type": "string"

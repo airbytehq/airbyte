@@ -21,7 +21,12 @@
           "type": "string"
         }
       },
-      "required": ["time", "uniqueQualifier", "applicationName", "customerId"]
+      "required": [
+        "time",
+        "uniqueQualifier",
+        "applicationName",
+        "customerId"
+      ]
     },
     "etag": {
       "type": "string"
@@ -36,179 +41,19 @@
           "type": "string"
         }
       },
-      "required": ["email", "profileId"]
+      "required": [
+        "email",
+        "profileId"
+      ]
     },
     "ipAddress": {
       "type": "string"
     },
     "events": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "parameters": {
-              "type": "array",
-              "items": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "multiMessageValue": {
-                      "type": "array",
-                      "items": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "parameter": {
-                              "type": "array",
-                              "items": [
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "name": {
-                                      "type": "string"
-                                    },
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": ["name", "value"]
-                                },
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "name": {
-                                      "type": "string"
-                                    },
-                                    "multiValue": {
-                                      "type": "array",
-                                      "items": [
-                                        {
-                                          "type": "string"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "required": ["name", "multiValue"]
-                                }
-                              ]
-                            }
-                          },
-                          "required": ["parameter"]
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "parameter": {
-                              "type": "array",
-                              "items": [
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "name": {
-                                      "type": "string"
-                                    },
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": ["name", "value"]
-                                },
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "name": {
-                                      "type": "string"
-                                    },
-                                    "multiValue": {
-                                      "type": "array",
-                                      "items": [
-                                        {
-                                          "type": "string"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "required": ["name", "multiValue"]
-                                }
-                              ]
-                            }
-                          },
-                          "required": ["parameter"]
-                        }
-                      ]
-                    }
-                  },
-                  "required": ["name", "multiMessageValue"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "multiValue": {
-                      "type": "array",
-                      "items": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "string"
-                        }
-                      ]
-                    }
-                  },
-                  "required": ["name", "multiValue"]
-                }
-              ]
-            }
-          },
-          "required": ["name", "parameters"]
-        }
-      ]
+      "items": {
+        "type": "object"
+      }
     },
     "time": {
       "type": "string"
