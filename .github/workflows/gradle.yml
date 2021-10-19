@@ -44,6 +44,9 @@ jobs:
     name: "Connectors Base: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
       - name: Pip Caching
         uses: actions/cache@v2
         with:
@@ -177,6 +180,9 @@ jobs:
     name: "Platform: Build"
     timeout-minutes: 90
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
       - name: Pip Caching
         uses: actions/cache@v2
         with:
@@ -325,6 +331,9 @@ jobs:
     name: Run Frontend Test
     timeout-minutes: 120
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
@@ -400,6 +409,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
   kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
@@ -408,6 +418,9 @@ jobs:
     name: Acceptance Tests (Kube)
     timeout-minutes: 90
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+        
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
