@@ -215,7 +215,7 @@ class SyncWorkflowTest {
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
-  private static void verifyReplication(ReplicationActivity replicationActivity, StandardSyncInput syncInput) {
+  private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
     verify(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -223,16 +223,16 @@ class SyncWorkflowTest {
         syncInput);
   }
 
-  private static void verifyNormalize(NormalizationActivity normalizationActivity, NormalizationInput normalizationInput) {
+  private static void verifyNormalize(final NormalizationActivity normalizationActivity, final NormalizationInput normalizationInput) {
     verify(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
         normalizationInput);
   }
 
-  private static void verifyDbtTransform(DbtTransformationActivity dbtTransformationActivity,
-                                         ResourceRequirements resourceRequirements,
-                                         OperatorDbtInput operatorDbtInput) {
+  private static void verifyDbtTransform(final DbtTransformationActivity dbtTransformationActivity,
+                                         final ResourceRequirements resourceRequirements,
+                                         final OperatorDbtInput operatorDbtInput) {
     verify(dbtTransformationActivity).run(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,

@@ -24,28 +24,28 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
    * Used by the copy consumer.
    */
   @Override
-  public StreamCopier create(String configuredSchema,
-                             GcsConfig gcsConfig,
-                             String stagingFolder,
-                             ConfiguredAirbyteStream configuredStream,
-                             ExtendedNameTransformer nameTransformer,
-                             JdbcDatabase db,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(final String configuredSchema,
+                             final GcsConfig gcsConfig,
+                             final String stagingFolder,
+                             final ConfiguredAirbyteStream configuredStream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
-      AirbyteStream stream = configuredStream.getStream();
-      DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final AirbyteStream stream = configuredStream.getStream();
+      final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
+      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
-      InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
-      GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
-      Storage storageClient = StorageOptions.newBuilder()
+      final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+      final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
+      final Storage storageClient = StorageOptions.newBuilder()
           .setCredentials(credentials)
           .setProjectId(gcsConfig.getProjectId())
           .build()
           .getService();
 
       return create(stagingFolder, syncMode, schema, stream.getName(), storageClient, db, gcsConfig, nameTransformer, sqlOperations);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

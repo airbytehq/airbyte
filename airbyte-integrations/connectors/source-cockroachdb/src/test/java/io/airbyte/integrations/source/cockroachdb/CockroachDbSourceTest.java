@@ -132,7 +132,7 @@ class CockroachDbSourceTest {
     database.close();
   }
 
-  private static Database getDatabaseFromConfig(JsonNode config) {
+  private static Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -144,7 +144,7 @@ class CockroachDbSourceTest {
         SQLDialect.POSTGRES);
   }
 
-  private JsonNode getConfig(CockroachContainer psqlDb, String dbName) {
+  private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort() - 1)
@@ -155,7 +155,7 @@ class CockroachDbSourceTest {
         .build());
   }
 
-  private JsonNode getConfig(CockroachContainer psqlDb) {
+  private JsonNode getConfig(final CockroachContainer psqlDb) {
     return getConfig(psqlDb, psqlDb.getDatabaseName());
   }
 
@@ -168,7 +168,7 @@ class CockroachDbSourceTest {
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
     // default settings are in another encoding
-    try (CockroachContainer db = new CockroachContainer("cockroachdb/cockroach")) {
+    try (final CockroachContainer db = new CockroachContainer("cockroachdb/cockroach")) {
       // .withCommand("postgres -c client_encoding=sql_ascii")
       db.start();
       final JsonNode config = getConfig(db);
@@ -189,7 +189,7 @@ class CockroachDbSourceTest {
     }
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
+  private static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
     messages.forEach(msg -> {
       if (msg.getRecord() != null) {
         msg.getRecord().setEmittedAt(null);
@@ -222,15 +222,15 @@ class CockroachDbSourceTest {
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
-  private static AirbyteMessage createRecord(String stream,
-                                             String namespace,
-                                             Map<Object, Object> data) {
+  private static AirbyteMessage createRecord(final String stream,
+                                             final String namespace,
+                                             final Map<Object, Object> data) {
     return new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream)
             .withNamespace(namespace));
   }
 
-  private static Map<Object, Object> map(Object... entries) {
+  private static Map<Object, Object> map(final Object... entries) {
     if (entries.length % 2 != 0) {
       throw new IllegalArgumentException("Entries must have even length");
     }

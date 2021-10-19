@@ -25,7 +25,7 @@ class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCl
   private boolean hasSupplied;
   private AutoCloseableIterator<T> internalIterator;
 
-  public LazyAutoCloseableIterator(Supplier<AutoCloseableIterator<T>> iteratorSupplier) {
+  public LazyAutoCloseableIterator(final Supplier<AutoCloseableIterator<T>> iteratorSupplier) {
     Preconditions.checkNotNull(iteratorSupplier);
     this.iteratorSupplier = iteratorSupplier;
     this.hasSupplied = false;
