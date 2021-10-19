@@ -19,6 +19,11 @@
         "type": "string",
         "description": "Password for the username",
         "airbyte_secret": true
+      },
+      "page_size": {
+        "type": "integer",
+        "description": "Page size used to scroll through ES indices",
+        "default": 1000
       }
     }
   }

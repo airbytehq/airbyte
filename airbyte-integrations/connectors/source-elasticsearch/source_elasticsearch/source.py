@@ -174,11 +174,13 @@ class SourceElasticsearch(Source):
         es = self._get_es_client(config, logger)
         for configured_stream in catalog.streams:
             index_name = configured_stream.stream.name
-            return self._scroll_through_index(es=es, index_name=index_name, logger=logger)
+            return self._scroll_through_index(
+                es=es, index_name=index_name, page_size=config["page_size"], logger=logger
+            )
 
     @staticmethod
     def _scroll_through_index(
-            es: Elasticsearch, index_name: str, logger: AirbyteLogger
+            es: Elasticsearch, index_name: str, page_size: int, logger: AirbyteLogger
     ) -> Generator[AirbyteMessage, None, None]:
         logger.info(f"Scrolling through index {index_name}")
         page = es.search(
@@ -186,7 +188,7 @@ class SourceElasticsearch(Source):
             body={
                 "query": {"match_all": {}}
             },
-            size=100,  # TODO: expose this in spec.json
+            size=page_size,
             scroll="1m",
         )
         scroll_id = page["_scroll_id"]
