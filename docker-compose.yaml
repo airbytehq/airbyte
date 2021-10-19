@@ -29,7 +29,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     ports:
-    - 5432:5432
+      - 5432:5432
   scheduler:
     image: airbyte/scheduler:${VERSION}
     logging: *default-logging

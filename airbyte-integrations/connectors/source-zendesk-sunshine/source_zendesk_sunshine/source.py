@@ -7,13 +7,11 @@ import base64
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
-
 
 from .streams import Limits, ObjectRecords, ObjectTypePolicies, ObjectTypes, RelationshipRecords, RelationshipTypes
 
@@ -49,17 +47,16 @@ class SourceZendeskSunshine(AbstractSource):
             return False, repr(e)
 
     def get_authenticator(self, config):
-        if config.get("authentication"):
-            auth = config["authentication"]
+        if config.get("credentials"):
+            auth = config["credentials"]
             if auth.get("api_token"):
-                authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', auth.get("api_token")))
+                return Base64HttpAuthenticator(auth=(f'{config["email"]}/token', auth.get("api_token")))
             elif auth.get("access_token"):
-                authenticator = OauthAuthenticator(auth["access_token"])
-
+                return OauthAuthenticator(auth["access_token"])
         else:
             # Legacy spec support for backward compatibility
-            authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
-        return authenticator
+            return Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+        raise Exception("Couldn't find a suitable authentication configuration")
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
