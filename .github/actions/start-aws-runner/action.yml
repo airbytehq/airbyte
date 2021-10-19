@@ -1,0 +1,56 @@
+name: 'Runner Start (AWS)'
+description: 'Starting Runner on AWS Cloud'
+inputs:
+  aws-access-key-id:
+    required: true
+  aws-secret-access-key:
+    required: true
+  github-token:
+    required: true
+  ec2-image-id:
+    default: 'ami-04bd6e81239f4f3fb'
+    required: true
+  ec2-instance-type:
+    default: 'c5.2xlarge'
+    required: true
+  subnet-id:
+    default: 'subnet-0469a9e68a379c1d3'
+    required: true
+  security-group-id:
+    default: 'sg-0793f3c9413f21970'
+    required: true
+  label:
+    required: false
+  ec2-instance-id:
+    required: false
+outputs:
+  label:
+    value: ${{ steps.start-ec2-runner.outputs.label }}
+  ec2-instance-id:
+    value: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: us-east-2
+    - name: Start EC2 runner
+      id: start-ec2-runner
+      uses: machulav/ec2-github-runner@v2.2.1
+      with:
+        mode: start
+        github-token: ${{ inputs.github-token }}
+        ec2-image-id: ${{ inputs.ec2-image-id }}
+        ec2-instance-type: ${{ inputs.ec2-instance-type }}
+        subnet-id: ${{ inputs.subnet-id }}
+        security-group-id: ${{ inputs.security-group-id }}
+        aws-resource-tags: >
+          [
+            {"Key": "BuildType", "Value": "oss"},
+            {"Key": "Repository", "Value": "${{ github.repository }}"},
+            {"Key": "Branch", "Value": "${{ github.ref }}"}
+          ]
