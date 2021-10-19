@@ -42,7 +42,7 @@ To build using Gradle, from the Airbyte repository root, run:
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/strava)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_strava/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+See `integration_tests/invalid_config.json` for a sample config file with fake tokens.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source strava test creds`
 and place them into `secrets/config.json`.
