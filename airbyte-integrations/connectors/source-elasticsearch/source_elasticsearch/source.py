@@ -52,10 +52,11 @@ class SourceElasticsearch(Source):
         "scaled_float": "number",
     }
 
-    def _get_es_client(self, config: json) -> Elasticsearch:
+    def _get_es_client(self, config: json, logger: AirbyteLogger) -> Elasticsearch:
         """
         Returns an ElasticSearch client using the config.
         """
+        logger.info(f"Creating ElasticSearch client for host {config['host']}")
         # TODO: support SSL
         return Elasticsearch(
             hosts=[config["host"]],
@@ -73,7 +74,7 @@ class SourceElasticsearch(Source):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        es = self._get_es_client(config)
+        es = self._get_es_client(config, logger)
         if not es.ping():
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"Connection failed"
@@ -96,22 +97,26 @@ class SourceElasticsearch(Source):
             by their names and types)
         """
         streams = []
-        es = self._get_es_client(config)
-        indices = self._get_indices(es)
+        es = self._get_es_client(config, logger)
+        indices = self._get_indices(es, logger)
         for index_name in indices.keys():
             json_schema = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": self._get_index_json_properties(es, index_name),
             }
-            streams.append(AirbyteStream(name=index_name, json_schema=json_schema))
+            streams.append(
+                # TODO: support incremental
+                AirbyteStream(name=index_name, json_schema=json_schema, supported_sync_modes=["full_refresh"])
+            )
         return AirbyteCatalog(streams=streams)
 
     @staticmethod
-    def _get_indices(es: Elasticsearch) -> dict:
+    def _get_indices(es: Elasticsearch, logger: AirbyteLogger) -> dict:
         """
         Returns all non-system indices in the domain.
         """
+        logger.info(f"Getting indices from ElasticSearch")
         return {
             key: value for key, value in es.indices.get("*").items()
             if key not in SourceElasticsearch.system_indices
@@ -164,12 +169,38 @@ class SourceElasticsearch(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        # TODO: switch to ElasticSearch.search() with PIT
+        # See https://www.elastic.co/guide/en/elasticsearch/reference/7.15/paginate-search-results.html#search-after
+        es = self._get_es_client(config, logger)
+        for configured_stream in catalog.streams:
+            index_name = configured_stream.stream.name
+            return self._scroll_through_index(es=es, index_name=index_name, logger=logger)
 
-        # Not Implemented
-
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+    @staticmethod
+    def _scroll_through_index(
+            es: Elasticsearch, index_name: str, logger: AirbyteLogger
+    ) -> Generator[AirbyteMessage, None, None]:
+        logger.info(f"Scrolling through index {index_name}")
+        page = es.search(
+            index=index_name,
+            body={
+                "query": {"match_all": {}}
+            },
+            size=100,  # TODO: expose this in spec.json
+            scroll="1m",
         )
+        scroll_id = page["_scroll_id"]
+        hits = page["hits"]["hits"]
+        while hits:
+            for hit in hits:
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(
+                        stream=index_name,
+                        data=hit["_source"],
+                        emitted_at=int(datetime.now().timestamp()) * 1000
+                    ),
+                )
+            page = es.scroll(scroll_id=scroll_id, scroll="1m")
+            scroll_id = page["_scroll_id"]
+            hits = page["hits"]["hits"]
