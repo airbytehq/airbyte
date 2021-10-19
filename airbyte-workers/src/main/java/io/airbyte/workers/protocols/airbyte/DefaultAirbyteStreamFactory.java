@@ -15,14 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates a stream from an input stream. The produced stream attempts to parse each line of the
- * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
- * dropped. Each record MUST be new line separated.
+ * Creates a stream from an input stream. The produced stream attempts to parse each line of the InputStream into a AirbyteMessage. If the line cannot
+ * be parsed into a AirbyteMessage it is dropped. Each record MUST be new line separated.
  *
  * <p>
- * If a line starts with a AirbyteMessage and then has other characters after it, that
- * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
- * line, only the first will be parsed.
+ * If a line starts with a AirbyteMessage and then has other characters after it, that AirbyteMessage will still be parsed. If there are multiple
+ * AirbyteMessage records on the same line, only the first will be parsed.
  */
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
@@ -44,40 +42,36 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
-        .map(s -> {
-          final Optional<JsonNode> j = Jsons.tryDeserialize(s);
-          if (j.isEmpty()) {
+        .flatMap(line -> {
+          final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
+          if (jsonLine.isEmpty()) {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            logger.info(s);
+            logger.info(line);
           }
-          return j;
+          return jsonLine.stream();
         })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         // filter invalid messages
-        .filter(j -> {
-          final boolean res = protocolValidator.test(j);
+        .filter(jsonLine -> {
+          final boolean res = protocolValidator.test(jsonLine);
           if (!res) {
-            logger.error("Validation failed: {}", Jsons.serialize(j));
+            logger.error("Validation failed: {}", Jsons.serialize(jsonLine));
           }
           return res;
         })
-        .map(j -> {
-          final Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
+        .flatMap(jsonLine -> {
+          final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
           if (m.isEmpty()) {
-            logger.error("Deserialization failed: {}", Jsons.serialize(j));
+            logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
           }
-          return m;
+          return m.stream();
         })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         // filter logs
-        .filter(m -> {
-          final boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
+        .filter(airbyteMessage -> {
+          final boolean isLog = airbyteMessage.getType() == AirbyteMessage.Type.LOG;
           if (isLog) {
-            internalLog(m.getLog());
+            internalLog(airbyteMessage.getLog());
           }
           return !isLog;
         });
