@@ -89,5 +89,5 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2021-10-18 | [000](https://github.com/airbytehq/airbyte/pull/000) | Initial release supporting the Strava API |
+| 0.1.0 | 2021-10-18 | [7151](https://github.com/airbytehq/airbyte/pull/7151) | Initial release supporting Strava API |
 
