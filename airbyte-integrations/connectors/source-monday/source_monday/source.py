@@ -53,6 +53,7 @@ class MondayStream(HttpStream, ABC):
 
         graphql_query = ','.join([f'{k}:{v}' for k,v in graphql_params.items()])
 
+        # Monday uses a query string to pass in environments
         params = {
             'query': f"query {{ {self.name.lower()} ({graphql_query}) {{ {self.load_schema()} }} }}"
         }
@@ -75,6 +76,20 @@ class Boards(MondayStream):
     """
     API Documentation: https://api.developer.monday.com/docs/groups-queries#groups-queries
     """
+class Teams(MondayStream):
+    """
+    API Documentation: https://api.developer.monday.com/docs/teams-queries
+    """
+
+class Updates(MondayStream):
+    """
+    API Documentation: https://api.developer.monday.com/docs/updates-queries
+    """
+
+class Users(MondayStream):
+    """
+    API Documentation: https://api.developer.monday.com/docs/users-queries-1
+    """
 
 # Source
 class SourceMonday(AbstractSource):
@@ -94,5 +109,8 @@ class SourceMonday(AbstractSource):
         auth = TokenAuthenticator(token=config['api_token'])
         return [
             Items(authenticator=auth),
-            Boards(authenticator=auth)
+            Boards(authenticator=auth),
+            Teams(authenticator=auth),
+            Updates(authenticator=auth),
+            Users(authenticator=auth),
         ]

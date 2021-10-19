@@ -72,7 +72,16 @@
             "id": { "type": "integer" }
           }
         },
-        "workspace_id": {"type":"integer"}
+        "workspace": {
+          "type":"object",
+          "properties": {
+            "id": { "type": "integer" },
+            "name": { "type": "string" },
+            "kind": { "type": "string" },
+            "description": { "type": "string" }
+          }
+
+        }
       }
     }
   }

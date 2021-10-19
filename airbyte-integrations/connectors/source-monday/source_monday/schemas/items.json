@@ -21,7 +21,11 @@
           "type": "array",
           "properties": {
             "id": { "type": "integer" },
-            "value": { "type": "string" }
+            "value": { "type": "object" },
+            "additional_info": { "type": "object" },
+            "text": { "type": "string" },
+            "title": { "type": "string" },
+            "type": { "type": "string" }
           }
         },
         "created_at": { "type": "timestamp" },
