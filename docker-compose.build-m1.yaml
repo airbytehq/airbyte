@@ -4,6 +4,7 @@
 # the project. However, currently, our Github Action runner has an old
 # version of docker-compose, which does not support this option. Once
 # we upgrade the docker-compose in the runners, we should delete this file.
+# Issue: https://github.com/airbytehq/airbyte/issues/7191
 
 version: "3.7"
 
