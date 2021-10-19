@@ -30,14 +30,14 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-
   public OAuthFlowImplementation create(final String imageName, final UUID workspaceId) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      var impl =  OAUTH_FLOW_MAPPING.get(imageName);
+      var impl = OAUTH_FLOW_MAPPING.get(imageName);
       impl.setWorkspaceId(workspaceId);
       return impl;
     } else {
-      throw new IllegalStateException(String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
+      throw new IllegalStateException(
+          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
     }
   }
 

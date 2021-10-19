@@ -22,5 +22,7 @@ public interface OAuthFlowImplementation {
       throws IOException, ConfigNotFoundException;
 
   void setWorkspaceId(UUID workspaceId);
+
   UUID getWorkspaceId();
+
 }

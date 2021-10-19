@@ -42,11 +42,13 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   /**
-   * Simple enum of content type strings and their respective encoding functions used for POSTing the access token request
+   * Simple enum of content type strings and their respective encoding functions used for POSTing the
+   * access token request
    */
   public enum TOKEN_REQUEST_CONTENT_TYPE {
-    URL_ENCODED ("application/x-www-form-urlencoded", BaseOAuthFlow::toUrlEncodedString),
-    JSON ("application/json", BaseOAuthFlow::toJson);
+
+    URL_ENCODED("application/x-www-form-urlencoded", BaseOAuthFlow::toUrlEncodedString),
+    JSON("application/json", BaseOAuthFlow::toJson);
 
     String contentType;
     Function<Map<String, String>, String> converter;
@@ -55,35 +57,34 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
       this.contentType = contentType;
       this.converter = converter;
     }
+
   }
 
   protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final ConfigRepository configRepository;
-  private final HttpClient httpClient;
   private final Supplier<String> stateSupplier;
   private UUID workspaceId;
-
-
 
   public BaseOAuthFlow(final ConfigRepository configRepository) {
     this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
   }
 
-  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
-    super(configRepository);
   public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     this(configRepository,
-            HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
-            BaseOAuthFlow::generateRandomState,
-            tokenReqContentType);
+        HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
+        BaseOAuthFlow::generateRandomState,
+        tokenReqContentType);
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
     this(configRepository, httpClient, stateSupplier, TOKEN_REQUEST_CONTENT_TYPE.URL_ENCODED);
   }
 
-  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
+  public BaseOAuthFlow(ConfigRepository configRepository,
+                       HttpClient httpClient,
+                       Supplier<String> stateSupplier,
+                       TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     this.configRepository = configRepository;
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
@@ -109,18 +110,19 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
                                     String host,
                                     String path,
                                     String scope,
-                                    String responseType) throws IOException {
+                                    String responseType)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
-            .setScheme("https")
-            .setHost(host)
-            .setPath(path)
-            // required
-            .addParameter("client_id", clientId)
-            .addParameter("redirect_uri", redirectUrl)
-            .addParameter("state", getState())
-            // optional
-            .addParameter("response_type", responseType)
-            .addParameter("scope", scope);
+        .setScheme("https")
+        .setHost(host)
+        .setPath(path)
+        // required
+        .addParameter("client_id", clientId)
+        .addParameter("redirect_uri", redirectUrl)
+        .addParameter("state", getState())
+        // optional
+        .addParameter("response_type", responseType)
+        .addParameter("scope", scope);
     try {
       return builder.build().toString();
     } catch (URISyntaxException e) {
@@ -186,7 +188,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
       throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
-        .POST(HttpRequest.BodyPublishers.ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+        .POST(HttpRequest.BodyPublishers
+            .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(getAccessTokenUrl()))
         .header("Content-Type", tokenReqContentType.contentType)
         .build();
@@ -223,67 +226,11 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
    */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
-  protected JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
-    try {
-      final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
-          configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
-      if (param.isPresent()) {
-        return param.get().getConfiguration();
-      } else {
-        throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
-      }
-    } catch (JsonValidationException e) {
-      throw new IOException("Failed to load OAuth Parameters", e);
-    }
-  }
-
-  private JsonNode getDestinationOAuthParamConfig(UUID workspaceId, UUID destinationDefinitionId) throws IOException, ConfigNotFoundException {
-    try {
-      final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
-          configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
-      if (param.isPresent()) {
-        return param.get().getConfiguration();
-      } else {
-        throw new ConfigNotFoundException(ConfigSchema.DESTINATION_OAUTH_PARAM, "Undefined OAuth Parameter.");
-      }
-    } catch (JsonValidationException e) {
-      throw new IOException("Failed to load OAuth Parameters", e);
-    }
-  }
-
   private static String urlEncode(String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
     } catch (final Exception e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return The client Id from the OAuthConfig
-   */
-  protected String getClientIdUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("client_id") != null) {
-      return oauthConfig.get("client_id").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
-    }
-  }
-
-  /**
-   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return The Client Secret from the OAuthConfiguration
-   */
-  protected String getClientSecretUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("client_secret") != null) {
-      return oauthConfig.get("client_secret").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_secret' necessary for the OAuth Flow.");
     }
   }
 
@@ -300,7 +247,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
-    Type gsonType = new TypeToken<Map<String, String>>(){}.getType();
+    Type gsonType = new TypeToken<Map<String, String>>() {}.getType();
     return gson.toJson(body, gsonType);
   }
 

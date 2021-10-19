@@ -10,10 +10,12 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Following docs from
