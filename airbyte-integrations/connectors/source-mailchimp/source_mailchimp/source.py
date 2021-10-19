@@ -45,9 +45,7 @@ class SourceMailchimp(AbstractSource):
         try:
             authorization = config.get("authorization", {})
             client = MailChimp(
-                mc_api=authorization.get("apikey"),
-                mc_user=authorization.get("username"),
-                access_token=authorization.get("access_token")
+                mc_api=authorization.get("apikey"), mc_user=authorization.get("username"), access_token=authorization.get("access_token")
             )
             client.ping.get()
             return True, None
@@ -56,10 +54,6 @@ class SourceMailchimp(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = MailChimpAuthenticator.get_auth(config)
-        streams_ = [
-            Lists(authenticator=authenticator),
-            Campaigns(authenticator=authenticator),
-            EmailActivity(authenticator=authenticator)
-        ]
+        streams_ = [Lists(authenticator=authenticator), Campaigns(authenticator=authenticator), EmailActivity(authenticator=authenticator)]
 
         return streams_
