@@ -1,7 +1,8 @@
 # This file is exactly the same as docker-compose.build.yaml, except
 # that it specifies the platform. This is a temporary solution for M1
-# Mac computers. Currently, our Github Action runner has an old version
-# of docker-compose, which does not support the platform option. Once
+# Mac computers. The platform option is required for M1 users to build
+# the project. However, currently, our Github Action runner has an old
+# version of docker-compose, which does not support this option. Once
 # we upgrade the docker-compose in the runners, we should delete this file.
 
 version: "3.7"
