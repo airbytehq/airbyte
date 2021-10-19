@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import pytest
 
+import pytest
+from airbyte_cdk.logger import AirbyteLogger
 from source_elasticsearch.source import SourceElasticsearch, UnsupportedDataTypeException
 
 
@@ -12,9 +13,7 @@ def test_get_indices(mocker):
         ".kibana_1": "foo",
         "other_index": "bar",
     }
-    assert SourceElasticsearch._get_indices(mocked_es) == {
-        "other_index": "bar"
-    }
+    assert SourceElasticsearch._get_indices(mocked_es, logger=AirbyteLogger()) == {"other_index": "bar"}
 
 
 def test_get_index_json_properties_happy_path(mocker):
@@ -23,35 +22,19 @@ def test_get_index_json_properties_happy_path(mocker):
         "index_name": {
             "mappings": {
                 "properties": {
-                    "text_property": {
-                        "type": "text"
-                    },
-                    "integer_property": {
-                        "type": "integer"
-                    },
-                    "float_property": {
-                        "type": "float"
-                    },
-                    "date_property": {
-                        "type": "date"
-                    },
+                    "text_property": {"type": "text"},
+                    "integer_property": {"type": "integer"},
+                    "float_property": {"type": "float"},
+                    "date_property": {"type": "date"},
                 }
             }
         }
     }
     assert SourceElasticsearch._get_index_json_properties(mocked_es, "index_name") == {
-        "text_property": {
-            "type": "string"
-        },
-        "integer_property": {
-            "type": "integer"
-        },
-        "float_property": {
-            "type": "number"
-        },
-        "date_property": {
-            "type": "string"
-        },
+        "text_property": {"type": "string"},
+        "integer_property": {"type": "integer"},
+        "float_property": {"type": "number"},
+        "date_property": {"type": "string"},
     }
 
 
@@ -61,9 +44,7 @@ def test_get_index_json_properties_unsupported_tyoe(mocker):
         "index_name": {
             "mappings": {
                 "properties": {
-                    "unsupported_property": {
-                        "type": "unsupported"
-                    },
+                    "unsupported_property": {"type": "unsupported"},
                 }
             }
         }

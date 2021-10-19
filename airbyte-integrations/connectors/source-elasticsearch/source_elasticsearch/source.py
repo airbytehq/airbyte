@@ -7,8 +7,6 @@ import json
 from datetime import datetime
 from typing import Dict, Generator
 
-from elasticsearch import Elasticsearch
-
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -21,6 +19,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
+from elasticsearch import Elasticsearch
 
 
 class UnsupportedDataTypeException(Exception):
@@ -66,7 +65,7 @@ class SourceElasticsearch(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Creates an ES client and tries to ping it.
-        
+
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
@@ -76,9 +75,7 @@ class SourceElasticsearch(Source):
         """
         es = self._get_es_client(config, logger)
         if not es.ping():
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Connection failed"
-            )
+            return AirbyteConnectionStatus(status=Status.FAILED, message="Connection failed")
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
@@ -116,11 +113,8 @@ class SourceElasticsearch(Source):
         """
         Returns all non-system indices in the domain.
         """
-        logger.info(f"Getting indices from ElasticSearch")
-        return {
-            key: value for key, value in es.indices.get("*").items()
-            if key not in SourceElasticsearch.system_indices
-        }
+        logger.info("Getting indices from ElasticSearch")
+        return {key: value for key, value in es.indices.get("*").items() if key not in SourceElasticsearch.system_indices}
 
     @staticmethod
     def _get_index_json_properties(es: Elasticsearch, index: str) -> dict:
@@ -138,13 +132,9 @@ class SourceElasticsearch(Source):
                 # Ignore this field until we handle nested objects.
                 continue
             try:
-                json_properties[property_name] = {
-                    "type": SourceElasticsearch.es_to_json_type_mapping[property_attributes["type"]]
-                }
+                json_properties[property_name] = {"type": SourceElasticsearch.es_to_json_type_mapping[property_attributes["type"]]}
             except KeyError:
-                raise UnsupportedDataTypeException(
-                    f"Unsupported data type: {property_attributes['type']}"
-                )
+                raise UnsupportedDataTypeException(f"Unsupported data type: {property_attributes['type']}")
         return json_properties
 
     def read(
@@ -174,20 +164,16 @@ class SourceElasticsearch(Source):
         es = self._get_es_client(config, logger)
         for configured_stream in catalog.streams:
             index_name = configured_stream.stream.name
-            return self._scroll_through_index(
-                es=es, index_name=index_name, page_size=config["page_size"], logger=logger
-            )
+            return self._scroll_through_index(es=es, index_name=index_name, page_size=config["page_size"], logger=logger)
 
     @staticmethod
     def _scroll_through_index(
-            es: Elasticsearch, index_name: str, page_size: int, logger: AirbyteLogger
+        es: Elasticsearch, index_name: str, page_size: int, logger: AirbyteLogger
     ) -> Generator[AirbyteMessage, None, None]:
         logger.info(f"Scrolling through index {index_name}")
         page = es.search(
             index=index_name,
-            body={
-                "query": {"match_all": {}}
-            },
+            body={"query": {"match_all": {}}},
             size=page_size,
             scroll="1m",
         )
@@ -197,11 +183,7 @@ class SourceElasticsearch(Source):
             for hit in hits:
                 yield AirbyteMessage(
                     type=Type.RECORD,
-                    record=AirbyteRecordMessage(
-                        stream=index_name,
-                        data=hit["_source"],
-                        emitted_at=int(datetime.now().timestamp()) * 1000
-                    ),
+                    record=AirbyteRecordMessage(stream=index_name, data=hit["_source"], emitted_at=int(datetime.now().timestamp()) * 1000),
                 )
             page = es.scroll(scroll_id=scroll_id, scroll="1m")
             scroll_id = page["_scroll_id"]

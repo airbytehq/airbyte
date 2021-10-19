@@ -1,15 +1,24 @@
 {
   "streams": [
     {
-      "stream": {
-        "name": "table_name",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
-      },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "test-index",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "email": {"type": "string"},
+            "id": {"type": "string"},
+            "name": {"type": "string"},
+            "updated_at": {"type": "string"},
+            "updated_at_dt": {"type": "string"}
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ]
     }
   ]
 }
