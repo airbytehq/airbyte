@@ -108,12 +108,26 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
+You can restrict the tests to a subset of destinations by specifying a comma separated list of destinations.
+For example, let's say you are working on a change to normalization for Postgres, with Gradle:
+
+    NORMALIZATION_TEST_TARGET=postgres ./gradlew :airbyte-integrations:bases:base-normalization:integrationTest
+
+or directly with pytest:
+
+    NORMALIZATION_TEST_TARGET=postgres  pytest airbyte-integrations/bases/base-normalization/integration_tests
+
 Note that these tests are connecting and processing data on top of real data warehouse destinations.
 Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run 
 (not included in git repository).
 
 This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
 re-use the `destination_config.json` passed to destination connectors.
+
+As normalization supports more and more destinations, tests are relying on an increasing number of destinations. 
+As a result, it is possible that the docker garbage collector is triggered to wipe "unused" docker images while the 
+integration tests for normalization are running. Thus, if you encounter errors about a connector's docker image not being 
+present locally (even though it was built beforehand), make sure to increase the docker image storage size of your docker engine ("defaultKeepStorage" for mac for example).
 
 ### Integration Tests Definitions for test_ephemeral.py:
 The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of

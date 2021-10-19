@@ -29,10 +29,10 @@ public class SqlOperationsUtils {
    * @param records records to write
    * @throws SQLException exception
    */
-  public static void insertRawRecordsInSingleQuery(String insertQueryComponent,
-                                                   String recordQueryComponent,
-                                                   JdbcDatabase jdbcDatabase,
-                                                   List<AirbyteRecordMessage> records)
+  public static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
+                                                   final String recordQueryComponent,
+                                                   final JdbcDatabase jdbcDatabase,
+                                                   final List<AirbyteRecordMessage> records)
       throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
   }
@@ -50,21 +50,21 @@ public class SqlOperationsUtils {
    * @param records records to write
    * @throws SQLException exception
    */
-  public static void insertRawRecordsInSingleQueryNoSem(String insertQueryComponent,
-                                                        String recordQueryComponent,
-                                                        JdbcDatabase jdbcDatabase,
-                                                        List<AirbyteRecordMessage> records)
+  public static void insertRawRecordsInSingleQueryNoSem(final String insertQueryComponent,
+                                                        final String recordQueryComponent,
+                                                        final JdbcDatabase jdbcDatabase,
+                                                        final List<AirbyteRecordMessage> records)
       throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
 
   @VisibleForTesting
-  static void insertRawRecordsInSingleQuery(String insertQueryComponent,
-                                            String recordQueryComponent,
-                                            JdbcDatabase jdbcDatabase,
-                                            List<AirbyteRecordMessage> records,
-                                            Supplier<UUID> uuidSupplier,
-                                            boolean sem)
+  static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
+                                            final String recordQueryComponent,
+                                            final JdbcDatabase jdbcDatabase,
+                                            final List<AirbyteRecordMessage> records,
+                                            final Supplier<UUID> uuidSupplier,
+                                            final boolean sem)
       throws SQLException {
     if (records.isEmpty()) {
       return;

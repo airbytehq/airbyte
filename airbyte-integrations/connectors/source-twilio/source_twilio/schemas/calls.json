@@ -47,7 +47,6 @@
       "type": ["null", "integer"]
     },
     "price": {
-      "multipleOf": 1e-8,
       "type": ["null", "number"]
     },
     "price_unit": {
@@ -91,6 +90,21 @@
           "type": ["null", "string"]
         },
         "notifications": {
+          "type": ["null", "string"]
+        },
+        "feedback": {
+          "type": ["null", "string"]
+        },
+        "payments": {
+          "type": ["null", "string"]
+        },
+        "siprec": {
+          "type": ["null", "string"]
+        },
+        "events": {
+          "type": ["null", "string"]
+        },
+        "feedback_summaries": {
           "type": ["null", "string"]
         }
       }

@@ -578,7 +578,7 @@ class SchedulerHandlerTest {
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
   }
 
-  private static List<StandardSyncOperation> getOperations(StandardSync standardSync) {
+  private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {
     if (standardSync.getOperationIds() != null && !standardSync.getOperationIds().isEmpty()) {
       return List.of(getOperation(standardSync.getOperationIds().get(0)));
     } else {
@@ -586,7 +586,7 @@ class SchedulerHandlerTest {
     }
   }
 
-  private static StandardSyncOperation getOperation(UUID operationId) {
+  private static StandardSyncOperation getOperation(final UUID operationId) {
     return new StandardSyncOperation()
         .withOperationId(operationId)
         .withName(OPERATION_NAME)
