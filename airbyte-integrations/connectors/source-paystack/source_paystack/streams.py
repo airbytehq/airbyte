@@ -16,9 +16,9 @@ class PaystackStream(HttpStream, ABC):
     url_base = PAYSTACK_API_BASE_URL
     primary_key = "id"
 
-    def __init__(self, start_date: int, **kwargs):
+    def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self.start_date = start_date
+        self.start_date = pendulum.parse(start_date).int_timestamp
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -73,8 +73,9 @@ class IncrementalPaystackStream(PaystackStream, ABC):
         latest_record_created = latest_record.get(self.cursor_field)
         return {
             self.cursor_field: max(
-                pendulum.parse(latest_record_created).int_timestamp,
-                current_stream_state.get(self.cursor_field, 0),
+                latest_record_created,
+                current_stream_state.get(self.cursor_field, None),
+                key=lambda d: pendulum.parse(d).int_timestamp if d else 0
             )
         }
 
@@ -88,7 +89,10 @@ class IncrementalPaystackStream(PaystackStream, ABC):
         start_point = self.start_date
         if stream_state and self.cursor_field in stream_state:
             stream_record_created = stream_state[self.cursor_field]
-            start_point = max(start_point, stream_record_created)
+            start_point = max(
+                start_point,
+                pendulum.parse(stream_record_created).int_timestamp
+            )
 
         if start_point and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")

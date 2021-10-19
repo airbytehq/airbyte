@@ -11,8 +11,7 @@ from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_paystack.streams import IncrementalPaystackStream, Customers
 
-# 1596240000 is equivalent to pendulum.parse("2020-08-01T00:00:00Z").int_timestamp
-START_DATE = 1596240000
+START_DATE = "2020-08-01T00:00:00Z"
 
 @fixture
 def patch_incremental_base_class(mocker):
@@ -26,17 +25,17 @@ def patch_incremental_base_class(mocker):
 def test_get_updated_state_uses_timestamp_of_latest_record(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
     inputs = {
-        "current_stream_state": {stream.cursor_field: pendulum.parse("2021-08-01").int_timestamp},
+        "current_stream_state": {stream.cursor_field: "2021-08-01"},
         "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}
     }
 
     updated_state = stream.get_updated_state(**inputs)
 
-    assert updated_state == {stream.cursor_field: pendulum.parse("2021-08-02T00:00:00Z").int_timestamp}
+    assert updated_state == {stream.cursor_field: "2021-08-02T00:00:00Z"}
 
 def test_get_updated_state_returns_current_state_for_old_records(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
-    current_state = {stream.cursor_field: pendulum.parse("2021-08-03").int_timestamp}
+    current_state = {stream.cursor_field: "2021-08-03"}
     inputs = {
         "current_stream_state": current_state,
         "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}
@@ -55,14 +54,14 @@ def test_get_updated_state_uses_timestamp_of_latest_record_when_no_current_state
 
     updated_state = stream.get_updated_state(**inputs)
 
-    assert updated_state == {stream.cursor_field: pendulum.parse("2021-08-02T00:00:00Z").int_timestamp}
+    assert updated_state == {stream.cursor_field: "2021-08-02T00:00:00Z"}
 
 def test_request_params_includes_incremental_start_point(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
     inputs = {
         "stream_slice": None,
         "next_page_token": {"page": 37},
-        "stream_state": {stream.cursor_field: pendulum.parse("2021-09-02").int_timestamp},
+        "stream_state": {stream.cursor_field: "2021-09-02"},
     }
 
     params = stream.request_params(**inputs)
@@ -89,7 +88,7 @@ def test_request_params_incremental_start_point_applies_lookback_window(
     inputs = {
         "stream_slice": None,
         "next_page_token": None,
-        "stream_state": {stream.cursor_field: pendulum.parse(current_state).int_timestamp},
+        "stream_state": {stream.cursor_field: current_state},
     }
 
     params = stream.request_params(**inputs)

@@ -48,8 +48,7 @@ class SourcePaystack(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         authenticator = TokenAuthenticator(config[AUTH_KEY_FIELD])
-        start_date = pendulum.parse(config["start_date"]).int_timestamp
-        args = {"authenticator": authenticator, "start_date": start_date}
+        args = {"authenticator": authenticator, "start_date": config["start_date"]}
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
             Customers(**incremental_args)

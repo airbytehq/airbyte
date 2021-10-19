@@ -8,8 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 from source_paystack.streams import PaystackStream
 
-# 1596240000 is equivalent to pendulum.parse("2020-08-01T00:00:00Z").int_timestamp
-START_DATE = 1596240000
+START_DATE = "2020-08-01T00:00:00Z"
 
 @pytest.fixture
 def patch_base_class(mocker):
