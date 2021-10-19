@@ -54,3 +54,7 @@
 {%- macro oracle__get_col_ab_id() -%}
     "_AIRBYTE_AB_ID"
 {%- endmacro -%}
+
+{%- macro snowflake__get_col_ab_id() -%}
+    _AIRBYTE_AB_ID
+{%- endmacro -%}
