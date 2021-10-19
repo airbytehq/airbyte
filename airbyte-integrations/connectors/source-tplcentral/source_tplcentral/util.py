@@ -22,12 +22,12 @@ def normalize(d):
 def _normalizer(d):
     out = {}
     for k, v in d.items():
-        if not k == '_links':
+        if not k == "_links":
             out[camel_to_snake(k)] = v
     return out
 
 def deep_get(mapping: Mapping[str, Any], key: str) -> Any:
-    key = key.split('.')
+    key = key.split(".")
     while len(key):
         mapping = mapping[camel_to_snake(key.pop(0))]
     return mapping
