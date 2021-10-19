@@ -1,3 +1,4 @@
 {
-  "fix-me": "TODO"
+  "secret_key": "sk_test_abc123",
+  "start_date": "2020-08-01T00:00:00Z"
 }
