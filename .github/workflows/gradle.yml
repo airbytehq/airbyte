@@ -144,7 +144,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -292,7 +292,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -374,7 +374,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -400,7 +400,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
   kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
@@ -459,12 +458,19 @@ jobs:
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.2.0
         with:
+          node_image: kindest/node:v1.21.2
           config: /tmp/kind-config.yaml
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
+
+      - name: Describe kube nodes
+        run: kubectl describe nodes
+        env:
+          USER: root
+          HOME: /home/runner
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
@@ -518,7 +524,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}

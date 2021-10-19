@@ -61,7 +61,6 @@ class FileStream(Stream, ABC):
             self._schema = self._parse_user_input_schema(schema)
         self.master_schema = None
         self.storagefile_cache: Optional[List[Tuple[datetime, StorageFile]]] = None
-        self.logger = AirbyteLogger()
         self.logger.info(f"initialised stream with format: {format}")
 
     @staticmethod

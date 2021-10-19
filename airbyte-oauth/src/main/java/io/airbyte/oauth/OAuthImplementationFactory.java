@@ -6,6 +6,7 @@ package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.flows.AsanaOAuthFlow;
 import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.TrelloOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
@@ -19,6 +20,7 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(final ConfigRepository configRepository) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
+        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
         .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
