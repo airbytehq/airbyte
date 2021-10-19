@@ -10,7 +10,7 @@ _UID=$(id -u)
 _GID=$(id -g)
 # Remove container if already exist
 echo "Removing previous generator if it exists..."
-#docker container rm -f airbyte-connector-bootstrap >/dev/null 2>&1
+docker container rm -f airbyte-connector-bootstrap >/dev/null 2>&1
 
 # Build image for container from Dockerfile
 # Specify the host system user UID and GID to chown the generated files to host system user.
