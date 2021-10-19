@@ -255,7 +255,7 @@ task composeBuild {
     doFirst {
         exec {
             workingDir rootDir
-            commandLine 'docker compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
+            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
             environment 'VERSION', buildTag
             environment 'DOCKER_BUILD_PLATFORM', buildPlatform
             environment 'DOCKER_BUILD_ARCH', buildArch
