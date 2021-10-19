@@ -175,7 +175,7 @@ public class MongoUtils {
     try {
       reader.skipValue();
       final Document document = (Document) obj;
-      return document.toJson();
+      return document.toString();
     } catch (final Exception e) {
       LOGGER.error("Failed to convert document to a String: ", e.getMessage());
       return null;
