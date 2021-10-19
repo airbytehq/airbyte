@@ -47,7 +47,7 @@ public class TestStreamingJdbcDatabase {
   private JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
   private JdbcDatabase defaultJdbcDatabase;
   private JdbcDatabase streamingJdbcDatabase;
-  private JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
@@ -94,7 +94,7 @@ public class TestStreamingJdbcDatabase {
   @SuppressWarnings("unchecked")
   @Test
   void testExecute() throws SQLException {
-    CheckedConsumer<Connection, SQLException> queryExecutor = mock(CheckedConsumer.class);
+    final CheckedConsumer<Connection, SQLException> queryExecutor = mock(CheckedConsumer.class);
     doNothing().when(defaultJdbcDatabase).execute(queryExecutor);
 
     streamingJdbcDatabase.execute(queryExecutor);
@@ -150,7 +150,7 @@ public class TestStreamingJdbcDatabase {
     verify(jdbcStreamingQueryConfiguration).accept(connection1.get(), ps1.get());
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())

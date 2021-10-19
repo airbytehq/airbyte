@@ -37,7 +37,7 @@ public class MetricSingletonTest {
   @BeforeAll
   public static void setUp() throws IOException {
     // try to grab an available port.
-    try (ServerSocket socket = new ServerSocket(0);) {
+    try (final ServerSocket socket = new ServerSocket(0);) {
       availPort = socket.getLocalPort();
     }
 
@@ -66,45 +66,45 @@ public class MetricSingletonTest {
 
   @Test
   public void testCounter() throws InterruptedException, IOException {
-    var metricName = "test_counter";
-    var rand = new Random();
+    final var metricName = "test_counter";
+    final var rand = new Random();
     for (int i = 0; i < 5; i++) {
       MetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing counter");
       Thread.sleep(500);
     }
 
-    HttpResponse<String> response = getPublishedPrometheusMetric();
+    final HttpResponse<String> response = getPublishedPrometheusMetric();
     assertTrue(response.body().contains(metricName));
   }
 
   @Test
   public void testGauge() throws InterruptedException, IOException {
-    var metricName = "test_gauge";
-    var rand = new Random();
+    final var metricName = "test_gauge";
+    final var rand = new Random();
     for (int i = 0; i < 5; i++) {
       MetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing gauge");
       Thread.sleep(500);
     }
 
-    HttpResponse<String> response = getPublishedPrometheusMetric();
+    final HttpResponse<String> response = getPublishedPrometheusMetric();
     assertTrue(response.body().contains(metricName));
   }
 
   @Test
   public void testTimer() throws InterruptedException, IOException {
-    var metricName = "test_timer";
-    var rand = new Random();
+    final var metricName = "test_timer";
+    final var rand = new Random();
     for (int i = 0; i < 5; i++) {
       MetricSingleton.getInstance().recordTime(metricName, rand.nextDouble() * 2, "testing time");
       Thread.sleep(500);
     }
 
-    HttpResponse<String> response = getPublishedPrometheusMetric();
+    final HttpResponse<String> response = getPublishedPrometheusMetric();
     assertTrue(response.body().contains(metricName));
   }
 
   private HttpResponse<String> getPublishedPrometheusMetric() throws IOException, InterruptedException {
-    HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create("http://localhost:" + availPort)).build();
+    final HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create("http://localhost:" + availPort)).build();
     return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
   }
 

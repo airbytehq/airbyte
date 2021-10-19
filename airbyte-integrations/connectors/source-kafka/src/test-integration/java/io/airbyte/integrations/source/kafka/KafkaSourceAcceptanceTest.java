@@ -50,8 +50,8 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    ObjectNode protocolConfig = mapper.createObjectNode();
-    ObjectNode subscriptionConfig = mapper.createObjectNode();
+    final ObjectNode protocolConfig = mapper.createObjectNode();
+    final ObjectNode subscriptionConfig = mapper.createObjectNode();
     protocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
     subscriptionConfig.put("subscription_type", "subscribe");
     subscriptionConfig.put("topic_pattern", TOPIC_NAME);
@@ -69,7 +69,7 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
     KAFKA.start();
 
@@ -83,9 +83,9 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
         .put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
         .build();
-    KafkaProducer<String, JsonNode> producer = new KafkaProducer<>(props);
+    final KafkaProducer<String, JsonNode> producer = new KafkaProducer<>(props);
 
-    ObjectNode event = mapper.createObjectNode();
+    final ObjectNode event = mapper.createObjectNode();
     event.put("test", "value");
 
     producer.send(new ProducerRecord<>(TOPIC_NAME, event), (recordMetadata, exception) -> {
@@ -96,14 +96,14 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createTopic() throws Exception {
-    try (var admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
-      NewTopic topic = new NewTopic(TOPIC_NAME, 1, (short) 1);
+    try (final var admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
+      final NewTopic topic = new NewTopic(TOPIC_NAME, 1, (short) 1);
       admin.createTopics(Collections.singletonList(topic)).all().get();
     }
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     KAFKA.close();
   }
 
@@ -114,7 +114,8 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    ConfiguredAirbyteStream streams = CatalogHelpers.createConfiguredAirbyteStream(TOPIC_NAME, null, Field.of("value", JsonSchemaPrimitive.STRING));
+    final ConfiguredAirbyteStream streams =
+        CatalogHelpers.createConfiguredAirbyteStream(TOPIC_NAME, null, Field.of("value", JsonSchemaPrimitive.STRING));
     streams.setSyncMode(SyncMode.FULL_REFRESH);
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(streams));
   }

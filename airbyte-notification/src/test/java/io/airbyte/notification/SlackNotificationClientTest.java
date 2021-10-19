@@ -121,19 +121,19 @@ public class SlackNotificationClientTest {
 
     final private String expectedMessage;
 
-    public ServerHandler(String expectedMessage) {
+    public ServerHandler(final String expectedMessage) {
       this.expectedMessage = expectedMessage;
     }
 
     @Override
-    public void handle(HttpExchange t) throws IOException {
+    public void handle(final HttpExchange t) throws IOException {
       final InputStream is = t.getRequestBody();
       final String body = IOUtils.toString(is, Charset.defaultCharset());
       LOGGER.info("Received: '{}'", body);
       JsonNode message = null;
       try {
         message = Jsons.deserialize(body);
-      } catch (RuntimeException e) {
+      } catch (final RuntimeException e) {
         LOGGER.error("Failed to parse JSON from body {}", body, e);
       }
       final String response;

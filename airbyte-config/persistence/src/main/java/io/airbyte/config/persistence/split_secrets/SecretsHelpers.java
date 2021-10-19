@@ -273,7 +273,7 @@ public class SecretsHelpers {
    * @param spec connector specification or a sub-node of the specification
    * @return a type used to process a config or sub-node of a config
    */
-  private static JsonSchemaSpecType getSpecTypeToHandle(JsonNode spec) {
+  private static JsonSchemaSpecType getSpecTypeToHandle(final JsonNode spec) {
     if (isObjectSchema(spec)) {
       return JsonSchemaSpecType.OBJECT;
     } else if (isArraySchema(spec)) {
@@ -299,16 +299,16 @@ public class SecretsHelpers {
 
   }
 
-  private static boolean isStringSchema(JsonNode schema) {
+  private static boolean isStringSchema(final JsonNode schema) {
     return schema.has("type") && schema.get("type").asText().equals("string");
   }
 
-  private static boolean isObjectSchema(JsonNode schema) {
-    return schema.has("type") && schema.get("type").asText().equals("object") && schema.has("properties");
+  private static boolean isObjectSchema(final JsonNode schema) {
+    return schema.has("properties") && schema.get("properties").isObject();
   }
 
-  private static boolean isArraySchema(JsonNode schema) {
-    return schema.has("type") && schema.get("type").asText().equals("array") && schema.has("items");
+  private static boolean isArraySchema(final JsonNode schema) {
+    return schema.has("items") && schema.get("items").isObject();
   }
 
   private static JsonNode getFieldOrEmptyNode(final JsonNode node, final String field) {
@@ -338,7 +338,7 @@ public class SecretsHelpers {
     return new TextNode(secretValue.get());
   }
 
-  private static SecretCoordinate getCoordinateFromTextNode(JsonNode node) {
+  private static SecretCoordinate getCoordinateFromTextNode(final JsonNode node) {
     return SecretCoordinate.fromFullCoordinate(node.asText());
   }
 
@@ -373,7 +373,7 @@ public class SecretsHelpers {
     Long version = null;
 
     if (oldSecretFullCoordinate != null) {
-      var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecretFullCoordinate);
+      final var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecretFullCoordinate);
       coordinateBase = oldCoordinate.getCoordinateBase();
       final var oldSecretValue = secretReader.read(oldCoordinate);
       if (oldSecretValue.isPresent()) {

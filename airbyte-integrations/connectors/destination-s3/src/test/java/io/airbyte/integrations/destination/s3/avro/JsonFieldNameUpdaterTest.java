@@ -19,15 +19,15 @@ class JsonFieldNameUpdaterTest {
 
   @Test
   public void testFieldNameUpdate() throws IOException {
-    JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_field_name_updater/test_case.json"));
-    for (JsonNode testCase : testCases) {
-      JsonNode nameMap = testCase.get("nameMap");
-      JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(
+    final JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_field_name_updater/test_case.json"));
+    for (final JsonNode testCase : testCases) {
+      final JsonNode nameMap = testCase.get("nameMap");
+      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(
           MoreIterators.toList(nameMap.fields()).stream()
               .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().asText())));
 
-      JsonNode original = testCase.get("original");
-      JsonNode updated = testCase.get("updated");
+      final JsonNode original = testCase.get("original");
+      final JsonNode updated = testCase.get("updated");
 
       assertEquals(updated, nameUpdater.getJsonWithStandardizedFieldNames(original));
       assertEquals(original, nameUpdater.getJsonWithOriginalFieldNames(updated));
