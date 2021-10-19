@@ -9,15 +9,15 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZendeskOAuthFlow extends BaseOAuthFlow {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ZendeskOAuthFlow.class);
 
   private String subdomain;
@@ -25,7 +25,6 @@ public class ZendeskOAuthFlow extends BaseOAuthFlow {
   public ZendeskOAuthFlow(ConfigRepository configRepository) {
     super(configRepository, TOKEN_REQUEST_CONTENT_TYPE.JSON);
   }
-
 
   /**
    * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
@@ -42,14 +41,14 @@ public class ZendeskOAuthFlow extends BaseOAuthFlow {
     try {
       oAuthParamConfig = getSourceOAuthParamConfig(this.getWorkspaceId(), definitionId);
       return formatConsentUrl(getClientIdUnsafe(oAuthParamConfig), redirectUrl,
-              MessageFormat.format("{0}.zendesk.com", getSubdomainUnsafe(oAuthParamConfig)),
-              "oauth/authorizations/new", "read", "code");
+          MessageFormat.format("{0}.zendesk.com", getSubdomainUnsafe(oAuthParamConfig)),
+          "oauth/authorizations/new", "read", "code");
     } catch (ConfigNotFoundException e) {
-      // Let's wrap it into a unchecked exception to avoid further refactorings without a clear cost benefit
+      // Let's wrap it into a unchecked exception to avoid further refactorings without a clear cost
+      // benefit
       throw new IllegalArgumentException("Undefined parameter 'subdomain' necessary for the Zendesk OAuth Flow.", e);
     }
   }
-
 
   /**
    * Returns the URL where to retrieve the access token from.
@@ -63,7 +62,7 @@ public class ZendeskOAuthFlow extends BaseOAuthFlow {
   /**
    * Query parameters to provide the access token url with.
    *
-   * @param clientId The configured clientId  for this OAuth client
+   * @param clientId The configured clientId for this OAuth client
    * @param clientSecret The clientSecret configured for this OAuthClient
    * @param authCode The AuthCode obtained from the consent flow
    * @param redirectUrl the configured redirectUrl
