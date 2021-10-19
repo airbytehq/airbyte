@@ -9,6 +9,18 @@
       "start_date",
       "subdomain"
     ],
+     "oneOf": [
+      {
+        "required": [
+          "credentials"
+        ]
+      },
+      {
+        "required": [
+          "api_token"
+        ]
+      }
+    ],
     "additionalProperties": false,
     "properties": {
       "api_token": {
@@ -84,16 +96,9 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": [
-        "credentials",
-        0
-      ],
-      "oauthFlowInitParameters": [["client_id"]],
-      "oauthFlowOutputParameters": [
-        [
-          "access_token"
-        ]
-      ]
+      "rootObject": ["credentials", 0],
+      "oauthFlowOutputParameters": [["access_token"]],
+      "oauthFlowInitParameters": [[]]
     }
   }
 }
