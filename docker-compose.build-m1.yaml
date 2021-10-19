@@ -1,7 +1,14 @@
+# This file is exactly the same as docker-compose.build.yaml, except
+# that it specifies the platform. This is a temporary solution for M1
+# Mac computers. Currently, our Github Action runner has an old version
+# of docker-compose, which does not support the platform option. Once
+# we upgrade the docker-compose in the runners, we should delete this file.
+
 version: "3.7"
 
 services:
   init:
+    platform: linux/amd64
     image: airbyte/init:${VERSION}
     build:
       dockerfile: Dockerfile
@@ -9,6 +16,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   db:
+    platform: linux/amd64
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
@@ -16,6 +24,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:
+    platform: ${DOCKER_BUILD_PLATFORM}
     image: airbyte/scheduler:${VERSION}
     build:
       dockerfile: Dockerfile
@@ -25,6 +34,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   worker:
+    platform: ${DOCKER_BUILD_PLATFORM}
     image: airbyte/worker:${VERSION}
     build:
       dockerfile: Dockerfile
@@ -35,6 +45,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   server:
+    platform: ${DOCKER_BUILD_PLATFORM}
     image: airbyte/server:${VERSION}
     build:
       dockerfile: Dockerfile
@@ -44,6 +55,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   webapp:
+    platform: linux/amd64
     image: airbyte/webapp:${VERSION}
     build:
       dockerfile: Dockerfile
@@ -51,6 +63,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   migration:
+    platform: ${DOCKER_BUILD_PLATFORM}
     image: airbyte/migration:${VERSION}
     build:
       dockerfile: Dockerfile
