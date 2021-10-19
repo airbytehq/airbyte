@@ -33,7 +33,10 @@ To compile and build just the platform \(not all the connectors\):
 SUB_BUILD=PLATFORM ./gradlew build
 ```
 
-On Mac M1\(Apple Silicon\) machines\
+{% hint style="info" %}
+If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
+some additional environment variables:
+
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
 export DOCKER_BUILD_ARCH=arm64
@@ -41,6 +44,10 @@ export JDK_VERSION=17
 export NODE_VERSION=16.11.1
 SUB_BUILD=PLATFORM ./gradlew build
 ```
+
+There are some known issues (unit tests failing and Temporal failing during runs). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
+
+{% endhint %}
 
 This will build all the code and run all the unit tests.
 
