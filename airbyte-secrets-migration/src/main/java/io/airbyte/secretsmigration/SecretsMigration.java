@@ -11,11 +11,8 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
-import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
@@ -62,7 +59,7 @@ public class SecretsMigration {
         "docker", // configs.getConfigDatabaseUser(),
         "docker", // configs.getConfigDatabasePassword(),
         "jdbc:postgresql://localhost:8011/airbyte") // configs.getConfigDatabaseUrl())
-        .getInitialized();
+            .getInitialized();
 
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(database).withValidation();
 
@@ -71,8 +68,7 @@ public class SecretsMigration {
             configPersistence,
             new RealSecretsHydrator(new LocalTestingSecretPersistence(database)),
             Optional.of(new LocalTestingSecretPersistence(database)),
-            Optional.of(new LocalTestingSecretPersistence(database))
-        );
+            Optional.of(new LocalTestingSecretPersistence(database)));
 
     configRepository.setSpecFetcher(dockerImage -> BucketSpecCacheSchedulerClient
         .attemptToFetchSpecFromBucket(StorageOptions.getDefaultInstance().getService(), "io-airbyte-cloud-spec-cache", dockerImage).get());

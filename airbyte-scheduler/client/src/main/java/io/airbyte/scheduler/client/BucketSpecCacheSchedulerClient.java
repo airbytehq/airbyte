@@ -106,8 +106,8 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
   }
 
   public static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
-                                                                               final String bucketName,
-                                                                               final String dockerImage) {
+                                                                              final String bucketName,
+                                                                              final String dockerImage) {
     final String[] dockerImageComponents = dockerImage.split(":");
     Preconditions.checkArgument(dockerImageComponents.length == 2, "Invalidate docker image: " + dockerImage);
     final String dockerImageName = dockerImageComponents[0];
