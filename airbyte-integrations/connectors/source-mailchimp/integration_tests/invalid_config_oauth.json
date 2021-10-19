@@ -1,0 +1,9 @@
+{
+  "authorization": {
+    "auth_type": "Oauth",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "access_token": "access_token",
+    "server_prefix": "server_prefix"
+  }
+}

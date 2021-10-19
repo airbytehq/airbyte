@@ -1,4 +1,7 @@
 {
-  "apikey": "api-key-awesome",
-  "username": "fakemaster@silly.com"
+  "authorization": {
+    "auth_type": "Apikey",
+    "apikey": "api-key-awesome",
+    "username": "fakemaster@silly.com"
+  }
 }

@@ -11,31 +11,55 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from mailchimp3 import MailChimp
+from requests.auth import AuthBase
 
 from .streams import Campaigns, EmailActivity, Lists
 
 
-class HttpBasicAuthenticator(TokenAuthenticator):
-    def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic", **kwargs):
-        # API keys have the format <key>-<data_center>.
-        # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
-        self.data_center = auth[1].split("-").pop()
-        auth_string = f"{auth[0]}:{auth[1]}".encode("utf8")
-        b64_encoded = base64.b64encode(auth_string).decode("utf8")
-        super().__init__(token=b64_encoded, auth_method=auth_method, **kwargs)
+class MailChimpAuthenticator:
+    @staticmethod
+    def get_auth(config: Mapping[str, Any]) -> AuthBase:
+        authorization = config.get("authorization", {})
+        auth_type = authorization.get("auth_type")
+        if auth_type == "Apikey":
+            # API keys have the format <key>-<data_center>.
+            # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
+            auth_string = f"anystring:{authorization['apikey']}".encode("utf8")
+            b64_encoded = base64.b64encode(auth_string).decode("utf8")
+            auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
+            auth.data_center = authorization["apikey"].split("-").pop()
+
+        elif auth_type == "Oauth":
+            auth = TokenAuthenticator(token=authorization["access_token"], auth_method="Bearer")
+            auth.data_center = authorization["server_prefix"]
+
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
+
+        auth.auth_type = auth_type
+        return auth
 
 
 class SourceMailchimp(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            client = MailChimp(mc_api=config["apikey"], mc_user=config["username"])
+            authorization = config.get("authorization", {})
+            client = MailChimp(
+                mc_api=authorization.get("apikey"),
+                mc_user=authorization.get("username"),
+                access_token=authorization.get("access_token")
+            )
             client.ping.get()
             return True, None
         except Exception as e:
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = HttpBasicAuthenticator(auth=("anystring", config["apikey"]))
-        streams_ = [Lists(authenticator=authenticator), Campaigns(authenticator=authenticator), EmailActivity(authenticator=authenticator)]
+        authenticator = MailChimpAuthenticator.get_auth(config)
+        streams_ = [
+            Lists(authenticator=authenticator),
+            Campaigns(authenticator=authenticator),
+            EmailActivity(authenticator=authenticator)
+        ]
 
         return streams_
