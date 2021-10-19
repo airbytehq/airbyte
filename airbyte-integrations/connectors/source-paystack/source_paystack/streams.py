@@ -41,8 +41,7 @@ class PaystackStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        yield from response_json.get("data", [])  # Paystack puts records in a container array "data"
+        yield from response.json().get("data", [])  # Paystack puts records in a container array "data"
 
 
 class IncrementalPaystackStream(PaystackStream, ABC):
@@ -82,10 +81,7 @@ class IncrementalPaystackStream(PaystackStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-
-        start_date = self._get_start_date(stream_state)
-        if start_date:
-            params["from"] = start_date
+        params["from"] = self._get_start_date(stream_state)
         return params
 
     def _get_start_date(self, stream_state) -> str:

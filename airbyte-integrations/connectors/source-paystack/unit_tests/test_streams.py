@@ -6,8 +6,10 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_paystack.source import PaystackStream
+from source_paystack.streams import PaystackStream
 
+# 1596240000 is equivalent to pendulum.parse("2020-08-01T00:00:00Z").int_timestamp
+START_DATE = 1596240000
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -17,48 +19,53 @@ def patch_base_class(mocker):
     mocker.patch.object(PaystackStream, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
-    stream = PaystackStream()
-    # TODO: replace this with your input parameters
+def test_request_params_includes_pagination_limit(patch_base_class):
+    stream = PaystackStream(start_date=START_DATE)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
 
+    params = stream.request_params(**inputs)
 
-def test_next_page_token(patch_base_class):
-    stream = PaystackStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    assert params == {"perPage": 200}
 
+def test_request_params_for_includes_page_number_for_pagination(patch_base_class):
+    stream = PaystackStream(start_date=START_DATE)
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page": 2}}
 
-def test_parse_response(patch_base_class):
-    stream = PaystackStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    params = stream.request_params(**inputs)
 
+    assert params == {"perPage": 200, "page": 2}
 
-def test_request_headers(patch_base_class):
-    stream = PaystackStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
+def test_next_page_token_increments_page_number(patch_base_class):
+    stream = PaystackStream(start_date=START_DATE)
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"meta": {"page": 2, "pageCount": 4}}
+    inputs = {"response": mock_response}
 
+    token = stream.next_page_token(**inputs)
 
-def test_http_method(patch_base_class):
-    stream = PaystackStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
+    assert token == {"page": 3}
 
+def test_next_page_token_is_none_when_last_page_reached(patch_base_class):
+    stream = PaystackStream(start_date=START_DATE)
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"meta": {"page": 4, "pageCount": 4}}
+    inputs = {"response": mock_response}
+
+    token = stream.next_page_token(**inputs)
+
+    assert token is None
+
+def test_parse_response_generates_data(patch_base_class):
+    stream = PaystackStream(start_date=START_DATE)
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"data": [{"id": 1137850082}, {"id": 1137850097}]}
+    inputs = {"response": mock_response}
+    
+    parsed = stream.parse_response(**inputs)
+    first, second = next(parsed), next(parsed)
+
+    assert first == {"id": 1137850082}
+    assert second == {"id": 1137850097}
 
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),
@@ -72,12 +79,12 @@ def test_http_method(patch_base_class):
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = PaystackStream()
+    stream = PaystackStream(start_date=START_DATE)
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = PaystackStream()
+    stream = PaystackStream(start_date=START_DATE)
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time

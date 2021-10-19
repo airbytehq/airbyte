@@ -20,17 +20,19 @@ class SourcePaystack(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-
         try:
             response = requests.get(
-                f"{PAYSTACK_API_BASE_URL}/customer?page=1&perPage=1", 
+                f"{PAYSTACK_API_BASE_URL}customer?page=1&perPage=1", 
                 headers={"Authorization": f"Bearer {config[AUTH_KEY_FIELD]}"},
                 verify=True
             )
             response.raise_for_status()
         except Exception as e:
             msg = e
-            if e.response.status_code == 401:
+            if (
+                isinstance(e, requests.exceptions.HTTPError)
+                and e.response.status_code == 401
+            ):
                 msg = 'Connection to Paystack was not authorized. Please check that your secret key is correct.'
             return False, msg
 
