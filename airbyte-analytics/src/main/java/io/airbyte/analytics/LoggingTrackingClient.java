@@ -17,27 +17,27 @@ public class LoggingTrackingClient implements TrackingClient {
 
   private final Function<UUID, TrackingIdentity> identityFetcher;
 
-  public LoggingTrackingClient(Function<UUID, TrackingIdentity> identityFetcher) {
+  public LoggingTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher) {
     this.identityFetcher = identityFetcher;
   }
 
   @Override
-  public void identify(UUID workspaceId) {
+  public void identify(final UUID workspaceId) {
     LOGGER.info("identify. userId: {}", identityFetcher.apply(workspaceId).getCustomerId());
   }
 
   @Override
-  public void alias(UUID workspaceId, String previousCustomerId) {
+  public void alias(final UUID workspaceId, final String previousCustomerId) {
     LOGGER.info("merge. userId: {} previousUserId: {}", identityFetcher.apply(workspaceId).getCustomerId(), previousCustomerId);
   }
 
   @Override
-  public void track(UUID workspaceId, String action) {
+  public void track(final UUID workspaceId, final String action) {
     track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(UUID workspaceId, String action, Map<String, Object> metadata) {
+  public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
     LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
         identityFetcher.apply(workspaceId).getAirbyteVersion(),
         identityFetcher.apply(workspaceId).getCustomerId(),

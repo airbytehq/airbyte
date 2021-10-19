@@ -6,8 +6,7 @@
 The high-level overview contains all the information you need to use Basic Normalization when pulling from APIs. Information past that can be read for advanced or educational purposes.
 {% endhint %}
 
-When you run your first Airbyte sync without the basic normalization, you'll notice that your data gets written to your destination as one data column with a JSON blob that contains all of your data. This is the `_airbyte_raw_` table that you may have seen before. Why do we create this table? A core tenet of ELT philosophy is that data should be untouched as it moves through the E and L stages so that the raw data is always accessible. If an unmodified version of the
-data exists in the destination, it can be retransformed without needing to sync data again.
+When you run your first Airbyte sync without the basic normalization, you'll notice that your data gets written to your destination as one data column with a JSON blob that contains all of your data. This is the `_airbyte_raw_` table that you may have seen before. Why do we create this table? A core tenet of ELT philosophy is that data should be untouched as it moves through the E and L stages so that the raw data is always accessible. If an unmodified version of the data exists in the destination, it can be retransformed without needing to sync data again.
 
 If you have Basic Normalization enabled, Airbyte automatically uses this JSON blob to create a schema and tables with your data in mind, converting it to the format of your destination. This runs after your sync and may take a long time if you have a large amount of data synced. If you don't enable Basic Normalization, you'll have to transform the JSON data from that column yourself.
 
@@ -47,7 +46,7 @@ Airbyte places the json blob version of your data in a table called `_airbyte_ra
 
 ## Why does Airbyte have Basic Normalization?
 
-At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination". 
+At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
 
 However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
 
@@ -60,15 +59,16 @@ To summarize, we can represent the ELT process in the diagram below. These are s
 ![](../.gitbook/assets/connecting-EL-with-T-4.png)
 
 In Airbyte, the current normalization option is implemented using a dbt Transformer composed of:
-- Airbyte base-normalization python package to generate dbt SQL models files
-- dbt to compile and executes the models on top of the data in the destinations that supports it.
+
+* Airbyte base-normalization python package to generate dbt SQL models files
+* dbt to compile and executes the models on top of the data in the destinations that supports it.
 
 ## Destinations that Support Basic Normalization
 
 * [BigQuery](../integrations/destinations/bigquery.md)
 * [MySQL](../integrations/destinations/mysql.md)
   * The server must support the `WITH` keyword.
-  * Require MySQL >= 8.0, or MariaDB >= 10.2.1.
+  * Require MySQL &gt;= 8.0, or MariaDB &gt;= 10.2.1.
 * [Postgres](../integrations/destinations/postgres.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
 * [Redshift](../integrations/destinations/redshift.md)
@@ -277,13 +277,13 @@ As an example from the hubspot source, we could have the following tables with n
 
 As mentioned in the overview:
 
-- Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`.
-- If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`.
-- In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
+* Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`.
+* If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`.
+* In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
 
 ## UI Configurations
 
-To enable basic normalization (which is optional), you can toggle it on or disable it in the "Normalization and Transformation" section when setting up your connection:
+To enable basic normalization \(which is optional\), you can toggle it on or disable it in the "Normalization and Transformation" section when setting up your connection:
 
 ![](../.gitbook/assets/basic-normalization-configuration.png)
 
@@ -299,22 +299,21 @@ Note that all the choices made by Normalization as described in this documentati
 
 ### airbyte-integration/bases/base-normalization
 
-Note that Basic Normalization is packaged in a docker image `airbyte/normalization`.
-This image is tied to and released along with a specific Airbyte version.
-It is not configurable independently like it is possible to do with connectors (source & destinations)
+Note that Basic Normalization is packaged in a docker image `airbyte/normalization`. This image is tied to and released along with a specific Airbyte version. It is not configurable independently like it is possible to do with connectors \(source & destinations\)
 
 Therefore, in order to "upgrade" to the desired normalization version, you need to use the corresponding Airbyte version that it's being released in:
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- | :--- |
-| 0.30.16-alpha | 0.1.52 | 2021-10-07 | [#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
-| 0.30.16-alpha | 0.1.51 | 2021-10-08 | [#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad_cdc_log_pos while normalization  |
-| 0.30.16-alpha | 0.1.50 | 2021-10-07 | [#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization  |
-| 0.30.16-alpha | 0.1.49 | 2021-10-06 | [#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
-| 0.29.17-alpha | 0.1.47 | 2021-09-20 | [#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel  |
-| 0.29.17-alpha | 0.1.45 | 2021-09-18 | [#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format  |
-| 0.29.8-alpha | 0.1.40 | 2021-08-18 | [#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials_json for BigQuery  |
-| 0.29.5-alpha | 0.1.39 | 2021-08-11 | [#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
-| 0.28.2-alpha | 0.1.38 | 2021-07-28 | [#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |
-| 0.27.5-alpha | 0.1.37 | 2021-07-22 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
-| 0.27.2-alpha | 0.1.36 | 2021-07-09 | [#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
+| :--- | :--- | :--- | :--- | :--- |
+| 0.30.16-alpha | 0.1.52 | 2021-10-07 | [\#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
+| 0.30.16-alpha | 0.1.51 | 2021-10-08 | [\#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad\_cdc\_log\_pos while normalization |
+| 0.30.16-alpha | 0.1.50 | 2021-10-07 | [\#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization |
+| 0.30.16-alpha | 0.1.49 | 2021-10-06 | [\#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
+| 0.29.17-alpha | 0.1.47 | 2021-09-20 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel |
+| 0.29.17-alpha | 0.1.45 | 2021-09-18 | [\#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format |
+| 0.29.8-alpha | 0.1.40 | 2021-08-18 | [\#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials\_json for BigQuery |
+| 0.29.5-alpha | 0.1.39 | 2021-08-11 | [\#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
+| 0.28.2-alpha | 0.1.38 | 2021-07-28 | [\#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |
+| 0.27.5-alpha | 0.1.37 | 2021-07-22 | [\#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
+| 0.27.2-alpha | 0.1.36 | 2021-07-09 | [\#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
+

@@ -48,7 +48,8 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2  | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149) | Change `cursor_field` for Incremental streams |
-|
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149) | Change `cursor_field` for Incremental streams |
+|  |  |  |  |
+

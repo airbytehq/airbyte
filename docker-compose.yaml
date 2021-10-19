@@ -164,11 +164,11 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - API_URL=${API_URL:-}
       - IS_DEMO=${IS_DEMO:-}
-      - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - FULLSTORY=${FULLSTORY:-}
-      - OPENREPLAY=${OPENREPLAY:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      - OPENREPLAY=${OPENREPLAY:-}
+      - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
     logging: *default-logging

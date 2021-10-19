@@ -52,7 +52,7 @@ class DefaultGetSpecWorkerTest {
 
   @Test
   public void testSuccessfulRun() throws IOException, InterruptedException, WorkerException {
-    String expectedSpecString = MoreResources.readResource("valid_spec.json");
+    final String expectedSpecString = MoreResources.readResource("valid_spec.json");
 
     final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.SPEC)
@@ -62,15 +62,15 @@ class DefaultGetSpecWorkerTest {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
-    ConnectorSpecification actualOutput = worker.run(config, jobRoot);
-    ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
+    final ConnectorSpecification actualOutput = worker.run(config, jobRoot);
+    final ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
 
     assertEquals(expectedOutput, actualOutput);
   }
 
   @Test
   public void testFailureOnInvalidSpec() throws InterruptedException {
-    String expectedSpecString = "{\"key\":\"value\"}";
+    final String expectedSpecString = "{\"key\":\"value\"}";
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);

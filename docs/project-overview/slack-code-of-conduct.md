@@ -1,5 +1,5 @@
 ---
-description: 'Be nice to one another.'
+description: Be nice to one another.
 ---
 
 # Slack Code of Conduct
@@ -21,14 +21,16 @@ If you ask a question and don’t get a response, review your question for clari
 This is a public forum; do not contact individual members of this community without their explicit permission, independent of reason.
 
 ## Rule 5: No soliciting!
-If you’re a vendor, you may advertise your product in #shameless-plugs. Advertising your product anywhere else, especially in direct messages (DMs), is strictly against the rules. We are appreciative when recruiters and vendors identify themselves through their Slack username.
+
+If you’re a vendor, you may advertise your product in \#shameless-plugs. Advertising your product anywhere else, especially in direct messages \(DMs\), is strictly against the rules. We are appreciative when recruiters and vendors identify themselves through their Slack username.
 
 ## Rule 6: Don't spam tags.
 
 For support and questions, generally avoid tagging community members. You will find that our community of volunteers is generally very responsive and amazingly helpful! As mentioned above, if you don’t receive an answer to your question, feel free to ping @support.
 
 ## Rule 7: Use threads for discussion.
+
 Using threads allows us to scope conversations without burying messages before it! They allow us to be organized in responding to questions and help keep our time to first response and resolution very low.
 
----
-*If you see a message or receive a direct message that violates any of these rules, please contact an Airbyte team member and we will take the appropriate moderation action immediately. We have zero tolerance for intentional rule-breaking and hate speech.*
+_If you see a message or receive a direct message that violates any of these rules, please contact an Airbyte team member and we will take the appropriate moderation action immediately. We have zero tolerance for intentional rule-breaking and hate speech._
+
