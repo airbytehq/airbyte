@@ -53,9 +53,94 @@
         "minimum": 1,
         "maximum": 30,
         "type": "integer"
+      },
+      "custom_insights": {
+        "title": "Custom Insights",
+        "description": "A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
+        "type": "array",
+        "items": {
+          "title": "InsightConfig",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "description": "The name value of insight",
+              "type": "string"
+            },
+            "fields": {
+              "title": "Fields",
+              "description": "A list of chosen fields for fields parameter",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "breakdowns": {
+              "title": "Breakdowns",
+              "description": "A list of chosen breakdowns for breakdowns",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "action_breakdowns": {
+              "title": "Action Breakdowns",
+              "description": "A list of chosen action_breakdowns for action_breakdowns",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["name"]
+        }
       }
     },
-    "required": ["account_id", "access_token", "start_date"]
+    "required": ["account_id", "access_token", "start_date"],
+    "definitions": {
+      "InsightConfig": {
+        "title": "InsightConfig",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "description": "The name value of insight",
+            "type": "string"
+          },
+          "fields": {
+            "title": "Fields",
+            "description": "A list of chosen fields for fields parameter",
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "breakdowns": {
+            "title": "Breakdowns",
+            "description": "A list of chosen breakdowns for breakdowns",
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "action_breakdowns": {
+            "title": "Action Breakdowns",
+            "description": "A list of chosen action_breakdowns for action_breakdowns",
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name"]
+      }
+    }
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
