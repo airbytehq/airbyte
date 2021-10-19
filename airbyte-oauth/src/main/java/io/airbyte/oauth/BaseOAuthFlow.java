@@ -5,6 +5,7 @@
 package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -29,24 +30,25 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   private final HttpClient httpClient;
   private final Supplier<String> stateSupplier;
 
-  public BaseOAuthFlow(ConfigRepository configRepository) {
+  public BaseOAuthFlow(final ConfigRepository configRepository) {
     this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
   }
 
-  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
   }
 
   @Override
-  public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
   @Override
-  public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
+  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
@@ -71,7 +73,11 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   @Override
-  public Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
+  public Map<String, Object> completeSourceOAuth(
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -82,10 +88,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   @Override
-  public Map<String, Object> completeDestinationOAuth(UUID workspaceId,
-                                                      UUID destinationDefinitionId,
-                                                      Map<String, Object> queryParams,
-                                                      String redirectUrl)
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return completeOAuthFlow(
@@ -95,7 +101,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         redirectUrl);
   }
 
-  private Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String authCode, String redirectUrl) throws IOException {
+  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
+      throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(getAccessTokenUrl()))
@@ -105,9 +112,22 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());;
       return extractRefreshToken(Jsons.deserialize(response.body()));
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
+  }
+
+  /**
+   * Query parameters to provide the access token url with.
+   */
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+    return ImmutableMap.<String, String>builder()
+        // required
+        .put("client_id", clientId)
+        .put("redirect_uri", redirectUrl)
+        .put("client_secret", clientSecret)
+        .put("code", authCode)
+        .build();
   }
 
   /**
@@ -115,7 +135,13 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
    * specific redirection URL along with query parameters. This function should parse and extract the
    * code from these query parameters in order to continue the OAuth Flow.
    */
-  protected abstract String extractCodeParameter(Map<String, Object> queryParams) throws IOException;
+  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+    if (queryParams.containsKey("code")) {
+      return (String) queryParams.get("code");
+    } else {
+      throw new IOException("Undefined 'code' from consent redirected url.");
+    }
+  }
 
   /**
    * Returns the URL where to retrieve the access token from.
@@ -123,27 +149,22 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   protected abstract String getAccessTokenUrl();
 
   /**
-   * Query parameters to provide the access token url with.
-   */
-  protected abstract Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl);
-
-  /**
    * Once the auth code is exchange for a refresh token, the oauth flow implementation can extract and
    * returns the values of fields to be used in the connector's configurations.
    */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
-  private static String urlEncode(String s) {
+  private static String urlEncode(final String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private static String toUrlEncodedString(Map<String, String> body) {
+  private static String toUrlEncodedString(final Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
-    for (var entry : body.entrySet()) {
+    for (final var entry : body.entrySet()) {
       if (result.length() > 0) {
         result.append("&");
       }

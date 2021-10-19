@@ -27,15 +27,15 @@ import java.util.function.Consumer;
  * https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-use-copy.html for more info.
  *
  * Creating multiple files per stream currently has the naive approach of one file per batch on a
- * stream up to the max limit of (26 * 26 * 26) 17576 files.  Each batch is randomly prefixed by
- * 3 Alpha characters and on a collision the batch is appended to the existing file.
+ * stream up to the max limit of (26 * 26 * 26) 17576 files. Each batch is randomly prefixed by 3
+ * Alpha characters and on a collision the batch is appended to the existing file.
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return CopyConsumerFactory.create(
         outputRecordCollector,
@@ -49,7 +49,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public void checkPersistence(JsonNode config) {
+  public void checkPersistence(final JsonNode config) throws Exception {
     S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
   }
 
@@ -59,7 +59,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) {
+  public JdbcDatabase getDatabase(final JsonNode config) {
     return getJdbcDatabase(config);
   }
 
@@ -68,11 +68,11 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return new RedshiftSqlOperations();
   }
 
-  private String getConfiguredSchema(JsonNode config) {
+  private String getConfiguredSchema(final JsonNode config) {
     return config.get("schema").asText();
   }
 
-  private S3Config getS3Config(JsonNode config) {
+  private S3Config getS3Config(final JsonNode config) {
     return S3Config.getS3Config(config);
   }
 

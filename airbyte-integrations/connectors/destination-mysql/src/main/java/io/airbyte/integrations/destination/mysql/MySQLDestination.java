@@ -34,17 +34,17 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try (final JdbcDatabase database = getDatabase(config)) {
-      MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
+      final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
-      String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
+      final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
           mySQLSqlOperations);
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 
-      VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
+      final VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
         throw new RuntimeException(String
             .format("Your MySQL version %s is not compatible with Airbyte",
@@ -52,7 +52,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -65,7 +65,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  protected JdbcDatabase getDatabase(JsonNode config) {
+  protected JdbcDatabase getDatabase(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
     return Databases.createJdbcDatabase(
@@ -77,7 +77,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
@@ -90,17 +90,18 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
-// zero dates by default cannot be parsed into java date objects (they will throw an error)
-// in addition, users don't always have agency in fixing them e.g: maybe they don't own the database and can't 
-// remove zero date values.
-// since zero dates are placeholders, we convert them to null by default
+    // zero dates by default cannot be parsed into java date objects (they will throw an error)
+    // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
+    // and can't
+    // remove zero date values.
+    // since zero dates are placeholders, we convert them to null by default
     jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
     if (!additionalParameters.isEmpty()) {
       jdbcUrl.append("&");
       additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -111,7 +112,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = MySQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     new IntegrationRunner(destination).run(args);

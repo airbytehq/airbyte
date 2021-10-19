@@ -192,8 +192,8 @@ class ConnectionsHandlerTest {
   @Test
   void testCreateConnectionWithBadDefinitionIds() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-    UUID sourceIdBad = UUID.randomUUID();
-    UUID destinationIdBad = UUID.randomUUID();
+    final UUID sourceIdBad = UUID.randomUUID();
+    final UUID destinationIdBad = UUID.randomUUID();
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")

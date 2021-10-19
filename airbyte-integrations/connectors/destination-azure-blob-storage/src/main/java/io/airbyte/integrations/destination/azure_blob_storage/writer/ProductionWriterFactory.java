@@ -18,12 +18,12 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
-                                       AppendBlobClient appendBlobClient,
-                                       ConfiguredAirbyteStream configuredStream,
-                                       boolean isNewlyCreatedBlob)
+  public AzureBlobStorageWriter create(final AzureBlobStorageDestinationConfig config,
+                                       final AppendBlobClient appendBlobClient,
+                                       final ConfiguredAirbyteStream configuredStream,
+                                       final boolean isNewlyCreatedBlob)
       throws Exception {
-    AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
+    final AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
 
     if (format == AzureBlobStorageFormat.CSV) {
       LOGGER.debug("Picked up CSV format writer");

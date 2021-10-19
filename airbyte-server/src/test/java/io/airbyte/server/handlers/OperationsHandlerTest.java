@@ -161,7 +161,7 @@ class OperationsHandlerTest {
 
   @Test
   void testListOperationsForConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-    UUID connectionId = UUID.randomUUID();
+    final UUID connectionId = UUID.randomUUID();
 
     when(configRepository.getStandardSync(connectionId))
         .thenReturn(new StandardSync()

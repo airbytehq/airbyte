@@ -1,0 +1,35 @@
+{
+  "in_app_events": {
+    "event_time": "2050-01-01T00:00:00+00:00"
+  },
+  "installs": {
+    "install_time": "2050-01-01T00:00:00+00:00"
+  },
+  "uninstall_events": {
+    "event_time": "2050-01-01T00:00:00+00:00"
+  },
+  "retargeting_in_app_events": {
+    "event_time": "2050-01-01T00:00:00+00:00"
+  },
+  "retargeting_conversions": {
+    "install_time": "2050-01-01T00:00:00+00:00"
+  },
+  "partners_report": {
+    "date": "2050-01-01T00:00:00+00:00"
+  },
+  "daily_report": {
+    "date": "2050-01-01T00:00:00+00:00"
+  },
+  "geo_report": {
+    "date": "2050-01-01T00:00:00+00:00"
+  },
+  "retargeting_partners_report": {
+    "date": "2050-01-01T00:00:00+00:00"
+  },
+  "retargeting_daily_report": {
+    "date": "2050-01-01T00:00:00+00:00"
+  },
+  "retargeting_geo_report": {
+    "date": "2050-01-01T00:00:00+00:00"
+  }
+}

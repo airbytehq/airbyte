@@ -62,7 +62,7 @@ public class GoogleSearchConsoleOAuthFlowTest {
             .put("client_secret", "test_client_secret")
             .build())))));
 
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -84,7 +84,7 @@ public class GoogleSearchConsoleOAuthFlowTest {
             .put("client_secret", "test_client_secret")
             .build())))));
 
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -97,9 +97,9 @@ public class GoogleSearchConsoleOAuthFlowTest {
 
   @Test
   public void testGetClientIdUnsafe() {
-    String clientId = "123";
-    Map<String, String> clientIdMap = Map.of("client_id", clientId);
-    Map<String, Map<String, String>> nestedConfig = Map.of("authorization", clientIdMap);
+    final String clientId = "123";
+    final Map<String, String> clientIdMap = Map.of("client_id", clientId);
+    final Map<String, Map<String, String>> nestedConfig = Map.of("authorization", clientIdMap);
 
     assertThrows(IllegalArgumentException.class, () -> googleSearchConsoleOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
     assertEquals(clientId, googleSearchConsoleOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(nestedConfig)));
@@ -107,9 +107,9 @@ public class GoogleSearchConsoleOAuthFlowTest {
 
   @Test
   public void testGetClientSecretUnsafe() {
-    String clientSecret = "secret";
-    Map<String, String> clientIdMap = Map.of("client_secret", clientSecret);
-    Map<String, Map<String, String>> nestedConfig = Map.of("authorization", clientIdMap);
+    final String clientSecret = "secret";
+    final Map<String, String> clientIdMap = Map.of("client_secret", clientSecret);
+    final Map<String, Map<String, String>> nestedConfig = Map.of("authorization", clientIdMap);
 
     assertThrows(IllegalArgumentException.class, () -> googleSearchConsoleOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
     assertEquals(clientSecret, googleSearchConsoleOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
