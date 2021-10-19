@@ -1,25 +1,24 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
-from airbyte_cdk.sources.utils.casing import camel_to_snake
 
 import arrow
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from source_tplcentral.util import normalize, deep_get
+from source_tplcentral.util import deep_get, normalize
 
 
 class TplcentralStream(HttpStream, ABC):
     url_base = None
 
     def __init__(self, config) -> None:
-        super().__init__(authenticator=config['authenticator'])
+        super().__init__(authenticator=config["authenticator"])
 
-        self.url_base = config['url_base']
-        self.customer_id = config.get('customer_id')
-        self.facility_id = config.get('facility_id')
-        self.start_date = config.get('start_date')
+        self.url_base = config["url_base"]
+        self.customer_id = config.get("customer_id")
+        self.facility_id = config.get("facility_id")
+        self.start_date = config.get("start_date")
 
         self.total_results_field = "TotalResults"
 
@@ -43,13 +42,13 @@ class TplcentralStream(HttpStream, ABC):
         url = urlparse(response.request.url)
         qs = dict(parse_qsl(url.query))
 
-        pgsiz = int(qs.get('pgsiz', pgsiz))
-        pgnum = int(qs.get('pgnum', 1))
+        pgsiz = int(qs.get("pgsiz", pgsiz))
+        pgnum = int(qs.get("pgnum", 1))
 
         if pgsiz * pgnum < total:
             return {
-                'pgsiz': pgsiz,
-                'pgnum': pgnum + 1,
+                "pgsiz": pgsiz,
+                "pgnum": pgnum + 1,
             }
 
     def request_params(
@@ -61,9 +60,9 @@ class TplcentralStream(HttpStream, ABC):
         records = normalize(response.json()[self.collection_field])
 
         for record in records:
-            if hasattr(self, 'upstream_primary_key'):
+            if hasattr(self, "upstream_primary_key"):
                 record[self.primary_key] = deep_get(record, self.upstream_primary_key)
-            if hasattr(self, 'upstream_cursor_field'):
+            if hasattr(self, "upstream_cursor_field"):
                 record[self.cursor_field] = deep_get(record, self.upstream_cursor_field)
 
         return records

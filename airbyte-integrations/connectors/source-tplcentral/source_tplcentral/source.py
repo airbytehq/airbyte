@@ -90,10 +90,10 @@ class SourceTplcentral(AbstractSource):
     def _auth(self, config):
         return TplcentralAuthenticator(
             token_refresh_endpoint=f"{config['url_base']}AuthServer/api/Token",
-            client_id=config['client_id'],
-            client_secret=config['client_secret'],
-            user_login_id=config.get('user_login_id', None),
-            user_login=config.get('user_login', None),
+            client_id=config["client_id"],
+            client_secret=config["client_secret"],
+            user_login_id=config.get("user_login_id", None),
+            user_login=config.get("user_login", None),
         )
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -105,7 +105,7 @@ class SourceTplcentral(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config['authenticator'] = self._auth(config)
+        config["authenticator"] = self._auth(config)
 
         return [
             StockSummaries(config),
