@@ -66,7 +66,7 @@ class API:
         else:
             response.raise_for_status()
 
-        return response.json()
+        return response
 
     @retry_pattern(backoff.expo, max_tries=4, factor=5)
     def get(self, url: str, domain_inclusion=False, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
@@ -106,23 +106,22 @@ class Stream(ABC):
 
     def _paginator(self, getter: Callable) -> Iterator:
         domain_inclusion = False
-        counter = 0
         while True:
             response = getter(domain_inclusion=domain_inclusion)
-            if response.get(self.data_field) is None:
+            response_json = response.json()
+            if response_json.get(self.data_field) is None:
                 raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
-            yield from response[self.data_field]
-            counter += len(response[self.data_field])
+            yield from response_json[self.data_field]
 
-            if response[self.count_field] <= counter:
+            if not response_json.get(self.has_more, False) or response.url == response_json[self.has_more]:
                 break
             else:
-                getter.keywords.update({"url": response[self.has_more], "params": None})
+                getter.keywords.update({"url": response_json[self.has_more], "params": None})
                 domain_inclusion = True
 
     def read_stats(self, getter: Callable) -> Any:
-        response = getter()
+        response = getter().json()
         return response[self.data_field]
 
     def read(self, getter: Callable) -> Iterator:
