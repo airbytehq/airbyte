@@ -781,7 +781,9 @@ where 1 = 1
     def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
-    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "", unique_key: str = "", subdir: str = "") -> str:
+    def add_to_outputs(
+        self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "", unique_key: str = "", subdir: str = ""
+    ) -> str:
         config = {}
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -791,17 +793,17 @@ where 1 = 1
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
-                output = os.path.join("airbyte_ctes", subdir, self.schema,file)
+                output = os.path.join("airbyte_ctes", subdir, self.schema, file)
             else:
                 # dbt throws "maximum recursion depth exceeded" exception at runtime
                 # if ephemeral is used with large number of columns, use views instead
-                output = os.path.join("airbyte_views", subdir, self.schema,file)
+                output = os.path.join("airbyte_views", subdir, self.schema, file)
         else:
             if self.source_sync_mode == SyncMode.incremental:
-                output = os.path.join("airbyte_incremental", subdir, self.schema,file)
+                output = os.path.join("airbyte_incremental", subdir, self.schema, file)
                 sql = self.add_incremental_clause(sql)
             else:
-                output = os.path.join("airbyte_tables",  subdir, self.schema, file)
+                output = os.path.join("airbyte_tables", subdir, self.schema, file)
         if file_name != table_name:
             # The alias() macro configs a model's final table name.
             config["alias"] = f'"{table_name}"'
