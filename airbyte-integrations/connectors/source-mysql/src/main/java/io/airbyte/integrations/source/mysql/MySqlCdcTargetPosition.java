@@ -21,15 +21,15 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   public final String fileName;
   public final Integer position;
 
-  public MySqlCdcTargetPosition(String fileName, Integer position) {
+  public MySqlCdcTargetPosition(final String fileName, final Integer position) {
     this.fileName = fileName;
     this.position = position;
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj instanceof MySqlCdcTargetPosition) {
-      MySqlCdcTargetPosition cdcTargetPosition = (MySqlCdcTargetPosition) obj;
+      final MySqlCdcTargetPosition cdcTargetPosition = (MySqlCdcTargetPosition) obj;
       return fileName.equals(cdcTargetPosition.fileName) && cdcTargetPosition.position.equals(position);
     }
     return false;
@@ -45,34 +45,34 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
     return "FileName: " + fileName + ", Position : " + position;
   }
 
-  public static MySqlCdcTargetPosition targetPosition(JdbcDatabase database) {
+  public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
     try {
-      List<MySqlCdcTargetPosition> masterStatus = database.resultSetQuery(
+      final List<MySqlCdcTargetPosition> masterStatus = database.resultSetQuery(
           connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
           resultSet -> {
-            String file = resultSet.getString("File");
-            int position = resultSet.getInt("Position");
+            final String file = resultSet.getString("File");
+            final int position = resultSet.getInt("Position");
             if (file == null || position == 0) {
               return new MySqlCdcTargetPosition(null, null);
             }
             return new MySqlCdcTargetPosition(file, position);
           }).collect(Collectors.toList());
-      MySqlCdcTargetPosition targetPosition = masterStatus.get(0);
+      final MySqlCdcTargetPosition targetPosition = masterStatus.get(0);
       LOGGER.info("Target File position : " + targetPosition);
 
       return targetPosition;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
 
   }
 
   @Override
-  public boolean reachedTargetPosition(JsonNode valueAsJson) {
-    String eventFileName = valueAsJson.get("source").get("file").asText();
-    int eventPosition = valueAsJson.get("source").get("pos").asInt();
+  public boolean reachedTargetPosition(final JsonNode valueAsJson) {
+    final String eventFileName = valueAsJson.get("source").get("file").asText();
+    final int eventPosition = valueAsJson.get("source").get("pos").asInt();
 
-    boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
+    final boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
         valueAsJson.get("source").get("snapshot").asText().toUpperCase());
 
     if (isSnapshot || fileName.compareTo(eventFileName) > 0

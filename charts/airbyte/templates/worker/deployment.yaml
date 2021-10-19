@@ -32,7 +32,10 @@ spec:
         imagePullPolicy: "{{ .Values.worker.image.pullPolicy }}"
         env:
         - name: AIRBYTE_VERSION
-          value: {{ .Chart.AppVersion }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AIRBYTE_VERSION
         - name: CONFIG_ROOT
           valueFrom:
             configMapKeyRef:

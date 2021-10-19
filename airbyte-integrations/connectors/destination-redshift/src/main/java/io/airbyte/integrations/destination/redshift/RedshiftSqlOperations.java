@@ -23,7 +23,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -34,7 +34,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   }
 
   @Override
-  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -55,7 +58,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   @Override
   public boolean isValidData(final JsonNode data) {
-    String stringData = Jsons.serialize(data);
+    final String stringData = Jsons.serialize(data);
     final int dataSize = stringData.getBytes().length;
     return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }

@@ -16,8 +16,8 @@ import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
  */
 public class AvroRecordHelper {
 
-  public static JsonFieldNameUpdater getFieldNameUpdater(String streamName, String namespace, JsonNode streamSchema) {
-    JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
+  public static JsonFieldNameUpdater getFieldNameUpdater(final String streamName, final String namespace, final JsonNode streamSchema) {
+    final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
     schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
     return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
   }
@@ -28,15 +28,15 @@ public class AvroRecordHelper {
    * <li>Remove null fields that must exist in Parquet but does not in original Json.</li> This
    * function mutates the input Json.
    */
-  public static JsonNode pruneAirbyteJson(JsonNode input) {
-    ObjectNode output = (ObjectNode) input;
+  public static JsonNode pruneAirbyteJson(final JsonNode input) {
+    final ObjectNode output = (ObjectNode) input;
 
     // Remove Airbyte columns.
     output.remove(JavaBaseConstants.COLUMN_NAME_AB_ID);
     output.remove(JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
     // Fields with null values does not exist in the original Json but only in Parquet.
-    for (String field : MoreIterators.toList(output.fieldNames())) {
+    for (final String field : MoreIterators.toList(output.fieldNames())) {
       if (output.get(field) == null || output.get(field).isNull()) {
         output.remove(field);
       }

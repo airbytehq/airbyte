@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class MySqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
   @Override
-  public void accept(Connection connection, PreparedStatement preparedStatement) throws SQLException {
+  public void accept(final Connection connection, final PreparedStatement preparedStatement) throws SQLException {
     // This is only respected if "useCursorFetch=true" is set in the connection. See the "resultset"
     // section the MySql docs for more details.
     // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-implementation-notes.html.

@@ -59,7 +59,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
 
       final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
-      for (var operationId : standardSync.getOperationIds()) {
+      for (final var operationId : standardSync.getOperationIds()) {
         final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
         standardSyncOperations.add(standardSyncOperation);
       }
@@ -73,7 +73,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           standardSyncOperations)
           .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
 
-    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
+    } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
       throw new RuntimeException(e);
     }
   }

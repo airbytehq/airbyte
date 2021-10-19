@@ -45,10 +45,10 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
 
   private AirbyteMessage lastStateMessage = null;
 
-  public MongodbRecordConsumer(Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs,
-                               MongoDatabase mongoDatabase,
-                               ConfiguredAirbyteCatalog catalog,
-                               Consumer<AirbyteMessage> outputRecordCollector) {
+  public MongodbRecordConsumer(final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs,
+                               final MongoDatabase mongoDatabase,
+                               final ConfiguredAirbyteCatalog catalog,
+                               final Consumer<AirbyteMessage> outputRecordCollector) {
     this.writeConfigs = writeConfigs;
     this.mongoDatabase = mongoDatabase;
     this.catalog = catalog;
@@ -62,12 +62,12 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage message) {
+  protected void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.STATE) {
       lastStateMessage = message;
     } else if (message.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
-      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
+      final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
       if (!writeConfigs.containsKey(pair)) {
         LOGGER.error("Message contained record from a stream that was not in the catalog. catalog: {}, message: {}",
@@ -76,20 +76,20 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
-      var writeConfig = writeConfigs.get(pair);
+      final var writeConfig = writeConfigs.get(pair);
       insertRecordToTmpCollection(writeConfig, message);
     }
   }
 
   @Override
-  protected void close(boolean hasFailed) {
+  protected void close(final boolean hasFailed) {
     try {
       if (!hasFailed) {
         LOGGER.info("Migration finished with no explicit errors. Copying data from tmp tables to permanent");
         writeConfigs.values().forEach(mongodbWriteConfig -> Exceptions.toRuntime(() -> {
           try {
             copyTable(mongoDatabase, mongodbWriteConfig.getCollectionName(), mongodbWriteConfig.getTmpCollectionName());
-          } catch (RuntimeException e) {
+          } catch (final RuntimeException e) {
             LOGGER.error("Failed to process a message for Streams numbers: {}, SyncMode: {}, CollectionName: {}, TmpCollectionName: {}",
                 catalog.getStreams().size(), mongodbWriteConfig.getSyncMode(), mongodbWriteConfig.getCollectionName(),
                 mongodbWriteConfig.getTmpCollectionName());
@@ -111,27 +111,27 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
 
   /* Helpers */
 
-  private void insertRecordToTmpCollection(MongodbWriteConfig writeConfig,
-                                           AirbyteMessage message) {
+  private void insertRecordToTmpCollection(final MongodbWriteConfig writeConfig,
+                                           final AirbyteMessage message) {
     try {
-      AirbyteRecordMessage recordMessage = message.getRecord();
-      Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-      var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes()).toString();
-      var newDocument = new Document();
+      final AirbyteRecordMessage recordMessage = message.getRecord();
+      final Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
+      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes()).toString();
+      final var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
       newDocument.put(AIRBYTE_DATA_HASH, newDocumentDataHashCode);
       newDocument.put(AIRBYTE_EMITTED_AT, new LocalDateTime().toString());
 
-      var collection = writeConfig.getCollection();
+      final var collection = writeConfig.getCollection();
 
-      var documentsHash = writeConfig.getDocumentsHash();
+      final var documentsHash = writeConfig.getDocumentsHash();
       if (!documentsHash.contains(newDocumentDataHashCode)) {
         collection.insertOne(newDocument);
         documentsHash.add(newDocumentDataHashCode);
       } else {
         LOGGER.info("Object with hashCode = {} already exist in table {}.", newDocumentDataHashCode, writeConfig.getCollectionName());
       }
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       LOGGER.error("Got an error while writing message:" + e.getMessage());
       LOGGER.error(String.format(
           "Failed to process a message for Streams numbers: %s, SyncMode: %s, CollectionName: %s, TmpCollectionName: %s, AirbyteMessage: %s",
@@ -140,12 +140,12 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     }
   }
 
-  private static void copyTable(MongoDatabase mongoDatabase, String collectionName, String tmpCollectionName) {
+  private static void copyTable(final MongoDatabase mongoDatabase, final String collectionName, final String tmpCollectionName) {
 
-    var tempCollection = mongoDatabase.getOrCreateNewCollection(tmpCollectionName);
-    var collection = mongoDatabase.getOrCreateNewCollection(collectionName);
-    List<Document> documents = new ArrayList<>();
-    try (MongoCursor<Document> cursor = tempCollection.find().projection(excludeId()).iterator()) {
+    final var tempCollection = mongoDatabase.getOrCreateNewCollection(tmpCollectionName);
+    final var collection = mongoDatabase.getOrCreateNewCollection(collectionName);
+    final List<Document> documents = new ArrayList<>();
+    try (final MongoCursor<Document> cursor = tempCollection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
         documents.add(cursor.next());
       }

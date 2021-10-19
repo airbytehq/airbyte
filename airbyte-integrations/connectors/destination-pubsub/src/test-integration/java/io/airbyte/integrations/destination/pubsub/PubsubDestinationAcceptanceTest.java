@@ -84,22 +84,22 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return true;
   }
 
-  private AirbyteStreamNameNamespacePair fromJsonNode(JsonNode j) {
-    var stream = j.get(STREAM).asText("");
-    var namespace = j.get(NAMESPACE).asText("");
+  private AirbyteStreamNameNamespacePair fromJsonNode(final JsonNode j) {
+    final var stream = j.get(STREAM).asText("");
+    final var namespace = j.get(NAMESPACE).asText("");
     return new AirbyteStreamNameNamespacePair(stream, namespace);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws IOException {
     if (records.isEmpty()) {
       // first time retrieving records, retrieve all and keep locally for easier
       // verification
-      SubscriberStubSettings subscriberStubSettings =
+      final SubscriberStubSettings subscriberStubSettings =
           SubscriberStubSettings.newBuilder()
               .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
               .setTransportChannelProvider(
@@ -107,8 +107,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
                       .setCredentials(credentials)
                       .build())
               .build();
-      try (SubscriberStub subscriber = GrpcSubscriberStub.create(subscriberStubSettings)) {
-        PullRequest pullRequest =
+      try (final SubscriberStub subscriber = GrpcSubscriberStub.create(subscriberStubSettings)) {
+        final PullRequest pullRequest =
             PullRequest.newBuilder()
                 .setMaxMessages(1000)
                 .setSubscription(subscriptionName.toString())
@@ -118,11 +118,11 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
             .call(pullRequest);
         var list = pullResponse.getReceivedMessagesList();
         do {
-          List<String> ackIds = Lists.newArrayList();
-          for (ReceivedMessage message : list) {
-            var m = message.getMessage();
-            var s = m.getAttributesMap().get(STREAM);
-            var n = m.getAttributesMap().get(NAMESPACE);
+          final List<String> ackIds = Lists.newArrayList();
+          for (final ReceivedMessage message : list) {
+            final var m = message.getMessage();
+            final var s = m.getAttributesMap().get(STREAM);
+            final var n = m.getAttributesMap().get(NAMESPACE);
             records.add(Jsons.jsonNode(ImmutableMap.of(
                 STREAM, nullToEmpty(s),
                 NAMESPACE, nullToEmpty(n),
@@ -132,7 +132,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
           }
           if (!ackIds.isEmpty()) {
             // Acknowledge received messages.
-            AcknowledgeRequest acknowledgeRequest =
+            final AcknowledgeRequest acknowledgeRequest =
                 AcknowledgeRequest.newBuilder()
                     .setSubscription(subscriptionName.toString())
                     .addAllAckIds(ackIds)
@@ -160,7 +160,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a gcp service account credentials file. By default {module-root}/"
@@ -189,7 +189,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
     topicAdminClient = TopicAdminClient
         .create(TopicAdminSettings.newBuilder().setCredentialsProvider(
             FixedCredentialsProvider.create(credentials)).build());
-    Topic topic = topicAdminClient.createTopic(topicName);
+    final Topic topic = topicAdminClient.createTopic(topicName);
     LOGGER.info("Created topic: " + topic.getName());
 
     // create subscription - with ordering, cause tests expect it
@@ -198,7 +198,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
         SubscriptionAdminSettings.newBuilder()
             .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
             .build());
-    Subscription subscription =
+    final Subscription subscription =
         subscriptionAdminClient.createSubscription(
             Subscription.newBuilder().setName(subscriptionName.toString())
                 .setTopic(topicName.toString()).setEnableMessageOrdering(true)
@@ -215,7 +215,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     // delete subscription
     if (subscriptionAdminClient != null && subscriptionName != null) {
       subscriptionAdminClient.deleteSubscription(subscriptionName);

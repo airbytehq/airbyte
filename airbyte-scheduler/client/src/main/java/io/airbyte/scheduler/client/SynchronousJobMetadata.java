@@ -23,12 +23,12 @@ public class SynchronousJobMetadata {
 
   private final Path logPath;
 
-  public static SynchronousJobMetadata fromJobMetadata(JobMetadata jobMetadata,
-                                                       UUID id,
-                                                       ConfigType configType,
-                                                       UUID configId,
-                                                       long createdAt,
-                                                       long endedAt) {
+  public static SynchronousJobMetadata fromJobMetadata(final JobMetadata jobMetadata,
+                                                       final UUID id,
+                                                       final ConfigType configType,
+                                                       final UUID configId,
+                                                       final long createdAt,
+                                                       final long endedAt) {
     return new SynchronousJobMetadata(
         id,
         configType,

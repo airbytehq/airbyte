@@ -26,8 +26,8 @@ class S3AvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigNull() {
-    List<String> nullConfigs = Lists.newArrayList("{}", "{ \"codec\": \"no compression\" }");
-    for (String nullConfig : nullConfigs) {
+    final List<String> nullConfigs = Lists.newArrayList("{}", "{ \"codec\": \"no compression\" }");
+    for (final String nullConfig : nullConfigs) {
       assertEquals(
           DataFileConstants.NULL_CODEC,
           S3AvroFormatConfig.parseCodecConfig(Jsons.deserialize(nullConfig)).toString());
@@ -37,32 +37,32 @@ class S3AvroFormatConfigTest {
   @Test
   public void testParseCodecConfigDeflate() {
     // default compression level 0
-    CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
+    final CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
         Jsons.deserialize("{ \"codec\": \"deflate\" }"));
     assertEquals("deflate-0", codecFactory1.toString());
 
     // compression level 5
-    CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
+    final CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
         Jsons.deserialize("{ \"codec\": \"deflate\", \"compression_level\": 5 }"));
     assertEquals("deflate-5", codecFactory2.toString());
   }
 
   @Test
   public void testParseCodecConfigBzip2() {
-    JsonNode bzip2Config = Jsons.deserialize("{ \"codec\": \"bzip2\" }");
-    CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(bzip2Config);
+    final JsonNode bzip2Config = Jsons.deserialize("{ \"codec\": \"bzip2\" }");
+    final CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(bzip2Config);
     assertEquals(DataFileConstants.BZIP2_CODEC, codecFactory.toString());
   }
 
   @Test
   public void testParseCodecConfigXz() {
     // default compression level 6
-    CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
+    final CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
         Jsons.deserialize("{ \"codec\": \"xz\" }"));
     assertEquals("xz-6", codecFactory1.toString());
 
     // compression level 7
-    CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
+    final CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
         Jsons.deserialize("{ \"codec\": \"xz\", \"compression_level\": 7 }"));
     assertEquals("xz-7", codecFactory2.toString());
   }
@@ -70,13 +70,13 @@ class S3AvroFormatConfigTest {
   @Test
   public void testParseCodecConfigZstandard() {
     // default compression level 3
-    CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
+    final CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
         Jsons.deserialize("{ \"codec\": \"zstandard\" }"));
     // There is no way to verify the checksum; all relevant methods are private or protected...
     assertEquals("zstandard[3]", codecFactory1.toString());
 
     // compression level 20
-    CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
+    final CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
         Jsons.deserialize(
             "{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }"));
     // There is no way to verify the checksum; all relevant methods are private or protected...
@@ -85,18 +85,18 @@ class S3AvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigSnappy() {
-    JsonNode snappyConfig = Jsons.deserialize("{ \"codec\": \"snappy\" }");
-    CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(snappyConfig);
+    final JsonNode snappyConfig = Jsons.deserialize("{ \"codec\": \"snappy\" }");
+    final CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(snappyConfig);
     assertEquals(DataFileConstants.SNAPPY_CODEC, codecFactory.toString());
   }
 
   @Test
   public void testParseCodecConfigInvalid() {
     try {
-      JsonNode invalidConfig = Jsons.deserialize("{ \"codec\": \"bi-directional-bfs\" }");
+      final JsonNode invalidConfig = Jsons.deserialize("{ \"codec\": \"bi-directional-bfs\" }");
       S3AvroFormatConfig.parseCodecConfig(invalidConfig);
       fail();
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }
@@ -104,43 +104,43 @@ class S3AvroFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"AVRO\",\n"
         + "  \"part_size_mb\": 6\n"
         + "}"));
 
-    S3DestinationConfig s3DestinationConfig = S3DestinationConfig
+    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
         .getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
+    final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
     assertEquals("AVRO", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
-    StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         s3DestinationConfig.getBucketName(), "objectKey", null,
         s3DestinationConfig.getFormatConfig().getPartSize());
 
-    Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
         + "  \"format_type\": \"AVRO\"\n"
         + "}"));
 
-    S3DestinationConfig s3DestinationConfig = S3DestinationConfig
+    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
         .getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
         s3DestinationConfig.getBucketName(), "objectKey", null,
         s3DestinationConfig.getFormatConfig().getPartSize());
 
-    Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
 

@@ -57,12 +57,12 @@ public class MigrationV0_29_0 extends BaseMigration implements Migration {
   private final Migration previousMigration;
   private final Supplier<UUID> uuidSupplier;
 
-  public MigrationV0_29_0(Migration previousMigration) {
+  public MigrationV0_29_0(final Migration previousMigration) {
     this(previousMigration, UUID::randomUUID);
   }
 
   @VisibleForTesting
-  public MigrationV0_29_0(Migration previousMigration, Supplier<UUID> uuidSupplier) {
+  public MigrationV0_29_0(final Migration previousMigration, final Supplier<UUID> uuidSupplier) {
     super(previousMigration);
     this.previousMigration = previousMigration;
     this.uuidSupplier = uuidSupplier;
@@ -81,8 +81,8 @@ public class MigrationV0_29_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData,
-                      Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData,
+                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     final UUID newWorkspaceId = uuidSupplier.get();
 
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {

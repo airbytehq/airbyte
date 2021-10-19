@@ -62,8 +62,8 @@ class MongodbDestinationTest {
 
   @ParameterizedTest
   @MethodSource("configAndDataProvider")
-  void testGetConnectionString(JsonNode config, String expected) {
-    var actual = mongodbDestination.getConnectionString(config);
+  void testGetConnectionString(final JsonNode config, final String expected) {
+    final var actual = mongodbDestination.getConnectionString(config);
     assertEquals(expected, actual);
   }
 
