@@ -50,6 +50,7 @@ models:
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental
+        +unique_key: _airbyte_ab_id
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table

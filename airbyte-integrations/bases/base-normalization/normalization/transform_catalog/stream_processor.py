@@ -209,27 +209,21 @@ class StreamProcessor(object):
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
-        from_table = self.add_to_outputs(
-            self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1", unique_key=self.get_ab_id()
-        )
+        from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
         from_table = self.add_to_outputs(
             self.generate_column_typing_model(from_table, column_names),
             is_intermediate=True,
             column_count=column_count,
             suffix="ab2",
-            unique_key=self.get_ab_id(),
         )
         from_table = self.add_to_outputs(
             self.generate_id_hashing_model(from_table, column_names),
             is_intermediate=True,
             column_count=column_count,
             suffix="ab3",
-            unique_key=self.get_ab_id(),
         )
         if self.destination_sync_mode == DestinationSyncMode.append_dedup:
-            from_table = self.add_to_outputs(
-                self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4", unique_key=self.get_ab_id()
-            )
+            from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
             if self.destination_type == DestinationType.ORACLE:
                 where_clause = '\nand "_AIRBYTE_ROW_NUM" = 1'
             else:
@@ -239,7 +233,6 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 column_count=column_count,
                 suffix="scd",
-                unique_key=self.get_ab_id(),
             )
             if self.destination_type == DestinationType.ORACLE:
                 where_clause = '\nand "_AIRBYTE_ACTIVE_ROW" = 1'
@@ -257,7 +250,6 @@ class StreamProcessor(object):
                 self.generate_final_model(from_table, column_names),
                 is_intermediate=False,
                 column_count=column_count,
-                unique_key=self.get_ab_id(),
             )
         return self.find_children_streams(from_table, column_names)
 
