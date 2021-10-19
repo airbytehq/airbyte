@@ -248,11 +248,17 @@ subprojects {
 
 task composeBuild {
     def buildTag = System.getenv('VERSION') ?: 'dev'
+    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
     doFirst {
         exec {
             workingDir rootDir
             commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
             environment 'VERSION', buildTag
+            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
+            environment 'DOCKER_BUILD_ARCH', buildArch
+            environment 'JDK_VERSION', jdkVersion
         }
     }
 }
