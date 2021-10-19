@@ -12,6 +12,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -27,6 +28,7 @@ import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -59,18 +61,35 @@ public class SecretsMigration {
 
     configRepository.setSpecFetcher(image -> Exceptions.toRuntime(() -> specFetcher.execute(image)));
 
-    for (final SourceConnection source : configRepository.listSourceConnectionWithSecrets()) {
-      System.out.println("source: " + source.getSourceId());
-      final var definition = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-      final var connectorSpec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, definition);
-      configRepository.writeSourceConnection(source, connectorSpec);
+    System.out.println("listing sources...");
+    for (final SourceConnection sourceWithoutSecrets : configRepository.listSourceConnection()) {
+      System.out.println("getting source...");
+      final var source = configRepository.getSourceConnectionWithSecrets(sourceWithoutSecrets.getSourceId());
+      try {
+        System.out.println("getting definition...");
+        final var definition = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+        System.out.println("getting connector spec...");
+        final var connectorSpec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, definition);
+        System.out.println("writing source...");
+        configRepository.writeSourceConnection(source, connectorSpec);
+        System.out.println("source_pass: " + source.getSourceId());
+      } catch (Throwable e) {
+        System.out.println("source_" + e.getClass()  + ": " + source.getSourceId());
+        e.printStackTrace();
+      }
     }
 
-    for (final DestinationConnection destination : configRepository.listDestinationConnectionWithSecrets()) {
-      System.out.println("destination: " + destination.getDestinationId());
-      final var definition = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-      final var connectorSpec = DestinationHandler.getSpec(specFetcher, definition);
-      configRepository.writeDestinationConnection(destination, connectorSpec);
+    for (final DestinationConnection destinationWithoutSecrets : configRepository.listDestinationConnection()) {
+      final var destination = configRepository.getDestinationConnectionWithSecrets(destinationWithoutSecrets.getDestinationId());
+      try {
+        final var definition = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+        final var connectorSpec = DestinationHandler.getSpec(specFetcher, definition);
+        configRepository.writeDestinationConnection(destination, connectorSpec);
+        System.out.println("destination_pass: " + destination.getDestinationId());
+      } catch (Throwable e) {
+        System.out.println("destination_" + e.getClass()  + ": " + destination.getDestinationId());
+        e.printStackTrace();
+      }
     }
   }
 

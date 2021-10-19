@@ -6,43 +6,43 @@ metadata:
 spec:
   containers:
     - name: airbyte-secrets-migration
-      image: airbyte/secrets-migration:dev-21
+      image: airbyte/secrets-migration:dev-27
       env:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-database-password
               key: DATABASE_PASSWORD
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-airbyte-secrets
               key: DATABASE_URL
         - name: DATABASE_USER
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-airbyte-secrets
               key: DATABASE_USER
         - name: TEMPORAL_HOST
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-airbyte-secrets
               key: TEMPORAL_HOST
         - name: WORKSPACE_ROOT
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-airbyte-secrets
               key: WORKSPACE_ROOT
         - name: SECRET_PERSISTENCE
           value: GOOGLE_SECRET_MANAGER
         - name: SECRET_STORE_GCP_PROJECT_ID
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-airbyte-secrets
               key: SECRET_STORE_GCP_PROJECT_ID
         - name: SECRET_STORE_GCP_CREDENTIALS
           valueFrom:
             secretKeyRef:
-              name: prod-airbyte-secrets
+              name: dev-secret-store-gcp-credential
               key: SECRET_STORE_GCP_CREDENTIALS
   restartPolicy: Never
