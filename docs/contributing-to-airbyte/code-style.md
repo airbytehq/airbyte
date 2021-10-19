@@ -30,5 +30,6 @@ Install it in IntelliJ:
          3. Activate save actions on batch > check the box
          4. Add final modifier to field > check the box
          5. Add final modifier to local variable or parameter > check the box
-         6. Apply the changes.
+         6. Add an inclusion filter to apply the formatting only on the src folders > add `src/.*` as a File path inclusion filter
+         7. Apply the changes.
 7. You're done!
