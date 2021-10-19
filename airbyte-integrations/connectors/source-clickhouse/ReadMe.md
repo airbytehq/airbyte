@@ -1,5 +1,3 @@
-for ssl test custom image is used. To push it use
-docker build -t etsybaev/clickhouse-with-ssl:dev -f Clickhouse.Dockerfile .
-
-
-under the tools\integration-tests-ssl dir
+# Integration tests
+For ssl test custom image is used. To push it run this command under the tools\integration-tests-ssl dir:
+*docker build -t your_user/clickhouse-with-ssl:dev -f Clickhouse.Dockerfile .*
