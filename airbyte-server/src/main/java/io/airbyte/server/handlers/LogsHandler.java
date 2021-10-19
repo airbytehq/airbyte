@@ -23,8 +23,8 @@ public class LogsHandler {
       case SCHEDULER -> {
         return LogClientSingleton.getSchedulerLogFile(configs);
       }
-      default -> throw new IllegalStateException("Unexpected value: " + logsRequestBody.getLogType());
+      default -> throw new IllegalStateException(
+          "Unexpected value: " + logsRequestBody.getLogType());
     }
   }
-
 }

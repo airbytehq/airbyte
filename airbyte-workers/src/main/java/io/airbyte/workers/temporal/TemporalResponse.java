@@ -61,10 +61,6 @@ public class TemporalResponse<T> {
 
   @Override
   public String toString() {
-    return "TemporalResponse{" +
-        "output=" + output +
-        ", metadata=" + metadata +
-        '}';
+    return "TemporalResponse{" + "output=" + output + ", metadata=" + metadata + '}';
   }
-
 }

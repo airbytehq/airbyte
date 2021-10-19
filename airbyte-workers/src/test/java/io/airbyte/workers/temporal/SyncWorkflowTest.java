@@ -56,19 +56,20 @@ class SyncWorkflowTest {
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
-  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
-      .withJobId(String.valueOf(JOB_ID))
-      .withAttemptId((long) ATTEMPT_ID);
+  private static final JobRunConfig JOB_RUN_CONFIG =
+      new JobRunConfig().withJobId(String.valueOf(JOB_ID)).withAttemptId((long) ATTEMPT_ID);
   private static final String IMAGE_NAME1 = "hms invincible";
   private static final String IMAGE_NAME2 = "hms defiant";
-  private static final IntegrationLauncherConfig SOURCE_LAUNCHER_CONFIG = new IntegrationLauncherConfig()
-      .withJobId(String.valueOf(JOB_ID))
-      .withAttemptId((long) ATTEMPT_ID)
-      .withDockerImage(IMAGE_NAME1);
-  private static final IntegrationLauncherConfig DESTINATION_LAUNCHER_CONFIG = new IntegrationLauncherConfig()
-      .withJobId(String.valueOf(JOB_ID))
-      .withAttemptId((long) ATTEMPT_ID)
-      .withDockerImage(IMAGE_NAME2);
+  private static final IntegrationLauncherConfig SOURCE_LAUNCHER_CONFIG =
+      new IntegrationLauncherConfig()
+          .withJobId(String.valueOf(JOB_ID))
+          .withAttemptId((long) ATTEMPT_ID)
+          .withDockerImage(IMAGE_NAME1);
+  private static final IntegrationLauncherConfig DESTINATION_LAUNCHER_CONFIG =
+      new IntegrationLauncherConfig()
+          .withJobId(String.valueOf(JOB_ID))
+          .withAttemptId((long) ATTEMPT_ID)
+          .withDockerImage(IMAGE_NAME2);
 
   private StandardSyncInput syncInput;
   private NormalizationInput normalizationInput;
@@ -84,17 +85,20 @@ class SyncWorkflowTest {
 
     client = testEnv.getWorkflowClient();
 
-    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair =
+        TestConfigHelpers.createSyncConfig();
     syncInput = syncPair.getValue();
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
 
-    normalizationInput = new NormalizationInput()
-        .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-        .withCatalog(syncInput.getCatalog());
+    normalizationInput =
+        new NormalizationInput()
+            .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+            .withCatalog(syncInput.getCatalog());
 
-    operatorDbtInput = new OperatorDbtInput()
-        .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-        .withOperatorDbt(syncInput.getOperationSequence().get(1).getOperatorDbt());
+    operatorDbtInput =
+        new OperatorDbtInput()
+            .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+            .withOperatorDbt(syncInput.getOperationSequence().get(1).getOperatorDbt());
 
     replicationActivity = mock(ReplicationActivityImpl.class);
     normalizationActivity = mock(NormalizationActivityImpl.class);
@@ -103,36 +107,37 @@ class SyncWorkflowTest {
 
   // bundle up all of the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity);
+    worker.registerActivitiesImplementations(
+        replicationActivity, normalizationActivity, dbtTransformationActivity);
     testEnv.start();
-    final SyncWorkflow workflow = client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+    final SyncWorkflow workflow =
+        client.newWorkflowStub(
+            SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
 
-    return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
+    return workflow.run(
+        JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
   }
 
   @Test
   void testSuccess() {
-    doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
-        JOB_RUN_CONFIG,
-        SOURCE_LAUNCHER_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+    doReturn(replicationSuccessOutput)
+        .when(replicationActivity)
+        .replicate(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
 
     final StandardSyncOutput actualOutput = execute();
     assertEquals(replicationSuccessOutput, actualOutput);
 
     verifyReplication(replicationActivity, syncInput);
     verifyNormalize(normalizationActivity, normalizationInput);
-    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
+    verifyDbtTransform(
+        dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
   }
 
   @Test
   void testReplicationFailure() {
-    doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
-        JOB_RUN_CONFIG,
-        SOURCE_LAUNCHER_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+    doThrow(new IllegalArgumentException("induced exception"))
+        .when(replicationActivity)
+        .replicate(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -142,16 +147,13 @@ class SyncWorkflowTest {
 
   @Test
   void testNormalizationFailure() {
-    doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
-        JOB_RUN_CONFIG,
-        SOURCE_LAUNCHER_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+    doReturn(replicationSuccessOutput)
+        .when(replicationActivity)
+        .replicate(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
 
-    doThrow(new IllegalArgumentException("induced exception")).when(normalizationActivity).normalize(
-        JOB_RUN_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput);
+    doThrow(new IllegalArgumentException("induced exception"))
+        .when(normalizationActivity)
+        .normalize(JOB_RUN_CONFIG, DESTINATION_LAUNCHER_CONFIG, normalizationInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -161,14 +163,13 @@ class SyncWorkflowTest {
 
   @Test
   void testCancelDuringReplication() {
-    doAnswer(ignored -> {
-      cancelWorkflow();
-      return replicationSuccessOutput;
-    }).when(replicationActivity).replicate(
-        JOB_RUN_CONFIG,
-        SOURCE_LAUNCHER_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+    doAnswer(
+            ignored -> {
+              cancelWorkflow();
+              return replicationSuccessOutput;
+            })
+        .when(replicationActivity)
+        .replicate(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -178,19 +179,17 @@ class SyncWorkflowTest {
 
   @Test
   void testCancelDuringNormalization() {
-    doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
-        JOB_RUN_CONFIG,
-        SOURCE_LAUNCHER_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+    doReturn(replicationSuccessOutput)
+        .when(replicationActivity)
+        .replicate(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
 
-    doAnswer(ignored -> {
-      cancelWorkflow();
-      return replicationSuccessOutput;
-    }).when(normalizationActivity).normalize(
-        JOB_RUN_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput);
+    doAnswer(
+            ignored -> {
+              cancelWorkflow();
+              return replicationSuccessOutput;
+            })
+        .when(normalizationActivity)
+        .normalize(JOB_RUN_CONFIG, DESTINATION_LAUNCHER_CONFIG, normalizationInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -202,47 +201,48 @@ class SyncWorkflowTest {
   private void cancelWorkflow() {
     final WorkflowServiceBlockingStub temporalService = testEnv.getWorkflowService().blockingStub();
     // there should only be one execution running.
-    final String workflowId = temporalService.listOpenWorkflowExecutions(null).getExecutionsList().get(0).getExecution().getWorkflowId();
+    final String workflowId =
+        temporalService
+            .listOpenWorkflowExecutions(null)
+            .getExecutionsList()
+            .get(0)
+            .getExecution()
+            .getWorkflowId();
 
-    final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
-        .setWorkflowId(workflowId)
-        .build();
+    final WorkflowExecution workflowExecution =
+        WorkflowExecution.newBuilder().setWorkflowId(workflowId).build();
 
-    final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
-        .setWorkflowExecution(workflowExecution)
-        .build();
+    final RequestCancelWorkflowExecutionRequest cancelRequest =
+        RequestCancelWorkflowExecutionRequest.newBuilder()
+            .setWorkflowExecution(workflowExecution)
+            .build();
 
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
-  private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
-    verify(replicationActivity).replicate(
-        JOB_RUN_CONFIG,
-        SOURCE_LAUNCHER_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+  private static void verifyReplication(
+      final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
+    verify(replicationActivity)
+        .replicate(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
   }
 
-  private static void verifyNormalize(final NormalizationActivity normalizationActivity, final NormalizationInput normalizationInput) {
-    verify(normalizationActivity).normalize(
-        JOB_RUN_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput);
+  private static void verifyNormalize(
+      final NormalizationActivity normalizationActivity,
+      final NormalizationInput normalizationInput) {
+    verify(normalizationActivity)
+        .normalize(JOB_RUN_CONFIG, DESTINATION_LAUNCHER_CONFIG, normalizationInput);
   }
 
-  private static void verifyDbtTransform(final DbtTransformationActivity dbtTransformationActivity,
-                                         final ResourceRequirements resourceRequirements,
-                                         final OperatorDbtInput operatorDbtInput) {
-    verify(dbtTransformationActivity).run(
-        JOB_RUN_CONFIG,
-        DESTINATION_LAUNCHER_CONFIG,
-        resourceRequirements,
-        operatorDbtInput);
+  private static void verifyDbtTransform(
+      final DbtTransformationActivity dbtTransformationActivity,
+      final ResourceRequirements resourceRequirements,
+      final OperatorDbtInput operatorDbtInput) {
+    verify(dbtTransformationActivity)
+        .run(JOB_RUN_CONFIG, DESTINATION_LAUNCHER_CONFIG, resourceRequirements, operatorDbtInput);
   }
 
   @AfterEach
   public void tearDown() {
     testEnv.close();
   }
-
 }

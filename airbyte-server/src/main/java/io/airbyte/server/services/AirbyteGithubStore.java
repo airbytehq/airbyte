@@ -19,9 +19,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Convenience class for retrieving files checked into the Airbyte Github repo.
- */
+/** Convenience class for retrieving files checked into the Airbyte Github repo. */
 public class AirbyteGithubStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);
@@ -52,7 +50,8 @@ public class AirbyteGithubStore {
 
   public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
     try {
-      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
+      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(
+          getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
     } catch (final IOException e) {
       LOGGER.warn(
           "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
@@ -63,7 +62,8 @@ public class AirbyteGithubStore {
 
   public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
     try {
-      return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
+      return YamlListToStandardDefinitions.toStandardSourceDefinitions(
+          getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
     } catch (final IOException e) {
       LOGGER.warn(
           "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
@@ -74,16 +74,19 @@ public class AirbyteGithubStore {
 
   @VisibleForTesting
   String getFile(final String filePathWithSlashPrefix) throws IOException, InterruptedException {
-    final var request = HttpRequest
-        .newBuilder(URI.create(baseUrl + filePathWithSlashPrefix))
-        .timeout(timeout)
-        .header("accept", "*/*") // accept any file type
-        .build();
+    final var request =
+        HttpRequest.newBuilder(URI.create(baseUrl + filePathWithSlashPrefix))
+            .timeout(timeout)
+            .header("accept", "*/*") // accept any file type
+            .build();
     final var resp = httpClient.send(request, BodyHandlers.ofString());
     if (resp.statusCode() >= 400) {
-      throw new IOException("getFile request ran into status code error: " + resp.statusCode() + "with message: " + resp.getClass());
+      throw new IOException(
+          "getFile request ran into status code error: "
+              + resp.statusCode()
+              + "with message: "
+              + resp.getClass());
     }
     return resp.body();
   }
-
 }

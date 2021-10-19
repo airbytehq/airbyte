@@ -70,11 +70,17 @@ public class DefaultJobPersistence implements JobPersistence {
   private final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
-  private static final Set<String> SYSTEM_SCHEMA = Set
-      .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
+  private static final Set<String> SYSTEM_SCHEMA =
+      Set.of(
+          "pg_toast",
+          "information_schema",
+          "pg_catalog",
+          "import_backup",
+          "pg_internal",
           "catalog_history");
 
-  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+  private static final JSONFormat DB_JSON_FORMAT =
+      new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
   public static final String DEPLOYMENT_ID_KEY = "deployment_id";
@@ -109,11 +115,12 @@ public class DefaultJobPersistence implements JobPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  DefaultJobPersistence(final Database database,
-                        final Supplier<Instant> timeSupplier,
-                        final int minimumAgeInDays,
-                        final int excessiveNumberOfJobs,
-                        final int minimumRecencyCount) {
+  DefaultJobPersistence(
+      final Database database,
+      final Supplier<Instant> timeSupplier,
+      final int minimumAgeInDays,
+      final int excessiveNumberOfJobs,
+      final int minimumRecencyCount) {
     this.database = new ExceptionWrappingDatabase(database);
     this.timeSupplier = timeSupplier;
     JOB_HISTORY_MINIMUM_AGE_IN_DAYS = minimumAgeInDays;
@@ -126,29 +133,40 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<Long> enqueueJob(final String scope, final JobConfig jobConfig) throws IOException {
+  public Optional<Long> enqueueJob(final String scope, final JobConfig jobConfig)
+      throws IOException {
     LOGGER.info("enqueuing pending job for scope: {}", scope);
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    final String queueingRequest = Job.REPLICATION_TYPES.contains(jobConfig.getConfigType())
-        ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE config_type IN (%s) AND scope = '%s' AND status NOT IN (%s)) ",
-            Job.REPLICATION_TYPES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")),
-            scope,
-            JobStatus.TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
-        : "";
+    final String queueingRequest =
+        Job.REPLICATION_TYPES.contains(jobConfig.getConfigType())
+            ? String.format(
+                "WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE config_type IN (%s) AND scope = '%s' AND status NOT IN (%s)) ",
+                Job.REPLICATION_TYPES.stream()
+                    .map(Sqls::toSqlName)
+                    .map(Names::singleQuote)
+                    .collect(Collectors.joining(",")),
+                scope,
+                JobStatus.TERMINAL_STATUSES.stream()
+                    .map(Sqls::toSqlName)
+                    .map(Names::singleQuote)
+                    .collect(Collectors.joining(",")))
+            : "";
 
-    return database.query(
-        ctx -> ctx.fetch(
-            "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
-                "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
-                queueingRequest +
-                "RETURNING id ",
-            Sqls.toSqlName(jobConfig.getConfigType()),
-            scope,
-            now,
-            now,
-            Sqls.toSqlName(JobStatus.PENDING),
-            Jsons.serialize(jobConfig)))
+    return database
+        .query(
+            ctx ->
+                ctx.fetch(
+                    "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) "
+                        + "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) "
+                        + queueingRequest
+                        + "RETURNING id ",
+                    Sqls.toSqlName(jobConfig.getConfigType()),
+                    scope,
+                    now,
+                    now,
+                    Sqls.toSqlName(JobStatus.PENDING),
+                    Jsons.serialize(jobConfig)))
         .stream()
         .findFirst()
         .map(r -> r.getValue("id", Long.class));
@@ -157,37 +175,46 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void resetJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    database.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.PENDING, now,
-          new IllegalStateException(String.format("Attempt to reset a job that is in a terminal state. job id: %s", jobId)));
-      return null;
-    });
+    database.query(
+        ctx -> {
+          updateJobStatusIfNotInTerminalState(
+              ctx,
+              jobId,
+              JobStatus.PENDING,
+              now,
+              new IllegalStateException(
+                  String.format(
+                      "Attempt to reset a job that is in a terminal state. job id: %s", jobId)));
+          return null;
+        });
   }
 
   @Override
   public void cancelJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    database.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.CANCELLED, now);
-      return null;
-    });
+    database.query(
+        ctx -> {
+          updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.CANCELLED, now);
+          return null;
+        });
   }
 
   @Override
   public void failJob(final long jobId) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    database.query(ctx -> {
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.FAILED, now);
-      return null;
-    });
+    database.query(
+        ctx -> {
+          updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.FAILED, now);
+          return null;
+        });
   }
 
   private void updateJobStatusIfNotInTerminalState(
-                                                   final DSLContext ctx,
-                                                   final long jobId,
-                                                   final JobStatus newStatus,
-                                                   final LocalDateTime now,
-                                                   final RuntimeException e) {
+      final DSLContext ctx,
+      final long jobId,
+      final JobStatus newStatus,
+      final LocalDateTime now,
+      final RuntimeException e) {
     final Job job = getJob(ctx, jobId);
     if (!job.isJobInTerminalState()) {
       updateJobStatus(ctx, jobId, newStatus, now);
@@ -196,11 +223,13 @@ public class DefaultJobPersistence implements JobPersistence {
     }
   }
 
-  private void updateJobStatusIfNotInTerminalState(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
+  private void updateJobStatusIfNotInTerminalState(
+      final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     updateJobStatusIfNotInTerminalState(ctx, jobId, newStatus, now, null);
   }
 
-  private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
+  private void updateJobStatus(
+      final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
         Sqls.toSqlName(newStatus),
@@ -212,92 +241,108 @@ public class DefaultJobPersistence implements JobPersistence {
   public int createAttempt(final long jobId, final Path logPath) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    return database.transaction(ctx -> {
-      final Job job = getJob(ctx, jobId);
-      if (job.isJobInTerminalState()) {
-        final var errMsg =
-            String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
-                job.getStatus(), job.getScope());
-        throw new IllegalStateException(errMsg);
-      }
+    return database.transaction(
+        ctx -> {
+          final Job job = getJob(ctx, jobId);
+          if (job.isJobInTerminalState()) {
+            final var errMsg =
+                String.format(
+                    "Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s",
+                    job.getId(), job.getStatus(), job.getScope());
+            throw new IllegalStateException(errMsg);
+          }
 
-      if (job.hasRunningAttempt()) {
-        final var errMsg =
-            String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
-                job.getStatus(), job.getScope());
-        throw new IllegalStateException(errMsg);
-      }
+          if (job.hasRunningAttempt()) {
+            final var errMsg =
+                String.format(
+                    "Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s",
+                    job.getId(), job.getStatus(), job.getScope());
+            throw new IllegalStateException(errMsg);
+          }
 
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.RUNNING, now);
+          updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.RUNNING, now);
 
-      // will fail if attempt number already exists for the job id.
-      return ctx.fetch(
-          "INSERT INTO attempts(job_id, attempt_number, log_path, status, created_at, updated_at) VALUES(?, ?, ?, CAST(? AS ATTEMPT_STATUS), ?, ?) RETURNING attempt_number",
-          jobId,
-          job.getAttemptsCount(),
-          logPath.toString(),
-          Sqls.toSqlName(AttemptStatus.RUNNING),
-          now,
-          now)
-          .stream()
-          .findFirst()
-          .map(r -> r.get("attempt_number", Integer.class))
-          .orElseThrow(() -> new RuntimeException("This should not happen"));
-    });
-
+          // will fail if attempt number already exists for the job id.
+          return ctx
+              .fetch(
+                  "INSERT INTO attempts(job_id, attempt_number, log_path, status, created_at, updated_at) VALUES(?, ?, ?, CAST(? AS ATTEMPT_STATUS), ?, ?) RETURNING attempt_number",
+                  jobId,
+                  job.getAttemptsCount(),
+                  logPath.toString(),
+                  Sqls.toSqlName(AttemptStatus.RUNNING),
+                  now,
+                  now)
+              .stream()
+              .findFirst()
+              .map(r -> r.get("attempt_number", Integer.class))
+              .orElseThrow(() -> new RuntimeException("This should not happen"));
+        });
   }
 
   @Override
   public void failAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    database.transaction(ctx -> {
-      // do not overwrite terminal states.
-      updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
+    database.transaction(
+        ctx -> {
+          // do not overwrite terminal states.
+          updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.INCOMPLETE, now);
 
-      ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
-          Sqls.toSqlName(AttemptStatus.FAILED),
-          now,
-          now,
-          jobId,
-          attemptNumber);
-      return null;
-    });
+          ctx.execute(
+              "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
+              Sqls.toSqlName(AttemptStatus.FAILED),
+              now,
+              now,
+              jobId,
+              attemptNumber);
+          return null;
+        });
   }
 
   @Override
   public void succeedAttempt(final long jobId, final int attemptNumber) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    database.transaction(ctx -> {
-      // override any other terminal statuses if we are now succeeded.
-      updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
+    database.transaction(
+        ctx -> {
+          // override any other terminal statuses if we are now succeeded.
+          updateJobStatus(ctx, jobId, JobStatus.SUCCEEDED, now);
 
-      ctx.execute(
-          "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
-          Sqls.toSqlName(AttemptStatus.SUCCEEDED),
-          now,
-          now,
-          jobId,
-          attemptNumber);
-      return null;
-    });
+          ctx.execute(
+              "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? , ended_at = ? WHERE job_id = ? AND attempt_number = ?",
+              Sqls.toSqlName(AttemptStatus.SUCCEEDED),
+              now,
+              now,
+              jobId,
+              attemptNumber);
+          return null;
+        });
   }
 
   @Override
-  public void setAttemptTemporalWorkflowId(final long jobId, final int attemptNumber, final String temporalWorkflowId) throws IOException {
-    database.query(ctx -> ctx.execute(
-        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
-        temporalWorkflowId,
-        jobId,
-        attemptNumber));
+  public void setAttemptTemporalWorkflowId(
+      final long jobId, final int attemptNumber, final String temporalWorkflowId)
+      throws IOException {
+    database.query(
+        ctx ->
+            ctx.execute(
+                " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
+                temporalWorkflowId,
+                jobId,
+                attemptNumber));
   }
 
   @Override
-  public Optional<String> getAttemptTemporalWorkflowId(final long jobId, final int attemptNumber) throws IOException {
-    final var result = database.query(ctx -> ctx.fetch(
-        " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
-        jobId,
-        attemptNumber)).stream().findFirst();
+  public Optional<String> getAttemptTemporalWorkflowId(final long jobId, final int attemptNumber)
+      throws IOException {
+    final var result =
+        database
+            .query(
+                ctx ->
+                    ctx.fetch(
+                        " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
+                        jobId,
+                        attemptNumber))
+            .stream()
+            .findFirst();
 
     if (result.isEmpty() || result.get().get("temporal_workflow_id") == null) {
       return Optional.empty();
@@ -307,16 +352,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
+  public <T> void writeOutput(final long jobId, final int attemptNumber, final T output)
+      throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
     database.query(
-        ctx -> ctx.execute(
-            "UPDATE attempts SET output = CAST(? as JSONB), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
-            Jsons.serialize(output),
-            now,
-            jobId,
-            attemptNumber));
+        ctx ->
+            ctx.execute(
+                "UPDATE attempts SET output = CAST(? as JSONB), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
+                Jsons.serialize(output),
+                now,
+                jobId,
+                attemptNumber));
   }
 
   @Override
@@ -325,7 +372,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private Job getJob(final DSLContext ctx, final long jobId) {
-    return getJobOptional(ctx, jobId).orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
+    return getJobOptional(ctx, jobId)
+        .orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
   }
 
   private Optional<Job> getJobOptional(final DSLContext ctx, final long jobId) {
@@ -333,19 +381,34 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobs(final ConfigType configType, final String configId, final int pagesize, final int offset) throws IOException {
+  public List<Job> listJobs(
+      final ConfigType configType, final String configId, final int pagesize, final int offset)
+      throws IOException {
     return listJobs(Set.of(configType), configId, pagesize, offset);
   }
 
   @Override
-  public List<Job> listJobs(final Set<ConfigType> configTypes, final String configId, final int pagesize, final int offset) throws IOException {
-    return database.query(ctx -> getJobsFromResult(ctx.fetch(
-        BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " " +
-            "AND scope = ? " +
-            ORDER_BY_JOB_TIME_ATTEMPT_TIME +
-            "LIMIT ? OFFSET ?",
-        configId, pagesize, offset)));
+  public List<Job> listJobs(
+      final Set<ConfigType> configTypes,
+      final String configId,
+      final int pagesize,
+      final int offset)
+      throws IOException {
+    return database.query(
+        ctx ->
+            getJobsFromResult(
+                ctx.fetch(
+                    BASE_JOB_SELECT_AND_JOIN
+                        + "WHERE "
+                        + "CAST(config_type AS VARCHAR) in "
+                        + Sqls.toSqlInFragment(configTypes)
+                        + " "
+                        + "AND scope = ? "
+                        + ORDER_BY_JOB_TIME_ATTEMPT_TIME
+                        + "LIMIT ? OFFSET ?",
+                    configId,
+                    pagesize,
+                    offset)));
   }
 
   @Override
@@ -354,51 +417,71 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobsWithStatus(final Set<ConfigType> configTypes, final JobStatus status) throws IOException {
-    return database.query(ctx -> getJobsFromResult(ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
-            "CAST(jobs.status AS VARCHAR) = ? " +
-            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
-            Sqls.toSqlName(status))));
+  public List<Job> listJobsWithStatus(final Set<ConfigType> configTypes, final JobStatus status)
+      throws IOException {
+    return database.query(
+        ctx ->
+            getJobsFromResult(
+                ctx.fetch(
+                    BASE_JOB_SELECT_AND_JOIN
+                        + "WHERE "
+                        + "CAST(config_type AS VARCHAR) IN "
+                        + Sqls.toSqlInFragment(configTypes)
+                        + " AND "
+                        + "CAST(jobs.status AS VARCHAR) = ? "
+                        + ORDER_BY_JOB_TIME_ATTEMPT_TIME,
+                    Sqls.toSqlName(status))));
   }
 
   @Override
-  public List<Job> listJobsWithStatus(final ConfigType configType, final JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(final ConfigType configType, final JobStatus status)
+      throws IOException {
     return listJobsWithStatus(Sets.newHashSet(configType), status);
   }
 
   @Override
   public Optional<Job> getLastReplicationJob(final UUID connectionId) throws IOException {
-    return database.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
-            "scope = ? AND " +
-            "CAST(jobs.status AS VARCHAR) <> ? " +
-            "ORDER BY jobs.created_at DESC LIMIT 1",
-            connectionId.toString(),
-            Sqls.toSqlName(JobStatus.CANCELLED))
-        .stream()
-        .findFirst()
-        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+    return database.query(
+        ctx ->
+            ctx
+                .fetch(
+                    BASE_JOB_SELECT_AND_JOIN
+                        + "WHERE "
+                        + "CAST(jobs.config_type AS VARCHAR) in "
+                        + Sqls.toSqlInFragment(Job.REPLICATION_TYPES)
+                        + " AND "
+                        + "scope = ? AND "
+                        + "CAST(jobs.status AS VARCHAR) <> ? "
+                        + "ORDER BY jobs.created_at DESC LIMIT 1",
+                    connectionId.toString(),
+                    Sqls.toSqlName(JobStatus.CANCELLED))
+                .stream()
+                .findFirst()
+                .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
   }
 
   @Override
   public Optional<State> getCurrentState(final UUID connectionId) throws IOException {
-    return database.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
-            "scope = ? AND " +
-            "output->'sync'->'state' IS NOT NULL " +
-            "ORDER BY attempts.created_at DESC LIMIT 1",
-            connectionId.toString())
-        .stream()
-        .findFirst()
-        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class)))
-        .flatMap(Job::getLastAttemptWithOutput)
-        .flatMap(Attempt::getOutput)
-        .map(JobOutput::getSync)
-        .map(StandardSyncOutput::getState));
+    return database.query(
+        ctx ->
+            ctx
+                .fetch(
+                    BASE_JOB_SELECT_AND_JOIN
+                        + "WHERE "
+                        + "CAST(jobs.config_type AS VARCHAR) in "
+                        + Sqls.toSqlInFragment(Job.REPLICATION_TYPES)
+                        + " AND "
+                        + "scope = ? AND "
+                        + "output->'sync'->'state' IS NOT NULL "
+                        + "ORDER BY attempts.created_at DESC LIMIT 1",
+                    connectionId.toString())
+                .stream()
+                .findFirst()
+                .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class)))
+                .flatMap(Job::getLastAttemptWithOutput)
+                .flatMap(Attempt::getOutput)
+                .map(JobOutput::getSync)
+                .map(StandardSyncOutput::getState));
   }
 
   @Override
@@ -407,24 +490,35 @@ public class DefaultJobPersistence implements JobPersistence {
     // 1. get oldest, pending job
     // 2. job is excluded if another job of the same scope is already running
     // 3. job is excluded if another job of the same scope is already incomplete
-    return database.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(jobs.status AS VARCHAR) = 'pending' AND " +
-            "jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) " +
-            "ORDER BY jobs.created_at ASC LIMIT 1")
-        .stream()
-        .findFirst()
-        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+    return database.query(
+        ctx ->
+            ctx
+                .fetch(
+                    BASE_JOB_SELECT_AND_JOIN
+                        + "WHERE "
+                        + "CAST(jobs.status AS VARCHAR) = 'pending' AND "
+                        + "jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) "
+                        + "ORDER BY jobs.created_at ASC LIMIT 1")
+                .stream()
+                .findFirst()
+                .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
   }
 
   @Override
-  public List<Job> listJobs(final ConfigType configType, final Instant attemptEndedAtTimestamp) throws IOException {
-    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
-    return database.query(ctx -> getJobsFromResult(ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) =  ? AND " +
-            " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC", Sqls.toSqlName(configType),
-            timeConvertedIntoLocalDateTime)));
+  public List<Job> listJobs(final ConfigType configType, final Instant attemptEndedAtTimestamp)
+      throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime =
+        LocalDateTime.ofInstant(attemptEndedAtTimestamp, ZoneOffset.UTC);
+    return database.query(
+        ctx ->
+            getJobsFromResult(
+                ctx.fetch(
+                    BASE_JOB_SELECT_AND_JOIN
+                        + "WHERE "
+                        + "CAST(config_type AS VARCHAR) =  ? AND "
+                        + " attempts.ended_at > ? ORDER BY jobs.created_at ASC, attempts.created_at ASC",
+                    Sqls.toSqlName(configType),
+                    timeConvertedIntoLocalDateTime)));
   }
 
   private static List<Job> getJobsFromResult(final Result<Record> result) {
@@ -433,29 +527,41 @@ public class DefaultJobPersistence implements JobPersistence {
     Job currentJob = null;
     for (final Record entry : result) {
       if (currentJob == null || currentJob.getId() != entry.get("job_id", Long.class)) {
-        currentJob = new Job(entry.get("job_id", Long.class),
-            Enums.toEnum(entry.get("config_type", String.class), ConfigType.class).orElseThrow(),
-            entry.get("scope", String.class),
-            Jsons.deserialize(entry.get("config", String.class), JobConfig.class),
-            new ArrayList<Attempt>(),
-            JobStatus.valueOf(entry.get("job_status", String.class).toUpperCase()),
-            Optional.ofNullable(entry.get("job_started_at")).map(value -> getEpoch(entry, "started_at")).orElse(null),
-            getEpoch(entry, "job_created_at"),
-            getEpoch(entry, "job_updated_at"));
+        currentJob =
+            new Job(
+                entry.get("job_id", Long.class),
+                Enums.toEnum(entry.get("config_type", String.class), ConfigType.class)
+                    .orElseThrow(),
+                entry.get("scope", String.class),
+                Jsons.deserialize(entry.get("config", String.class), JobConfig.class),
+                new ArrayList<Attempt>(),
+                JobStatus.valueOf(entry.get("job_status", String.class).toUpperCase()),
+                Optional.ofNullable(entry.get("job_started_at"))
+                    .map(value -> getEpoch(entry, "started_at"))
+                    .orElse(null),
+                getEpoch(entry, "job_created_at"),
+                getEpoch(entry, "job_updated_at"));
         jobs.add(currentJob);
       }
       if (entry.getValue("attempt_number") != null) {
-        currentJob.getAttempts().add(new Attempt(
-            entry.get("attempt_number", Long.class),
-            entry.get("job_id", Long.class),
-            Path.of(entry.get("log_path", String.class)),
-            entry.get("attempt_output", String.class) == null ? null : Jsons.deserialize(entry.get("attempt_output", String.class), JobOutput.class),
-            Enums.toEnum(entry.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
-            getEpoch(entry, "attempt_created_at"),
-            getEpoch(entry, "attempt_updated_at"),
-            Optional.ofNullable(entry.get("attempt_ended_at"))
-                .map(value -> getEpoch(entry, "attempt_ended_at"))
-                .orElse(null)));
+        currentJob
+            .getAttempts()
+            .add(
+                new Attempt(
+                    entry.get("attempt_number", Long.class),
+                    entry.get("job_id", Long.class),
+                    Path.of(entry.get("log_path", String.class)),
+                    entry.get("attempt_output", String.class) == null
+                        ? null
+                        : Jsons.deserialize(
+                            entry.get("attempt_output", String.class), JobOutput.class),
+                    Enums.toEnum(entry.get("attempt_status", String.class), AttemptStatus.class)
+                        .orElseThrow(),
+                    getEpoch(entry, "attempt_created_at"),
+                    getEpoch(entry, "attempt_updated_at"),
+                    Optional.ofNullable(entry.get("attempt_ended_at"))
+                        .map(value -> getEpoch(entry, "attempt_ended_at"))
+                        .orElse(null)));
       }
     }
 
@@ -473,61 +579,80 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public Optional<String> getVersion() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select()
-        .from(AIRBYTE_METADATA_TABLE)
-        .where(DSL.field(METADATA_KEY_COL).eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
-        .fetch());
+    final Result<Record> result =
+        database.query(
+            ctx ->
+                ctx.select()
+                    .from(AIRBYTE_METADATA_TABLE)
+                    .where(DSL.field(METADATA_KEY_COL).eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
+                    .fetch());
     return result.stream().findFirst().map(r -> r.getValue(METADATA_VAL_COL, String.class));
   }
 
   @Override
   public void setVersion(final String airbyteVersion) throws IOException {
-    database.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s(%s, %s) VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
-        AIRBYTE_METADATA_TABLE,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME,
-        airbyteVersion,
-        current_timestamp(),
-        airbyteVersion,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        airbyteVersion)));
+    database.query(
+        ctx ->
+            ctx.execute(
+                String.format(
+                    "INSERT INTO %s(%s, %s) VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+                    AIRBYTE_METADATA_TABLE,
+                    METADATA_KEY_COL,
+                    METADATA_VAL_COL,
+                    AirbyteVersion.AIRBYTE_VERSION_KEY_NAME,
+                    airbyteVersion,
+                    current_timestamp(),
+                    airbyteVersion,
+                    METADATA_KEY_COL,
+                    METADATA_VAL_COL,
+                    airbyteVersion)));
   }
 
   @Override
   public Optional<UUID> getDeployment() throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select()
-        .from(AIRBYTE_METADATA_TABLE)
-        .where(DSL.field(METADATA_KEY_COL).eq(DEPLOYMENT_ID_KEY))
-        .fetch());
-    return result.stream().findFirst().map(r -> UUID.fromString(r.getValue(METADATA_VAL_COL, String.class)));
+    final Result<Record> result =
+        database.query(
+            ctx ->
+                ctx.select()
+                    .from(AIRBYTE_METADATA_TABLE)
+                    .where(DSL.field(METADATA_KEY_COL).eq(DEPLOYMENT_ID_KEY))
+                    .fetch());
+    return result.stream()
+        .findFirst()
+        .map(r -> UUID.fromString(r.getValue(METADATA_VAL_COL, String.class)));
   }
 
   @Override
   public void setDeployment(final UUID deployment) throws IOException {
     // if an existing deployment id already exists, on conflict, return it so we can log it.
-    final UUID committedDeploymentId = database.query(ctx -> ctx.fetch(String.format(
-        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO NOTHING RETURNING (SELECT %s FROM %s WHERE %s='%s') as existing_deployment_id",
-        AIRBYTE_METADATA_TABLE,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        DEPLOYMENT_ID_KEY,
-        deployment,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        AIRBYTE_METADATA_TABLE,
-        METADATA_KEY_COL,
-        DEPLOYMENT_ID_KEY)))
-        .stream()
-        .filter(record -> record.get("existing_deployment_id", String.class) != null)
-        .map(record -> UUID.fromString(record.get("existing_deployment_id", String.class)))
-        .findFirst()
-        .orElse(deployment); // if no record was returned that means that the new deployment id was used.
+    final UUID committedDeploymentId =
+        database
+            .query(
+                ctx ->
+                    ctx.fetch(
+                        String.format(
+                            "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO NOTHING RETURNING (SELECT %s FROM %s WHERE %s='%s') as existing_deployment_id",
+                            AIRBYTE_METADATA_TABLE,
+                            METADATA_KEY_COL,
+                            METADATA_VAL_COL,
+                            DEPLOYMENT_ID_KEY,
+                            deployment,
+                            METADATA_KEY_COL,
+                            METADATA_VAL_COL,
+                            AIRBYTE_METADATA_TABLE,
+                            METADATA_KEY_COL,
+                            DEPLOYMENT_ID_KEY)))
+            .stream()
+            .filter(record -> record.get("existing_deployment_id", String.class) != null)
+            .map(record -> UUID.fromString(record.get("existing_deployment_id", String.class)))
+            .findFirst()
+            .orElse(
+                deployment); // if no record was returned that means that the new deployment id was
+    // used.
 
     if (!deployment.equals(committedDeploymentId)) {
-      LOGGER.warn("Attempted to set a deployment id %s, but deployment id %s already set. Retained original value.");
+      LOGGER.warn(
+          "Attempted to set a deployment id %s, but deployment id %s already set. Retained original value.");
     }
   }
 
@@ -561,7 +686,8 @@ public class DefaultJobPersistence implements JobPersistence {
     return result;
   }
 
-  private Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+  private Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema)
+      throws IOException {
     final List<String> tables = listTables(schema);
     final Map<JobsDatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
 
@@ -572,16 +698,16 @@ public class DefaultJobPersistence implements JobPersistence {
     return result;
   }
 
-  /**
-   * List tables from @param schema and @return their names
-   */
+  /** List tables from @param schema and @return their names */
   private List<String> listTables(final String schema) throws IOException {
     if (schema != null) {
-      return database.query(context -> context.meta().getSchemas(schema).stream()
-          .flatMap(s -> context.meta(s).getTables().stream())
-          .map(Named::getName)
-          .filter(table -> JobsDatabaseSchema.getTableNames().contains(table.toLowerCase()))
-          .collect(Collectors.toList()));
+      return database.query(
+          context ->
+              context.meta().getSchemas(schema).stream()
+                  .flatMap(s -> context.meta(s).getTables().stream())
+                  .map(Named::getName)
+                  .filter(table -> JobsDatabaseSchema.getTableNames().contains(table.toLowerCase()))
+                  .collect(Collectors.toList()));
     } else {
       return List.of();
     }
@@ -597,11 +723,16 @@ public class DefaultJobPersistence implements JobPersistence {
     try {
       final String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
       // interval '?' days cannot use a ? bind, so we're using %d instead.
-      final String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
-      final Integer rows = database.query(ctx -> ctx.execute(sql,
-          asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
-          JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
-          JOB_HISTORY_MINIMUM_RECENCY));
+      final String sql =
+          String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
+      final Integer rows =
+          database.query(
+              ctx ->
+                  ctx.execute(
+                      sql,
+                      asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
+                      JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
+                      JOB_HISTORY_MINIMUM_RECENCY));
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
@@ -609,62 +740,78 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private List<String> listAllTables(final String schema) throws IOException {
     if (schema != null) {
-      return database.query(context -> context.meta().getSchemas(schema).stream()
-          .flatMap(s -> context.meta(s).getTables().stream())
-          .map(Named::getName)
-          .collect(Collectors.toList()));
+      return database.query(
+          context ->
+              context.meta().getSchemas(schema).stream()
+                  .flatMap(s -> context.meta(s).getTables().stream())
+                  .map(Named::getName)
+                  .collect(Collectors.toList()));
     } else {
       return List.of();
     }
   }
 
   private List<String> listSchemas() throws IOException {
-    return database.query(context -> context.meta().getSchemas().stream()
-        .map(Named::getName)
-        .filter(c -> !SYSTEM_SCHEMA.contains(c))
-        .collect(Collectors.toList()));
-
+    return database.query(
+        context ->
+            context.meta().getSchemas().stream()
+                .map(Named::getName)
+                .filter(c -> !SYSTEM_SCHEMA.contains(c))
+                .collect(Collectors.toList()));
   }
 
-  private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
+  private Stream<JsonNode> exportTable(final String schema, final String tableName)
+      throws IOException {
     final Table<Record> tableSql = getTable(schema, tableName);
-    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
-      return records.map(record -> {
-        final Set<String> jsonFieldNames = Arrays.stream(record.fields())
-            .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
-            .map(Field::getName)
-            .collect(Collectors.toSet());
-        final JsonNode row = Jsons.deserialize(record.formatJSON(DB_JSON_FORMAT));
-        // for json fields, deserialize them so they are treated as objects instead of strings. this is to
-        // get around that formatJson doesn't handle deserializing them for us.
-        jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
-        return row;
-      });
+    try (final Stream<Record> records =
+        database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
+      return records.map(
+          record -> {
+            final Set<String> jsonFieldNames =
+                Arrays.stream(record.fields())
+                    .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
+                    .map(Field::getName)
+                    .collect(Collectors.toSet());
+            final JsonNode row = Jsons.deserialize(record.formatJSON(DB_JSON_FORMAT));
+            // for json fields, deserialize them so they are treated as objects instead of strings.
+            // this is to
+            // get around that formatJson doesn't handle deserializing them for us.
+            jsonFieldNames.forEach(
+                jsonFieldName ->
+                    ((ObjectNode) row)
+                        .replace(
+                            jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
+            return row;
+          });
     }
   }
 
   @Override
-  public void importDatabase(final String airbyteVersion, final Map<JobsDatabaseSchema, Stream<JsonNode>> data) throws IOException {
+  public void importDatabase(
+      final String airbyteVersion, final Map<JobsDatabaseSchema, Stream<JsonNode>> data)
+      throws IOException {
     importDatabase(airbyteVersion, DEFAULT_SCHEMA, data, false);
   }
 
-  private void importDatabase(final String airbyteVersion,
-                              final String targetSchema,
-                              final Map<JobsDatabaseSchema, Stream<JsonNode>> data,
-                              final boolean incrementalImport)
+  private void importDatabase(
+      final String airbyteVersion,
+      final String targetSchema,
+      final Map<JobsDatabaseSchema, Stream<JsonNode>> data,
+      final boolean incrementalImport)
       throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
-      database.transaction(ctx -> {
-        for (final JobsDatabaseSchema tableType : data.keySet()) {
-          if (!incrementalImport) {
-            truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
-          }
-          importTable(ctx, targetSchema, tableType, data.get(tableType));
-        }
-        registerImportMetadata(ctx, airbyteVersion);
-        return null;
-      });
+      database.transaction(
+          ctx -> {
+            for (final JobsDatabaseSchema tableType : data.keySet()) {
+              if (!incrementalImport) {
+                truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
+              }
+              importTable(ctx, targetSchema, tableType, data.get(tableType));
+            }
+            registerImportMetadata(ctx, airbyteVersion);
+            return null;
+          });
     }
     // TODO write "import success vXX on now()" to audit log table?
   }
@@ -677,64 +824,78 @@ public class DefaultJobPersistence implements JobPersistence {
    * In a single transaction, truncate all @param tables from @param schema, making backup copies
    * in @param backupSchema
    */
-  private static void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
+  private static void truncateTable(
+      final DSLContext ctx,
+      final String schema,
+      final String tableName,
+      final String backupSchema) {
     final Table<Record> tableSql = getTable(schema, tableName);
     final Table<Record> backupTableSql = getTable(backupSchema, tableName);
     ctx.dropTableIfExists(backupTableSql).execute();
-    ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
+    ctx.createTable(backupTableSql)
+        .as(DSL.select(DSL.asterisk()).from(tableSql))
+        .withData()
+        .execute();
     ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
-  /**
-   * TODO: we need version specific importers to copy data to the database. Issue: #5682.
-   */
-  private static void importTable(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+  /** TODO: we need version specific importers to copy data to the database. Issue: #5682. */
+  private static void importTable(
+      final DSLContext ctx,
+      final String schema,
+      final JobsDatabaseSchema tableType,
+      final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
-      // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
+      // Use an ArrayList to mirror the order of columns from the schema file since columns may not
+      // be
       // written consistently in the same order in the stream
       final List<Field<?>> columns = getFields(jsonSchema);
-      // Build a Stream of List of Values using the same order as columns, filling blanks if needed (when
+      // Build a Stream of List of Values using the same order as columns, filling blanks if needed
+      // (when
       // stream omits them for nullable columns)
-      final Stream<List<?>> data = jsonStream.map(node -> {
-        final List<Object> values = new ArrayList<>();
-        for (final Field<?> column : columns) {
-          values.add(getJsonNodeValue(node, column.getName()));
-        }
-        return values;
-      });
+      final Stream<List<?>> data =
+          jsonStream.map(
+              node -> {
+                final List<Object> values = new ArrayList<>();
+                for (final Field<?> column : columns) {
+                  values.add(getJsonNodeValue(node, column.getName()));
+                }
+                return values;
+              });
       // Then Insert rows into table
-      final InsertValuesStepN<Record> insertStep = ctx
-          .insertInto(tableSql)
-          .columns(columns);
+      final InsertValuesStepN<Record> insertStep = ctx.insertInto(tableSql).columns(columns);
       data.forEach(insertStep::values);
       if (insertStep.getBindValues().size() > 0) {
         // LOGGER.debug(insertStep.toString());
         ctx.batch(insertStep).execute();
       }
-      final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
-      if (idColumn.isPresent())
-        resetIdentityColumn(ctx, schema, tableType);
+      final Optional<Field<?>> idColumn =
+          columns.stream().filter(f -> f.getName().equals("id")).findFirst();
+      if (idColumn.isPresent()) resetIdentityColumn(ctx, schema, tableType);
     }
   }
 
   /**
    * In schema.sql, we create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
-   * auto-incremented ID for each new record. When importing batch of records from outside of the DB,
-   * we need to update Postgres Internal state to continue auto-incrementing from the latest value or
-   * we would risk to violate primary key constraints by inserting new records with duplicate ids.
+   * auto-incremented ID for each new record. When importing batch of records from outside of the
+   * DB, we need to update Postgres Internal state to continue auto-incrementing from the latest
+   * value or we would risk to violate primary key constraints by inserting new records with
+   * duplicate ids.
    *
-   * This function reset such Identity states (called SQL Sequence objects).
+   * <p>This function reset such Identity states (called SQL Sequence objects).
    */
-  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType) {
-    final Result<Record> result = ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
-    final Optional<Integer> maxId = result.stream()
-        .map(r -> r.get(0, Integer.class))
-        .filter(Objects::nonNull)
-        .findFirst();
+  private static void resetIdentityColumn(
+      final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType) {
+    final Result<Record> result =
+        ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
+    final Optional<Integer> maxId =
+        result.stream().map(r -> r.get(0, Integer.class)).filter(Objects::nonNull).findFirst();
     if (maxId.isPresent()) {
-      final Sequence<BigInteger> sequenceName = DSL.sequence(DSL.name(schema, String.format("%s_%s_seq", tableType.name().toLowerCase(), "id")));
+      final Sequence<BigInteger> sequenceName =
+          DSL.sequence(
+              DSL.name(schema, String.format("%s_%s_seq", tableType.name().toLowerCase(), "id")));
       ctx.alterSequenceIfExists(sequenceName).restartWith(maxId.get() + 1).execute();
     }
   }
@@ -744,31 +905,32 @@ public class DefaultJobPersistence implements JobPersistence {
    * database. Update and overwrite the corresponding @param airbyteVersion.
    */
   private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
-    ctx.execute(String.format("INSERT INTO %s VALUES('%s_import_db', '%s');", AIRBYTE_METADATA_TABLE, current_timestamp(), airbyteVersion));
-    ctx.execute(String.format("UPDATE %s SET %s = '%s' WHERE %s = '%s';",
-        AIRBYTE_METADATA_TABLE,
-        METADATA_VAL_COL,
-        airbyteVersion,
-        METADATA_KEY_COL,
-        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
+    ctx.execute(
+        String.format(
+            "INSERT INTO %s VALUES('%s_import_db', '%s');",
+            AIRBYTE_METADATA_TABLE, current_timestamp(), airbyteVersion));
+    ctx.execute(
+        String.format(
+            "UPDATE %s SET %s = '%s' WHERE %s = '%s';",
+            AIRBYTE_METADATA_TABLE,
+            METADATA_VAL_COL,
+            airbyteVersion,
+            METADATA_KEY_COL,
+            AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
   }
 
-  /**
-   * Read @param jsonSchema and @returns a list of properties (converted as Field objects)
-   */
+  /** Read @param jsonSchema and @returns a list of properties (converted as Field objects) */
   private static List<Field<?>> getFields(final JsonNode jsonSchema) {
     final List<Field<?>> result = new ArrayList<>();
     final JsonNode properties = jsonSchema.get("properties");
-    for (final Iterator<String> it = properties.fieldNames(); it.hasNext();) {
+    for (final Iterator<String> it = properties.fieldNames(); it.hasNext(); ) {
       final String fieldName = it.next();
       result.add(DSL.field(fieldName));
     }
     return result;
   }
 
-  /**
-   * @return Java Values for the @param columnName in @param jsonNode
-   */
+  /** @return Java Values for the @param columnName in @param jsonNode */
   private static Object getJsonNodeValue(final JsonNode jsonNode, final String columnName) {
     if (!jsonNode.has(columnName)) {
       return null;
@@ -790,5 +952,4 @@ public class DefaultJobPersistence implements JobPersistence {
   private static Table<Record> getTable(final String schema, final String tableName) {
     return DSL.table(String.format("%s.%s", schema, tableName));
   }
-
 }

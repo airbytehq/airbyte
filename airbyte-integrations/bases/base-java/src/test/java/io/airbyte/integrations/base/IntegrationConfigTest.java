@@ -62,8 +62,10 @@ class IntegrationConfigTest {
 
   @Test
   void testReadWithState() {
-    assertThrows(NullPointerException.class, () -> IntegrationConfig.read(null, CATALOG_PATH, STATE_PATH));
-    assertThrows(NullPointerException.class, () -> IntegrationConfig.read(CONFIG_PATH, null, STATE_PATH));
+    assertThrows(
+        NullPointerException.class, () -> IntegrationConfig.read(null, CATALOG_PATH, STATE_PATH));
+    assertThrows(
+        NullPointerException.class, () -> IntegrationConfig.read(CONFIG_PATH, null, STATE_PATH));
 
     final IntegrationConfig config = IntegrationConfig.read(CONFIG_PATH, CATALOG_PATH, STATE_PATH);
     assertEquals(Command.READ, config.getCommand());
@@ -74,7 +76,8 @@ class IntegrationConfigTest {
 
   @Test
   void testReadWithoutState() {
-    assertThrows(NullPointerException.class, () -> IntegrationConfig.read(null, CATALOG_PATH, null));
+    assertThrows(
+        NullPointerException.class, () -> IntegrationConfig.read(null, CATALOG_PATH, null));
     assertThrows(NullPointerException.class, () -> IntegrationConfig.read(CONFIG_PATH, null, null));
 
     final IntegrationConfig config = IntegrationConfig.read(CONFIG_PATH, CATALOG_PATH, null);
@@ -83,5 +86,4 @@ class IntegrationConfigTest {
     assertEquals(CATALOG_PATH, config.getCatalogPath());
     assertEquals(Optional.empty(), config.getStatePath());
   }
-
 }

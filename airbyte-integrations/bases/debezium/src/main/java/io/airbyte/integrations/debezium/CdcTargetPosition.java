@@ -16,5 +16,4 @@ import com.fasterxml.jackson.databind.JsonNode;
 public interface CdcTargetPosition {
 
   boolean reachedTargetPosition(JsonNode valueAsJson);
-
 }

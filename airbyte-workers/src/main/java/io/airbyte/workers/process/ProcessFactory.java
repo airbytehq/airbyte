@@ -20,39 +20,50 @@ public interface ProcessFactory {
    * @param jobPath Workspace directory to run the process from.
    * @param imageName Docker image name to start the process from.
    * @param files File name to contents map that will be written into the working dir of the process
-   *        prior to execution.
-   * @param entrypoint If not null, the default entrypoint program of the docker image can be changed
-   *        by this argument.
+   *     prior to execution.
+   * @param entrypoint If not null, the default entrypoint program of the docker image can be
+   *     changed by this argument.
    * @param resourceRequirements CPU and RAM to assign to the created process.
    * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
    * @throws WorkerException
    */
-  Process create(String jobId,
-                 int attempt,
-                 final Path jobPath,
-                 final String imageName,
-                 final boolean usesStdin,
-                 final Map<String, String> files,
-                 final String entrypoint,
-                 final ResourceRequirements resourceRequirements,
-                 final Map<String, String> labels,
-                 final String... args)
+  Process create(
+      String jobId,
+      int attempt,
+      final Path jobPath,
+      final String imageName,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final Map<String, String> labels,
+      final String... args)
       throws WorkerException;
 
-  default Process create(final String jobId,
-                         final int attempt,
-                         final Path jobPath,
-                         final String imageName,
-                         final boolean usesStdin,
-                         final Map<String, String> files,
-                         final String entrypoint,
-                         final ResourceRequirements resourceRequirements,
-                         final Map<String, String> labels,
-                         final List<String> args)
+  default Process create(
+      final String jobId,
+      final int attempt,
+      final Path jobPath,
+      final String imageName,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final Map<String, String> labels,
+      final List<String> args)
       throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, resourceRequirements, labels, args.toArray(new String[0]));
+    return create(
+        jobId,
+        attempt,
+        jobPath,
+        imageName,
+        usesStdin,
+        files,
+        entrypoint,
+        resourceRequirements,
+        labels,
+        args.toArray(new String[0]));
   }
-
 }

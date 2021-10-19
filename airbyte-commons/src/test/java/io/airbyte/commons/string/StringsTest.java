@@ -22,18 +22,15 @@ class StringsTest {
     public String toString() {
       return "id = " + id;
     }
-
   }
 
   @Test
   void testJoin() {
-    Assertions.assertEquals(
-        "1, 2, 3, 4, 5",
-        Strings.join(Lists.newArrayList(1, 2, 3, 4, 5), ", "));
+    Assertions.assertEquals("1, 2, 3, 4, 5", Strings.join(Lists.newArrayList(1, 2, 3, 4, 5), ", "));
 
     Assertions.assertEquals(
         "id = 1, id = 2, id = 3",
-        Strings.join(Lists.newArrayList(new JoinClass(1), new JoinClass(2), new JoinClass(3)), ", "));
+        Strings.join(
+            Lists.newArrayList(new JoinClass(1), new JoinClass(2), new JoinClass(3)), ", "));
   }
-
 }

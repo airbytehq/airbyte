@@ -43,24 +43,33 @@ public class BufferedStreamConsumerTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createConfiguredAirbyteStream(
-          STREAM_NAME,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(
-          STREAM_NAME2,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING))));
+  private static final ConfiguredAirbyteCatalog CATALOG =
+      new ConfiguredAirbyteCatalog()
+          .withStreams(
+              List.of(
+                  CatalogHelpers.createConfiguredAirbyteStream(
+                      STREAM_NAME,
+                      SCHEMA_NAME,
+                      Field.of("id", JsonSchemaPrimitive.NUMBER),
+                      Field.of("name", JsonSchemaPrimitive.STRING)),
+                  CatalogHelpers.createConfiguredAirbyteStream(
+                      STREAM_NAME2,
+                      SCHEMA_NAME,
+                      Field.of("id", JsonSchemaPrimitive.NUMBER),
+                      Field.of("name", JsonSchemaPrimitive.STRING))));
 
-  private static final AirbyteMessage STATE_MESSAGE1 = new AirbyteMessage()
-      .withType(Type.STATE)
-      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1))));
-  private static final AirbyteMessage STATE_MESSAGE2 = new AirbyteMessage()
-      .withType(Type.STATE)
-      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))));
+  private static final AirbyteMessage STATE_MESSAGE1 =
+      new AirbyteMessage()
+          .withType(Type.STATE)
+          .withState(
+              new AirbyteStateMessage()
+                  .withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1))));
+  private static final AirbyteMessage STATE_MESSAGE2 =
+      new AirbyteMessage()
+          .withType(Type.STATE)
+          .withState(
+              new AirbyteStateMessage()
+                  .withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))));
 
   private BufferedStreamConsumer consumer;
   private VoidCallable onStart;
@@ -77,14 +86,9 @@ public class BufferedStreamConsumerTest {
     onClose = mock(CheckedConsumer.class);
     isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
-    consumer = new BufferedStreamConsumer(
-        outputRecordCollector,
-        onStart,
-        recordWriter,
-        onClose,
-        CATALOG,
-        isValidRecord,
-        10);
+    consumer =
+        new BufferedStreamConsumer(
+            outputRecordCollector, onStart, recordWriter, onClose, CATALOG, isValidRecord, 10);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -160,14 +164,9 @@ public class BufferedStreamConsumerTest {
     final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
 
     // consumer with big enough buffered that we see both batches are flushed in one go.
-    final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
-        outputRecordCollector,
-        onStart,
-        recordWriter,
-        onClose,
-        CATALOG,
-        isValidRecord,
-        20);
+    final BufferedStreamConsumer consumer =
+        new BufferedStreamConsumer(
+            outputRecordCollector, onStart, recordWriter, onClose, CATALOG, isValidRecord, 20);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
@@ -177,10 +176,10 @@ public class BufferedStreamConsumerTest {
 
     verifyStartAndClose();
 
-    final List<AirbyteMessage> expectedRecords = Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2)
-        .stream()
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> expectedRecords =
+        Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2).stream()
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
     verify(outputRecordCollector).accept(STATE_MESSAGE1);
@@ -251,11 +250,11 @@ public class BufferedStreamConsumerTest {
   @Test
   void test2StreamWith1State() throws Exception {
     final List<AirbyteMessage> expectedRecordsStream1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsStream2 = expectedRecordsStream1
-        .stream()
-        .map(Jsons::clone)
-        .peek(m -> m.getRecord().withStream(STREAM_NAME2))
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> expectedRecordsStream2 =
+        expectedRecordsStream1.stream()
+            .map(Jsons::clone)
+            .peek(m -> m.getRecord().withStream(STREAM_NAME2))
+            .collect(Collectors.toList());
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsStream1);
@@ -274,11 +273,11 @@ public class BufferedStreamConsumerTest {
   @Test
   void test2StreamWith2State() throws Exception {
     final List<AirbyteMessage> expectedRecordsStream1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsStream2 = expectedRecordsStream1
-        .stream()
-        .map(Jsons::clone)
-        .peek(m -> m.getRecord().withStream(STREAM_NAME2))
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> expectedRecordsStream2 =
+        expectedRecordsStream1.stream()
+            .map(Jsons::clone)
+            .peek(m -> m.getRecord().withStream(STREAM_NAME2))
+            .collect(Collectors.toList());
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsStream1);
@@ -300,37 +299,48 @@ public class BufferedStreamConsumerTest {
     verify(onClose).accept(false);
   }
 
-  private static void consumeRecords(final BufferedStreamConsumer consumer, final Collection<AirbyteMessage> records) {
-    records.forEach(m -> {
-      try {
-        consumer.accept(m);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
+  private static void consumeRecords(
+      final BufferedStreamConsumer consumer, final Collection<AirbyteMessage> records) {
+    records.forEach(
+        m -> {
+          try {
+            consumer.accept(m);
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   private static List<AirbyteMessage> getNRecords(final int endExclusive) {
     return getNRecords(0, endExclusive);
   }
 
-  private static List<AirbyteMessage> getNRecords(final int startInclusive, final int endExclusive) {
+  private static List<AirbyteMessage> getNRecords(
+      final int startInclusive, final int endExclusive) {
     return IntStream.range(startInclusive, endExclusive)
         .boxed()
-        .map(i -> new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(STREAM_NAME)
-                .withNamespace(SCHEMA_NAME)
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
+        .map(
+            i ->
+                new AirbyteMessage()
+                    .withType(Type.RECORD)
+                    .withRecord(
+                        new AirbyteRecordMessage()
+                            .withStream(STREAM_NAME)
+                            .withNamespace(SCHEMA_NAME)
+                            .withEmittedAt(Instant.now().toEpochMilli())
+                            .withData(
+                                Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
   }
 
-  private void verifyRecords(final String streamName, final String namespace, final Collection<AirbyteMessage> expectedRecords) throws Exception {
-    verify(recordWriter).accept(
-        new AirbyteStreamNameNamespacePair(streamName, namespace),
-        expectedRecords.stream().map(AirbyteMessage::getRecord).collect(Collectors.toList()));
+  private void verifyRecords(
+      final String streamName,
+      final String namespace,
+      final Collection<AirbyteMessage> expectedRecords)
+      throws Exception {
+    verify(recordWriter)
+        .accept(
+            new AirbyteStreamNameNamespacePair(streamName, namespace),
+            expectedRecords.stream().map(AirbyteMessage::getRecord).collect(Collectors.toList()));
   }
-
 }

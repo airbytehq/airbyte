@@ -8,14 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface TableSchema {
 
-  /**
-   * @return table name in lower case
-   */
+  /** @return table name in lower case */
   String getTableName();
 
-  /**
-   * @return the table definition in JsonSchema
-   */
+  /** @return the table definition in JsonSchema */
   JsonNode getTableDefinition();
-
 }

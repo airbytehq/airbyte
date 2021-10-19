@@ -21,5 +21,4 @@ public class MoreMaps {
 
     return outputMap;
   }
-
 }

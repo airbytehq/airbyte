@@ -26,8 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class JobCleanerTest {
 
-  @TempDir
-  Path folder;
+  @TempDir Path folder;
 
   @Test
   public void testNotDeletingFilesInMinimum() throws IOException {
@@ -35,10 +34,8 @@ class JobCleanerTest {
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
-    final JobCleaner jobCleaner = new JobCleaner(
-        new WorkspaceRetentionConfig(20, 30, 0),
-        folder,
-        jobPersistence);
+    final JobCleaner jobCleaner =
+        new JobCleaner(new WorkspaceRetentionConfig(20, 30, 0), folder, jobPersistence);
 
     final Set<String> before = listFiles(folder);
     jobCleaner.run();
@@ -54,10 +51,8 @@ class JobCleanerTest {
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
-    final JobCleaner jobCleaner = new JobCleaner(
-        new WorkspaceRetentionConfig(20, 30, 0),
-        folder,
-        jobPersistence);
+    final JobCleaner jobCleaner =
+        new JobCleaner(new WorkspaceRetentionConfig(20, 30, 0), folder, jobPersistence);
 
     final Set<String> before = listFiles(folder);
     jobCleaner.run();
@@ -80,10 +75,8 @@ class JobCleanerTest {
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
-    final JobCleaner jobCleaner = new JobCleaner(
-        new WorkspaceRetentionConfig(1, 30, 4),
-        folder,
-        jobPersistence);
+    final JobCleaner jobCleaner =
+        new JobCleaner(new WorkspaceRetentionConfig(1, 30, 4), folder, jobPersistence);
 
     jobCleaner.run();
     final Set<String> after = listFiles(folder);
@@ -106,10 +99,8 @@ class JobCleanerTest {
     when(job2.getId()).thenReturn(2L);
     when(jobPersistence.listJobsWithStatus(JobStatus.RUNNING)).thenReturn(List.of(job2));
 
-    final JobCleaner jobCleaner = new JobCleaner(
-        new WorkspaceRetentionConfig(1, 30, 0),
-        folder,
-        jobPersistence);
+    final JobCleaner jobCleaner =
+        new JobCleaner(new WorkspaceRetentionConfig(1, 30, 0), folder, jobPersistence);
 
     jobCleaner.run();
     final Set<String> after = listFiles(folder);
@@ -118,7 +109,9 @@ class JobCleanerTest {
     assertEquals(expected, after);
   }
 
-  private void createFile(final Path subdirectory, final String filename, final int sizeMb, final int daysAgo) throws IOException {
+  private void createFile(
+      final Path subdirectory, final String filename, final int sizeMb, final int daysAgo)
+      throws IOException {
     final long lastModified = JobCleaner.getDateFromDaysAgo(daysAgo).getTime();
     final File subdirFile = subdirectory.toFile();
     if (!subdirFile.exists()) {
@@ -137,7 +130,9 @@ class JobCleanerTest {
   }
 
   private Set<String> listFiles(final Path dir) throws IOException {
-    return Files.walk(dir).map(Path::toString).map(x -> x.replace(folder.toString(), "")).collect(Collectors.toSet());
+    return Files.walk(dir)
+        .map(Path::toString)
+        .map(x -> x.replace(folder.toString(), ""))
+        .collect(Collectors.toSet());
   }
-
 }

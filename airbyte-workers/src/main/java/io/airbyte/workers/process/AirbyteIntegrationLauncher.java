@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(AirbyteIntegrationLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteIntegrationLauncher.class);
 
   private final String jobId;
   private final int attempt;
@@ -28,18 +28,25 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
 
-  public AirbyteIntegrationLauncher(final String jobId,
-                                    final int attempt,
-                                    final String imageName,
-                                    final ProcessFactory processFactory) {
-    this(String.valueOf(jobId), attempt, imageName, processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+  public AirbyteIntegrationLauncher(
+      final String jobId,
+      final int attempt,
+      final String imageName,
+      final ProcessFactory processFactory) {
+    this(
+        String.valueOf(jobId),
+        attempt,
+        imageName,
+        processFactory,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
-  public AirbyteIntegrationLauncher(final String jobId,
-                                    final int attempt,
-                                    final String imageName,
-                                    final ProcessFactory processFactory,
-                                    final ResourceRequirements resourceRequirement) {
+  public AirbyteIntegrationLauncher(
+      final String jobId,
+      final int attempt,
+      final String imageName,
+      final ProcessFactory processFactory,
+      final ResourceRequirements resourceRequirement) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
@@ -63,7 +70,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+  public Process check(final Path jobRoot, final String configFilename, final String configContents)
+      throws WorkerException {
     return processFactory.create(
         jobId,
         attempt,
@@ -75,11 +83,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
         "check",
-        "--config", configFilename);
+        "--config",
+        configFilename);
   }
 
   @Override
-  public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+  public Process discover(
+      final Path jobRoot, final String configFilename, final String configContents)
+      throws WorkerException {
     return processFactory.create(
         jobId,
         attempt,
@@ -91,22 +102,22 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
         "discover",
-        "--config", configFilename);
+        "--config",
+        configFilename);
   }
 
   @Override
-  public Process read(final Path jobRoot,
-                      final String configFilename,
-                      final String configContents,
-                      final String catalogFilename,
-                      final String catalogContents,
-                      final String stateFilename,
-                      final String stateContents)
+  public Process read(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents,
+      final String stateFilename,
+      final String stateContents)
       throws WorkerException {
-    final List<String> arguments = Lists.newArrayList(
-        "read",
-        "--config", configFilename,
-        "--catalog", catalogFilename);
+    final List<String> arguments =
+        Lists.newArrayList("read", "--config", configFilename, "--catalog", catalogFilename);
 
     final Map<String, String> files = new HashMap<>();
     files.put(configFilename, configContents);
@@ -129,20 +140,26 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(
+            KubeProcessFactory.JOB_TYPE,
+            KubeProcessFactory.SYNC_JOB,
+            KubeProcessFactory.SYNC_STEP,
+            KubeProcessFactory.READ_STEP),
         arguments);
   }
 
   @Override
-  public Process write(final Path jobRoot,
-                       final String configFilename,
-                       final String configContents,
-                       final String catalogFilename,
-                       final String catalogContents)
+  public Process write(
+      final Path jobRoot,
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents)
       throws WorkerException {
-    final Map<String, String> files = ImmutableMap.of(
-        configFilename, configContents,
-        catalogFilename, catalogContents);
+    final Map<String, String> files =
+        ImmutableMap.of(
+            configFilename, configContents,
+            catalogFilename, catalogContents);
 
     return processFactory.create(
         jobId,
@@ -153,10 +170,15 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(
+            KubeProcessFactory.JOB_TYPE,
+            KubeProcessFactory.SYNC_JOB,
+            KubeProcessFactory.SYNC_STEP,
+            KubeProcessFactory.WRITE_STEP),
         "write",
-        "--config", configFilename,
-        "--catalog", catalogFilename);
+        "--config",
+        configFilename,
+        "--catalog",
+        catalogFilename);
   }
-
 }

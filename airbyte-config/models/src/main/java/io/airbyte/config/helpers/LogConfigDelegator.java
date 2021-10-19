@@ -53,5 +53,4 @@ public class LogConfigDelegator implements LogConfigs {
   public String getGoogleApplicationCredentials() {
     return delegate.getGoogleApplicationCredentials();
   }
-
 }

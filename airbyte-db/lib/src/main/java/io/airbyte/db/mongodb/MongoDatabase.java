@@ -72,16 +72,17 @@ public class MongoDatabase extends AbstractDatabase {
       return Collections.EMPTY_SET;
     }
     return MoreIterators.toSet(database.listCollectionNames().iterator()).stream()
-        .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX)).collect(Collectors.toSet());
+        .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX))
+        .collect(Collectors.toSet());
   }
 
   public MongoCollection<Document> getCollection(final String collectionName) {
-    return database.getCollection(collectionName)
-        .withReadConcern(ReadConcern.MAJORITY);
+    return database.getCollection(collectionName).withReadConcern(ReadConcern.MAJORITY);
   }
 
   public MongoCollection<Document> getOrCreateNewCollection(final String collectionName) {
-    final Set<String> collectionNames = MoreIterators.toSet(database.listCollectionNames().iterator());
+    final Set<String> collectionNames =
+        MoreIterators.toSet(database.listCollectionNames().iterator());
     if (!collectionNames.contains(collectionName)) {
       database.createCollection(collectionName);
     }
@@ -99,47 +100,50 @@ public class MongoDatabase extends AbstractDatabase {
     return database.getName();
   }
 
-  public Stream<JsonNode> read(final String collectionName, final List<String> columnNames, final Optional<Bson> filter) {
+  public Stream<JsonNode> read(
+      final String collectionName, final List<String> columnNames, final Optional<Bson> filter) {
     try {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final MongoCursor<Document> cursor = collection
-          .find(filter.orElse(new BsonDocument()))
-          .batchSize(BATCH_SIZE)
-          .cursor();
+      final MongoCursor<Document> cursor =
+          collection.find(filter.orElse(new BsonDocument())).batchSize(BATCH_SIZE).cursor();
 
       return getStream(cursor, (document) -> MongoUtils.toJsonNode(document, columnNames))
-          .onClose(() -> {
-            try {
-              cursor.close();
-            } catch (final Exception e) {
-              throw new RuntimeException();
-            }
-          });
+          .onClose(
+              () -> {
+                try {
+                  cursor.close();
+                } catch (final Exception e) {
+                  throw new RuntimeException();
+                }
+              });
 
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to read data from collection: ", collectionName, e.getMessage());
+      LOGGER.error(
+          "Exception attempting to read data from collection: ", collectionName, e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-  private Stream<JsonNode> getStream(final MongoCursor<Document> cursor, final CheckedFunction<Document, JsonNode, Exception> mapper) {
-    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
+  private Stream<JsonNode> getStream(
+      final MongoCursor<Document> cursor,
+      final CheckedFunction<Document, JsonNode, Exception> mapper) {
+    return StreamSupport.stream(
+        new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
-      @Override
-      public boolean tryAdvance(final Consumer<? super JsonNode> action) {
-        try {
-          final Document document = cursor.tryNext();
-          if (document == null) {
-            return false;
+          @Override
+          public boolean tryAdvance(final Consumer<? super JsonNode> action) {
+            try {
+              final Document document = cursor.tryNext();
+              if (document == null) {
+                return false;
+              }
+              action.accept(mapper.apply(document));
+              return true;
+            } catch (final Exception e) {
+              throw new RuntimeException(e);
+            }
           }
-          action.accept(mapper.apply(document));
-          return true;
-        } catch (final Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-    }, false);
+        },
+        false);
   }
-
 }

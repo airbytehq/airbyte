@@ -37,7 +37,8 @@ import org.junit.jupiter.api.Test;
 public class DefaultCheckConnectionWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
-  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
+  private static final JsonNode CREDS =
+      Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
 
   private Path jobRoot;
   private StandardCheckConnectionInput input;
@@ -54,19 +55,27 @@ public class DefaultCheckConnectionWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS))).thenReturn(process);
+    when(integrationLauncher.check(
+            jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS)))
+        .thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    final AirbyteMessage successMessage = new AirbyteMessage()
-        .withType(Type.CONNECTION_STATUS)
-        .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED));
+    final AirbyteMessage successMessage =
+        new AirbyteMessage()
+            .withType(Type.CONNECTION_STATUS)
+            .withConnectionStatus(
+                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED));
     successStreamFactory = noop -> Lists.newArrayList(successMessage).stream();
 
-    final AirbyteMessage failureMessage = new AirbyteMessage()
-        .withType(Type.CONNECTION_STATUS)
-        .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to connect"));
+    final AirbyteMessage failureMessage =
+        new AirbyteMessage()
+            .withType(Type.CONNECTION_STATUS)
+            .withConnectionStatus(
+                new AirbyteConnectionStatus()
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                    .withMessage("failed to connect"));
     failureStreamFactory = noop -> Lists.newArrayList(failureMessage).stream();
   }
 
@@ -77,17 +86,18 @@ public class DefaultCheckConnectionWorkerTest {
 
   @Test
   public void testSuccessfulConnection() throws WorkerException {
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
     assertEquals(Status.SUCCEEDED, output.getStatus());
     assertNull(output.getMessage());
-
   }
 
   @Test
   public void testFailedConnection() throws WorkerException {
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
     assertEquals(Status.FAILED, output.getStatus());
@@ -98,26 +108,30 @@ public class DefaultCheckConnectionWorkerTest {
   public void testProcessFail() {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test
   public void testExceptionThrownInRun() throws WorkerException {
-    doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
+    doThrow(new RuntimeException())
+        .when(integrationLauncher)
+        .check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test
   public void testCancel() throws WorkerException {
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
 
     worker.cancel();
 
     verify(process).destroy();
   }
-
 }

@@ -26,10 +26,11 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
   private final AtomicBoolean cancelled;
 
-  public DefaultNormalizationWorker(final String jobId,
-                                    final int attempt,
-                                    final NormalizationRunner normalizationRunner,
-                                    final WorkerEnvironment workerEnvironment) {
+  public DefaultNormalizationWorker(
+      final String jobId,
+      final int attempt,
+      final NormalizationRunner normalizationRunner,
+      final WorkerEnvironment workerEnvironment) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.normalizationRunner = normalizationRunner;
@@ -52,7 +53,12 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
         normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
       }
 
-      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
+      if (!normalizationRunner.normalize(
+          jobId,
+          attempt,
+          normalizationRoot,
+          input.getDestinationConfiguration(),
+          input.getCatalog(),
           input.getResourceRequirements())) {
         throw new WorkerException("Normalization Failed.");
       }
@@ -65,7 +71,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     }
 
     final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-    final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+    final String durationDescription =
+        DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
     LOGGER.info("Normalization executed in {}.", durationDescription);
 
     return null;
@@ -81,5 +88,4 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       e.printStackTrace();
     }
   }
-
 }

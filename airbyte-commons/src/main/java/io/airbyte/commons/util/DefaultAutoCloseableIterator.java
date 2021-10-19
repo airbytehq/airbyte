@@ -15,7 +15,8 @@ import java.util.Iterator;
  *
  * @param <T> type
  */
-class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
+class DefaultAutoCloseableIterator<T> extends AbstractIterator<T>
+    implements AutoCloseableIterator<T> {
 
   private final Iterator<T> iterator;
   private final VoidCallable onClose;
@@ -53,5 +54,4 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
   private void assertHasNotClosed() {
     Preconditions.checkState(!hasClosed);
   }
-
 }

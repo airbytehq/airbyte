@@ -15,5 +15,4 @@ import java.util.Map;
 public interface CdcStateHandler {
 
   AirbyteMessage saveState(Map<String, String> offset, String dbHistory);
-
 }

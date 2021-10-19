@@ -25,7 +25,8 @@ public class MigrationV0_14_1 implements Migration {
   private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_14_1");
   private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID =
       ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
-  private static final ResourceId JOB_METADATA_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.JOB, "JOB");
+  private static final ResourceId JOB_METADATA_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.JOB, "JOB");
 
   private final Map<ResourceId, JsonNode> inputSchema;
   private final Map<ResourceId, JsonNode> outputSchema;
@@ -33,12 +34,24 @@ public class MigrationV0_14_1 implements Migration {
   public MigrationV0_14_1() {
     inputSchema = new MigrationV0_14_0().getOutputSchema();
     outputSchema = new HashMap<>(inputSchema);
-    final JsonNode standardSourceDefinitionSchema = Yamls.deserialize(Exceptions
-        .toRuntime(() -> MoreResources
-            .readResource(RESOURCE_PATH.resolve(ResourceType.CONFIG.getDirectoryName()).resolve("StandardSourceDefinition.yaml").toString())));
-    final JsonNode jobSchema = Yamls.deserialize(Exceptions
-        .toRuntime(
-            () -> MoreResources.readResource(RESOURCE_PATH.resolve(ResourceType.JOB.getDirectoryName()).resolve("Jobs.yaml").toString())));
+    final JsonNode standardSourceDefinitionSchema =
+        Yamls.deserialize(
+            Exceptions.toRuntime(
+                () ->
+                    MoreResources.readResource(
+                        RESOURCE_PATH
+                            .resolve(ResourceType.CONFIG.getDirectoryName())
+                            .resolve("StandardSourceDefinition.yaml")
+                            .toString())));
+    final JsonNode jobSchema =
+        Yamls.deserialize(
+            Exceptions.toRuntime(
+                () ->
+                    MoreResources.readResource(
+                        RESOURCE_PATH
+                            .resolve(ResourceType.JOB.getDirectoryName())
+                            .resolve("Jobs.yaml")
+                            .toString())));
     outputSchema.put(STANDARD_SOURCE_DEFINITION_RESOURCE_ID, standardSourceDefinitionSchema);
     outputSchema.put(JOB_METADATA_RESOURCE_ID, jobSchema);
   }
@@ -59,18 +72,23 @@ public class MigrationV0_14_1 implements Migration {
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      entry.getValue().forEach(r -> {
-        if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID) || entry.getKey().equals(JOB_METADATA_RESOURCE_ID)) {
-          ((ObjectNode) r).put("foo", "bar");
-        }
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID)
+                    || entry.getKey().equals(JOB_METADATA_RESOURCE_ID)) {
+                  ((ObjectNode) r).put("foo", "bar");
+                }
 
-        recordConsumer.accept(r);
-      });
+                recordConsumer.accept(r);
+              });
     }
   }
-
 }

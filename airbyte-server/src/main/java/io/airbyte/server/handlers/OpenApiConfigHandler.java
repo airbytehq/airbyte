@@ -26,5 +26,4 @@ public class OpenApiConfigHandler {
   public File getFile() {
     return TMP_FILE;
   }
-
 }

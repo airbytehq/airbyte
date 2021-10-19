@@ -25,34 +25,39 @@ public class Archives {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Archives.class);
 
-  /**
-   * Compress a @param sourceFolder into a Gzip Tarball @param archiveFile
-   */
-  public static void createArchive(final Path sourceFolder, final Path archiveFile) throws IOException {
+  /** Compress a @param sourceFolder into a Gzip Tarball @param archiveFile */
+  public static void createArchive(final Path sourceFolder, final Path archiveFile)
+      throws IOException {
     final TarArchiveOutputStream archive =
-        new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
+        new TarArchiveOutputStream(
+            new GZIPOutputStream(
+                new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
     Files.walk(sourceFolder)
         .filter(Files::isRegularFile)
-        .forEach(file -> {
-          final Path targetFile = sourceFolder.relativize(file);
-          Exceptions.toRuntime(() -> compressFile(file, targetFile, archive));
-        });
+        .forEach(
+            file -> {
+              final Path targetFile = sourceFolder.relativize(file);
+              Exceptions.toRuntime(() -> compressFile(file, targetFile, archive));
+            });
     archive.close();
   }
 
-  private static void compressFile(final Path file, final Path filename, final TarArchiveOutputStream archive) throws IOException {
+  private static void compressFile(
+      final Path file, final Path filename, final TarArchiveOutputStream archive)
+      throws IOException {
     final TarArchiveEntry tarEntry = new TarArchiveEntry(file.toFile(), filename.toString());
     archive.putArchiveEntry(tarEntry);
     Files.copy(file, archive);
     archive.closeArchiveEntry();
   }
 
-  /**
-   * Uncompress a Gzip Tarball @param archiveFile into the @param destinationFolder
-   */
-  public static void extractArchive(final Path archiveFile, final Path destinationFolder) throws IOException {
+  /** Uncompress a Gzip Tarball @param archiveFile into the @param destinationFolder */
+  public static void extractArchive(final Path archiveFile, final Path destinationFolder)
+      throws IOException {
     final TarArchiveInputStream archive =
-        new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(Files.newInputStream(archiveFile))));
+        new TarArchiveInputStream(
+            new GzipCompressorInputStream(
+                new BufferedInputStream(Files.newInputStream(archiveFile))));
     ArchiveEntry entry;
     while ((entry = archive.getNextEntry()) != null) {
       final Path newPath = zipSlipProtect(entry, destinationFolder);
@@ -81,5 +86,4 @@ public class Archives {
     }
     return normalizePath;
   }
-
 }

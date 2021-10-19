@@ -59,53 +59,60 @@ public class DefaultJobCreatorTest {
     final UUID sourceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
 
-    final JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
-        .put("apiKey", "123-abc")
-        .put("hostname", "airbyte.io")
-        .build());
+    final JsonNode implementationJson =
+        Jsons.jsonNode(
+            ImmutableMap.builder().put("apiKey", "123-abc").put("hostname", "airbyte.io").build());
 
-    SOURCE_CONNECTION = new SourceConnection()
-        .withWorkspaceId(workspaceId)
-        .withSourceDefinitionId(sourceDefinitionId)
-        .withSourceId(sourceId)
-        .withConfiguration(implementationJson)
-        .withTombstone(false);
+    SOURCE_CONNECTION =
+        new SourceConnection()
+            .withWorkspaceId(workspaceId)
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withSourceId(sourceId)
+            .withConfiguration(implementationJson)
+            .withTombstone(false);
 
     final UUID destinationId = UUID.randomUUID();
     final UUID destinationDefinitionId = UUID.randomUUID();
 
-    DESTINATION_CONNECTION = new DestinationConnection()
-        .withWorkspaceId(workspaceId)
-        .withDestinationDefinitionId(destinationDefinitionId)
-        .withDestinationId(destinationId)
-        .withConfiguration(implementationJson)
-        .withTombstone(false);
+    DESTINATION_CONNECTION =
+        new DestinationConnection()
+            .withWorkspaceId(workspaceId)
+            .withDestinationDefinitionId(destinationDefinitionId)
+            .withDestinationId(destinationId)
+            .withConfiguration(implementationJson)
+            .withTombstone(false);
 
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
+    final ConfiguredAirbyteStream stream =
+        new ConfiguredAirbyteStream()
+            .withStream(
+                CatalogHelpers.createAirbyteStream(
+                    STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+    final ConfiguredAirbyteCatalog catalog =
+        new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
     final UUID operationId = UUID.randomUUID();
 
-    STANDARD_SYNC = new StandardSync()
-        .withConnectionId(connectionId)
-        .withName("presto to hudi")
-        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
-        .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
-        .withStatus(StandardSync.Status.ACTIVE)
-        .withCatalog(catalog)
-        .withSourceId(sourceId)
-        .withDestinationId(destinationId)
-        .withOperationIds(List.of(operationId));
+    STANDARD_SYNC =
+        new StandardSync()
+            .withConnectionId(connectionId)
+            .withName("presto to hudi")
+            .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+            .withNamespaceFormat(null)
+            .withPrefix("presto_to_hudi")
+            .withStatus(StandardSync.Status.ACTIVE)
+            .withCatalog(catalog)
+            .withSourceId(sourceId)
+            .withDestinationId(destinationId)
+            .withOperationIds(List.of(operationId));
 
-    STANDARD_SYNC_OPERATION = new StandardSyncOperation()
-        .withOperationId(operationId)
-        .withName("normalize")
-        .withTombstone(false)
-        .withOperatorType(OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
+    STANDARD_SYNC_OPERATION =
+        new StandardSyncOperation()
+            .withOperationId(operationId)
+            .withName("normalize")
+            .withTombstone(false)
+            .withOperatorType(OperatorType.NORMALIZATION)
+            .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
   }
 
   @BeforeEach
@@ -116,126 +123,145 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateSyncJob() throws IOException {
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
-        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
-        .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
-        .withSourceDockerImage(SOURCE_IMAGE_NAME)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
-        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+    final JobSyncConfig jobSyncConfig =
+        new JobSyncConfig()
+            .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+            .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+            .withPrefix(STANDARD_SYNC.getPrefix())
+            .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
+            .withSourceDockerImage(SOURCE_IMAGE_NAME)
+            .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+            .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+            .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+            .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.SYNC)
-        .withSync(jobSyncConfig);
+    final JobConfig jobConfig =
+        new JobConfig().withConfigType(JobConfig.ConfigType.SYNC).withSync(jobSyncConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
-    final long jobId = jobCreator.createSyncJob(
-        SOURCE_CONNECTION,
-        DESTINATION_CONNECTION,
-        STANDARD_SYNC,
-        SOURCE_IMAGE_NAME,
-        DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
+    final long jobId =
+        jobCreator
+            .createSyncJob(
+                SOURCE_CONNECTION,
+                DESTINATION_CONNECTION,
+                STANDARD_SYNC,
+                SOURCE_IMAGE_NAME,
+                DESTINATION_IMAGE_NAME,
+                List.of(STANDARD_SYNC_OPERATION))
+            .orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
   @Test
   void testCreateSyncJobEnsureNoQueuing() throws IOException {
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
-        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
-        .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
-        .withSourceDockerImage(SOURCE_IMAGE_NAME)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
-        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+    final JobSyncConfig jobSyncConfig =
+        new JobSyncConfig()
+            .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+            .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+            .withPrefix(STANDARD_SYNC.getPrefix())
+            .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
+            .withSourceDockerImage(SOURCE_IMAGE_NAME)
+            .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+            .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+            .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+            .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.SYNC)
-        .withSync(jobSyncConfig);
+    final JobConfig jobConfig =
+        new JobConfig().withConfigType(JobConfig.ConfigType.SYNC).withSync(jobSyncConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
-    assertTrue(jobCreator.createSyncJob(
-        SOURCE_CONNECTION,
-        DESTINATION_CONNECTION,
-        STANDARD_SYNC,
-        SOURCE_IMAGE_NAME,
-        DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
+    assertTrue(
+        jobCreator
+            .createSyncJob(
+                SOURCE_CONNECTION,
+                DESTINATION_CONNECTION,
+                STANDARD_SYNC,
+                SOURCE_IMAGE_NAME,
+                DESTINATION_IMAGE_NAME,
+                List.of(STANDARD_SYNC_OPERATION))
+            .isEmpty());
   }
 
   @Test
   void testCreateResetConnectionJob() throws IOException {
     final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
-    expectedCatalog.getStreams()
-        .forEach(configuredAirbyteStream -> {
-          configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
-          configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-        });
+    expectedCatalog
+        .getStreams()
+        .forEach(
+            configuredAirbyteStream -> {
+              configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
+              configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+            });
 
-    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
-        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
-        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
-        .withPrefix(STANDARD_SYNC.getPrefix())
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
-        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+    final JobResetConnectionConfig JobResetConnectionConfig =
+        new JobResetConnectionConfig()
+            .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+            .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+            .withPrefix(STANDARD_SYNC.getPrefix())
+            .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+            .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+            .withConfiguredAirbyteCatalog(expectedCatalog)
+            .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(JobResetConnectionConfig);
+    final JobConfig jobConfig =
+        new JobConfig()
+            .withConfigType(ConfigType.RESET_CONNECTION)
+            .withResetConnection(JobResetConnectionConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
-    final long jobId = jobCreator.createResetConnectionJob(
-        DESTINATION_CONNECTION,
-        STANDARD_SYNC,
-        DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
+    final long jobId =
+        jobCreator
+            .createResetConnectionJob(
+                DESTINATION_CONNECTION,
+                STANDARD_SYNC,
+                DESTINATION_IMAGE_NAME,
+                List.of(STANDARD_SYNC_OPERATION))
+            .orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
   @Test
   void testCreateResetConnectionJobEnsureNoQueuing() throws IOException {
     final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
-    expectedCatalog.getStreams()
-        .forEach(configuredAirbyteStream -> {
-          configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
-          configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-        });
+    expectedCatalog
+        .getStreams()
+        .forEach(
+            configuredAirbyteStream -> {
+              configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
+              configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+            });
 
-    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
-        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
-        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
-        .withPrefix(STANDARD_SYNC.getPrefix())
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
-        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+    final JobResetConnectionConfig JobResetConnectionConfig =
+        new JobResetConnectionConfig()
+            .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+            .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+            .withPrefix(STANDARD_SYNC.getPrefix())
+            .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+            .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+            .withConfiguredAirbyteCatalog(expectedCatalog)
+            .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(JobResetConnectionConfig);
+    final JobConfig jobConfig =
+        new JobConfig()
+            .withConfigType(ConfigType.RESET_CONNECTION)
+            .withResetConnection(JobResetConnectionConfig);
 
     final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
-    assertTrue(jobCreator.createResetConnectionJob(
-        DESTINATION_CONNECTION,
-        STANDARD_SYNC,
-        DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
+    assertTrue(
+        jobCreator
+            .createResetConnectionJob(
+                DESTINATION_CONNECTION,
+                STANDARD_SYNC,
+                DESTINATION_IMAGE_NAME,
+                List.of(STANDARD_SYNC_OPERATION))
+            .isEmpty());
   }
-
 }

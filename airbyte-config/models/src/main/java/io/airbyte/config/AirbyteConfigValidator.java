@@ -13,5 +13,4 @@ public class AirbyteConfigValidator extends AbstractSchemaValidator<ConfigSchema
   public Path getSchemaPath(final ConfigSchema configType) {
     return configType.getConfigSchemaFile().toPath();
   }
-
 }

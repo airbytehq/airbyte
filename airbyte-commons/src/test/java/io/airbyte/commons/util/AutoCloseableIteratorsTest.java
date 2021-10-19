@@ -26,7 +26,8 @@ class AutoCloseableIteratorsTest {
   @Test
   void testFromIterator() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose);
+    final AutoCloseableIterator<String> iterator =
+        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -59,8 +60,10 @@ class AutoCloseableIteratorsTest {
     final VoidCallable onClose1 = mock(VoidCallable.class);
     final VoidCallable onClose2 = mock(VoidCallable.class);
 
-    final AutoCloseableIterator<Integer> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of(1, 2, 3), onClose1);
-    final AutoCloseableIterator<Integer> iteratorWithExtraClose = AutoCloseableIterators.appendOnClose(iterator, onClose2);
+    final AutoCloseableIterator<Integer> iterator =
+        AutoCloseableIterators.fromIterator(MoreIterators.of(1, 2, 3), onClose1);
+    final AutoCloseableIterator<Integer> iteratorWithExtraClose =
+        AutoCloseableIterators.appendOnClose(iterator, onClose2);
 
     iteratorWithExtraClose.close();
     verify(onClose1).call();
@@ -78,9 +81,11 @@ class AutoCloseableIteratorsTest {
     final VoidCallable onClose1 = mock(VoidCallable.class);
     final VoidCallable onClose2 = mock(VoidCallable.class);
 
-    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1),
-        AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2)));
+    final AutoCloseableIterator<String> iterator =
+        new CompositeIterator<>(
+            ImmutableList.of(
+                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1),
+                AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2)));
 
     assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2));
     assertNext(iterator, "a");
@@ -96,7 +101,9 @@ class AutoCloseableIteratorsTest {
     verify(onClose2, times(1)).call();
   }
 
-  private void assertOnCloseInvocations(final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed) throws Exception {
+  private void assertOnCloseInvocations(
+      final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed)
+      throws Exception {
     for (final VoidCallable voidCallable : haveClosed) {
       verify(voidCallable).call();
     }
@@ -105,5 +112,4 @@ class AutoCloseableIteratorsTest {
       verify(voidCallable, never()).call();
     }
   }
-
 }

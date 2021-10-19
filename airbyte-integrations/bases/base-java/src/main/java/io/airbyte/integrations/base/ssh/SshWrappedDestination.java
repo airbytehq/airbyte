@@ -27,9 +27,8 @@ public class SshWrappedDestination implements Destination {
   private final List<String> hostKey;
   private final List<String> portKey;
 
-  public SshWrappedDestination(final Destination delegate,
-                               final List<String> hostKey,
-                               final List<String> portKey) {
+  public SshWrappedDestination(
+      final Destination delegate, final List<String> hostKey, final List<String> portKey) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
@@ -39,8 +38,10 @@ public class SshWrappedDestination implements Destination {
   public ConnectorSpecification spec() throws Exception {
     // inject the standard ssh configuration into the spec.
     final ConnectorSpecification originalSpec = delegate.spec();
-    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    final ObjectNode propNode =
+        (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    propNode.set(
+        "tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
     return originalSpec;
   }
 
@@ -50,12 +51,14 @@ public class SshWrappedDestination implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
-    return AirbyteMessageConsumer.appendOnClose(delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector), tunnel::close);
+    return AirbyteMessageConsumer.appendOnClose(
+        delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector),
+        tunnel::close);
   }
-
 }

@@ -55,15 +55,18 @@ public class WorkerHeartbeatServer {
 
   public static class WorkerHeartbeatServlet extends HttpServlet {
 
-    public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void doPost(final HttpServletRequest request, final HttpServletResponse response)
+        throws IOException {
       this.serveDefaultRequest(response);
     }
 
-    public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void doGet(final HttpServletRequest request, final HttpServletResponse response)
+        throws IOException {
       this.serveDefaultRequest(response);
     }
 
-    public void doOptions(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void doOptions(final HttpServletRequest request, final HttpServletResponse response)
+        throws IOException {
       this.addCorsHeaders(response);
     }
 
@@ -82,12 +85,12 @@ public class WorkerHeartbeatServer {
         response.setHeader(entry.getKey(), entry.getValue());
       }
     }
-
   }
 
-  private static final ImmutableMap<String, String> CORS_FILTER_MAP = ImmutableMap.of(
-      HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*",
-      HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Origin, Content-Type, Accept, Content-Encoding",
-      HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-
+  private static final ImmutableMap<String, String> CORS_FILTER_MAP =
+      ImmutableMap.of(
+          HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*",
+          HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
+              "Origin, Content-Type, Accept, Content-Encoding",
+          HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
 }

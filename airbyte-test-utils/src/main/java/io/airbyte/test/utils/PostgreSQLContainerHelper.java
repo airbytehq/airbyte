@@ -32,36 +32,42 @@ public class PostgreSQLContainerHelper {
     }
   }
 
-  public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(final PostgreSQLContainer<?> psqlDb) {
+  public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(
+      final PostgreSQLContainer<?> psqlDb) {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     return createDatabaseAndGetPostgresConfig(psqlDb, dbName);
   }
 
-  public static JsonNode createDatabaseAndGetPostgresConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+  public static JsonNode createDatabaseAndGetPostgresConfig(
+      final PostgreSQLContainer<?> psqlDb, final String dbName) {
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), psqlDb);
 
     return getDestinationConfig(psqlDb, dbName);
   }
 
-  public static JsonNode getDestinationConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("schema", "public")
-        .put("ssl", false)
-        .build());
+  public static JsonNode getDestinationConfig(
+      final PostgreSQLContainer<?> psqlDb, final String dbName) {
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", psqlDb.getHost())
+            .put("port", psqlDb.getFirstMappedPort())
+            .put("database", dbName)
+            .put("username", psqlDb.getUsername())
+            .put("password", psqlDb.getPassword())
+            .put("schema", "public")
+            .put("ssl", false)
+            .build());
   }
 
   public static Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        String.format(
+            "jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
@@ -73,11 +79,11 @@ public class PostgreSQLContainerHelper {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        String.format(
+            "jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
         "org.postgresql.Driver");
   }
-
 }

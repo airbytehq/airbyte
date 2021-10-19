@@ -44,10 +44,6 @@ public class JobMetadata {
 
   @Override
   public String toString() {
-    return "JobMetadata{" +
-        "succeeded=" + succeeded +
-        ", logPath=" + logPath +
-        '}';
+    return "JobMetadata{" + "succeeded=" + succeeded + ", logPath=" + logPath + '}';
   }
-
 }

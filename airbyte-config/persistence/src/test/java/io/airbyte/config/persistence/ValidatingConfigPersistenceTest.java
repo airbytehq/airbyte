@@ -52,30 +52,42 @@ class ValidatingConfigPersistenceTest {
     schemaValidator = mock(JsonSchemaValidator.class);
 
     decoratedConfigPersistence = mock(ConfigPersistence.class);
-    configPersistence = new ValidatingConfigPersistence(decoratedConfigPersistence, schemaValidator);
+    configPersistence =
+        new ValidatingConfigPersistence(decoratedConfigPersistence, schemaValidator);
   }
 
   @Test
   void testWriteConfigSuccess() throws IOException, JsonValidationException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
-    verify(decoratedConfigPersistence).writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    verify(decoratedConfigPersistence)
+        .writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
   }
 
   @Test
   void testWriteConfigFailure() throws JsonValidationException {
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
-    assertThrows(JsonValidationException.class,
-        () -> configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1));
+    assertThrows(
+        JsonValidationException.class,
+        () ->
+            configPersistence.writeConfig(
+                ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1));
 
     verifyNoInteractions(decoratedConfigPersistence);
   }
 
   @Test
   void testGetConfigSuccess() throws IOException, JsonValidationException, ConfigNotFoundException {
-    when(decoratedConfigPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class))
+    when(decoratedConfigPersistence.getConfig(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
+            UUID_1.toString(),
+            StandardSourceDefinition.class))
         .thenReturn(SOURCE_1);
-    final StandardSourceDefinition actualConfig = configPersistence
-        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class);
+    final StandardSourceDefinition actualConfig =
+        configPersistence.getConfig(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
+            UUID_1.toString(),
+            StandardSourceDefinition.class);
 
     assertEquals(SOURCE_1, actualConfig);
   }
@@ -83,35 +95,45 @@ class ValidatingConfigPersistenceTest {
   @Test
   void testGetConfigFailure() throws IOException, JsonValidationException, ConfigNotFoundException {
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
-    when(decoratedConfigPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class))
+    when(decoratedConfigPersistence.getConfig(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
+            UUID_1.toString(),
+            StandardSourceDefinition.class))
         .thenReturn(SOURCE_1);
 
     assertThrows(
         JsonValidationException.class,
-        () -> configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), StandardSourceDefinition.class));
+        () ->
+            configPersistence.getConfig(
+                ConfigSchema.STANDARD_SOURCE_DEFINITION,
+                UUID_1.toString(),
+                StandardSourceDefinition.class));
   }
 
   @Test
   void testListConfigsSuccess() throws JsonValidationException, IOException {
-    when(decoratedConfigPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+    when(decoratedConfigPersistence.listConfigs(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(List.of(SOURCE_1, SOURCE_2));
 
-    final List<StandardSourceDefinition> actualConfigs = configPersistence
-        .listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+    final List<StandardSourceDefinition> actualConfigs =
+        configPersistence.listConfigs(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
 
-    assertEquals(
-        Sets.newHashSet(SOURCE_1, SOURCE_2),
-        Sets.newHashSet(actualConfigs));
+    assertEquals(Sets.newHashSet(SOURCE_1, SOURCE_2), Sets.newHashSet(actualConfigs));
   }
 
   @Test
   void testListConfigsFailure() throws JsonValidationException, IOException {
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
-    when(decoratedConfigPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+    when(decoratedConfigPersistence.listConfigs(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(List.of(SOURCE_1, SOURCE_2));
 
-    assertThrows(JsonValidationException.class, () -> configPersistence
-        .listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class));
+    assertThrows(
+        JsonValidationException.class,
+        () ->
+            configPersistence.listConfigs(
+                ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class));
   }
-
 }

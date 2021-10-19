@@ -19,7 +19,8 @@ import javax.annotation.Nullable;
 
 public class Job {
 
-  public static final Set<ConfigType> REPLICATION_TYPES = EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
+  public static final Set<ConfigType> REPLICATION_TYPES =
+      EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
 
   private final long id;
   private final ConfigType configType;
@@ -31,15 +32,16 @@ public class Job {
   private final long updatedAtInSecond;
   private final List<Attempt> attempts;
 
-  public Job(final long id,
-             final ConfigType configType,
-             final String scope,
-             final JobConfig config,
-             final List<Attempt> attempts,
-             final JobStatus status,
-             final @Nullable Long startedAtInSecond,
-             final long createdAtInSecond,
-             final long updatedAtInSecond) {
+  public Job(
+      final long id,
+      final ConfigType configType,
+      final String scope,
+      final JobConfig config,
+      final List<Attempt> attempts,
+      final JobStatus status,
+      final @Nullable Long startedAtInSecond,
+      final long createdAtInSecond,
+      final long updatedAtInSecond) {
     this.id = id;
     this.configType = configType;
     this.scope = scope;
@@ -92,12 +94,14 @@ public class Job {
   }
 
   public Optional<Attempt> getSuccessfulAttempt() {
-    final List<Attempt> successfulAttempts = getAttempts()
-        .stream()
-        .filter(a -> a.getStatus() == AttemptStatus.SUCCEEDED)
-        .collect(Collectors.toList());
+    final List<Attempt> successfulAttempts =
+        getAttempts().stream()
+            .filter(a -> a.getStatus() == AttemptStatus.SUCCEEDED)
+            .collect(Collectors.toList());
 
-    Preconditions.checkState(successfulAttempts.size() <= 1, String.format("Job %s has multiple successful attempts.", getId()));
+    Preconditions.checkState(
+        successfulAttempts.size() <= 1,
+        String.format("Job %s has multiple successful attempts.", getId()));
     if (successfulAttempts.size() == 1) {
       return Optional.of(successfulAttempts.get(0));
     } else {
@@ -110,10 +114,13 @@ public class Job {
   }
 
   public Optional<Attempt> getLastAttemptWithOutput() {
-    return getAttempts()
-        .stream()
+    return getAttempts().stream()
         .sorted(Comparator.comparing(Attempt::getCreatedAtInSecond).reversed())
-        .filter(a -> a.getOutput().isPresent() && a.getOutput().get().getSync() != null && a.getOutput().get().getSync().getState() != null)
+        .filter(
+            a ->
+                a.getOutput().isPresent()
+                    && a.getOutput().get().getSync() != null
+                    && a.getOutput().get().getSync().getState() != null)
         .findFirst();
   }
 
@@ -134,33 +141,49 @@ public class Job {
       return false;
     }
     final Job job = (Job) o;
-    return id == job.id &&
-        createdAtInSecond == job.createdAtInSecond &&
-        updatedAtInSecond == job.updatedAtInSecond &&
-        Objects.equals(scope, job.scope) &&
-        Objects.equals(config, job.config) &&
-        status == job.status &&
-        Objects.equals(startedAtInSecond, job.startedAtInSecond) &&
-        Objects.equals(attempts, job.attempts);
+    return id == job.id
+        && createdAtInSecond == job.createdAtInSecond
+        && updatedAtInSecond == job.updatedAtInSecond
+        && Objects.equals(scope, job.scope)
+        && Objects.equals(config, job.config)
+        && status == job.status
+        && Objects.equals(startedAtInSecond, job.startedAtInSecond)
+        && Objects.equals(attempts, job.attempts);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, scope, config, status, startedAtInSecond, createdAtInSecond, updatedAtInSecond, attempts);
+    return Objects.hash(
+        id,
+        scope,
+        config,
+        status,
+        startedAtInSecond,
+        createdAtInSecond,
+        updatedAtInSecond,
+        attempts);
   }
 
   @Override
   public String toString() {
-    return "Job{" +
-        "id=" + id +
-        ", scope='" + scope + '\'' +
-        ", config=" + config +
-        ", status=" + status +
-        ", startedAtInSecond=" + startedAtInSecond +
-        ", createdAtInSecond=" + createdAtInSecond +
-        ", updatedAtInSecond=" + updatedAtInSecond +
-        ", attempts=" + attempts +
-        '}';
+    return "Job{"
+        + "id="
+        + id
+        + ", scope='"
+        + scope
+        + '\''
+        + ", config="
+        + config
+        + ", status="
+        + status
+        + ", startedAtInSecond="
+        + startedAtInSecond
+        + ", createdAtInSecond="
+        + createdAtInSecond
+        + ", updatedAtInSecond="
+        + updatedAtInSecond
+        + ", attempts="
+        + attempts
+        + '}';
   }
-
 }

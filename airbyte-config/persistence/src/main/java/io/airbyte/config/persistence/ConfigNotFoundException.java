@@ -33,5 +33,4 @@ public class ConfigNotFoundException extends Exception {
   public String getConfigId() {
     return configId;
   }
-
 }

@@ -70,8 +70,6 @@ public class MoreIterators {
           return endOfData();
         }
       }
-
     };
   }
-
 }

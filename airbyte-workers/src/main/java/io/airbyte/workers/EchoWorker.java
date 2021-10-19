@@ -24,5 +24,4 @@ public class EchoWorker implements Worker<String, String> {
   public void cancel() {
     // no-op
   }
-
 }

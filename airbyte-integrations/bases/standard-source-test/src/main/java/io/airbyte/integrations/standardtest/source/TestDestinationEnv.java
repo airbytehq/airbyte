@@ -17,5 +17,4 @@ public class TestDestinationEnv {
   public Path getLocalRoot() {
     return localRoot;
   }
-
 }

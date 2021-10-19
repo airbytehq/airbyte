@@ -67,20 +67,12 @@ class FailureTrackingAirbyteMessageConsumerTest {
   static class TestConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     @Override
-    protected void startTracked() {
-
-    }
+    protected void startTracked() {}
 
     @Override
-    protected void acceptTracked(final AirbyteMessage s) {
-
-    }
+    protected void acceptTracked(final AirbyteMessage s) {}
 
     @Override
-    protected void close(final boolean hasFailed) {
-
-    }
-
+    protected void close(final boolean hasFailed) {}
   }
-
 }

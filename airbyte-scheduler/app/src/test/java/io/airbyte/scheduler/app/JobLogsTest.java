@@ -16,5 +16,4 @@ class JobLogsTest {
     final String expected = "logs/jobs/blah";
     assertEquals(expected, actual);
   }
-
 }

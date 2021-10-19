@@ -6,9 +6,7 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-/**
- * Adds secrets to a partial config.
- */
+/** Adds secrets to a partial config. */
 public interface SecretsHydrator {
 
   /**
@@ -18,5 +16,4 @@ public interface SecretsHydrator {
    * @return full config with secrets
    */
   JsonNode hydrate(JsonNode partialConfig);
-
 }

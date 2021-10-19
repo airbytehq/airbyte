@@ -40,11 +40,13 @@ class DockerImageValidatorTest {
     final String tag = "tag";
     final String imageName = DockerUtils.getTaggedImageName(repo, tag);
 
-    final SynchronousResponse<ConnectorSpecification> specResponse = mock(SynchronousResponse.class);
-    final ConnectorSpecification connectorSpecification = new ConnectorSpecification()
-        .withDocumentationUrl(new URI("https://google.com"))
-        .withChangelogUrl(new URI("https://google.com"))
-        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+    final SynchronousResponse<ConnectorSpecification> specResponse =
+        mock(SynchronousResponse.class);
+    final ConnectorSpecification connectorSpecification =
+        new ConnectorSpecification()
+            .withDocumentationUrl(new URI("https://google.com"))
+            .withChangelogUrl(new URI("https://google.com"))
+            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
     when(schedulerJobClient.createGetSpecJob(imageName)).thenReturn(specResponse);
     when(specResponse.getOutput()).thenReturn(connectorSpecification);
     when(specResponse.isSuccess()).thenReturn(true);
@@ -58,11 +60,11 @@ class DockerImageValidatorTest {
     final String repo = "repo";
     final String tag = "tag";
     final String imageName = DockerUtils.getTaggedImageName(repo, tag);
-    final SynchronousResponse<ConnectorSpecification> specResponse = mock(SynchronousResponse.class);
+    final SynchronousResponse<ConnectorSpecification> specResponse =
+        mock(SynchronousResponse.class);
     when(specResponse.isSuccess()).thenReturn(false);
     when(schedulerJobClient.createGetSpecJob(imageName)).thenReturn(specResponse);
 
     assertThrows(KnownException.class, () -> validator.assertValidIntegrationImage(repo, tag));
   }
-
 }

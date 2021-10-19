@@ -10,9 +10,7 @@ import io.airbyte.db.instance.development.MigrationDevCenter;
 import java.io.IOException;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-/**
- * Helper class for migration development. See README for details.
- */
+/** Helper class for migration development. See README for details. */
 public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public JobsDatabaseMigrationDevCenter() {
@@ -26,7 +24,8 @@ public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   @Override
   protected Database getDatabase(final PostgreSQLContainer<?> container) throws IOException {
-    return new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    return new JobsDatabaseInstance(
+            container.getUsername(), container.getPassword(), container.getJdbcUrl())
+        .getAndInitialize();
   }
-
 }

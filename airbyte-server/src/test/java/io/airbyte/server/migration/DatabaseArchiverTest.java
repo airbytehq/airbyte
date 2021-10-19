@@ -33,13 +33,17 @@ public class DatabaseArchiverTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
+    container =
+        new PostgreSQLContainer<>("postgres:13-alpine")
+            .withDatabaseName("airbyte")
+            .withUsername("docker")
+            .withPassword("docker");
     container.start();
 
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database =
+        new JobsDatabaseInstance(
+                container.getUsername(), container.getPassword(), container.getJdbcUrl())
+            .getAndInitialize();
     final JobPersistence persistence = new DefaultJobPersistence(database);
     databaseArchiver = new DatabaseArchiver(persistence);
   }
@@ -53,20 +57,22 @@ public class DatabaseArchiverTest {
   @Test
   void testUnknownTableExport() throws Exception {
     // Create a table that is not declared in JobsDatabaseSchema
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
+          return null;
+        });
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
 
     databaseArchiver.exportDatabaseToArchive(tempFolder);
 
-    final Set<String> exportedFiles = Files.walk(tempFolder)
-        .map(Path::toString)
-        .map(String::toLowerCase)
-        .collect(Collectors.toSet());
+    final Set<String> exportedFiles =
+        Files.walk(tempFolder)
+            .map(Path::toString)
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet());
 
     assertTrue(exportedFiles.stream().anyMatch(x -> x.contains("jobs")));
     assertFalse(exportedFiles.stream().anyMatch(x -> x.contains("id_and_name")));
@@ -74,14 +80,15 @@ public class DatabaseArchiverTest {
 
   @Test
   void testDatabaseExportImport() throws Exception {
-    database.query(ctx -> {
-      ctx.fetch(
-          "INSERT INTO jobs(id, scope, config_type, config, status, created_at, started_at, updated_at) VALUES "
-              + "(1,'get_spec_scope', 'get_spec', '{ \"type\" : \"getSpec\" }', 'succeeded', '2004-10-19', null, '2004-10-19'), "
-              + "(2,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', null, '2005-10-19'), "
-              + "(3,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', null, '2006-10-19');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch(
+              "INSERT INTO jobs(id, scope, config_type, config, status, created_at, started_at, updated_at) VALUES "
+                  + "(1,'get_spec_scope', 'get_spec', '{ \"type\" : \"getSpec\" }', 'succeeded', '2004-10-19', null, '2004-10-19'), "
+                  + "(2,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', null, '2005-10-19'), "
+                  + "(3,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', null, '2006-10-19');");
+          return null;
+        });
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
     databaseArchiver.importDatabaseFromArchive(tempFolder, "test");
@@ -92,8 +99,11 @@ public class DatabaseArchiverTest {
   void testPartialDatabaseImport() throws Exception {
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
-    Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), JobsDatabaseSchema.ATTEMPTS.name()));
-    assertThrows(RuntimeException.class, () -> databaseArchiver.importDatabaseFromArchive(tempFolder, "test"));
+    Files.delete(
+        DatabaseArchiver.buildTablePath(
+            tempFolder.toRealPath(), JobsDatabaseSchema.ATTEMPTS.name()));
+    assertThrows(
+        RuntimeException.class,
+        () -> databaseArchiver.importDatabaseFromArchive(tempFolder, "test"));
   }
-
 }

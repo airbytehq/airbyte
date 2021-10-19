@@ -35,8 +35,10 @@ class LogClientSingletonTest {
   @Test
   void testGetJobLogFileK8s() throws IOException {
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.KUBERNETES);
-    assertEquals(Collections.emptyList(), LogClientSingleton.getJobLogFile(configs, Path.of("/job/1")));
-    verify(mockLogClient).tailCloudLog(any(), eq("job-logging/job/1"), eq(LogClientSingleton.LOG_TAIL_SIZE));
+    assertEquals(
+        Collections.emptyList(), LogClientSingleton.getJobLogFile(configs, Path.of("/job/1")));
+    verify(mockLogClient)
+        .tailCloudLog(any(), eq("job-logging/job/1"), eq(LogClientSingleton.LOG_TAIL_SIZE));
   }
 
   @Test
@@ -50,5 +52,4 @@ class LogClientSingletonTest {
     assertEquals(Collections.emptyList(), LogClientSingleton.getJobLogFile(configs, Path.of("")));
     verifyNoInteractions(mockLogClient);
   }
-
 }

@@ -41,24 +41,34 @@ class MigrationDevHelperTest {
   @Test
   public void testGetNextMigrationVersion() {
     // Migration version does not exist
-    assertEquals("0.11.3.001", MigrationDevHelper.getNextMigrationVersion(
-        new AirbyteVersion("0.11.3-alpha"),
-        Optional.empty()).getVersion());
+    assertEquals(
+        "0.11.3.001",
+        MigrationDevHelper.getNextMigrationVersion(
+                new AirbyteVersion("0.11.3-alpha"), Optional.empty())
+            .getVersion());
 
     // Airbyte version is greater
-    assertEquals("0.11.3.001", MigrationDevHelper.getNextMigrationVersion(
-        new AirbyteVersion("0.11.3-alpha"),
-        Optional.of(MigrationVersion.fromVersion("0.10.9.003"))).getVersion());
+    assertEquals(
+        "0.11.3.001",
+        MigrationDevHelper.getNextMigrationVersion(
+                new AirbyteVersion("0.11.3-alpha"),
+                Optional.of(MigrationVersion.fromVersion("0.10.9.003")))
+            .getVersion());
 
     // Airbyte version is equal to migration version
-    assertEquals("0.11.3.004", MigrationDevHelper.getNextMigrationVersion(
-        new AirbyteVersion("0.11.3-alpha"),
-        Optional.of(MigrationVersion.fromVersion("0.11.3.003"))).getVersion());
+    assertEquals(
+        "0.11.3.004",
+        MigrationDevHelper.getNextMigrationVersion(
+                new AirbyteVersion("0.11.3-alpha"),
+                Optional.of(MigrationVersion.fromVersion("0.11.3.003")))
+            .getVersion());
 
     // Migration version is greater
-    assertEquals("0.11.3.004", MigrationDevHelper.getNextMigrationVersion(
-        new AirbyteVersion("0.9.17-alpha"),
-        Optional.of(MigrationVersion.fromVersion("0.11.3.003"))).getVersion());
+    assertEquals(
+        "0.11.3.004",
+        MigrationDevHelper.getNextMigrationVersion(
+                new AirbyteVersion("0.9.17-alpha"),
+                Optional.of(MigrationVersion.fromVersion("0.11.3.003")))
+            .getVersion());
   }
-
 }

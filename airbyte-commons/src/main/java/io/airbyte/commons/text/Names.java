@@ -47,5 +47,4 @@ public class Names {
       return String.format("%c%s%c", quoteChar, value, quoteChar);
     }
   }
-
 }

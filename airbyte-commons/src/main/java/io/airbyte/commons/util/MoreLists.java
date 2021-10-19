@@ -34,5 +34,4 @@ public class MoreLists {
     Collections.reverse(reversed);
     return reversed;
   }
-
 }

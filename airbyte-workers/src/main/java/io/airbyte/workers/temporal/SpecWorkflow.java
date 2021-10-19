@@ -33,17 +33,18 @@ public interface SpecWorkflow {
 
   class WorkflowImpl implements SpecWorkflow {
 
-    final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofHours(1))
-        .setRetryOptions(TemporalUtils.NO_RETRY)
-        .build();
+    final ActivityOptions options =
+        ActivityOptions.newBuilder()
+            .setScheduleToCloseTimeout(Duration.ofHours(1))
+            .setRetryOptions(TemporalUtils.NO_RETRY)
+            .build();
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
     @Override
-    public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
+    public ConnectorSpecification run(
+        final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
       return activity.run(jobRunConfig, launcherConfig);
     }
-
   }
 
   @ActivityInterface
@@ -51,7 +52,6 @@ public interface SpecWorkflow {
 
     @ActivityMethod
     ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig);
-
   }
 
   class SpecActivityImpl implements SpecActivity {
@@ -64,32 +64,36 @@ public interface SpecWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
-      final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
+    public ConnectorSpecification run(
+        final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
+      final Supplier<JobGetSpecConfig> inputSupplier =
+          () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
-      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
-          jobRunConfig,
-          getWorkerFactory(launcherConfig),
-          inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification>
+          temporalAttemptExecution =
+              new TemporalAttemptExecution<>(
+                  workspaceRoot,
+                  jobRunConfig,
+                  getWorkerFactory(launcherConfig),
+                  inputSupplier,
+                  new CancellationHandler.TemporalCancellationHandler());
 
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorSpecification>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorSpecification>, Exception>
+        getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
       return () -> {
-        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
-            launcherConfig.getJobId(),
-            launcherConfig.getAttemptId().intValue(),
-            launcherConfig.getDockerImage(),
-            processFactory,
-            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        final IntegrationLauncher integrationLauncher =
+            new AirbyteIntegrationLauncher(
+                launcherConfig.getJobId(),
+                launcherConfig.getAttemptId().intValue(),
+                launcherConfig.getDockerImage(),
+                processFactory,
+                WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
         return new DefaultGetSpecWorker(integrationLauncher);
       };
     }
-
   }
-
 }

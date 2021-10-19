@@ -17,7 +17,10 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JsonNode schema;
 
-  public RecordConsumer(final BufferedWriter fileWriter, final JsonSchemaValidator jsonSchemaValidator, final JsonNode schema) {
+  public RecordConsumer(
+      final BufferedWriter fileWriter,
+      final JsonSchemaValidator jsonSchemaValidator,
+      final JsonNode schema) {
     this.consumer = Yamls.listWriter(fileWriter);
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.schema = schema;
@@ -29,7 +32,8 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
       jsonSchemaValidator.ensure(schema, jsonNode);
       consumer.accept(jsonNode);
     } catch (final JsonValidationException e) {
-      throw new IllegalArgumentException("Output record does not conform to declared output schema", e);
+      throw new IllegalArgumentException(
+          "Output record does not conform to declared output schema", e);
     }
   }
 
@@ -37,5 +41,4 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
   public void close() throws Exception {
     consumer.close();
   }
-
 }

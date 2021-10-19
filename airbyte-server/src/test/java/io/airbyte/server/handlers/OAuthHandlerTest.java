@@ -47,13 +47,15 @@ class OAuthHandlerTest {
     params.put("client_id", "123");
     params.put("client_secret", "hunter2");
 
-    final SetInstancewideSourceOauthParamsRequestBody actualRequest = new SetInstancewideSourceOauthParamsRequestBody()
-        .sourceDefinitionId(sourceDefId)
-        .params(params);
+    final SetInstancewideSourceOauthParamsRequestBody actualRequest =
+        new SetInstancewideSourceOauthParamsRequestBody()
+            .sourceDefinitionId(sourceDefId)
+            .params(params);
 
     handler.setSourceInstancewideOauthParams(actualRequest);
 
-    final ArgumentCaptor<SourceOAuthParameter> argument = ArgumentCaptor.forClass(SourceOAuthParameter.class);
+    final ArgumentCaptor<SourceOAuthParameter> argument =
+        ArgumentCaptor.forClass(SourceOAuthParameter.class);
     Mockito.verify(configRepository).writeSourceOAuthParam(argument.capture());
     assertEquals(Jsons.jsonNode(params), argument.getValue().getConfiguration());
     assertEquals(sourceDefId, argument.getValue().getSourceDefinitionId());
@@ -65,9 +67,10 @@ class OAuthHandlerTest {
     final Map<String, Object> firstParams = new HashMap<>();
     firstParams.put("client_id", "123");
     firstParams.put("client_secret", "hunter2");
-    final SetInstancewideSourceOauthParamsRequestBody firstRequest = new SetInstancewideSourceOauthParamsRequestBody()
-        .sourceDefinitionId(sourceDefId)
-        .params(firstParams);
+    final SetInstancewideSourceOauthParamsRequestBody firstRequest =
+        new SetInstancewideSourceOauthParamsRequestBody()
+            .sourceDefinitionId(sourceDefId)
+            .params(firstParams);
     handler.setSourceInstancewideOauthParams(firstRequest);
 
     final UUID oauthParameterId = UUID.randomUUID();
@@ -77,12 +80,14 @@ class OAuthHandlerTest {
     final Map<String, Object> secondParams = new HashMap<>();
     secondParams.put("client_id", "456");
     secondParams.put("client_secret", "hunter3");
-    final SetInstancewideSourceOauthParamsRequestBody secondRequest = new SetInstancewideSourceOauthParamsRequestBody()
-        .sourceDefinitionId(sourceDefId)
-        .params(secondParams);
+    final SetInstancewideSourceOauthParamsRequestBody secondRequest =
+        new SetInstancewideSourceOauthParamsRequestBody()
+            .sourceDefinitionId(sourceDefId)
+            .params(secondParams);
     handler.setSourceInstancewideOauthParams(secondRequest);
 
-    final ArgumentCaptor<SourceOAuthParameter> argument = ArgumentCaptor.forClass(SourceOAuthParameter.class);
+    final ArgumentCaptor<SourceOAuthParameter> argument =
+        ArgumentCaptor.forClass(SourceOAuthParameter.class);
     Mockito.verify(configRepository, Mockito.times(2)).writeSourceOAuthParam(argument.capture());
     final List<SourceOAuthParameter> capturedValues = argument.getAllValues();
     assertEquals(Jsons.jsonNode(firstParams), capturedValues.get(0).getConfiguration());
@@ -99,13 +104,15 @@ class OAuthHandlerTest {
     params.put("client_id", "123");
     params.put("client_secret", "hunter2");
 
-    final SetInstancewideDestinationOauthParamsRequestBody actualRequest = new SetInstancewideDestinationOauthParamsRequestBody()
-        .destinationDefinitionId(destinationDefId)
-        .params(params);
+    final SetInstancewideDestinationOauthParamsRequestBody actualRequest =
+        new SetInstancewideDestinationOauthParamsRequestBody()
+            .destinationDefinitionId(destinationDefId)
+            .params(params);
 
     handler.setDestinationInstancewideOauthParams(actualRequest);
 
-    final ArgumentCaptor<DestinationOAuthParameter> argument = ArgumentCaptor.forClass(DestinationOAuthParameter.class);
+    final ArgumentCaptor<DestinationOAuthParameter> argument =
+        ArgumentCaptor.forClass(DestinationOAuthParameter.class);
     Mockito.verify(configRepository).writeDestinationOAuthParam(argument.capture());
     assertEquals(Jsons.jsonNode(params), argument.getValue().getConfiguration());
     assertEquals(destinationDefId, argument.getValue().getDestinationDefinitionId());
@@ -117,25 +124,30 @@ class OAuthHandlerTest {
     final Map<String, Object> firstParams = new HashMap<>();
     firstParams.put("client_id", "123");
     firstParams.put("client_secret", "hunter2");
-    final SetInstancewideDestinationOauthParamsRequestBody firstRequest = new SetInstancewideDestinationOauthParamsRequestBody()
-        .destinationDefinitionId(destinationDefId)
-        .params(firstParams);
+    final SetInstancewideDestinationOauthParamsRequestBody firstRequest =
+        new SetInstancewideDestinationOauthParamsRequestBody()
+            .destinationDefinitionId(destinationDefId)
+            .params(firstParams);
     handler.setDestinationInstancewideOauthParams(firstRequest);
 
     final UUID oauthParameterId = UUID.randomUUID();
     when(configRepository.getDestinationOAuthParamByDefinitionIdOptional(null, destinationDefId))
-        .thenReturn(Optional.of(new DestinationOAuthParameter().withOauthParameterId(oauthParameterId)));
+        .thenReturn(
+            Optional.of(new DestinationOAuthParameter().withOauthParameterId(oauthParameterId)));
 
     final Map<String, Object> secondParams = new HashMap<>();
     secondParams.put("client_id", "456");
     secondParams.put("client_secret", "hunter3");
-    final SetInstancewideDestinationOauthParamsRequestBody secondRequest = new SetInstancewideDestinationOauthParamsRequestBody()
-        .destinationDefinitionId(destinationDefId)
-        .params(secondParams);
+    final SetInstancewideDestinationOauthParamsRequestBody secondRequest =
+        new SetInstancewideDestinationOauthParamsRequestBody()
+            .destinationDefinitionId(destinationDefId)
+            .params(secondParams);
     handler.setDestinationInstancewideOauthParams(secondRequest);
 
-    final ArgumentCaptor<DestinationOAuthParameter> argument = ArgumentCaptor.forClass(DestinationOAuthParameter.class);
-    Mockito.verify(configRepository, Mockito.times(2)).writeDestinationOAuthParam(argument.capture());
+    final ArgumentCaptor<DestinationOAuthParameter> argument =
+        ArgumentCaptor.forClass(DestinationOAuthParameter.class);
+    Mockito.verify(configRepository, Mockito.times(2))
+        .writeDestinationOAuthParam(argument.capture());
     final List<DestinationOAuthParameter> capturedValues = argument.getAllValues();
     assertEquals(Jsons.jsonNode(firstParams), capturedValues.get(0).getConfiguration());
     assertEquals(Jsons.jsonNode(secondParams), capturedValues.get(1).getConfiguration());
@@ -143,5 +155,4 @@ class OAuthHandlerTest {
     assertEquals(destinationDefId, capturedValues.get(1).getDestinationDefinitionId());
     assertEquals(oauthParameterId, capturedValues.get(1).getOauthParameterId());
   }
-
 }

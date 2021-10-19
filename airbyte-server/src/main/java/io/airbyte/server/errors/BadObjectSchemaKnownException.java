@@ -18,5 +18,4 @@ public class BadObjectSchemaKnownException extends KnownException {
   public int getHttpCode() {
     return 422;
   }
-
 }

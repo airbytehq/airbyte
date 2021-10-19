@@ -19,18 +19,19 @@ import java.util.List;
  */
 public interface SchedulerJobClient {
 
-  Job createOrGetActiveSyncJob(SourceConnection source,
-                               DestinationConnection destination,
-                               StandardSync standardSync,
-                               String sourceDockerImage,
-                               String destinationDockerImage,
-                               List<StandardSyncOperation> standardSyncOperations)
+  Job createOrGetActiveSyncJob(
+      SourceConnection source,
+      DestinationConnection destination,
+      StandardSync standardSync,
+      String sourceDockerImage,
+      String destinationDockerImage,
+      List<StandardSyncOperation> standardSyncOperations)
       throws IOException;
 
-  Job createOrGetActiveResetConnectionJob(DestinationConnection destination,
-                                          StandardSync standardSync,
-                                          String destinationDockerImage,
-                                          List<StandardSyncOperation> standardSyncOperations)
+  Job createOrGetActiveResetConnectionJob(
+      DestinationConnection destination,
+      StandardSync standardSync,
+      String destinationDockerImage,
+      List<StandardSyncOperation> standardSyncOperations)
       throws IOException;
-
 }

@@ -24,24 +24,27 @@ public class EntrypointEnvChecker {
    * @return the entrypoint in the env variable AIRBYTE_ENTRYPOINT
    * @throws RuntimeException if there is ambiguous output from the container
    */
-  public static String getEntrypointEnvVariable(final ProcessFactory processFactory,
-                                                final String jobId,
-                                                final int jobAttempt,
-                                                final Path jobRoot,
-                                                final String imageName)
+  public static String getEntrypointEnvVariable(
+      final ProcessFactory processFactory,
+      final String jobId,
+      final int jobAttempt,
+      final Path jobRoot,
+      final String imageName)
       throws IOException, InterruptedException, WorkerException {
-    final Process process = processFactory.create(
-        jobId,
-        jobAttempt,
-        jobRoot,
-        imageName,
-        false,
-        Collections.emptyMap(),
-        "printenv",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
-        Collections.emptyMap());
+    final Process process =
+        processFactory.create(
+            jobId,
+            jobAttempt,
+            jobRoot,
+            imageName,
+            false,
+            Collections.emptyMap(),
+            "printenv",
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+            Collections.emptyMap());
 
-    final BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    final BufferedReader stdout =
+        new BufferedReader(new InputStreamReader(process.getInputStream()));
 
     String outputLine = null;
 
@@ -57,7 +60,8 @@ public class EntrypointEnvChecker {
     if (outputLine != null) {
       final String[] splits = outputLine.split("=", 2);
       if (splits.length != 2) {
-        throw new RuntimeException("String could not be split into multiple segments: " + outputLine);
+        throw new RuntimeException(
+            "String could not be split into multiple segments: " + outputLine);
       } else {
         return splits[1].strip();
       }
@@ -65,5 +69,4 @@ public class EntrypointEnvChecker {
       return null;
     }
   }
-
 }

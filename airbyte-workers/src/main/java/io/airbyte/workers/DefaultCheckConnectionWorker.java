@@ -33,7 +33,8 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   private Process process;
 
-  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+  public DefaultCheckConnectionWorker(
+      final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
@@ -43,21 +44,26 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
+  public StandardCheckConnectionOutput run(
+      final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
     try {
-      process = integrationLauncher.check(
-          jobRoot,
-          WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-          Jsons.serialize(input.getConnectionConfiguration()));
+      process =
+          integrationLauncher.check(
+              jobRoot,
+              WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+              Jsons.serialize(input.getConnectionConfiguration()));
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       final Optional<AirbyteConnectionStatus> status;
       try (final InputStream stdout = process.getInputStream()) {
-        status = streamFactory.create(IOs.newBufferedReader(stdout))
-            .filter(message -> message.getType() == Type.CONNECTION_STATUS)
-            .map(AirbyteMessage::getConnectionStatus).findFirst();
+        status =
+            streamFactory
+                .create(IOs.newBufferedReader(stdout))
+                .filter(message -> message.getType() == Type.CONNECTION_STATUS)
+                .map(AirbyteMessage::getConnectionStatus)
+                .findFirst();
 
         WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
       }
@@ -65,9 +71,10 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       final int exitCode = process.exitValue();
 
       if (status.isPresent() && exitCode == 0) {
-        final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
-            .withStatus(Enums.convertTo(status.get().getStatus(), Status.class))
-            .withMessage(status.get().getMessage());
+        final StandardCheckConnectionOutput output =
+            new StandardCheckConnectionOutput()
+                .withStatus(Enums.convertTo(status.get().getStatus(), Status.class))
+                .withMessage(status.get().getMessage());
 
         LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
@@ -85,5 +92,4 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   public void cancel() {
     WorkerUtils.cancelProcess(process);
   }
-
 }

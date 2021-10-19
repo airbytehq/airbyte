@@ -30,9 +30,10 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   public static Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
 
-  private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
-      ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
-      ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
+  private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP =
+      Map.of(
+          ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
+          ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
 
   // A mapping from seed config type to config UUID to config.
   private final ImmutableMap<SeedType, Map<String, JsonNode>> allSeedConfigs;
@@ -41,29 +42,37 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     return new YamlSeedConfigPersistence(DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
-  public static YamlSeedConfigPersistence get(final Class<?> seedDefinitionsResourceClass) throws IOException {
+  public static YamlSeedConfigPersistence get(final Class<?> seedDefinitionsResourceClass)
+      throws IOException {
     return new YamlSeedConfigPersistence(seedDefinitionsResourceClass);
   }
 
-  private YamlSeedConfigPersistence(final Class<?> seedDefinitionsResourceClass) throws IOException {
-    this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
-        .put(SeedType.STANDARD_SOURCE_DEFINITION, getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_SOURCE_DEFINITION))
-        .put(SeedType.STANDARD_DESTINATION_DEFINITION, getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION))
-        .build();
+  private YamlSeedConfigPersistence(final Class<?> seedDefinitionsResourceClass)
+      throws IOException {
+    this.allSeedConfigs =
+        ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
+            .put(
+                SeedType.STANDARD_SOURCE_DEFINITION,
+                getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_SOURCE_DEFINITION))
+            .put(
+                SeedType.STANDARD_DESTINATION_DEFINITION,
+                getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION))
+            .build();
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  private static Map<String, JsonNode> getConfigs(final Class<?> seedDefinitionsResourceClass, final SeedType seedType) throws IOException {
+  private static Map<String, JsonNode> getConfigs(
+      final Class<?> seedDefinitionsResourceClass, final SeedType seedType) throws IOException {
     final URL url = Resources.getResource(seedDefinitionsResourceClass, seedType.getResourcePath());
     final String yamlString = Resources.toString(url, StandardCharsets.UTF_8);
     final JsonNode configList = Yamls.deserialize(yamlString);
-    return MoreIterators.toList(configList.elements()).stream().collect(Collectors.toMap(
-        json -> json.get(seedType.getIdName()).asText(),
-        json -> json));
+    return MoreIterators.toList(configList.elements()).stream()
+        .collect(Collectors.toMap(json -> json.get(seedType.getIdName()).asText(), json -> json));
   }
 
   @Override
-  public <T> T getConfig(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+  public <T> T getConfig(
+      final AirbyteConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     final Map<String, JsonNode> configs = allSeedConfigs.get(CONFIG_SCHEMA_MAP.get(configType));
     if (configs == null) {
@@ -82,11 +91,14 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     if (configs == null) {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
     }
-    return configs.values().stream().map(json -> Jsons.object(json, clazz)).collect(Collectors.toList());
+    return configs.values().stream()
+        .map(json -> Jsons.object(json, clazz))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) {
+  public <T> void writeConfig(
+      final AirbyteConfig configType, final String configId, final T config) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
@@ -102,14 +114,12 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public Map<String, Stream<JsonNode>> dumpConfigs() {
-    return allSeedConfigs.entrySet().stream().collect(Collectors.toMap(
-        e -> e.getKey().name(),
-        e -> e.getValue().values().stream()));
+    return allSeedConfigs.entrySet().stream()
+        .collect(Collectors.toMap(e -> e.getKey().name(), e -> e.getValue().values().stream()));
   }
 
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
-
 }

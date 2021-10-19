@@ -9,10 +9,10 @@ import java.io.File;
 import java.nio.file.Path;
 
 public enum AirbyteProtocolSchema {
-
   PROTOCOL("airbyte_protocol.yaml");
 
-  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("airbyte_protocol", AirbyteProtocolSchema.class);
+  static final Path KNOWN_SCHEMAS_ROOT =
+      JsonSchemas.prepareSchemas("airbyte_protocol", AirbyteProtocolSchema.class);
 
   private final String schemaFilename;
 
@@ -23,5 +23,4 @@ public enum AirbyteProtocolSchema {
   public File getFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
-
 }

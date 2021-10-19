@@ -18,5 +18,4 @@ public class ApplicationErrorKnownException extends KnownException {
   public int getHttpCode() {
     return 422;
   }
-
 }

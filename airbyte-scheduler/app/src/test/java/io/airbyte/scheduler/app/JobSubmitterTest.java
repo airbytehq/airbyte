@@ -51,8 +51,10 @@ import org.slf4j.MDC;
 
 public class JobSubmitterTest {
 
-  private static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCEEDED, new JobOutput());
-  private static final OutputAndStatus<JobOutput> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
+  private static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT =
+      new OutputAndStatus<>(JobStatus.SUCCEEDED, new JobOutput());
+  private static final OutputAndStatus<JobOutput> FAILED_OUTPUT =
+      new OutputAndStatus<>(JobStatus.FAILED);
   private static final long JOB_ID = 1L;
   private static final int ATTEMPT_NUMBER = 12;
 
@@ -86,12 +88,14 @@ public class JobSubmitterTest {
     when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
     jobNotifier = mock(JobNotifier.class);
 
-    jobSubmitter = spy(new JobSubmitter(
-        MoreExecutors.newDirectExecutorService(),
-        persistence,
-        workerRunFactory,
-        jobTracker,
-        jobNotifier));
+    jobSubmitter =
+        spy(
+            new JobSubmitter(
+                MoreExecutors.newDirectExecutorService(),
+                persistence,
+                workerRunFactory,
+                jobTracker,
+                jobNotifier));
   }
 
   @Test
@@ -197,10 +201,12 @@ public class JobSubmitterTest {
   @Test
   void testMDC() throws Exception {
     final AtomicReference<Map<String, String>> mdcMap = new AtomicReference<>();
-    when(workerRun.call()).then(invocation -> {
-      mdcMap.set(MDC.getCopyOfContextMap());
-      return SUCCESS_OUTPUT;
-    });
+    when(workerRun.call())
+        .then(
+            invocation -> {
+              mdcMap.set(MDC.getCopyOfContextMap());
+              return SUCCESS_OUTPUT;
+            });
 
     jobSubmitter.run();
 
@@ -218,28 +224,31 @@ public class JobSubmitterTest {
   class OnlyOneJobIdRunning {
 
     /**
-     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job
-     * id can be successfully submited at once.
+     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one
+     * job id can be successfully submited at once.
      */
     @Test
     public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {
       final var jobDone = new AtomicReference<>(false);
-      when(workerRun.call()).thenAnswer((a) -> {
-        Thread.sleep(5000);
-        jobDone.set(true);
-        return SUCCESS_OUTPUT;
-      });
+      when(workerRun.call())
+          .thenAnswer(
+              (a) -> {
+                Thread.sleep(5000);
+                jobDone.set(true);
+                return SUCCESS_OUTPUT;
+              });
 
       // Simulate the same job being submitted over and over again.
       final var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
       while (!jobDone.get()) {
         // This sleep mimics our SchedulerApp loop.
         Thread.sleep(1000);
-        simulatedJobSubmitterPool.submit(() -> {
-          if (!jobDone.get()) {
-            jobSubmitter.run();
-          }
-        });
+        simulatedJobSubmitterPool.submit(
+            () -> {
+              if (!jobDone.get()) {
+                jobSubmitter.run();
+              }
+            });
       }
 
       simulatedJobSubmitterPool.shutdownNow();
@@ -280,7 +289,5 @@ public class JobSubmitterTest {
       verify(persistence, Mockito.times(2)).getNextJob();
       verify(jobSubmitter, Mockito.times(2)).submitJob(Mockito.any());
     }
-
   }
-
 }

@@ -50,10 +50,13 @@ public class TemporalUtilsTest {
     final VoidCallable callable = mock(VoidCallable.class);
 
     // force it to wait until we can verify that it is running.
-    doAnswer((a) -> {
-      countDownLatch.await(1, TimeUnit.MINUTES);
-      return null;
-    }).when(callable).call();
+    doAnswer(
+            (a) -> {
+              countDownLatch.await(1, TimeUnit.MINUTES);
+              return null;
+            })
+        .when(callable)
+        .call();
 
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
     final WorkflowServiceStubs temporalService = testEnv.getWorkflowService();
@@ -63,18 +66,18 @@ public class TemporalUtilsTest {
     worker.registerActivitiesImplementations(new TestWorkflow.Activity1Impl(callable));
     testEnv.start();
 
-    final TestWorkflow workflowStub = client.newWorkflowStub(TestWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
-    final ImmutablePair<WorkflowExecution, CompletableFuture<String>> pair = TemporalUtils.asyncExecute(
-        workflowStub,
-        workflowStub::run,
-        "whatever",
-        String.class);
+    final TestWorkflow workflowStub =
+        client.newWorkflowStub(
+            TestWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+    final ImmutablePair<WorkflowExecution, CompletableFuture<String>> pair =
+        TemporalUtils.asyncExecute(workflowStub, workflowStub::run, "whatever", String.class);
 
     final WorkflowExecution workflowExecution = pair.getLeft();
     final String workflowId = workflowExecution.getWorkflowId();
     final String runId = workflowExecution.getRunId();
 
-    final WorkflowExecutionInfo workflowExecutionInfo = temporalService.blockingStub().listOpenWorkflowExecutions(null).getExecutionsList().get(0);
+    final WorkflowExecutionInfo workflowExecutionInfo =
+        temporalService.blockingStub().listOpenWorkflowExecutions(null).getExecutionsList().get(0);
     assertEquals(workflowId, workflowExecutionInfo.getExecution().getWorkflowId());
     assertEquals(runId, workflowExecutionInfo.getExecution().getRunId());
 
@@ -87,8 +90,10 @@ public class TemporalUtilsTest {
 
   @Test
   public void testWaitForTemporalServerAndLogThrowsException() {
-    final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
-    final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
+    final WorkflowServiceStubs workflowServiceStubs =
+        mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
+    final DescribeNamespaceResponse describeNamespaceResponse =
+        mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
 
     when(namespaceInfo.getName()).thenReturn("default");
@@ -109,11 +114,12 @@ public class TemporalUtilsTest {
 
       private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
 
-      private final ActivityOptions options = ActivityOptions.newBuilder()
-          .setScheduleToCloseTimeout(Duration.ofDays(3))
-          .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
-          .setRetryOptions(TemporalUtils.NO_RETRY)
-          .build();
+      private final ActivityOptions options =
+          ActivityOptions.newBuilder()
+              .setScheduleToCloseTimeout(Duration.ofDays(3))
+              .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
+              .setRetryOptions(TemporalUtils.NO_RETRY)
+              .build();
 
       private final Activity1 activity1 = Workflow.newActivityStub(Activity1.class, options);
       private final Activity1 activity2 = Workflow.newActivityStub(Activity1.class, options);
@@ -128,7 +134,6 @@ public class TemporalUtilsTest {
 
         return "completed";
       }
-
     }
 
     @ActivityInterface
@@ -136,12 +141,12 @@ public class TemporalUtilsTest {
 
       @ActivityMethod
       void activity();
-
     }
 
     class Activity1Impl implements Activity1 {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(TestWorkflow.Activity1Impl.class);
+      private static final Logger LOGGER =
+          LoggerFactory.getLogger(TestWorkflow.Activity1Impl.class);
       private static final String ACTIVITY1 = "activity1";
 
       private final VoidCallable callable;
@@ -159,9 +164,6 @@ public class TemporalUtilsTest {
         }
         LOGGER.info("before: {}", ACTIVITY1);
       }
-
     }
-
   }
-
 }

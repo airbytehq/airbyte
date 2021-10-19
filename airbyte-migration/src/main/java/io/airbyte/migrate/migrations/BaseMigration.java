@@ -25,5 +25,4 @@ public abstract class BaseMigration implements Migration {
   public Map<ResourceId, JsonNode> getInputSchema() {
     return previousMigration.getOutputSchema();
   }
-
 }

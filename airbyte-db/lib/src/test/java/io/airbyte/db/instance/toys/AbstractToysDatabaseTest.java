@@ -10,8 +10,11 @@ import java.io.IOException;
 
 public abstract class AbstractToysDatabaseTest extends AbstractDatabaseTest {
 
-  public Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
-    return new ToysDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+  public Database getAndInitializeDatabase(
+      final String username, final String password, final String connectionString)
+      throws IOException {
+    return new ToysDatabaseInstance(
+            container.getUsername(), container.getPassword(), container.getJdbcUrl())
+        .getAndInitialize();
   }
-
 }

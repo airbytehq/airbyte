@@ -88,10 +88,11 @@ public class ConnectionHelpers {
         .withUnits(BASIC_SCHEDULE_UNITS);
   }
 
-  public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
-                                                              final UUID sourceId,
-                                                              final UUID destinationId,
-                                                              final List<UUID> operationIds) {
+  public static ConnectionRead generateExpectedConnectionRead(
+      final UUID connectionId,
+      final UUID sourceId,
+      final UUID destinationId,
+      final List<UUID> operationIds) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -105,26 +106,29 @@ public class ConnectionHelpers {
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog())
-        .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+        .resourceRequirements(
+            new ResourceRequirements()
+                .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+                .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+                .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+                .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
-    final ConnectionRead connectionRead = generateExpectedConnectionRead(
-        standardSync.getConnectionId(),
-        standardSync.getSourceId(),
-        standardSync.getDestinationId(),
-        standardSync.getOperationIds());
+    final ConnectionRead connectionRead =
+        generateExpectedConnectionRead(
+            standardSync.getConnectionId(),
+            standardSync.getSourceId(),
+            standardSync.getDestinationId(),
+            standardSync.getOperationIds());
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
     } else {
-      connectionRead.schedule(new ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
+      connectionRead.schedule(
+          new ConnectionSchedule()
+              .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+              .units(standardSync.getSchedule().getUnits()));
     }
 
     return connectionRead;
@@ -142,26 +146,30 @@ public class ConnectionHelpers {
         .prefix(standardSync.getPrefix());
 
     if (standardSync.getNamespaceDefinition() != null) {
-      connectionRead
-          .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
+      connectionRead.namespaceDefinition(
+          io.airbyte.api.model.NamespaceDefinitionType.fromValue(
+              standardSync.getNamespaceDefinition().value()));
     }
     if (standardSync.getStatus() != null) {
-      connectionRead.status(io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
+      connectionRead.status(
+          io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
     }
     if (standardSync.getSchedule() != null) {
-      connectionRead.schedule(new io.airbyte.api.model.ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
+      connectionRead.schedule(
+          new io.airbyte.api.model.ConnectionSchedule()
+              .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+              .units(standardSync.getSchedule().getUnits()));
     }
     if (standardSync.getCatalog() != null) {
       connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
     }
     if (standardSync.getResourceRequirements() != null) {
-      connectionRead.resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
-          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
-          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
+      connectionRead.resourceRequirements(
+          new io.airbyte.api.model.ResourceRequirements()
+              .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+              .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+              .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
+              .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
     }
     return connectionRead;
   }
@@ -171,25 +179,32 @@ public class ConnectionHelpers {
   }
 
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(generateBasicAirbyteStream())
-        .withCursorField(Lists.newArrayList(FIELD_NAME))
-        .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL)
-        .withDestinationSyncMode(DestinationSyncMode.APPEND);
+    final ConfiguredAirbyteStream stream =
+        new ConfiguredAirbyteStream()
+            .withStream(generateBasicAirbyteStream())
+            .withCursorField(Lists.newArrayList(FIELD_NAME))
+            .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND);
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
   }
 
   private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
-    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
+    return CatalogHelpers.createAirbyteStream(
+            STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
-        .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
+        .withSupportedSyncModes(
+            List.of(
+                io.airbyte.protocol.models.SyncMode.FULL_REFRESH,
+                io.airbyte.protocol.models.SyncMode.INCREMENTAL));
   }
 
   public static AirbyteCatalog generateBasicApiCatalog() {
-    return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
-        .stream(generateBasicApiStream())
-        .config(generateBasicApiStreamConfig())));
+    return new AirbyteCatalog()
+        .streams(
+            Lists.newArrayList(
+                new AirbyteStreamAndConfiguration()
+                    .stream(generateBasicApiStream()).config(generateBasicApiStreamConfig())));
   }
 
   private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {
@@ -210,5 +225,4 @@ public class ConnectionHelpers {
         .sourceDefinedCursor(false)
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
-
 }

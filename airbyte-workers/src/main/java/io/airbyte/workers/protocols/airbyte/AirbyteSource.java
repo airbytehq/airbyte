@@ -7,6 +7,4 @@ package io.airbyte.workers.protocols.airbyte;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.Source;
 
-public interface AirbyteSource extends Source<AirbyteMessage> {
-
-}
+public interface AirbyteSource extends Source<AirbyteMessage> {}

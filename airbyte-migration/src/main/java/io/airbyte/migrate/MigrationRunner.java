@@ -29,26 +29,32 @@ public class MigrationRunner {
 
   public static void run(MigrateConfig migrateConfig) throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
-    migrateConfig = new MigrateConfig(migrateConfig.getInputPath(), migrateConfig.getOutputPath(),
-        AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).getVersion());
+    migrateConfig =
+        new MigrateConfig(
+            migrateConfig.getInputPath(),
+            migrateConfig.getOutputPath(),
+            AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).getVersion());
 
     if (migrateConfig.getInputPath().toString().endsWith(".gz")) {
       LOGGER.info("Unpacking tarball");
-      final Path uncompressedInputPath = Files.createDirectories(workspaceRoot.resolve("uncompressed"));
+      final Path uncompressedInputPath =
+          Files.createDirectories(workspaceRoot.resolve("uncompressed"));
       Archives.extractArchive(migrateConfig.getInputPath(), uncompressedInputPath);
-      migrateConfig = new MigrateConfig(
-          uncompressedInputPath,
-          migrateConfig.getOutputPath(),
-          migrateConfig.getTargetVersion());
+      migrateConfig =
+          new MigrateConfig(
+              uncompressedInputPath,
+              migrateConfig.getOutputPath(),
+              migrateConfig.getTargetVersion());
     }
 
     final Path outputPath = migrateConfig.getOutputPath();
 
     // todo hack
-    migrateConfig = new MigrateConfig(
-        migrateConfig.getInputPath(),
-        workspaceRoot.resolve("output"),
-        migrateConfig.getTargetVersion());
+    migrateConfig =
+        new MigrateConfig(
+            migrateConfig.getInputPath(),
+            workspaceRoot.resolve("output"),
+            migrateConfig.getTargetVersion());
 
     LOGGER.info("Running migrations...");
     LOGGER.info(migrateConfig.toString());
@@ -62,21 +68,27 @@ public class MigrationRunner {
 
   private static MigrateConfig parse(final String[] args) {
     LOGGER.info("args: {}", Arrays.asList(args));
-    final ArgumentParser parser = ArgumentParsers.newFor(Migrate.class.getName()).build()
-        .defaultHelp(true)
-        .description("Migrate Airbyte Data");
+    final ArgumentParser parser =
+        ArgumentParsers.newFor(Migrate.class.getName())
+            .build()
+            .defaultHelp(true)
+            .description("Migrate Airbyte Data");
 
-    parser.addArgument("--input")
+    parser
+        .addArgument("--input")
         .required(true)
         .help("Path to .tar.gz archive or root dir of data to migrate.");
 
-    parser.addArgument("--output")
+    parser
+        .addArgument("--output")
         .required(true)
         .help("Full path of the output tarball. By convention should end with .tar.gz");
 
-    parser.addArgument("--target-version")
+    parser
+        .addArgument("--target-version")
         .required(false)
-        .help("Version to upgrade the data to (default to latest migration available if left empty)");
+        .help(
+            "Version to upgrade the data to (default to latest migration available if left empty)");
 
     try {
       final Namespace parsed = parser.parseArgs(args);
@@ -84,7 +96,9 @@ public class MigrationRunner {
       final Path outputPath = Path.of(parsed.getString("output"));
       final String targetVersionFromCli = parsed.getString("target_version");
       final String targetVersion =
-          Objects.isNull(targetVersionFromCli) ? Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion() : targetVersionFromCli;
+          Objects.isNull(targetVersionFromCli)
+              ? Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion()
+              : targetVersionFromCli;
       return new MigrateConfig(inputPath, outputPath, targetVersion);
     } catch (final ArgumentParserException e) {
       parser.handleError(e);
@@ -95,5 +109,4 @@ public class MigrationRunner {
   public static void main(final String[] args) throws IOException {
     MigrationRunner.run(args);
   }
-
 }

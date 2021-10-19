@@ -18,10 +18,14 @@ public class SchemaTableNamePair {
 
   @Override
   public String toString() {
-    return "SchemaTableNamePair{" +
-        "schemaName='" + schemaName + '\'' +
-        ", tableName='" + tableName + '\'' +
-        '}';
+    return "SchemaTableNamePair{"
+        + "schemaName='"
+        + schemaName
+        + '\''
+        + ", tableName='"
+        + tableName
+        + '\''
+        + '}';
   }
 
   @Override
@@ -44,5 +48,4 @@ public class SchemaTableNamePair {
   public String getFullyQualifiedTableName() {
     return schemaName + "." + tableName;
   }
-
 }

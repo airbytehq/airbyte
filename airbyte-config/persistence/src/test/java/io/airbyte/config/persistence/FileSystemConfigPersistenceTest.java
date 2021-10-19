@@ -41,14 +41,17 @@ class FileSystemConfigPersistenceTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    final Path rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), FileSystemConfigPersistenceTest.class.getName());
+    final Path rootPath =
+        Files.createTempDirectory(
+            Files.createDirectories(TEST_ROOT), FileSystemConfigPersistenceTest.class.getName());
 
     configPersistence = new FileSystemConfigPersistence(rootPath);
   }
 
   @Test
   void testReadWriteConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
 
     assertEquals(
         SOURCE_1,
@@ -60,31 +63,37 @@ class FileSystemConfigPersistenceTest {
 
   @Test
   void testListConfigs() throws JsonValidationException, IOException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
+    configPersistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
 
     assertEquals(
         Sets.newHashSet(SOURCE_1, SOURCE_2),
-        Sets.newHashSet(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)));
+        Sets.newHashSet(
+            configPersistence.listConfigs(
+                ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)));
   }
 
   @Test
-  void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardSync standardSync = new StandardSync()
-        .withName("sync")
-        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
-        .withNamespaceFormat(null)
-        .withPrefix("sync")
-        .withConnectionId(UUID_1)
-        .withSourceId(UUID.randomUUID())
-        .withDestinationId(UUID.randomUUID())
-        .withOperationIds(List.of(UUID.randomUUID()));
+  void writeConfigWithJsonSchemaRef()
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final StandardSync standardSync =
+        new StandardSync()
+            .withName("sync")
+            .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+            .withNamespaceFormat(null)
+            .withPrefix("sync")
+            .withConnectionId(UUID_1)
+            .withSourceId(UUID.randomUUID())
+            .withDestinationId(UUID.randomUUID())
+            .withOperationIds(List.of(UUID.randomUUID()));
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 
     assertEquals(
         standardSync,
-        configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
+        configPersistence.getConfig(
+            ConfigSchema.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
   }
-
 }

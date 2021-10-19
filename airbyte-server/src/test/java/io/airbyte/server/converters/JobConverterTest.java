@@ -38,10 +38,12 @@ class JobConverterTest {
   private static final String JOB_CONFIG_ID = "123";
   private static final JobStatus JOB_STATUS = JobStatus.RUNNING;
   private static final AttemptStatus ATTEMPT_STATUS = AttemptStatus.RUNNING;
-  private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
-  private static final JobConfig JOB_CONFIG = new JobConfig()
-      .withConfigType(CONFIG_TYPE)
-      .withCheckConnection(new JobCheckConnectionConfig());
+  private static final JobConfig.ConfigType CONFIG_TYPE =
+      JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
+  private static final JobConfig JOB_CONFIG =
+      new JobConfig()
+          .withConfigType(CONFIG_TYPE)
+          .withCheckConnection(new JobCheckConnectionConfig());
   private static final Path LOG_PATH = Path.of("log_path");
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
@@ -49,25 +51,33 @@ class JobConverterTest {
 
   private static final JobInfoRead JOB_INFO =
       new JobInfoRead()
-          .job(new JobRead()
-              .id(JOB_ID)
-              .configId(JOB_CONFIG_ID)
-              .status(io.airbyte.api.model.JobStatus.RUNNING)
-              .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
-              .createdAt(CREATED_AT)
-              .updatedAt(CREATED_AT))
-          .attempts(Lists.newArrayList(new AttemptInfoRead()
-              .attempt(new AttemptRead()
-                  .id(ATTEMPT_ID)
-                  .status(io.airbyte.api.model.AttemptStatus.RUNNING)
-                  .updatedAt(CREATED_AT)
+          .job(
+              new JobRead()
+                  .id(JOB_ID)
+                  .configId(JOB_CONFIG_ID)
+                  .status(io.airbyte.api.model.JobStatus.RUNNING)
+                  .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
                   .createdAt(CREATED_AT)
-                  .endedAt(CREATED_AT))
-              .logs(new LogRead().logLines(new ArrayList<>()))));
+                  .updatedAt(CREATED_AT))
+          .attempts(
+              Lists.newArrayList(
+                  new AttemptInfoRead()
+                      .attempt(
+                          new AttemptRead()
+                              .id(ATTEMPT_ID)
+                              .status(io.airbyte.api.model.AttemptStatus.RUNNING)
+                              .updatedAt(CREATED_AT)
+                              .createdAt(CREATED_AT)
+                              .endedAt(CREATED_AT))
+                      .logs(new LogRead().logLines(new ArrayList<>()))));
 
-  private static final JobWithAttemptsRead JOB_WITH_ATTEMPTS_READ = new JobWithAttemptsRead()
-      .job(JOB_INFO.getJob())
-      .attempts(JOB_INFO.getAttempts().stream().map(AttemptInfoRead::getAttempt).collect(Collectors.toList()));
+  private static final JobWithAttemptsRead JOB_WITH_ATTEMPTS_READ =
+      new JobWithAttemptsRead()
+          .job(JOB_INFO.getJob())
+          .attempts(
+              JOB_INFO.getAttempts().stream()
+                  .map(AttemptInfoRead::getAttempt)
+                  .collect(Collectors.toList()));
 
   @BeforeEach
   public void setUp() {
@@ -111,5 +121,4 @@ class JobConverterTest {
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
     assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.AttemptStatus.class));
   }
-
 }

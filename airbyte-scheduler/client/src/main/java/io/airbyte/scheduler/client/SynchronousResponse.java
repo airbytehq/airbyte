@@ -18,24 +18,22 @@ public class SynchronousResponse<T> {
     return new SynchronousResponse<>(null, metadata);
   }
 
-  public static <T> SynchronousResponse<T> success(final T output, final SynchronousJobMetadata metadata) {
+  public static <T> SynchronousResponse<T> success(
+      final T output, final SynchronousJobMetadata metadata) {
     return new SynchronousResponse<>(output, metadata);
   }
 
-  public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<T> temporalResponse,
-                                                                final UUID id,
-                                                                final ConfigType configType,
-                                                                final UUID configId,
-                                                                final long createdAt,
-                                                                final long endedAt) {
+  public static <T> SynchronousResponse<T> fromTemporalResponse(
+      final TemporalResponse<T> temporalResponse,
+      final UUID id,
+      final ConfigType configType,
+      final UUID configId,
+      final long createdAt,
+      final long endedAt) {
 
-    final SynchronousJobMetadata metadata = SynchronousJobMetadata.fromJobMetadata(
-        temporalResponse.getMetadata(),
-        id,
-        configType,
-        configId,
-        createdAt,
-        endedAt);
+    final SynchronousJobMetadata metadata =
+        SynchronousJobMetadata.fromJobMetadata(
+            temporalResponse.getMetadata(), id, configType, configId, createdAt, endedAt);
     return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata);
   }
 
@@ -75,10 +73,6 @@ public class SynchronousResponse<T> {
 
   @Override
   public String toString() {
-    return "SynchronousResponse{" +
-        "output=" + output +
-        ", metadata=" + metadata +
-        '}';
+    return "SynchronousResponse{" + "output=" + output + ", metadata=" + metadata + '}';
   }
-
 }

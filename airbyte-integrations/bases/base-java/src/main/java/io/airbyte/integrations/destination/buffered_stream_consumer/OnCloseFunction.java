@@ -10,5 +10,4 @@ public interface OnCloseFunction extends CheckedConsumer<Boolean, Exception> {
 
   @Override
   void accept(Boolean hasFailed) throws Exception;
-
 }

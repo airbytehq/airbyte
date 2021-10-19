@@ -35,38 +35,43 @@ class DefaultNormalizationWorkerTest {
     jobRoot = Files.createDirectories(Files.createTempDirectory("test").resolve(WORKSPACE_ROOT));
     normalizationRoot = jobRoot.resolve("normalize");
 
-    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
-    normalizationInput = new NormalizationInput()
-        .withDestinationConfiguration(syncPair.getValue().getDestinationConfiguration())
-        .withCatalog(syncPair.getValue().getCatalog())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair =
+        TestConfigHelpers.createSyncConfig();
+    normalizationInput =
+        new NormalizationInput()
+            .withDestinationConfiguration(syncPair.getValue().getDestinationConfiguration())
+            .withCatalog(syncPair.getValue().getCatalog())
+            .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
     normalizationRunner = mock(NormalizationRunner.class);
 
     when(normalizationRunner.normalize(
-        JOB_ID,
-        JOB_ATTEMPT,
-        normalizationRoot,
-        normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS))
-            .thenReturn(true);
+            JOB_ID,
+            JOB_ATTEMPT,
+            normalizationRoot,
+            normalizationInput.getDestinationConfiguration(),
+            normalizationInput.getCatalog(),
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS))
+        .thenReturn(true);
   }
 
   @Test
   void test() throws Exception {
     final DefaultNormalizationWorker normalizationWorker =
-        new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
+        new DefaultNormalizationWorker(
+            JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
 
     normalizationWorker.run(normalizationInput, jobRoot);
 
     verify(normalizationRunner).start();
-    verify(normalizationRunner).normalize(
-        JOB_ID,
-        JOB_ATTEMPT,
-        normalizationRoot,
-        normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    verify(normalizationRunner)
+        .normalize(
+            JOB_ID,
+            JOB_ATTEMPT,
+            normalizationRoot,
+            normalizationInput.getDestinationConfiguration(),
+            normalizationInput.getCatalog(),
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     verify(normalizationRunner).close();
   }
-
 }

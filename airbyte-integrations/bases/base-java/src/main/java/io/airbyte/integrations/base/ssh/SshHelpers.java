@@ -13,15 +13,18 @@ import java.io.IOException;
 public class SshHelpers {
 
   public static ConnectorSpecification getSpecAndInjectSsh() throws IOException {
-    final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    final ConnectorSpecification originalSpec =
+        Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
     return injectSshIntoSpec(originalSpec);
   }
 
-  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification) throws IOException {
+  public static ConnectorSpecification injectSshIntoSpec(
+      final ConnectorSpecification connectorSpecification) throws IOException {
     final ConnectorSpecification originalSpec = Jsons.clone(connectorSpecification);
-    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    final ObjectNode propNode =
+        (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    propNode.set(
+        "tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
     return originalSpec;
   }
-
 }

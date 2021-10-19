@@ -33,15 +33,17 @@ public class GcsLogs implements CloudLogs {
     return getFile(configs, logPath, LogClientSingleton.DEFAULT_PAGE_SIZE);
   }
 
-  static File getFile(final LogConfigs configs, final String logPath, final int pageSize) throws IOException {
+  static File getFile(final LogConfigs configs, final String logPath, final int pageSize)
+      throws IOException {
     LOGGER.debug("Retrieving logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
 
     LOGGER.debug("Start GCS list request.");
-    final Page<Blob> blobs = GCS.list(
-        configs.getGcpStorageBucket(),
-        Storage.BlobListOption.prefix(logPath),
-        Storage.BlobListOption.pageSize(pageSize));
+    final Page<Blob> blobs =
+        GCS.list(
+            configs.getGcpStorageBucket(),
+            Storage.BlobListOption.prefix(logPath),
+            Storage.BlobListOption.pageSize(pageSize));
 
     final var randomName = Strings.addRandomSuffix("logs", "-", 5);
     final var tmpOutputFile = new File("/tmp/" + randomName);
@@ -57,14 +59,14 @@ public class GcsLogs implements CloudLogs {
   }
 
   @Override
-  public List<String> tailCloudLog(final LogConfigs configs, final String logPath, final int numLines) throws IOException {
+  public List<String> tailCloudLog(
+      final LogConfigs configs, final String logPath, final int numLines) throws IOException {
     LOGGER.debug("Tailing logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
 
     LOGGER.debug("Start GCS list request.");
-    final Page<Blob> blobs = GCS.list(
-        configs.getGcpStorageBucket(),
-        Storage.BlobListOption.prefix(logPath));
+    final Page<Blob> blobs =
+        GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
 
     final var ascendingTimestampBlobs = new ArrayList<Blob>();
     for (final Blob blob : blobs.iterateAll()) {
@@ -102,7 +104,8 @@ public class GcsLogs implements CloudLogs {
     createGcsClientIfNotExists(configs);
 
     LOGGER.debug("Start GCS list and delete request.");
-    final Page<Blob> blobs = GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
+    final Page<Blob> blobs =
+        GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
     for (final Blob blob : blobs.iterateAll()) {
       blob.delete(BlobSourceOption.generationMatch());
     }
@@ -135,8 +138,8 @@ public class GcsLogs implements CloudLogs {
       blob.downloadTo(os);
     }
     os.close();
-    final var data = new GcsLogs().tailCloudLog(new LogConfigDelegator(new EnvConfigs()), "tail", 6);
+    final var data =
+        new GcsLogs().tailCloudLog(new LogConfigDelegator(new EnvConfigs()), "tail", 6);
     System.out.println(data);
   }
-
 }

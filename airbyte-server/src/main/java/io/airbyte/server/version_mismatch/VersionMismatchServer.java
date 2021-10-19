@@ -62,15 +62,18 @@ public class VersionMismatchServer implements ServerRunnable {
     // this error message should be overwritten before any requests are served
     public static String ERROR_MESSAGE = "Versions don't match!";
 
-    public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void doPost(final HttpServletRequest request, final HttpServletResponse response)
+        throws IOException {
       this.serveDefaultRequest(response);
     }
 
-    public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void doGet(final HttpServletRequest request, final HttpServletResponse response)
+        throws IOException {
       this.serveDefaultRequest(response);
     }
 
-    public void doOptions(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void doOptions(final HttpServletRequest request, final HttpServletResponse response)
+        throws IOException {
       this.addCorsHeaders(response);
     }
 
@@ -89,7 +92,5 @@ public class VersionMismatchServer implements ServerRunnable {
         response.setHeader(entry.getKey(), entry.getValue());
       }
     }
-
   }
-
 }

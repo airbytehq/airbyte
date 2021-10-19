@@ -44,8 +44,8 @@ public interface JobPersistence {
   Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException;
 
   /**
-   * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job is
-   * in a terminal state.
+   * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job
+   * is in a terminal state.
    *
    * @param jobId job to reset
    * @throws IOException exception due to interaction with persistence
@@ -107,14 +107,11 @@ public interface JobPersistence {
   // END OF LIFECYCLE
   //
 
-  /**
-   * Sets an attempt's temporal workflow id. Later used to cancel the workflow.
-   */
-  void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException;
+  /** Sets an attempt's temporal workflow id. Later used to cancel the workflow. */
+  void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId)
+      throws IOException;
 
-  /**
-   * Retrieves an attempt's temporal workflow id. Used to cancel the workflow.
-   */
+  /** Retrieves an attempt's temporal workflow id. Used to cancel the workflow. */
   Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
 
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
@@ -125,10 +122,10 @@ public interface JobPersistence {
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
    */
-  List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
+  List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset)
+      throws IOException;
 
   /**
-   *
    * @param configType The type of job
    * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
    * @return List of jobs that have attempts after the provided timestamp
@@ -136,21 +133,24 @@ public interface JobPersistence {
    */
   List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
-  List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
+  List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset)
+      throws IOException;
 
   List<Job> listJobsWithStatus(JobStatus status) throws IOException;
 
-  List<Job> listJobsWithStatus(Set<JobConfig.ConfigType> configTypes, JobStatus status) throws IOException;
+  List<Job> listJobsWithStatus(Set<JobConfig.ConfigType> configTypes, JobStatus status)
+      throws IOException;
 
-  List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
+  List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status)
+      throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
   /**
    * if a job does not succeed, we assume that it synced nothing. that is the most conservative
    * assumption we can make. as long as all destinations write the final data output in a
-   * transactional way, this will be true. if this changes, then we may end up writing duplicate data
-   * with our incremental append only. this is preferable to failing to send data at all. our
+   * transactional way, this will be true. if this changes, then we may end up writing duplicate
+   * data with our incremental append only. this is preferable to failing to send data at all. our
    * incremental append only most closely resembles a deliver at least once strategy anyway.
    *
    * @param connectionId - id of the connection whose state we want to fetch.
@@ -163,31 +163,23 @@ public interface JobPersistence {
 
   /// ARCHIVE
 
-  /**
-   * Returns the AirbyteVersion.
-   */
+  /** Returns the AirbyteVersion. */
   Optional<String> getVersion() throws IOException;
 
-  /**
-   * Set the airbyte version
-   */
+  /** Set the airbyte version */
   void setVersion(String airbyteVersion) throws IOException;
 
-  /**
-   * Returns a deployment UUID.
-   */
+  /** Returns a deployment UUID. */
   Optional<UUID> getDeployment() throws IOException;
   // a deployment references a setup of airbyte. it is created the first time the docker compose or
   // K8s is ready.
 
-  /**
-   * Set deployment id. If one is already set, the new value is ignored.
-   */
+  /** Set deployment id. If one is already set, the new value is ignored. */
   void setDeployment(UUID uuid) throws IOException;
 
   /**
-   * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
-   * table schemas to the associated streams of records that is being exported.
+   * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map
+   * of table schemas to the associated streams of records that is being exported.
    */
   Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
 
@@ -198,9 +190,10 @@ public interface JobPersistence {
    *
    * @param data is a Map of table schemas to the associated streams of records to import.
    * @param airbyteVersion is the version of the files to be imported and should match the Airbyte
-   *        version in the Database.
+   *     version in the Database.
    */
-  void importDatabase(String airbyteVersion, Map<JobsDatabaseSchema, Stream<JsonNode>> data) throws IOException;
+  void importDatabase(String airbyteVersion, Map<JobsDatabaseSchema, Stream<JsonNode>> data)
+      throws IOException;
 
   /**
    * Purges job history while ensuring that the latest saved-state information is maintained.
@@ -208,5 +201,4 @@ public interface JobPersistence {
    * @throws IOException
    */
   void purgeJobHistory();
-
 }

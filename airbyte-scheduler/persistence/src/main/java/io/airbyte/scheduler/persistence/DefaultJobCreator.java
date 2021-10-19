@@ -28,32 +28,35 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public Optional<Long> createSyncJob(final SourceConnection source,
-                                      final DestinationConnection destination,
-                                      final StandardSync standardSync,
-                                      final String sourceDockerImageName,
-                                      final String destinationDockerImageName,
-                                      final List<StandardSyncOperation> standardSyncOperations)
+  public Optional<Long> createSyncJob(
+      final SourceConnection source,
+      final DestinationConnection destination,
+      final StandardSync standardSync,
+      final String sourceDockerImageName,
+      final String destinationDockerImageName,
+      final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     // reusing this isn't going to quite work.
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
-        .withNamespaceFormat(standardSync.getNamespaceFormat())
-        .withPrefix(standardSync.getPrefix())
-        .withSourceDockerImage(sourceDockerImageName)
-        .withSourceConfiguration(source.getConfiguration())
-        .withDestinationDockerImage(destinationDockerImageName)
-        .withDestinationConfiguration(destination.getConfiguration())
-        .withOperationSequence(standardSyncOperations)
-        .withConfiguredAirbyteCatalog(standardSync.getCatalog())
-        .withState(null)
-        .withResourceRequirements(standardSync.getResourceRequirements());
+    final JobSyncConfig jobSyncConfig =
+        new JobSyncConfig()
+            .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+            .withNamespaceFormat(standardSync.getNamespaceFormat())
+            .withPrefix(standardSync.getPrefix())
+            .withSourceDockerImage(sourceDockerImageName)
+            .withSourceConfiguration(source.getConfiguration())
+            .withDestinationDockerImage(destinationDockerImageName)
+            .withDestinationConfiguration(destination.getConfiguration())
+            .withOperationSequence(standardSyncOperations)
+            .withConfiguredAirbyteCatalog(standardSync.getCatalog())
+            .withState(null)
+            .withResourceRequirements(standardSync.getResourceRequirements());
 
-    jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
+    jobPersistence
+        .getCurrentState(standardSync.getConnectionId())
+        .ifPresent(jobSyncConfig::withState);
 
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.SYNC)
-        .withSync(jobSyncConfig);
+    final JobConfig jobConfig =
+        new JobConfig().withConfigType(ConfigType.SYNC).withSync(jobSyncConfig);
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
   }
 
@@ -65,30 +68,35 @@ public class DefaultJobCreator implements JobCreator {
   // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
   // beginning on the next sync).
   @Override
-  public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
-                                                 final StandardSync standardSync,
-                                                 final String destinationDockerImage,
-                                                 final List<StandardSyncOperation> standardSyncOperations)
+  public Optional<Long> createResetConnectionJob(
+      final DestinationConnection destination,
+      final StandardSync standardSync,
+      final String destinationDockerImage,
+      final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
-    configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
-      configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
-      configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-    });
-    final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
-        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
-        .withNamespaceFormat(standardSync.getNamespaceFormat())
-        .withPrefix(standardSync.getPrefix())
-        .withDestinationDockerImage(destinationDockerImage)
-        .withDestinationConfiguration(destination.getConfiguration())
-        .withOperationSequence(standardSyncOperations)
-        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
-        .withResourceRequirements(standardSync.getResourceRequirements());
+    configuredAirbyteCatalog
+        .getStreams()
+        .forEach(
+            configuredAirbyteStream -> {
+              configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
+              configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+            });
+    final JobResetConnectionConfig resetConnectionConfig =
+        new JobResetConnectionConfig()
+            .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+            .withNamespaceFormat(standardSync.getNamespaceFormat())
+            .withPrefix(standardSync.getPrefix())
+            .withDestinationDockerImage(destinationDockerImage)
+            .withDestinationConfiguration(destination.getConfiguration())
+            .withOperationSequence(standardSyncOperations)
+            .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
+            .withResourceRequirements(standardSync.getResourceRequirements());
 
-    final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.RESET_CONNECTION)
-        .withResetConnection(resetConnectionConfig);
+    final JobConfig jobConfig =
+        new JobConfig()
+            .withConfigType(ConfigType.RESET_CONNECTION)
+            .withResetConnection(resetConnectionConfig);
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
   }
-
 }

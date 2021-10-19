@@ -47,7 +47,6 @@ public class AirbyteGithubStoreTest {
       webServer.shutdown();
       assertEquals(Collections.emptyList(), githubStore.getLatestSources());
     }
-
   }
 
   @Nested
@@ -69,7 +68,6 @@ public class AirbyteGithubStoreTest {
 
       assertEquals(Collections.emptyList(), githubStore.getLatestSources());
     }
-
   }
 
   @Nested
@@ -79,10 +77,12 @@ public class AirbyteGithubStoreTest {
     @Test
     void testReturn() throws IOException, InterruptedException {
       final var goodBody = "great day!";
-      final var goodResp = new MockResponse().setResponseCode(200)
-          .addHeader("Content-Type", "text/plain; charset=utf-8")
-          .addHeader("Cache-Control", "no-cache")
-          .setBody(goodBody);
+      final var goodResp =
+          new MockResponse()
+              .setResponseCode(200)
+              .addHeader("Content-Type", "text/plain; charset=utf-8")
+              .addHeader("Cache-Control", "no-cache")
+              .setBody(goodBody);
       webServer.enqueue(goodResp);
 
       final var fileStr = githubStore.getFile("test-file");
@@ -91,17 +91,17 @@ public class AirbyteGithubStoreTest {
 
     @Test
     void testHttpTimeout() {
-      final var timeoutResp = new MockResponse().setResponseCode(200)
-          .addHeader("Content-Type", "text/plain; charset=utf-8")
-          .addHeader("Cache-Control", "no-cache")
-          .setBody("")
-          .setHeadersDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS)
-          .setBodyDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS);
+      final var timeoutResp =
+          new MockResponse()
+              .setResponseCode(200)
+              .addHeader("Content-Type", "text/plain; charset=utf-8")
+              .addHeader("Cache-Control", "no-cache")
+              .setBody("")
+              .setHeadersDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS)
+              .setBodyDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS);
       webServer.enqueue(timeoutResp);
 
       assertThrows(HttpTimeoutException.class, () -> githubStore.getFile("test-file"));
     }
-
   }
-
 }

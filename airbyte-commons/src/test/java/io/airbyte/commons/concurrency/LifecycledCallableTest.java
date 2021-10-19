@@ -36,12 +36,13 @@ class LifecycledCallableTest {
 
   @Test
   void testSuccess() throws Exception {
-    final LifecycledCallable<Integer> lc = new LifecycledCallable.Builder<>(callable)
-        .setOnStart(onStart)
-        .setOnException(onException)
-        .setOnSuccess(onSuccess)
-        .setOnFinish(onFinish)
-        .build();
+    final LifecycledCallable<Integer> lc =
+        new LifecycledCallable.Builder<>(callable)
+            .setOnStart(onStart)
+            .setOnException(onException)
+            .setOnSuccess(onSuccess)
+            .setOnFinish(onFinish)
+            .build();
 
     when(callable.call()).thenReturn(1);
 
@@ -56,12 +57,13 @@ class LifecycledCallableTest {
 
   @Test
   void testException() throws Exception {
-    final LifecycledCallable<Integer> lc = new LifecycledCallable.Builder<>(callable)
-        .setOnStart(onStart)
-        .setOnException(onException)
-        .setOnSuccess(onSuccess)
-        .setOnFinish(onFinish)
-        .build();
+    final LifecycledCallable<Integer> lc =
+        new LifecycledCallable.Builder<>(callable)
+            .setOnStart(onStart)
+            .setOnException(onException)
+            .setOnSuccess(onSuccess)
+            .setOnFinish(onFinish)
+            .build();
 
     final RuntimeException re = new RuntimeException();
     when(callable.call()).thenThrow(re);
@@ -74,5 +76,4 @@ class LifecycledCallableTest {
     inOrder.verify(onException).accept(re);
     inOrder.verify(onFinish).call();
   }
-
 }

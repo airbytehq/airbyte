@@ -50,9 +50,11 @@ class JobRetrierTest {
 
   @Test
   void testSyncJobTimeToRetry() throws IOException {
-    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSyncJob));
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE))
+        .thenReturn(List.of(incompleteSyncJob));
     when(incompleteSyncJob.getAttemptsCount()).thenReturn(1);
-    when(incompleteSyncJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
+    when(incompleteSyncJob.getUpdatedAtInSecond())
+        .thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
     jobRetrier.run();
 
@@ -63,9 +65,11 @@ class JobRetrierTest {
 
   @Test
   void testToSoonToRetry() throws IOException {
-    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSyncJob));
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE))
+        .thenReturn(List.of(incompleteSyncJob));
     when(incompleteSyncJob.getAttemptsCount()).thenReturn(1);
-    when(incompleteSyncJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
+    when(incompleteSyncJob.getUpdatedAtInSecond())
+        .thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
 
     jobRetrier.run();
 
@@ -75,9 +79,11 @@ class JobRetrierTest {
 
   @Test
   void testTooManySyncJobFailures() throws IOException {
-    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSyncJob));
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE))
+        .thenReturn(List.of(incompleteSyncJob));
     when(incompleteSyncJob.getAttemptsCount()).thenReturn(5);
-    when(incompleteSyncJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
+    when(incompleteSyncJob.getUpdatedAtInSecond())
+        .thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
     jobRetrier.run();
 
@@ -88,7 +94,8 @@ class JobRetrierTest {
 
   @Test
   void testSpecJobFailure() throws IOException {
-    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSpecJob));
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE))
+        .thenReturn(List.of(incompleteSpecJob));
     when(incompleteSpecJob.getAttemptsCount()).thenReturn(1);
 
     jobRetrier.run();
@@ -97,5 +104,4 @@ class JobRetrierTest {
     verify(persistence).failJob(incompleteSpecJob.getId());
     verifyNoMoreInteractions(persistence);
   }
-
 }

@@ -38,7 +38,11 @@ public class DockerProcessFactory implements ProcessFactory {
   private final String networkName;
   private final Path imageExistsScriptPath;
 
-  public DockerProcessFactory(final Path workspaceRoot, final String workspaceMountSource, final String localMountSource, final String networkName) {
+  public DockerProcessFactory(
+      final Path workspaceRoot,
+      final String workspaceMountSource,
+      final String localMountSource,
+      final String networkName) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
@@ -61,16 +65,17 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(final String jobId,
-                        final int attempt,
-                        final Path jobRoot,
-                        final String imageName,
-                        final boolean usesStdin,
-                        final Map<String, String> files,
-                        final String entrypoint,
-                        final ResourceRequirements resourceRequirements,
-                        final Map<String, String> labels,
-                        final String... args)
+  public Process create(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final String imageName,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final Map<String, String> labels,
+      final String... args)
       throws WorkerException {
     try {
       if (!checkImageExists(imageName)) {
@@ -114,7 +119,8 @@ public class DockerProcessFactory implements ProcessFactory {
           cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
         }
         if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
-          cmd.add(String.format("--memory-reservation=%s", resourceRequirements.getMemoryRequest()));
+          cmd.add(
+              String.format("--memory-reservation=%s", resourceRequirements.getMemoryRequest()));
         }
         if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
           cmd.add(String.format("--memory=%s", resourceRequirements.getMemoryLimit()));
@@ -140,7 +146,8 @@ public class DockerProcessFactory implements ProcessFactory {
   @VisibleForTesting
   boolean checkImageExists(final String imageName) throws WorkerException {
     try {
-      final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
+      final Process process =
+          new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
@@ -155,5 +162,4 @@ public class DockerProcessFactory implements ProcessFactory {
       throw new RuntimeException(e);
     }
   }
-
 }

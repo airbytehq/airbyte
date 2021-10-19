@@ -27,10 +27,11 @@ import org.testcontainers.utility.MountableFile;
 
 public class TestDefaultJdbcDatabase {
 
-  private static final List<JsonNode> RECORDS_AS_JSON = Lists.newArrayList(
-      Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
-      Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
-      Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")));
+  private static final List<JsonNode> RECORDS_AS_JSON =
+      Lists.newArrayList(
+          Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
+          Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
+          Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -41,7 +42,6 @@ public class TestDefaultJdbcDatabase {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
-
   }
 
   @BeforeEach
@@ -51,14 +51,21 @@ public class TestDefaultJdbcDatabase {
     config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final JdbcDatabase database = getDatabaseFromConfig(config);
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-    });
+    database.execute(
+        connection -> {
+          connection
+              .createStatement()
+              .execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        });
     database.close();
   }
 
@@ -69,18 +76,24 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testBufferedResultQuery() throws SQLException {
-    final List<JsonNode> actual = getDatabaseFromConfig(config).bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
+    final List<JsonNode> actual =
+        getDatabaseFromConfig(config)
+            .bufferedResultSetQuery(
+                connection ->
+                    connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
+                sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual);
   }
 
   @Test
   void testResultSetQuery() throws SQLException {
-    final Stream<JsonNode> actual = getDatabaseFromConfig(config).resultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
+    final Stream<JsonNode> actual =
+        getDatabaseFromConfig(config)
+            .resultSetQuery(
+                connection ->
+                    connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
+                sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
     actual.close();
 
@@ -89,9 +102,11 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testQuery() throws SQLException {
-    final Stream<JsonNode> actual = getDatabaseFromConfig(config).query(
-        connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
+    final Stream<JsonNode> actual =
+        getDatabaseFromConfig(config)
+            .query(
+                connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
+                sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
   }
@@ -100,7 +115,8 @@ public class TestDefaultJdbcDatabase {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        String.format(
+            "jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
@@ -108,13 +124,13 @@ public class TestDefaultJdbcDatabase {
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", psqlDb.getHost())
+            .put("port", psqlDb.getFirstMappedPort())
+            .put("database", dbName)
+            .put("username", psqlDb.getUsername())
+            .put("password", psqlDb.getPassword())
+            .build());
   }
-
 }

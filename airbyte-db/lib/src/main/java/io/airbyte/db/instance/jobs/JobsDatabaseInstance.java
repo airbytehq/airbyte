@@ -20,22 +20,38 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   private static final String DATABASE_LOGGING_NAME = "airbyte jobs";
   private static final String SCHEMA_PATH = "jobs_database/schema.sql";
-  private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
-    try {
-      LOGGER.info("Testing if jobs database is ready...");
-      return database.query(ctx -> JobsDatabaseSchema.getTableNames().stream().allMatch(table -> hasTable(ctx, table)));
-    } catch (Exception e) {
-      return false;
-    }
-  };
+  private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY =
+      database -> {
+        try {
+          LOGGER.info("Testing if jobs database is ready...");
+          return database.query(
+              ctx ->
+                  JobsDatabaseSchema.getTableNames().stream()
+                      .allMatch(table -> hasTable(ctx, table)));
+        } catch (Exception e) {
+          return false;
+        }
+      };
 
   @VisibleForTesting
-  public JobsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
-    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
+  public JobsDatabaseInstance(
+      final String username,
+      final String password,
+      final String connectionString,
+      final String schema) {
+    super(
+        username,
+        password,
+        connectionString,
+        schema,
+        DATABASE_LOGGING_NAME,
+        JobsDatabaseSchema.getTableNames(),
+        IS_JOBS_DATABASE_READY);
   }
 
-  public JobsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
+  public JobsDatabaseInstance(
+      final String username, final String password, final String connectionString)
+      throws IOException {
     this(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH));
   }
-
 }

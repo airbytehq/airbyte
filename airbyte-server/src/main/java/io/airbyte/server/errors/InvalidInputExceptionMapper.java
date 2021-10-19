@@ -21,18 +21,22 @@ import org.apache.logging.log4j.core.util.Throwables;
 @Provider
 public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
-  public static InvalidInputExceptionInfo infoFromConstraints(final ConstraintViolationException cve) {
-    final InvalidInputExceptionInfo exceptionInfo = new InvalidInputExceptionInfo()
-        .exceptionClassName(cve.getClass().getName())
-        .message("Some properties contained invalid input.")
-        .exceptionStack(Throwables.toStringList(cve));
+  public static InvalidInputExceptionInfo infoFromConstraints(
+      final ConstraintViolationException cve) {
+    final InvalidInputExceptionInfo exceptionInfo =
+        new InvalidInputExceptionInfo()
+            .exceptionClassName(cve.getClass().getName())
+            .message("Some properties contained invalid input.")
+            .exceptionStack(Throwables.toStringList(cve));
 
     final List<InvalidInputProperty> props = new ArrayList<InvalidInputProperty>();
     for (final ConstraintViolation<?> cv : cve.getConstraintViolations()) {
-      props.add(new InvalidInputProperty()
-          .propertyPath(cv.getPropertyPath().toString())
-          .message(cv.getMessage())
-          .invalidValue(cv.getInvalidValue() != null ? cv.getInvalidValue().toString() : "null"));
+      props.add(
+          new InvalidInputProperty()
+              .propertyPath(cv.getPropertyPath().toString())
+              .message(cv.getMessage())
+              .invalidValue(
+                  cv.getInvalidValue() != null ? cv.getInvalidValue().toString() : "null"));
     }
     exceptionInfo.validationErrors(props);
     return exceptionInfo;
@@ -45,5 +49,4 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
         .type("application/json")
         .build();
   }
-
 }

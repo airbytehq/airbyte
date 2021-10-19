@@ -35,18 +35,18 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static TrackingClient trackingClient;
 
   public static void setValues(
-                               final WorkflowServiceStubs temporalService,
-                               final ConfigRepository configRepository,
-                               final JobPersistence jobPersistence,
-                               final ConfigPersistence seed,
-                               final SchedulerJobClient schedulerJobClient,
-                               final CachingSynchronousSchedulerClient synchronousSchedulerClient,
-                               final Configs configs,
-                               final FileTtlManager archiveTtlManager,
-                               final Map<String, String> mdc,
-                               final Database configsDatabase,
-                               final Database jobsDatabase,
-                               final TrackingClient trackingClient) {
+      final WorkflowServiceStubs temporalService,
+      final ConfigRepository configRepository,
+      final JobPersistence jobPersistence,
+      final ConfigPersistence seed,
+      final SchedulerJobClient schedulerJobClient,
+      final CachingSynchronousSchedulerClient synchronousSchedulerClient,
+      final Configs configs,
+      final FileTtlManager archiveTtlManager,
+      final Map<String, String> mdc,
+      final Database configsDatabase,
+      final Database jobsDatabase,
+      final TrackingClient trackingClient) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -83,5 +83,4 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   public void dispose(final ConfigurationApi service) {
     /* noop */
   }
-
 }

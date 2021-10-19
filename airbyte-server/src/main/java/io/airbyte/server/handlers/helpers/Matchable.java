@@ -8,5 +8,4 @@ package io.airbyte.server.handlers.helpers;
 interface Matchable<K> {
 
   K match(K k);
-
 }

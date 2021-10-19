@@ -30,7 +30,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private volatile Process process;
 
-  public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+  public DefaultDiscoverCatalogWorker(
+      final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
@@ -40,21 +41,26 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   }
 
   @Override
-  public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
+  public AirbyteCatalog run(
+      final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot)
+      throws WorkerException {
     try {
-      process = integrationLauncher.discover(
-          jobRoot,
-          WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-          Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
+      process =
+          integrationLauncher.discover(
+              jobRoot,
+              WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+              Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       final Optional<AirbyteCatalog> catalog;
       try (final InputStream stdout = process.getInputStream()) {
-        catalog = streamFactory.create(IOs.newBufferedReader(stdout))
-            .filter(message -> message.getType() == Type.CATALOG)
-            .map(AirbyteMessage::getCatalog)
-            .findFirst();
+        catalog =
+            streamFactory
+                .create(IOs.newBufferedReader(stdout))
+                .filter(message -> message.getType() == Type.CATALOG)
+                .map(AirbyteMessage::getCatalog)
+                .findFirst();
 
         WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
       }
@@ -67,7 +73,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
         return catalog.get();
       } else {
-        throw new WorkerException(String.format("Discover job subprocess finished with exit code %s", exitCode));
+        throw new WorkerException(
+            String.format("Discover job subprocess finished with exit code %s", exitCode));
       }
     } catch (final WorkerException e) {
       throw e;
@@ -80,5 +87,4 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   public void cancel() {
     WorkerUtils.cancelProcess(process);
   }
-
 }

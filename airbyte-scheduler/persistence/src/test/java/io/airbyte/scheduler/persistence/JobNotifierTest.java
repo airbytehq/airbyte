@@ -59,47 +59,59 @@ class JobNotifierTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
 
-    jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository, workspaceHelper, trackingClient));
+    jobNotifier =
+        spy(new JobNotifier(WEBAPP_URL, configRepository, workspaceHelper, trackingClient));
     notificationClient = mock(NotificationClient.class);
     when(jobNotifier.getNotificationClient(getSlackNotification())).thenReturn(notificationClient);
   }
 
   @Test
-  void testFailJob() throws IOException, InterruptedException, JsonValidationException, ConfigNotFoundException {
+  void testFailJob()
+      throws IOException, InterruptedException, JsonValidationException, ConfigNotFoundException {
     final Job job = createJob();
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-        .withName("source-test")
-        .withDockerRepository(TEST_DOCKER_REPO)
-        .withDockerImageTag(TEST_DOCKER_TAG)
-        .withSourceDefinitionId(UUID.randomUUID());
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-        .withName("destination-test")
-        .withDockerRepository(TEST_DOCKER_REPO)
-        .withDockerImageTag(TEST_DOCKER_TAG)
-        .withDestinationDefinitionId(UUID.randomUUID());
+    final StandardSourceDefinition sourceDefinition =
+        new StandardSourceDefinition()
+            .withName("source-test")
+            .withDockerRepository(TEST_DOCKER_REPO)
+            .withDockerImageTag(TEST_DOCKER_TAG)
+            .withSourceDefinitionId(UUID.randomUUID());
+    final StandardDestinationDefinition destinationDefinition =
+        new StandardDestinationDefinition()
+            .withName("destination-test")
+            .withDockerRepository(TEST_DOCKER_REPO)
+            .withDockerImageTag(TEST_DOCKER_TAG)
+            .withDestinationDefinitionId(UUID.randomUUID());
     when(configRepository.getSourceDefinitionFromConnection(any())).thenReturn(sourceDefinition);
-    when(configRepository.getDestinationDefinitionFromConnection(any())).thenReturn(destinationDefinition);
+    when(configRepository.getDestinationDefinitionFromConnection(any()))
+        .thenReturn(destinationDefinition);
     when(configRepository.getStandardSourceDefinition(any())).thenReturn(sourceDefinition);
-    when(configRepository.getStandardDestinationDefinition(any())).thenReturn(destinationDefinition);
+    when(configRepository.getStandardDestinationDefinition(any()))
+        .thenReturn(destinationDefinition);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(getWorkspace());
-    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId())).thenReturn(WORKSPACE_ID);
-    when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
+    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId()))
+        .thenReturn(WORKSPACE_ID);
+    when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(true);
 
     jobNotifier.failJob("JobNotifierTest was running", job);
-    final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
-    verify(notificationClient).notifyJobFailure(
-        "source-test version 0.1.0",
-        "destination-test version 0.1.0",
-        String.format("sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
-            formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
-        "http://localhost:8000/connections/" + job.getScope());
+    final DateTimeFormatter formatter =
+        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
+    verify(notificationClient)
+        .notifyJobFailure(
+            "source-test version 0.1.0",
+            "destination-test version 0.1.0",
+            String.format(
+                "sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
+                formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
+            "http://localhost:8000/connections/" + job.getScope());
 
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", UUID.fromString(job.getScope()));
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
     metadata.put("connector_source", "source-test");
     metadata.put("connector_source_version", TEST_DOCKER_TAG);
-    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put(
+        "connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
     metadata.put("connector_destination", "destination-test");
     metadata.put("connector_destination_version", TEST_DOCKER_TAG);
     metadata.put("notification_type", NotificationType.SLACK);
@@ -128,8 +140,8 @@ class JobNotifierTest {
   private static Notification getSlackNotification() {
     return new Notification()
         .withNotificationType(NotificationType.SLACK)
-        .withSlackConfiguration(new SlackNotificationConfiguration()
-            .withWebhook("http://random.webhook.url/hooks.slack.com/"));
+        .withSlackConfiguration(
+            new SlackNotificationConfiguration()
+                .withWebhook("http://random.webhook.url/hooks.slack.com/"));
   }
-
 }

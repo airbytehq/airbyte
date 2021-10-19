@@ -23,5 +23,4 @@ class MoreSetsTest {
     assertDoesNotThrow(() -> MoreSets.assertEqualsVerbose(set1, set2));
     assertThrows(IllegalArgumentException.class, () -> MoreSets.assertEqualsVerbose(set1, set3));
   }
-
 }

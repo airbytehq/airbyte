@@ -22,13 +22,13 @@ import org.slf4j.LoggerFactory;
  * This migration forces upgrading all sources and destinations connectors to be at least equal to
  * or greater than 0.2.0
  *
- * This is because as part of Airbyte V0.17.0-alpha, we made changes to the JSON validation
+ * <p>This is because as part of Airbyte V0.17.0-alpha, we made changes to the JSON validation
  * parsers/serializers/deserializers from all connectors to allow for unknown properties, thus
  * bumping their versions to v0.2.0 as part of that release.
  *
- * This is required in case we want to perform modifications to the Airbyte protocol in the future
- * by adding new properties. Connectors that are not using these additional properties yet, should
- * ignore them but keep working as usual instead of throwing json validation errors.
+ * <p>This is required in case we want to perform modifications to the Airbyte protocol in the
+ * future by adding new properties. Connectors that are not using these additional properties yet,
+ * should ignore them but keep working as usual instead of throwing json validation errors.
  */
 public class MigrationV0_17_0 extends BaseMigration implements Migration {
 
@@ -41,50 +41,52 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
   protected static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID =
       ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
 
-  private static final Set<String> DESTINATION_DOCKER_IMAGES = Set.of(
-      "airbyte/destination-local-json",
-      "airbyte/destination-csv",
-      "airbyte/destination-postgres",
-      "airbyte/destination-bigquery",
-      "airbyte/destination-snowflake",
-      "airbyte/destination-redshift",
-      "airbyte/destination-meilisearch");
-  private static final Set<String> SOURCE_DOCKER_IMAGES = Set.of(
-      "airbyte/source-exchangeratesapi-singer",
-      "airbyte/source-file",
-      "airbyte/source-google-adwords-singer",
-      "airbyte/source-github-singer",
-      "airbyte/source-mssql",
-      "airbyte/source-postgres",
-      "airbyte/source-recurly",
-      "airbyte/source-sendgrid",
-      "airbyte/source-marketo-singer",
-      "airbyte/source-google-sheets",
-      "airbyte/source-mysql",
-      "airbyte/source-salesforce-singer",
-      "airbyte/source-stripe-singer",
-      "airbyte/source-mailchimp",
-      "airbyte/source-googleanalytics-singer",
-      "airbyte/source-facebook-marketing",
-      "airbyte/source-hubspot-singer",
-      "airbyte/source-shopify-singer",
-      "airbyte/source-redshift",
-      "airbyte/source-twilio-singer",
-      "airbyte/source-freshdesk",
-      "airbyte/source-braintree-singer",
-      "airbyte/source-slack-singer",
-      "airbyte/source-greenhouse",
-      "airbyte/source-zendesk-support-singer",
-      "airbyte/source-intercom-singer",
-      "airbyte/source-jira",
-      "airbyte/source-mixpanel-singer",
-      "airbyte/source-zoom-singer",
-      "airbyte/source-microsoft-teams",
-      "airbyte/source-drift",
-      "airbyte/source-looker",
-      "airbyte/source-plaid",
-      "airbyte/source-appstore-singer",
-      "airbyte/source-mongodb");
+  private static final Set<String> DESTINATION_DOCKER_IMAGES =
+      Set.of(
+          "airbyte/destination-local-json",
+          "airbyte/destination-csv",
+          "airbyte/destination-postgres",
+          "airbyte/destination-bigquery",
+          "airbyte/destination-snowflake",
+          "airbyte/destination-redshift",
+          "airbyte/destination-meilisearch");
+  private static final Set<String> SOURCE_DOCKER_IMAGES =
+      Set.of(
+          "airbyte/source-exchangeratesapi-singer",
+          "airbyte/source-file",
+          "airbyte/source-google-adwords-singer",
+          "airbyte/source-github-singer",
+          "airbyte/source-mssql",
+          "airbyte/source-postgres",
+          "airbyte/source-recurly",
+          "airbyte/source-sendgrid",
+          "airbyte/source-marketo-singer",
+          "airbyte/source-google-sheets",
+          "airbyte/source-mysql",
+          "airbyte/source-salesforce-singer",
+          "airbyte/source-stripe-singer",
+          "airbyte/source-mailchimp",
+          "airbyte/source-googleanalytics-singer",
+          "airbyte/source-facebook-marketing",
+          "airbyte/source-hubspot-singer",
+          "airbyte/source-shopify-singer",
+          "airbyte/source-redshift",
+          "airbyte/source-twilio-singer",
+          "airbyte/source-freshdesk",
+          "airbyte/source-braintree-singer",
+          "airbyte/source-slack-singer",
+          "airbyte/source-greenhouse",
+          "airbyte/source-zendesk-support-singer",
+          "airbyte/source-intercom-singer",
+          "airbyte/source-jira",
+          "airbyte/source-mixpanel-singer",
+          "airbyte/source-zoom-singer",
+          "airbyte/source-microsoft-teams",
+          "airbyte/source-drift",
+          "airbyte/source-looker",
+          "airbyte/source-plaid",
+          "airbyte/source-appstore-singer",
+          "airbyte/source-mongodb");
 
   private final Migration previousMigration;
 
@@ -104,27 +106,36 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      entry.getValue().forEach(r -> {
-        if (r.get("dockerImageTag") != null) {
-          if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID)) {
-            ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(SOURCE_DOCKER_IMAGES, r));
-          } else if (entry.getKey().equals(STANDARD_DESTINATION_DEFINITION_RESOURCE_ID)) {
-            ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(DESTINATION_DOCKER_IMAGES, r));
-          }
-        }
-        recordConsumer.accept(r);
-      });
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                if (r.get("dockerImageTag") != null) {
+                  if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID)) {
+                    ((ObjectNode) r)
+                        .set("dockerImageTag", getDockerImageTag(SOURCE_DOCKER_IMAGES, r));
+                  } else if (entry.getKey().equals(STANDARD_DESTINATION_DEFINITION_RESOURCE_ID)) {
+                    ((ObjectNode) r)
+                        .set("dockerImageTag", getDockerImageTag(DESTINATION_DOCKER_IMAGES, r));
+                  }
+                }
+                recordConsumer.accept(r);
+              });
     }
   }
 
   private JsonNode getDockerImageTag(final Set<String> airbyteConnectors, final JsonNode node) {
     final JsonNode dockerImageTag = node.get("dockerImageTag");
     final JsonNode dockerRepository = node.get("dockerRepository");
-    if (dockerRepository != null && !dockerRepository.isNull() && airbyteConnectors.contains(dockerRepository.asText())) {
+    if (dockerRepository != null
+        && !dockerRepository.isNull()
+        && airbyteConnectors.contains(dockerRepository.asText())) {
       try {
         final AirbyteVersion connectorVersion = new AirbyteVersion(dockerImageTag.asText());
         final JsonNode requiredDockerTag = Jsons.jsonNode("0.2.0");
@@ -132,7 +143,10 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
         if (connectorVersion.patchVersionCompareTo(requiredVersion) >= 0) {
           return dockerImageTag;
         } else {
-          LOGGER.debug(String.format("Bump connector %s version from %s to %s", dockerRepository, dockerImageTag, requiredDockerTag));
+          LOGGER.debug(
+              String.format(
+                  "Bump connector %s version from %s to %s",
+                  dockerRepository, dockerImageTag, requiredDockerTag));
           return requiredDockerTag;
         }
       } catch (final IllegalArgumentException e) {
@@ -141,5 +155,4 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
     }
     return dockerImageTag;
   }
-
 }

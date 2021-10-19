@@ -18,13 +18,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Helper class for Catalog and Stream related operations. Generally only used in tests.
- */
+/** Helper class for Catalog and Stream related operations. Generally only used in tests. */
 public class CatalogHelpers {
 
-  public static AirbyteCatalog createAirbyteCatalog(final String streamName, final Field... fields) {
-    return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
+  public static AirbyteCatalog createAirbyteCatalog(
+      final String streamName, final Field... fields) {
+    return new AirbyteCatalog()
+        .withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
   }
 
   public static AirbyteStream createAirbyteStream(final String streamName, final Field... fields) {
@@ -32,26 +32,41 @@ public class CatalogHelpers {
     return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final Field... fields) {
+  public static AirbyteStream createAirbyteStream(
+      final String streamName, final String namespace, final Field... fields) {
     return createAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
+  public static AirbyteStream createAirbyteStream(
+      final String streamName, final String namespace, final List<Field> fields) {
+    return new AirbyteStream()
+        .withName(streamName)
+        .withNamespace(namespace)
+        .withJsonSchema(fieldsToJsonSchema(fields));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final Field... fields) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(
+      final String streamName, final String namespace, final Field... fields) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final Field... fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(
+      final String streamName, final String namespace, final Field... fields) {
     return createConfiguredAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(
+      final String streamName, final String namespace, final List<Field> fields) {
     return new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+        .withStream(
+            new AirbyteStream()
+                .withName(streamName)
+                .withNamespace(namespace)
+                .withJsonSchema(fieldsToJsonSchema(fields)))
+        .withSyncMode(SyncMode.FULL_REFRESH)
+        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
   }
 
   /**
@@ -63,10 +78,10 @@ public class CatalogHelpers {
    */
   public static ConfiguredAirbyteCatalog toDefaultConfiguredCatalog(final AirbyteCatalog catalog) {
     return new ConfiguredAirbyteCatalog()
-        .withStreams(catalog.getStreams()
-            .stream()
-            .map(CatalogHelpers::toDefaultConfiguredStream)
-            .collect(Collectors.toList()));
+        .withStreams(
+            catalog.getStreams().stream()
+                .map(CatalogHelpers::toDefaultConfiguredStream)
+                .collect(Collectors.toList()));
   }
 
   public static ConfiguredAirbyteStream toDefaultConfiguredStream(final AirbyteStream stream) {
@@ -83,21 +98,24 @@ public class CatalogHelpers {
   }
 
   /**
-   * Maps a list of fields into a JsonSchema object with names and types. This method will throw if it
-   * receives multiple fields with the same name.
+   * Maps a list of fields into a JsonSchema object with names and types. This method will throw if
+   * it receives multiple fields with the same name.
    *
    * @param fields fields to map to JsonSchema
    * @return JsonSchema representation of the fields.
    */
   public static JsonNode fieldsToJsonSchema(final List<Field> fields) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("type", "object")
-        .put("properties", fields
-            .stream()
-            .collect(Collectors.toMap(
-                Field::getName,
-                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("type", "object")
+            .put(
+                "properties",
+                fields.stream()
+                    .collect(
+                        Collectors.toMap(
+                            Field::getName,
+                            field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
+            .build());
   }
 
   /**
@@ -109,7 +127,8 @@ public class CatalogHelpers {
   @SuppressWarnings("unchecked")
   public static Set<String> getTopLevelFieldNames(final ConfiguredAirbyteStream stream) {
     // it is json, so the key has to be a string.
-    final Map<String, Object> object = Jsons.object(stream.getStream().getJsonSchema().get("properties"), Map.class);
+    final Map<String, Object> object =
+        Jsons.object(stream.getStream().getJsonSchema().get("properties"), Map.class);
     return object.keySet();
   }
 
@@ -136,5 +155,4 @@ public class CatalogHelpers {
 
     return allFieldNames;
   }
-
 }

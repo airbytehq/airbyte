@@ -17,5 +17,4 @@ public class DestinationDefinitionHelpers {
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org");
   }
-
 }

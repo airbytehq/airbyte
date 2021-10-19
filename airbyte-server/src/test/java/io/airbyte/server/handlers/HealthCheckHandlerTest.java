@@ -25,11 +25,11 @@ class HealthCheckHandlerTest {
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
     // check db healthy
-    when(configRepository.listStandardWorkspaces(true)).thenReturn(Collections.singletonList(new StandardWorkspace()));
+    when(configRepository.listStandardWorkspaces(true))
+        .thenReturn(Collections.singletonList(new StandardWorkspace()));
     assertEquals(new HealthCheckRead().db(true), healthCheckHandler.health());
 
     doThrow(IOException.class).when(configRepository).listStandardWorkspaces(true);
     assertEquals(new HealthCheckRead().db(false), healthCheckHandler.health());
   }
-
 }

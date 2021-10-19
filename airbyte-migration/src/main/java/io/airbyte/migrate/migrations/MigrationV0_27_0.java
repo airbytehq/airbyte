@@ -18,12 +18,11 @@ import java.util.stream.Stream;
 
 public class MigrationV0_27_0 extends BaseMigration implements Migration {
 
-  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   private static final String MIGRATION_VERSION = "0.27.0-alpha";
-  @VisibleForTesting
-  protected final Migration previousMigration;
+  @VisibleForTesting protected final Migration previousMigration;
 
   public MigrationV0_27_0(final Migration previousMigration) {
     super(previousMigration);
@@ -39,7 +38,8 @@ public class MigrationV0_27_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
+    final Map<ResourceId, JsonNode> outputSchema =
+        new HashMap<>(previousMigration.getOutputSchema());
     outputSchema.put(
         STANDARD_SYNC_RESOURCE_ID,
         MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, STANDARD_SYNC_RESOURCE_ID));
@@ -47,16 +47,19 @@ public class MigrationV0_27_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData,
-                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      entry.getValue().forEach(r -> {
-        // empty migration
-        recordConsumer.accept(r);
-      });
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                // empty migration
+                recordConsumer.accept(r);
+              });
     }
   }
-
 }

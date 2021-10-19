@@ -37,18 +37,23 @@ import org.junit.jupiter.api.Test;
 
 public class DefaultDiscoverCatalogWorkerTest {
 
-  private static final JsonNode CREDENTIALS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
-  private static final StandardDiscoverCatalogInput INPUT = new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDENTIALS);
+  private static final JsonNode CREDENTIALS =
+      Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
+  private static final StandardDiscoverCatalogInput INPUT =
+      new StandardDiscoverCatalogInput().withConnectionConfiguration(CREDENTIALS);
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM = "users";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_AGE = "age";
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
-      .withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-          STREAM,
-          Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
-          Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER))));
+  private static final AirbyteCatalog CATALOG =
+      new AirbyteCatalog()
+          .withStreams(
+              Lists.newArrayList(
+                  CatalogHelpers.createAirbyteStream(
+                      STREAM,
+                      Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
+                      Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER))));
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -61,29 +66,40 @@ public class DefaultDiscoverCatalogWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS))).thenReturn(process);
+    when(integrationLauncher.discover(
+            jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
+        .thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
+    IOs.writeFile(
+        jobRoot,
+        WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
+        MoreResources.readResource("airbyte_postgres_catalog.json"));
 
-    streamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+    streamFactory =
+        noop ->
+            Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG))
+                .stream();
   }
 
   @SuppressWarnings("BusyWait")
   @Test
   public void testDiscoverSchema() throws Exception {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     final AirbyteCatalog output = worker.run(INPUT, jobRoot);
 
     assertEquals(CATALOG, output);
 
-    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
-      while (process.getErrorStream().available() != 0) {
-        Thread.sleep(50);
-      }
-    });
+    Assertions.assertTimeout(
+        Duration.ofSeconds(5),
+        () -> {
+          while (process.getErrorStream().available() != 0) {
+            Thread.sleep(50);
+          }
+        });
 
     verify(process).exitValue();
   }
@@ -93,35 +109,40 @@ public class DefaultDiscoverCatalogWorkerTest {
   public void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
-    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
-      while (process.getErrorStream().available() != 0) {
-        Thread.sleep(50);
-      }
-    });
+    Assertions.assertTimeout(
+        Duration.ofSeconds(5),
+        () -> {
+          while (process.getErrorStream().available() != 0) {
+            Thread.sleep(50);
+          }
+        });
 
     verify(process).exitValue();
   }
 
   @Test
   public void testDiscoverSchemaException() throws WorkerException {
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
+    when(integrationLauncher.discover(
+            jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
         .thenThrow(new RuntimeException());
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
   public void testCancel() throws WorkerException {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     worker.run(INPUT, jobRoot);
 
     worker.cancel();
 
     verify(process).destroy();
   }
-
 }

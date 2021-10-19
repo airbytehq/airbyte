@@ -19,5 +19,4 @@ public class Types {
     final var nonNullEntries = list.stream().filter(Objects::nonNull);
     return nonNullEntries.map(Collections::singletonList).collect(Collectors.toList());
   }
-
 }

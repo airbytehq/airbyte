@@ -31,7 +31,8 @@ import java.util.stream.Stream;
  */
 public class MigrationV0_14_3 extends BaseMigration implements Migration {
 
-  private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  private static final ResourceId STANDARD_SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   public MigrationV0_14_3(final Migration previousMigration) {
     super(previousMigration);
@@ -44,68 +45,78 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(new MigrationV0_14_0().getOutputSchema());
+    final Map<ResourceId, JsonNode> outputSchema =
+        new HashMap<>(new MigrationV0_14_0().getOutputSchema());
     outputSchema.put(
         STANDARD_SYNC_RESOURCE_ID,
-        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_14_3/airbyte_config"), STANDARD_SYNC_RESOURCE_ID));
+        MigrationUtils.getSchemaFromResourcePath(
+            Path.of("migrations/migrationV0_14_3/airbyte_config"), STANDARD_SYNC_RESOURCE_ID));
     return outputSchema;
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      entry.getValue().forEach(r -> {
-        // replace schema object with a catalog object.
-        if (entry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)) {
-          final JsonNode schema = ((ObjectNode) r).remove("schema");
-          ((ObjectNode) r).set("catalog", toConfiguredCatalog(schema));
-        }
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                // replace schema object with a catalog object.
+                if (entry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)) {
+                  final JsonNode schema = ((ObjectNode) r).remove("schema");
+                  ((ObjectNode) r).set("catalog", toConfiguredCatalog(schema));
+                }
 
-        recordConsumer.accept(r);
-      });
+                recordConsumer.accept(r);
+              });
     }
   }
 
   private static JsonNode toConfiguredCatalog(final JsonNode schema) {
-    final List<Map<String, JsonNode>> configuredStreams = MoreIterators.toList(schema.get("streams").elements())
-        .stream()
-        .map(stream -> {
-          final List<String> supportedSyncModes = MoreIterators.toList(stream.get("supportedSyncModes").iterator())
-              .stream()
-              // sync mode enum is identical in Schema and ConfiguredCatalog.
-              .map(JsonNode::asText)
-              .collect(Collectors.toList());
-          // catalog fields
-          final Map<String, JsonNode> airbyteStream = Maps.newHashMap();
-          airbyteStream.put("name", stream.get("name"));
-          airbyteStream.put("supported_sync_modes", Jsons.jsonNode(supportedSyncModes));
-          airbyteStream.put("json_schema", fieldsToJsonSchema(stream.get("fields")));
-          airbyteStream.put("source_defined_cursor", stream.get("sourceDefinedCursor"));
-          airbyteStream.put("default_cursor_field", stream.get("defaultCursorField"));
-          // configured catalog fields
-          final Map<String, JsonNode> catalog = Maps.newHashMap();
-          catalog.put("stream", Jsons.jsonNode(airbyteStream));
-          catalog.put("sync_mode", Jsons.jsonNode(stream.get("syncMode").asText()));
-          catalog.put("cursor_field", stream.get("cursorField"));
-          return catalog;
-        })
-        .collect(Collectors.toList());
+    final List<Map<String, JsonNode>> configuredStreams =
+        MoreIterators.toList(schema.get("streams").elements()).stream()
+            .map(
+                stream -> {
+                  final List<String> supportedSyncModes =
+                      MoreIterators.toList(stream.get("supportedSyncModes").iterator()).stream()
+                          // sync mode enum is identical in Schema and ConfiguredCatalog.
+                          .map(JsonNode::asText)
+                          .collect(Collectors.toList());
+                  // catalog fields
+                  final Map<String, JsonNode> airbyteStream = Maps.newHashMap();
+                  airbyteStream.put("name", stream.get("name"));
+                  airbyteStream.put("supported_sync_modes", Jsons.jsonNode(supportedSyncModes));
+                  airbyteStream.put("json_schema", fieldsToJsonSchema(stream.get("fields")));
+                  airbyteStream.put("source_defined_cursor", stream.get("sourceDefinedCursor"));
+                  airbyteStream.put("default_cursor_field", stream.get("defaultCursorField"));
+                  // configured catalog fields
+                  final Map<String, JsonNode> catalog = Maps.newHashMap();
+                  catalog.put("stream", Jsons.jsonNode(airbyteStream));
+                  catalog.put("sync_mode", Jsons.jsonNode(stream.get("syncMode").asText()));
+                  catalog.put("cursor_field", stream.get("cursorField"));
+                  return catalog;
+                })
+            .collect(Collectors.toList());
 
     return Jsons.jsonNode(ImmutableMap.of("streams", configuredStreams));
   }
 
   private static JsonNode fieldsToJsonSchema(final JsonNode fields) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("type", "object")
-        .put("properties", MoreIterators.toList(fields.elements())
-            .stream()
-            .collect(Collectors.toMap(
-                field -> field.get("name").asText(),
-                // data type enum is identical in Schema and ConfiguredCatalog.
-                field -> ImmutableMap.of("type", field.get("dataType").asText()))))
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("type", "object")
+            .put(
+                "properties",
+                MoreIterators.toList(fields.elements()).stream()
+                    .collect(
+                        Collectors.toMap(
+                            field -> field.get("name").asText(),
+                            // data type enum is identical in Schema and ConfiguredCatalog.
+                            field -> ImmutableMap.of("type", field.get("dataType").asText()))))
+            .build());
   }
-
 }

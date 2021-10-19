@@ -31,7 +31,9 @@ class SpecFetcherTest {
   void setup() {
     schedulerJobClient = mock(SynchronousSchedulerClient.class);
     response = mock(SynchronousResponse.class);
-    connectorSpecification = new ConnectorSpecification().withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
+    connectorSpecification =
+        new ConnectorSpecification()
+            .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
   }
 
   @Test
@@ -52,5 +54,4 @@ class SpecFetcherTest {
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
     assertThrows(IllegalStateException.class, () -> specFetcher.execute(IMAGE_NAME));
   }
-
 }

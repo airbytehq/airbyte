@@ -27,18 +27,20 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
   private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
   private final String airbyteVersionOrWarnings;
 
-  public static WorkerRun create(final Path workspaceRoot,
-                                 final long jobId,
-                                 final int attempt,
-                                 final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun,
-                                 final String airbyteVersionOrWarnings) {
+  public static WorkerRun create(
+      final Path workspaceRoot,
+      final long jobId,
+      final int attempt,
+      final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun,
+      final String airbyteVersionOrWarnings) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), attempt);
     return new WorkerRun(jobRoot, workerRun, airbyteVersionOrWarnings);
   }
 
-  public WorkerRun(final Path jobRoot,
-                   final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun,
-                   final String airbyteVersionOrWarnings) {
+  public WorkerRun(
+      final Path jobRoot,
+      final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun,
+      final String airbyteVersionOrWarnings) {
     this.jobRoot = jobRoot;
     this.workerRun = workerRun;
     this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
@@ -54,5 +56,4 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
   public Path getJobRoot() {
     return jobRoot;
   }
-
 }

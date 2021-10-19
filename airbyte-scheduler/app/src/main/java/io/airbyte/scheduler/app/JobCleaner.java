@@ -42,9 +42,10 @@ public class JobCleaner implements Runnable {
 
   private final WorkspaceRetentionConfig config;
 
-  public JobCleaner(final WorkspaceRetentionConfig config,
-                    final Path workspaceRoot,
-                    final JobPersistence jobPersistence) {
+  public JobCleaner(
+      final WorkspaceRetentionConfig config,
+      final Path workspaceRoot,
+      final JobPersistence jobPersistence) {
     this.config = config;
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
@@ -66,27 +67,29 @@ public class JobCleaner implements Runnable {
     Files.walk(workspaceRoot)
         .map(Path::toFile)
         .filter(f -> new AgeFileFilter(oldestAllowed).accept(f))
-        .forEach(file -> {
-          LOGGER.info("Deleting old file: " + file.toString());
-          FileUtils.deleteQuietly(file);
+        .forEach(
+            file -> {
+              LOGGER.info("Deleting old file: " + file.toString());
+              FileUtils.deleteQuietly(file);
 
-          final File parentDir = file.getParentFile();
-          if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
-            FileUtils.deleteQuietly(parentDir);
-          }
-        });
+              final File parentDir = file.getParentFile();
+              if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
+                FileUtils.deleteQuietly(parentDir);
+              }
+            });
   }
 
   private void deleteOnSize() throws IOException {
     final Set<String> nonTerminalJobIds = new HashSet<>();
-    final Sets.SetView<JobStatus> nonTerminalStatuses = Sets.difference(Set.of(JobStatus.values()), JobStatus.TERMINAL_STATUSES);
+    final Sets.SetView<JobStatus> nonTerminalStatuses =
+        Sets.difference(Set.of(JobStatus.values()), JobStatus.TERMINAL_STATUSES);
 
     for (final JobStatus nonTerminalStatus : nonTerminalStatuses) {
-      final Set<String> jobIds = jobPersistence.listJobsWithStatus(nonTerminalStatus)
-          .stream()
-          .map(Job::getId)
-          .map(String::valueOf)
-          .collect(Collectors.toSet());
+      final Set<String> jobIds =
+          jobPersistence.listJobsWithStatus(nonTerminalStatus).stream()
+              .map(Job::getId)
+              .map(String::valueOf)
+              .collect(Collectors.toSet());
 
       nonTerminalJobIds.addAll(jobIds);
     }
@@ -98,43 +101,47 @@ public class JobCleaner implements Runnable {
     final AgeFileFilter ageFilter = new AgeFileFilter(youngestAllowed);
     Files.walk(workspaceRoot)
         .map(Path::toFile)
-        .filter(f -> {
-          Path relativePath = workspaceRoot.relativize(f.toPath());
+        .filter(
+            f -> {
+              Path relativePath = workspaceRoot.relativize(f.toPath());
 
-          // if the directory is ID/something instead of just ID, get just the ID
-          if (relativePath.getParent() != null) {
-            relativePath = workspaceRoot.relativize(f.toPath()).getParent();
-          }
+              // if the directory is ID/something instead of just ID, get just the ID
+              if (relativePath.getParent() != null) {
+                relativePath = workspaceRoot.relativize(f.toPath()).getParent();
+              }
 
-          if (!relativePath.toString().equals("")) {
-            return !nonTerminalJobIds.contains(relativePath.toString());
-          } else {
-            return true;
-          }
-        })
+              if (!relativePath.toString().equals("")) {
+                return !nonTerminalJobIds.contains(relativePath.toString());
+              } else {
+                return true;
+              }
+            })
         .filter(ageFilter::accept)
-        .sorted((o1, o2) -> {
-          final FileTime ft1 = getFileTime(o1);
-          final FileTime ft2 = getFileTime(o2);
-          return ft1.compareTo(ft2);
-        })
-        .forEach(fileToDelete -> {
-          if (workspaceBytes - deletedBytes.get() > config.getMaxSizeMb() * 1024 * 1024) {
-            final long sizeToDelete = fileToDelete.length();
-            deletedBytes.addAndGet(sizeToDelete);
-            LOGGER.info("Deleting: " + fileToDelete.toString());
-            FileUtils.deleteQuietly(fileToDelete);
+        .sorted(
+            (o1, o2) -> {
+              final FileTime ft1 = getFileTime(o1);
+              final FileTime ft2 = getFileTime(o2);
+              return ft1.compareTo(ft2);
+            })
+        .forEach(
+            fileToDelete -> {
+              if (workspaceBytes - deletedBytes.get() > config.getMaxSizeMb() * 1024 * 1024) {
+                final long sizeToDelete = fileToDelete.length();
+                deletedBytes.addAndGet(sizeToDelete);
+                LOGGER.info("Deleting: " + fileToDelete.toString());
+                FileUtils.deleteQuietly(fileToDelete);
 
-            final File parentDir = fileToDelete.getParentFile();
-            if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
-              FileUtils.deleteQuietly(parentDir);
-            }
-          }
-        });
+                final File parentDir = fileToDelete.getParentFile();
+                if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
+                  FileUtils.deleteQuietly(parentDir);
+                }
+              }
+            });
   }
 
   protected static Date getDateFromDaysAgo(final long daysAgo) {
-    return Date.from(LocalDateTime.now().minusDays(daysAgo).toInstant(OffsetDateTime.now().getOffset()));
+    return Date.from(
+        LocalDateTime.now().minusDays(daysAgo).toInstant(OffsetDateTime.now().getOffset()));
   }
 
   private static FileTime getFileTime(final File file) {
@@ -144,5 +151,4 @@ public class JobCleaner implements Runnable {
       throw new RuntimeException(e);
     }
   }
-
 }

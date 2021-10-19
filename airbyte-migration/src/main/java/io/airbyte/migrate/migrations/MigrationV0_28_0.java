@@ -19,14 +19,18 @@ import java.util.stream.Stream;
 
 public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
-  private static final UUID DEFAULT_WORKSPACE_ID = UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+  private static final UUID DEFAULT_WORKSPACE_ID =
+      UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
 
   private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_28_0/airbyte_config");
   private static final String MIGRATION_VERSION = "0.28.0-alpha";
 
-  private static final ResourceId CONNECTION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
-  private static final ResourceId SOURCE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "SOURCE_CONNECTION");
-  private static final ResourceId OPERATION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
+  private static final ResourceId CONNECTION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  private static final ResourceId SOURCE_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "SOURCE_CONNECTION");
+  private static final ResourceId OPERATION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
   private final Migration previousMigration;
 
@@ -42,14 +46,18 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
-    outputSchema.put(OPERATION_RESOURCE_ID, MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, OPERATION_RESOURCE_ID));
+    final Map<ResourceId, JsonNode> outputSchema =
+        new HashMap<>(previousMigration.getOutputSchema());
+    outputSchema.put(
+        OPERATION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, OPERATION_RESOURCE_ID));
     return outputSchema;
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputDataImmutable,
-                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputDataImmutable,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     // we need to figure out which workspace to associate an operation with. we use the following
     // strategy to avoid ever storing too much info in memory:
     // 1. iterate over connectors stream
@@ -58,7 +66,8 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
     // 4. iterate over sources stream
     // 5. build mapping of sources to workspaces
     // 6. iterate over operations stream,
-    // 7. map from operation => connection => source => workspace. set that workspace for the operation.
+    // 7. map from operation => connection => source => workspace. set that workspace for the
+    // operation.
     // 8. if no mapping use default workspace id
 
     final Map<UUID, UUID> connectionIdToSourceId = new HashMap<>();
@@ -67,47 +76,58 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
     final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>(inputDataImmutable);
     // process connections.
-    inputData.getOrDefault(CONNECTION_RESOURCE_ID, Stream.empty()).forEach(r -> {
-      final UUID connectionId = UUID.fromString(r.get("connectionId").asText());
-      final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
-      connectionIdToSourceId.put(connectionId, sourceId);
-      if (r.hasNonNull("operationIds")) {
-        r.get("operationIds").forEach(operationIdString -> {
-          final UUID operationId = UUID.fromString(operationIdString.asText());
-          operationIdToConnectionId.put(operationId, connectionId);
-        });
-      }
+    inputData
+        .getOrDefault(CONNECTION_RESOURCE_ID, Stream.empty())
+        .forEach(
+            r -> {
+              final UUID connectionId = UUID.fromString(r.get("connectionId").asText());
+              final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
+              connectionIdToSourceId.put(connectionId, sourceId);
+              if (r.hasNonNull("operationIds")) {
+                r.get("operationIds")
+                    .forEach(
+                        operationIdString -> {
+                          final UUID operationId = UUID.fromString(operationIdString.asText());
+                          operationIdToConnectionId.put(operationId, connectionId);
+                        });
+              }
 
-      outputData.get(CONNECTION_RESOURCE_ID).accept(r);
-    });
+              outputData.get(CONNECTION_RESOURCE_ID).accept(r);
+            });
     inputData.remove(CONNECTION_RESOURCE_ID);
 
     // process sources.
-    inputData.getOrDefault(SOURCE_RESOURCE_ID, Stream.empty()).forEach(r -> {
-      final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
-      final UUID workspaceId = UUID.fromString(r.get("workspaceId").asText());
-      sourceIdToWorkspaceId.put(sourceId, workspaceId);
+    inputData
+        .getOrDefault(SOURCE_RESOURCE_ID, Stream.empty())
+        .forEach(
+            r -> {
+              final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
+              final UUID workspaceId = UUID.fromString(r.get("workspaceId").asText());
+              sourceIdToWorkspaceId.put(sourceId, workspaceId);
 
-      outputData.get(SOURCE_RESOURCE_ID).accept(r);
-    });
+              outputData.get(SOURCE_RESOURCE_ID).accept(r);
+            });
     inputData.remove(SOURCE_RESOURCE_ID);
 
     // process operations.
-    inputData.getOrDefault(OPERATION_RESOURCE_ID, Stream.empty()).forEach(r -> {
-      final UUID operationId = UUID.fromString(r.get("operationId").asText());
+    inputData
+        .getOrDefault(OPERATION_RESOURCE_ID, Stream.empty())
+        .forEach(
+            r -> {
+              final UUID operationId = UUID.fromString(r.get("operationId").asText());
 
-      final UUID workspaceId;
-      final UUID connectionId = operationIdToConnectionId.get(operationId);
-      if (connectionId == null) {
-        workspaceId = DEFAULT_WORKSPACE_ID;
-      } else {
-        final UUID sourceId = connectionIdToSourceId.get(connectionId);
-        workspaceId = sourceIdToWorkspaceId.getOrDefault(sourceId, DEFAULT_WORKSPACE_ID);
-      }
-      ((ObjectNode) r).put("workspaceId", workspaceId.toString());
+              final UUID workspaceId;
+              final UUID connectionId = operationIdToConnectionId.get(operationId);
+              if (connectionId == null) {
+                workspaceId = DEFAULT_WORKSPACE_ID;
+              } else {
+                final UUID sourceId = connectionIdToSourceId.get(connectionId);
+                workspaceId = sourceIdToWorkspaceId.getOrDefault(sourceId, DEFAULT_WORKSPACE_ID);
+              }
+              ((ObjectNode) r).put("workspaceId", workspaceId.toString());
 
-      outputData.get(OPERATION_RESOURCE_ID).accept(r);
-    });
+              outputData.get(OPERATION_RESOURCE_ID).accept(r);
+            });
     inputData.remove(OPERATION_RESOURCE_ID);
 
     // process the remaining resources.
@@ -116,5 +136,4 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
       entry.getValue().forEach(recordConsumer);
     }
   }
-
 }

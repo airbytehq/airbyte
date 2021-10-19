@@ -39,10 +39,11 @@ public class JobNotifier {
   private final TrackingClient trackingClient;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(final String webappUrl,
-                     final ConfigRepository configRepository,
-                     final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient) {
+  public JobNotifier(
+      final String webappUrl,
+      final ConfigRepository configRepository,
+      final WorkspaceHelper workspaceHelper,
+      final TrackingClient trackingClient) {
     this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
@@ -56,35 +57,52 @@ public class JobNotifier {
   private void notifyJob(final String reason, final String action, final Job job) {
     final UUID connectionId = UUID.fromString(job.getScope());
     try {
-      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-      final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
-      final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
+      final StandardSourceDefinition sourceDefinition =
+          configRepository.getSourceDefinitionFromConnection(connectionId);
+      final StandardDestinationDefinition destinationDefinition =
+          configRepository.getDestinationDefinitionFromConnection(connectionId);
+      final Instant jobStartedDate =
+          Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
+      final DateTimeFormatter formatter =
+          DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
       final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
-      final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
+      final Instant adjustedJobUpdatedDate =
+          jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
       final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
-      final String durationString = formatDurationPart(duration.toDaysPart(), "day")
-          + formatDurationPart(duration.toHoursPart(), "hour")
-          + formatDurationPart(duration.toMinutesPart(), "minute")
-          + formatDurationPart(duration.toSecondsPart(), "second");
-      final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
-      final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
-      final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
+      final String durationString =
+          formatDurationPart(duration.toDaysPart(), "day")
+              + formatDurationPart(duration.toHoursPart(), "hour")
+              + formatDurationPart(duration.toMinutesPart(), "minute")
+              + formatDurationPart(duration.toSecondsPart(), "second");
+      final String sourceConnector =
+          String.format(
+              "%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
+      final String destinationConnector =
+          String.format(
+              "%s version %s",
+              destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
+      final String failReason =
+          Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
       final String jobDescription =
-          String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, failReason);
+          String.format(
+              "sync started on %s, running for%s%s.",
+              formatter.format(jobStartedDate), durationString, failReason);
       final String logUrl = connectionPageUrl + connectionId;
       final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
-      final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
-      final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
-      final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
+      final ImmutableMap<String, Object> jobMetadata =
+          TrackingMetadata.generateJobAttemptMetadata(job);
+      final ImmutableMap<String, Object> sourceMetadata =
+          TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+      final ImmutableMap<String, Object> destinationMetadata =
+          TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
       for (final Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
           notificationMetadata.put("connection_id", connectionId);
-          if (notification.getNotificationType().equals(NotificationType.SLACK) &&
-              notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
+          if (notification.getNotificationType().equals(NotificationType.SLACK)
+              && notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
             // flag as slack if the webhook URL is also pointing to slack
             notificationMetadata.put("notification_type", NotificationType.SLACK);
           } else {
@@ -94,13 +112,16 @@ public class JobNotifier {
           trackingClient.track(
               workspaceId,
               action,
-              MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
+              MoreMaps.merge(
+                  jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
           if (FAILURE_NOTIFICATION.equals(action)) {
-            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            if (!notificationClient.notifyJobFailure(
+                sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify failure: {}", notification);
             }
           } else if (SUCCESS_NOTIFICATION.equals(action)) {
-            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            if (!notificationClient.notifyJobSuccess(
+                sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
           }
@@ -134,5 +155,4 @@ public class JobNotifier {
     }
     return "";
   }
-
 }

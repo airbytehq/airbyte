@@ -21,7 +21,6 @@ class FileTtlManagerTest {
   private Path file3;
 
   @BeforeEach
-
   void setup() throws IOException {
     final Path testRoot = Files.createTempDirectory(Path.of("/tmp"), "ttl_test");
     file1 = Files.createFile(testRoot.resolve("file1"));
@@ -54,5 +53,4 @@ class FileTtlManagerTest {
     fileTtlManager.register(file3);
     assertFalse(Files.exists(file1));
   }
-
 }

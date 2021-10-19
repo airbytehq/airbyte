@@ -43,13 +43,17 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+    this(
+        integrationLauncher,
+        new DefaultAirbyteStreamFactory(),
+        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
+  DefaultAirbyteSource(
+      final IntegrationLauncher integrationLauncher,
+      final AirbyteStreamFactory streamFactory,
+      final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
@@ -59,26 +63,33 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
-    sourceProcess = integrationLauncher.read(jobRoot,
-        WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
-        WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getCatalog()),
-        sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
+    sourceProcess =
+        integrationLauncher.read(
+            jobRoot,
+            WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+            Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
+            WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
+            Jsons.serialize(sourceConfig.getCatalog()),
+            sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+            sourceConfig.getState() == null
+                ? null
+                : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
-        .peek(message -> heartbeatMonitor.beat())
-        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
-        .iterator();
+    messageIterator =
+        streamFactory
+            .create(IOs.newBufferedReader(sourceProcess.getInputStream()))
+            .peek(message -> heartbeatMonitor.beat())
+            .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
+            .iterator();
   }
 
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
-    // As this check is done on every message read, it is important for this operation to be efficient.
+    // As this check is done on every message read, it is important for this operation to be
+    // efficient.
     // Short circuit early to avoid checking the underlying process.
     final var isEmpty = !messageIterator.hasNext();
     if (!isEmpty) {
@@ -111,7 +122,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+      final String message =
+          sourceProcess.isAlive()
+              ? "Source has not terminated "
+              : "Source process exit with code " + sourceProcess.exitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
@@ -128,5 +142,4 @@ public class DefaultAirbyteSource implements AirbyteSource {
       LOGGER.info("Cancelled source process!");
     }
   }
-
 }

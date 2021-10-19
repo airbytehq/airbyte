@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 
 public class TrelloOAuthFlowIntegrationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TrelloOAuthFlowIntegrationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(TrelloOAuthFlowIntegrationTest.class);
   private static final String REDIRECT_URL = "http://localhost:8000/code";
   private static final Path CREDENTIALS_PATH = Path.of("secrets/trello.json");
 
@@ -47,8 +48,7 @@ public class TrelloOAuthFlowIntegrationTest {
   @BeforeEach
   public void setup() throws IOException {
     if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a oauth credentials file.");
+      throw new IllegalStateException("Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
     trelloOAuthFlow = new TrelloOAuthFlow(configRepository);
@@ -66,21 +66,27 @@ public class TrelloOAuthFlowIntegrationTest {
   }
 
   @Test
-  public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullGoogleOAuthFlow()
+      throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     final String clientId = credentialsJson.get("client_id").asText();
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", clientId)
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", clientId)
+                                .put("client_secret", credentialsJson.get("client_secret").asText())
+                                .build()))));
     final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
@@ -90,8 +96,16 @@ public class TrelloOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("oauth_verifier", serverHandler.getParamValue(), "oauth_token", serverHandler.getResponseQuery().get("oauth_token")), REDIRECT_URL);
+    final Map<String, Object> params =
+        trelloOAuthFlow.completeSourceOAuth(
+            workspaceId,
+            definitionId,
+            Map.of(
+                "oauth_verifier",
+                serverHandler.getParamValue(),
+                "oauth_token",
+                serverHandler.getResponseQuery().get("oauth_token")),
+            REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("token"));
     assertTrue(params.containsKey("key"));
@@ -100,7 +114,7 @@ public class TrelloOAuthFlowIntegrationTest {
 
   static class ServerHandler implements HttpHandler {
 
-    final private String expectedParam;
+    private final String expectedParam;
     private Map responseQuery;
     private String paramValue;
     private boolean succeeded;
@@ -133,8 +147,10 @@ public class TrelloOAuthFlowIntegrationTest {
         final String response;
         if (data != null && data.containsKey(expectedParam)) {
           paramValue = data.get(expectedParam);
-          response = String.format("Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
-              expectedParam, paramValue);
+          response =
+              String.format(
+                  "Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
+                  expectedParam, paramValue);
           responseQuery = data;
           LOGGER.info(response);
           t.sendResponseHeaders(200, response.length());
@@ -166,7 +182,5 @@ public class TrelloOAuthFlowIntegrationTest {
       }
       return result;
     }
-
   }
-
 }

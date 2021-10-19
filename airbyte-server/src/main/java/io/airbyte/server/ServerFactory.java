@@ -21,30 +21,32 @@ import org.slf4j.MDC;
 
 public interface ServerFactory {
 
-  ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                        SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-                        WorkflowServiceStubs temporalService,
-                        ConfigRepository configRepository,
-                        JobPersistence jobPersistence,
-                        ConfigPersistence seed,
-                        Database configsDatabase,
-                        Database jobsDatabase,
-                        Configs configs,
-                        TrackingClient trackingClient);
+  ServerRunnable create(
+      SchedulerJobClient schedulerJobClient,
+      SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+      WorkflowServiceStubs temporalService,
+      ConfigRepository configRepository,
+      JobPersistence jobPersistence,
+      ConfigPersistence seed,
+      Database configsDatabase,
+      Database jobsDatabase,
+      Configs configs,
+      TrackingClient trackingClient);
 
   class Api implements ServerFactory {
 
     @Override
-    public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
-                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-                                 final WorkflowServiceStubs temporalService,
-                                 final ConfigRepository configRepository,
-                                 final JobPersistence jobPersistence,
-                                 final ConfigPersistence seed,
-                                 final Database configsDatabase,
-                                 final Database jobsDatabase,
-                                 final Configs configs,
-                                 final TrackingClient trackingClient) {
+    public ServerRunnable create(
+        final SchedulerJobClient schedulerJobClient,
+        final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+        final WorkflowServiceStubs temporalService,
+        final ConfigRepository configRepository,
+        final JobPersistence jobPersistence,
+        final ConfigPersistence seed,
+        final Database configsDatabase,
+        final Database jobsDatabase,
+        final Configs configs,
+        final TrackingClient trackingClient) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -67,7 +69,5 @@ public interface ServerFactory {
       // construct server
       return new ServerApp(configs.getAirbyteVersion(), componentClasses, components);
     }
-
   }
-
 }

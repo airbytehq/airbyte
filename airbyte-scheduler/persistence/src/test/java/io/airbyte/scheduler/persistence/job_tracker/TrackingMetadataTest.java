@@ -35,13 +35,17 @@ class TrackingMetadataTest {
     when(standardSync.getCatalog()).thenReturn(mock(ConfiguredAirbyteCatalog.class));
 
     // try to generate metadata
-    final ImmutableMap<String, Object> expected = ImmutableMap.of(
-        "connection_id", connectionId,
-        "frequency", "manual",
-        "operation_count", 0,
-        "table_prefix", false);
+    final ImmutableMap<String, Object> expected =
+        ImmutableMap.of(
+            "connection_id",
+            connectionId,
+            "frequency",
+            "manual",
+            "operation_count",
+            0,
+            "table_prefix",
+            false);
     final ImmutableMap<String, Object> actual = TrackingMetadata.generateSyncMetadata(standardSync);
     assertEquals(expected, actual);
   }
-
 }

@@ -60,7 +60,6 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     public String dumpSchema() {
       return "";
     }
-
   }
 
   /**
@@ -69,16 +68,18 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
    */
   private static DatabaseMigrator getBaselineMigrator(final FlywayDatabaseMigrator fullMigrator) {
     final Configuration fullConfig = fullMigrator.getFlyway().getConfiguration();
-    final FluentConfiguration baselineConfig = Flyway.configure()
-        .dataSource(fullConfig.getDataSource())
-        .baselineVersion(fullConfig.getBaselineVersion())
-        .baselineDescription(fullConfig.getBaselineDescription())
-        .baselineOnMigrate(fullConfig.isBaselineOnMigrate())
-        .installedBy(fullConfig.getInstalledBy())
-        .table(fullConfig.getTable())
-        .locations(fullConfig.getLocations());
+    final FluentConfiguration baselineConfig =
+        Flyway.configure()
+            .dataSource(fullConfig.getDataSource())
+            .baselineVersion(fullConfig.getBaselineVersion())
+            .baselineDescription(fullConfig.getBaselineDescription())
+            .baselineOnMigrate(fullConfig.isBaselineOnMigrate())
+            .installedBy(fullConfig.getInstalledBy())
+            .table(fullConfig.getTable())
+            .locations(fullConfig.getLocations());
 
-    final Optional<MigrationVersion> secondToLastMigrationVersion = MigrationDevHelper.getSecondToLastMigrationVersion(fullMigrator);
+    final Optional<MigrationVersion> secondToLastMigrationVersion =
+        MigrationDevHelper.getSecondToLastMigrationVersion(fullMigrator);
     if (secondToLastMigrationVersion.isEmpty()) {
       LOGGER.info("There is zero or one migration. No extra baseline setup is needed.");
       return new NoOpDatabaseMigrator();
@@ -114,5 +115,4 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   public String dumpSchema() throws IOException {
     return fullMigrator.dumpSchema();
   }
-
 }

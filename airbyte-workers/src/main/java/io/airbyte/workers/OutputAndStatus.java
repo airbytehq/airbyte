@@ -45,13 +45,11 @@ public class OutputAndStatus<OutputType> {
       return false;
     }
     final OutputAndStatus<?> that = (OutputAndStatus<?>) o;
-    return Objects.equals(output, that.output) &&
-        status == that.status;
+    return Objects.equals(output, that.output) && status == that.status;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(output, status);
   }
-
 }

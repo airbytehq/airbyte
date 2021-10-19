@@ -38,7 +38,8 @@ class TemporalAttemptExecutionTest {
 
   private static final String JOB_ID = "11";
   private static final int ATTEMPT_ID = 21;
-  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
+  private static final JobRunConfig JOB_RUN_CONFIG =
+      new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
   private static final String SOURCE_USERNAME = "sourceusername";
   private static final String SOURCE_PASSWORD = "hunter2";
 
@@ -55,9 +56,10 @@ class TemporalAttemptExecutionTest {
 
   @BeforeAll
   static void setUpAll() throws IOException {
-    container = new PostgreSQLContainer("postgres:13-alpine")
-        .withUsername(SOURCE_USERNAME)
-        .withPassword(SOURCE_PASSWORD);
+    container =
+        new PostgreSQLContainer("postgres:13-alpine")
+            .withUsername(SOURCE_USERNAME)
+            .withPassword(SOURCE_PASSWORD);
     container.start();
     configs = mock(Configs.class);
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
@@ -65,10 +67,9 @@ class TemporalAttemptExecutionTest {
     when(configs.getDatabasePassword()).thenReturn(SOURCE_PASSWORD);
 
     // create the initial schema
-    database = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
+    database =
+        new JobsDatabaseInstance(
+                configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl())
             .getAndInitialize();
 
     // make sure schema is up-to-date
@@ -80,20 +81,23 @@ class TemporalAttemptExecutionTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException {
-    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
+    final Path workspaceRoot =
+        Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
 
     execution = mock(CheckedSupplier.class);
     mdcSetter = mock(Consumer.class);
 
-    attemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot,
-        JOB_RUN_CONFIG, execution,
-        () -> "",
-        mdcSetter,
-        mock(CancellationHandler.class),
-        () -> "workflow_id",
-        configs);
+    attemptExecution =
+        new TemporalAttemptExecution<>(
+            workspaceRoot,
+            JOB_RUN_CONFIG,
+            execution,
+            () -> "",
+            mdcSetter,
+            mock(CancellationHandler.class),
+            () -> "workflow_id",
+            configs);
   }
 
   @AfterEach
@@ -129,7 +133,8 @@ class TemporalAttemptExecutionTest {
   void testThrowsCheckedException() throws Exception {
     when(execution.get()).thenThrow(new IOException());
 
-    final CheckedExceptionWrapper actualException = assertThrows(CheckedExceptionWrapper.class, () -> attemptExecution.get());
+    final CheckedExceptionWrapper actualException =
+        assertThrows(CheckedExceptionWrapper.class, () -> attemptExecution.get());
     assertEquals(IOException.class, CheckedExceptionWrapper.unwrap(actualException).getClass());
 
     verify(execution).get();
@@ -145,5 +150,4 @@ class TemporalAttemptExecutionTest {
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot);
   }
-
 }

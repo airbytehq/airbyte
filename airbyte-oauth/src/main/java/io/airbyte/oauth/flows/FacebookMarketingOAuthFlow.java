@@ -22,30 +22,36 @@ import org.apache.http.client.utils.URIBuilder;
  */
 public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
 
-  private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v11.0/oauth/access_token";
+  private static final String ACCESS_TOKEN_URL =
+      "https://graph.facebook.com/v11.0/oauth/access_token";
 
   public FacebookMarketingOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  FacebookMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  FacebookMarketingOAuthFlow(
+      final ConfigRepository configRepository,
+      final HttpClient httpClient,
+      final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
-    final URIBuilder builder = new URIBuilder()
-        .setScheme("https")
-        .setHost("www.facebook.com")
-        .setPath("v11.0/dialog/oauth")
-        // required
-        .addParameter("client_id", clientId)
-        .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
-        // optional
-        .addParameter("response_type", "code")
-        .addParameter("scope", "ads_management,ads_read,read_insights");
+  protected String formatConsentUrl(
+      final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+    final URIBuilder builder =
+        new URIBuilder()
+            .setScheme("https")
+            .setHost("www.facebook.com")
+            .setPath("v11.0/dialog/oauth")
+            // required
+            .addParameter("client_id", clientId)
+            .addParameter("redirect_uri", redirectUrl)
+            .addParameter("state", getState())
+            // optional
+            .addParameter("response_type", "code")
+            .addParameter("scope", "ads_management,ads_read,read_insights");
     try {
       return builder.build().toString();
     } catch (final URISyntaxException e) {
@@ -65,8 +71,8 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
     if (data.has("access_token")) {
       return Map.of("access_token", data.get("access_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
+      throw new IOException(
+          String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
     }
   }
-
 }

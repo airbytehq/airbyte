@@ -17,5 +17,4 @@ public interface VoidCallable extends Callable<Void> {
   }
 
   void voidCall() throws Exception;
-
 }

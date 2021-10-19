@@ -47,8 +47,7 @@ public class AsanaOAuthFlowIntegrationTest {
   @BeforeEach
   public void setup() throws IOException {
     if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a oauth credentials file.");
+      throw new IllegalStateException("Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
     asanaOAuthFlow = new AsanaOAuthFlow(configRepository);
@@ -66,21 +65,27 @@ public class AsanaOAuthFlowIntegrationTest {
   }
 
   @Test
-  public void testFullAsanaOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullAsanaOAuthFlow()
+      throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     final String clientId = credentialsJson.get("client_id").asText();
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", clientId)
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", clientId)
+                                .put("client_secret", credentialsJson.get("client_secret").asText())
+                                .build()))));
     final String url = asanaOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
@@ -90,8 +95,9 @@ public class AsanaOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = asanaOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+    final Map<String, Object> params =
+        asanaOAuthFlow.completeSourceOAuth(
+            workspaceId, definitionId, Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));
     final Map creds = (Map) params.get("credentials");
@@ -101,7 +107,7 @@ public class AsanaOAuthFlowIntegrationTest {
 
   static class ServerHandler implements HttpHandler {
 
-    final private String expectedParam;
+    private final String expectedParam;
     private Map responseQuery;
     private String paramValue;
     private boolean succeeded;
@@ -134,8 +140,10 @@ public class AsanaOAuthFlowIntegrationTest {
         final String response;
         if (data != null && data.containsKey(expectedParam)) {
           paramValue = data.get(expectedParam);
-          response = String.format("Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
-              expectedParam, paramValue);
+          response =
+              String.format(
+                  "Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
+                  expectedParam, paramValue);
           responseQuery = data;
           LOGGER.info(response);
           t.sendResponseHeaders(200, response.length());
@@ -167,7 +175,5 @@ public class AsanaOAuthFlowIntegrationTest {
       }
       return result;
     }
-
   }
-
 }

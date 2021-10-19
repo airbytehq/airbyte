@@ -51,38 +51,45 @@ class OperationsHandlerTest {
     uuidGenerator = mock(Supplier.class);
 
     operationsHandler = new OperationsHandler(configRepository, uuidGenerator);
-    standardSyncOperation = new StandardSyncOperation()
-        .withWorkspaceId(UUID.randomUUID())
-        .withOperationId(UUID.randomUUID())
-        .withName("presto to hudi")
-        .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new io.airbyte.config.OperatorNormalization().withOption(Option.BASIC))
-        .withOperatorDbt(null)
-        .withTombstone(false);
+    standardSyncOperation =
+        new StandardSyncOperation()
+            .withWorkspaceId(UUID.randomUUID())
+            .withOperationId(UUID.randomUUID())
+            .withName("presto to hudi")
+            .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.NORMALIZATION)
+            .withOperatorNormalization(
+                new io.airbyte.config.OperatorNormalization().withOption(Option.BASIC))
+            .withOperatorDbt(null)
+            .withTombstone(false);
   }
 
   @Test
   void testCreateOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSyncOperation.getOperationId());
 
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId()))
+        .thenReturn(standardSyncOperation);
 
-    final OperationCreate operationCreate = new OperationCreate()
-        .workspaceId(standardSyncOperation.getWorkspaceId())
-        .name(standardSyncOperation.getName())
-        .operatorConfiguration(new OperatorConfiguration()
-            .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
+    final OperationCreate operationCreate =
+        new OperationCreate()
+            .workspaceId(standardSyncOperation.getWorkspaceId())
+            .name(standardSyncOperation.getName())
+            .operatorConfiguration(
+                new OperatorConfiguration()
+                    .operatorType(OperatorType.NORMALIZATION)
+                    .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
 
     final OperationRead actualOperationRead = operationsHandler.createOperation(operationCreate);
 
-    final OperationRead expectedOperationRead = new OperationRead()
-        .workspaceId(standardSyncOperation.getWorkspaceId())
-        .operationId(standardSyncOperation.getOperationId())
-        .name(standardSyncOperation.getName())
-        .operatorConfiguration(new OperatorConfiguration()
-            .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
+    final OperationRead expectedOperationRead =
+        new OperationRead()
+            .workspaceId(standardSyncOperation.getWorkspaceId())
+            .operationId(standardSyncOperation.getOperationId())
+            .name(standardSyncOperation.getName())
+            .operatorConfiguration(
+                new OperatorConfiguration()
+                    .operatorType(OperatorType.NORMALIZATION)
+                    .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
 
     assertEquals(expectedOperationRead, actualOperationRead);
 
@@ -91,46 +98,55 @@ class OperationsHandlerTest {
 
   @Test
   void testUpdateOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final OperationUpdate operationUpdate = new OperationUpdate()
-        .operationId(standardSyncOperation.getOperationId())
-        .name(standardSyncOperation.getName())
-        .operatorConfiguration(new OperatorConfiguration()
-            .operatorType(OperatorType.DBT)
-            .dbt(new OperatorDbt()
-                .gitRepoUrl("git_repo_url")
-                .gitRepoBranch("git_repo_branch")
-                .dockerImage("docker")
-                .dbtArguments("--full-refresh")));
+    final OperationUpdate operationUpdate =
+        new OperationUpdate()
+            .operationId(standardSyncOperation.getOperationId())
+            .name(standardSyncOperation.getName())
+            .operatorConfiguration(
+                new OperatorConfiguration()
+                    .operatorType(OperatorType.DBT)
+                    .dbt(
+                        new OperatorDbt()
+                            .gitRepoUrl("git_repo_url")
+                            .gitRepoBranch("git_repo_branch")
+                            .dockerImage("docker")
+                            .dbtArguments("--full-refresh")));
 
-    final StandardSyncOperation updatedStandardSyncOperation = new StandardSyncOperation()
-        .withWorkspaceId(standardSyncOperation.getWorkspaceId())
-        .withOperationId(standardSyncOperation.getOperationId())
-        .withName(standardSyncOperation.getName())
-        .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.DBT)
-        .withOperatorDbt(new io.airbyte.config.OperatorDbt()
-            .withGitRepoUrl("git_repo_url")
-            .withGitRepoBranch("git_repo_branch")
-            .withDockerImage("docker")
-            .withDbtArguments("--full-refresh"))
-        .withOperatorNormalization(null)
-        .withTombstone(false);
+    final StandardSyncOperation updatedStandardSyncOperation =
+        new StandardSyncOperation()
+            .withWorkspaceId(standardSyncOperation.getWorkspaceId())
+            .withOperationId(standardSyncOperation.getOperationId())
+            .withName(standardSyncOperation.getName())
+            .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.DBT)
+            .withOperatorDbt(
+                new io.airbyte.config.OperatorDbt()
+                    .withGitRepoUrl("git_repo_url")
+                    .withGitRepoBranch("git_repo_branch")
+                    .withDockerImage("docker")
+                    .withDbtArguments("--full-refresh"))
+            .withOperatorNormalization(null)
+            .withTombstone(false);
 
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation)
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId()))
+        .thenReturn(standardSyncOperation)
         .thenReturn(updatedStandardSyncOperation);
 
     final OperationRead actualOperationRead = operationsHandler.updateOperation(operationUpdate);
 
-    final OperationRead expectedOperationRead = new OperationRead()
-        .workspaceId(standardSyncOperation.getWorkspaceId())
-        .operationId(standardSyncOperation.getOperationId())
-        .name(standardSyncOperation.getName())
-        .operatorConfiguration(new OperatorConfiguration()
-            .operatorType(OperatorType.DBT)
-            .dbt(new OperatorDbt()
-                .gitRepoUrl("git_repo_url")
-                .gitRepoBranch("git_repo_branch")
-                .dockerImage("docker")
-                .dbtArguments("--full-refresh")));
+    final OperationRead expectedOperationRead =
+        new OperationRead()
+            .workspaceId(standardSyncOperation.getWorkspaceId())
+            .operationId(standardSyncOperation.getOperationId())
+            .name(standardSyncOperation.getName())
+            .operatorConfiguration(
+                new OperatorConfiguration()
+                    .operatorType(OperatorType.DBT)
+                    .dbt(
+                        new OperatorDbt()
+                            .gitRepoUrl("git_repo_url")
+                            .gitRepoBranch("git_repo_branch")
+                            .dockerImage("docker")
+                            .dbtArguments("--full-refresh")));
 
     assertEquals(expectedOperationRead, actualOperationRead);
 
@@ -139,10 +155,13 @@ class OperationsHandlerTest {
 
   @Test
   void testGetOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId()))
+        .thenReturn(standardSyncOperation);
 
-    final OperationIdRequestBody operationIdRequestBody = new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
-    final OperationRead actualOperationRead = operationsHandler.getOperation(operationIdRequestBody);
+    final OperationIdRequestBody operationIdRequestBody =
+        new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
+    final OperationRead actualOperationRead =
+        operationsHandler.getOperation(operationIdRequestBody);
 
     final OperationRead expectedOperationRead = generateOperationRead();
 
@@ -154,37 +173,42 @@ class OperationsHandlerTest {
         .workspaceId(standardSyncOperation.getWorkspaceId())
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
-        .operatorConfiguration(new OperatorConfiguration()
-            .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
+        .operatorConfiguration(
+            new OperatorConfiguration()
+                .operatorType(OperatorType.NORMALIZATION)
+                .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
   }
 
   @Test
-  void testListOperationsForConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListOperationsForConnection()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID connectionId = UUID.randomUUID();
 
     when(configRepository.getStandardSync(connectionId))
-        .thenReturn(new StandardSync()
-            .withOperationIds(List.of(standardSyncOperation.getOperationId())));
+        .thenReturn(
+            new StandardSync().withOperationIds(List.of(standardSyncOperation.getOperationId())));
 
     when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId()))
         .thenReturn(standardSyncOperation);
 
-    when(configRepository.listStandardSyncOperations())
-        .thenReturn(List.of(standardSyncOperation));
+    when(configRepository.listStandardSyncOperations()).thenReturn(List.of(standardSyncOperation));
 
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
-    final OperationReadList actualOperationReadList = operationsHandler.listOperationsForConnection(connectionIdRequestBody);
+    final ConnectionIdRequestBody connectionIdRequestBody =
+        new ConnectionIdRequestBody().connectionId(connectionId);
+    final OperationReadList actualOperationReadList =
+        operationsHandler.listOperationsForConnection(connectionIdRequestBody);
 
     assertEquals(generateOperationRead(), actualOperationReadList.getOperations().get(0));
   }
 
   @Test
   void testDeleteOperation() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final OperationIdRequestBody operationIdRequestBody = new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
+    final OperationIdRequestBody operationIdRequestBody =
+        new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
 
     final OperationsHandler spiedOperationsHandler = spy(operationsHandler);
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId()))
+        .thenReturn(standardSyncOperation);
 
     spiedOperationsHandler.deleteOperation(operationIdRequestBody);
 
@@ -192,20 +216,26 @@ class OperationsHandlerTest {
   }
 
   @Test
-  void testDeleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testDeleteOperationsForConnection()
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID operationId = UUID.randomUUID();
     final List<UUID> toDelete = List.of(standardSyncOperation.getOperationId(), operationId);
-    final StandardSync sync = new StandardSync()
-        .withConnectionId(UUID.randomUUID())
-        .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId));
-    when(configRepository.listStandardSyncs()).thenReturn(List.of(
-        sync,
+    final StandardSync sync =
         new StandardSync()
             .withConnectionId(UUID.randomUUID())
-            .withOperationIds(List.of(standardSyncOperation.getOperationId()))));
-    final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
+            .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId));
+    when(configRepository.listStandardSyncs())
+        .thenReturn(
+            List.of(
+                sync,
+                new StandardSync()
+                    .withConnectionId(UUID.randomUUID())
+                    .withOperationIds(List.of(standardSyncOperation.getOperationId()))));
+    final StandardSyncOperation operation =
+        new StandardSyncOperation().withOperationId(operationId);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
-    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId()))
+        .thenReturn(standardSyncOperation);
 
     operationsHandler.deleteOperationsForConnection(sync, toDelete);
 
@@ -214,8 +244,13 @@ class OperationsHandlerTest {
 
   @Test
   void testEnumConversion() {
-    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
-    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorNormalization.OptionEnum.class, io.airbyte.config.OperatorNormalization.Option.class));
+    assertTrue(
+        Enums.isCompatible(
+            io.airbyte.api.model.OperatorType.class,
+            io.airbyte.config.StandardSyncOperation.OperatorType.class));
+    assertTrue(
+        Enums.isCompatible(
+            io.airbyte.api.model.OperatorNormalization.OptionEnum.class,
+            io.airbyte.config.OperatorNormalization.Option.class));
   }
-
 }

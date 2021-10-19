@@ -30,22 +30,23 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
   @BeforeEach
   void setUp() {
     final var configs = new EnvConfigs();
-    persistence = GoogleSecretManagerPersistence.getEphemeral(
-        configs.getSecretStoreGcpProjectId(),
-        configs.getSecretStoreGcpCredentials());
-    baseCoordinate = "GoogleSecretManagerPersistenceIntegrationTest_coordinate_" + RandomUtils.nextInt() % 20000;
+    persistence =
+        GoogleSecretManagerPersistence.getEphemeral(
+            configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials());
+    baseCoordinate =
+        "GoogleSecretManagerPersistenceIntegrationTest_coordinate_" + RandomUtils.nextInt() % 20000;
   }
 
   @AfterEach
   void tearDown() throws IOException {
     final var configs = new EnvConfigs();
-    try (final var client = GoogleSecretManagerPersistence.getSecretManagerServiceClient(configs.getSecretStoreGcpCredentials())) {
+    try (final var client =
+        GoogleSecretManagerPersistence.getSecretManagerServiceClient(
+            configs.getSecretStoreGcpCredentials())) {
       // try to delete this so we aren't charged for the secret
       // if this is missed due to some sort of failure the secret will be deleted after the ttl
       try {
-        client.deleteSecret(SecretName.of(
-            configs.getSecretStoreGcpProjectId(),
-            baseCoordinate));
+        client.deleteSecret(SecretName.of(configs.getSecretStoreGcpProjectId(), baseCoordinate));
       } catch (final NotFoundException nfe) {
         // do nothing
       }
@@ -75,5 +76,4 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
     assertTrue(thirdRead.isPresent());
     assertEquals(secondPayload, thirdRead.get());
   }
-
 }

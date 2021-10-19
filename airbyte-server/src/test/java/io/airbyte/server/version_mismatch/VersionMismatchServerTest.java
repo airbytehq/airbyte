@@ -45,11 +45,7 @@ public class VersionMismatchServerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {
-    "/",
-    "/api/v1/health",
-    "/random_path"
-  })
+  @ValueSource(strings = {"/", "/api/v1/health", "/random_path"})
   public void testIt(final String relativePath) throws Exception {
     final URL url = rootUri.resolve(relativePath).toURL();
     final HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -59,8 +55,11 @@ public class VersionMismatchServerTest {
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, http.getResponseCode());
 
     assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), "*");
-    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), "Origin, Content-Type, Accept, Content-Encoding");
-    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS), "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+    assertEquals(
+        http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS),
+        "Origin, Content-Type, Accept, Content-Encoding");
+    assertEquals(
+        http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS),
+        "GET, POST, PUT, DELETE, OPTIONS, HEAD");
   }
-
 }

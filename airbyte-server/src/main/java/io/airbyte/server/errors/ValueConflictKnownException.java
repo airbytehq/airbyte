@@ -18,5 +18,4 @@ public class ValueConflictKnownException extends KnownException {
   public int getHttpCode() {
     return 409;
   }
-
 }

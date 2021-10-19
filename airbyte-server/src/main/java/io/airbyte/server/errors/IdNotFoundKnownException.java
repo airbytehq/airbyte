@@ -35,10 +35,11 @@ public class IdNotFoundKnownException extends KnownException {
   }
 
   public NotFoundKnownExceptionInfo getNotFoundKnownExceptionInfo() {
-    final NotFoundKnownExceptionInfo exceptionInfo = new NotFoundKnownExceptionInfo()
-        .exceptionClassName(this.getClass().getName())
-        .message(this.getMessage())
-        .exceptionStack(Throwables.toStringList(this));
+    final NotFoundKnownExceptionInfo exceptionInfo =
+        new NotFoundKnownExceptionInfo()
+            .exceptionClassName(this.getClass().getName())
+            .message(this.getMessage())
+            .exceptionStack(Throwables.toStringList(this));
     if (this.getCause() != null) {
       exceptionInfo.rootCauseExceptionClassName(this.getClass().getClass().getName());
       exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(this.getCause()));
@@ -46,5 +47,4 @@ public class IdNotFoundKnownException extends KnownException {
     exceptionInfo.id(this.getId());
     return exceptionInfo;
   }
-
 }

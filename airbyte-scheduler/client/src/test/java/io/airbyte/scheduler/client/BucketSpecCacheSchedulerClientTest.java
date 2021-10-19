@@ -32,9 +32,12 @@ class BucketSpecCacheSchedulerClientTest {
 
   @Test
   void testGetsSpecIfPresent() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenReturn(Optional.of(new ConnectorSpecification()));
-    final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
-    assertEquals(new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
+    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0"))
+        .thenReturn(Optional.of(new ConnectorSpecification()));
+    final BucketSpecCacheSchedulerClient client =
+        new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
+    assertEquals(
+        new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
     verifyNoInteractions(defaultClientMock);
   }
 
@@ -42,18 +45,27 @@ class BucketSpecCacheSchedulerClientTest {
   void testCallsDelegateIfNotPresent() throws IOException {
     when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenReturn(Optional.empty());
     when(defaultClientMock.createGetSpecJob("source-pokeapi:0.1.0"))
-        .thenReturn(new SynchronousResponse<>(new ConnectorSpecification(), mock(SynchronousJobMetadata.class)));
-    final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
-    assertEquals(new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
+        .thenReturn(
+            new SynchronousResponse<>(
+                new ConnectorSpecification(), mock(SynchronousJobMetadata.class)));
+    final BucketSpecCacheSchedulerClient client =
+        new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
+    assertEquals(
+        new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
   }
 
   @Test
   void testCallsDelegateIfException() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenThrow(new RuntimeException("induced exception"));
+    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0"))
+        .thenThrow(new RuntimeException("induced exception"));
     when(defaultClientMock.createGetSpecJob("source-pokeapi:0.1.0"))
-        .thenReturn(new SynchronousResponse<>(new ConnectorSpecification(), mock(SynchronousJobMetadata.class)));
-    final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
-    assertEquals(new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
+        .thenReturn(
+            new SynchronousResponse<>(
+                new ConnectorSpecification(), mock(SynchronousJobMetadata.class)));
+    final BucketSpecCacheSchedulerClient client =
+        new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
+    assertEquals(
+        new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
   }
 
   // todo (cgardens) - this is essentially an integration test. run it manually to sanity check that
@@ -62,11 +74,13 @@ class BucketSpecCacheSchedulerClientTest {
   @Disabled
   @Test
   void testGetsSpecFromBucket() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenReturn(Optional.of(new ConnectorSpecification()));
+    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0"))
+        .thenReturn(Optional.of(new ConnectorSpecification()));
     // todo (cgardens) - replace with prod bucket.
-    final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, "cg-specs");
-    final ConnectorSpecification actualSpec = client.createGetSpecJob("source-pokeapi:0.1.0").getOutput();
+    final BucketSpecCacheSchedulerClient client =
+        new BucketSpecCacheSchedulerClient(defaultClientMock, "cg-specs");
+    final ConnectorSpecification actualSpec =
+        client.createGetSpecJob("source-pokeapi:0.1.0").getOutput();
     assertTrue(actualSpec.getDocumentationUrl().toString().contains("poke"));
   }
-
 }

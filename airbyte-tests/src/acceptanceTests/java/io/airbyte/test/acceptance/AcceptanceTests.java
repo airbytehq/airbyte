@@ -126,7 +126,8 @@ public class AcceptanceTests {
 
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
   // assume env file is one directory level up from airbyte-tests.
-  private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+  private static final File ENV_FILE =
+      Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
@@ -136,7 +137,8 @@ public class AcceptanceTests {
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
-      System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
+      System.getenv("USE_EXTERNAL_DEPLOYMENT") != null
+          && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
 
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
@@ -155,6 +157,7 @@ public class AcceptanceTests {
    * postgres database ane use them for testing.
    */
   private static PostgreSQLContainer sourcePsql;
+
   private static PostgreSQLContainer destinationPsql;
   private static AirbyteTestContainer airbyteTestContainer;
 
@@ -174,26 +177,29 @@ public class AcceptanceTests {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
     if (!IS_GKE) {
-      sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
-          .withUsername(SOURCE_USERNAME)
-          .withPassword(SOURCE_PASSWORD);
+      sourcePsql =
+          new PostgreSQLContainer("postgres:13-alpine")
+              .withUsername(SOURCE_USERNAME)
+              .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
     }
 
     // by default use airbyte deployment governed by a test container.
     if (!USE_EXTERNAL_DEPLOYMENT) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
-      airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
-          .setEnv(ENV_FILE)
-          // override env VERSION to use dev to test current build of airbyte.
-          .setEnvVariable("VERSION", "dev")
-          // override to use test mounts.
-          .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
-          .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
-          .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
-          .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
-          .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
-          .build();
+      airbyteTestContainer =
+          new AirbyteTestContainer.Builder(
+                  new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
+              .setEnv(ENV_FILE)
+              // override env VERSION to use dev to test current build of airbyte.
+              .setEnvVariable("VERSION", "dev")
+              // override to use test mounts.
+              .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
+              .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
+              .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
+              .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
+              .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
+              .build();
       airbyteTestContainer.start();
     } else {
       LOGGER.info("Using external deployment of airbyte.");
@@ -212,22 +218,32 @@ public class AcceptanceTests {
 
   @BeforeEach
   public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
-    apiClient = new AirbyteApiClient(
-        new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
-            .setBasePath("/api"));
+    apiClient =
+        new AirbyteApiClient(
+            new ApiClient()
+                .setScheme("http")
+                .setHost("localhost")
+                .setPort(8001)
+                .setBasePath("/api"));
 
     // work in whatever default workspace is present.
-    workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
+    workspaceId =
+        apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
 
     // log which connectors are being used.
-    final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
-        .getSourceDefinition(new SourceDefinitionIdRequestBody()
-            .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
-    final DestinationDefinitionRead destinationDef = apiClient.getDestinationDefinitionApi()
-        .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
-            .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
+    final SourceDefinitionRead sourceDef =
+        apiClient
+            .getSourceDefinitionApi()
+            .getSourceDefinition(
+                new SourceDefinitionIdRequestBody()
+                    .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
+    final DestinationDefinitionRead destinationDef =
+        apiClient
+            .getDestinationDefinitionApi()
+            .getDestinationDefinition(
+                new DestinationDefinitionIdRequestBody()
+                    .destinationDefinitionId(
+                        UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
     if (!IS_GKE) {
@@ -252,7 +268,8 @@ public class AcceptanceTests {
       }
       database.query(context -> context.execute(query.toString()));
     } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+      PostgreSQLContainerHelper.runSqlScript(
+          MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
     }
   }
 
@@ -282,87 +299,94 @@ public class AcceptanceTests {
 
   @Test
   @Order(-2)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
-    final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
+    final DestinationDefinitionSpecificationRead spec =
+        apiClient
+            .getDestinationDefinitionSpecificationApi()
+            .getDestinationDefinitionSpecification(
+                new DestinationDefinitionIdRequestBody()
+                    .destinationDefinitionId(destinationDefinitionId));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
 
   @Test
   @Order(-1)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testFailedGet404() {
-    final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID())));
+    final var e =
+        assertThrows(
+            ApiException.class,
+            () ->
+                apiClient
+                    .getDestinationDefinitionSpecificationApi()
+                    .getDestinationDefinitionSpecification(
+                        new DestinationDefinitionIdRequestBody()
+                            .destinationDefinitionId(UUID.randomUUID())));
     assertEquals(404, e.getCode());
   }
 
   @Test
   @Order(0)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
-    final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
-        .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
+    final SourceDefinitionSpecificationRead spec =
+        apiClient
+            .getSourceDefinitionSpecificationApi()
+            .getSourceDefinitionSpecification(
+                new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
     assertEquals(sourceDefId, spec.getSourceDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
 
   @Test
   @Order(1)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testCreateDestination() throws ApiException {
     final UUID destinationDefId = getDestinationDefId();
     final JsonNode destinationConfig = getDestinationDbConfig();
     final String name = "AccTestDestinationDb-" + UUID.randomUUID();
 
-    final DestinationRead createdDestination = createDestination(
-        name,
-        workspaceId,
-        destinationDefId,
-        destinationConfig);
+    final DestinationRead createdDestination =
+        createDestination(name, workspaceId, destinationDefId, destinationConfig);
 
     assertEquals(name, createdDestination.getName());
     assertEquals(destinationDefId, createdDestination.getDestinationDefinitionId());
     assertEquals(workspaceId, createdDestination.getWorkspaceId());
-    assertEquals(getDestinationDbConfigWithHiddenPassword(), createdDestination.getConnectionConfiguration());
+    assertEquals(
+        getDestinationDbConfigWithHiddenPassword(),
+        createdDestination.getConnectionConfiguration());
   }
 
   @Test
   @Order(2)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testDestinationCheckConnection() throws ApiException {
     final UUID destinationId = createDestination().getDestinationId();
 
-    final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
-        .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
-        .getStatus();
+    final CheckConnectionRead.StatusEnum checkOperationStatus =
+        apiClient
+            .getDestinationApi()
+            .checkConnectionToDestination(
+                new DestinationIdRequestBody().destinationId(destinationId))
+            .getStatus();
 
     assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
   }
 
   @Test
   @Order(3)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testCreateSource() throws ApiException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
     final JsonNode sourceDbConfig = getSourceDbConfig();
 
-    final SourceRead response = createSource(
-        dbName,
-        workspaceId,
-        postgresSourceDefinitionId,
-        sourceDbConfig);
+    final SourceRead response =
+        createSource(dbName, workspaceId, postgresSourceDefinitionId, sourceDbConfig);
 
     final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
     // expect replacement of secret with magic string.
@@ -375,12 +399,14 @@ public class AcceptanceTests {
 
   @Test
   @Order(4)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testSourceCheckConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
-    final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
+    final CheckConnectionRead checkConnectionRead =
+        apiClient
+            .getSourceApi()
+            .checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
 
     assertEquals(
         CheckConnectionRead.StatusEnum.SUCCEEDED,
@@ -395,39 +421,41 @@ public class AcceptanceTests {
 
     final AirbyteCatalog actual = discoverSourceSchema(sourceId);
 
-    final Map<String, Map<String, DataType>> fields = ImmutableMap.of(
-        COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER),
-        COLUMN_NAME, ImmutableMap.of("type", DataType.STRING));
-    final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
-        .put("type", "object")
-        .put("properties", fields)
-        .build());
-    final AirbyteStream stream = new AirbyteStream()
-        .name(STREAM_NAME)
-        .namespace("public")
-        .jsonSchema(jsonSchema)
-        .defaultCursorField(Collections.emptyList())
-        .sourceDefinedPrimaryKey(Collections.emptyList())
-        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
-    final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
-        .syncMode(SyncMode.FULL_REFRESH)
-        .cursorField(Collections.emptyList())
-        .destinationSyncMode(DestinationSyncMode.APPEND)
-        .primaryKey(Collections.emptyList())
-        .aliasName(STREAM_NAME.replace(".", "_"))
-        .selected(true);
-    final AirbyteCatalog expected = new AirbyteCatalog()
-        .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
-            .stream(stream)
-            .config(streamConfig)));
+    final Map<String, Map<String, DataType>> fields =
+        ImmutableMap.of(
+            COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER),
+            COLUMN_NAME, ImmutableMap.of("type", DataType.STRING));
+    final JsonNode jsonSchema =
+        Jsons.jsonNode(
+            ImmutableMap.builder().put("type", "object").put("properties", fields).build());
+    final AirbyteStream stream =
+        new AirbyteStream()
+            .name(STREAM_NAME)
+            .namespace("public")
+            .jsonSchema(jsonSchema)
+            .defaultCursorField(Collections.emptyList())
+            .sourceDefinedPrimaryKey(Collections.emptyList())
+            .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    final AirbyteStreamConfiguration streamConfig =
+        new AirbyteStreamConfiguration()
+            .syncMode(SyncMode.FULL_REFRESH)
+            .cursorField(Collections.emptyList())
+            .destinationSyncMode(DestinationSyncMode.APPEND)
+            .primaryKey(Collections.emptyList())
+            .aliasName(STREAM_NAME.replace(".", "_"))
+            .selected(true);
+    final AirbyteCatalog expected =
+        new AirbyteCatalog()
+            .streams(
+                Lists.newArrayList(
+                    new AirbyteStreamAndConfiguration().stream(stream).config(streamConfig)));
 
     assertEquals(expected, actual);
   }
 
   @Test
   @Order(6)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testCreateConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -437,8 +465,11 @@ public class AcceptanceTests {
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, List.of(operationId), catalog, schedule);
+    catalog
+        .getStreams()
+        .forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final ConnectionRead createdConnection =
+        createConnection(name, sourceId, destinationId, List.of(operationId), catalog, schedule);
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
@@ -459,11 +490,18 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, List.of(operationId), catalog, null)
+            .getConnectionId();
 
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
   }
@@ -478,14 +516,24 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, List.of(operationId), catalog, null)
+            .getConnectionId();
 
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
 
-    final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+    final var resp =
+        apiClient
+            .getJobsApi()
+            .cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
@@ -499,7 +547,9 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
-    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
+    assertEquals(
+        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+        stream.getSupportedSyncModes());
     // instead of assertFalse to avoid NPE from unboxed.
     assertNull(stream.getSourceDefinedCursor());
     assertTrue(stream.getDefaultCursorField().isEmpty());
@@ -507,17 +557,29 @@ public class AcceptanceTests {
 
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(
+            s ->
+                s.getConfig()
+                    .syncMode(syncMode)
+                    .cursorField(List.of(COLUMN_ID))
+                    .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, List.of(operationId), catalog, null)
+            .getConnectionId();
 
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead1 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(
+        "state after sync 1: {}",
+        apiClient
+            .getConnectionApi()
+            .getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndDestinationDbInSync(false);
 
@@ -525,42 +587,64 @@ public class AcceptanceTests {
     final Database source = getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    expectedRecords.add(
+        Jsons.jsonNode(
+            ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
     // add a new record
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
-    // mutate a record that was already synced with out updating its cursor value. if we are actually
+    // mutate a record that was already synced with out updating its cursor value. if we are
+    // actually
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     source.close();
 
-    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead2 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(
+        "state after sync 2: {}",
+        apiClient
+            .getConnectionApi()
+            .getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
-    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead jobInfoRead =
+        apiClient
+            .getConnectionApi()
+            .resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(
+        "state after reset: {}",
+        apiClient
+            .getConnectionApi()
+            .getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(
+        Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
-    final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead3 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
-    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info(
+        "state after sync 3: {}",
+        apiClient
+            .getConnectionApi()
+            .getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
   @Order(10)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -568,14 +652,19 @@ public class AcceptanceTests {
     final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
-    final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
+    final ConnectionSchedule connectionSchedule =
+        new ConnectionSchedule().units(1L).timeUnit(MINUTES);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-    createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
+    createConnection(
+        connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
 
-    // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
+    // When a new connection is created, Airbyte might sync it immediately (before the sync
+    // interval).
     // Then it will wait the sync interval.
     // todo: wait for two attempts in the UI
     // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
@@ -586,11 +675,12 @@ public class AcceptanceTests {
 
   @Test
   @Order(11)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
+    PostgreSQLContainerHelper.runSqlScript(
+        MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"),
+        sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -600,22 +690,29 @@ public class AcceptanceTests {
 
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, List.of(operationId), catalog, null)
+            .getConnectionId();
 
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
   @Order(12)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
+    PostgreSQLContainerHelper.runSqlScript(
+        MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -625,19 +722,25 @@ public class AcceptanceTests {
 
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, List.of(operationId), catalog, null)
+            .getConnectionId();
 
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
   @Order(13)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -646,17 +749,25 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
-        .primaryKey(List.of(List.of(COLUMN_NAME))));
+    catalog
+        .getStreams()
+        .forEach(
+            s ->
+                s.getConfig()
+                    .syncMode(syncMode)
+                    .cursorField(List.of(COLUMN_ID))
+                    .destinationSyncMode(destinationSyncMode)
+                    .primaryKey(List.of(List.of(COLUMN_NAME))));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, List.of(operationId), catalog, null)
+            .getConnectionId();
 
     // sync from start
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead1 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
 
     assertSourceAndDestinationDbInSync(true);
@@ -664,8 +775,11 @@ public class AcceptanceTests {
     // add new records and run again.
     final Database source = getSourceDatabase();
     final List<JsonNode> expectedRawRecords = retrieveSourceRecords(source, STREAM_NAME);
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
+    expectedRawRecords.add(
+        Jsons.jsonNode(
+            ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
+    expectedRawRecords.add(
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET id=6 WHERE name='sherif'"));
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
     // retrieve latest snapshot of source records after modifications; the deduplicated table in
@@ -673,46 +787,58 @@ public class AcceptanceTests {
     final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
     source.close();
 
-    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead2 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
 
-    assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(
+        expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
   @Test
   @Order(14)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testCheckpointing() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition =
+        apiClient
+            .getSourceDefinitionApi()
+            .createSourceDefinition(
+                new SourceDefinitionCreate()
+                    .name("E2E Test Source")
+                    .dockerRepository("airbyte/source-e2e-test")
+                    .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+                    .documentationUrl(URI.create("https://example.com")));
 
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final DestinationDefinitionRead destinationDefinition =
+        apiClient
+            .getDestinationDefinitionApi()
+            .createDestinationDefinition(
+                new DestinationDefinitionCreate()
+                    .name("E2E Test Destination")
+                    .dockerRepository("airbyte/destination-e2e-test")
+                    .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+                    .documentationUrl(URI.create("https://example.com")));
 
-    final SourceRead source = createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "EXCEPTION_AFTER_N")
-            .put("throw_after_n_records", 100)
-            .build()));
+    final SourceRead source =
+        createSource(
+            "E2E Test Source -" + UUID.randomUUID(),
+            workspaceId,
+            sourceDefinition.getSourceDefinitionId(),
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put("type", "EXCEPTION_AFTER_N")
+                    .put("throw_after_n_records", 100)
+                    .build()));
 
-    final DestinationRead destination = createDestination(
-        "E2E Test Destination -" + UUID.randomUUID(),
-        workspaceId,
-        destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "LOGGING")));
+    final DestinationRead destination =
+        createDestination(
+            "E2E Test Destination -" + UUID.randomUUID(),
+            workspaceId,
+            destinationDefinition.getDestinationDefinitionId(),
+            Jsons.jsonNode(ImmutableMap.of("type", "LOGGING")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -727,22 +853,36 @@ public class AcceptanceTests {
 
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
+    catalog
+        .getStreams()
+        .forEach(
+            s ->
+                s.getConfig()
+                    .syncMode(syncMode)
+                    .cursorField(List.of(COLUMN_ID))
+                    .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null).getConnectionId();
+        createConnection(
+                connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+            .getConnectionId();
 
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead1 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob =
+        waitForJob(
+            apiClient.getJobsApi(),
+            connectionSyncRead1.getJob(),
+            Sets.newHashSet(JobStatus.PENDING));
     // wait to get out of running.
     waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
     // now cancel it so that we freeze state!
-    apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
+    apiClient
+        .getJobsApi()
+        .cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -760,9 +900,10 @@ public class AcceptanceTests {
   @Order(15)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
-    final List<String> serverLogLines = java.nio.file.Files.readAllLines(
-        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
-        Charset.defaultCharset());
+    final List<String> serverLogLines =
+        java.nio.file.Files.readAllLines(
+            apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
+            Charset.defaultCharset());
 
     assertTrue(serverLogLines.size() > 0);
 
@@ -782,39 +923,49 @@ public class AcceptanceTests {
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @Test
   @Order(16)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
+  @DisabledIfEnvironmentVariable(named = "KUBE", matches = "true")
   public void testBackpressure() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition =
+        apiClient
+            .getSourceDefinitionApi()
+            .createSourceDefinition(
+                new SourceDefinitionCreate()
+                    .name("E2E Test Source")
+                    .dockerRepository("airbyte/source-e2e-test")
+                    .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+                    .documentationUrl(URI.create("https://example.com")));
 
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final DestinationDefinitionRead destinationDefinition =
+        apiClient
+            .getDestinationDefinitionApi()
+            .createDestinationDefinition(
+                new DestinationDefinitionCreate()
+                    .name("E2E Test Destination")
+                    .dockerRepository("airbyte/destination-e2e-test")
+                    .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+                    .documentationUrl(URI.create("https://example.com")));
 
-    final SourceRead source = createSource(
-        "E2E Test Source -" + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
-            .put("max_records", 5000)
-            .build()));
+    final SourceRead source =
+        createSource(
+            "E2E Test Source -" + UUID.randomUUID(),
+            workspaceId,
+            sourceDefinition.getSourceDefinitionId(),
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put("type", "INFINITE_FEED")
+                    .put("max_records", 5000)
+                    .build()));
 
-    final DestinationRead destination = createDestination(
-        "E2E Test Destination -" + UUID.randomUUID(),
-        workspaceId,
-        destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "THROTTLED")
-            .put("millis_per_record", 1)
-            .build()));
+    final DestinationRead destination =
+        createDestination(
+            "E2E Test Destination -" + UUID.randomUUID(),
+            workspaceId,
+            destinationDefinition.getDestinationDefinitionId(),
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put("type", "THROTTLED")
+                    .put("millis_per_record", 1)
+                    .build()));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -822,19 +973,28 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        createConnection(
+                connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
 
-    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead1 =
+        apiClient
+            .getConnectionApi()
+            .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob =
+        waitForJob(
+            apiClient.getJobsApi(),
+            connectionSyncRead1.getJob(),
+            Sets.newHashSet(JobStatus.PENDING));
     // wait to get out of running.
     waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
 
-    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(runningJob.getId()));
-    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
+    final JobInfoRead jobInfo =
+        apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(runningJob.getId()));
+    final AttemptInfoRead attemptInfoRead =
+        jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
     assertNotNull(attemptInfoRead);
 
     int expectedMessageNumber = 0;
@@ -854,21 +1014,30 @@ public class AcceptanceTests {
   }
 
   private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
-    return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
+    return apiClient
+        .getSourceApi()
+        .discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId))
+        .getCatalog();
   }
 
   private void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded =
+        addAirbyteGeneratedTables(withScdTable, sourceTables);
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
-    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
-        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+    assertEquals(
+        sourceTablesWithRawTablesAdded,
+        destinationTables,
+        String.format(
+            "streams did not match.\n source stream names: %s\n destination stream names: %s\n",
+            sourceTables, destinationTables));
 
     for (final SchemaTableNamePair pair : sourceTables) {
-      final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
+      final List<JsonNode> sourceRecords =
+          retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
       assertRawDestinationContains(sourceRecords, pair);
     }
   }
@@ -898,80 +1067,118 @@ public class AcceptanceTests {
               context.fetch(
                   "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
-              .map(record -> {
-                final var schemaName = (String) record.get("schemaname");
-                final var tableName = (String) record.get("tablename");
-                return new SchemaTableNamePair(schemaName, tableName);
-              })
+              .map(
+                  record -> {
+                    final var schemaName = (String) record.get("schemaname");
+                    final var tableName = (String) record.get("tablename");
+                    return new SchemaTableNamePair(schemaName, tableName);
+                  })
               .collect(Collectors.toSet());
         });
   }
 
-  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(final boolean withScdTable, final Set<SchemaTableNamePair> sourceTables) {
-    return sourceTables.stream().flatMap(x -> {
-      final String cleanedNameStream = x.tableName.replace(".", "_");
-      final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
-          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName,
-              String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream)),
-          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
-      if (withScdTable) {
-        explodedStreamNames
-            .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
-      }
-      return explodedStreamNames.stream();
-    }).collect(Collectors.toSet());
+  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(
+      final boolean withScdTable, final Set<SchemaTableNamePair> sourceTables) {
+    return sourceTables.stream()
+        .flatMap(
+            x -> {
+              final String cleanedNameStream = x.tableName.replace(".", "_");
+              final List<SchemaTableNamePair> explodedStreamNames =
+                  new ArrayList<>(
+                      List.of(
+                          new SchemaTableNamePair(
+                              OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+                              String.format(
+                                  "_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream)),
+                          new SchemaTableNamePair(
+                              OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+                              String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
+              if (withScdTable) {
+                explodedStreamNames.add(
+                    new SchemaTableNamePair(
+                        OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+                        String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
+              }
+              return explodedStreamNames.stream();
+            })
+        .collect(Collectors.toSet());
   }
 
-  private void assertRawDestinationContains(final List<JsonNode> sourceRecords, final SchemaTableNamePair pair) throws Exception {
+  private void assertRawDestinationContains(
+      final List<JsonNode> sourceRecords, final SchemaTableNamePair pair) throws Exception {
     final Set<JsonNode> destinationRecords = new HashSet<>(retrieveRawDestinationRecords(pair));
 
-    assertEquals(sourceRecords.size(), destinationRecords.size(),
-        String.format("destination contains: %s record. source contains: %s, \nsource records %s \ndestination records: %s",
+    assertEquals(
+        sourceRecords.size(),
+        destinationRecords.size(),
+        String.format(
+            "destination contains: %s record. source contains: %s, \nsource records %s \ndestination records: %s",
             destinationRecords.size(), sourceRecords.size(), sourceRecords, destinationRecords));
 
     for (final JsonNode sourceStreamRecord : sourceRecords) {
-      assertTrue(destinationRecords.contains(sourceStreamRecord),
-          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n",
+      assertTrue(
+          destinationRecords.contains(sourceStreamRecord),
+          String.format(
+              "destination does not contain record:\n %s \n destination contains:\n %s\n",
               sourceStreamRecord, destinationRecords));
     }
   }
 
-  private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
+  private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords)
+      throws Exception {
     final Database destination = getDestinationDatabase();
-    final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
-    final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
+    final String finalDestinationTable =
+        String.format(
+            "%spublic.%s%s",
+            OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
+    final List<JsonNode> destinationRecords =
+        retrieveSourceRecords(destination, finalDestinationTable);
 
-    assertEquals(sourceRecords.size(), destinationRecords.size(),
-        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
+    assertEquals(
+        sourceRecords.size(),
+        destinationRecords.size(),
+        String.format(
+            "destination contains: %s record. source contains: %s",
+            sourceRecords.size(), destinationRecords.size()));
 
     for (final JsonNode sourceStreamRecord : sourceRecords) {
       assertTrue(
           destinationRecords.stream()
-              .anyMatch(r -> r.get(COLUMN_NAME).asText().equals(sourceStreamRecord.get(COLUMN_NAME).asText())
-                  && r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
-          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+              .anyMatch(
+                  r ->
+                      r.get(COLUMN_NAME)
+                              .asText()
+                              .equals(sourceStreamRecord.get(COLUMN_NAME).asText())
+                          && r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
+          String.format(
+              "destination does not contain record:\n %s \n destination contains:\n %s\n",
+              sourceStreamRecord, destinationRecords));
     }
   }
 
-  private ConnectionRead createConnection(final String name,
-                                          final UUID sourceId,
-                                          final UUID destinationId,
-                                          final List<UUID> operationIds,
-                                          final AirbyteCatalog catalog,
-                                          final ConnectionSchedule schedule)
+  private ConnectionRead createConnection(
+      final String name,
+      final UUID sourceId,
+      final UUID destinationId,
+      final List<UUID> operationIds,
+      final AirbyteCatalog catalog,
+      final ConnectionSchedule schedule)
       throws ApiException {
-    final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
-        new ConnectionCreate()
-            .status(ConnectionStatus.ACTIVE)
-            .sourceId(sourceId)
-            .destinationId(destinationId)
-            .syncCatalog(catalog)
-            .schedule(schedule)
-            .operationIds(operationIds)
-            .name(name)
-            .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
-            .namespaceFormat(OUTPUT_NAMESPACE)
-            .prefix(OUTPUT_STREAM_PREFIX));
+    final ConnectionRead connection =
+        apiClient
+            .getConnectionApi()
+            .createConnection(
+                new ConnectionCreate()
+                    .status(ConnectionStatus.ACTIVE)
+                    .sourceId(sourceId)
+                    .destinationId(destinationId)
+                    .syncCatalog(catalog)
+                    .schedule(schedule)
+                    .operationIds(operationIds)
+                    .name(name)
+                    .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+                    .namespaceFormat(OUTPUT_NAMESPACE)
+                    .prefix(OUTPUT_STREAM_PREFIX));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -984,26 +1191,36 @@ public class AcceptanceTests {
         getDestinationDbConfig());
   }
 
-  private DestinationRead createDestination(final String name, final UUID workspaceId, final UUID destinationDefId, final JsonNode destinationConfig)
+  private DestinationRead createDestination(
+      final String name,
+      final UUID workspaceId,
+      final UUID destinationDefId,
+      final JsonNode destinationConfig)
       throws ApiException {
     final DestinationRead destination =
-        apiClient.getDestinationApi().createDestination(new DestinationCreate()
-            .name(name)
-            .connectionConfiguration(Jsons.jsonNode(destinationConfig))
-            .workspaceId(workspaceId)
-            .destinationDefinitionId(destinationDefId));
+        apiClient
+            .getDestinationApi()
+            .createDestination(
+                new DestinationCreate()
+                    .name(name)
+                    .connectionConfiguration(Jsons.jsonNode(destinationConfig))
+                    .workspaceId(workspaceId)
+                    .destinationDefinitionId(destinationDefId));
     destinationIds.add(destination.getDestinationId());
     return destination;
   }
 
   private OperationRead createOperation() throws ApiException {
-    final OperatorConfiguration normalizationConfig = new OperatorConfiguration()
-        .operatorType(OperatorType.NORMALIZATION).normalization(new OperatorNormalization().option(
-            OptionEnum.BASIC));
+    final OperatorConfiguration normalizationConfig =
+        new OperatorConfiguration()
+            .operatorType(OperatorType.NORMALIZATION)
+            .normalization(new OperatorNormalization().option(OptionEnum.BASIC));
 
-    final OperationCreate operationCreate = new OperationCreate()
-        .workspaceId(workspaceId)
-        .name("AccTestDestination-" + UUID.randomUUID()).operatorConfiguration(normalizationConfig);
+    final OperationCreate operationCreate =
+        new OperationCreate()
+            .workspaceId(workspaceId)
+            .name("AccTestDestination-" + UUID.randomUUID())
+            .operatorConfiguration(normalizationConfig);
 
     final OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
     operationIds.add(operation.getOperationId());
@@ -1011,7 +1228,10 @@ public class AcceptanceTests {
   }
 
   private UUID getDestinationDefId() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+    return apiClient
+        .getDestinationDefinitionApi()
+        .listDestinationDefinitions()
+        .getDestinationDefinitions()
         .stream()
         .filter(dr -> dr.getName().toLowerCase().contains("postgres"))
         .findFirst()
@@ -1019,16 +1239,20 @@ public class AcceptanceTests {
         .getDestinationDefinitionId();
   }
 
-  private List<JsonNode> retrieveSourceRecords(final Database database, final String table) throws SQLException {
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
+  private List<JsonNode> retrieveSourceRecords(final Database database, final String table)
+      throws SQLException {
+    return database
+        .query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveDestinationRecords(final Database database, final String table) throws SQLException {
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
+  private List<JsonNode> retrieveDestinationRecords(final Database database, final String table)
+      throws SQLException {
+    return database
+        .query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -1039,13 +1263,19 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
+  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair)
+      throws Exception {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
-    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
-    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName, rawStreamName);
-    assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
+    final String rawStreamName =
+        String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
+    final SchemaTableNamePair rawTablePair =
+        new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName, rawStreamName);
+    assertTrue(
+        namePairs.contains(rawTablePair),
+        "can't find a non-normalized version (raw) of "
+            + rawTablePair.getFullyQualifiedTableName());
 
     return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
   }
@@ -1062,17 +1292,24 @@ public class AcceptanceTests {
     return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
   }
 
-  private JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
+  private JsonNode getDbConfig(
+      final PostgreSQLContainer psql,
+      final boolean hiddenPassword,
+      final boolean withSchema,
+      final Type connectorType) {
     try {
-      final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema);
+      final Map<Object, Object> dbConfig =
+          (IS_KUBE && IS_GKE)
+              ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
+              : localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+  private Map<Object, Object> localConfig(
+      final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
@@ -1112,19 +1349,30 @@ public class AcceptanceTests {
         getSourceDbConfig());
   }
 
-  private SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)
+  private SourceRead createSource(
+      final String name,
+      final UUID workspaceId,
+      final UUID sourceDefId,
+      final JsonNode sourceConfig)
       throws ApiException {
-    final SourceRead source = apiClient.getSourceApi().createSource(new SourceCreate()
-        .name(name)
-        .sourceDefinitionId(sourceDefId)
-        .workspaceId(workspaceId)
-        .connectionConfiguration(sourceConfig));
+    final SourceRead source =
+        apiClient
+            .getSourceApi()
+            .createSource(
+                new SourceCreate()
+                    .name(name)
+                    .sourceDefinitionId(sourceDefId)
+                    .workspaceId(workspaceId)
+                    .connectionConfiguration(sourceConfig));
     sourceIds.add(source.getSourceId());
     return source;
   }
 
   private UUID getPostgresSourceDefinitionId() throws ApiException {
-    return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
+    return apiClient
+        .getSourceDefinitionApi()
+        .listSourceDefinitions()
+        .getSourceDefinitions()
         .stream()
         .filter(sourceRead -> sourceRead.getName().equalsIgnoreCase("postgres"))
         .findFirst()
@@ -1136,7 +1384,9 @@ public class AcceptanceTests {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(
+          context ->
+              context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1144,7 +1394,9 @@ public class AcceptanceTests {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(
+          context ->
+              context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1153,7 +1405,10 @@ public class AcceptanceTests {
   }
 
   private void disableConnection(final UUID connectionId) throws ApiException {
-    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionRead connection =
+        apiClient
+            .getConnectionApi()
+            .getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
         new ConnectionUpdate()
             .prefix(connection.getPrefix())
@@ -1166,20 +1421,27 @@ public class AcceptanceTests {
   }
 
   private void deleteDestination(final UUID destinationId) throws ApiException {
-    apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
+    apiClient
+        .getDestinationApi()
+        .deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
   private void deleteOperation(final UUID destinationId) throws ApiException {
-    apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
+    apiClient
+        .getOperationApi()
+        .deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
-  private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
-    final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
+  private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob)
+      throws InterruptedException, ApiException {
+    final JobRead job =
+        waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
   @SuppressWarnings("BusyWait")
-  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
+  private static JobRead waitForJob(
+      final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
@@ -1188,19 +1450,31 @@ public class AcceptanceTests {
       count++;
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
-      LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
+      LOGGER.info(
+          "waiting: job id: {} config type: {} status: {}",
+          job.getId(),
+          job.getConfigType(),
+          job.getStatus());
     }
     return job;
   }
 
   @SuppressWarnings("BusyWait")
-  private static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
+  private static ConnectionState waitForConnectionState(
+      final AirbyteApiClient apiClient, final UUID connectionId)
       throws ApiException, InterruptedException {
-    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    ConnectionState connectionState =
+        apiClient
+            .getConnectionApi()
+            .getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
-    while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
+    while (count < 60
+        && (connectionState.getState() == null || connectionState.getState().isNull())) {
       LOGGER.info("fetching connection state. attempt: {}", count++);
-      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+      connectionState =
+          apiClient
+              .getConnectionApi()
+              .getState(new ConnectionIdRequestBody().connectionId(connectionId));
       sleep(1000);
     }
     return connectionState;
@@ -1210,5 +1484,4 @@ public class AcceptanceTests {
     SOURCE,
     DESTINATION
   }
-
 }

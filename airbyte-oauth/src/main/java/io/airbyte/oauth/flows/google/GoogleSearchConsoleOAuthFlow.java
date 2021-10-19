@@ -23,7 +23,10 @@ public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
   }
 
   @VisibleForTesting
-  GoogleSearchConsoleOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  GoogleSearchConsoleOAuthFlow(
+      final ConfigRepository configRepository,
+      final HttpClient httpClient,
+      final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
@@ -51,5 +54,4 @@ public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
     // the config object containing refresh token is nested inside the "authorization" object
     return Map.of("authorization", super.extractRefreshToken(data));
   }
-
 }

@@ -21,9 +21,12 @@ class AirbyteMessageTrackerTest {
 
   @Test
   public void testIncrementsWhenRecord() {
-    final AirbyteMessage message = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("name", "rudolph"))));
+    final AirbyteMessage message =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.jsonNode(ImmutableMap.of("name", "rudolph"))));
 
     final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
     messageTracker.accept(message);
@@ -31,20 +34,26 @@ class AirbyteMessageTrackerTest {
     messageTracker.accept(message);
 
     assertEquals(3, messageTracker.getRecordCount());
-    assertEquals(3 * Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getBytesCount());
+    assertEquals(
+        3 * Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length,
+        messageTracker.getBytesCount());
   }
 
   @Test
   public void testRetainsLatestState() {
-    final JsonNode oldStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
-    final AirbyteMessage oldStateMessage = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(oldStateValue));
+    final JsonNode oldStateValue =
+        Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598900000").build());
+    final AirbyteMessage oldStateMessage =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(new AirbyteStateMessage().withData(oldStateValue));
 
-    final JsonNode newStateValue = Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
-    final AirbyteMessage newStateMessage = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(newStateValue));
+    final JsonNode newStateValue =
+        Jsons.jsonNode(ImmutableMap.builder().put("lastSync", "1598993526").build());
+    final AirbyteMessage newStateMessage =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(new AirbyteStateMessage().withData(newStateValue));
 
     final AirbyteMessageTracker messageTracker = new AirbyteMessageTracker();
     messageTracker.accept(oldStateMessage);
@@ -60,5 +69,4 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessageTracker MessageTracker = new AirbyteMessageTracker();
     assertTrue(MessageTracker.getOutputState().isEmpty());
   }
-
 }

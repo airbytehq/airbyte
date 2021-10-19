@@ -18,5 +18,4 @@ public interface MessageTracker<T> extends Consumer<T> {
   long getBytesCount();
 
   Optional<State> getOutputState();
-
 }

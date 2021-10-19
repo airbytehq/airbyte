@@ -35,7 +35,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
   private static final WaitTime FIRST_RECORD_WAIT_TIME_MINUTES = new WaitTime(5, TimeUnit.MINUTES);
-  private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS = new WaitTime(1, TimeUnit.MINUTES);
+  private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS =
+      new WaitTime(1, TimeUnit.MINUTES);
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition targetPosition;
@@ -45,10 +46,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean hasSnapshotFinished;
   private boolean signalledClose;
 
-  public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
-                                final CdcTargetPosition targetPosition,
-                                final Supplier<Boolean> publisherStatusSupplier,
-                                final VoidCallable requestClose) {
+  public DebeziumRecordIterator(
+      final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
+      final CdcTargetPosition targetPosition,
+      final Supplier<Boolean> publisherStatusSupplier,
+      final VoidCallable requestClose) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
@@ -61,18 +63,23 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   @Override
   protected ChangeEvent<String, String> computeNext() {
     // keep trying until the publisher is closed or until the queue is empty. the latter case is
-    // possible when the publisher has shutdown but the consumer has not yet processed all messages it
+    // possible when the publisher has shutdown but the consumer has not yet processed all messages
+    // it
     // emitted.
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        final WaitTime waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS : FIRST_RECORD_WAIT_TIME_MINUTES;
+        final WaitTime waitTime =
+            receivedFirstRecord
+                ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS
+                : FIRST_RECORD_WAIT_TIME_MINUTES;
         next = queue.poll(waitTime.period, waitTime.timeUnit);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
 
-      // if within the timeout, the consumer could not get a record, it is time to tell the producer to
+      // if within the timeout, the consumer could not get a record, it is time to tell the producer
+      // to
       // shutdown.
       if (next == null) {
         LOGGER.info("Closing cause next is returned as null");
@@ -84,7 +91,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       final JsonNode eventAsJson = Jsons.deserialize(next.value());
       hasSnapshotFinished = hasSnapshotFinished(eventAsJson);
 
-      // if the last record matches the target file position, it is time to tell the producer to shutdown.
+      // if the last record matches the target file position, it is time to tell the producer to
+      // shutdown.
       if (!signalledClose && shouldSignalClose(eventAsJson)) {
         requestClose();
       }
@@ -95,25 +103,26 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   }
 
   private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
-    final SnapshotMetadata snapshot = SnapshotMetadata.valueOf(eventAsJson.get("source").get("snapshot").asText().toUpperCase());
+    final SnapshotMetadata snapshot =
+        SnapshotMetadata.valueOf(eventAsJson.get("source").get("snapshot").asText().toUpperCase());
     return SnapshotMetadata.TRUE != snapshot;
   }
 
   /**
-   * Debezium was built as an ever running process which keeps on listening for new changes on DB and
-   * immediately processing them. Airbyte needs debezium to work as a start stop mechanism. In order
-   * to determine when to stop debezium engine we rely on few factors 1. TargetPosition logic. At the
-   * beginning of the sync we define a target position in the logs of the DB. This can be an LSN or
-   * anything specific to the DB which can help us identify that we have reached a specific position
-   * in the log based replication When we start processing records from debezium, we extract the the
-   * log position from the metadata of the record and compare it with our target that we defined at
-   * the beginning of the sync. If we have reached the target position, we shutdown the debezium
-   * engine 2. The TargetPosition logic might not always work and in order to tackle that we have
-   * another logic where if we do not receive records from debezium for a given duration, we ask
-   * debezium engine to shutdown 3. We also take the Snapshot into consideration, when a connector is
-   * running for the first time, we let it complete the snapshot and only after the completion of
-   * snapshot we should shutdown the engine. If we are closing the engine before completion of
-   * snapshot, we throw an exception
+   * Debezium was built as an ever running process which keeps on listening for new changes on DB
+   * and immediately processing them. Airbyte needs debezium to work as a start stop mechanism. In
+   * order to determine when to stop debezium engine we rely on few factors 1. TargetPosition logic.
+   * At the beginning of the sync we define a target position in the logs of the DB. This can be an
+   * LSN or anything specific to the DB which can help us identify that we have reached a specific
+   * position in the log based replication When we start processing records from debezium, we
+   * extract the the log position from the metadata of the record and compare it with our target
+   * that we defined at the beginning of the sync. If we have reached the target position, we
+   * shutdown the debezium engine 2. The TargetPosition logic might not always work and in order to
+   * tackle that we have another logic where if we do not receive records from debezium for a given
+   * duration, we ask debezium engine to shutdown 3. We also take the Snapshot into consideration,
+   * when a connector is running for the first time, we let it complete the snapshot and only after
+   * the completion of snapshot we should shutdown the engine. If we are closing the engine before
+   * completion of snapshot, we throw an exception
    */
   @Override
   public void close() throws Exception {
@@ -149,7 +158,5 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       this.period = period;
       this.timeUnit = timeUnit;
     }
-
   }
-
 }

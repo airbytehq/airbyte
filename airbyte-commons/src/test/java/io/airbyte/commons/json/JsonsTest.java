@@ -47,9 +47,11 @@ class JsonsTest {
 
     assertEquals(
         "{\"test\":\"abc\",\"test2\":\"def\"}",
-        Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
-            "test", "abc",
-            "test2", "def"))));
+        Jsons.serialize(
+            Jsons.jsonNode(
+                ImmutableMap.of(
+                    "test", "abc",
+                    "test2", "def"))));
   }
 
   @Test
@@ -61,9 +63,7 @@ class JsonsTest {
 
   @Test
   void testDeserializeToJsonNode() {
-    assertEquals(
-        "{\"str\":\"abc\"}",
-        Jsons.deserialize("{\"str\":\"abc\"}").toString());
+    assertEquals("{\"str\":\"abc\"}", Jsons.deserialize("{\"str\":\"abc\"}").toString());
 
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
@@ -87,9 +87,7 @@ class JsonsTest {
         Optional.of(Jsons.deserialize("{\"str\":\"abc\"}")),
         Jsons.tryDeserialize("{\"str\":\"abc\"}"));
 
-    assertEquals(
-        Optional.empty(),
-        Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}"));
+    assertEquals(Optional.empty(), Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}"));
   }
 
   @Test
@@ -101,17 +99,14 @@ class JsonsTest {
     assertEquals(
         "{\"test\":\"abc\",\"test2\":\"def\"}",
         Jsons.jsonNode(
-            ImmutableMap.of(
-                "test", "abc",
-                "test2", "def"))
+                ImmutableMap.of(
+                    "test", "abc",
+                    "test2", "def"))
             .toString());
 
     assertEquals(
         "{\"test\":\"abc\",\"test2\":{\"inner\":1}}",
-        Jsons.jsonNode(
-            ImmutableMap.of(
-                "test", "abc",
-                "test2", ImmutableMap.of("inner", 1)))
+        Jsons.jsonNode(ImmutableMap.of("test", "abc", "test2", ImmutableMap.of("inner", 1)))
             .toString());
 
     assertEquals(
@@ -127,17 +122,14 @@ class JsonsTest {
   @Test
   void testToObject() {
     final ToClass expected = new ToClass("abc", 999, 888L);
-    assertEquals(
-        expected,
-        Jsons.object(Jsons.jsonNode(expected), ToClass.class));
+    assertEquals(expected, Jsons.object(Jsons.jsonNode(expected), ToClass.class));
 
     assertEquals(
         Lists.newArrayList(expected),
-        Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
+        Jsons.object(
+            Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
 
-    assertEquals(
-        new ToClass(),
-        Jsons.object(Jsons.deserialize("{\"a\":1}"), ToClass.class));
+    assertEquals(new ToClass(), Jsons.object(Jsons.deserialize("{\"a\":1}"), ToClass.class));
   }
 
   @Test
@@ -145,11 +137,14 @@ class JsonsTest {
     final ToClass expected = new ToClass("abc", 999, 888L);
     assertEquals(
         Optional.of(expected),
-        Jsons.tryObject(Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"), ToClass.class));
+        Jsons.tryObject(
+            Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"), ToClass.class));
 
     assertEquals(
         Optional.of(expected),
-        Jsons.tryObject(Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"), new TypeReference<ToClass>() {}));
+        Jsons.tryObject(
+            Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"),
+            new TypeReference<ToClass>() {}));
 
     final ToClass emptyExpected = new ToClass();
     assertEquals(
@@ -159,7 +154,6 @@ class JsonsTest {
     assertEquals(
         Optional.of(emptyExpected),
         Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {}));
-
   }
 
   @Test
@@ -177,13 +171,16 @@ class JsonsTest {
     JsonSchemas.mutateTypeToArrayStandard(expectedWithoutType);
     assertEquals(expectedWithoutType, actualWithoutType);
 
-    final JsonNode expectedWithArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
+    final JsonNode expectedWithArrayType =
+        Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
     final JsonNode actualWithArrayType = Jsons.clone(expectedWithArrayType);
     JsonSchemas.mutateTypeToArrayStandard(actualWithArrayType);
     assertEquals(expectedWithoutType, actualWithoutType);
 
-    final JsonNode expectedWithoutArrayType = Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
-    final JsonNode actualWithStringType = Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
+    final JsonNode expectedWithoutArrayType =
+        Jsons.deserialize("{\"test\":\"abc\", \"type\":[\"object\"]}");
+    final JsonNode actualWithStringType =
+        Jsons.deserialize("{\"test\":\"abc\", \"type\":\"object\"}");
     JsonSchemas.mutateTypeToArrayStandard(actualWithStringType);
     assertEquals(expectedWithoutArrayType, actualWithStringType);
   }
@@ -191,7 +188,8 @@ class JsonsTest {
   @Test
   void testToBytes() {
     final String jsonString = "{\"test\":\"abc\",\"type\":[\"object\"]}";
-    assertArrayEquals(jsonString.getBytes(Charsets.UTF_8), Jsons.toBytes(Jsons.deserialize(jsonString)));
+    assertArrayEquals(
+        jsonString.getBytes(Charsets.UTF_8), Jsons.toBytes(Jsons.deserialize(jsonString)));
   }
 
   @Test
@@ -204,27 +202,28 @@ class JsonsTest {
     assertEquals(Collections.emptySet(), Jsons.keys(jsonNode.get("test")));
 
     // test nested object json node. should only return top-level keys.
-    final JsonNode nestedJsonNode = Jsons.jsonNode(ImmutableMap.of("test", "abc", "test2", ImmutableMap.of("test3", "def")));
+    final JsonNode nestedJsonNode =
+        Jsons.jsonNode(ImmutableMap.of("test", "abc", "test2", ImmutableMap.of("test3", "def")));
     assertEquals(Sets.newHashSet("test", "test2"), Jsons.keys(nestedJsonNode));
 
     // test array json node
-    final JsonNode arrayJsonNode = Jsons.jsonNode(ImmutableList.of(ImmutableMap.of("test", "abc", "test2", "def")));
+    final JsonNode arrayJsonNode =
+        Jsons.jsonNode(ImmutableList.of(ImmutableMap.of("test", "abc", "test2", "def")));
     assertEquals(Collections.emptySet(), Jsons.keys(arrayJsonNode));
   }
 
   @Test
   void testToPrettyString() {
     final JsonNode jsonNode = Jsons.jsonNode(ImmutableMap.of("test", "abc"));
-    final String expectedOutput = ""
-        + "{\n"
-        + "  \"test\": \"abc\"\n"
-        + "}\n";
+    final String expectedOutput = "" + "{\n" + "  \"test\": \"abc\"\n" + "}\n";
     assertEquals(expectedOutput, Jsons.toPrettyString(jsonNode));
   }
 
   @Test
   void testGetOptional() {
-    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }");
+    final JsonNode json =
+        Jsons.deserialize(
+            "{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }");
 
     assertEquals(Optional.of(Jsons.jsonNode("ghi")), Jsons.getOptional(json, "abc", "def"));
     assertEquals(Optional.of(Jsons.emptyObject()), Jsons.getOptional(json, "jkl"));
@@ -239,7 +238,8 @@ class JsonsTest {
 
   @Test
   void testGetStringOrNull() {
-    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": \"mno\", \"pqr\": 1 }");
+    final JsonNode json =
+        Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": \"mno\", \"pqr\": 1 }");
 
     assertEquals("ghi", Jsons.getStringOrNull(json, "abc", "def"));
     assertEquals("mno", Jsons.getStringOrNull(json, "jkl"));
@@ -285,7 +285,5 @@ class JsonsTest {
     public int hashCode() {
       return Objects.hash(str, num, numLong);
     }
-
   }
-
 }

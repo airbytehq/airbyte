@@ -60,21 +60,21 @@ public class Yamls {
         throw new IllegalStateException("Expected content to be an array");
       }
 
-      final Iterator<JsonNode> iterator = new AbstractIterator<>() {
+      final Iterator<JsonNode> iterator =
+          new AbstractIterator<>() {
 
-        @Override
-        protected JsonNode computeNext() {
-          try {
-            while (parser.nextToken() != JsonToken.END_ARRAY) {
-              return parser.readValueAsTree();
+            @Override
+            protected JsonNode computeNext() {
+              try {
+                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                  return parser.readValueAsTree();
+                }
+              } catch (final IOException e) {
+                throw new RuntimeException(e);
+              }
+              return endOfData();
             }
-          } catch (final IOException e) {
-            throw new RuntimeException(e);
-          }
-          return endOfData();
-        }
-
-      };
+          };
 
       return AutoCloseableIterators.fromIterator(iterator, parser::close);
 
@@ -101,8 +101,8 @@ public class Yamls {
     private final SequenceWriter sequenceWriter;
 
     public YamlConsumer(final Writer writer, final ObjectMapper objectMapper) {
-      this.sequenceWriter = Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
-
+      this.sequenceWriter =
+          Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
     }
 
     @Override
@@ -119,7 +119,5 @@ public class Yamls {
       // closing the SequenceWriter closes the Writer that it wraps.
       sequenceWriter.close();
     }
-
   }
-
 }

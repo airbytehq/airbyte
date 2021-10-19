@@ -36,19 +36,21 @@ public class JobScheduler implements Runnable {
   private final SyncJobFactory jobFactory;
 
   @VisibleForTesting
-  JobScheduler(final JobPersistence jobPersistence,
-               final ConfigRepository configRepository,
-               final BiPredicate<Optional<Job>, StandardSync> scheduleJobPredicate,
-               final SyncJobFactory jobFactory) {
+  JobScheduler(
+      final JobPersistence jobPersistence,
+      final ConfigRepository configRepository,
+      final BiPredicate<Optional<Job>, StandardSync> scheduleJobPredicate,
+      final SyncJobFactory jobFactory) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.scheduleJobPredicate = scheduleJobPredicate;
     this.jobFactory = jobFactory;
   }
 
-  public JobScheduler(final JobPersistence jobPersistence,
-                      final ConfigRepository configRepository,
-                      final TrackingClient trackingClient) {
+  public JobScheduler(
+      final JobPersistence jobPersistence,
+      final ConfigRepository configRepository,
+      final TrackingClient trackingClient) {
     this(
         jobPersistence,
         configRepository,
@@ -81,7 +83,8 @@ public class JobScheduler implements Runnable {
     LOGGER.debug("Time to retrieve all connections: {} ms", queryEnd - start);
 
     for (final StandardSync connection : activeConnections) {
-      final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
+      final Optional<Job> previousJobOptional =
+          jobPersistence.getLastReplicationJob(connection.getConnectionId());
 
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
@@ -93,19 +96,20 @@ public class JobScheduler implements Runnable {
     LOGGER.debug("Time taken to schedule jobs: {} ms", end - start);
 
     if (jobsScheduled > 0) {
-      LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}", activeConnections.size(), jobsScheduled);
+      LOGGER.info(
+          "Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}",
+          activeConnections.size(),
+          jobsScheduled);
     }
   }
 
   private List<StandardSync> getAllActiveConnections() {
     try {
-      return configRepository.listStandardSyncs()
-          .stream()
+      return configRepository.listStandardSyncs().stream()
           .filter(sync -> sync.getStatus() == Status.ACTIVE)
           .collect(Collectors.toList());
     } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }
-
 }

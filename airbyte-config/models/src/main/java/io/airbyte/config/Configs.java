@@ -133,5 +133,4 @@ public interface Configs {
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER
   }
-
 }

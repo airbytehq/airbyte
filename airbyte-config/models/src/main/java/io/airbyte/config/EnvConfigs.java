@@ -46,7 +46,8 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
-  public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
+  public static final String RUN_DATABASE_MIGRATION_ON_STARTUP =
+      "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
@@ -221,31 +222,40 @@ public class EnvConfigs implements Configs {
 
   @Override
   public TrackingStrategy getTrackingStrategy() {
-    return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
-      try {
-        return TrackingStrategy.valueOf(s.toUpperCase());
-      } catch (final IllegalArgumentException e) {
-        LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
-        return TrackingStrategy.LOGGING;
-      }
-    });
+    return getEnvOrDefault(
+        TRACKING_STRATEGY,
+        TrackingStrategy.LOGGING,
+        s -> {
+          try {
+            return TrackingStrategy.valueOf(s.toUpperCase());
+          } catch (final IllegalArgumentException e) {
+            LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
+            return TrackingStrategy.LOGGING;
+          }
+        });
   }
 
   @Override
   public DeploymentMode getDeploymentMode() {
-    return getEnvOrDefault(DEPLOYMENT_MODE, DeploymentMode.OSS, s -> {
-      try {
-        return DeploymentMode.valueOf(s);
-      } catch (final IllegalArgumentException e) {
-        LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS);
-        return DeploymentMode.OSS;
-      }
-    });
+    return getEnvOrDefault(
+        DEPLOYMENT_MODE,
+        DeploymentMode.OSS,
+        s -> {
+          try {
+            return DeploymentMode.valueOf(s);
+          } catch (final IllegalArgumentException e) {
+            LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS);
+            return DeploymentMode.OSS;
+          }
+        });
   }
 
   @Override
   public WorkerEnvironment getWorkerEnvironment() {
-    return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
+    return getEnvOrDefault(
+        WORKER_ENVIRONMENT,
+        WorkerEnvironment.DOCKER,
+        s -> WorkerEnvironment.valueOf(s.toUpperCase()));
   }
 
   @Override
@@ -255,27 +265,33 @@ public class EnvConfigs implements Configs {
 
   @Override
   public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
-    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+    final long minDays =
+        getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxDays =
+        getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxSizeMb =
+        getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
 
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
 
   private WorkerPodToleration workerPodToleration(final String tolerationStr) {
-    final Map<String, String> tolerationMap = Splitter.on(",")
-        .splitToStream(tolerationStr)
-        .map(s -> s.split("="))
-        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+    final Map<String, String> tolerationMap =
+        Splitter.on(",")
+            .splitToStream(tolerationStr)
+            .map(s -> s.split("="))
+            .collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
-    if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-      return new WorkerPodToleration(tolerationMap.get("key"),
+    if (tolerationMap.containsKey("key")
+        && tolerationMap.containsKey("effect")
+        && tolerationMap.containsKey("operator")) {
+      return new WorkerPodToleration(
+          tolerationMap.get("key"),
           tolerationMap.get("effect"),
           tolerationMap.get("value"),
           tolerationMap.get("operator"));
     } else {
-      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
-          tolerationStr);
+      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator", tolerationStr);
       return null;
     }
   }
@@ -286,16 +302,16 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
-   * a string that represents one or more tolerations.
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env
+   * is a string that represents one or more tolerations.
    * <li>Tolerations are separated by a `;`
-   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
-   * separated by `,`
-   * <p>
-   * For example:- The following represents two tolerations, one checking existence and another
-   * matching a value
-   * <p>
-   * key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
+   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value
+   *     and separated by `,`
+   *
+   *     <p>For example:- The following represents two tolerations, one checking existence and
+   *     another matching a value
+   *
+   *     <p>key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
    *
    * @return list of WorkerPodToleration parsed from env
    */
@@ -303,10 +319,12 @@ public class EnvConfigs implements Configs {
   public List<WorkerPodToleration> getWorkerPodTolerations() {
     final String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
 
-    final Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
-        : Splitter.on(";")
-            .splitToStream(tolerationsStr)
-            .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
+    final Stream<String> tolerations =
+        Strings.isNullOrEmpty(tolerationsStr)
+            ? Stream.of()
+            : Splitter.on(";")
+                .splitToStream(tolerationsStr)
+                .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
 
     return tolerations
         .map(this::workerPodToleration)
@@ -317,10 +335,10 @@ public class EnvConfigs implements Configs {
   /**
    * Returns a map of node selectors from its own environment variable. The value of the env is a
    * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
-   * <p>
-   * For example:- The following represents two node selectors
-   * <p>
-   * airbyte=server,type=preemptive
+   *
+   * <p>For example:- The following represents two node selectors
+   *
+   * <p>airbyte=server,type=preemptive
    *
    * @return map containing kv pairs of node selectors
    */
@@ -387,9 +405,9 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * Returns the name of the secret to be used when pulling down docker images for jobs.
+   * Automatically injected in the KubePodProcess class and used in the job pod templates. The empty
+   * string is a no-op value.
    */
   @Override
   public String getJobsImagePullSecret() {
@@ -438,7 +456,8 @@ public class EnvConfigs implements Configs {
 
   @Override
   public SecretPersistenceType getSecretPersistenceType() {
-    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
+    final var secretPersistenceStr =
+        getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
     return SecretPersistenceType.valueOf(secretPersistenceStr);
   }
 
@@ -446,7 +465,8 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 
-  private String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
+  private String getEnvOrDefault(
+      final String key, final String defaultValue, final boolean isSecret) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
@@ -458,16 +478,24 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
-  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
+  private <T> T getEnvOrDefault(
+      final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);
   }
 
-  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
+  private <T> T getEnvOrDefault(
+      final String key,
+      final T defaultValue,
+      final Function<String, T> parser,
+      final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info("Using default value for environment variable {}: '{}'", key, isSecret ? "*****" : defaultValue);
+      LOGGER.info(
+          "Using default value for environment variable {}: '{}'",
+          key,
+          isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }
@@ -490,5 +518,4 @@ public class EnvConfigs implements Configs {
     }
     return Path.of(value);
   }
-
 }

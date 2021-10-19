@@ -9,9 +9,11 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 
-public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>, Exception> {
+public interface RecordWriter
+    extends CheckedBiConsumer<
+        AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>, Exception> {
 
   @Override
-  void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) throws Exception;
-
+  void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records)
+      throws Exception;
 }

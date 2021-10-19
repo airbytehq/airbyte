@@ -26,17 +26,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit test for the {@link DatabaseConfigPersistence#updateConnectorDefinitions} method.
- */
-public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDatabaseConfigPersistenceTest {
+/** Unit test for the {@link DatabaseConfigPersistence#updateConnectorDefinitions} method. */
+public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest
+    extends BaseDatabaseConfigPersistenceTest {
 
   private static final JsonNode SOURCE_GITHUB_JSON = Jsons.jsonNode(SOURCE_GITHUB);
   private static final OffsetDateTime TIMESTAMP = OffsetDateTime.now();
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database =
+        new ConfigsDatabaseInstance(
+                container.getUsername(), container.getPassword(), container.getJdbcUrl())
+            .getAndInitialize();
     configPersistence = new DatabaseConfigPersistence(database);
   }
 
@@ -76,9 +78,11 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @Test
   @DisplayName("When a old connector is in use, add missing fields, do not update its version")
   public void testOldConnectorInUseWithMissingFields() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0").withDocumentationUrl(null).withSourceType(null);
+    final StandardSourceDefinition currentSource =
+        getSource().withDockerImageTag("0.0.0").withDocumentationUrl(null).withSourceType(null);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1000.0");
-    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.0.0");
+    final StandardSourceDefinition currentSourceWithNewFields =
+        getSource().withDockerImageTag("0.0.0");
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -101,11 +105,14 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   }
 
   @Test
-  @DisplayName("When an unused connector has missing fields, add the missing fields, do not update its version")
+  @DisplayName(
+      "When an unused connector has missing fields, add the missing fields, do not update its version")
   public void testUnusedConnectorWithMissingFields() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
+    final StandardSourceDefinition currentSource =
+        getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
-    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
+    final StandardSourceDefinition currentSourceWithNewFields =
+        getSource().withDockerImageTag("0.1000.0");
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
@@ -114,9 +121,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
         Collections.singletonList(currentSourceWithNewFields));
   }
 
-  /**
-   * Clone a source for modification and testing.
-   */
+  /** Clone a source for modification and testing. */
   private StandardSourceDefinition getSource() {
     return Jsons.object(Jsons.clone(SOURCE_GITHUB_JSON), StandardSourceDefinition.class);
   }
@@ -125,46 +130,53 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
    * @param currentSources all sources currently exist in the database
    * @param currentSourcesInUse a subset of currentSources; sources currently used in data syncing
    */
-  private void assertUpdateConnectorDefinition(final List<StandardSourceDefinition> currentSources,
-                                               final List<StandardSourceDefinition> currentSourcesInUse,
-                                               final List<StandardSourceDefinition> latestSources,
-                                               final List<StandardSourceDefinition> expectedUpdatedSources)
+  private void assertUpdateConnectorDefinition(
+      final List<StandardSourceDefinition> currentSources,
+      final List<StandardSourceDefinition> currentSourcesInUse,
+      final List<StandardSourceDefinition> latestSources,
+      final List<StandardSourceDefinition> expectedUpdatedSources)
       throws Exception {
     for (final StandardSourceDefinition source : currentSources) {
       writeSource(configPersistence, source);
     }
 
     for (final StandardSourceDefinition source : currentSourcesInUse) {
-      assertTrue(currentSources.contains(source), "currentSourcesInUse must exist in currentSources");
+      assertTrue(
+          currentSources.contains(source), "currentSourcesInUse must exist in currentSources");
     }
 
-    final Set<String> sourceRepositoriesInUse = currentSourcesInUse.stream()
-        .map(StandardSourceDefinition::getDockerRepository)
-        .collect(Collectors.toSet());
-    final Map<String, ConnectorInfo> currentSourceRepositoryToInfo = currentSources.stream()
-        .collect(Collectors.toMap(
-            StandardSourceDefinition::getDockerRepository,
-            s -> new ConnectorInfo(s.getSourceDefinitionId().toString(), Jsons.jsonNode(s))));
+    final Set<String> sourceRepositoriesInUse =
+        currentSourcesInUse.stream()
+            .map(StandardSourceDefinition::getDockerRepository)
+            .collect(Collectors.toSet());
+    final Map<String, ConnectorInfo> currentSourceRepositoryToInfo =
+        currentSources.stream()
+            .collect(
+                Collectors.toMap(
+                    StandardSourceDefinition::getDockerRepository,
+                    s ->
+                        new ConnectorInfo(
+                            s.getSourceDefinitionId().toString(), Jsons.jsonNode(s))));
 
-    database.transaction(ctx -> {
-      try {
-        configPersistence.updateConnectorDefinitions(
-            ctx,
-            TIMESTAMP,
-            ConfigSchema.STANDARD_SOURCE_DEFINITION,
-            latestSources,
-            sourceRepositoriesInUse,
-            currentSourceRepositoryToInfo);
-      } catch (final IOException e) {
-        throw new SQLException(e);
-      }
-      return null;
-    });
+    database.transaction(
+        ctx -> {
+          try {
+            configPersistence.updateConnectorDefinitions(
+                ctx,
+                TIMESTAMP,
+                ConfigSchema.STANDARD_SOURCE_DEFINITION,
+                latestSources,
+                sourceRepositoriesInUse,
+                currentSourceRepositoryToInfo);
+          } catch (final IOException e) {
+            throw new SQLException(e);
+          }
+          return null;
+        });
 
     assertRecordCount(expectedUpdatedSources.size());
     for (final StandardSourceDefinition source : expectedUpdatedSources) {
       assertHasSource(source);
     }
   }
-
 }

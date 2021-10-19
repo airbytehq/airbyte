@@ -46,31 +46,41 @@ public class MigrationDevHelper {
     migrator.createBaseline();
 
     final List<MigrationInfo> preMigrationInfoList = migrator.list();
-    System.out.println("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
+    System.out.println(
+        "\n==== Pre Migration Info ====\n"
+            + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
     System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
 
     final MigrateResult migrateResult = migrator.migrate();
-    System.out.println("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
+    System.out.println(
+        "\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
 
     final List<MigrationInfo> postMigrationInfoList = migrator.list();
-    System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
+    System.out.println(
+        "\n==== Post Migration Info ====\n"
+            + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
     System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
 
-  public static void createNextMigrationFile(final String dbIdentifier, final FlywayDatabaseMigrator migrator) throws IOException {
+  public static void createNextMigrationFile(
+      final String dbIdentifier, final FlywayDatabaseMigrator migrator) throws IOException {
     final String description = "New_migration";
 
     final MigrationVersion nextMigrationVersion = getNextMigrationVersion(migrator);
     final String versionId = nextMigrationVersion.toString().replaceAll("\\.", "_");
 
     final String template = MoreResources.readResource("migration_template.txt");
-    final String newMigration = template.replace("<db-name>", dbIdentifier)
-        .replace("<version-id>", versionId)
-        .replace("<description>", description)
-        .strip();
+    final String newMigration =
+        template
+            .replace("<db-name>", dbIdentifier)
+            .replace("<version-id>", versionId)
+            .replace("<description>", description)
+            .strip();
 
     final String fileName = String.format("V%s__%s.java", versionId, description);
-    final String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
+    final String filePath =
+        String.format(
+            "src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
 
     System.out.println("\n==== New Migration File ====\n" + filePath);
 
@@ -84,7 +94,8 @@ public class MigrationDevHelper {
     }
   }
 
-  public static Optional<MigrationVersion> getSecondToLastMigrationVersion(final FlywayDatabaseMigrator migrator) {
+  public static Optional<MigrationVersion> getSecondToLastMigrationVersion(
+      final FlywayDatabaseMigrator migrator) {
     final List<ResolvedMigration> migrations = getAllMigrations(migrator);
     if (migrations.isEmpty() || migrations.size() == 1) {
       return Optional.empty();
@@ -92,12 +103,15 @@ public class MigrationDevHelper {
     return Optional.of(migrations.get(migrations.size() - 2).getVersion());
   }
 
-  public static void dumpSchema(final String schema, final String schemaDumpFile, final boolean printSchema) throws IOException {
+  public static void dumpSchema(
+      final String schema, final String schemaDumpFile, final boolean printSchema)
+      throws IOException {
     try (final PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
       writer.println(schema);
       if (printSchema) {
         System.out.println("\n==== Schema ====\n" + schema);
-        System.out.println("\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
+        System.out.println(
+            "\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
       }
     } catch (final FileNotFoundException e) {
       throw new IOException(e);
@@ -111,24 +125,27 @@ public class MigrationDevHelper {
    */
   private static List<ResolvedMigration> getAllMigrations(final FlywayDatabaseMigrator migrator) {
     final Configuration configuration = migrator.getFlyway().getConfiguration();
-    final ClassProvider<JavaMigration> scanner = new Scanner<>(
-        JavaMigration.class,
-        Arrays.asList(configuration.getLocations()),
-        configuration.getClassLoader(),
-        configuration.getEncoding(),
-        configuration.getDetectEncoding(),
-        false,
-        new ResourceNameCache(),
-        new LocationScannerCache(),
-        configuration.getFailOnMissingLocations());
-    final ScanningJavaMigrationResolver resolver = new ScanningJavaMigrationResolver(scanner, configuration);
+    final ClassProvider<JavaMigration> scanner =
+        new Scanner<>(
+            JavaMigration.class,
+            Arrays.asList(configuration.getLocations()),
+            configuration.getClassLoader(),
+            configuration.getEncoding(),
+            configuration.getDetectEncoding(),
+            false,
+            new ResourceNameCache(),
+            new LocationScannerCache(),
+            configuration.getFailOnMissingLocations());
+    final ScanningJavaMigrationResolver resolver =
+        new ScanningJavaMigrationResolver(scanner, configuration);
     return resolver.resolveMigrations(() -> configuration).stream()
         // There may be duplicated migration from the resolver.
         .distinct()
         .collect(Collectors.toList());
   }
 
-  private static Optional<MigrationVersion> getLastMigrationVersion(final FlywayDatabaseMigrator migrator) {
+  private static Optional<MigrationVersion> getLastMigrationVersion(
+      final FlywayDatabaseMigrator migrator) {
     final List<ResolvedMigration> migrations = getAllMigrations(migrator);
     if (migrations.isEmpty()) {
       return Optional.empty();
@@ -169,12 +186,12 @@ public class MigrationDevHelper {
    */
   @VisibleForTesting
   static String formatAirbyteVersion(final AirbyteVersion version) {
-    return String.format("%s_%s_%s", version.getMajorVersion(), version.getMinorVersion(), version.getPatchVersion());
+    return String.format(
+        "%s_%s_%s",
+        version.getMajorVersion(), version.getMinorVersion(), version.getPatchVersion());
   }
 
-  /**
-   * Extract the migration id. E.g. "0.29.10.001" -> "001".
-   */
+  /** Extract the migration id. E.g. "0.29.10.001" -> "001". */
   @VisibleForTesting
   static String getMigrationId(final MigrationVersion version) {
     return version.getVersion().split("\\.")[3];
@@ -188,11 +205,14 @@ public class MigrationDevHelper {
 
   @VisibleForTesting
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static MigrationVersion getNextMigrationVersion(final AirbyteVersion currentAirbyteVersion, final Optional<MigrationVersion> lastMigrationVersion) {
+  static MigrationVersion getNextMigrationVersion(
+      final AirbyteVersion currentAirbyteVersion,
+      final Optional<MigrationVersion> lastMigrationVersion) {
     // When there is no migration, use the current airbyte version.
     if (lastMigrationVersion.isEmpty()) {
       LOGGER.info("No migration exists. Use the current airbyte version {}", currentAirbyteVersion);
-      return MigrationVersion.fromVersion(String.format("%s_001", formatAirbyteVersion(currentAirbyteVersion)));
+      return MigrationVersion.fromVersion(
+          String.format("%s_001", formatAirbyteVersion(currentAirbyteVersion)));
     }
 
     // When the current airbyte version is greater, use the airbyte version.
@@ -203,7 +223,8 @@ public class MigrationDevHelper {
           "Use the current airbyte version ({}), since it is greater than the last migration version ({})",
           currentAirbyteVersion,
           migrationAirbyteVersion);
-      return MigrationVersion.fromVersion(String.format("%s_001", formatAirbyteVersion(currentAirbyteVersion)));
+      return MigrationVersion.fromVersion(
+          String.format("%s_001", formatAirbyteVersion(currentAirbyteVersion)));
     }
 
     // When the last migration version is greater, which usually does not happen, use the migration
@@ -216,7 +237,7 @@ public class MigrationDevHelper {
     System.out.println("lastMigrationId: " + lastMigrationId);
     final String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
     System.out.println("nextMigrationId: " + nextMigrationId);
-    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.getVersion(), nextMigrationId));
+    return MigrationVersion.fromVersion(
+        String.format("%s_%s", migrationAirbyteVersion.getVersion(), nextMigrationId));
   }
-
 }

@@ -31,7 +31,10 @@ public class TemporalWorkerRunFactory {
   private final Path workspaceRoot;
   private final String airbyteVersionOrWarnings;
 
-  public TemporalWorkerRunFactory(final TemporalClient temporalClient, final Path workspaceRoot, final String airbyteVersionOrWarnings) {
+  public TemporalWorkerRunFactory(
+      final TemporalClient temporalClient,
+      final Path workspaceRoot,
+      final String airbyteVersionOrWarnings) {
     this.temporalClient = temporalClient;
     this.workspaceRoot = workspaceRoot;
     this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
@@ -39,59 +42,73 @@ public class TemporalWorkerRunFactory {
 
   public WorkerRun create(final Job job) {
     final int attemptId = job.getAttemptsCount();
-    return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
+    return WorkerRun.create(
+        workspaceRoot,
+        job.getId(),
+        attemptId,
+        createSupplier(job, attemptId),
+        airbyteVersionOrWarnings);
   }
 
-  public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
+  public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(
+      final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
+        final TemporalResponse<StandardSyncOutput> output =
+            temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
         return toOutputAndStatus(output);
       };
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
-        final JobSyncConfig config = new JobSyncConfig()
-            .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
-            .withNamespaceFormat(resetConnection.getNamespaceFormat())
-            .withPrefix(resetConnection.getPrefix())
-            .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
-            .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
-            .withSourceConfiguration(Jsons.emptyObject())
-            .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
-            .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
-            .withOperationSequence(resetConnection.getOperationSequence())
-            .withResourceRequirements(resetConnection.getResourceRequirements());
+        final JobSyncConfig config =
+            new JobSyncConfig()
+                .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
+                .withNamespaceFormat(resetConnection.getNamespaceFormat())
+                .withPrefix(resetConnection.getPrefix())
+                .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
+                .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+                .withSourceConfiguration(Jsons.emptyObject())
+                .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
+                .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
+                .withOperationSequence(resetConnection.getOperationSequence())
+                .withResourceRequirements(resetConnection.getResourceRequirements());
 
-        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config);
+        final TemporalResponse<StandardSyncOutput> output =
+            temporalClient.submitSync(job.getId(), attemptId, config);
         return toOutputAndStatus(output);
       };
-      default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
+      default -> throw new IllegalArgumentException(
+          "Does not support job type: " + temporalJobType);
     };
   }
 
   private static TemporalJobType toTemporalJobType(final ConfigType jobType) {
     return switch (jobType) {
       case GET_SPEC -> TemporalJobType.GET_SPEC;
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> TemporalJobType.CHECK_CONNECTION;
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> TemporalJobType
+          .CHECK_CONNECTION;
       case DISCOVER_SCHEMA -> TemporalJobType.DISCOVER_SCHEMA;
       case SYNC, RESET_CONNECTION -> TemporalJobType.SYNC;
     };
   }
 
-  private OutputAndStatus<JobOutput> toOutputAndStatus(final TemporalResponse<StandardSyncOutput> response) {
+  private OutputAndStatus<JobOutput> toOutputAndStatus(
+      final TemporalResponse<StandardSyncOutput> response) {
     final JobStatus status;
     if (!response.isSuccess()) {
       status = JobStatus.FAILED;
     } else {
-      final ReplicationStatus replicationStatus = response.getOutput().get().getStandardSyncSummary().getStatus();
-      if (replicationStatus == ReplicationStatus.FAILED || replicationStatus == ReplicationStatus.CANCELLED) {
+      final ReplicationStatus replicationStatus =
+          response.getOutput().get().getStandardSyncSummary().getStatus();
+      if (replicationStatus == ReplicationStatus.FAILED
+          || replicationStatus == ReplicationStatus.CANCELLED) {
         status = JobStatus.FAILED;
       } else {
         status = JobStatus.SUCCEEDED;
       }
     }
-    return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
+    return new OutputAndStatus<>(
+        status, new JobOutput().withSync(response.getOutput().orElse(null)));
   }
-
 }

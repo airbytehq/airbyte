@@ -30,15 +30,17 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
-  public RunMigration(final JobPersistence jobPersistence,
-                      final ConfigRepository configRepository,
-                      final String targetVersion,
-                      final ConfigPersistence seedPersistence,
-                      final SpecFetcher specFetcher) {
+  public RunMigration(
+      final JobPersistence jobPersistence,
+      final ConfigRepository configRepository,
+      final String targetVersion,
+      final ConfigPersistence seedPersistence,
+      final SpecFetcher specFetcher) {
     this.targetVersion = targetVersion;
     this.seedPersistence = seedPersistence;
     this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
-    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null, specFetcher, false);
+    this.configDumpImporter =
+        new ConfigDumpImporter(configRepository, jobPersistence, null, specFetcher, false);
   }
 
   @Override
@@ -50,12 +52,14 @@ public class RunMigration implements Runnable, AutoCloseable {
 
       // Define output target
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive_output");
-      final File output = Files.createTempFile(tempFolder, "airbyte_archive_output", ".tar.gz").toFile();
+      final File output =
+          Files.createTempFile(tempFolder, "airbyte_archive_output", ".tar.gz").toFile();
       filesToBeCleanedUp.add(output);
       filesToBeCleanedUp.add(tempFolder.toFile());
 
       // Run Migration
-      final MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
+      final MigrateConfig migrateConfig =
+          new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
       MigrationRunner.run(migrateConfig);
 
       // Import data
@@ -78,5 +82,4 @@ public class RunMigration implements Runnable, AutoCloseable {
       }
     }
   }
-
 }

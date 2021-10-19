@@ -29,9 +29,14 @@ public class MigrationV0_14_0 implements Migration {
 
   public MigrationV0_14_0() {
     // avoid pulling schema from disk multiple times. calling getOutputSchema should be cheap.
-    outputSchemaSupplier = Suppliers.memoize(() -> MoreMaps.merge(
-        MigrationUtils.getConfigModels(RESOURCE_PATH, Enums.valuesAsStrings(ConfigKeys.class)),
-        MigrationUtils.getJobModels(RESOURCE_PATH, Enums.valuesAsStrings(JobKeys.class))));
+    outputSchemaSupplier =
+        Suppliers.memoize(
+            () ->
+                MoreMaps.merge(
+                    MigrationUtils.getConfigModels(
+                        RESOURCE_PATH, Enums.valuesAsStrings(ConfigKeys.class)),
+                    MigrationUtils.getJobModels(
+                        RESOURCE_PATH, Enums.valuesAsStrings(JobKeys.class))));
   }
 
   @Override
@@ -51,7 +56,9 @@ public class MigrationV0_14_0 implements Migration {
 
   // no op migration.
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
       entry.getValue().forEach(recordConsumer);
@@ -73,5 +80,4 @@ public class MigrationV0_14_0 implements Migration {
     ATTEMPTS,
     AIRBYTE_METADATA
   }
-
 }

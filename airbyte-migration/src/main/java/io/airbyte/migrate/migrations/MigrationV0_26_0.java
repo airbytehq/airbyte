@@ -28,16 +28,15 @@ import java.util.stream.Stream;
 
 public class MigrationV0_26_0 extends BaseMigration implements Migration {
 
-  protected static final ResourceId DESTINATION_CONNECTION_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "DESTINATION_CONNECTION");
-  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
-  protected static final ResourceId STANDARD_SYNC_OPERATION_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
+  protected static final ResourceId DESTINATION_CONNECTION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "DESTINATION_CONNECTION");
+  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  protected static final ResourceId STANDARD_SYNC_OPERATION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
   private static final String MIGRATION_VERSION = "0.26.0-alpha";
-  @VisibleForTesting
-  protected final Migration previousMigration;
+  @VisibleForTesting protected final Migration previousMigration;
 
   public MigrationV0_26_0(final Migration previousMigration) {
     super(previousMigration);
@@ -53,71 +52,85 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final JsonNode schemaFromResourcePath = MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, STANDARD_SYNC_OPERATION_RESOURCE_ID);
+    final JsonNode schemaFromResourcePath =
+        MigrationUtils.getSchemaFromResourcePath(
+            RESOURCE_PATH, STANDARD_SYNC_OPERATION_RESOURCE_ID);
 
-    final HashMap<ResourceId, JsonNode> resourceIdJsonNodeHashMap = new HashMap<>(previousMigration.getOutputSchema());
+    final HashMap<ResourceId, JsonNode> resourceIdJsonNodeHashMap =
+        new HashMap<>(previousMigration.getOutputSchema());
     resourceIdJsonNodeHashMap.put(STANDARD_SYNC_OPERATION_RESOURCE_ID, schemaFromResourcePath);
 
     return resourceIdJsonNodeHashMap;
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData,
-                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
 
     final Set<String> destinationIds = new HashSet<>();
 
-    inputData.getOrDefault(DESTINATION_CONNECTION_RESOURCE_ID, Stream.empty())
-        .forEach(destinationConnection -> {
-          final JsonNode configuration = destinationConnection.get("configuration");
-          if (configuration.get("basic_normalization") != null) {
-            final boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
-                .asBoolean();
-            ((ObjectNode) destinationConnection).set("configuration", configuration);
-            if (basicNormalization) {
-              destinationIds.add(destinationConnection.get("destinationId").asText());
-            }
-          }
+    inputData
+        .getOrDefault(DESTINATION_CONNECTION_RESOURCE_ID, Stream.empty())
+        .forEach(
+            destinationConnection -> {
+              final JsonNode configuration = destinationConnection.get("configuration");
+              if (configuration.get("basic_normalization") != null) {
+                final boolean basicNormalization =
+                    ((ObjectNode) configuration).remove("basic_normalization").asBoolean();
+                ((ObjectNode) destinationConnection).set("configuration", configuration);
+                if (basicNormalization) {
+                  destinationIds.add(destinationConnection.get("destinationId").asText());
+                }
+              }
 
-          final Consumer<JsonNode> destinationConnectionConsumer = outputData
-              .get(DESTINATION_CONNECTION_RESOURCE_ID);
-          if (destinationConnectionConsumer == null) {
-            throw new RuntimeException("Could not find consumer for DESTINATION_CONNECTION");
-          }
-          destinationConnectionConsumer.accept(destinationConnection);
-        });
+              final Consumer<JsonNode> destinationConnectionConsumer =
+                  outputData.get(DESTINATION_CONNECTION_RESOURCE_ID);
+              if (destinationConnectionConsumer == null) {
+                throw new RuntimeException("Could not find consumer for DESTINATION_CONNECTION");
+              }
+              destinationConnectionConsumer.accept(destinationConnection);
+            });
 
     for (final Map.Entry<ResourceId, Stream<JsonNode>> inputEntry : inputData.entrySet()) {
       if (inputEntry.getKey().equals(DESTINATION_CONNECTION_RESOURCE_ID)) {
         continue;
       }
 
-      inputEntry.getValue().forEach(jsonNode -> {
-        if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID) && destinationIds
-            .contains(jsonNode.get("destinationId").asText())) {
-          final Map<String, Object> standardSyncOperation = new LinkedHashMap<>();
-          final String operationId = uuid();
-          standardSyncOperation.put("operationId", operationId);
-          standardSyncOperation.put("name", "default-normalization");
-          standardSyncOperation.put("operatorType", "normalization");
-          standardSyncOperation
-              .put("operatorNormalization", Jsons.jsonNode(ImmutableMap.of("option", "basic")));
-          standardSyncOperation
-              .put("tombstone", false);
-          final JsonNode standardSyncOperationAsJson = Jsons.jsonNode(standardSyncOperation);
-          outputData.get(STANDARD_SYNC_OPERATION_RESOURCE_ID).accept(standardSyncOperationAsJson);
-          if (jsonNode.get("operationIds") == null) {
-            ((ObjectNode) jsonNode).put("operationIds", Jsons.jsonNode(Collections.singletonList(operationId)));
-          } else {
-            final List<String> operationIds = Jsons
-                .object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
-            operationIds.add(operationId);
-            ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));
-          }
-        }
-        final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
-        outputConsumer.accept(jsonNode);
-      });
+      inputEntry
+          .getValue()
+          .forEach(
+              jsonNode -> {
+                if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)
+                    && destinationIds.contains(jsonNode.get("destinationId").asText())) {
+                  final Map<String, Object> standardSyncOperation = new LinkedHashMap<>();
+                  final String operationId = uuid();
+                  standardSyncOperation.put("operationId", operationId);
+                  standardSyncOperation.put("name", "default-normalization");
+                  standardSyncOperation.put("operatorType", "normalization");
+                  standardSyncOperation.put(
+                      "operatorNormalization", Jsons.jsonNode(ImmutableMap.of("option", "basic")));
+                  standardSyncOperation.put("tombstone", false);
+                  final JsonNode standardSyncOperationAsJson =
+                      Jsons.jsonNode(standardSyncOperation);
+                  outputData
+                      .get(STANDARD_SYNC_OPERATION_RESOURCE_ID)
+                      .accept(standardSyncOperationAsJson);
+                  if (jsonNode.get("operationIds") == null) {
+                    ((ObjectNode) jsonNode)
+                        .put(
+                            "operationIds", Jsons.jsonNode(Collections.singletonList(operationId)));
+                  } else {
+                    final List<String> operationIds =
+                        Jsons.object(
+                            jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
+                    operationIds.add(operationId);
+                    ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));
+                  }
+                }
+                final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
+                outputConsumer.accept(jsonNode);
+              });
     }
   }
 
@@ -125,5 +138,4 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
   protected String uuid() {
     return UUID.randomUUID().toString();
   }
-
 }

@@ -97,7 +97,8 @@ public class Jsons {
     }
   }
 
-  public static <T> Optional<T> tryObject(final JsonNode jsonNode, final TypeReference<T> typeReference) {
+  public static <T> Optional<T> tryObject(
+      final JsonNode jsonNode, final TypeReference<T> typeReference) {
     try {
       return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, typeReference));
     } catch (final Exception e) {
@@ -141,15 +142,20 @@ public class Jsons {
     return node;
   }
 
-  public static void replaceNestedString(final JsonNode json, final List<String> keys, final String replacement) {
+  public static void replaceNestedString(
+      final JsonNode json, final List<String> keys, final String replacement) {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
-  public static void replaceNestedInt(final JsonNode json, final List<String> keys, final int replacement) {
+  public static void replaceNestedInt(
+      final JsonNode json, final List<String> keys, final int replacement) {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }
 
-  private static void replaceNested(final JsonNode json, final List<String> keys, final BiConsumer<ObjectNode, String> typedReplacement) {
+  private static void replaceNested(
+      final JsonNode json,
+      final List<String> keys,
+      final BiConsumer<ObjectNode, String> typedReplacement) {
     Preconditions.checkArgument(keys.size() > 0, "Must pass at least one key");
     final JsonNode nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size() - 1));
     typedReplacement.accept((ObjectNode) nodeContainingFinalKey, keys.get(keys.size() - 1));
@@ -195,7 +201,8 @@ public class Jsons {
    */
   private static class JsonPrettyPrinter extends DefaultPrettyPrinter {
 
-    // this method has to be overridden because in the superclass it checks that it is an instance of
+    // this method has to be overridden because in the superclass it checks that it is an instance
+    // of
     // DefaultPrettyPrinter (which is no longer the case in this inherited class).
     @Override
     public DefaultPrettyPrinter createInstance() {
@@ -209,7 +216,5 @@ public class Jsons {
       _objectFieldValueSeparatorWithSpaces = separators.getObjectFieldValueSeparator() + " ";
       return this;
     }
-
   }
-
 }

@@ -19,17 +19,22 @@ class CatalogHelpersTest {
 
   @Test
   void testFieldToJsonSchema() {
-    final String expected = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
-    final JsonNode actual = CatalogHelpers.fieldsToJsonSchema(Field.of("name", JsonSchemaPrimitive.STRING));
+    final String expected =
+        "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
+    final JsonNode actual =
+        CatalogHelpers.fieldsToJsonSchema(Field.of("name", JsonSchemaPrimitive.STRING));
 
     assertEquals(Jsons.deserialize(expected), actual);
   }
 
   @Test
   void testGetTopLevelFieldNames() {
-    final String json = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
+    final String json =
+        "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
     final Set<String> actualFieldNames =
-        CatalogHelpers.getTopLevelFieldNames(new ConfiguredAirbyteStream().withStream(new AirbyteStream().withJsonSchema(Jsons.deserialize(json))));
+        CatalogHelpers.getTopLevelFieldNames(
+            new ConfiguredAirbyteStream()
+                .withStream(new AirbyteStream().withJsonSchema(Jsons.deserialize(json))));
 
     assertEquals(Sets.newHashSet("name"), actualFieldNames);
   }
@@ -39,9 +44,19 @@ class CatalogHelpersTest {
     final JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     final Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
     final Set<String> expectedFieldNames =
-        ImmutableSet.of("date", "CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "文", "somekey", "something", "nestedkey");
+        ImmutableSet.of(
+            "date",
+            "CAD",
+            "HKD",
+            "ISK",
+            "PHP",
+            "DKK",
+            "HUF",
+            "文",
+            "somekey",
+            "something",
+            "nestedkey");
 
     assertEquals(expectedFieldNames, actualFieldNames);
   }
-
 }

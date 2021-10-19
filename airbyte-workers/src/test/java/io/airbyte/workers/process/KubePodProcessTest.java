@@ -51,41 +51,44 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error when the given pod does not exists.")
     public void testGetPodIpNoPod() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
+      assertThrows(
+          RuntimeException.class,
+          () -> KubePodProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
     }
 
     @Test
     @DisplayName("Should return the correct pod ip.")
     public void testGetPodIpGoodPod() throws InterruptedException {
-      final var sleep = new ContainerBuilder()
-          .withImage("busybox")
-          .withName("sleep")
-          .withCommand("sleep", "100000")
-          .build();
+      final var sleep =
+          new ContainerBuilder()
+              .withImage("busybox")
+              .withName("sleep")
+              .withCommand("sleep", "100000")
+              .build();
 
       final var podName = Strings.addRandomSuffix("test-get-pod-good-pod", "-", 5);
-      final Pod podDef = new PodBuilder()
-          .withApiVersion("v1")
-          .withNewMetadata()
-          .withName(podName)
-          .endMetadata()
-          .withNewSpec()
-          .withRestartPolicy("Never")
-          .withRestartPolicy("Never")
-          .withContainers(sleep)
-          .endSpec()
-          .build();
+      final Pod podDef =
+          new PodBuilder()
+              .withApiVersion("v1")
+              .withNewMetadata()
+              .withName(podName)
+              .endMetadata()
+              .withNewSpec()
+              .withRestartPolicy("Never")
+              .withRestartPolicy("Never")
+              .withContainers(sleep)
+              .endSpec()
+              .build();
 
       final String namespace = "default";
       final Pod pod = K8s.pods().inNamespace(namespace).createOrReplace(podDef);
       K8s.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
 
       final var ip = KubePodProcess.getPodIP(K8s, podName, namespace);
-      final var exp = K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
+      final var exp =
+          K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
       assertEquals(exp, ip);
       K8s.resource(podDef).inNamespace(namespace).delete();
     }
-
   }
-
 }

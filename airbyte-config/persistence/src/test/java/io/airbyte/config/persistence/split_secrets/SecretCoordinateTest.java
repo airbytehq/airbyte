@@ -15,5 +15,4 @@ class SecretCoordinateTest {
     final var coordinate = new SecretCoordinate("some_base", 1);
     assertEquals("some_base_v1", coordinate.getFullCoordinate());
   }
-
 }

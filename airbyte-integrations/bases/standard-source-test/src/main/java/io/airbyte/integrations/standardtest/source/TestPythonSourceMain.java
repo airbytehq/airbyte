@@ -16,15 +16,15 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class TestPythonSourceMain {
 
   public static void main(final String[] args) {
-    final ArgumentParser parser = ArgumentParsers.newFor(TestPythonSourceMain.class.getName()).build()
-        .defaultHelp(true)
-        .description("Run standard source tests");
+    final ArgumentParser parser =
+        ArgumentParsers.newFor(TestPythonSourceMain.class.getName())
+            .build()
+            .defaultHelp(true)
+            .description("Run standard source tests");
 
-    parser.addArgument("--imageName")
-        .help("Name of the integration image");
+    parser.addArgument("--imageName").help("Name of the integration image");
 
-    parser.addArgument("--pythonContainerName")
-        .help("Name of the python integration image");
+    parser.addArgument("--pythonContainerName").help("Name of the python integration image");
 
     Namespace ns = null;
     try {
@@ -42,5 +42,4 @@ public class TestPythonSourceMain {
 
     TestRunner.runTestClass(PythonSourceAcceptanceTest.class);
   }
-
 }

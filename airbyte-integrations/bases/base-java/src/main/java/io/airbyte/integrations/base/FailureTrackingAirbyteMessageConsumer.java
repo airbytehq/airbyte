@@ -13,16 +13,17 @@ import org.slf4j.LoggerFactory;
  * the {@link AirbyteMessageConsumer} interface. The original interface methods are wrapped in
  * generic exception handlers - any exception is caught and logged.
  *
- * Two methods are intended for extension: - startTracked: Wraps set up of necessary
+ * <p>Two methods are intended for extension: - startTracked: Wraps set up of necessary
  * infrastructure/configuration before message consumption. - acceptTracked: Wraps actual processing
  * of each {@link io.airbyte.protocol.models.AirbyteMessage}.
  *
- * Though not necessary, we highly encourage using this class when implementing destinations. See
+ * <p>Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
  */
 public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer.class);
 
   private boolean hasFailed = false;
 
@@ -61,5 +62,4 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     }
     close(hasFailed);
   }
-
 }

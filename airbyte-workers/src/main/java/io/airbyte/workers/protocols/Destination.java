@@ -26,5 +26,4 @@ public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoClose
   boolean isFinished();
 
   Optional<T> attemptRead();
-
 }

@@ -20,22 +20,35 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   private static final String DATABASE_LOGGING_NAME = "airbyte configs";
   private static final String SCHEMA_PATH = "configs_database/schema.sql";
-  private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
-    try {
-      LOGGER.info("Testing if airbyte_configs has been created and seeded...");
-      return database.query(ctx -> hasData(ctx, "airbyte_configs"));
-    } catch (Exception e) {
-      return false;
-    }
-  };
+  private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY =
+      database -> {
+        try {
+          LOGGER.info("Testing if airbyte_configs has been created and seeded...");
+          return database.query(ctx -> hasData(ctx, "airbyte_configs"));
+        } catch (Exception e) {
+          return false;
+        }
+      };
 
   @VisibleForTesting
-  public ConfigsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
-    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseSchema.getTableNames(), IS_CONFIGS_DATABASE_READY);
+  public ConfigsDatabaseInstance(
+      final String username,
+      final String password,
+      final String connectionString,
+      final String schema) {
+    super(
+        username,
+        password,
+        connectionString,
+        schema,
+        DATABASE_LOGGING_NAME,
+        ConfigsDatabaseSchema.getTableNames(),
+        IS_CONFIGS_DATABASE_READY);
   }
 
-  public ConfigsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
+  public ConfigsDatabaseInstance(
+      final String username, final String password, final String connectionString)
+      throws IOException {
     this(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH));
   }
-
 }

@@ -17,19 +17,24 @@ class ToysDatabaseMigratorTest extends AbstractToysDatabaseTest {
 
   @Test
   public void testMigration() throws Exception {
-    final DatabaseMigrator migrator = new ToysDatabaseMigrator(database, ToysDatabaseMigratorTest.class.getSimpleName());
+    final DatabaseMigrator migrator =
+        new ToysDatabaseMigrator(database, ToysDatabaseMigratorTest.class.getSimpleName());
 
     // Compare pre migration baseline schema
     migrator.createBaseline();
     final String preMigrationSchema = MoreResources.readResource(PRE_MIGRATION_SCHEMA_DUMP).strip();
     final String actualPreMigrationSchema = migrator.dumpSchema();
-    assertEquals(preMigrationSchema, actualPreMigrationSchema, "The pre migration schema dump has changed");
+    assertEquals(
+        preMigrationSchema, actualPreMigrationSchema, "The pre migration schema dump has changed");
 
     // Compare post migration schema
     migrator.migrate();
-    final String postMigrationSchema = MoreResources.readResource(POST_MIGRATION_SCHEMA_DUMP).strip();
+    final String postMigrationSchema =
+        MoreResources.readResource(POST_MIGRATION_SCHEMA_DUMP).strip();
     final String actualPostMigrationSchema = migrator.dumpSchema();
-    assertEquals(postMigrationSchema, actualPostMigrationSchema, "The post migration schema dump has changed");
+    assertEquals(
+        postMigrationSchema,
+        actualPostMigrationSchema,
+        "The post migration schema dump has changed");
   }
-
 }

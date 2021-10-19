@@ -27,5 +27,4 @@ public class WorkspaceRetentionConfig {
   public long getMaxSizeMb() {
     return maxSizeMb;
   }
-
 }

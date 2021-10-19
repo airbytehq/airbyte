@@ -23,8 +23,8 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_25_0.class);
 
-  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   private static final String MIGRATION_VERSION = "0.25.0-alpha";
   private static final Path CONFIG_PATH = Path.of("migrations/migrationV0_25_0");
@@ -43,7 +43,8 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
+    final Map<ResourceId, JsonNode> outputSchema =
+        new HashMap<>(previousMigration.getOutputSchema());
     outputSchema.put(
         STANDARD_SYNC_RESOURCE_ID,
         MigrationUtils.getSchemaFromResourcePath(CONFIG_PATH, STANDARD_SYNC_RESOURCE_ID));
@@ -51,15 +52,19 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      entry.getValue().forEach(r -> {
-        // empty migration
-        recordConsumer.accept(r);
-      });
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                // empty migration
+                recordConsumer.accept(r);
+              });
     }
   }
-
 }

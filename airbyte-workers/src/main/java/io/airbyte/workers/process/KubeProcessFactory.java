@@ -39,7 +39,8 @@ public class KubeProcessFactory implements ProcessFactory {
   public static final String NORMALISE_STEP = "normalise";
   public static final String CUSTOM_STEP = "custom";
 
-  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
+  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");
+  ;
   private static final String JOB_LABEL_KEY = "job_id";
   private static final String ATTEMPT_LABEL_KEY = "attempt_id";
   private static final String WORKER_POD_LABEL_KEY = "airbyte";
@@ -51,15 +52,20 @@ public class KubeProcessFactory implements ProcessFactory {
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
 
-  /**
-   * Sets up a process factory with the default processRunnerHost.
-   */
-  public KubeProcessFactory(final String namespace,
-                            final ApiClient officialClient,
-                            final KubernetesClient fabricClient,
-                            final String kubeHeartbeatUrl,
-                            final Set<Integer> ports) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
+  /** Sets up a process factory with the default processRunnerHost. */
+  public KubeProcessFactory(
+      final String namespace,
+      final ApiClient officialClient,
+      final KubernetesClient fabricClient,
+      final String kubeHeartbeatUrl,
+      final Set<Integer> ports) {
+    this(
+        namespace,
+        officialClient,
+        fabricClient,
+        kubeHeartbeatUrl,
+        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()),
+        ports);
   }
 
   /**
@@ -67,17 +73,18 @@ public class KubeProcessFactory implements ProcessFactory {
    * @param officialClient official kubernetes client
    * @param fabricClient fabric8 kubernetes client
    * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
-   *        itself
+   *     itself
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
-   *        injectable for testing.
+   *     injectable for testing.
    */
   @VisibleForTesting
-  public KubeProcessFactory(final String namespace,
-                            final ApiClient officialClient,
-                            final KubernetesClient fabricClient,
-                            final String kubeHeartbeatUrl,
-                            final String processRunnerHost,
-                            final Set<Integer> ports) {
+  public KubeProcessFactory(
+      final String namespace,
+      final ApiClient officialClient,
+      final KubernetesClient fabricClient,
+      final String kubeHeartbeatUrl,
+      final String processRunnerHost,
+      final Set<Integer> ports) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
@@ -87,16 +94,17 @@ public class KubeProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(final String jobId,
-                        final int attempt,
-                        final Path jobRoot,
-                        final String imageName,
-                        final boolean usesStdin,
-                        final Map<String, String> files,
-                        final String entrypoint,
-                        final ResourceRequirements resourceRequirements,
-                        final Map<String, String> customLabels,
-                        final String... args)
+  public Process create(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final String imageName,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final Map<String, String> customLabels,
+      final String... args)
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
@@ -109,10 +117,11 @@ public class KubeProcessFactory implements ProcessFactory {
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       final var allLabels = new HashMap<>(customLabels);
-      final var generalKubeLabels = Map.of(
-          JOB_LABEL_KEY, jobId,
-          ATTEMPT_LABEL_KEY, String.valueOf(attempt),
-          WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+      final var generalKubeLabels =
+          Map.of(
+              JOB_LABEL_KEY, jobId,
+              ATTEMPT_LABEL_KEY, String.valueOf(attempt),
+              WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
       allLabels.putAll(generalKubeLabels);
 
       return new KubePodProcess(
@@ -141,18 +150,19 @@ public class KubeProcessFactory implements ProcessFactory {
   }
 
   /**
-   * Docker image names are by convention separated by slashes. The last portion is the image's name.
-   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
+   * Docker image names are by convention separated by slashes. The last portion is the image's
+   * name. This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
    * gcr.io/my-project/image-name:v2.
    *
-   * Kubernetes has a maximum pod name length of 63 characters, and names must start with an
+   * <p>Kubernetes has a maximum pod name length of 63 characters, and names must start with an
    * alphabetic character.
    *
-   * With these two facts, attempt to construct a unique Pod name with the image name present for
+   * <p>With these two facts, attempt to construct a unique Pod name with the image name present for
    * easier operations.
    */
   @VisibleForTesting
-  protected static String createPodName(final String fullImagePath, final String jobId, final int attempt) {
+  protected static String createPodName(
+      final String fullImagePath, final String jobId, final int attempt) {
     final var versionDelimiter = ":";
     final var noVersion = fullImagePath.split(versionDelimiter)[0];
 
@@ -175,9 +185,9 @@ public class KubeProcessFactory implements ProcessFactory {
     final Matcher m = ALPHABETIC.matcher(podName);
     // Since we add worker-UUID as a suffix a couple of lines up, there will always be a substring
     // starting with an alphabetic character.
-    // If the image name is a no-op, this function should always return `worker-UUID` at the minimum.
+    // If the image name is a no-op, this function should always return `worker-UUID` at the
+    // minimum.
     m.find();
     return podName.substring(m.start());
   }
-
 }

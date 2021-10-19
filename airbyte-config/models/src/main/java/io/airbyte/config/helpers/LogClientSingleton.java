@@ -24,20 +24,19 @@ import org.slf4j.MDC;
  * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to
  * cloud storages.
  *
- * Although the configuration is passed in as {@link Configs}, it is transformed to
- * {@link LogConfigs} within this class. Beyond this class, all configuration consumption is via the
- * {@link LogConfigs} interface via the {@link CloudLogs} interface.
+ * <p>Although the configuration is passed in as {@link Configs}, it is transformed to {@link
+ * LogConfigs} within this class. Beyond this class, all configuration consumption is via the {@link
+ * LogConfigs} interface via the {@link CloudLogs} interface.
  */
 public class LogClientSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LogClientSingleton.class);
 
-  @VisibleForTesting
-  static final int LOG_TAIL_SIZE = 1000000;
-  @VisibleForTesting
-  static CloudLogs logClient;
+  @VisibleForTesting static final int LOG_TAIL_SIZE = 1000000;
+  @VisibleForTesting static CloudLogs logClient;
 
-  // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
+  // Any changes to the following values must also be propagated to the log4j2.xml in
+  // main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
   public static String CLOUD_WORKSPACE_MDC_KEY = "cloud_workspace_app_root";
 
@@ -98,7 +97,8 @@ public class LogClientSingleton {
     }
   }
 
-  public static List<String> getJobLogFile(final Configs configs, final Path logPath) throws IOException {
+  public static List<String> getJobLogFile(final Configs configs, final Path logPath)
+      throws IOException {
     if (logPath == null || logPath.equals(Path.of(""))) {
       return Collections.emptyList();
     }
@@ -112,9 +112,7 @@ public class LogClientSingleton {
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
-  /**
-   * Primarily to clean up logs after testing. Only valid for Kube logs.
-   */
+  /** Primarily to clean up logs after testing. Only valid for Kube logs. */
   @VisibleForTesting
   public static void deleteLogs(final Configs configs, final String logPath) {
     if (logPath == null || logPath.equals(Path.of(""))) {
@@ -130,17 +128,22 @@ public class LogClientSingleton {
   }
 
   public static void setJobMdc(final Path path) {
-    // setJobMdc is referenced from TemporalAttemptExecution without input parameters, so hard to pass
+    // setJobMdc is referenced from TemporalAttemptExecution without input parameters, so hard to
+    // pass
     // this in.
     final Configs configs = new EnvConfigs();
     if (shouldUseLocalLogs(configs.getWorkerEnvironment())) {
       LOGGER.debug("Setting docker job mdc");
-      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+      MDC.put(
+          LogClientSingleton.JOB_LOG_PATH_MDC_KEY,
+          path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     } else {
       LOGGER.debug("Setting kube job mdc");
       final var logConfigs = new LogConfigDelegator(configs);
       createCloudClientIfNull(logConfigs);
-      MDC.put(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+      MDC.put(
+          LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY,
+          path.resolve(LogClientSingleton.LOG_FILENAME).toString());
     }
   }
 
@@ -166,5 +169,4 @@ public class LogClientSingleton {
       logClient = CloudLogs.createCloudLogClient(configs);
     }
   }
-
 }

@@ -9,9 +9,7 @@ import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.FlywayMigrationDatabase;
 import java.io.IOException;
 
-/**
- * Jobs database for jOOQ code generation.
- */
+/** Jobs database for jOOQ code generation. */
 public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
 
   public JobsFlywayMigrationDatabase() {
@@ -19,7 +17,9 @@ public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
   }
 
   @Override
-  protected Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
+  protected Database getAndInitializeDatabase(
+      final String username, final String password, final String connectionString)
+      throws IOException {
     return new JobsDatabaseInstance(username, password, connectionString).getAndInitialize();
   }
 
@@ -27,5 +27,4 @@ public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
   protected DatabaseMigrator getDatabaseMigrator(final Database database) {
     return new JobsDatabaseMigrator(database, JobsFlywayMigrationDatabase.class.getSimpleName());
   }
-
 }

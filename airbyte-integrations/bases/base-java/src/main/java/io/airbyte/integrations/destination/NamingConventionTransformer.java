@@ -17,7 +17,7 @@ public interface NamingConventionTransformer {
    *
    * @param name of the identifier to check proper naming conventions
    * @return modified name with invalid characters replaced by '_' and adapted for the chosen
-   *         destination.
+   *     destination.
    */
   String getIdentifier(String name);
 
@@ -26,8 +26,7 @@ public interface NamingConventionTransformer {
    *
    * @param name of the identifier to check proper naming conventions
    * @return modified name with invalid characters replaced by '_' and adapted for the chosen
-   *         destination.
-   *
+   *     destination.
    * @deprecated as this is very SQL specific, prefer using getIdentifier instead
    */
   @Deprecated
@@ -38,11 +37,9 @@ public interface NamingConventionTransformer {
    *
    * @param name of the identifier to check proper naming conventions
    * @return modified name with invalid characters replaced by '_' and adapted for the chosen
-   *         destination.
-   *
+   *     destination.
    * @deprecated as this is very SQL specific, prefer using getIdentifier instead
    */
   @Deprecated
   String getTmpTableName(String name);
-
 }

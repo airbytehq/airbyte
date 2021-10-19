@@ -62,7 +62,10 @@ public class ConfigDumpExporter {
   private final JobPersistence jobPersistence;
   private final WorkspaceHelper workspaceHelper;
 
-  public ConfigDumpExporter(final ConfigRepository configRepository, final JobPersistence jobPersistence, final WorkspaceHelper workspaceHelper) {
+  public ConfigDumpExporter(
+      final ConfigRepository configRepository,
+      final JobPersistence jobPersistence,
+      final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.workspaceHelper = workspaceHelper;
@@ -90,8 +93,9 @@ public class ConfigDumpExporter {
   }
 
   private void dumpJobsDatabase(final Path parentFolder) throws Exception {
-    final Map<String, Stream<JsonNode>> tables = jobPersistence.exportDatabase().entrySet().stream()
-        .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
+    final Map<String, Stream<JsonNode>> tables =
+        jobPersistence.exportDatabase().entrySet().stream()
+            .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
     for (final Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
       final Path tablePath = buildTablePath(parentFolder, table.getKey());
@@ -99,9 +103,11 @@ public class ConfigDumpExporter {
     }
   }
 
-  private void writeTableToArchive(final Path tablePath, final Stream<JsonNode> tableStream) throws Exception {
+  private void writeTableToArchive(final Path tablePath, final Stream<JsonNode> tableStream)
+      throws Exception {
     Files.createDirectories(tablePath.getParent());
-    final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(tablePath.toFile()));
+    final BufferedWriter recordOutputWriter =
+        new BufferedWriter(new FileWriter(tablePath.toFile()));
     final CloseableConsumer<JsonNode> recordConsumer = Yamls.listWriter(recordOutputWriter);
     tableStream.forEach(row -> Exceptions.toRuntime(() -> recordConsumer.accept(row)));
     recordConsumer.close();
@@ -114,28 +120,28 @@ public class ConfigDumpExporter {
   }
 
   private void dumpConfigsDatabase(final Path parentFolder) throws IOException {
-    for (final Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
+    for (final Map.Entry<String, Stream<JsonNode>> configEntry :
+        configRepository.dumpConfigs().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }
 
-  private static void writeConfigsToArchive(final Path storageRoot,
-                                            final String schemaType,
-                                            final Stream<JsonNode> configs)
+  private static void writeConfigsToArchive(
+      final Path storageRoot, final String schemaType, final Stream<JsonNode> configs)
       throws IOException {
     writeConfigsToArchive(storageRoot, schemaType, configs.collect(Collectors.toList()));
   }
 
-  private static void writeConfigsToArchive(final Path storageRoot,
-                                            final String schemaType,
-                                            final List<JsonNode> configList)
+  private static void writeConfigsToArchive(
+      final Path storageRoot, final String schemaType, final List<JsonNode> configList)
       throws IOException {
     final Path configPath = buildConfigPath(storageRoot, schemaType);
     Files.createDirectories(configPath.getParent());
     if (!configList.isEmpty()) {
-      final List<JsonNode> sortedConfigs = configList.stream()
-          .sorted(Comparator.comparing(JsonNode::toString)).collect(
-              Collectors.toList());
+      final List<JsonNode> sortedConfigs =
+          configList.stream()
+              .sorted(Comparator.comparing(JsonNode::toString))
+              .collect(Collectors.toList());
       Files.writeString(configPath, Yamls.serialize(sortedConfigs));
     } else {
       // Create empty file
@@ -144,11 +150,11 @@ public class ConfigDumpExporter {
   }
 
   private static Path buildConfigPath(final Path storageRoot, final String schemaType) {
-    return storageRoot.resolve(CONFIG_FOLDER_NAME)
-        .resolve(String.format("%s.yaml", schemaType));
+    return storageRoot.resolve(CONFIG_FOLDER_NAME).resolve(String.format("%s.yaml", schemaType));
   }
 
-  public File exportWorkspace(final UUID workspaceId) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public File exportWorkspace(final UUID workspaceId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
     final File dump = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
     exportVersionFile(tempFolder);
@@ -160,21 +166,27 @@ public class ConfigDumpExporter {
 
   private void exportConfigsDatabase(final Path parentFolder, final UUID workspaceId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    final Collection<SourceConnection> sourceConnections = writeConfigsToArchive(
+    final Collection<SourceConnection> sourceConnections =
+        writeConfigsToArchive(
+            parentFolder,
+            ConfigSchema.SOURCE_CONNECTION.name(),
+            configRepository::listSourceConnectionWithSecrets,
+            (sourceConnection) -> workspaceId.equals(sourceConnection.getWorkspaceId()));
+    writeConfigsToArchive(
         parentFolder,
-        ConfigSchema.SOURCE_CONNECTION.name(),
-        configRepository::listSourceConnectionWithSecrets,
-        (sourceConnection) -> workspaceId.equals(sourceConnection.getWorkspaceId()));
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
         () -> listSourceDefinition(sourceConnections),
         (config) -> true);
 
-    final Collection<DestinationConnection> destinationConnections = writeConfigsToArchive(
+    final Collection<DestinationConnection> destinationConnections =
+        writeConfigsToArchive(
+            parentFolder,
+            ConfigSchema.DESTINATION_CONNECTION.name(),
+            configRepository::listDestinationConnectionWithSecrets,
+            (destinationConnection) -> workspaceId.equals(destinationConnection.getWorkspaceId()));
+    writeConfigsToArchive(
         parentFolder,
-        ConfigSchema.DESTINATION_CONNECTION.name(),
-        configRepository::listDestinationConnectionWithSecrets,
-        (destinationConnection) -> workspaceId.equals(destinationConnection.getWorkspaceId()));
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
         () -> listDestinationDefinition(destinationConnections),
         (config) -> true);
 
@@ -186,57 +198,66 @@ public class ConfigDumpExporter {
 
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
-      if (workspaceHelper != null &&
-          workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()))) {
+      if (workspaceHelper != null
+          && workspaceId.equals(
+              workspaceHelper.getWorkspaceForConnection(
+                  standardSync.getSourceId(), standardSync.getDestinationId()))) {
         standardSyncs.add(standardSync);
       }
     }
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SYNC.name(), standardSyncs.stream().map(Jsons::jsonNode));
+    writeConfigsToArchive(
+        parentFolder,
+        ConfigSchema.STANDARD_SYNC.name(),
+        standardSyncs.stream().map(Jsons::jsonNode));
   }
 
-  private <T> Collection<T> writeConfigsToArchive(final Path parentFolder,
-                                                  final String configSchemaName,
-                                                  final ListConfigCall<T> listConfigCall,
-                                                  final Function<T, Boolean> filterConfigCall)
+  private <T> Collection<T> writeConfigsToArchive(
+      final Path parentFolder,
+      final String configSchemaName,
+      final ListConfigCall<T> listConfigCall,
+      final Function<T, Boolean> filterConfigCall)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Collection<T> configs = listConfigCall.apply().stream().filter(filterConfigCall::apply).collect(Collectors.toList());
+    final Collection<T> configs =
+        listConfigCall.apply().stream()
+            .filter(filterConfigCall::apply)
+            .collect(Collectors.toList());
     writeConfigsToArchive(parentFolder, configSchemaName, configs.stream().map(Jsons::jsonNode));
     return configs;
   }
 
-  private Collection<StandardSourceDefinition> listSourceDefinition(final Collection<SourceConnection> sourceConnections)
+  private Collection<StandardSourceDefinition> listSourceDefinition(
+      final Collection<SourceConnection> sourceConnections)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, StandardSourceDefinition> sourceDefinitionMap = new HashMap<>();
     for (final SourceConnection sourceConnection : sourceConnections) {
       if (!sourceDefinitionMap.containsKey(sourceConnection.getSourceDefinitionId())) {
-        sourceDefinitionMap
-            .put(sourceConnection.getSourceDefinitionId(),
-                configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()));
+        sourceDefinitionMap.put(
+            sourceConnection.getSourceDefinitionId(),
+            configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()));
       }
     }
     return sourceDefinitionMap.values();
   }
 
-  private Collection<StandardDestinationDefinition> listDestinationDefinition(final Collection<DestinationConnection> destinationConnections)
+  private Collection<StandardDestinationDefinition> listDestinationDefinition(
+      final Collection<DestinationConnection> destinationConnections)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, StandardDestinationDefinition> destinationDefinitionMap = new HashMap<>();
     for (final DestinationConnection destinationConnection : destinationConnections) {
-      if (!destinationDefinitionMap.containsKey(destinationConnection.getDestinationDefinitionId())) {
-        destinationDefinitionMap
-            .put(destinationConnection.getDestinationDefinitionId(),
-                configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()));
+      if (!destinationDefinitionMap.containsKey(
+          destinationConnection.getDestinationDefinitionId())) {
+        destinationDefinitionMap.put(
+            destinationConnection.getDestinationDefinitionId(),
+            configRepository.getStandardDestinationDefinition(
+                destinationConnection.getDestinationDefinitionId()));
       }
     }
     return destinationDefinitionMap.values();
   }
 
-  /**
-   * List all configurations of type @param <T> that already exists
-   */
+  /** List all configurations of type @param <T> that already exists */
   public interface ListConfigCall<T> {
 
     Collection<T> apply() throws IOException, JsonValidationException, ConfigNotFoundException;
-
   }
-
 }

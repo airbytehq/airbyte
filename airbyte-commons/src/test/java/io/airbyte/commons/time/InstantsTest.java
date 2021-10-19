@@ -16,5 +16,4 @@ class InstantsTest {
     final Instant now = Instant.now();
     assertEquals(now.getEpochSecond(), Instants.toSeconds(now.toEpochMilli()));
   }
-
 }

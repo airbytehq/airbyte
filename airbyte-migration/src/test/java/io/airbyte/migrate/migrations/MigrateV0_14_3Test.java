@@ -26,42 +26,54 @@ import org.junit.jupiter.api.Test;
 
 class MigrateV0_14_3Test {
 
-  private static final ResourceId SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  private static final ResourceId SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   @Test
   void testMigration() throws IOException {
-    // construct a sync object. in this migration we swap our schema for catalog, so we will use this as
+    // construct a sync object. in this migration we swap our schema for catalog, so we will use
+    // this as
     // a base.
-    final JsonNode syncWithoutSchema = Jsons.jsonNode(ImmutableMap.<String, String>builder()
-        .put("sourceId", UUID.randomUUID().toString())
-        .put("destinationId", UUID.randomUUID().toString())
-        .put("connectionId", UUID.randomUUID().toString())
-        .put("name", "users_sync")
-        .put("status", "active")
-        .build());
+    final JsonNode syncWithoutSchema =
+        Jsons.jsonNode(
+            ImmutableMap.<String, String>builder()
+                .put("sourceId", UUID.randomUUID().toString())
+                .put("destinationId", UUID.randomUUID().toString())
+                .put("connectionId", UUID.randomUUID().toString())
+                .put("name", "users_sync")
+                .put("status", "active")
+                .build());
 
     // sync with schema
-    final JsonNode schema = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_14_3/example_input_schema.json"));
+    final JsonNode schema =
+        Jsons.deserialize(
+            MoreResources.readResource("migrations/migrationV0_14_3/example_input_schema.json"));
     final JsonNode syncWithSchema = Jsons.clone(syncWithoutSchema);
     ((ObjectNode) syncWithSchema).set("schema", schema);
 
     // sync with catalog
-    final JsonNode configuredCatalog = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_14_3/example_output_schema.json"));
+    final JsonNode configuredCatalog =
+        Jsons.deserialize(
+            MoreResources.readResource("migrations/migrationV0_14_3/example_output_schema.json"));
     final JsonNode syncWithCatalog = Jsons.clone(syncWithoutSchema);
     ((ObjectNode) syncWithCatalog).set("catalog", configuredCatalog);
 
-    final Map<ResourceId, Stream<JsonNode>> records = ImmutableMap.of(SYNC_RESOURCE_ID, Stream.of(syncWithSchema));
+    final Map<ResourceId, Stream<JsonNode>> records =
+        ImmutableMap.of(SYNC_RESOURCE_ID, Stream.of(syncWithSchema));
 
     final MigrationV0_14_3 migration = new MigrationV0_14_3(new MigrationV0_14_0());
-    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils.createOutputConsumer(migration.getOutputSchema().keySet());
+    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer =
+        MigrationTestUtils.createOutputConsumer(migration.getOutputSchema().keySet());
     migration.migrate(records, MigrationUtils.mapRecordConsumerToConsumer(outputConsumer));
 
-    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap.of(SYNC_RESOURCE_ID, ImmutableList.of(syncWithCatalog));
+    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides =
+        ImmutableMap.of(SYNC_RESOURCE_ID, ImmutableList.of(syncWithCatalog));
     final Map<ResourceId, List<JsonNode>> expectedOutput =
-        MigrationTestUtils.createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
+        MigrationTestUtils.createExpectedOutput(
+            migration.getOutputSchema().keySet(), expectedOutputOverrides);
 
-    final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils.collectConsumersToList(outputConsumer);
+    final Map<ResourceId, List<JsonNode>> outputAsList =
+        MigrationTestUtils.collectConsumersToList(outputConsumer);
     assertEquals(expectedOutput, outputAsList);
   }
-
 }

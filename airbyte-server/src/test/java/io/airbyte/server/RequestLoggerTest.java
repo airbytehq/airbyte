@@ -38,58 +38,63 @@ public class RequestLoggerTest {
   private static final String REMOTE_ADDR = "123.456.789.101";
   private static final String URL = "/api/v1/test";
 
-  @Mock
-  private HttpServletRequest mServletRequest;
+  @Mock private HttpServletRequest mServletRequest;
 
-  @Mock
-  private ContainerRequestContext mRequestContext;
+  @Mock private ContainerRequestContext mRequestContext;
 
-  @Mock
-  private ContainerResponseContext mResponseContext;
+  @Mock private ContainerResponseContext mResponseContext;
 
   private RequestLogger requestLogger;
 
   @BeforeEach
   public void init() throws Exception {
-    Mockito.when(mRequestContext.getMethod())
-        .thenReturn(METHOD);
+    Mockito.when(mRequestContext.getMethod()).thenReturn(METHOD);
 
-    Mockito.when(mServletRequest.getMethod())
-        .thenReturn(METHOD);
-    Mockito.when(mServletRequest.getRemoteAddr())
-        .thenReturn(REMOTE_ADDR);
-    Mockito.when(mServletRequest.getRequestURI())
-        .thenReturn(URL);
+    Mockito.when(mServletRequest.getMethod()).thenReturn(METHOD);
+    Mockito.when(mServletRequest.getRemoteAddr()).thenReturn(REMOTE_ADDR);
+    Mockito.when(mServletRequest.getRequestURI()).thenReturn(URL);
   }
 
   private static final int ERROR_CODE = 401;
   private static final int SUCCESS_CODE = 200;
 
-  private static final String errorPrefix = RequestLogger
-      .createLogPrefix(REMOTE_ADDR, METHOD, ERROR_CODE, URL)
-      .toString();
+  private static final String errorPrefix =
+      RequestLogger.createLogPrefix(REMOTE_ADDR, METHOD, ERROR_CODE, URL).toString();
 
-  private static final String successPrefix = RequestLogger
-      .createLogPrefix(REMOTE_ADDR, METHOD, SUCCESS_CODE, URL)
-      .toString();
+  private static final String successPrefix =
+      RequestLogger.createLogPrefix(REMOTE_ADDR, METHOD, SUCCESS_CODE, URL).toString();
 
   static Stream<Arguments> logScenarios() {
     return Stream.of(
         Arguments.of(INVALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, ERROR_CODE, errorPrefix),
         Arguments.of(INVALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, ERROR_CODE, errorPrefix),
         Arguments.of(VALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, ERROR_CODE, errorPrefix),
-        Arguments.of(VALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, ERROR_CODE, errorPrefix + " - " + VALID_JSON_OBJECT),
+        Arguments.of(
+            VALID_JSON_OBJECT,
+            ACCEPTED_CONTENT_TYPE,
+            ERROR_CODE,
+            errorPrefix + " - " + VALID_JSON_OBJECT),
         Arguments.of(INVALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix),
         Arguments.of(INVALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix),
         Arguments.of(VALID_JSON_OBJECT, NON_ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix),
-        Arguments.of(VALID_JSON_OBJECT, ACCEPTED_CONTENT_TYPE, SUCCESS_CODE, successPrefix + " - " + VALID_JSON_OBJECT));
+        Arguments.of(
+            VALID_JSON_OBJECT,
+            ACCEPTED_CONTENT_TYPE,
+            SUCCESS_CODE,
+            successPrefix + " - " + VALID_JSON_OBJECT));
   }
 
   @ParameterizedTest
   @MethodSource("logScenarios")
   @DisplayName("Check that the proper log is produced based on the scenario")
-  public void test(final String inputByteBuffer, final String contentType, final int status, final String expectedLog) throws IOException {
-    // set up the mdc so that actually log to a file, so that we can verify that file logging captures
+  public void test(
+      final String inputByteBuffer,
+      final String contentType,
+      final int status,
+      final String expectedLog)
+      throws IOException {
+    // set up the mdc so that actually log to a file, so that we can verify that file logging
+    // captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
     LogClientSingleton.setJobMdc(jobRoot);
@@ -101,11 +106,9 @@ public class RequestLoggerTest {
     Mockito.when(mRequestContext.getEntityStream())
         .thenReturn(new ByteArrayInputStream(inputByteBuffer.getBytes()));
 
-    Mockito.when(mResponseContext.getStatus())
-        .thenReturn(status);
+    Mockito.when(mResponseContext.getStatus()).thenReturn(status);
 
-    Mockito.when(mServletRequest.getHeader("Content-Type"))
-        .thenReturn(contentType);
+    Mockito.when(mServletRequest.getHeader("Content-Type")).thenReturn(contentType);
 
     // This is call to set the requestBody variable in the RequestLogger
     requestLogger.filter(mRequestContext);
@@ -115,11 +118,11 @@ public class RequestLoggerTest {
 
     final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final String logs = IOs.readFile(logPath);
-    final Stream<String> matchingLines = logs.lines()
-        .filter(line -> line.endsWith(expectedLog))
-        .filter(line -> line.contains(expectedLogLevel));
+    final Stream<String> matchingLines =
+        logs.lines()
+            .filter(line -> line.endsWith(expectedLog))
+            .filter(line -> line.contains(expectedLogLevel));
 
     Assertions.assertThat(matchingLines).hasSize(1);
   }
-
 }

@@ -23,25 +23,59 @@ public class NestedOneOfTestCase implements SecretsTestCase {
   @Override
   public Map<SecretCoordinate, String> getFirstSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1), "hunter1",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1), "hunter2");
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(0),
+                1),
+            "hunter1",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(1),
+                1),
+            "hunter2");
   }
 
   @Override
   public Map<SecretCoordinate, String> getSecondSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "hunter4");
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(0),
+                2),
+            "hunter3",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(1),
+                2),
+            "hunter4");
   }
 
   @Override
   public Consumer<SecretPersistence> getPersistenceUpdater() {
     return secretPersistence -> {
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(0),
+              1),
           "hunter1");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(1),
+              1),
           "hunter2");
     };
   }
@@ -50,11 +84,13 @@ public class NestedOneOfTestCase implements SecretsTestCase {
   // versions
 
   public JsonNode getUpdatedPartialConfigAfterUpdate1() {
-    return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config_update1.json"));
+    return Exceptions.toRuntime(
+        () -> getNodeResource(getName(), "updated_partial_config_update1.json"));
   }
 
   public JsonNode getUpdatedPartialConfigAfterUpdate2() {
-    return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config_update2.json"));
+    return Exceptions.toRuntime(
+        () -> getNodeResource(getName(), "updated_partial_config_update2.json"));
   }
 
   public JsonNode getFullConfigUpdate1() {
@@ -67,14 +103,37 @@ public class NestedOneOfTestCase implements SecretsTestCase {
 
   public Map<SecretCoordinate, String> getSecretMapAfterUpdate1() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1), "hunter2");
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(0),
+                2),
+            "hunter3",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(1),
+                1),
+            "hunter2");
   }
 
   public Map<SecretCoordinate, String> getSecretMapAfterUpdate2() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "hunter3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "hunter4");
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(0),
+                2),
+            "hunter3",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(1),
+                2),
+            "hunter4");
   }
-
 }

@@ -29,18 +29,22 @@ public class TrackingMetadata {
     if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
+      final long intervalInMinutes =
+          TimeUnit.SECONDS.toMinutes(
+              ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);
 
-    final int operationCount = standardSync.getOperationIds() != null ? standardSync.getOperationIds().size() : 0;
+    final int operationCount =
+        standardSync.getOperationIds() != null ? standardSync.getOperationIds().size() : 0;
     metadata.put("operation_count", operationCount);
     if (standardSync.getNamespaceDefinition() != null) {
       metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
     }
 
-    final boolean isUsingPrefix = standardSync.getPrefix() != null && !standardSync.getPrefix().isBlank();
+    final boolean isUsingPrefix =
+        standardSync.getPrefix() != null && !standardSync.getPrefix().isBlank();
     metadata.put("table_prefix", isUsingPrefix);
 
     final ResourceRequirements resourceRequirements = standardSync.getResourceRequirements();
@@ -62,10 +66,12 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
+  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(
+      final StandardDestinationDefinition destinationDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_destination", destinationDefinition.getName());
-    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put(
+        "connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
     final String imageTag = destinationDefinition.getDockerImageTag();
     if (!Strings.isEmpty(imageTag)) {
       metadata.put("connector_destination_version", imageTag);
@@ -73,7 +79,8 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
+  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(
+      final StandardSourceDefinition sourceDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
@@ -94,7 +101,9 @@ public class TrackingMetadata {
           final JobOutput jobOutput = lastAttempt.getOutput().get();
           if (jobOutput.getSync() != null) {
             final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
-            metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
+            metadata.put(
+                "duration",
+                Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
             metadata.put("volume_mb", syncSummary.getBytesSynced());
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
           }
@@ -103,5 +112,4 @@ public class TrackingMetadata {
     }
     return metadata.build();
   }
-
 }

@@ -78,21 +78,29 @@ public class ConfigDumpImporter {
   private final JobPersistence jobPersistence;
   private final boolean importDefinitions;
 
-  public ConfigDumpImporter(final ConfigRepository configRepository,
-                            final JobPersistence jobPersistence,
-                            final WorkspaceHelper workspaceHelper,
-                            final SpecFetcher specFetcher,
-                            final boolean importDefinitions) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), specFetcher, importDefinitions);
+  public ConfigDumpImporter(
+      final ConfigRepository configRepository,
+      final JobPersistence jobPersistence,
+      final WorkspaceHelper workspaceHelper,
+      final SpecFetcher specFetcher,
+      final boolean importDefinitions) {
+    this(
+        configRepository,
+        jobPersistence,
+        workspaceHelper,
+        new JsonSchemaValidator(),
+        specFetcher,
+        importDefinitions);
   }
 
   @VisibleForTesting
-  public ConfigDumpImporter(final ConfigRepository configRepository,
-                            final JobPersistence jobPersistence,
-                            final WorkspaceHelper workspaceHelper,
-                            final JsonSchemaValidator jsonSchemaValidator,
-                            final SpecFetcher specFetcher,
-                            final boolean importDefinitions) {
+  public ConfigDumpImporter(
+      final ConfigRepository configRepository,
+      final JobPersistence jobPersistence,
+      final WorkspaceHelper workspaceHelper,
+      final JsonSchemaValidator jsonSchemaValidator,
+      final SpecFetcher specFetcher,
+      final boolean importDefinitions) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
@@ -120,7 +128,8 @@ public class ConfigDumpImporter {
     }
   }
 
-  public void importDataWithSeed(final String targetVersion, final File archive, final ConfigPersistence seedPersistence)
+  public void importDataWithSeed(
+      final String targetVersion, final File archive, final ConfigPersistence seedPersistence)
       throws IOException, JsonValidationException {
     final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
@@ -155,18 +164,21 @@ public class ConfigDumpImporter {
     }
 
     // identify this instance as the new customer id.
-    configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
+    configRepository
+        .listStandardWorkspaces(true)
+        .forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
   }
 
   private void checkImport(final String targetVersion, final Path tempFolder) throws IOException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
-    final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
-        .replace("\n", "").strip();
+    final String importVersion =
+        Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
     if (!AirbyteVersion.isCompatible(targetVersion, importVersion)) {
-      throw new IOException(String
-          .format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
-              "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
+      throw new IOException(
+          String.format(
+              "Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n"
+                  + "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
               importVersion, targetVersion));
     }
   }
@@ -174,17 +186,18 @@ public class ConfigDumpImporter {
   // Config
   private List<String> listDirectories(final Path sourceRoot) throws IOException {
     try (final Stream<Path> files = Files.list(sourceRoot.resolve(CONFIG_FOLDER_NAME))) {
-      return files.map(c -> c.getFileName().toString())
-          .collect(Collectors.toList());
+      return files.map(c -> c.getFileName().toString()).collect(Collectors.toList());
     }
   }
 
-  private void importConfigsFromArchive(final Path sourceRoot, final boolean dryRun) throws IOException {
+  private void importConfigsFromArchive(final Path sourceRoot, final boolean dryRun)
+      throws IOException {
     final List<String> directories = listDirectories(sourceRoot);
     final Map<AirbyteConfig, Stream<?>> data = new LinkedHashMap<>();
 
     for (final String directory : directories) {
-      final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
+      final Optional<ConfigSchema> configSchemaOptional =
+          Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
 
       if (configSchemaOptional.isEmpty()) {
         continue;
@@ -196,24 +209,25 @@ public class ConfigDumpImporter {
     configRepository.replaceAllConfigs(data, dryRun);
   }
 
-  private <T> Stream<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType)
-      throws IOException {
+  private <T> Stream<T> readConfigsFromArchive(
+      final Path storageRoot, final ConfigSchema schemaType) throws IOException {
 
     final Path configPath = buildConfigPath(storageRoot, schemaType);
     if (configPath.toFile().exists()) {
       final String configStr = Files.readString(configPath);
       final JsonNode node = Yamls.deserialize(configStr);
-      return StreamSupport
-          .stream(Spliterators.spliteratorUnknownSize(node.elements(), Spliterator.ORDERED), false)
-          .map(element -> {
-            final T config = Jsons.object(element, schemaType.getClassName());
-            try {
-              validateJson(config, schemaType);
-              return config;
-            } catch (final JsonValidationException e) {
-              throw new RuntimeException(e);
-            }
-          });
+      return StreamSupport.stream(
+              Spliterators.spliteratorUnknownSize(node.elements(), Spliterator.ORDERED), false)
+          .map(
+              element -> {
+                final T config = Jsons.object(element, schemaType.getClassName());
+                try {
+                  validateJson(config, schemaType);
+                  return config;
+                } catch (final JsonValidationException e) {
+                  throw new RuntimeException(e);
+                }
+              });
 
     } else {
       throw new FileNotFoundException(
@@ -221,18 +235,21 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
+  private <T> void validateJson(final T config, final ConfigSchema configType)
+      throws JsonValidationException {
     final JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
   protected static Path buildConfigPath(final Path storageRoot, final ConfigSchema schemaType) {
-    return storageRoot.resolve(CONFIG_FOLDER_NAME)
+    return storageRoot
+        .resolve(CONFIG_FOLDER_NAME)
         .resolve(String.format("%s.yaml", schemaType.name()));
   }
 
   // Postgres Portion
-  public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
+  public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion)
+      throws IOException {
     try {
       final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
       for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
@@ -248,7 +265,8 @@ public class ConfigDumpImporter {
       jobPersistence.importDatabase(airbyteVersion, data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");
     } catch (final Exception e) {
-      LOGGER.warn("Postgres database version upgrade failed, reverting to state previous to migration.");
+      LOGGER.warn(
+          "Postgres database version upgrade failed, reverting to state previous to migration.");
       throw e;
     }
   }
@@ -264,20 +282,29 @@ public class ConfigDumpImporter {
    * @return modified stream with old deployment id removed and correct deployment id inserted.
    * @throws IOException - you never know when you IO.
    */
-  static Stream<JsonNode> replaceDeploymentMetadata(final JobPersistence postgresPersistence,
-                                                    final Stream<JsonNode> metadataTableStream)
+  static Stream<JsonNode> replaceDeploymentMetadata(
+      final JobPersistence postgresPersistence, final Stream<JsonNode> metadataTableStream)
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
-    Stream<JsonNode> stream = metadataTableStream
-        .filter(record -> !record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(DefaultJobPersistence.DEPLOYMENT_ID_KEY));
+    Stream<JsonNode> stream =
+        metadataTableStream.filter(
+            record ->
+                !record
+                    .get(DefaultJobPersistence.METADATA_KEY_COL)
+                    .asText()
+                    .equals(DefaultJobPersistence.DEPLOYMENT_ID_KEY));
 
     // insert the current deployment id, if it exists.
     final Optional<UUID> deploymentOptional = postgresPersistence.getDeployment();
     if (deploymentOptional.isPresent()) {
-      final JsonNode deploymentRecord = Jsons.jsonNode(ImmutableMap.<String, String>builder()
-          .put(DefaultJobPersistence.METADATA_KEY_COL, DefaultJobPersistence.DEPLOYMENT_ID_KEY)
-          .put(DefaultJobPersistence.METADATA_VAL_COL, deploymentOptional.get().toString())
-          .build());
+      final JsonNode deploymentRecord =
+          Jsons.jsonNode(
+              ImmutableMap.<String, String>builder()
+                  .put(
+                      DefaultJobPersistence.METADATA_KEY_COL,
+                      DefaultJobPersistence.DEPLOYMENT_ID_KEY)
+                  .put(DefaultJobPersistence.METADATA_VAL_COL, deploymentOptional.get().toString())
+                  .build());
       stream = Streams.concat(stream, Stream.of(deploymentRecord));
     }
     return stream;
@@ -289,39 +316,39 @@ public class ConfigDumpImporter {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  private Stream<JsonNode> readTableFromArchive(final JobsDatabaseSchema tableSchema,
-                                                final Path tablePath)
-      throws FileNotFoundException {
+  private Stream<JsonNode> readTableFromArchive(
+      final JobsDatabaseSchema tableSchema, final Path tablePath) throws FileNotFoundException {
     final JsonNode schema = tableSchema.getTableDefinition();
     if (schema != null) {
       return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
-          .peek(r -> {
-            try {
-              jsonSchemaValidator.ensure(schema, r);
-            } catch (final JsonValidationException e) {
-              throw new IllegalArgumentException(
-                  "Archived Data Schema does not match current Airbyte Data Schemas", e);
-            }
-          });
+          .peek(
+              r -> {
+                try {
+                  jsonSchemaValidator.ensure(schema, r);
+                } catch (final JsonValidationException e) {
+                  throw new IllegalArgumentException(
+                      "Archived Data Schema does not match current Airbyte Data Schemas", e);
+                }
+              });
     } else {
-      throw new FileNotFoundException(String
-          .format("Airbyte Database table %s was not found in the archive", tableSchema.name()));
+      throw new FileNotFoundException(
+          String.format(
+              "Airbyte Database table %s was not found in the archive", tableSchema.name()));
     }
   }
 
   private void checkDBVersion(final String airbyteVersion) throws IOException {
     final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    airbyteDatabaseVersion
-        .ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
+    airbyteDatabaseVersion.ifPresent(
+        dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
   }
 
   public UploadRead uploadArchiveResource(final File archive) {
     try {
       final UUID resourceId = UUID.randomUUID();
-      FileUtils.moveFile(archive, TMP_AIRBYTE_STAGED_RESOURCES.resolve(resourceId.toString()).toFile());
-      return new UploadRead()
-          .status(UploadRead.StatusEnum.SUCCEEDED)
-          .resourceId(resourceId);
+      FileUtils.moveFile(
+          archive, TMP_AIRBYTE_STAGED_RESOURCES.resolve(resourceId.toString()).toFile());
+      return new UploadRead().status(UploadRead.StatusEnum.SUCCEEDED).resourceId(resourceId);
     } catch (final IOException e) {
       LOGGER.error("Failed to upload archive resource", e);
       return new UploadRead().status(UploadRead.StatusEnum.FAILED);
@@ -341,7 +368,8 @@ public class ConfigDumpImporter {
     FileUtils.deleteQuietly(archive);
   }
 
-  public void importIntoWorkspace(final String targetVersion, final UUID workspaceId, final File archive)
+  public void importIntoWorkspace(
+      final String targetVersion, final UUID workspaceId, final File archive)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
@@ -366,7 +394,8 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> void importConfigsIntoWorkspace(final Path sourceRoot, final UUID workspaceId, final boolean dryRun)
+  private <T> void importConfigsIntoWorkspace(
+      final Path sourceRoot, final UUID workspaceId, final boolean dryRun)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     // Keep maps of any re-assigned ids
     final Map<UUID, UUID> sourceIdMap = new HashMap<>();
@@ -376,13 +405,15 @@ public class ConfigDumpImporter {
     final List<String> directories = listDirectories(sourceRoot);
     // We sort the directories because we want to process SOURCE_CONNECTION after
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION after STANDARD_DESTINATION_DEFINITION
-    // so that we can identify which connectors should not be imported because the definitions are not
+    // so that we can identify which connectors should not be imported because the definitions are
+    // not
     // existing
     directories.sort(Comparator.reverseOrder());
     Stream<T> standardSyncs = null;
 
     for (final String directory : directories) {
-      final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
+      final Optional<ConfigSchema> configSchemaOptional =
+          Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
 
       if (configSchemaOptional.isEmpty()) {
         continue;
@@ -400,70 +431,81 @@ public class ConfigDumpImporter {
             importSourceDefinitionIntoWorkspace(configs);
           }
         }
-        case SOURCE_CONNECTION -> sourceIdMap.putAll(importIntoWorkspace(
-            ConfigSchema.SOURCE_CONNECTION,
-            configs.map(c -> (SourceConnection) c),
-            configRepository::listSourceConnection,
-            (sourceConnection) -> !workspaceId.equals(sourceConnection.getWorkspaceId()),
-            (sourceConnection, sourceId) -> {
-              sourceConnection.setSourceId(sourceId);
-              sourceConnection.setWorkspaceId(workspaceId);
-              return sourceConnection;
-            },
-            (sourceConnection) -> {
-              // make sure connector definition exists
-              try {
-                final StandardSourceDefinition sourceDefinition =
-                    configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-                if (sourceDefinition == null) {
-                  return;
-                }
-                configRepository.writeSourceConnection(sourceConnection, SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition));
-              } catch (final ConfigNotFoundException e) {
-                return;
-              }
-            }));
+        case SOURCE_CONNECTION -> sourceIdMap.putAll(
+            importIntoWorkspace(
+                ConfigSchema.SOURCE_CONNECTION,
+                configs.map(c -> (SourceConnection) c),
+                configRepository::listSourceConnection,
+                (sourceConnection) -> !workspaceId.equals(sourceConnection.getWorkspaceId()),
+                (sourceConnection, sourceId) -> {
+                  sourceConnection.setSourceId(sourceId);
+                  sourceConnection.setWorkspaceId(workspaceId);
+                  return sourceConnection;
+                },
+                (sourceConnection) -> {
+                  // make sure connector definition exists
+                  try {
+                    final StandardSourceDefinition sourceDefinition =
+                        configRepository.getStandardSourceDefinition(
+                            sourceConnection.getSourceDefinitionId());
+                    if (sourceDefinition == null) {
+                      return;
+                    }
+                    configRepository.writeSourceConnection(
+                        sourceConnection,
+                        SourceHandler.getSpecFromSourceDefinitionId(specFetcher, sourceDefinition));
+                  } catch (final ConfigNotFoundException e) {
+                    return;
+                  }
+                }));
         case STANDARD_DESTINATION_DEFINITION -> {
           if (canImportDefinitions()) {
             importDestinationDefinitionIntoWorkspace(configs);
           }
         }
-        case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
-            ConfigSchema.DESTINATION_CONNECTION,
-            configs.map(c -> (DestinationConnection) c),
-            configRepository::listDestinationConnection,
-            (destinationConnection) -> !workspaceId.equals(destinationConnection.getWorkspaceId()),
-            (destinationConnection, destinationId) -> {
-              destinationConnection.setDestinationId(destinationId);
-              destinationConnection.setWorkspaceId(workspaceId);
-              return destinationConnection;
-            },
-            (destinationConnection) -> {
-              // make sure connector definition exists
-              try {
-                final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(
-                    destinationConnection.getDestinationDefinitionId());
-                if (destinationDefinition == null) {
-                  return;
-                }
-                configRepository.writeDestinationConnection(destinationConnection, DestinationHandler.getSpec(specFetcher, destinationDefinition));
-              } catch (final ConfigNotFoundException e) {
-                return;
-              }
-            }));
+        case DESTINATION_CONNECTION -> destinationIdMap.putAll(
+            importIntoWorkspace(
+                ConfigSchema.DESTINATION_CONNECTION,
+                configs.map(c -> (DestinationConnection) c),
+                configRepository::listDestinationConnection,
+                (destinationConnection) ->
+                    !workspaceId.equals(destinationConnection.getWorkspaceId()),
+                (destinationConnection, destinationId) -> {
+                  destinationConnection.setDestinationId(destinationId);
+                  destinationConnection.setWorkspaceId(workspaceId);
+                  return destinationConnection;
+                },
+                (destinationConnection) -> {
+                  // make sure connector definition exists
+                  try {
+                    final StandardDestinationDefinition destinationDefinition =
+                        configRepository.getStandardDestinationDefinition(
+                            destinationConnection.getDestinationDefinitionId());
+                    if (destinationDefinition == null) {
+                      return;
+                    }
+                    configRepository.writeDestinationConnection(
+                        destinationConnection,
+                        DestinationHandler.getSpec(specFetcher, destinationDefinition));
+                  } catch (final ConfigNotFoundException e) {
+                    return;
+                  }
+                }));
         case STANDARD_SYNC -> standardSyncs = configs;
-        case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
-            ConfigSchema.STANDARD_SYNC_OPERATION,
-            configs.map(c -> (StandardSyncOperation) c),
-            configRepository::listStandardSyncOperations,
-            (operation) -> !workspaceId.equals(operation.getWorkspaceId()),
-            (operation, operationId) -> {
-              operation.setOperationId(operationId);
-              operation.setWorkspaceId(workspaceId);
-              return operation;
-            },
-            configRepository::writeStandardSyncOperation));
-        default -> {}
+        case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(
+            importIntoWorkspace(
+                ConfigSchema.STANDARD_SYNC_OPERATION,
+                configs.map(c -> (StandardSyncOperation) c),
+                configRepository::listStandardSyncOperations,
+                (operation) -> !workspaceId.equals(operation.getWorkspaceId()),
+                (operation, operationId) -> {
+                  operation.setOperationId(operationId);
+                  operation.setWorkspaceId(workspaceId);
+                  return operation;
+                },
+                configRepository::writeStandardSyncOperation));
+        default -> {
+        }
       }
     }
 
@@ -475,7 +517,9 @@ public class ConfigDumpImporter {
           configRepository::listStandardSyncs,
           (standardSync) -> {
             try {
-              return !workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()));
+              return !workspaceId.equals(
+                  workspaceHelper.getWorkspaceForConnection(
+                      standardSync.getSourceId(), standardSync.getDestinationId()));
             } catch (final JsonValidationException | ConfigNotFoundException e) {
               return true;
             }
@@ -484,17 +528,18 @@ public class ConfigDumpImporter {
             standardSync.setConnectionId(connectionId);
             standardSync.setSourceId(sourceIdMap.get(standardSync.getSourceId()));
             standardSync.setDestinationId(destinationIdMap.get(standardSync.getDestinationId()));
-            standardSync.setOperationIds(standardSync.getOperationIds()
-                .stream()
-                .map(operationIdMap::get)
-                .collect(Collectors.toList()));
+            standardSync.setOperationIds(
+                standardSync.getOperationIds().stream()
+                    .map(operationIdMap::get)
+                    .collect(Collectors.toList()));
             return standardSync;
           },
           (standardSync) -> {
             // make sure connectors definition exists
             try {
-              if (configRepository.getSourceConnection(standardSync.getSourceId()) == null ||
-                  configRepository.getDestinationConnection(standardSync.getDestinationId()) == null) {
+              if (configRepository.getSourceConnection(standardSync.getSourceId()) == null
+                  || configRepository.getDestinationConnection(standardSync.getDestinationId())
+                      == null) {
                 return;
               }
               for (final UUID operationId : standardSync.getOperationIds()) {
@@ -510,9 +555,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  /**
-   * Method that @return if this importer will import standard connector definitions or not
-   */
+  /** Method that @return if this importer will import standard connector definitions or not */
   public boolean canImportDefinitions() {
     return importDefinitions;
   }
@@ -528,7 +571,8 @@ public class ConfigDumpImporter {
           if (id.equals(config.getSourceDefinitionId())) {
             return config;
           } else {
-            // a newId has been generated for this definition as it is in conflict with an existing one
+            // a newId has been generated for this definition as it is in conflict with an existing
+            // one
             // here we return null, so we don't do anything to the old definition
             return null;
           }
@@ -551,7 +595,8 @@ public class ConfigDumpImporter {
           if (id.equals(config.getDestinationDefinitionId())) {
             return config;
           } else {
-            // a newId has been generated for this definition as it is in conflict with an existing one
+            // a newId has been generated for this definition as it is in conflict with an existing
+            // one
             // here we return null, so we don't do anything to the old definition
             return null;
           }
@@ -563,22 +608,24 @@ public class ConfigDumpImporter {
         });
   }
 
-  private <T> Map<UUID, UUID> importIntoWorkspace(final ConfigSchema configSchema,
-                                                  final Stream<T> configs,
-                                                  final ListConfigCall<T> listConfigCall,
-                                                  final Function<T, Boolean> filterConfigCall,
-                                                  final MutateConfigCall<T> mutateConfig,
-                                                  final PersistConfigCall<T> persistConfig)
+  private <T> Map<UUID, UUID> importIntoWorkspace(
+      final ConfigSchema configSchema,
+      final Stream<T> configs,
+      final ListConfigCall<T> listConfigCall,
+      final Function<T, Boolean> filterConfigCall,
+      final MutateConfigCall<T> mutateConfig,
+      final PersistConfigCall<T> persistConfig)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, UUID> idsMap = new HashMap<>();
-    // To detect conflicts, we retrieve ids already in use by others for this ConfigSchema (ids from the
+    // To detect conflicts, we retrieve ids already in use by others for this ConfigSchema (ids from
+    // the
     // current workspace can be safely updated)
-    final Set<UUID> idsInUse = listConfigCall.apply()
-        .stream()
-        .filter(filterConfigCall::apply)
-        .map(configSchema::getId)
-        .map(UUID::fromString)
-        .collect(Collectors.toSet());
+    final Set<UUID> idsInUse =
+        listConfigCall.apply().stream()
+            .filter(filterConfigCall::apply)
+            .map(configSchema::getId)
+            .map(UUID::fromString)
+            .collect(Collectors.toSet());
     for (T config : configs.collect(Collectors.toList())) {
       final UUID configId = UUID.fromString(configSchema.getId(config));
       final UUID configIdToPersist = idsInUse.contains(configId) ? UUID.randomUUID() : configId;
@@ -594,31 +641,24 @@ public class ConfigDumpImporter {
   }
 
   /**
-   * List all configurations of type @param <T> that already exists (we'll be using this to know which
-   * ids are already in use)
+   * List all configurations of type @param <T> that already exists (we'll be using this to know
+   * which ids are already in use)
    */
   public interface ListConfigCall<T> {
 
     Collection<T> apply() throws IOException, JsonValidationException, ConfigNotFoundException;
-
   }
 
-  /**
-   * Apply some modifications to the configuration with new ids
-   */
+  /** Apply some modifications to the configuration with new ids */
   public interface MutateConfigCall<T> {
 
-    T apply(T config, UUID newId) throws IOException, JsonValidationException, ConfigNotFoundException;
-
+    T apply(T config, UUID newId)
+        throws IOException, JsonValidationException, ConfigNotFoundException;
   }
 
-  /**
-   * Persist the configuration
-   */
+  /** Persist the configuration */
   public interface PersistConfigCall<T> {
 
     void apply(T config) throws JsonValidationException, IOException;
-
   }
-
 }

@@ -14,5 +14,4 @@ import java.util.Optional;
 public interface ReadOnlySecretPersistence {
 
   Optional<String> read(SecretCoordinate coordinate);
-
 }

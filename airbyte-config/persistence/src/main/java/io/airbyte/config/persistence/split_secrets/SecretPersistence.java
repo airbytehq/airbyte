@@ -19,21 +19,25 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   Optional<String> read(final SecretCoordinate coordinate);
 
-  void write(final SecretCoordinate coordinate, final String payload) throws IllegalArgumentException;
+  void write(final SecretCoordinate coordinate, final String payload)
+      throws IllegalArgumentException;
 
   static Optional<SecretPersistence> getLongLived(final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
-        final Database configDatabase = new ConfigsDatabaseInstance(
-            configs.getConfigDatabaseUser(),
-            configs.getConfigDatabasePassword(),
-            configs.getConfigDatabaseUrl())
+        final Database configDatabase =
+            new ConfigsDatabaseInstance(
+                    configs.getConfigDatabaseUser(),
+                    configs.getConfigDatabasePassword(),
+                    configs.getConfigDatabaseUrl())
                 .getAndInitialize();
 
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }
       case GOOGLE_SECRET_MANAGER -> {
-        return Optional.of(GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
+        return Optional.of(
+            GoogleSecretManagerPersistence.getLongLived(
+                configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
       default -> {
         return Optional.empty();
@@ -54,21 +58,23 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
   static Optional<SecretPersistence> getEphemeral(final Configs configs) throws IOException {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
-        final Database configDatabase = new ConfigsDatabaseInstance(
-            configs.getConfigDatabaseUser(),
-            configs.getConfigDatabasePassword(),
-            configs.getConfigDatabaseUrl())
+        final Database configDatabase =
+            new ConfigsDatabaseInstance(
+                    configs.getConfigDatabaseUser(),
+                    configs.getConfigDatabasePassword(),
+                    configs.getConfigDatabaseUrl())
                 .getAndInitialize();
 
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }
       case GOOGLE_SECRET_MANAGER -> {
-        return Optional.of(GoogleSecretManagerPersistence.getEphemeral(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
+        return Optional.of(
+            GoogleSecretManagerPersistence.getEphemeral(
+                configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
       default -> {
         return Optional.empty();
       }
     }
   }
-
 }

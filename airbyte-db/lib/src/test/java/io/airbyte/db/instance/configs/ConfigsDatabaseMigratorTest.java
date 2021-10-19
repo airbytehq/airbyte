@@ -11,14 +11,15 @@ import org.junit.jupiter.api.Test;
 
 public class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
 
-  private static final String SCHEMA_DUMP_FILE = "src/main/resources/configs_database/schema_dump.txt";
+  private static final String SCHEMA_DUMP_FILE =
+      "src/main/resources/configs_database/schema_dump.txt";
 
   @Test
   public void dumpSchema() throws IOException {
-    final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
+    final DatabaseMigrator migrator =
+        new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
     migrator.migrate();
     final String schema = migrator.dumpSchema();
     MigrationDevHelper.dumpSchema(schema, SCHEMA_DUMP_FILE, false);
   }
-
 }

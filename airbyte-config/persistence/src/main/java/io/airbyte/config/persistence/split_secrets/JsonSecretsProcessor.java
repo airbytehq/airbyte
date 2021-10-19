@@ -22,14 +22,13 @@ public class JsonSecretsProcessor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
 
-  @VisibleForTesting
-  static String SECRETS_MASK = "**********";
+  @VisibleForTesting static String SECRETS_MASK = "**********";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
    * input schema are masked.
-   * <p>
-   * This method masks secrets both at the top level of the configuration object and in nested
+   *
+   * <p>This method masks secrets both at the top level of the configuration object and in nested
    * properties in a oneOf.
    *
    * @param schema Schema containing secret annotations
@@ -84,8 +83,8 @@ public class JsonSecretsProcessor {
   /**
    * Returns a copy of the destination object in which any secret fields (as denoted by the input
    * schema) found in the source object are added.
-   * <p>
-   * This method absorbs secrets both at the top level of the configuration object and in nested
+   *
+   * <p>This method absorbs secrets both at the top level of the configuration object and in nested
    * properties in a oneOf.
    *
    * @param src The object potentially containing secrets
@@ -130,11 +129,14 @@ public class JsonSecretsProcessor {
   }
 
   public static boolean isSecret(final JsonNode obj) {
-    return obj.isObject() && obj.has(AIRBYTE_SECRET_FIELD) && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
+    return obj.isObject()
+        && obj.has(AIRBYTE_SECRET_FIELD)
+        && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
   }
 
   public static boolean canBeProcessed(final JsonNode schema) {
-    return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+    return schema.isObject()
+        && schema.has(PROPERTIES_FIELD)
+        && schema.get(PROPERTIES_FIELD).isObject();
   }
-
 }

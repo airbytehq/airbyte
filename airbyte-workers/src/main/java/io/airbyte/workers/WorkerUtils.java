@@ -32,13 +32,17 @@ public class WorkerUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
   private static final Configs CONFIGS = new EnvConfigs();
 
-  public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
-  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = CONFIGS.getWorkerPodTolerations();
-  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
+  public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS =
+      initResourceRequirements();
+  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS =
+      CONFIGS.getWorkerPodTolerations();
+  public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS =
+      CONFIGS.getWorkerNodeSelectors();
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
   public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
 
-  public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
+  public static void gentleClose(
+      final Process process, final long timeout, final TimeUnit timeUnit) {
     if (process == null) {
       return;
     }
@@ -61,26 +65,27 @@ public class WorkerUtils {
   }
 
   /**
-   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to continue.
-   * This method checks the heartbeat once every minute. Once there is no heartbeat detected, if the
-   * process has ended, then the method returns. If the process is still running it is given a grace
-   * period of the timeout arguments passed into the method. Once those expire the process is killed
-   * forcibly. If the process cannot be killed, this method will log that this is the case, but then
-   * returns.
+   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to
+   * continue. This method checks the heartbeat once every minute. Once there is no heartbeat
+   * detected, if the process has ended, then the method returns. If the process is still running it
+   * is given a grace period of the timeout arguments passed into the method. Once those expire the
+   * process is killed forcibly. If the process cannot be killed, this method will log that this is
+   * the case, but then returns.
    *
    * @param process - process to monitor.
    * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
    * @param checkHeartbeatDuration - grace period to give the process to die after its heart stops
-   *        beating.
+   *     beating.
    * @param checkHeartbeatDuration - frequency with which the heartbeat of the process is checked.
    * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
-   *        forcibly.
+   *     forcibly.
    */
-  public static void gentleCloseWithHeartbeat(final Process process,
-                                              final HeartbeatMonitor heartbeatMonitor,
-                                              final Duration gracefulShutdownDuration,
-                                              final Duration checkHeartbeatDuration,
-                                              final Duration forcedShutdownDuration) {
+  public static void gentleCloseWithHeartbeat(
+      final Process process,
+      final HeartbeatMonitor heartbeatMonitor,
+      final Duration gracefulShutdownDuration,
+      final Duration checkHeartbeatDuration,
+      final Duration forcedShutdownDuration) {
     gentleCloseWithHeartbeat(
         process,
         heartbeatMonitor,
@@ -91,16 +96,18 @@ public class WorkerUtils {
   }
 
   @VisibleForTesting
-  static void gentleCloseWithHeartbeat(final Process process,
-                                       final HeartbeatMonitor heartbeatMonitor,
-                                       final Duration gracefulShutdownDuration,
-                                       final Duration checkHeartbeatDuration,
-                                       final Duration forcedShutdownDuration,
-                                       final BiConsumer<Process, Duration> forceShutdown) {
+  static void gentleCloseWithHeartbeat(
+      final Process process,
+      final HeartbeatMonitor heartbeatMonitor,
+      final Duration gracefulShutdownDuration,
+      final Duration checkHeartbeatDuration,
+      final Duration forcedShutdownDuration,
+      final BiConsumer<Process, Duration> forceShutdown) {
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
         if (CONFIGS.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
-          LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
+          LOGGER.debug(
+              "Gently closing process {} with heartbeat..", process.info().commandLine().get());
         }
 
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
@@ -112,12 +119,14 @@ public class WorkerUtils {
     if (process.isAlive()) {
       try {
         if (CONFIGS.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
-          LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
+          LOGGER.debug(
+              "Gently closing process {} without heartbeat..", process.info().commandLine().get());
         }
 
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
-        LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
+        LOGGER.error(
+            "Exception during grace period for process to finish. This can happen when cancelling jobs.");
       }
     }
 
@@ -145,7 +154,8 @@ public class WorkerUtils {
     }
   }
 
-  public static void closeProcess(final Process process, final int duration, final TimeUnit timeUnit) {
+  public static void closeProcess(
+      final Process process, final int duration, final TimeUnit timeUnit) {
     if (process == null) {
       return;
     }
@@ -187,14 +197,16 @@ public class WorkerUtils {
    * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
    * subset of StandardSyncInput.
    */
-  public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(
+      final StandardSyncInput sync) {
     return new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
   }
 
-  // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
+  // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to
+  // one,
   // once we are fully on temporal.
   public static Path getJobRoot(final Path workspaceRoot, final JobRunConfig jobRunConfig) {
     return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
@@ -204,14 +216,13 @@ public class WorkerUtils {
     return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
   }
 
-  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final long attemptId) {
+  public static Path getJobRoot(
+      final Path workspaceRoot, final String jobId, final long attemptId) {
     return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
   }
 
   public static Path getJobRoot(final Path workspaceRoot, final String jobId, final int attemptId) {
-    return workspaceRoot
-        .resolve(String.valueOf(jobId))
-        .resolve(String.valueOf(attemptId));
+    return workspaceRoot.resolve(String.valueOf(jobId)).resolve(String.valueOf(attemptId));
   }
 
   private static ResourceRequirements initResourceRequirements() {
@@ -221,5 +232,4 @@ public class WorkerUtils {
         .withMemoryRequest(CONFIGS.getMemoryRequest())
         .withMemoryLimit(CONFIGS.getMemoryLimit());
   }
-
 }

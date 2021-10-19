@@ -41,7 +41,9 @@ public class GoogleAdsOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleAdsOAuthFlow = new GoogleAdsOAuthFlow(configRepository, httpClient, GoogleAdsOAuthFlowTest::getConstantState);
+    googleAdsOAuthFlow =
+        new GoogleAdsOAuthFlow(
+            configRepository, httpClient, GoogleAdsOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -52,45 +54,71 @@ public class GoogleAdsOAuthFlowTest {
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
+  public void testCompleteSourceOAuth()
+      throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            Map.of(
+                                "credentials",
+                                ImmutableMap.builder()
+                                    .put("client_id", "test_client_id")
+                                    .put("client_secret", "test_client_secret")
+                                    .build())))));
 
-    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials =
+        Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleAdsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        googleAdsOAuthFlow.completeSourceOAuth(
+            workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(
+        Jsons.serialize(Map.of("credentials", returnedCredentials)),
+        Jsons.serialize(actualQueryParams));
   }
 
   @Test
-  public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
+  public void testCompleteDestinationOAuth()
+      throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listDestinationOAuthParam())
+        .thenReturn(
+            List.of(
+                new DestinationOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withDestinationDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            Map.of(
+                                "credentials",
+                                ImmutableMap.builder()
+                                    .put("client_id", "test_client_id")
+                                    .put("client_secret", "test_client_secret")
+                                    .build())))));
 
-    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials =
+        Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleAdsOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        googleAdsOAuthFlow.completeDestinationOAuth(
+            workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(
+        Jsons.serialize(Map.of("credentials", returnedCredentials)),
+        Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -99,7 +127,9 @@ public class GoogleAdsOAuthFlowTest {
     final Map<String, String> clientIdMap = Map.of("client_id", clientId);
     final Map<String, Map<String, String>> nestedConfig = Map.of("credentials", clientIdMap);
 
-    assertThrows(IllegalArgumentException.class, () -> googleAdsOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> googleAdsOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
     assertEquals(clientId, googleAdsOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(nestedConfig)));
   }
 
@@ -109,8 +139,10 @@ public class GoogleAdsOAuthFlowTest {
     final Map<String, String> clientIdMap = Map.of("client_secret", clientSecret);
     final Map<String, Map<String, String>> nestedConfig = Map.of("credentials", clientIdMap);
 
-    assertThrows(IllegalArgumentException.class, () -> googleAdsOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientSecret, googleAdsOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> googleAdsOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
+    assertEquals(
+        clientSecret, googleAdsOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
   }
-
 }

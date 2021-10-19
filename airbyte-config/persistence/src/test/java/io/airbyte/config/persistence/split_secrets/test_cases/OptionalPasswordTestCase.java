@@ -31,5 +31,4 @@ public class OptionalPasswordTestCase implements SecretsTestCase {
   public Consumer<SecretPersistence> getPersistenceUpdater() {
     return secretPersistence -> {};
   }
-
 }

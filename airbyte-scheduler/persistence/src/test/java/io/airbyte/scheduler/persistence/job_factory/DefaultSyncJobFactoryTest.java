@@ -29,7 +29,8 @@ import org.junit.jupiter.api.Test;
 class DefaultSyncJobFactoryTest {
 
   @Test
-  void createSyncJobFromConnectionId() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void createSyncJobFromConnectionId()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID destinationDefinitionId = UUID.randomUUID();
     final UUID connectionId = UUID.randomUUID();
@@ -40,14 +41,17 @@ class DefaultSyncJobFactoryTest {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final long jobId = 11L;
 
-    final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
+    final StandardSyncOperation operation =
+        new StandardSyncOperation().withOperationId(operationId);
     final List<StandardSyncOperation> operations = List.of(operation);
-    final StandardSync standardSync = new StandardSync()
-        .withSourceId(sourceId)
-        .withDestinationId(destinationId)
-        .withOperationIds(List.of(operationId));
+    final StandardSync standardSync =
+        new StandardSync()
+            .withSourceId(sourceId)
+            .withDestinationId(destinationId)
+            .withOperationIds(List.of(operationId));
 
-    final SourceConnection sourceConnection = new SourceConnection().withSourceDefinitionId(sourceDefinitionId);
+    final SourceConnection sourceConnection =
+        new SourceConnection().withSourceDefinitionId(sourceDefinitionId);
     final DestinationConnection destinationConnection =
         new DestinationConnection().withDestinationDefinitionId(destinationDefinitionId);
     final String srcDockerRepo = "srcrepo";
@@ -60,24 +64,43 @@ class DefaultSyncJobFactoryTest {
 
     when(configRepository.getStandardSync(connectionId)).thenReturn(standardSync);
     when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
-    when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
+    when(configRepository.getDestinationConnection(destinationId))
+        .thenReturn(destinationConnection);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
-    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations))
+    when(jobCreator.createSyncJob(
+            sourceConnection,
+            destinationConnection,
+            standardSync,
+            srcDockerImage,
+            dstDockerImage,
+            operations))
         .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
-        .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
-            .withDockerImageTag(srcDockerTag));
+        .thenReturn(
+            new StandardSourceDefinition()
+                .withSourceDefinitionId(sourceDefinitionId)
+                .withDockerRepository(srcDockerRepo)
+                .withDockerImageTag(srcDockerTag));
 
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionId))
-        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
-            .withDockerImageTag(dstDockerTag));
+        .thenReturn(
+            new StandardDestinationDefinition()
+                .withDestinationDefinitionId(destinationDefinitionId)
+                .withDockerRepository(dstDockerRepo)
+                .withDockerImageTag(dstDockerTag));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository, mock(OAuthConfigSupplier.class));
+    final SyncJobFactory factory =
+        new DefaultSyncJobFactory(jobCreator, configRepository, mock(OAuthConfigSupplier.class));
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
     verify(jobCreator)
-        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations);
+        .createSyncJob(
+            sourceConnection,
+            destinationConnection,
+            standardSync,
+            srcDockerImage,
+            dstDockerImage,
+            operations);
   }
-
 }

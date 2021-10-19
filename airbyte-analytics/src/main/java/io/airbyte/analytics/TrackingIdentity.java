@@ -22,12 +22,12 @@ public class TrackingIdentity {
   }
 
   public TrackingIdentity(
-                          final String airbyteVersion,
-                          final UUID customerId,
-                          final String email,
-                          final Boolean anonymousDataCollection,
-                          final Boolean news,
-                          final Boolean securityUpdates) {
+      final String airbyteVersion,
+      final UUID customerId,
+      final String email,
+      final Boolean anonymousDataCollection,
+      final Boolean news,
+      final Boolean securityUpdates) {
     this.airbyteVersion = airbyteVersion;
     this.customerId = customerId;
     this.email = email;
@@ -69,16 +69,15 @@ public class TrackingIdentity {
       return false;
     }
     final TrackingIdentity that = (TrackingIdentity) o;
-    return anonymousDataCollection == that.anonymousDataCollection &&
-        news == that.news &&
-        securityUpdates == that.securityUpdates &&
-        Objects.equals(customerId, that.customerId) &&
-        Objects.equals(email, that.email);
+    return anonymousDataCollection == that.anonymousDataCollection
+        && news == that.news
+        && securityUpdates == that.securityUpdates
+        && Objects.equals(customerId, that.customerId)
+        && Objects.equals(email, that.email);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(customerId, email, anonymousDataCollection, news, securityUpdates);
   }
-
 }

@@ -30,15 +30,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest},
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest}, and
- * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
+ * See {@link DatabaseConfigPersistenceLoadDataTest}, {@link
+ * DatabaseConfigPersistenceMigrateFileConfigsTest}, and {@link
+ * DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database =
+        new ConfigsDatabaseInstance(
+                container.getUsername(), container.getPassword(), container.getJdbcUrl())
+            .getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
@@ -57,7 +60,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
-        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+        configPersistence.listConfigs(
+            ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
   }
 
   @Test
@@ -69,12 +73,14 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
-        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+        configPersistence.listConfigs(
+            ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
     deleteDestination(configPersistence, DESTINATION_S3);
     assertThrows(ConfigNotFoundException.class, () -> assertHasDestination(DESTINATION_S3));
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE),
-        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+        configPersistence.listConfigs(
+            ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
   }
 
   @Test
@@ -82,7 +88,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
 
-    final Map<AirbyteConfig, Stream<?>> newConfigs = Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
+    final Map<AirbyteConfig, Stream<?>> newConfigs =
+        Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
 
     configPersistence.replaceAllConfigs(newConfigs, true);
 
@@ -103,9 +110,12 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeSource(configPersistence, SOURCE_POSTGRES);
     writeDestination(configPersistence, DESTINATION_S3);
     final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
-    final Map<String, Stream<JsonNode>> expected = Map.of(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
+    final Map<String, Stream<JsonNode>> expected =
+        Map.of(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+                Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
+            ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
+                Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
   }
 
@@ -114,17 +124,20 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final String connectorRepository = "airbyte/duplicated-connector";
     final String oldVersion = "0.1.10";
     final String newVersion = "0.2.0";
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withDockerRepository(connectorRepository)
-        .withDockerImageTag(oldVersion);
-    final StandardSourceDefinition source2 = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withDockerRepository(connectorRepository)
-        .withDockerImageTag(newVersion);
+    final StandardSourceDefinition source1 =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withDockerRepository(connectorRepository)
+            .withDockerImageTag(oldVersion);
+    final StandardSourceDefinition source2 =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withDockerRepository(connectorRepository)
+            .withDockerImageTag(newVersion);
     writeSource(configPersistence, source1);
     writeSource(configPersistence, source2);
-    final Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
+    final Map<String, ConnectorInfo> result =
+        database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
     // when there are duplicated connector definitions, the one with the latest version should be
     // retrieved
     assertEquals(newVersion, result.get(connectorRepository).dockerImageTag);
@@ -137,16 +150,20 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final String connectorRepository = "airbyte/test-connector";
 
     // when the record does not exist, it is inserted
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
-        .withDockerRepository(connectorRepository)
-        .withDockerImageTag("0.1.2");
-    int insertionCount = database.query(ctx -> configPersistence.insertConfigRecord(
-        ctx,
-        timestamp,
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-        Jsons.jsonNode(source1),
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
+    final StandardSourceDefinition source1 =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(definitionId)
+            .withDockerRepository(connectorRepository)
+            .withDockerImageTag("0.1.2");
+    int insertionCount =
+        database.query(
+            ctx ->
+                configPersistence.insertConfigRecord(
+                    ctx,
+                    timestamp,
+                    ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+                    Jsons.jsonNode(source1),
+                    ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
     assertEquals(1, insertionCount);
     // write an irrelevant source to make sure that it is not changed
     writeSource(configPersistence, SOURCE_GITHUB);
@@ -155,16 +172,20 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasSource(SOURCE_GITHUB);
 
     // when the record already exists, it is ignored
-    final StandardSourceDefinition source2 = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
-        .withDockerRepository(connectorRepository)
-        .withDockerImageTag("0.1.5");
-    insertionCount = database.query(ctx -> configPersistence.insertConfigRecord(
-        ctx,
-        timestamp,
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-        Jsons.jsonNode(source2),
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
+    final StandardSourceDefinition source2 =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(definitionId)
+            .withDockerRepository(connectorRepository)
+            .withDockerImageTag("0.1.5");
+    insertionCount =
+        database.query(
+            ctx ->
+                configPersistence.insertConfigRecord(
+                    ctx,
+                    timestamp,
+                    ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+                    Jsons.jsonNode(source2),
+                    ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
     assertEquals(0, insertionCount);
     assertRecordCount(2);
     assertHasSource(source1);
@@ -177,10 +198,11 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final UUID definitionId = UUID.randomUUID();
     final String connectorRepository = "airbyte/test-connector";
 
-    final StandardSourceDefinition oldSource = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
-        .withDockerRepository(connectorRepository)
-        .withDockerImageTag("0.3.5");
+    final StandardSourceDefinition oldSource =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(definitionId)
+            .withDockerRepository(connectorRepository)
+            .withDockerImageTag("0.3.5");
     writeSource(configPersistence, oldSource);
     // write an irrelevant source to make sure that it is not changed
     writeSource(configPersistence, SOURCE_GITHUB);
@@ -188,16 +210,19 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasSource(oldSource);
     assertHasSource(SOURCE_GITHUB);
 
-    final StandardSourceDefinition newSource = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
-        .withDockerRepository(connectorRepository)
-        .withDockerImageTag("0.3.5");
-    database.query(ctx -> configPersistence.updateConfigRecord(
-        ctx,
-        timestamp,
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
-        Jsons.jsonNode(newSource),
-        definitionId.toString()));
+    final StandardSourceDefinition newSource =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(definitionId)
+            .withDockerRepository(connectorRepository)
+            .withDockerImageTag("0.3.5");
+    database.query(
+        ctx ->
+            configPersistence.updateConfigRecord(
+                ctx,
+                timestamp,
+                ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+                Jsons.jsonNode(newSource),
+                definitionId.toString()));
     assertRecordCount(2);
     assertHasSource(newSource);
     assertHasSource(SOURCE_GITHUB);
@@ -224,10 +249,15 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final JsonNode latest = Jsons.deserialize("{ \"field1\": 1, \"field3\": 3, \"field4\": 4 }");
     final Set<String> newFields = Set.of("field3");
 
-    assertEquals(current, DatabaseConfigPersistence.getDefinitionWithNewFields(current, latest, Collections.emptySet()));
+    assertEquals(
+        current,
+        DatabaseConfigPersistence.getDefinitionWithNewFields(
+            current, latest, Collections.emptySet()));
 
-    final JsonNode currentWithNewFields = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2, \"field3\": 3 }");
-    assertEquals(currentWithNewFields, DatabaseConfigPersistence.getDefinitionWithNewFields(current, latest, newFields));
+    final JsonNode currentWithNewFields =
+        Jsons.deserialize("{ \"field1\": 1, \"field2\": 2, \"field3\": 3 }");
+    assertEquals(
+        currentWithNewFields,
+        DatabaseConfigPersistence.getDefinitionWithNewFields(current, latest, newFields));
   }
-
 }

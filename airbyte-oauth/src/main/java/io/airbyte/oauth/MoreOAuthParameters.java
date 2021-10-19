@@ -14,27 +14,32 @@ import java.util.stream.Stream;
 public class MoreOAuthParameters {
 
   public static Optional<SourceOAuthParameter> getSourceOAuthParameter(
-                                                                       final Stream<SourceOAuthParameter> stream,
-                                                                       final UUID workspaceId,
-                                                                       final UUID sourceDefinitionId) {
+      final Stream<SourceOAuthParameter> stream,
+      final UUID workspaceId,
+      final UUID sourceDefinitionId) {
     return stream
         .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
         .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
         // we prefer params specific to a workspace before global ones (ie workspace is null)
-        .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(SourceOAuthParameter::getOauthParameterId));
+        .min(
+            Comparator.comparing(
+                    SourceOAuthParameter::getWorkspaceId,
+                    Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(SourceOAuthParameter::getOauthParameterId));
   }
 
   public static Optional<DestinationOAuthParameter> getDestinationOAuthParameter(
-                                                                                 final Stream<DestinationOAuthParameter> stream,
-                                                                                 final UUID workspaceId,
-                                                                                 final UUID destinationDefinitionId) {
+      final Stream<DestinationOAuthParameter> stream,
+      final UUID workspaceId,
+      final UUID destinationDefinitionId) {
     return stream
         .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
         .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
         // we prefer params specific to a workspace before global ones (ie workspace is null)
-        .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(DestinationOAuthParameter::getOauthParameterId));
+        .min(
+            Comparator.comparing(
+                    DestinationOAuthParameter::getWorkspaceId,
+                    Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(DestinationOAuthParameter::getOauthParameterId));
   }
-
 }

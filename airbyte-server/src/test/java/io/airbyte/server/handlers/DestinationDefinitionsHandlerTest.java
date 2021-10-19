@@ -56,7 +56,12 @@ class DestinationDefinitionsHandlerTest {
     githubStore = mock(AirbyteGithubStore.class);
 
     destinationHandler =
-        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
+        new DestinationDefinitionsHandler(
+            configRepository,
+            dockerImageValidator,
+            uuidSupplier,
+            schedulerSynchronousClient,
+            githubStore);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -74,25 +79,29 @@ class DestinationDefinitionsHandlerTest {
   void testListDestinations() throws JsonValidationException, IOException, URISyntaxException {
     final StandardDestinationDefinition destination2 = generateDestination();
 
-    when(configRepository.listStandardDestinationDefinitions()).thenReturn(Lists.newArrayList(destination, destination2));
+    when(configRepository.listStandardDestinationDefinitions())
+        .thenReturn(Lists.newArrayList(destination, destination2));
 
-    final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
-        .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .name(destination.getName())
-        .dockerRepository(destination.getDockerRepository())
-        .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
+    final DestinationDefinitionRead expectedDestinationDefinitionRead1 =
+        new DestinationDefinitionRead()
+            .destinationDefinitionId(destination.getDestinationDefinitionId())
+            .name(destination.getName())
+            .dockerRepository(destination.getDockerRepository())
+            .dockerImageTag(destination.getDockerImageTag())
+            .documentationUrl(new URI(destination.getDocumentationUrl()))
+            .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
 
-    final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
-        .destinationDefinitionId(destination2.getDestinationDefinitionId())
-        .name(destination2.getName())
-        .dockerRepository(destination2.getDockerRepository())
-        .dockerImageTag(destination2.getDockerImageTag())
-        .documentationUrl(new URI(destination2.getDocumentationUrl()))
-        .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()));
+    final DestinationDefinitionRead expectedDestinationDefinitionRead2 =
+        new DestinationDefinitionRead()
+            .destinationDefinitionId(destination2.getDestinationDefinitionId())
+            .name(destination2.getName())
+            .dockerRepository(destination2.getDockerRepository())
+            .dockerImageTag(destination2.getDockerImageTag())
+            .documentationUrl(new URI(destination2.getDocumentationUrl()))
+            .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()));
 
-    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationHandler.listDestinationDefinitions();
+    final DestinationDefinitionReadList actualDestinationDefinitionReadList =
+        destinationHandler.listDestinationDefinitions();
 
     assertEquals(
         Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
@@ -101,65 +110,84 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   @DisplayName("getDestinationDefinition should return the right destination")
-  void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
+  void testGetDestination()
+      throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardDestinationDefinition(
+            destination.getDestinationDefinitionId()))
         .thenReturn(destination);
 
-    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
-        .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .name(destination.getName())
-        .dockerRepository(destination.getDockerRepository())
-        .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
+    final DestinationDefinitionRead expectedDestinationDefinitionRead =
+        new DestinationDefinitionRead()
+            .destinationDefinitionId(destination.getDestinationDefinitionId())
+            .name(destination.getName())
+            .dockerRepository(destination.getDockerRepository())
+            .dockerImageTag(destination.getDockerImageTag())
+            .documentationUrl(new URI(destination.getDocumentationUrl()))
+            .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
 
-    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
-        .destinationDefinitionId(destination.getDestinationDefinitionId());
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
+        new DestinationDefinitionIdRequestBody()
+            .destinationDefinitionId(destination.getDestinationDefinitionId());
 
-    final DestinationDefinitionRead actualDestinationDefinitionRead = destinationHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
+    final DestinationDefinitionRead actualDestinationDefinitionRead =
+        destinationHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
 
     assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
   }
 
   @Test
   @DisplayName("createDestinationDefinition should correctly create a destinationDefinition")
-  void testCreateDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
+  void testCreateDestinationDefinition()
+      throws URISyntaxException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestination();
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
-    final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
-        .name(destination.getName())
-        .dockerRepository(destination.getDockerRepository())
-        .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(destination.getIcon());
+    final DestinationDefinitionCreate create =
+        new DestinationDefinitionCreate()
+            .name(destination.getName())
+            .dockerRepository(destination.getDockerRepository())
+            .dockerImageTag(destination.getDockerImageTag())
+            .documentationUrl(new URI(destination.getDocumentationUrl()))
+            .icon(destination.getIcon());
 
-    final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
-        .name(destination.getName())
-        .dockerRepository(destination.getDockerRepository())
-        .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
+    final DestinationDefinitionRead expectedRead =
+        new DestinationDefinitionRead()
+            .name(destination.getName())
+            .dockerRepository(destination.getDockerRepository())
+            .dockerImageTag(destination.getDockerImageTag())
+            .documentationUrl(new URI(destination.getDocumentationUrl()))
+            .destinationDefinitionId(destination.getDestinationDefinitionId())
+            .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
 
-    final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
+    final DestinationDefinitionRead actualRead =
+        destinationHandler.createDestinationDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(dockerImageValidator).assertValidIntegrationImage(destination.getDockerRepository(), destination.getDockerImageTag());
+    verify(dockerImageValidator)
+        .assertValidIntegrationImage(
+            destination.getDockerRepository(), destination.getDockerImageTag());
   }
 
   @Test
   @DisplayName("updateDestinationDefinition should correctly update a destinationDefinition")
-  void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId())).thenReturn(destination);
-    final DestinationDefinitionRead currentDestination = destinationHandler
-        .getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationDefinitionId()));
+  void testUpdateDestination()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.getStandardDestinationDefinition(
+            destination.getDestinationDefinitionId()))
+        .thenReturn(destination);
+    final DestinationDefinitionRead currentDestination =
+        destinationHandler.getDestinationDefinition(
+            new DestinationDefinitionIdRequestBody()
+                .destinationDefinitionId(destination.getDestinationDefinitionId()));
     final String currentTag = currentDestination.getDockerImageTag();
     final String dockerRepository = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
-    final DestinationDefinitionRead sourceRead = destinationHandler.updateDestinationDefinition(
-        new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationDefinitionId()).dockerImageTag(newDockerImageTag));
+    final DestinationDefinitionRead sourceRead =
+        destinationHandler.updateDestinationDefinition(
+            new DestinationDefinitionUpdate()
+                .destinationDefinitionId(this.destination.getDestinationDefinitionId())
+                .dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
@@ -174,21 +202,25 @@ class DestinationDefinitionsHandlerTest {
     @DisplayName("should return the latest list")
     void testCorrect() throws InterruptedException {
       final StandardDestinationDefinition destinationDefinition = generateDestination();
-      when(githubStore.getLatestDestinations()).thenReturn(Collections.singletonList(destinationDefinition));
+      when(githubStore.getLatestDestinations())
+          .thenReturn(Collections.singletonList(destinationDefinition));
 
-      final var destinationDefinitionReadList = destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions();
+      final var destinationDefinitionReadList =
+          destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions();
       assertEquals(1, destinationDefinitionReadList.size());
 
       final var destinationDefinitionRead = destinationDefinitionReadList.get(0);
-      assertEquals(DestinationDefinitionsHandler.buildDestinationDefinitionRead(destinationDefinition), destinationDefinitionRead);
+      assertEquals(
+          DestinationDefinitionsHandler.buildDestinationDefinitionRead(destinationDefinition),
+          destinationDefinitionRead);
     }
 
     @Test
     @DisplayName("returns empty collection if cannot find latest definitions")
     void testHttpTimeout() {
-      assertEquals(0, destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions().size());
+      assertEquals(
+          0,
+          destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions().size());
     }
-
   }
-
 }

@@ -19,8 +19,8 @@ public class V0_29_15_001__Add_temporalWorkflowId_col_to_Attempts extends BaseJa
     // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     ctx.alterTable("attempts")
-        .addColumnIfNotExists(DSL.field("temporal_workflow_id", SQLDataType.VARCHAR(256).nullable(true)))
+        .addColumnIfNotExists(
+            DSL.field("temporal_workflow_id", SQLDataType.VARCHAR(256).nullable(true)))
         .execute();
   }
-
 }

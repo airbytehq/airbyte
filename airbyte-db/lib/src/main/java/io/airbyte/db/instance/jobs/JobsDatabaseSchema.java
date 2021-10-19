@@ -18,15 +18,15 @@ import java.util.stream.Stream;
  * Whenever a new table is created in the Job Airbyte Database, we should also add a corresponding
  * yaml file to validate the content of the table when it is exported/imported in files.
  *
- * This enum maps the table names to the yaml file where the Json Schema is stored.
+ * <p>This enum maps the table names to the yaml file where the Json Schema is stored.
  */
 public enum JobsDatabaseSchema implements TableSchema {
-
   ATTEMPTS("Attempts.yaml"),
   JOBS("Jobs.yaml"),
   AIRBYTE_METADATA("AirbyteMetadata.yaml");
 
-  static final Path SCHEMAS_ROOT = JsonSchemas.prepareSchemas("jobs_database", JobsDatabaseSchema.class);
+  static final Path SCHEMAS_ROOT =
+      JsonSchemas.prepareSchemas("jobs_database", JobsDatabaseSchema.class);
 
   private final String schemaFilename;
 
@@ -45,11 +45,10 @@ public enum JobsDatabaseSchema implements TableSchema {
     return JsonSchemaValidator.getSchema(schemaFile);
   }
 
-  /**
-   * @return table names in lower case
-   */
+  /** @return table names in lower case */
   public static Set<String> getTableNames() {
-    return Stream.of(JobsDatabaseSchema.values()).map(JobsDatabaseSchema::getTableName).collect(Collectors.toSet());
+    return Stream.of(JobsDatabaseSchema.values())
+        .map(JobsDatabaseSchema::getTableName)
+        .collect(Collectors.toSet());
   }
-
 }

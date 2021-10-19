@@ -21,14 +21,15 @@ public class Attempt {
   private final long createdAtInSecond;
   private final Long endedAtInSecond;
 
-  public Attempt(final long id,
-                 final long jobId,
-                 final Path logPath,
-                 final @Nullable JobOutput output,
-                 final AttemptStatus status,
-                 final long createdAtInSecond,
-                 final long updatedAtInSecond,
-                 final @Nullable Long endedAtInSecond) {
+  public Attempt(
+      final long id,
+      final long jobId,
+      final Path logPath,
+      final @Nullable JobOutput output,
+      final AttemptStatus status,
+      final long createdAtInSecond,
+      final long updatedAtInSecond,
+      final @Nullable Long endedAtInSecond) {
     this.id = id;
     this.jobId = jobId;
     this.output = output;
@@ -84,33 +85,41 @@ public class Attempt {
       return false;
     }
     final Attempt attempt = (Attempt) o;
-    return id == attempt.id &&
-        jobId == attempt.jobId &&
-        updatedAtInSecond == attempt.updatedAtInSecond &&
-        createdAtInSecond == attempt.createdAtInSecond &&
-        Objects.equals(output, attempt.output) &&
-        status == attempt.status &&
-        Objects.equals(logPath, attempt.logPath) &&
-        Objects.equals(endedAtInSecond, attempt.endedAtInSecond);
+    return id == attempt.id
+        && jobId == attempt.jobId
+        && updatedAtInSecond == attempt.updatedAtInSecond
+        && createdAtInSecond == attempt.createdAtInSecond
+        && Objects.equals(output, attempt.output)
+        && status == attempt.status
+        && Objects.equals(logPath, attempt.logPath)
+        && Objects.equals(endedAtInSecond, attempt.endedAtInSecond);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, jobId, output, status, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
+    return Objects.hash(
+        id, jobId, output, status, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
   }
 
   @Override
   public String toString() {
-    return "Attempt{" +
-        "id=" + id +
-        ", jobId=" + jobId +
-        ", output=" + output +
-        ", status=" + status +
-        ", logPath=" + logPath +
-        ", updatedAtInSecond=" + updatedAtInSecond +
-        ", createdAtInSecond=" + createdAtInSecond +
-        ", endedAtInSecond=" + endedAtInSecond +
-        '}';
+    return "Attempt{"
+        + "id="
+        + id
+        + ", jobId="
+        + jobId
+        + ", output="
+        + output
+        + ", status="
+        + status
+        + ", logPath="
+        + logPath
+        + ", updatedAtInSecond="
+        + updatedAtInSecond
+        + ", createdAtInSecond="
+        + createdAtInSecond
+        + ", endedAtInSecond="
+        + endedAtInSecond
+        + '}';
   }
-
 }

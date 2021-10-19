@@ -13,5 +13,4 @@ public class JobLogs {
   public static String getLogDirectory(final String scope) {
     return Paths.get(ROOT_PATH, scope).toString();
   }
-
 }

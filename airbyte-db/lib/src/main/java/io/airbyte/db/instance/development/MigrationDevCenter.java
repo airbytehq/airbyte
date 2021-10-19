@@ -11,9 +11,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrationDevCenter;
 import java.io.IOException;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-/**
- * Helper class for migration development. See README for details.
- */
+/** Helper class for migration development. See README for details. */
 public abstract class MigrationDevCenter {
 
   private enum Db {
@@ -36,10 +34,11 @@ public abstract class MigrationDevCenter {
   }
 
   private static PostgreSQLContainer<?> createContainer() {
-    final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
+    final PostgreSQLContainer<?> container =
+        new PostgreSQLContainer<>("postgres:13-alpine")
+            .withDatabaseName("airbyte")
+            .withUsername("docker")
+            .withPassword("docker");
     container.start();
     return container;
   }
@@ -49,7 +48,8 @@ public abstract class MigrationDevCenter {
   protected abstract Database getDatabase(PostgreSQLContainer<?> container) throws IOException;
 
   private void createMigration() {
-    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
+    try (final PostgreSQLContainer<?> container = createContainer();
+        final Database database = getDatabase(container)) {
       final FlywayDatabaseMigrator migrator = getMigrator(database);
       MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
     } catch (final Exception e) {
@@ -58,7 +58,8 @@ public abstract class MigrationDevCenter {
   }
 
   private void runLastMigration() {
-    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
+    try (final PostgreSQLContainer<?> container = createContainer();
+        final Database database = getDatabase(container)) {
       final FlywayDatabaseMigrator fullMigrator = getMigrator(database);
       final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
       MigrationDevHelper.runLastMigration(devDatabaseMigrator);
@@ -70,7 +71,8 @@ public abstract class MigrationDevCenter {
   }
 
   private void dumpSchema() {
-    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
+    try (final PostgreSQLContainer<?> container = createContainer();
+        final Database database = getDatabase(container)) {
       final FlywayDatabaseMigrator migrator = getMigrator(database);
       migrator.migrate();
       final String schema = migrator.dumpSchema();
@@ -98,5 +100,4 @@ public abstract class MigrationDevCenter {
       default -> throw new IllegalArgumentException("Unexpected command: " + args[1]);
     }
   }
-
 }

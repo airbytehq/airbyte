@@ -40,7 +40,10 @@ public class EmptyAirbyteSource implements AirbyteSource {
   public Optional<AirbyteMessage> attemptRead() {
     if (!hasEmittedState.get()) {
       hasEmittedState.compareAndSet(false, true);
-      return Optional.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withData(Jsons.emptyObject())));
+      return Optional.of(
+          new AirbyteMessage()
+              .withType(Type.STATE)
+              .withState(new AirbyteStateMessage().withData(Jsons.emptyObject())));
     } else {
       return Optional.empty();
     }
@@ -55,5 +58,4 @@ public class EmptyAirbyteSource implements AirbyteSource {
   public void cancel() throws Exception {
     // no op.
   }
-
 }

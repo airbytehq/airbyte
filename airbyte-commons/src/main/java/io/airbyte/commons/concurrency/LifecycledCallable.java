@@ -50,7 +50,6 @@ public class LifecycledCallable<T> implements Callable<T> {
     public LifecycledCallable<T> build() {
       return new LifecycledCallable<>(onStart, callable, onSuccess, onException, onFinish);
     }
-
   }
 
   private final VoidCallable onStart;
@@ -59,11 +58,12 @@ public class LifecycledCallable<T> implements Callable<T> {
   private final CheckedConsumer<Exception, Exception> onException;
   private final VoidCallable onFinish;
 
-  private LifecycledCallable(final VoidCallable onStart,
-                             final Callable<T> decoratedCallable,
-                             final CheckedConsumer<T, Exception> onSuccess,
-                             final CheckedConsumer<Exception, Exception> onException,
-                             final VoidCallable onFinish) {
+  private LifecycledCallable(
+      final VoidCallable onStart,
+      final Callable<T> decoratedCallable,
+      final CheckedConsumer<T, Exception> onSuccess,
+      final CheckedConsumer<Exception, Exception> onException,
+      final VoidCallable onFinish) {
     this.onStart = onStart;
     this.decoratedCallable = decoratedCallable;
     this.onSuccess = onSuccess;
@@ -92,7 +92,6 @@ public class LifecycledCallable<T> implements Callable<T> {
 
   private T execute() throws Exception {
     return this.decoratedCallable.call();
-
   }
 
   private void onSuccess(final T value) throws Exception {
@@ -106,5 +105,4 @@ public class LifecycledCallable<T> implements Callable<T> {
   private void onFinish() throws Exception {
     this.onFinish.call();
   }
-
 }

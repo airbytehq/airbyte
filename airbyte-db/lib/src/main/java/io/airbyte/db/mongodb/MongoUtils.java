@@ -46,7 +46,8 @@ public class MongoUtils {
     return switch (dataType) {
       case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case INT32, INT64, DOUBLE, DECIMAL128 -> JsonSchemaPrimitive.NUMBER;
-      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaPrimitive.STRING;
+      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaPrimitive
+          .STRING;
       case ARRAY -> JsonSchemaPrimitive.ARRAY;
       case DOCUMENT -> JsonSchemaPrimitive.OBJECT;
       default -> JsonSchemaPrimitive.STRING;
@@ -79,7 +80,8 @@ public class MongoUtils {
     }
   }
 
-  private static void readBson(final Document document, final ObjectNode o, final List<String> columnNames) {
+  private static void readBson(
+      final Document document, final ObjectNode o, final List<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       reader.readStartDocument();
@@ -127,7 +129,8 @@ public class MongoUtils {
    */
   public static Map<String, BsonType> getUniqueFields(final MongoCollection<Document> collection) {
     final Map<String, BsonType> uniqueFields = new HashMap<>();
-    try (final MongoCursor<Document> cursor = collection.find().batchSize(DISCOVERY_BATCH_SIZE).iterator()) {
+    try (final MongoCursor<Document> cursor =
+        collection.find().batchSize(DISCOVERY_BATCH_SIZE).iterator()) {
       while (cursor.hasNext()) {
         final BsonDocument document = toBsonDocument(cursor.next());
         try (final BsonReader reader = new BsonDocumentReader(document)) {
@@ -136,7 +139,8 @@ public class MongoUtils {
             final var fieldName = reader.readName();
             final var fieldType = reader.getCurrentBsonType();
             reader.skipValue();
-            if (uniqueFields.containsKey(fieldName) && fieldType.compareTo(uniqueFields.get(fieldName)) != 0) {
+            if (uniqueFields.containsKey(fieldName)
+                && fieldType.compareTo(uniqueFields.get(fieldName)) != 0) {
               uniqueFields.replace(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
             } else {
               uniqueFields.put(fieldName, fieldType);
@@ -194,7 +198,6 @@ public class MongoUtils {
   }
 
   public enum MongoInstanceType {
-
     STANDALONE("standalone"),
     REPLICA("replica"),
     ATLAS("atlas");
@@ -217,7 +220,5 @@ public class MongoUtils {
       }
       throw new IllegalArgumentException("Unknown instance type value: " + value);
     }
-
   }
-
 }

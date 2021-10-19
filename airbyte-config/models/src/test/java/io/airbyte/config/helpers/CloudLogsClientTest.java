@@ -56,7 +56,6 @@ public class CloudLogsClientTest {
 
       assertThrows(RuntimeException.class, () -> CloudLogs.createCloudLogClient(configs));
     }
-
   }
 
   @Test
@@ -96,5 +95,4 @@ public class CloudLogsClientTest {
 
     assertEquals(GcsLogs.class, CloudLogs.createCloudLogClient(configs).getClass());
   }
-
 }

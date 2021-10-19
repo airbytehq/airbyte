@@ -26,12 +26,16 @@ public class MigrateWithMetadata {
     this.migration = migration;
   }
 
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     final String version = migration.getVersion();
-    final Map<ResourceId, Consumer<JsonNode>> decoratedOutputData = decorateAirbyteMetadataConsumerWithVersionBump(outputData, version);
+    final Map<ResourceId, Consumer<JsonNode>> decoratedOutputData =
+        decorateAirbyteMetadataConsumerWithVersionBump(outputData, version);
     migration.migrate(inputData, decoratedOutputData);
 
-    MigrationUtils.registerMigrationRecord(outputData, MigrationConstants.AIRBYTE_METADATA, version);
+    MigrationUtils.registerMigrationRecord(
+        outputData, MigrationConstants.AIRBYTE_METADATA, version);
   }
 
   /**
@@ -40,19 +44,23 @@ public class MigrateWithMetadata {
    *
    * @param consumerMap Map of resource ids to output consumer.
    * @return Map of resource ids to output consumer. The AirbyteMetadata consumer will be altered to
-   *         bump the version.
+   *     bump the version.
    */
-  private static Map<ResourceId, Consumer<JsonNode>> decorateAirbyteMetadataConsumerWithVersionBump(final Map<ResourceId, Consumer<JsonNode>> consumerMap,
-                                                                                                    final String version) {
-    final HashMap<ResourceId, Consumer<JsonNode>> resourceIdConsumerHashMap = new HashMap<>(consumerMap);
-    final ResourceId metadataResourceId = ResourceId.fromConstantCase(ResourceType.JOB, MigrationConstants.AIRBYTE_METADATA);
+  private static Map<ResourceId, Consumer<JsonNode>> decorateAirbyteMetadataConsumerWithVersionBump(
+      final Map<ResourceId, Consumer<JsonNode>> consumerMap, final String version) {
+    final HashMap<ResourceId, Consumer<JsonNode>> resourceIdConsumerHashMap =
+        new HashMap<>(consumerMap);
+    final ResourceId metadataResourceId =
+        ResourceId.fromConstantCase(ResourceType.JOB, MigrationConstants.AIRBYTE_METADATA);
 
-    resourceIdConsumerHashMap.put(metadataResourceId, Consumers.wrapConsumer(
-        (json) -> {
-          bumpVersionOnAirbyteMetadata(json, version);
-          return json;
-        },
-        resourceIdConsumerHashMap.get(metadataResourceId)));
+    resourceIdConsumerHashMap.put(
+        metadataResourceId,
+        Consumers.wrapConsumer(
+            (json) -> {
+              bumpVersionOnAirbyteMetadata(json, version);
+              return json;
+            },
+            resourceIdConsumerHashMap.get(metadataResourceId)));
 
     return resourceIdConsumerHashMap;
   }
@@ -63,5 +71,4 @@ public class MigrateWithMetadata {
       ((ObjectNode) input).put("value", version);
     }
   }
-
 }

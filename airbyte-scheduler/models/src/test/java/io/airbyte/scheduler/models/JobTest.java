@@ -21,7 +21,6 @@ class JobTest {
     assertTrue(jobWithStatus(JobStatus.FAILED).isJobInTerminalState());
     assertTrue(jobWithStatus(JobStatus.SUCCEEDED).isJobInTerminalState());
     assertTrue(jobWithStatus(JobStatus.CANCELLED).isJobInTerminalState());
-
   }
 
   private static Job jobWithStatus(final JobStatus jobStatus) {
@@ -34,13 +33,16 @@ class JobTest {
     assertFalse(jobWithAttemptWithStatus(AttemptStatus.FAILED).hasRunningAttempt());
     assertFalse(jobWithAttemptWithStatus(AttemptStatus.SUCCEEDED).hasRunningAttempt());
     assertFalse(jobWithAttemptWithStatus().hasRunningAttempt());
-    assertTrue(jobWithAttemptWithStatus(AttemptStatus.SUCCEEDED, AttemptStatus.RUNNING).hasRunningAttempt());
+    assertTrue(
+        jobWithAttemptWithStatus(AttemptStatus.SUCCEEDED, AttemptStatus.RUNNING)
+            .hasRunningAttempt());
   }
 
   private static Job jobWithAttemptWithStatus(final AttemptStatus... attemptStatuses) {
-    final List<Attempt> attempts = Arrays.stream(attemptStatuses)
-        .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, 0L, 0L, null))
-        .collect(Collectors.toList());
+    final List<Attempt> attempts =
+        Arrays.stream(attemptStatuses)
+            .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, 0L, 0L, null))
+            .collect(Collectors.toList());
     return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }
 
@@ -48,12 +50,14 @@ class JobTest {
   void testGetSuccessfulAttempt() {
     assertTrue(jobWithAttemptWithStatus().getSuccessfulAttempt().isEmpty());
     assertTrue(jobWithAttemptWithStatus(AttemptStatus.FAILED).getSuccessfulAttempt().isEmpty());
-    assertThrows(IllegalStateException.class,
-        () -> jobWithAttemptWithStatus(AttemptStatus.SUCCEEDED, AttemptStatus.SUCCEEDED).getSuccessfulAttempt());
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            jobWithAttemptWithStatus(AttemptStatus.SUCCEEDED, AttemptStatus.SUCCEEDED)
+                .getSuccessfulAttempt());
 
     final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
     assertTrue(job.getSuccessfulAttempt().isPresent());
     assertEquals(job.getAttempts().get(1), job.getSuccessfulAttempt().get());
   }
-
 }

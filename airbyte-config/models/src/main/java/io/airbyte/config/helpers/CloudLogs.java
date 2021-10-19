@@ -13,17 +13,17 @@ import org.slf4j.LoggerFactory;
 /**
  * Interface for various Cloud Storage clients supporting Cloud log retrieval.
  *
- * The underlying assumption 1) each file at the path is part of the entire log file represented by
- * that path 2) log files names start with timestamps, making it possible extract the time the file
- * was written from it's name.
+ * <p>The underlying assumption 1) each file at the path is part of the entire log file represented
+ * by that path 2) log files names start with timestamps, making it possible extract the time the
+ * file was written from it's name.
  */
 public interface CloudLogs {
 
   Logger LOGGER = LoggerFactory.getLogger(CloudLogs.class);
 
   /**
-   * Retrieve all objects at the given path in lexicographical order, and return their contents as one
-   * file.
+   * Retrieve all objects at the given path in lexicographical order, and return their contents as
+   * one file.
    */
   File downloadCloudLog(LogConfigs configs, String logPath) throws IOException;
 
@@ -35,11 +35,11 @@ public interface CloudLogs {
 
   void deleteLogs(LogConfigs configs, String logPath);
 
-  /**
-   * @return true if no cloud logging configuration is set;
-   */
+  /** @return true if no cloud logging configuration is set; */
   static boolean hasEmptyConfigs(final LogConfigs configs) {
-    return !hasMinioConfiguration(configs) && !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
+    return !hasMinioConfiguration(configs)
+        && !hasS3Configuration(configs)
+        && !hasGcpConfiguration(configs);
   }
 
   static CloudLogs createCloudLogClient(final LogConfigs configs) {
@@ -63,20 +63,21 @@ public interface CloudLogs {
   }
 
   private static boolean hasMinioConfiguration(final LogConfigs configs) {
-    return !configs.getS3LogBucket().isBlank() && !configs.getAwsAccessKey().isBlank()
-        && !configs.getAwsSecretAccessKey().isBlank() && !configs.getS3MinioEndpoint().isBlank();
+    return !configs.getS3LogBucket().isBlank()
+        && !configs.getAwsAccessKey().isBlank()
+        && !configs.getAwsSecretAccessKey().isBlank()
+        && !configs.getS3MinioEndpoint().isBlank();
   }
 
   private static boolean hasS3Configuration(final LogConfigs configs) {
-    return !configs.getAwsAccessKey().isBlank() &&
-        !configs.getAwsSecretAccessKey().isBlank() &&
-        !configs.getS3LogBucketRegion().isBlank() &&
-        !configs.getS3LogBucket().isBlank();
+    return !configs.getAwsAccessKey().isBlank()
+        && !configs.getAwsSecretAccessKey().isBlank()
+        && !configs.getS3LogBucketRegion().isBlank()
+        && !configs.getS3LogBucket().isBlank();
   }
 
   private static boolean hasGcpConfiguration(final LogConfigs configs) {
-    return !configs.getGcpStorageBucket().isBlank() &&
-        !configs.getGoogleApplicationCredentials().isBlank();
+    return !configs.getGcpStorageBucket().isBlank()
+        && !configs.getGoogleApplicationCredentials().isBlank();
   }
-
 }

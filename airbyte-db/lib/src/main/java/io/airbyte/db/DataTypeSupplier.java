@@ -10,5 +10,4 @@ import java.sql.SQLException;
 public interface DataTypeSupplier<DataType> {
 
   DataType apply() throws SQLException;
-
 }

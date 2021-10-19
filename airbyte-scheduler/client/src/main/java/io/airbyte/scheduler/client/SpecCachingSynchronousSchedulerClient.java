@@ -23,7 +23,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SpecCachingSynchronousSchedulerClient implements CachingSynchronousSchedulerClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SpecCachingSynchronousSchedulerClient.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(SpecCachingSynchronousSchedulerClient.class);
 
   private final Cache<String, SynchronousResponse<ConnectorSpecification>> specCache;
   private final SynchronousSchedulerClient decoratedClient;
@@ -34,32 +35,35 @@ public class SpecCachingSynchronousSchedulerClient implements CachingSynchronous
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
-      throws IOException {
+  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(
+      final SourceConnection source, final String dockerImage) throws IOException {
     return decoratedClient.createSourceCheckConnectionJob(source, dockerImage);
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
-                                                                                                final String dockerImage)
-      throws IOException {
+  public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(
+      final DestinationConnection destination, final String dockerImage) throws IOException {
     return decoratedClient.createDestinationCheckConnectionJob(destination, dockerImage);
   }
 
   @Override
-  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) throws IOException {
+  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(
+      final SourceConnection source, final String dockerImage) throws IOException {
     return decoratedClient.createDiscoverSchemaJob(source, dockerImage);
   }
 
   @Override
-  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage) throws IOException {
-    final Optional<SynchronousResponse<ConnectorSpecification>> cachedJob = Optional.ofNullable(specCache.getIfPresent(dockerImage));
+  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage)
+      throws IOException {
+    final Optional<SynchronousResponse<ConnectorSpecification>> cachedJob =
+        Optional.ofNullable(specCache.getIfPresent(dockerImage));
     if (cachedJob.isPresent()) {
       LOGGER.debug("cache hit: " + dockerImage);
       return cachedJob.get();
     } else {
       LOGGER.debug("cache miss: " + dockerImage);
-      final SynchronousResponse<ConnectorSpecification> response = decoratedClient.createGetSpecJob(dockerImage);
+      final SynchronousResponse<ConnectorSpecification> response =
+          decoratedClient.createGetSpecJob(dockerImage);
       if (response.isSuccess()) {
         specCache.put(dockerImage, response);
       }
@@ -71,5 +75,4 @@ public class SpecCachingSynchronousSchedulerClient implements CachingSynchronous
   public void resetCache() {
     specCache.invalidateAll();
   }
-
 }

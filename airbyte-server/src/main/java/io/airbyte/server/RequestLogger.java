@@ -32,8 +32,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
 
-  @Context
-  private HttpServletRequest servletRequest;
+  @Context private HttpServletRequest servletRequest;
 
   private String requestBody = null;
 
@@ -59,34 +58,32 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
       requestContext.setEntityStream(new ByteArrayInputStream(baos.toByteArray()));
       // end hack
 
-      requestBody = IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType()));
+      requestBody =
+          IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType()));
     }
   }
 
   @Override
-  public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext) {
+  public void filter(
+      final ContainerRequestContext requestContext,
+      final ContainerResponseContext responseContext) {
     MDC.setContextMap(mdc);
 
     final String remoteAddr = servletRequest.getRemoteAddr();
     final String method = servletRequest.getMethod();
     final String url = servletRequest.getRequestURI();
 
-    final boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
-        servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&
-        isValidJson(requestBody);
+    final boolean isPrintable =
+        servletRequest.getHeader("Content-Type") != null
+            && servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json")
+            && isValidJson(requestBody);
 
     final int status = responseContext.getStatus();
 
-    final StringBuilder logBuilder = createLogPrefix(
-        remoteAddr,
-        method,
-        status,
-        url);
+    final StringBuilder logBuilder = createLogPrefix(remoteAddr, method, status, url);
 
     if (method.equals("POST") && requestBody != null && !requestBody.equals("") && isPrintable) {
-      logBuilder
-          .append(" - ")
-          .append(redactSensitiveInfo(requestBody));
+      logBuilder.append(" - ").append(redactSensitiveInfo(requestBody));
     }
 
     if (HttpStatus.isClientError(status) || HttpStatus.isServerError(status)) {
@@ -98,10 +95,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   @VisibleForTesting
   static StringBuilder createLogPrefix(
-                                       final String remoteAddr,
-                                       final String method,
-                                       final int status,
-                                       final String url) {
+      final String remoteAddr, final String method, final int status, final String url) {
     return new StringBuilder()
         .append("REQ ")
         .append(remoteAddr)
@@ -113,8 +107,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
         .append(url);
   }
 
-  private static final Set<String> TOP_LEVEL_SENSITIVE_FIELDS = Set.of(
-      "connectionConfiguration");
+  private static final Set<String> TOP_LEVEL_SENSITIVE_FIELDS = Set.of("connectionConfiguration");
 
   private static String redactSensitiveInfo(final String requestBody) {
     final Optional<JsonNode> jsonNodeOpt = Jsons.tryDeserialize(requestBody);
@@ -142,5 +135,4 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
   private static boolean isValidJson(final String json) {
     return Jsons.tryDeserialize(json).isPresent();
   }
-
 }

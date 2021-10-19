@@ -15,18 +15,22 @@ class CatalogConverterTest {
 
   @Test
   void testConvertToProtocol() {
-    assertEquals(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(), CatalogConverter.toProtocol(ConnectionHelpers.generateBasicApiCatalog()));
+    assertEquals(
+        ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(),
+        CatalogConverter.toProtocol(ConnectionHelpers.generateBasicApiCatalog()));
   }
 
   @Test
   void testConvertToAPI() {
-    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
+    assertEquals(
+        ConnectionHelpers.generateBasicApiCatalog(),
+        CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
   }
 
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
-    assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, io.airbyte.api.model.SyncMode.class));
+    assertTrue(
+        Enums.isCompatible(io.airbyte.config.SyncMode.class, io.airbyte.api.model.SyncMode.class));
   }
-
 }

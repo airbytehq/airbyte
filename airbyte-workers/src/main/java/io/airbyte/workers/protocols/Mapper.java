@@ -11,5 +11,4 @@ public interface Mapper<T> {
   ConfiguredAirbyteCatalog mapCatalog(ConfiguredAirbyteCatalog catalog);
 
   T mapMessage(T message);
-
 }

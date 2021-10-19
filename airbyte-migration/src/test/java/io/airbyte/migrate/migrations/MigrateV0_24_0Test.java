@@ -32,50 +32,53 @@ import org.junit.jupiter.api.Test;
 public class MigrateV0_24_0Test {
 
   /**
-   * The test resource directory is named differently from the main resource directory (with the extra
-   * "Test" suffix). If their names are the same, the main one will somehow be overridden by the test
-   * one. Consequently, {@link MigrationV0_24_0} cannot correctly get the new standard sync file and
-   * resolve the output schema.
+   * The test resource directory is named differently from the main resource directory (with the
+   * extra "Test" suffix). If their names are the same, the main one will somehow be overridden by
+   * the test one. Consequently, {@link MigrationV0_24_0} cannot correctly get the new standard sync
+   * file and resolve the output schema.
    */
   private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/input_config";
+
   private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/output_config";
 
   private Stream<JsonNode> getResourceStream(final String resourcePath) throws IOException {
-    final ArrayNode nodeArray = (ArrayNode) Yamls
-        .deserialize(MoreResources.readResource(resourcePath));
-    return StreamSupport
-        .stream(Spliterators.spliteratorUnknownSize(nodeArray.iterator(), 0), false);
+    final ArrayNode nodeArray =
+        (ArrayNode) Yamls.deserialize(MoreResources.readResource(resourcePath));
+    return StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(nodeArray.iterator(), 0), false);
   }
 
   @Test
   void testMigration() throws IOException {
-    final Migration migration = Migrations.MIGRATIONS
-        .stream()
-        .filter(m -> m instanceof MigrationV0_24_0)
-        .findAny()
-        .orElse(null);
+    final Migration migration =
+        Migrations.MIGRATIONS.stream()
+            .filter(m -> m instanceof MigrationV0_24_0)
+            .findAny()
+            .orElse(null);
     assertNotNull(migration);
 
-    final Map<ResourceId, Stream<JsonNode>> inputConfigs = ImmutableMap.of(
-        STANDARD_SYNC_RESOURCE_ID,
-        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml"),
-        STANDARD_SYNC_SCHEDULE_RESOURCE_ID,
-        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC_SCHEDULE.yaml"));
+    final Map<ResourceId, Stream<JsonNode>> inputConfigs =
+        ImmutableMap.of(
+            STANDARD_SYNC_RESOURCE_ID,
+            getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml"),
+            STANDARD_SYNC_SCHEDULE_RESOURCE_ID,
+            getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC_SCHEDULE.yaml"));
 
-    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils
-        .createOutputConsumer(migration.getOutputSchema().keySet());
+    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer =
+        MigrationTestUtils.createOutputConsumer(migration.getOutputSchema().keySet());
     migration.migrate(inputConfigs, MigrationUtils.mapRecordConsumerToConsumer(outputConsumer));
 
-    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap
-        .of(STANDARD_SYNC_RESOURCE_ID,
+    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides =
+        ImmutableMap.of(
+            STANDARD_SYNC_RESOURCE_ID,
             getResourceStream(OUTPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml")
                 .collect(Collectors.toList()));
-    final Map<ResourceId, List<JsonNode>> expectedOutput = MigrationTestUtils
-        .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
+    final Map<ResourceId, List<JsonNode>> expectedOutput =
+        MigrationTestUtils.createExpectedOutput(
+            migration.getOutputSchema().keySet(), expectedOutputOverrides);
 
-    final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils
-        .collectConsumersToList(outputConsumer);
+    final Map<ResourceId, List<JsonNode>> outputAsList =
+        MigrationTestUtils.collectConsumersToList(outputConsumer);
     assertEquals(expectedOutput, outputAsList);
   }
-
 }

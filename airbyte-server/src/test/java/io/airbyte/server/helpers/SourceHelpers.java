@@ -21,15 +21,19 @@ public class SourceHelpers {
     return generateSource(sourceDefinitionId, "my default source name", false);
   }
 
-  public static SourceConnection generateSource(final UUID sourceDefinitionId, final String name) throws IOException {
+  public static SourceConnection generateSource(final UUID sourceDefinitionId, final String name)
+      throws IOException {
     return generateSource(sourceDefinitionId, name, false);
   }
 
-  public static SourceConnection generateSource(final UUID sourceDefinitionId, final boolean tombstone) throws IOException {
+  public static SourceConnection generateSource(
+      final UUID sourceDefinitionId, final boolean tombstone) throws IOException {
     return generateSource(sourceDefinitionId, "my default source name", tombstone);
   }
 
-  public static SourceConnection generateSource(final UUID sourceDefinitionId, final String name, final boolean tombstone) throws IOException {
+  public static SourceConnection generateSource(
+      final UUID sourceDefinitionId, final String name, final boolean tombstone)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
 
@@ -45,11 +49,13 @@ public class SourceHelpers {
   }
 
   public static JsonNode getTestImplementationJson() throws IOException {
-    final Path path = Paths.get("../airbyte-server/src/test/resources/json/TestImplementation.json");
+    final Path path =
+        Paths.get("../airbyte-server/src/test/resources/json/TestImplementation.json");
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static SourceRead getSourceRead(final SourceConnection source, final StandardSourceDefinition standardSourceDefinition) {
+  public static SourceRead getSourceRead(
+      final SourceConnection source, final StandardSourceDefinition standardSourceDefinition) {
 
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -60,5 +66,4 @@ public class SourceHelpers {
         .name(source.getName())
         .sourceName(standardSourceDefinition.getName());
   }
-
 }

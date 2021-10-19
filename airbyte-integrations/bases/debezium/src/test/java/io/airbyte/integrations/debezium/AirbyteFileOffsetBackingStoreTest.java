@@ -31,12 +31,14 @@ class AirbyteFileOffsetBackingStoreTest {
 
     final Path writeFilePath = testRoot.resolve("offset.dat");
 
-    final AirbyteFileOffsetBackingStore offsetStore = new AirbyteFileOffsetBackingStore(templateFilePath);
+    final AirbyteFileOffsetBackingStore offsetStore =
+        new AirbyteFileOffsetBackingStore(templateFilePath);
     final Map<String, String> offset = offsetStore.read();
 
     final JsonNode asJson = Jsons.jsonNode(offset);
 
-    final AirbyteFileOffsetBackingStore offsetStore2 = new AirbyteFileOffsetBackingStore(writeFilePath);
+    final AirbyteFileOffsetBackingStore offsetStore2 =
+        new AirbyteFileOffsetBackingStore(writeFilePath);
     offsetStore2.persist(asJson);
 
     final Map<String, String> stateFromOffsetStoreRoundTrip = offsetStore2.read();
@@ -46,5 +48,4 @@ class AirbyteFileOffsetBackingStoreTest {
     // verify that the file written by the offset store is identical to the template file.
     assertTrue(com.google.common.io.Files.equal(templateFilePath.toFile(), writeFilePath.toFile()));
   }
-
 }

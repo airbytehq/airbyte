@@ -29,48 +29,59 @@ import org.junit.jupiter.api.Test;
 
 class MigrateV0_18_0Test {
 
-  private static final ResourceId SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  private static final ResourceId SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   @Test
   void testMigration() throws IOException {
-    final Migration migration = Migrations.MIGRATIONS
-        .stream()
-        .filter(m -> m instanceof MigrationV0_18_0)
-        .findAny()
-        .orElse(null);
+    final Migration migration =
+        Migrations.MIGRATIONS.stream()
+            .filter(m -> m instanceof MigrationV0_18_0)
+            .findAny()
+            .orElse(null);
     assertNotNull(migration);
 
     // construct a sync object. in this migration we modify the catalog, so we will use this as
     // a base.
-    final JsonNode syncWithoutCatalog = Jsons.jsonNode(ImmutableMap.<String, String>builder()
-        .put("sourceId", UUID.randomUUID().toString())
-        .put("destinationId", UUID.randomUUID().toString())
-        .put("connectionId", UUID.randomUUID().toString())
-        .put("name", "users_sync")
-        .put("status", "active")
-        .build());
+    final JsonNode syncWithoutCatalog =
+        Jsons.jsonNode(
+            ImmutableMap.<String, String>builder()
+                .put("sourceId", UUID.randomUUID().toString())
+                .put("destinationId", UUID.randomUUID().toString())
+                .put("connectionId", UUID.randomUUID().toString())
+                .put("name", "users_sync")
+                .put("status", "active")
+                .build());
 
     // input Catalog
-    final JsonNode inputCatalog = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_18_0/example_input_catalog.json"));
+    final JsonNode inputCatalog =
+        Jsons.deserialize(
+            MoreResources.readResource("migrations/migrationV0_18_0/example_input_catalog.json"));
     final JsonNode syncInputCatalog = Jsons.clone(syncWithoutCatalog);
     ((ObjectNode) syncInputCatalog).set("catalog", inputCatalog);
 
     // Output Catalog
-    final JsonNode outputCatalog = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_18_0/example_output_catalog.json"));
+    final JsonNode outputCatalog =
+        Jsons.deserialize(
+            MoreResources.readResource("migrations/migrationV0_18_0/example_output_catalog.json"));
     final JsonNode syncOutputCatalog = Jsons.clone(syncWithoutCatalog);
     ((ObjectNode) syncOutputCatalog).set("catalog", outputCatalog);
 
-    final Map<ResourceId, Stream<JsonNode>> records = ImmutableMap.of(SYNC_RESOURCE_ID, Stream.of(syncInputCatalog));
+    final Map<ResourceId, Stream<JsonNode>> records =
+        ImmutableMap.of(SYNC_RESOURCE_ID, Stream.of(syncInputCatalog));
 
-    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils.createOutputConsumer(migration.getOutputSchema().keySet());
+    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer =
+        MigrationTestUtils.createOutputConsumer(migration.getOutputSchema().keySet());
     migration.migrate(records, MigrationUtils.mapRecordConsumerToConsumer(outputConsumer));
 
-    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap.of(SYNC_RESOURCE_ID, ImmutableList.of(syncOutputCatalog));
+    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides =
+        ImmutableMap.of(SYNC_RESOURCE_ID, ImmutableList.of(syncOutputCatalog));
     final Map<ResourceId, List<JsonNode>> expectedOutput =
-        MigrationTestUtils.createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
+        MigrationTestUtils.createExpectedOutput(
+            migration.getOutputSchema().keySet(), expectedOutputOverrides);
 
-    final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils.collectConsumersToList(outputConsumer);
+    final Map<ResourceId, List<JsonNode>> outputAsList =
+        MigrationTestUtils.collectConsumersToList(outputConsumer);
     assertEquals(expectedOutput, outputAsList);
   }
-
 }

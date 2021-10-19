@@ -11,12 +11,12 @@ import io.airbyte.api.client.invoker.ApiClient;
  * open API generators create a separate class per API "root-route". For example, if our API has two
  * routes "/v1/First/get" and "/v1/Second/get", OpenAPI generates (essentially) the following files:
  *
- * ApiClient.java, FirstApi.java, SecondApi.java
+ * <p>ApiClient.java, FirstApi.java, SecondApi.java
  *
- * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get() or new SecondApi(new
+ * <p>To call the API type-safely, we'd do new FirstApi(new ApiClient()).get() or new SecondApi(new
  * ApiClient()).get(), which can get cumbersome if we're interacting with many pieces of the API.
  *
- * This is currently manually maintained. We could look into autogenerating it if needed.
+ * <p>This is currently manually maintained. We could look into autogenerating it if needed.
  */
 public class AirbyteApiClient {
 
@@ -101,5 +101,4 @@ public class AirbyteApiClient {
   public DbMigrationApi getDbMigrationApi() {
     return dbMigrationApi;
   }
-
 }

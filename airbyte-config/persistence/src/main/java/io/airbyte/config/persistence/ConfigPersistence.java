@@ -14,18 +14,21 @@ import java.util.stream.Stream;
 
 public interface ConfigPersistence {
 
-  <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
+  <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException;
 
-  <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
+  <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz)
+      throws JsonValidationException, IOException;
 
-  <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException;
+  <T> void writeConfig(AirbyteConfig configType, String configId, T config)
+      throws JsonValidationException, IOException;
 
-  void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
+  void deleteConfig(AirbyteConfig configType, String configId)
+      throws ConfigNotFoundException, IOException;
 
   void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException;
 
   Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
   void loadData(ConfigPersistence seedPersistence) throws IOException;
-
 }

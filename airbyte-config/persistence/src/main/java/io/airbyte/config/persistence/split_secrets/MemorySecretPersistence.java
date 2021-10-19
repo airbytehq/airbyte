@@ -8,9 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Map-based implementation of a {@link SecretPersistence} used for unit testing.
- */
+/** Map-based implementation of a {@link SecretPersistence} used for unit testing. */
 public class MemorySecretPersistence implements SecretPersistence {
 
   final Map<SecretCoordinate, String> secretMap = new HashMap<>();
@@ -24,5 +22,4 @@ public class MemorySecretPersistence implements SecretPersistence {
   public void write(final SecretCoordinate coordinate, final String payload) {
     secretMap.put(coordinate, payload);
   }
-
 }

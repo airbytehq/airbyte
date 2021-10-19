@@ -51,11 +51,12 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final Supplier<String> workflowIdProvider;
   private final Configs configs;
 
-  public TemporalAttemptExecution(final Path workspaceRoot,
-                                  final JobRunConfig jobRunConfig,
-                                  final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-                                  final Supplier<INPUT> inputSupplier,
-                                  final CancellationHandler cancellationHandler) {
+  public TemporalAttemptExecution(
+      final Path workspaceRoot,
+      final JobRunConfig jobRunConfig,
+      final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+      final Supplier<INPUT> inputSupplier,
+      final CancellationHandler cancellationHandler) {
     this(
         workspaceRoot,
         jobRunConfig,
@@ -68,16 +69,18 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   @VisibleForTesting
-  TemporalAttemptExecution(final Path workspaceRoot,
-                           final JobRunConfig jobRunConfig,
-                           final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-                           final Supplier<INPUT> inputSupplier,
-                           final Consumer<Path> mdcSetter,
-                           final CancellationHandler cancellationHandler,
-                           final Supplier<String> workflowIdProvider,
-                           final Configs configs) {
+  TemporalAttemptExecution(
+      final Path workspaceRoot,
+      final JobRunConfig jobRunConfig,
+      final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+      final Supplier<INPUT> inputSupplier,
+      final Consumer<Path> mdcSetter,
+      final CancellationHandler cancellationHandler,
+      final Supplier<String> workflowIdProvider,
+      final Configs configs) {
     this.jobRunConfig = jobRunConfig;
-    this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    this.jobRoot =
+        WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
     this.mdcSetter = mdcSetter;
@@ -91,22 +94,28 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     try {
       mdcSetter.accept(jobRoot);
 
-      LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
-      // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
+      LOGGER.info(
+          "Executing worker wrapper. Airbyte version: {}",
+          new EnvConfigs().getAirbyteVersionOrWarning());
+      // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection
+      // per
       // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
       saveWorkflowIdForCancellation();
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
       final Thread workerThread = getWorkerThread(worker, outputFuture);
-      final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-      final Runnable cancellationChecker = getCancellationChecker(worker, workerThread, outputFuture);
+      final ScheduledExecutorService scheduledExecutor =
+          Executors.newSingleThreadScheduledExecutor();
+      final Runnable cancellationChecker =
+          getCancellationChecker(worker, workerThread, outputFuture);
 
       // check once first that we are not already cancelled. if we are, don't start!
       cancellationChecker.run();
 
       workerThread.start();
-      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(
+          cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       try {
         // block and wait for the output
@@ -121,75 +130,87 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   private void saveWorkflowIdForCancellation() throws IOException {
-    // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
+    // If the jobId is not a number, it means the job is a synchronous job. No attempt is created
+    // for
     // it, and it cannot be cancelled, so do not save the workflowId. See
     // SynchronousSchedulerClient.java
     // for info.
     if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
-      final Database jobDatabase = new JobsDatabaseInstance(
-          configs.getDatabaseUser(),
-          configs.getDatabasePassword(),
-          configs.getDatabaseUrl())
+      final Database jobDatabase =
+          new JobsDatabaseInstance(
+                  configs.getDatabaseUser(),
+                  configs.getDatabasePassword(),
+                  configs.getDatabaseUrl())
               .getInitialized();
       final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
       final String workflowId = workflowIdProvider.get();
-      jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
+      jobPersistence.setAttemptTemporalWorkflowId(
+          Long.parseLong(jobRunConfig.getJobId()),
+          jobRunConfig.getAttemptId().intValue(),
+          workflowId);
     }
   }
 
-  private Thread getWorkerThread(final Worker<INPUT, OUTPUT> worker, final CompletableFuture<OUTPUT> outputFuture) {
-    return new Thread(() -> {
-      mdcSetter.accept(jobRoot);
+  private Thread getWorkerThread(
+      final Worker<INPUT, OUTPUT> worker, final CompletableFuture<OUTPUT> outputFuture) {
+    return new Thread(
+        () -> {
+          mdcSetter.accept(jobRoot);
 
-      try {
-        final OUTPUT output = worker.run(inputSupplier.get(), jobRoot);
-        outputFuture.complete(output);
-      } catch (final Throwable e) {
-        LOGGER.info("Completing future exceptionally...", e);
-        outputFuture.completeExceptionally(e);
-      }
-    });
+          try {
+            final OUTPUT output = worker.run(inputSupplier.get(), jobRoot);
+            outputFuture.complete(output);
+          } catch (final Throwable e) {
+            LOGGER.info("Completing future exceptionally...", e);
+            outputFuture.completeExceptionally(e);
+          }
+        });
   }
 
   /**
    * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel
    * requests are routed to the Temporal Scheduler via the cancelJob function in
-   * SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException}
-   * when the {@link CancellationHandler} heartbeats to the Temporal Scheduler.
+   * SchedulerHandler.java. This manifests as a {@link
+   * io.temporal.client.ActivityCompletionException} when the {@link CancellationHandler} heartbeats
+   * to the Temporal Scheduler.
    *
-   * The callback defined in this function is executed after the above exception is caught, and
+   * <p>The callback defined in this function is executed after the above exception is caught, and
    * defines the clean up operations executed as part of cancel.
    *
-   * See {@link CancellationHandler} for more info.
+   * <p>See {@link CancellationHandler} for more info.
    */
-  private Runnable getCancellationChecker(final Worker<INPUT, OUTPUT> worker,
-                                          final Thread workerThread,
-                                          final CompletableFuture<OUTPUT> outputFuture) {
+  private Runnable getCancellationChecker(
+      final Worker<INPUT, OUTPUT> worker,
+      final Thread workerThread,
+      final CompletableFuture<OUTPUT> outputFuture) {
     final var cancelled = new AtomicBoolean(false);
     return () -> {
       try {
         mdcSetter.accept(jobRoot);
 
-        final Runnable onCancellationCallback = () -> {
-          if (cancelled.get()) {
-            // Since this is a separate thread, race condition between the executor service shutting down and
-            // this thread's next invocation can happen. This
-            // check guarantees cancel operations are only executed once.
-            return;
-          }
+        final Runnable onCancellationCallback =
+            () -> {
+              if (cancelled.get()) {
+                // Since this is a separate thread, race condition between the executor service
+                // shutting down and
+                // this thread's next invocation can happen. This
+                // check guarantees cancel operations are only executed once.
+                return;
+              }
 
-          LOGGER.info("Running sync worker cancellation...");
-          cancelled.set(true);
-          worker.cancel();
+              LOGGER.info("Running sync worker cancellation...");
+              cancelled.set(true);
+              worker.cancel();
 
-          LOGGER.info("Interrupting worker thread...");
-          workerThread.interrupt();
+              LOGGER.info("Interrupting worker thread...");
+              workerThread.interrupt();
 
-          LOGGER.info("Cancelling completable future...");
-          // This throws a CancellationException as part of the cancelling and is the exception seen in logs
-          // when cancelling the job.
-          outputFuture.cancel(false);
-        };
+              LOGGER.info("Cancelling completable future...");
+              // This throws a CancellationException as part of the cancelling and is the exception
+              // seen in logs
+              // when cancelling the job.
+              outputFuture.cancel(false);
+            };
 
         cancellationHandler.checkAndHandleCancellation(onCancellationCallback);
       } catch (final Exception e) {
@@ -197,5 +218,4 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
     };
   }
-
 }

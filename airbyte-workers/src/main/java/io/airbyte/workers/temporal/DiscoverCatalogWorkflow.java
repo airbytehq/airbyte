@@ -33,35 +33,38 @@ import java.util.function.Supplier;
 public interface DiscoverCatalogWorkflow {
 
   @WorkflowMethod
-  AirbyteCatalog run(JobRunConfig jobRunConfig,
-                     IntegrationLauncherConfig launcherConfig,
-                     StandardDiscoverCatalogInput config);
+  AirbyteCatalog run(
+      JobRunConfig jobRunConfig,
+      IntegrationLauncherConfig launcherConfig,
+      StandardDiscoverCatalogInput config);
 
   class WorkflowImpl implements DiscoverCatalogWorkflow {
 
-    final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofHours(2))
-        .setRetryOptions(TemporalUtils.NO_RETRY)
-        .build();
-    private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
+    final ActivityOptions options =
+        ActivityOptions.newBuilder()
+            .setScheduleToCloseTimeout(Duration.ofHours(2))
+            .setRetryOptions(TemporalUtils.NO_RETRY)
+            .build();
+    private final DiscoverCatalogActivity activity =
+        Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
     @Override
-    public AirbyteCatalog run(final JobRunConfig jobRunConfig,
-                              final IntegrationLauncherConfig launcherConfig,
-                              final StandardDiscoverCatalogInput config) {
+    public AirbyteCatalog run(
+        final JobRunConfig jobRunConfig,
+        final IntegrationLauncherConfig launcherConfig,
+        final StandardDiscoverCatalogInput config) {
       return activity.run(jobRunConfig, launcherConfig, config);
     }
-
   }
 
   @ActivityInterface
   interface DiscoverCatalogActivity {
 
     @ActivityMethod
-    AirbyteCatalog run(JobRunConfig jobRunConfig,
-                       IntegrationLauncherConfig launcherConfig,
-                       StandardDiscoverCatalogInput config);
-
+    AirbyteCatalog run(
+        JobRunConfig jobRunConfig,
+        IntegrationLauncherConfig launcherConfig,
+        StandardDiscoverCatalogInput config);
   }
 
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
@@ -70,43 +73,52 @@ public interface DiscoverCatalogWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(final ProcessFactory processFactory, final SecretsHydrator secretsHydrator, final Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(
+        final ProcessFactory processFactory,
+        final SecretsHydrator secretsHydrator,
+        final Path workspaceRoot) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public AirbyteCatalog run(final JobRunConfig jobRunConfig,
-                              final IntegrationLauncherConfig launcherConfig,
-                              final StandardDiscoverCatalogInput config) {
+    public AirbyteCatalog run(
+        final JobRunConfig jobRunConfig,
+        final IntegrationLauncherConfig launcherConfig,
+        final StandardDiscoverCatalogInput config) {
 
       final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
-      final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
-          .withConnectionConfiguration(fullConfig);
+      final StandardDiscoverCatalogInput input =
+          new StandardDiscoverCatalogInput().withConnectionConfiguration(fullConfig);
 
       final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> input;
 
-      final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
-          jobRunConfig,
-          getWorkerFactory(launcherConfig),
-          inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+      final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog>
+          temporalAttemptExecution =
+              new TemporalAttemptExecution<>(
+                  workspaceRoot,
+                  jobRunConfig,
+                  getWorkerFactory(launcherConfig),
+                  inputSupplier,
+                  new CancellationHandler.TemporalCancellationHandler());
 
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception>
+        getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher =
-            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
-                processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+            new AirbyteIntegrationLauncher(
+                launcherConfig.getJobId(),
+                launcherConfig.getAttemptId().intValue(),
+                launcherConfig.getDockerImage(),
+                processFactory,
+                WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
         return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
       };
     }
-
   }
-
 }

@@ -26,5 +26,4 @@ public abstract class AbstractDatabase implements AutoCloseable {
   public void setDatabaseConfig(final JsonNode databaseConfig) {
     this.databaseConfig = databaseConfig;
   }
-
 }

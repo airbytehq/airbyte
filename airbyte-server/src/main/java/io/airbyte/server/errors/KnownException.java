@@ -17,17 +17,19 @@ public abstract class KnownException extends RuntimeException {
     super(message, cause);
   }
 
-  abstract public int getHttpCode();
+  public abstract int getHttpCode();
 
   public KnownExceptionInfo getKnownExceptionInfo() {
     return KnownException.infoFromThrowable(this);
   }
 
-  public static KnownExceptionInfo infoFromThrowableWithMessage(final Throwable t, final String message) {
-    final KnownExceptionInfo exceptionInfo = new KnownExceptionInfo()
-        .exceptionClassName(t.getClass().getName())
-        .message(message)
-        .exceptionStack(Throwables.toStringList(t));
+  public static KnownExceptionInfo infoFromThrowableWithMessage(
+      final Throwable t, final String message) {
+    final KnownExceptionInfo exceptionInfo =
+        new KnownExceptionInfo()
+            .exceptionClassName(t.getClass().getName())
+            .message(message)
+            .exceptionStack(Throwables.toStringList(t));
     if (t.getCause() != null) {
       exceptionInfo.rootCauseExceptionClassName(t.getClass().getClass().getName());
       exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(t.getCause()));
@@ -38,5 +40,4 @@ public abstract class KnownException extends RuntimeException {
   public static KnownExceptionInfo infoFromThrowable(final Throwable t) {
     return infoFromThrowableWithMessage(t, t.getMessage());
   }
-
 }

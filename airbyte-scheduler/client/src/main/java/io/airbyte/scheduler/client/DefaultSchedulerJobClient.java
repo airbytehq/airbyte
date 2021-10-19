@@ -24,48 +24,60 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   private final JobPersistence jobPersistence;
   private final JobCreator jobCreator;
 
-  public DefaultSchedulerJobClient(final JobPersistence jobPersistence, final JobCreator jobCreator) {
+  public DefaultSchedulerJobClient(
+      final JobPersistence jobPersistence, final JobCreator jobCreator) {
     this.jobPersistence = jobPersistence;
     this.jobCreator = jobCreator;
   }
 
   @Override
-  public Job createOrGetActiveSyncJob(final SourceConnection source,
-                                      final DestinationConnection destination,
-                                      final StandardSync standardSync,
-                                      final String sourceDockerImage,
-                                      final String destinationDockerImage,
-                                      final List<StandardSyncOperation> standardSyncOperations)
+  public Job createOrGetActiveSyncJob(
+      final SourceConnection source,
+      final DestinationConnection destination,
+      final StandardSync standardSync,
+      final String sourceDockerImage,
+      final String destinationDockerImage,
+      final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
-    final Optional<Long> jobIdOptional = jobCreator.createSyncJob(
-        source,
-        destination,
-        standardSync,
-        sourceDockerImage,
-        destinationDockerImage,
-        standardSyncOperations);
+    final Optional<Long> jobIdOptional =
+        jobCreator.createSyncJob(
+            source,
+            destination,
+            standardSync,
+            sourceDockerImage,
+            destinationDockerImage,
+            standardSyncOperations);
 
-    final long jobId = jobIdOptional.isEmpty()
-        ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
-        : jobIdOptional.get();
+    final long jobId =
+        jobIdOptional.isEmpty()
+            ? jobPersistence
+                .getLastReplicationJob(standardSync.getConnectionId())
+                .orElseThrow(() -> new RuntimeException("No job available"))
+                .getId()
+            : jobIdOptional.get();
 
     return jobPersistence.getJob(jobId);
   }
 
   @Override
-  public Job createOrGetActiveResetConnectionJob(final DestinationConnection destination,
-                                                 final StandardSync standardSync,
-                                                 final String destinationDockerImage,
-                                                 final List<StandardSyncOperation> standardSyncOperations)
+  public Job createOrGetActiveResetConnectionJob(
+      final DestinationConnection destination,
+      final StandardSync standardSync,
+      final String destinationDockerImage,
+      final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     final Optional<Long> jobIdOptional =
-        jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage, standardSyncOperations);
+        jobCreator.createResetConnectionJob(
+            destination, standardSync, destinationDockerImage, standardSyncOperations);
 
-    final long jobId = jobIdOptional.isEmpty()
-        ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
-        : jobIdOptional.get();
+    final long jobId =
+        jobIdOptional.isEmpty()
+            ? jobPersistence
+                .getLastReplicationJob(standardSync.getConnectionId())
+                .orElseThrow(() -> new RuntimeException("No job available"))
+                .getId()
+            : jobIdOptional.get();
 
     return jobPersistence.getJob(jobId);
   }
-
 }

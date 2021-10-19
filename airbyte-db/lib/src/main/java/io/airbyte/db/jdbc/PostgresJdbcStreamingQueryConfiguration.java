@@ -11,9 +11,9 @@ import java.sql.SQLException;
 public class PostgresJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
   @Override
-  public void accept(final Connection connection, final PreparedStatement preparedStatement) throws SQLException {
+  public void accept(final Connection connection, final PreparedStatement preparedStatement)
+      throws SQLException {
     connection.setAutoCommit(false);
     preparedStatement.setFetchSize(1000);
   }
-
 }

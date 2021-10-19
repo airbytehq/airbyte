@@ -50,11 +50,13 @@ public class JobHistoryHandlerTest {
   private static final long ATTEMPT_ID = 1002L;
   private static final String JOB_CONFIG_ID = "123";
   private static final JobStatus JOB_STATUS = JobStatus.SUCCEEDED;
-  private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
+  private static final JobConfig.ConfigType CONFIG_TYPE =
+      JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
   private static final JobConfigType CONFIG_TYPE_FOR_API = JobConfigType.CHECK_CONNECTION_SOURCE;
-  private static final JobConfig JOB_CONFIG = new JobConfig()
-      .withConfigType(CONFIG_TYPE)
-      .withCheckConnection(new JobCheckConnectionConfig());
+  private static final JobConfig JOB_CONFIG =
+      new JobConfig()
+          .withConfigType(CONFIG_TYPE)
+          .withCheckConnection(new JobCheckConnectionConfig());
   private static final Path LOG_PATH = Path.of("log_path");
   private static final LogRead EMPTY_LOG_READ = new LogRead().logLines(new ArrayList<>());
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
@@ -65,19 +67,21 @@ public class JobHistoryHandlerTest {
   private JobHistoryHandler jobHistoryHandler;
 
   private static JobRead toJobInfo(final Job job) {
-    return new JobRead().id(job.getId())
+    return new JobRead()
+        .id(job.getId())
         .configId(job.getScope())
         .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
         .configType(Enums.convertTo(job.getConfigType(), io.airbyte.api.model.JobConfigType.class))
         .createdAt(job.getCreatedAtInSecond())
         .updatedAt(job.getUpdatedAtInSecond());
-
   }
 
   private static List<AttemptInfoRead> toAttemptInfoList(final List<Attempt> attempts) {
-    final List<AttemptRead> attemptReads = attempts.stream().map(JobHistoryHandlerTest::toAttemptRead).collect(Collectors.toList());
+    final List<AttemptRead> attemptReads =
+        attempts.stream().map(JobHistoryHandlerTest::toAttemptRead).collect(Collectors.toList());
 
-    final Function<AttemptRead, AttemptInfoRead> toAttemptInfoRead = (AttemptRead a) -> new AttemptInfoRead().attempt(a).logs(EMPTY_LOG_READ);
+    final Function<AttemptRead, AttemptInfoRead> toAttemptInfoRead =
+        (AttemptRead a) -> new AttemptInfoRead().attempt(a).logs(EMPTY_LOG_READ);
     return attemptReads.stream().map(toAttemptInfoRead).collect(Collectors.toList());
   }
 
@@ -91,14 +95,31 @@ public class JobHistoryHandlerTest {
   }
 
   private static Attempt createSuccessfulAttempt(final long jobId, final long timestamps) {
-    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, timestamps, timestamps, timestamps);
+    return new Attempt(
+        ATTEMPT_ID,
+        jobId,
+        LOG_PATH,
+        null,
+        AttemptStatus.SUCCEEDED,
+        timestamps,
+        timestamps,
+        timestamps);
   }
 
   @BeforeEach
   public void setUp() {
     testJobAttempt = createSuccessfulAttempt(JOB_ID, CREATED_AT);
-    testJob = new Job(JOB_ID, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(testJobAttempt), JOB_STATUS, null, CREATED_AT,
-        CREATED_AT);
+    testJob =
+        new Job(
+            JOB_ID,
+            JOB_CONFIG.getConfigType(),
+            JOB_CONFIG_ID,
+            JOB_CONFIG,
+            ImmutableList.of(testJobAttempt),
+            JOB_STATUS,
+            null,
+            CREATED_AT,
+            CREATED_AT);
 
     jobPersistence = mock(JobPersistence.class);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
@@ -118,22 +139,41 @@ public class JobHistoryHandlerTest {
       final var jobId2 = JOB_ID + 100;
       final var createdAt2 = CREATED_AT + 1000;
       final var latestJobNoAttempt =
-          new Job(jobId2, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING,
-              null, createdAt2, createdAt2);
+          new Job(
+              jobId2,
+              JOB_CONFIG.getConfigType(),
+              JOB_CONFIG_ID,
+              JOB_CONFIG,
+              Collections.emptyList(),
+              JobStatus.PENDING,
+              null,
+              createdAt2,
+              createdAt2);
 
-      when(jobPersistence.listJobs(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, pagesize, rowOffset))
+      when(jobPersistence.listJobs(
+              Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)),
+              JOB_CONFIG_ID,
+              pagesize,
+              rowOffset))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
 
-      final var requestBody = new JobListRequestBody()
-          .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
-          .configId(JOB_CONFIG_ID)
-          .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
+      final var requestBody =
+          new JobListRequestBody()
+              .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
+              .configId(JOB_CONFIG_ID)
+              .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
-      final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
-          testJobAttempt)));
-      final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
-      final JobReadList expectedJobReadList = new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead));
+      final var successfulJobWithAttemptRead =
+          new JobWithAttemptsRead()
+              .job(toJobInfo(successfulJob))
+              .attempts(ImmutableList.of(toAttemptRead(testJobAttempt)));
+      final var latestJobWithAttemptRead =
+          new JobWithAttemptsRead()
+              .job(toJobInfo(latestJobNoAttempt))
+              .attempts(Collections.emptyList());
+      final JobReadList expectedJobReadList =
+          new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead));
 
       assertEquals(expectedJobReadList, jobReadList);
     }
@@ -148,38 +188,67 @@ public class JobHistoryHandlerTest {
       final var secondJobId = JOB_ID + 100;
       final var createdAt2 = CREATED_AT + 1000;
       final var secondJobAttempt = createSuccessfulAttempt(secondJobId, createdAt2);
-      final var secondJob = new Job(secondJobId, ConfigType.DISCOVER_SCHEMA, JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(secondJobAttempt),
-          JobStatus.SUCCEEDED, null, createdAt2, createdAt2);
+      final var secondJob =
+          new Job(
+              secondJobId,
+              ConfigType.DISCOVER_SCHEMA,
+              JOB_CONFIG_ID,
+              JOB_CONFIG,
+              ImmutableList.of(secondJobAttempt),
+              JobStatus.SUCCEEDED,
+              null,
+              createdAt2,
+              createdAt2);
 
-      final Set<ConfigType> configTypes = Set.of(
-          Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class),
-          Enums.convertTo(JobConfigType.SYNC, ConfigType.class),
-          Enums.convertTo(JobConfigType.DISCOVER_SCHEMA, ConfigType.class));
+      final Set<ConfigType> configTypes =
+          Set.of(
+              Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class),
+              Enums.convertTo(JobConfigType.SYNC, ConfigType.class),
+              Enums.convertTo(JobConfigType.DISCOVER_SCHEMA, ConfigType.class));
 
       final var latestJobId = secondJobId + 100;
       final var createdAt3 = createdAt2 + 1000;
       final var latestJob =
-          new Job(latestJobId, ConfigType.SYNC, JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING, null, createdAt3, createdAt3);
+          new Job(
+              latestJobId,
+              ConfigType.SYNC,
+              JOB_CONFIG_ID,
+              JOB_CONFIG,
+              Collections.emptyList(),
+              JobStatus.PENDING,
+              null,
+              createdAt3,
+              createdAt3);
 
-      when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJob, secondJob, firstJob));
+      when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset))
+          .thenReturn(List.of(latestJob, secondJob, firstJob));
 
-      final JobListRequestBody requestBody = new JobListRequestBody()
-          .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
-          .configId(JOB_CONFIG_ID)
-          .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
+      final JobListRequestBody requestBody =
+          new JobListRequestBody()
+              .configTypes(
+                  List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
+              .configId(JOB_CONFIG_ID)
+              .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var firstJobWithAttemptRead =
-          new JobWithAttemptsRead().job(toJobInfo(firstJob)).attempts(ImmutableList.of(toAttemptRead(testJobAttempt)));
+          new JobWithAttemptsRead()
+              .job(toJobInfo(firstJob))
+              .attempts(ImmutableList.of(toAttemptRead(testJobAttempt)));
       final var secondJobWithAttemptRead =
-          new JobWithAttemptsRead().job(toJobInfo(secondJob)).attempts(ImmutableList.of(toAttemptRead(secondJobAttempt)));
-      final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJob)).attempts(Collections.emptyList());
+          new JobWithAttemptsRead()
+              .job(toJobInfo(secondJob))
+              .attempts(ImmutableList.of(toAttemptRead(secondJobAttempt)));
+      final var latestJobWithAttemptRead =
+          new JobWithAttemptsRead().job(toJobInfo(latestJob)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
-          new JobReadList().jobs(List.of(latestJobWithAttemptRead, secondJobWithAttemptRead, firstJobWithAttemptRead));
+          new JobReadList()
+              .jobs(
+                  List.of(
+                      latestJobWithAttemptRead, secondJobWithAttemptRead, firstJobWithAttemptRead));
 
       assertEquals(expectedJobReadList, jobReadList);
     }
-
   }
 
   @Test
@@ -190,7 +259,10 @@ public class JobHistoryHandlerTest {
     final JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
     final JobInfoRead jobInfoActual = jobHistoryHandler.getJobInfo(requestBody);
 
-    final JobInfoRead exp = new JobInfoRead().job(toJobInfo(testJob)).attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
+    final JobInfoRead exp =
+        new JobInfoRead()
+            .job(toJobInfo(testJob))
+            .attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
 
     assertEquals(exp, jobInfoActual);
   }
@@ -200,5 +272,4 @@ public class JobHistoryHandlerTest {
   public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
   }
-
 }

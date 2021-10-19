@@ -21,10 +21,10 @@ class ScheduleHelpersTest {
     assertEquals(2_592_000, ScheduleHelpers.getSecondsInUnit(Schedule.TimeUnit.MONTHS));
   }
 
-  // Will throw if a new TimeUnit is added but an appropriate mapping is not included in this method.
+  // Will throw if a new TimeUnit is added but an appropriate mapping is not included in this
+  // method.
   @Test
   public void testAllOfTimeUnitEnumValues() {
     Arrays.stream(Schedule.TimeUnit.values()).forEach(ScheduleHelpers::getSecondsInUnit);
   }
-
 }

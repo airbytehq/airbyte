@@ -17,36 +17,33 @@ import java.util.Map;
 
 public class AirbyteMessageUtils {
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final JsonNode record,
-                                                   final Instant timeExtracted) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final JsonNode record, final Instant timeExtracted) {
 
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withData(record)
-            .withStream(tableName)
-            .withEmittedAt(timeExtracted.getEpochSecond()));
+        .withRecord(
+            new AirbyteRecordMessage()
+                .withData(record)
+                .withStream(tableName)
+                .withEmittedAt(timeExtracted.getEpochSecond()));
   }
 
-  public static AirbyteMessage createLogMessage(final AirbyteLogMessage.Level level,
-                                                final String message) {
+  public static AirbyteMessage createLogMessage(
+      final AirbyteLogMessage.Level level, final String message) {
 
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.LOG)
-        .withLog(new AirbyteLogMessage()
-            .withLevel(level)
-            .withMessage(message));
+        .withLog(new AirbyteLogMessage().withLevel(level).withMessage(message));
   }
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final String key,
-                                                   final String value) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final String key, final String value) {
     return createRecordMessage(tableName, ImmutableMap.of(key, value));
   }
 
-  public static AirbyteMessage createRecordMessage(final String tableName,
-                                                   final Map<String, String> record) {
+  public static AirbyteMessage createRecordMessage(
+      final String tableName, final Map<String, String> record) {
     return createRecordMessage(tableName, Jsons.jsonNode(record), Instant.EPOCH);
   }
 
@@ -55,5 +52,4 @@ public class AirbyteMessageUtils {
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));
   }
-
 }

@@ -40,7 +40,9 @@ public class FacebookMarketingOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    facebookMarketingOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookMarketingOAuthFlowTest::getConstantState);
+    facebookMarketingOAuthFlow =
+        new FacebookMarketingOAuthFlow(
+            configRepository, httpClient, FacebookMarketingOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -51,15 +53,21 @@ public class FacebookMarketingOAuthFlowTest {
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
+  public void testCompleteSourceOAuth()
+      throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", "test_client_id")
+                                .put("client_secret", "test_client_secret")
+                                .build()))));
 
     final Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
@@ -67,21 +75,28 @@ public class FacebookMarketingOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        facebookMarketingOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        facebookMarketingOAuthFlow.completeSourceOAuth(
+            workspaceId, definitionId, queryParams, REDIRECT_URL);
 
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
   @Test
-  public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
+  public void testCompleteDestinationOAuth()
+      throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listDestinationOAuthParam())
+        .thenReturn(
+            List.of(
+                new DestinationOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withDestinationDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", "test_client_id")
+                                .put("client_secret", "test_client_secret")
+                                .build()))));
 
     final Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
@@ -89,9 +104,9 @@ public class FacebookMarketingOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        facebookMarketingOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        facebookMarketingOAuthFlow.completeDestinationOAuth(
+            workspaceId, definitionId, queryParams, REDIRECT_URL);
 
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
-
 }

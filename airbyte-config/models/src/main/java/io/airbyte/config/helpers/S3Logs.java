@@ -42,11 +42,13 @@ public class S3Logs implements CloudLogs {
 
     // When region is set, endpoint cannot be set and vice versa.
     if (configs.getS3LogBucketRegion().isBlank()) {
-      Preconditions.checkNotNull(configs.getS3MinioEndpoint(), "Either S3 region or endpoint needs to be configured.");
+      Preconditions.checkNotNull(
+          configs.getS3MinioEndpoint(), "Either S3 region or endpoint needs to be configured.");
     }
 
     if (configs.getS3MinioEndpoint().isBlank()) {
-      Preconditions.checkNotNull(configs.getS3LogBucketRegion(), "Either S3 region or endpoint needs to be configured.");
+      Preconditions.checkNotNull(
+          configs.getS3LogBucketRegion(), "Either S3 region or endpoint needs to be configured.");
     }
   }
 
@@ -56,7 +58,8 @@ public class S3Logs implements CloudLogs {
   }
 
   @VisibleForTesting
-  static File getFile(final LogConfigs configs, final String logPath, final int pageSize) throws IOException {
+  static File getFile(final LogConfigs configs, final String logPath, final int pageSize)
+      throws IOException {
     LOGGER.debug("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
@@ -66,16 +69,14 @@ public class S3Logs implements CloudLogs {
     final var os = new FileOutputStream(tmpOutputFile);
 
     LOGGER.debug("Start S3 list request.");
-    final var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
-        .prefix(logPath).maxKeys(pageSize).build();
+    final var listObjReq =
+        ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).maxKeys(pageSize).build();
     LOGGER.debug("Start getting S3 objects.");
     // Objects are returned in lexicographical order.
     for (final var page : S3.listObjectsV2Paginator(listObjReq)) {
       for (final var objMetadata : page.contents()) {
-        final var getObjReq = GetObjectRequest.builder()
-            .key(objMetadata.key())
-            .bucket(s3Bucket)
-            .build();
+        final var getObjReq =
+            GetObjectRequest.builder().key(objMetadata.key()).bucket(s3Bucket).build();
         final var data = S3.getObjectAsBytes(getObjReq).asByteArray();
         os.write(data);
       }
@@ -87,7 +88,8 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public List<String> tailCloudLog(final LogConfigs configs, final String logPath, final int numLines) throws IOException {
+  public List<String> tailCloudLog(
+      final LogConfigs configs, final String logPath, final int numLines) throws IOException {
     LOGGER.debug("Tailing logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
@@ -121,16 +123,13 @@ public class S3Logs implements CloudLogs {
     LOGGER.debug("Deleting logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
-    final var keys = getAscendingObjectKeys(logPath, configs.getS3LogBucket())
-        .stream().map(key -> ObjectIdentifier.builder().key(key).build())
-        .collect(Collectors.toList());
-    final Delete del = Delete.builder()
-        .objects(keys)
-        .build();
-    final DeleteObjectsRequest multiObjectDeleteRequest = DeleteObjectsRequest.builder()
-        .bucket(configs.getS3LogBucket())
-        .delete(del)
-        .build();
+    final var keys =
+        getAscendingObjectKeys(logPath, configs.getS3LogBucket()).stream()
+            .map(key -> ObjectIdentifier.builder().key(key).build())
+            .collect(Collectors.toList());
+    final Delete del = Delete.builder().objects(keys).build();
+    final DeleteObjectsRequest multiObjectDeleteRequest =
+        DeleteObjectsRequest.builder().bucket(configs.getS3LogBucket()).delete(del).build();
 
     S3.deleteObjects(multiObjectDeleteRequest);
     LOGGER.debug("Multiple objects are deleted!");
@@ -154,7 +153,10 @@ public class S3Logs implements CloudLogs {
         try {
           final var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);
-          builder.region(Region.US_EAST_1); // Although this is not used, the S3 client will error out if this is not set. Set a stub value.
+          builder.region(
+              Region
+                  .US_EAST_1); // Although this is not used, the S3 client will error out if this is
+          // not set. Set a stub value.
         } catch (final URISyntaxException e) {
           throw new RuntimeException("Error creating S3 log client to Minio", e);
         }
@@ -177,11 +179,9 @@ public class S3Logs implements CloudLogs {
     return ascendingTimestampObjs;
   }
 
-  private static ArrayList<String> getCurrFile(final String s3Bucket, final String poppedKey) throws IOException {
-    final var getObjReq = GetObjectRequest.builder()
-        .key(poppedKey)
-        .bucket(s3Bucket)
-        .build();
+  private static ArrayList<String> getCurrFile(final String s3Bucket, final String poppedKey)
+      throws IOException {
+    final var getObjReq = GetObjectRequest.builder().key(poppedKey).bucket(s3Bucket).build();
 
     final var data = S3.getObjectAsBytes(getObjReq).asByteArray();
     final var is = new ByteArrayInputStream(data);
@@ -194,5 +194,4 @@ public class S3Logs implements CloudLogs {
     }
     return currentFileLines;
   }
-
 }

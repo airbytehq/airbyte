@@ -44,7 +44,9 @@ class SpecCachingSynchronousSchedulerClientTest {
 
   @Test
   void testCreateGetSpecJobFails() throws IOException {
-    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE)).thenReturn(response1).thenReturn(response2);
+    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE))
+        .thenReturn(response1)
+        .thenReturn(response2);
     when(response1.isSuccess()).thenReturn(false);
     when(response2.isSuccess()).thenReturn(true);
     client.createGetSpecJob(DOCKER_IMAGE);
@@ -63,7 +65,9 @@ class SpecCachingSynchronousSchedulerClientTest {
 
   @Test
   void testInvalidateCache() throws IOException {
-    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE)).thenReturn(response1).thenReturn(response2);
+    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE))
+        .thenReturn(response1)
+        .thenReturn(response2);
     when(response1.isSuccess()).thenReturn(true);
     when(response2.isSuccess()).thenReturn(true);
     client.createGetSpecJob(DOCKER_IMAGE);
@@ -71,5 +75,4 @@ class SpecCachingSynchronousSchedulerClientTest {
     assertEquals(response2, client.createGetSpecJob(DOCKER_IMAGE));
     verify(decoratedClient, times(2)).createGetSpecJob(DOCKER_IMAGE);
   }
-
 }

@@ -32,10 +32,11 @@ public class TemporalUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalUtils.class);
 
   public static WorkflowServiceStubs createTemporalService(final String temporalHost) {
-    final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-        // todo move to env.
-        .setTarget(temporalHost)
-        .build();
+    final WorkflowServiceStubsOptions options =
+        WorkflowServiceStubsOptions.newBuilder()
+            // todo move to env.
+            .setTarget(temporalHost)
+            .build();
 
     final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
     waitForTemporalServerAndLog(temporalService);
@@ -47,7 +48,8 @@ public class TemporalUtils {
     return WorkflowClient.newInstance(temporalService);
   }
 
-  public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
+  public static final RetryOptions NO_RETRY =
+      RetryOptions.newBuilder().setMaximumAttempts(1).build();
 
   public static final String DEFAULT_NAMESPACE = "default";
 
@@ -55,7 +57,6 @@ public class TemporalUtils {
   public interface TemporalJobCreator<T extends Serializable> {
 
     UUID create(WorkflowClient workflowClient, long jobId, int attempt, T config);
-
   }
 
   public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
@@ -76,16 +77,14 @@ public class TemporalUtils {
   }
 
   public static JobRunConfig createJobRunConfig(final String jobId, final int attemptId) {
-    return new JobRunConfig()
-        .withJobId(jobId)
-        .withAttemptId((long) attemptId);
+    return new JobRunConfig().withJobId(jobId).withAttemptId((long) attemptId);
   }
 
   /**
    * Allows running a given temporal workflow stub asynchronously. This method only works for
-   * workflows that take one argument. Because of the iface that Temporal supplies, in order to handle
-   * other method signatures, if we need to support them, we will need to add another helper with that
-   * number of args. For a reference on how Temporal recommends to do this see their docs:
+   * workflows that take one argument. Because of the iface that Temporal supplies, in order to
+   * handle other method signatures, if we need to support them, we will need to add another helper
+   * with that number of args. For a reference on how Temporal recommends to do this see their docs:
    * https://docs.temporal.io/docs/java/workflows#asynchronous-start
    *
    * @param workflowStub - workflow stub to be executed
@@ -95,13 +94,14 @@ public class TemporalUtils {
    * @param <STUB> - type of the workflow stub
    * @param <A1> - type of the argument of the workflow stub
    * @param <R> - type of the return of the workflow stub
-   * @return pair of the workflow execution (contains metadata on the asynchronously running job) and
-   *         future that can be used to await the result of the workflow stub's function
+   * @return pair of the workflow execution (contains metadata on the asynchronously running job)
+   *     and future that can be used to await the result of the workflow stub's function
    */
-  public static <STUB, A1, R> ImmutablePair<WorkflowExecution, CompletableFuture<R>> asyncExecute(final STUB workflowStub,
-                                                                                                  final Functions.Func1<A1, R> function,
-                                                                                                  final A1 arg1,
-                                                                                                  final Class<R> outputType) {
+  public static <STUB, A1, R> ImmutablePair<WorkflowExecution, CompletableFuture<R>> asyncExecute(
+      final STUB workflowStub,
+      final Functions.Func1<A1, R> function,
+      final A1 arg1,
+      final Class<R> outputType) {
     final WorkflowStub untyped = WorkflowStub.fromTyped(workflowStub);
     final WorkflowExecution workflowExecution = WorkflowClient.start(function, arg1);
     final CompletableFuture<R> resultAsync = untyped.getResultAsync(outputType);
@@ -120,7 +120,8 @@ public class TemporalUtils {
       try {
         temporalStatus = getNamespaces(temporalService).contains("default");
       } catch (final Exception e) {
-        // Ignore the exception because this likely means that the Temporal service is still initializing.
+        // Ignore the exception because this likely means that the Temporal service is still
+        // initializing.
         LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
       }
     }
@@ -132,7 +133,8 @@ public class TemporalUtils {
   }
 
   protected static Set<String> getNamespaces(final WorkflowServiceStubs temporalService) {
-    return temporalService.blockingStub()
+    return temporalService
+        .blockingStub()
         .listNamespaces(ListNamespacesRequest.newBuilder().build())
         .getNamespacesList()
         .stream()
@@ -140,5 +142,4 @@ public class TemporalUtils {
         .map(NamespaceInfo::getName)
         .collect(toSet());
   }
-
 }

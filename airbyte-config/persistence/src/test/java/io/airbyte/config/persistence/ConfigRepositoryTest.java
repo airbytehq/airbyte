@@ -31,28 +31,39 @@ class ConfigRepositoryTest {
     configPersistence = mock(ConfigPersistence.class);
     final var secretPersistence = new MemorySecretPersistence();
     configRepository =
-        new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence));
+        new ConfigRepository(
+            configPersistence,
+            new NoOpSecretsHydrator(),
+            Optional.of(secretPersistence),
+            Optional.of(secretPersistence));
   }
 
   @Test
-  void testWorkspaceWithNullTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWorkspaceWithNullTombstone()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID));
   }
 
   @Test
-  void testWorkspaceWithFalseTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false));
+  void testWorkspaceWithFalseTombstone()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    assertReturnsWorkspace(
+        new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false));
   }
 
   @Test
-  void testWorkspaceWithTrueTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(true));
+  void testWorkspaceWithTrueTombstone()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    assertReturnsWorkspace(
+        new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(true));
   }
 
-  void assertReturnsWorkspace(final StandardWorkspace workspace) throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class)).thenReturn(workspace);
+  void assertReturnsWorkspace(final StandardWorkspace workspace)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configPersistence.getConfig(
+            ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class))
+        .thenReturn(workspace);
 
     assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
   }
-
 }

@@ -25,17 +25,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit test for the {@link DatabaseConfigPersistence#migrateFileConfigs} method.
- */
-public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabaseConfigPersistenceTest {
+/** Unit test for the {@link DatabaseConfigPersistence#migrateFileConfigs} method. */
+public class DatabaseConfigPersistenceMigrateFileConfigsTest
+    extends BaseDatabaseConfigPersistenceTest {
 
   private static Path ROOT_PATH;
   private final Configs configs = mock(Configs.class);
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database =
+        new ConfigsDatabaseInstance(
+                container.getUsername(), container.getPassword(), container.getJdbcUrl())
+            .getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
   }
 
@@ -46,9 +48,11 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
 
   @BeforeEach
   public void resetPersistence() throws Exception {
-    ROOT_PATH = Files.createTempDirectory(
-        Files.createDirectories(Path.of("/tmp/airbyte_tests")),
-        DatabaseConfigPersistenceMigrateFileConfigsTest.class.getSimpleName() + UUID.randomUUID());
+    ROOT_PATH =
+        Files.createTempDirectory(
+            Files.createDirectories(Path.of("/tmp/airbyte_tests")),
+            DatabaseConfigPersistenceMigrateFileConfigsTest.class.getSimpleName()
+                + UUID.randomUUID());
 
     reset(configs);
     when(configs.getConfigRoot()).thenReturn(ROOT_PATH);
@@ -65,12 +69,15 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
 
     assertRecordCount(0);
 
-    verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never())
+        .copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never())
+        .updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   @Test
-  @DisplayName("When database is not initialized, and there is local config dir, copy from local dir")
+  @DisplayName(
+      "When database is not initialized, and there is local config dir, copy from local dir")
   public void testMigrationDeployment() throws Exception {
     prepareLocalFilePersistence();
 
@@ -80,7 +87,8 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
     assertHasSource(SOURCE_GITHUB);
     assertHasDestination(DESTINATION_S3);
 
-    verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, times(1))
+        .copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   @Test
@@ -94,8 +102,10 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
     assertRecordCount(1);
     assertHasSource(SOURCE_GITHUB);
 
-    verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
-    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never())
+        .copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never())
+        .updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   private void prepareLocalFilePersistence() throws Exception {
@@ -104,5 +114,4 @@ public class DatabaseConfigPersistenceMigrateFileConfigsTest extends BaseDatabas
     writeSource(filePersistence, SOURCE_GITHUB);
     writeDestination(filePersistence, DESTINATION_S3);
   }
-
 }

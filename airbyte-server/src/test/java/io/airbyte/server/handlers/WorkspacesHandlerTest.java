@@ -66,7 +66,9 @@ class WorkspacesHandlerTest {
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
+    workspacesHandler =
+        new WorkspacesHandler(
+            configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -88,47 +90,51 @@ class WorkspacesHandlerTest {
   private Notification generateNotification() {
     return new Notification()
         .withNotificationType(NotificationType.SLACK)
-        .withSlackConfiguration(new SlackNotificationConfiguration()
-            .withWebhook(FAILURE_NOTIFICATION_WEBHOOK));
+        .withSlackConfiguration(
+            new SlackNotificationConfiguration().withWebhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
   private io.airbyte.api.model.Notification generateApiNotification() {
     return new io.airbyte.api.model.Notification()
         .notificationType(io.airbyte.api.model.NotificationType.SLACK)
-        .slackConfiguration(new io.airbyte.api.model.SlackNotificationConfiguration()
-            .webhook(FAILURE_NOTIFICATION_WEBHOOK));
+        .slackConfiguration(
+            new io.airbyte.api.model.SlackNotificationConfiguration()
+                .webhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
   @Test
   void testCreateWorkspace() throws JsonValidationException, IOException {
-    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
+    when(configRepository.listStandardWorkspaces(false))
+        .thenReturn(Collections.singletonList(workspace));
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
     configRepository.writeStandardWorkspace(workspace);
 
-    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
-        .name("new workspace")
-        .email("test@airbyte.io")
-        .news(false)
-        .anonymousDataCollection(false)
-        .securityUpdates(false)
-        .notifications(List.of(generateApiNotification()));
+    final WorkspaceCreate workspaceCreate =
+        new WorkspaceCreate()
+            .name("new workspace")
+            .email("test@airbyte.io")
+            .news(false)
+            .anonymousDataCollection(false)
+            .securityUpdates(false)
+            .notifications(List.of(generateApiNotification()));
 
     final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
-    final WorkspaceRead expectedRead = new WorkspaceRead()
-        .workspaceId(uuid)
-        .customerId(uuid)
-        .email("test@airbyte.io")
-        .name("new workspace")
-        .slug("new-workspace")
-        .initialSetupComplete(false)
-        .displaySetupWizard(false)
-        .news(false)
-        .anonymousDataCollection(false)
-        .securityUpdates(false)
-        .notifications(List.of(generateApiNotification()));
+    final WorkspaceRead expectedRead =
+        new WorkspaceRead()
+            .workspaceId(uuid)
+            .customerId(uuid)
+            .email("test@airbyte.io")
+            .name("new workspace")
+            .slug("new-workspace")
+            .initialSetupComplete(false)
+            .displaySetupWizard(false)
+            .news(false)
+            .anonymousDataCollection(false)
+            .securityUpdates(false)
+            .notifications(List.of(generateApiNotification()));
 
     assertEquals(expectedRead, actualRead);
   }
@@ -145,27 +151,29 @@ class WorkspacesHandlerTest {
 
     configRepository.writeStandardWorkspace(workspace);
 
-    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
-        .name(workspace.getName())
-        .email("test@airbyte.io")
-        .news(false)
-        .anonymousDataCollection(false)
-        .securityUpdates(false)
-        .notifications(Collections.emptyList());
+    final WorkspaceCreate workspaceCreate =
+        new WorkspaceCreate()
+            .name(workspace.getName())
+            .email("test@airbyte.io")
+            .news(false)
+            .anonymousDataCollection(false)
+            .securityUpdates(false)
+            .notifications(Collections.emptyList());
 
     final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
-    final WorkspaceRead expectedRead = new WorkspaceRead()
-        .workspaceId(uuid)
-        .customerId(uuid)
-        .email("test@airbyte.io")
-        .name(workspace.getName())
-        .slug(workspace.getSlug())
-        .initialSetupComplete(false)
-        .displaySetupWizard(false)
-        .news(false)
-        .anonymousDataCollection(false)
-        .securityUpdates(false)
-        .notifications(Collections.emptyList());
+    final WorkspaceRead expectedRead =
+        new WorkspaceRead()
+            .workspaceId(uuid)
+            .customerId(uuid)
+            .email("test@airbyte.io")
+            .name(workspace.getName())
+            .slug(workspace.getSlug())
+            .initialSetupComplete(false)
+            .displaySetupWizard(false)
+            .news(false)
+            .anonymousDataCollection(false)
+            .securityUpdates(false)
+            .notifications(Collections.emptyList());
 
     assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
     assertNotEquals(workspace.getSlug(), actualRead.getSlug());
@@ -176,20 +184,22 @@ class WorkspacesHandlerTest {
     assertEquals(workspace.getSlug(), slugCaptor.getAllValues().get(0));
     assertTrue(slugCaptor.getAllValues().get(1).startsWith(workspace.getSlug()));
     assertTrue(slugCaptor.getAllValues().get(2).startsWith(workspace.getSlug()));
-
   }
 
   @Test
   void testDeleteWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody =
+        new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
     final ConnectionRead connection = new ConnectionRead();
     final DestinationRead destination = new DestinationRead();
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace);
 
-    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
+    when(configRepository.listStandardWorkspaces(false))
+        .thenReturn(Collections.singletonList(workspace));
 
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody))
         .thenReturn(new ConnectionReadList().connections(Collections.singletonList(connection)));
@@ -211,79 +221,88 @@ class WorkspacesHandlerTest {
   void testListWorkspaces() throws JsonValidationException, IOException {
     final StandardWorkspace workspace2 = generateWorkspace();
 
-    when(configRepository.listStandardWorkspaces(false)).thenReturn(Lists.newArrayList(workspace, workspace2));
+    when(configRepository.listStandardWorkspaces(false))
+        .thenReturn(Lists.newArrayList(workspace, workspace2));
 
-    final WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
-        .workspaceId(workspace.getWorkspaceId())
-        .customerId(workspace.getCustomerId())
-        .email(workspace.getEmail())
-        .name(workspace.getName())
-        .slug(workspace.getSlug())
-        .initialSetupComplete(workspace.getInitialSetupComplete())
-        .displaySetupWizard(workspace.getDisplaySetupWizard())
-        .news(workspace.getNews())
-        .anonymousDataCollection(workspace.getAnonymousDataCollection())
-        .securityUpdates(workspace.getSecurityUpdates())
-        .notifications(List.of(generateApiNotification()));
+    final WorkspaceRead expectedWorkspaceRead1 =
+        new WorkspaceRead()
+            .workspaceId(workspace.getWorkspaceId())
+            .customerId(workspace.getCustomerId())
+            .email(workspace.getEmail())
+            .name(workspace.getName())
+            .slug(workspace.getSlug())
+            .initialSetupComplete(workspace.getInitialSetupComplete())
+            .displaySetupWizard(workspace.getDisplaySetupWizard())
+            .news(workspace.getNews())
+            .anonymousDataCollection(workspace.getAnonymousDataCollection())
+            .securityUpdates(workspace.getSecurityUpdates())
+            .notifications(List.of(generateApiNotification()));
 
-    final WorkspaceRead expectedWorkspaceRead2 = new WorkspaceRead()
-        .workspaceId(workspace2.getWorkspaceId())
-        .customerId(workspace2.getCustomerId())
-        .email(workspace2.getEmail())
-        .name(workspace2.getName())
-        .slug(workspace2.getSlug())
-        .initialSetupComplete(workspace2.getInitialSetupComplete())
-        .displaySetupWizard(workspace2.getDisplaySetupWizard())
-        .news(workspace2.getNews())
-        .anonymousDataCollection(workspace2.getAnonymousDataCollection())
-        .securityUpdates(workspace2.getSecurityUpdates())
-        .notifications(List.of(generateApiNotification()));
+    final WorkspaceRead expectedWorkspaceRead2 =
+        new WorkspaceRead()
+            .workspaceId(workspace2.getWorkspaceId())
+            .customerId(workspace2.getCustomerId())
+            .email(workspace2.getEmail())
+            .name(workspace2.getName())
+            .slug(workspace2.getSlug())
+            .initialSetupComplete(workspace2.getInitialSetupComplete())
+            .displaySetupWizard(workspace2.getDisplaySetupWizard())
+            .news(workspace2.getNews())
+            .anonymousDataCollection(workspace2.getAnonymousDataCollection())
+            .securityUpdates(workspace2.getSecurityUpdates())
+            .notifications(List.of(generateApiNotification()));
 
     final WorkspaceReadList actualWorkspaceReadList = workspacesHandler.listWorkspaces();
 
-    assertEquals(Lists.newArrayList(expectedWorkspaceRead1, expectedWorkspaceRead2),
+    assertEquals(
+        Lists.newArrayList(expectedWorkspaceRead1, expectedWorkspaceRead2),
         actualWorkspaceReadList.getWorkspaces());
   }
 
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace);
 
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
+    final WorkspaceIdRequestBody workspaceIdRequestBody =
+        new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
-    final WorkspaceRead workspaceRead = new WorkspaceRead()
-        .workspaceId(workspace.getWorkspaceId())
-        .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("test workspace")
-        .slug("test-workspace")
-        .initialSetupComplete(false)
-        .displaySetupWizard(true)
-        .news(false)
-        .anonymousDataCollection(false)
-        .securityUpdates(false)
-        .notifications(List.of(generateApiNotification()));
+    final WorkspaceRead workspaceRead =
+        new WorkspaceRead()
+            .workspaceId(workspace.getWorkspaceId())
+            .customerId(workspace.getCustomerId())
+            .email("test@airbyte.io")
+            .name("test workspace")
+            .slug("test-workspace")
+            .initialSetupComplete(false)
+            .displaySetupWizard(true)
+            .news(false)
+            .anonymousDataCollection(false)
+            .securityUpdates(false)
+            .notifications(List.of(generateApiNotification()));
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
 
   @Test
-  void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testGetWorkspaceBySlug()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.getWorkspaceBySlug("default", false)).thenReturn(workspace);
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
-    final WorkspaceRead workspaceRead = new WorkspaceRead()
-        .workspaceId(workspace.getWorkspaceId())
-        .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name(workspace.getName())
-        .slug(workspace.getSlug())
-        .initialSetupComplete(workspace.getInitialSetupComplete())
-        .displaySetupWizard(workspace.getDisplaySetupWizard())
-        .news(workspace.getNews())
-        .anonymousDataCollection(workspace.getAnonymousDataCollection())
-        .securityUpdates(workspace.getSecurityUpdates())
-        .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
+    final WorkspaceRead workspaceRead =
+        new WorkspaceRead()
+            .workspaceId(workspace.getWorkspaceId())
+            .customerId(workspace.getCustomerId())
+            .email("test@airbyte.io")
+            .name(workspace.getName())
+            .slug(workspace.getSlug())
+            .initialSetupComplete(workspace.getInitialSetupComplete())
+            .displaySetupWizard(workspace.getDisplaySetupWizard())
+            .news(workspace.getNews())
+            .anonymousDataCollection(workspace.getAnonymousDataCollection())
+            .securityUpdates(workspace.getSecurityUpdates())
+            .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
@@ -292,30 +311,32 @@ class WorkspacesHandlerTest {
   void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     final io.airbyte.api.model.Notification apiNotification = generateApiNotification();
     apiNotification.getSlackConfiguration().webhook("updated");
-    final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
-        .workspaceId(workspace.getWorkspaceId())
-        .anonymousDataCollection(true)
-        .securityUpdates(false)
-        .news(false)
-        .initialSetupComplete(true)
-        .displaySetupWizard(false)
-        .notifications(List.of(apiNotification));
+    final WorkspaceUpdate workspaceUpdate =
+        new WorkspaceUpdate()
+            .workspaceId(workspace.getWorkspaceId())
+            .anonymousDataCollection(true)
+            .securityUpdates(false)
+            .news(false)
+            .initialSetupComplete(true)
+            .displaySetupWizard(false)
+            .notifications(List.of(apiNotification));
 
     final Notification expectedNotification = generateNotification();
     expectedNotification.getSlackConfiguration().withWebhook("updated");
-    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
-        .withWorkspaceId(workspace.getWorkspaceId())
-        .withCustomerId(workspace.getCustomerId())
-        .withEmail("test@airbyte.io")
-        .withName("test workspace")
-        .withSlug("test-workspace")
-        .withAnonymousDataCollection(true)
-        .withSecurityUpdates(false)
-        .withNews(false)
-        .withInitialSetupComplete(true)
-        .withDisplaySetupWizard(false)
-        .withTombstone(false)
-        .withNotifications(List.of(expectedNotification));
+    final StandardWorkspace expectedWorkspace =
+        new StandardWorkspace()
+            .withWorkspaceId(workspace.getWorkspaceId())
+            .withCustomerId(workspace.getCustomerId())
+            .withEmail("test@airbyte.io")
+            .withName("test workspace")
+            .withSlug("test-workspace")
+            .withAnonymousDataCollection(true)
+            .withSecurityUpdates(false)
+            .withNews(false)
+            .withInitialSetupComplete(true)
+            .withDisplaySetupWizard(false)
+            .withTombstone(false)
+            .withNotifications(List.of(expectedNotification));
 
     when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
@@ -325,22 +346,22 @@ class WorkspacesHandlerTest {
 
     final io.airbyte.api.model.Notification expectedNotificationRead = generateApiNotification();
     expectedNotificationRead.getSlackConfiguration().webhook("updated");
-    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
-        .workspaceId(workspace.getWorkspaceId())
-        .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("test workspace")
-        .slug("test-workspace")
-        .initialSetupComplete(true)
-        .displaySetupWizard(false)
-        .news(false)
-        .anonymousDataCollection(true)
-        .securityUpdates(false)
-        .notifications(List.of(expectedNotificationRead));
+    final WorkspaceRead expectedWorkspaceRead =
+        new WorkspaceRead()
+            .workspaceId(workspace.getWorkspaceId())
+            .customerId(workspace.getCustomerId())
+            .email("test@airbyte.io")
+            .name("test workspace")
+            .slug("test-workspace")
+            .initialSetupComplete(true)
+            .displaySetupWizard(false)
+            .news(false)
+            .anonymousDataCollection(true)
+            .securityUpdates(false)
+            .notifications(List.of(expectedNotificationRead));
 
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
-
 }

@@ -12,24 +12,15 @@ import org.flywaydb.core.api.output.MigrateResult;
 
 public interface DatabaseMigrator {
 
-  /**
-   * Run migration.
-   */
+  /** Run migration. */
   MigrateResult migrate();
 
-  /**
-   * List migration information.
-   */
+  /** List migration information. */
   List<MigrationInfo> list();
 
-  /**
-   * Setup Flyway migration in a database and create baseline.
-   */
+  /** Setup Flyway migration in a database and create baseline. */
   BaselineResult createBaseline();
 
-  /**
-   * Dump the current database schema.
-   */
+  /** Dump the current database schema. */
   String dumpSchema() throws IOException;
-
 }

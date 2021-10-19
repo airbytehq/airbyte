@@ -33,22 +33,29 @@ public class JobHistoryHandler {
   @SuppressWarnings("UnstableApiUsage")
   public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {
     Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
-    Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
+    Preconditions.checkState(
+        !request.getConfigTypes().isEmpty(), "Must include at least one configType.");
 
-    final Set<ConfigType> configTypes = request.getConfigTypes()
-        .stream()
-        .map(type -> Enums.convertTo(type, JobConfig.ConfigType.class))
-        .collect(Collectors.toSet());
+    final Set<ConfigType> configTypes =
+        request.getConfigTypes().stream()
+            .map(type -> Enums.convertTo(type, JobConfig.ConfigType.class))
+            .collect(Collectors.toSet());
     final String configId = request.getConfigId();
 
-    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
-        configId,
-        (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
-            : DEFAULT_PAGE_SIZE,
-        (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
-        .stream()
-        .map(JobConverter::getJobWithAttemptsRead)
-        .collect(Collectors.toList());
+    final List<JobWithAttemptsRead> jobReads =
+        jobPersistence
+            .listJobs(
+                configTypes,
+                configId,
+                (request.getPagination() != null && request.getPagination().getPageSize() != null)
+                    ? request.getPagination().getPageSize()
+                    : DEFAULT_PAGE_SIZE,
+                (request.getPagination() != null && request.getPagination().getRowOffset() != null)
+                    ? request.getPagination().getRowOffset()
+                    : 0)
+            .stream()
+            .map(JobConverter::getJobWithAttemptsRead)
+            .collect(Collectors.toList());
     return new JobReadList().jobs(jobReads);
   }
 
@@ -57,5 +64,4 @@ public class JobHistoryHandler {
 
     return JobConverter.getJobInfoRead(job);
   }
-
 }

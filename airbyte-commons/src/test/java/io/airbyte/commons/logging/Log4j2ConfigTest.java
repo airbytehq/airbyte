@@ -38,12 +38,13 @@ public class Log4j2ConfigTest {
     final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
-    executor.submit(() -> {
-      MDC.put("context", "worker");
-      MDC.put("job_log_path", root + "/" + filename);
-      logger.error("random message testWorkerDispatch");
-      MDC.clear();
-    });
+    executor.submit(
+        () -> {
+          MDC.put("context", "worker");
+          MDC.put("job_log_path", root + "/" + filename);
+          logger.error("random message testWorkerDispatch");
+          MDC.clear();
+        });
 
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -60,15 +61,17 @@ public class Log4j2ConfigTest {
     final Path root2 = root.resolve("2");
 
     final ExecutorService executor = Executors.newFixedThreadPool(2);
-    executor.submit(() -> {
-      MDC.put("job_log_path", root1 + "/" + filename);
-      logger.error("random message 1");
-    });
+    executor.submit(
+        () -> {
+          MDC.put("job_log_path", root1 + "/" + filename);
+          logger.error("random message 1");
+        });
 
-    executor.submit(() -> {
-      MDC.put("job_log_path", root2 + "/" + filename);
-      logger.error("random message 2");
-    });
+    executor.submit(
+        () -> {
+          MDC.put("job_log_path", root2 + "/" + filename);
+          logger.error("random message 2");
+        });
 
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -84,10 +87,11 @@ public class Log4j2ConfigTest {
     final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
-    executor.submit(() -> {
-      logger.error("random message testLogNoJobRoot");
-      MDC.clear();
-    });
+    executor.submit(
+        () -> {
+          logger.error("random message testLogNoJobRoot");
+          MDC.clear();
+        });
 
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -102,11 +106,12 @@ public class Log4j2ConfigTest {
     final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
-    executor.submit(() -> {
-      MDC.put("workspace_app_root", root.toString());
-      logger.error("random message testAppDispatch");
-      MDC.clear();
-    });
+    executor.submit(
+        () -> {
+          MDC.put("workspace_app_root", root.toString());
+          logger.error("random message testAppDispatch");
+          MDC.clear();
+        });
 
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -121,15 +126,15 @@ public class Log4j2ConfigTest {
     final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
-    executor.submit(() -> {
-      logger.error("random message testLogNoAppRoot");
-      MDC.clear();
-    });
+    executor.submit(
+        () -> {
+          logger.error("random message testLogNoAppRoot");
+          MDC.clear();
+        });
 
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
 
     assertFalse(Files.exists(root.resolve(filename)));
   }
-
 }

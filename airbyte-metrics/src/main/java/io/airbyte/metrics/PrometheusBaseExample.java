@@ -19,9 +19,20 @@ public class PrometheusBaseExample {
     // Number and type of metrics per class is left on discretion
     // of a Developer.
     // A "namespace()" here sets the prefix of a metric.
-    static final Counter counter = Counter.build().namespace("app_prom_java").name("my_counter").help("This is my counter").register();
-    static final Gauge gauge = Gauge.build().name("test_metric_gauges").help("test scheduler metric").register();
-    static final Histogram histogram = Histogram.build().namespace("app_prom_java").name("my_histogram").help("This is my histogram").register();
+    static final Counter counter =
+        Counter.build()
+            .namespace("app_prom_java")
+            .name("my_counter")
+            .help("This is my counter")
+            .register();
+    static final Gauge gauge =
+        Gauge.build().name("test_metric_gauges").help("test scheduler metric").register();
+    static final Histogram histogram =
+        Histogram.build()
+            .namespace("app_prom_java")
+            .name("my_histogram")
+            .help("This is my histogram")
+            .register();
     // static final Summary summary =
     // Summary.build().namespace("app_prom_java").name("my_summary").help("This is my
     // summary").register();
@@ -41,15 +52,16 @@ public class PrometheusBaseExample {
     private static double rand(final double min, final double max) {
       return min + (Math.random() * (max - min));
     }
-
   }
 
   public static void main(final String[] args) {
     try {
-      // The second constructor argument ('true') makes this server start as a separate daemon thread.
+      // The second constructor argument ('true') makes this server start as a separate daemon
+      // thread.
       // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
       new HTTPServer(Integer.parseInt("8081"), true);
-    } catch (final IOException e) {}
+    } catch (final IOException e) {
+    }
 
     // The following block along with an instance of the instrumented
     // class simulates activity inside instrumented class object, which
@@ -63,7 +75,5 @@ public class PrometheusBaseExample {
         e.printStackTrace();
       }
     }
-
   }
-
 }

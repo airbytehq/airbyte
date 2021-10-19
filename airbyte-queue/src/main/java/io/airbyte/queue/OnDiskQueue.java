@@ -20,8 +20,7 @@ import org.apache.commons.io.FileUtils;
  * the size of memory. It is meant for use by a single process. Closing this queue deletes the data
  * on disk. It is NOT meant to be a long-lived, persistent queue.
  *
- * Wraps BigQueueImpl behind Airbyte persistent queue interface. BigQueueImpl is threadsafe.
- *
+ * <p>Wraps BigQueueImpl behind Airbyte persistent queue interface. BigQueueImpl is threadsafe.
  */
 public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
 
@@ -101,11 +100,13 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
    */
   @Override
   public String toString() {
-    return "OnDiskQueue{" +
-        "queue=" + queue.hashCode() +
-        ", size=" + queue.size() +
-        ", closed=" + closed +
-        '}';
+    return "OnDiskQueue{"
+        + "queue="
+        + queue.hashCode()
+        + ", size="
+        + queue.size()
+        + ", closed="
+        + closed
+        + '}';
   }
-
 }

@@ -34,13 +34,11 @@ public class CommonField<T> {
     }
 
     final CommonField<T> field = (CommonField<T>) o;
-    return name.equals(field.name) &&
-        type == field.type;
+    return name.equals(field.name) && type == field.type;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(name, type);
   }
-
 }

@@ -29,11 +29,11 @@ class WorkerRunTest {
   @SuppressWarnings("unchecked")
   @Test
   void test() throws Exception {
-    final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> supplier = mock(CheckedSupplier.class);
+    final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> supplier =
+        mock(CheckedSupplier.class);
     new WorkerRun(path, supplier, "unknown airbyte version").call();
 
     assertTrue(Files.exists(path));
     verify(supplier).get();
   }
-
 }

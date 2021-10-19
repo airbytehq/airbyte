@@ -61,12 +61,12 @@ public class StandardNameTransformer implements NamingConventionTransformer {
       }
       return Jsons.jsonNode(properties);
     } else if (root.isArray()) {
-      return Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
-          .map(StandardNameTransformer::formatJsonPath)
-          .collect(Collectors.toList()));
+      return Jsons.jsonNode(
+          MoreIterators.toList(root.elements()).stream()
+              .map(StandardNameTransformer::formatJsonPath)
+              .collect(Collectors.toList()));
     } else {
       return root;
     }
   }
-
 }

@@ -7,7 +7,6 @@ package io.airbyte.migrate;
 import java.nio.file.Path;
 
 public enum ResourceType {
-
   CONFIG(Path.of("airbyte_config")),
   JOB(Path.of("airbyte_db"));
 
@@ -20,5 +19,4 @@ public enum ResourceType {
   public Path getDirectoryName() {
     return directoryName;
   }
-
 }

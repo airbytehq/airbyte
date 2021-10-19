@@ -15,15 +15,17 @@ import java.util.function.Supplier;
 
 public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
 
-  @VisibleForTesting
-  static final String SCOPE_URL = "https://www.googleapis.com/auth/adwords";
+  @VisibleForTesting static final String SCOPE_URL = "https://www.googleapis.com/auth/adwords";
 
   public GoogleAdsOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  GoogleAdsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  GoogleAdsOAuthFlow(
+      final ConfigRepository configRepository,
+      final HttpClient httpClient,
+      final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
@@ -51,5 +53,4 @@ public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
     // the config object containing refresh token is nested inside the "credentials" object
     return Map.of("credentials", super.extractRefreshToken(data));
   }
-
 }

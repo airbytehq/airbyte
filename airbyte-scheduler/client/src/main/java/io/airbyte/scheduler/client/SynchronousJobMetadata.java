@@ -23,12 +23,13 @@ public class SynchronousJobMetadata {
 
   private final Path logPath;
 
-  public static SynchronousJobMetadata fromJobMetadata(final JobMetadata jobMetadata,
-                                                       final UUID id,
-                                                       final ConfigType configType,
-                                                       final UUID configId,
-                                                       final long createdAt,
-                                                       final long endedAt) {
+  public static SynchronousJobMetadata fromJobMetadata(
+      final JobMetadata jobMetadata,
+      final UUID id,
+      final ConfigType configType,
+      final UUID configId,
+      final long createdAt,
+      final long endedAt) {
     return new SynchronousJobMetadata(
         id,
         configType,
@@ -39,13 +40,14 @@ public class SynchronousJobMetadata {
         jobMetadata.getLogPath());
   }
 
-  public SynchronousJobMetadata(final UUID id,
-                                final ConfigType configType,
-                                final UUID configId,
-                                final long createdAt,
-                                final long endedAt,
-                                final boolean succeeded,
-                                final Path logPath) {
+  public SynchronousJobMetadata(
+      final UUID id,
+      final ConfigType configType,
+      final UUID configId,
+      final long createdAt,
+      final long endedAt,
+      final boolean succeeded,
+      final Path logPath) {
     this.id = id;
     this.configType = configType;
     this.configId = configId;
@@ -92,8 +94,13 @@ public class SynchronousJobMetadata {
       return false;
     }
     final SynchronousJobMetadata that = (SynchronousJobMetadata) o;
-    return createdAt == that.createdAt && endedAt == that.endedAt && succeeded == that.succeeded && Objects.equals(id, that.id)
-        && configType == that.configType && Objects.equals(configId, that.configId) && Objects.equals(logPath, that.logPath);
+    return createdAt == that.createdAt
+        && endedAt == that.endedAt
+        && succeeded == that.succeeded
+        && Objects.equals(id, that.id)
+        && configType == that.configType
+        && Objects.equals(configId, that.configId)
+        && Objects.equals(logPath, that.logPath);
   }
 
   @Override
@@ -103,15 +110,21 @@ public class SynchronousJobMetadata {
 
   @Override
   public String toString() {
-    return "SynchronousJobMetadata{" +
-        "id=" + id +
-        ", configType=" + configType +
-        ", configId=" + configId +
-        ", createdAt=" + createdAt +
-        ", endedAt=" + endedAt +
-        ", succeeded=" + succeeded +
-        ", logPath=" + logPath +
-        '}';
+    return "SynchronousJobMetadata{"
+        + "id="
+        + id
+        + ", configType="
+        + configType
+        + ", configId="
+        + configId
+        + ", createdAt="
+        + createdAt
+        + ", endedAt="
+        + endedAt
+        + ", succeeded="
+        + succeeded
+        + ", logPath="
+        + logPath
+        + '}';
   }
-
 }

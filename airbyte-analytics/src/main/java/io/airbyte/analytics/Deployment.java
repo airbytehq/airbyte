@@ -12,24 +12,23 @@ import java.util.UUID;
 
 public class Deployment {
 
-  /**
-   * deployment - deployment tracking info.
-   */
+  /** deployment - deployment tracking info. */
   private final DeploymentMode deploymentMode;
   /**
    * deploymentId - Identifier for the deployment.
    *
-   * This identifier tracks an install of Airbyte. Any time Airbyte is started up with new volumes or
-   * persistence, it will be assigned a new deployment id. This is different from the lifecycle of the
-   * rest of the data layer which may be persisted across deployments.
+   * <p>This identifier tracks an install of Airbyte. Any time Airbyte is started up with new
+   * volumes or persistence, it will be assigned a new deployment id. This is different from the
+   * lifecycle of the rest of the data layer which may be persisted across deployments.
    */
   private final UUID deploymentId;
-  /**
-   * deploymentEnvironment - the environment that airbyte is running in.
-   */
+  /** deploymentEnvironment - the environment that airbyte is running in. */
   private final Configs.WorkerEnvironment deploymentEnv;
 
-  public Deployment(final DeploymentMode deploymentMode, final UUID deploymentId, final WorkerEnvironment deploymentEnv) {
+  public Deployment(
+      final DeploymentMode deploymentMode,
+      final UUID deploymentId,
+      final WorkerEnvironment deploymentEnv) {
     Preconditions.checkNotNull(deploymentMode);
     Preconditions.checkNotNull(deploymentId);
     Preconditions.checkNotNull(deploymentEnv);
@@ -50,5 +49,4 @@ public class Deployment {
   public WorkerEnvironment getDeploymentEnv() {
     return deploymentEnv;
   }
-
 }

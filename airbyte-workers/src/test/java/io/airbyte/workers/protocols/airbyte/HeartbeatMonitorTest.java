@@ -52,5 +52,4 @@ class HeartbeatMonitorTest {
     heartbeatMonitor.beat();
     assertFalse(heartbeatMonitor.isBeating());
   }
-
 }

@@ -30,7 +30,8 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       recordCount.incrementAndGet();
       // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
-      numBytes.addAndGet(Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length);
+      numBytes.addAndGet(
+          Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length);
     }
     if (message.getType() == AirbyteMessage.Type.STATE) {
       outputState.set(new State().withState(message.getState().getData()));
@@ -51,5 +52,4 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
   public Optional<State> getOutputState() {
     return Optional.ofNullable(outputState.get());
   }
-
 }

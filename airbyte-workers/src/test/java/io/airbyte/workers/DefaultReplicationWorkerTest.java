@@ -65,9 +65,12 @@ class DefaultReplicationWorkerTest {
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
-  private static final AirbyteMessage RECORD_MESSAGE1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
-  private static final AirbyteMessage RECORD_MESSAGE2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
-  private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
+  private static final AirbyteMessage RECORD_MESSAGE1 =
+      AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+  private static final AirbyteMessage RECORD_MESSAGE2 =
+      AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+  private static final AirbyteMessage STATE_MESSAGE =
+      AirbyteMessageUtils.createStateMessage("checkpoint", "1");
 
   private Path jobRoot;
   private AirbyteSource source;
@@ -86,7 +89,8 @@ class DefaultReplicationWorkerTest {
 
     jobRoot = Files.createDirectories(Files.createTempDirectory("test").resolve(WORKSPACE_ROOT));
 
-    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
+    final ImmutablePair<StandardSync, StandardSyncInput> syncPair =
+        TestConfigHelpers.createSyncConfig();
     syncInput = syncPair.getValue();
 
     sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
@@ -100,8 +104,10 @@ class DefaultReplicationWorkerTest {
 
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);
-    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
-    when(mapper.mapCatalog(destinationConfig.getCatalog())).thenReturn(destinationConfig.getCatalog());
+    when(source.attemptRead())
+        .thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
+    when(mapper.mapCatalog(destinationConfig.getCatalog()))
+        .thenReturn(destinationConfig.getCatalog());
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
   }
@@ -113,14 +119,15 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void test() throws Exception {
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
     worker.run(syncInput, jobRoot);
 
@@ -134,19 +141,21 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testLoggingInThreads() throws IOException, WorkerException {
-    // set up the mdc so that actually log to a file, so that we can verify that file logging captures
+    // set up the mdc so that actually log to a file, so that we can verify that file logging
+    // captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
     LogClientSingleton.setJobMdc(jobRoot);
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
     worker.run(syncInput, jobRoot);
 
@@ -177,24 +186,28 @@ class DefaultReplicationWorkerTest {
   void testCancellation() throws InterruptedException {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     when(source.isFinished()).thenReturn(false);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
+    when(destinationMessageTracker.getOutputState())
+        .thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
-    final Thread workerThread = new Thread(() -> {
-      try {
-        output.set(worker.run(syncInput, jobRoot));
-      } catch (final WorkerException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    final Thread workerThread =
+        new Thread(
+            () -> {
+              try {
+                output.set(worker.run(syncInput, jobRoot));
+              } catch (final WorkerException e) {
+                throw new RuntimeException(e);
+              }
+            });
 
     workerThread.start();
 
@@ -215,34 +228,43 @@ class DefaultReplicationWorkerTest {
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
     when(sourceMessageTracker.getRecordCount()).thenReturn(12L);
     when(sourceMessageTracker.getBytesCount()).thenReturn(100L);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+    when(destinationMessageTracker.getOutputState())
+        .thenReturn(Optional.of(new State().withState(expectedState)));
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
-    final ReplicationOutput replicationOutput = new ReplicationOutput()
-        .withReplicationAttemptSummary(new ReplicationAttemptSummary()
-            .withRecordsSynced(12L)
-            .withBytesSynced(100L)
-            .withStatus(ReplicationStatus.COMPLETED))
-        .withOutputCatalog(syncInput.getCatalog())
-        .withState(new State().withState(expectedState));
+    final ReplicationOutput replicationOutput =
+        new ReplicationOutput()
+            .withReplicationAttemptSummary(
+                new ReplicationAttemptSummary()
+                    .withRecordsSynced(12L)
+                    .withBytesSynced(100L)
+                    .withStatus(ReplicationStatus.COMPLETED))
+            .withOutputCatalog(syncInput.getCatalog())
+            .withState(new State().withState(expectedState));
 
     // good enough to verify that times are present.
     assertNotNull(actual.getReplicationAttemptSummary().getStartTime());
     assertNotNull(actual.getReplicationAttemptSummary().getEndTime());
 
     // verify output object matches declared json schema spec.
-    final Set<String> validate = new JsonSchemaValidator()
-        .validate(Jsons.jsonNode(Jsons.jsonNode(JsonSchemaValidator.getSchema(ConfigSchema.REPLICATION_OUTPUT.getConfigSchemaFile()))),
-            Jsons.jsonNode(actual));
+    final Set<String> validate =
+        new JsonSchemaValidator()
+            .validate(
+                Jsons.jsonNode(
+                    Jsons.jsonNode(
+                        JsonSchemaValidator.getSchema(
+                            ConfigSchema.REPLICATION_OUTPUT.getConfigSchemaFile()))),
+                Jsons.jsonNode(actual));
     assertTrue(validate.isEmpty(), "Validation errors: " + Strings.join(validate, ","));
 
     // remove times so we can do the rest of the object <> object comparison.
@@ -255,16 +277,18 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesStateOnFailureIfAvailable() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(source).close();
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
+    when(destinationMessageTracker.getOutputState())
+        .thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -275,14 +299,15 @@ class DefaultReplicationWorkerTest {
   void testRetainsStateOnFailureIfNewStateNotAvailable() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(source).close();
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -297,14 +322,15 @@ class DefaultReplicationWorkerTest {
 
     doThrow(new IllegalStateException("induced exception")).when(source).close();
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -314,17 +340,19 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testDoesNotPopulateOnIrrecoverableFailure() {
-    doThrow(new IllegalStateException("induced exception")).when(sourceMessageTracker).getRecordCount();
+    doThrow(new IllegalStateException("induced exception"))
+        .when(sourceMessageTracker)
+        .getRecordCount();
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+    final ReplicationWorker worker =
+        new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            sourceMessageTracker,
+            destinationMessageTracker);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
-
 }

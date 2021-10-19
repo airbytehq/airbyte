@@ -20,24 +20,25 @@ import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
 
-  private static final JsonNode VALID_SCHEMA = Jsons.deserialize(
-      "{\n" +
-          "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" +
-          "    \"title\": \"test\",\n" +
-          "    \"type\": \"object\",\n" +
-          "    \"required\": [\"host\"],\n" +
-          "    \"additionalProperties\": false,\n" +
-          "    \"properties\": {\n" +
-          "      \"host\": {\n" +
-          "        \"type\": \"string\"\n" +
-          "      },\n" +
-          "      \"port\": {\n" +
-          "        \"type\": \"integer\",\n" +
-          "        \"minimum\": 0,\n" +
-          "        \"maximum\": 65536\n" +
-          "      }" +
-          "    }\n" +
-          "  }");
+  private static final JsonNode VALID_SCHEMA =
+      Jsons.deserialize(
+          "{\n"
+              + "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
+              + "    \"title\": \"test\",\n"
+              + "    \"type\": \"object\",\n"
+              + "    \"required\": [\"host\"],\n"
+              + "    \"additionalProperties\": false,\n"
+              + "    \"properties\": {\n"
+              + "      \"host\": {\n"
+              + "        \"type\": \"string\"\n"
+              + "      },\n"
+              + "      \"port\": {\n"
+              + "        \"type\": \"integer\",\n"
+              + "        \"minimum\": 0,\n"
+              + "        \"maximum\": 65536\n"
+              + "      }"
+              + "    }\n"
+              + "  }");
 
   @Test
   void testValidateSuccess() {
@@ -67,37 +68,40 @@ class JsonSchemaValidatorTest {
 
   @Test
   void test() throws IOException {
-    final String schema = "{\n"
-        + "  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
-        + "  \"title\": \"OuterObject\",\n"
-        + "  \"type\": \"object\",\n"
-        + "  \"properties\": {\n"
-        + "    \"field1\": {\n"
-        + "      \"type\": \"string\"\n"
-        + "    }\n"
-        + "  },\n"
-        + "  \"definitions\": {\n"
-        + "    \"InnerObject\": {\n"
-        + "      \"type\": \"object\",\n"
-        + "      \"properties\": {\n"
-        + "        \"field2\": {\n"
-        + "          \"type\": \"string\"\n"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  }\n"
-        + "}\n";
+    final String schema =
+        "{\n"
+            + "  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
+            + "  \"title\": \"OuterObject\",\n"
+            + "  \"type\": \"object\",\n"
+            + "  \"properties\": {\n"
+            + "    \"field1\": {\n"
+            + "      \"type\": \"string\"\n"
+            + "    }\n"
+            + "  },\n"
+            + "  \"definitions\": {\n"
+            + "    \"InnerObject\": {\n"
+            + "      \"type\": \"object\",\n"
+            + "      \"properties\": {\n"
+            + "        \"field2\": {\n"
+            + "          \"type\": \"string\"\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n";
 
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "schema.json", schema).toFile();
+    final File schemaFile =
+        IOs.writeFile(Files.createTempDirectory("test"), "schema.json", schema).toFile();
 
     // outer object
     assertTrue(JsonSchemaValidator.getSchema(schemaFile).get("properties").has("field1"));
     assertFalse(JsonSchemaValidator.getSchema(schemaFile).get("properties").has("field2"));
     // inner object
-    assertTrue(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field2"));
-    assertFalse(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field1"));
+    assertTrue(
+        JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field2"));
+    assertFalse(
+        JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field1"));
     // non-existent object
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
   }
-
 }

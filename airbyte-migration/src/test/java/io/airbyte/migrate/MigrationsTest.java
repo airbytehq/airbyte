@@ -15,10 +15,16 @@ class MigrationsTest {
 
   @Test
   void testMigrationsOrder() {
-    final List<Migration> migrationsSorted = Migrations.MIGRATIONS.stream()
-        .sorted((a, b) -> new AirbyteVersion(a.getVersion()).patchVersionCompareTo(new AirbyteVersion(b.getVersion())))
-        .collect(Collectors.toList());
-    assertEquals(migrationsSorted, Migrations.MIGRATIONS, "Migrations must be added to the MIGRATIONS list in version order.");
+    final List<Migration> migrationsSorted =
+        Migrations.MIGRATIONS.stream()
+            .sorted(
+                (a, b) ->
+                    new AirbyteVersion(a.getVersion())
+                        .patchVersionCompareTo(new AirbyteVersion(b.getVersion())))
+            .collect(Collectors.toList());
+    assertEquals(
+        migrationsSorted,
+        Migrations.MIGRATIONS,
+        "Migrations must be added to the MIGRATIONS list in version order.");
   }
-
 }

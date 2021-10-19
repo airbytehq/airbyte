@@ -25,9 +25,12 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws Exception {
+  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot)
+      throws Exception {
     consumer =
-        dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(), destinationConfig.getCatalog(),
+        dest.getConsumer(
+            destinationConfig.getDestinationConnectionConfiguration(),
+            destinationConfig.getCatalog(),
             Destination::defaultOutputRecordCollector);
     consumer.start();
   }
@@ -62,5 +65,4 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   public Optional<AirbyteMessage> attemptRead() {
     return Optional.empty();
   }
-
 }

@@ -36,7 +36,8 @@ import org.junit.jupiter.api.Test;
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 public class KubePodProcessIntegrationTest {
 
-  private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
+  private static final boolean IS_MINIKUBE =
+      Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
   private static int heartbeatPort;
   private static String heartbeatUrl;
@@ -56,8 +57,14 @@ public class KubePodProcessIntegrationTest {
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
 
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost(),
-        new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    processFactory =
+        new KubeProcessFactory(
+            "default",
+            officialClient,
+            fabricClient,
+            heartbeatUrl,
+            getHost(),
+            new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
   }
 
   @BeforeEach
@@ -80,7 +87,8 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
-    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(
+        availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
@@ -95,7 +103,8 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
-    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(
+        availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
@@ -108,7 +117,8 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
-    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(
+        availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
@@ -121,7 +131,8 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead with the correct error code
     assertFalse(process.isAlive());
-    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(
+        availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(10, process.exitValue());
   }
 
@@ -134,7 +145,8 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
-    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(
+        availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(127, process.exitValue());
   }
 
@@ -152,7 +164,8 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
-    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(
+        availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertNotEquals(0, process.exitValue());
   }
 
@@ -167,11 +180,12 @@ public class KubePodProcessIntegrationTest {
 
   private Process getProcess(final String entrypoint) throws WorkerException {
     // these files aren't used for anything, it's just to check for exceptions when uploading
-    final var files = ImmutableMap.of(
-        "file0", "fixed str",
-        "file1", getRandomFile(1),
-        "file2", getRandomFile(100),
-        "file3", getRandomFile(1000));
+    final var files =
+        ImmutableMap.of(
+            "file0", "fixed str",
+            "file1", getRandomFile(1),
+            "file2", getRandomFile(100),
+            "file3", getRandomFile(1000));
 
     return processFactory.create(
         "some-id",
@@ -180,7 +194,9 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+        entrypoint,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {
@@ -210,6 +226,6 @@ public class KubePodProcessIntegrationTest {
     } catch (final UnknownHostException e) {
       throw new RuntimeException(e);
     }
-  };
-
+  }
+  ;
 }

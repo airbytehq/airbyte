@@ -91,7 +91,7 @@ spotless {
 
         importOrder()
 
-        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+        googleJavaFormat()
 
         licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()

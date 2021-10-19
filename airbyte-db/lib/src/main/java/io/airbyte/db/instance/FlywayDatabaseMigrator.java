@@ -33,17 +33,20 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
   private final Flyway flyway;
 
   /**
-   * @param dbIdentifier A name to identify the database. Preferably one word. This identifier will be
-   *        used to construct the migration history table name. For example, if the identifier is
-   *        "imports", the history table name will be "airbyte_imports_migrations".
+   * @param dbIdentifier A name to identify the database. Preferably one word. This identifier will
+   *     be used to construct the migration history table name. For example, if the identifier is
+   *     "imports", the history table name will be "airbyte_imports_migrations".
    * @param migrationFileLocations Example: "classpath:db/migration". See:
-   *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
+   *     https://flywaydb.org/documentation/concepts/migrations#discovery-1
    */
-  protected FlywayDatabaseMigrator(final Database database,
-                                   final String dbIdentifier,
-                                   final String migrationRunner,
-                                   final String migrationFileLocations) {
-    this(database, getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load());
+  protected FlywayDatabaseMigrator(
+      final Database database,
+      final String dbIdentifier,
+      final String migrationRunner,
+      final String migrationFileLocations) {
+    this(
+        database,
+        getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load());
   }
 
   @VisibleForTesting
@@ -56,10 +59,11 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
     return String.format("classpath:io/airbyte/db/instance/%s/migrations", dbIdentifier);
   }
 
-  private static FluentConfiguration getConfiguration(final Database database,
-                                                      final String dbIdentifier,
-                                                      final String migrationRunner,
-                                                      final String migrationFileLocations) {
+  private static FluentConfiguration getConfiguration(
+      final Database database,
+      final String dbIdentifier,
+      final String migrationRunner,
+      final String migrationFileLocations) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
@@ -93,10 +97,15 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public String dumpSchema() throws IOException {
-    return new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
-        .map(query -> query.toString() + ";")
-        .filter(statement -> !statement.startsWith("create schema"))
-        .collect(Collectors.joining("\n")));
+    return new ExceptionWrappingDatabase(database)
+        .query(
+            ctx ->
+                ctx.meta()
+                    .ddl()
+                    .queryStream()
+                    .map(query -> query.toString() + ";")
+                    .filter(statement -> !statement.startsWith("create schema"))
+                    .collect(Collectors.joining("\n")));
   }
 
   @VisibleForTesting
@@ -108,5 +117,4 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
   public Flyway getFlyway() {
     return flyway;
   }
-
 }

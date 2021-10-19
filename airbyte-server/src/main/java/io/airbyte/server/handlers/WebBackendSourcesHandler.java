@@ -18,12 +18,16 @@ public class WebBackendSourcesHandler {
   private final SourceHandler sourceHandler;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public WebBackendSourcesHandler(final SourceHandler sourceHandler, final ConfigRepository configRepository, final TrackingClient trackingClient) {
+  public WebBackendSourcesHandler(
+      final SourceHandler sourceHandler,
+      final ConfigRepository configRepository,
+      final TrackingClient trackingClient) {
     this.sourceHandler = sourceHandler;
     oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
   }
 
-  public SourceRead webBackendCreateSource(final SourceCreate sourceCreate) throws JsonValidationException, ConfigNotFoundException, IOException {
+  public SourceRead webBackendCreateSource(final SourceCreate sourceCreate)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     sourceCreate.connectionConfiguration(
         oAuthConfigSupplier.injectSourceOAuthParameters(
             sourceCreate.getSourceDefinitionId(),
@@ -31,5 +35,4 @@ public class WebBackendSourcesHandler {
             sourceCreate.getConnectionConfiguration()));
     return sourceHandler.createSource(sourceCreate);
   }
-
 }

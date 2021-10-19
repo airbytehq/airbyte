@@ -21,7 +21,8 @@ public class SshWrappedSource implements Source {
   private final List<String> hostKey;
   private final List<String> portKey;
 
-  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey) {
+  public SshWrappedSource(
+      final Source delegate, final List<String> hostKey, final List<String> portKey) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
@@ -43,10 +44,11 @@ public class SshWrappedSource implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
-    return AutoCloseableIterators.appendOnClose(delegate.read(tunnel.getConfigInTunnel(), catalog, state), tunnel::close);
+    return AutoCloseableIterators.appendOnClose(
+        delegate.read(tunnel.getConfigInTunnel(), catalog, state), tunnel::close);
   }
-
 }

@@ -21,15 +21,19 @@ class DefaultAutoCloseableIteratorTest {
   @Test
   void testNullInput() {
     final VoidCallable onClose = mock(VoidCallable.class);
-    assertThrows(NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, onClose));
-    assertThrows(NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), null));
+    assertThrows(
+        NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, onClose));
+    assertThrows(
+        NullPointerException.class,
+        () -> new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), null));
     assertThrows(NullPointerException.class, () -> new DefaultAutoCloseableIterator<>(null, null));
   }
 
   @Test
   void testEmptyInput() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), onClose);
+    final AutoCloseableIterator<String> iterator =
+        new DefaultAutoCloseableIterator<>(Collections.emptyIterator(), onClose);
     assertFalse(iterator.hasNext());
     iterator.close();
     verify(onClose).call();
@@ -38,7 +42,8 @@ class DefaultAutoCloseableIteratorTest {
   @Test
   void test() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose);
+    final AutoCloseableIterator<String> iterator =
+        new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -51,7 +56,8 @@ class DefaultAutoCloseableIteratorTest {
   @Test
   void testCannotOperateAfterClosing() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose);
+    final AutoCloseableIterator<String> iterator =
+        new DefaultAutoCloseableIterator<>(MoreIterators.of("a", "b", "c"), onClose);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -65,5 +71,4 @@ class DefaultAutoCloseableIteratorTest {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }
-
 }

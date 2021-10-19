@@ -41,12 +41,12 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   private final Path configRoot;
 
   /**
-   * Check if there are existing configs under the storage root. Previously the seed container copies
-   * the configs to the storage root, it may take some time for the operation to complete and for the
-   * CONFIG_DIR to show up. So we cannot infer anything based on the existence of this directory. Now
-   * this seed generation step has been removed. So we can tell immediately whether CONFIG_DIR exists
-   * or not. If CONFIG_DIR exists, it means the user has just migrated Airbyte from an old version
-   * that uses this file system config persistence.
+   * Check if there are existing configs under the storage root. Previously the seed container
+   * copies the configs to the storage root, it may take some time for the operation to complete and
+   * for the CONFIG_DIR to show up. So we cannot infer anything based on the existence of this
+   * directory. Now this seed generation step has been removed. So we can tell immediately whether
+   * CONFIG_DIR exists or not. If CONFIG_DIR exists, it means the user has just migrated Airbyte
+   * from an old version that uses this file system config persistence.
    */
   public static boolean hasExistingConfigs(final Path storageRoot) {
     return Files.exists(storageRoot.resolve(CONFIG_DIR));
@@ -55,7 +55,10 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   public static ConfigPersistence createWithValidation(final Path storageRoot) {
     LOGGER.info("Constructing file system config persistence (root: {})", storageRoot);
     final Path configRoot = storageRoot.resolve(CONFIG_DIR);
-    Preconditions.checkArgument(Files.exists(configRoot), "CONFIG_DIR does not exist under the storage root: %s", configRoot);
+    Preconditions.checkArgument(
+        Files.exists(configRoot),
+        "CONFIG_DIR does not exist under the storage root: %s",
+        configRoot);
     return new ValidatingConfigPersistence(new FileSystemConfigPersistence(storageRoot));
   }
 
@@ -65,7 +68,8 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+  public <T> T getConfig(
+      final AirbyteConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
       return getConfigInternal(configType, configId, clazz);
@@ -73,28 +77,32 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz)
+      throws JsonValidationException, IOException {
     synchronized (lock) {
       return listConfigsInternal(configType, clazz);
     }
   }
 
   @Override
-  public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
+  public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config)
+      throws IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
     }
   }
 
-  private <T> void writeConfigs(final AirbyteConfig configType, final Stream<T> configs, final Path rootOverride) {
-    configs.forEach(config -> {
-      final String configId = configType.getId(config);
-      try {
-        writeConfigInternal(configType, configId, config, rootOverride);
-      } catch (final IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+  private <T> void writeConfigs(
+      final AirbyteConfig configType, final Stream<T> configs, final Path rootOverride) {
+    configs.forEach(
+        config -> {
+          final String configId = configType.getId(config);
+          try {
+            writeConfigInternal(configType, configId, config, rootOverride);
+          } catch (final IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   @Override
@@ -124,15 +132,17 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
       return Collections.emptyList();
     }
     try (final Stream<Path> files = Files.list(configTypePath)) {
-      final List<String> ids = files
-          .filter(p -> !p.endsWith(".json"))
-          .map(p -> p.getFileName().toString().replace(".json", ""))
-          .collect(Collectors.toList());
+      final List<String> ids =
+          files
+              .filter(p -> !p.endsWith(".json"))
+              .map(p -> p.getFileName().toString().replace(".json", ""))
+              .collect(Collectors.toList());
 
       final List<JsonNode> configs = Lists.newArrayList();
       for (final String id : ids) {
         try {
-          final Path configPath = configRoot.resolve(configType).resolve(String.format("%s.json", id));
+          final Path configPath =
+              configRoot.resolve(configType).resolve(String.format("%s.json", id));
           if (!Files.exists(configPath)) {
             throw new RuntimeException("Config NotFound");
           }
@@ -149,14 +159,16 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void deleteConfig(final AirbyteConfig configType, final String configId) throws IOException {
+  public void deleteConfig(final AirbyteConfig configType, final String configId)
+      throws IOException {
     synchronized (lock) {
       deleteConfigInternal(configType, configId);
     }
   }
 
   @Override
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
+  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun)
+      throws IOException {
     final String oldConfigsDir = "config_deprecated";
     // create a new folder
     final String importDirectory = TMP_DIR + UUID.randomUUID();
@@ -189,7 +201,8 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     throw new UnsupportedEncodingException("This method is not supported in this implementation");
   }
 
-  private <T> T getConfigInternal(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+  private <T> T getConfigInternal(
+      final AirbyteConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, IOException {
     // validate file with schema
     final Path configPath = buildConfigPath(configType, configId, configRoot);
@@ -200,17 +213,19 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> List<T> listConfigsInternal(final AirbyteConfig configType, final Class<T> clazz) throws JsonValidationException, IOException {
+  private <T> List<T> listConfigsInternal(final AirbyteConfig configType, final Class<T> clazz)
+      throws JsonValidationException, IOException {
     final Path configTypePath = buildTypePath(configType, configRoot);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
     }
 
     try (final Stream<Path> files = Files.list(configTypePath)) {
-      final List<String> ids = files
-          .filter(p -> !p.endsWith(".json"))
-          .map(p -> p.getFileName().toString().replace(".json", ""))
-          .collect(Collectors.toList());
+      final List<String> ids =
+          files
+              .filter(p -> !p.endsWith(".json"))
+              .map(p -> p.getFileName().toString().replace(".json", ""))
+              .collect(Collectors.toList());
 
       final List<T> configs = Lists.newArrayList();
       for (final String id : ids) {
@@ -226,11 +241,13 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> void writeConfigInternal(final AirbyteConfig configType, final String configId, final T config) throws IOException {
+  private <T> void writeConfigInternal(
+      final AirbyteConfig configType, final String configId, final T config) throws IOException {
     writeConfigInternal(configType, configId, config, configRoot);
   }
 
-  private <T> void writeConfigInternal(final AirbyteConfig configType, final String configId, final T config, final Path storageRoot)
+  private <T> void writeConfigInternal(
+      final AirbyteConfig configType, final String configId, final T config, final Path storageRoot)
       throws IOException {
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.createDirectories(configPath.getParent());
@@ -238,21 +255,24 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private void deleteConfigInternal(final AirbyteConfig configType, final String configId) throws IOException {
+  private void deleteConfigInternal(final AirbyteConfig configType, final String configId)
+      throws IOException {
     deleteConfigInternal(configType, configId, configRoot);
   }
 
-  private void deleteConfigInternal(final AirbyteConfig configType, final String configId, final Path storageRoot) throws IOException {
+  private void deleteConfigInternal(
+      final AirbyteConfig configType, final String configId, final Path storageRoot)
+      throws IOException {
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.delete(configPath);
   }
 
-  private static Path buildConfigPath(final AirbyteConfig configType, final String configId, final Path storageRoot) {
+  private static Path buildConfigPath(
+      final AirbyteConfig configType, final String configId, final Path storageRoot) {
     return buildTypePath(configType, storageRoot).resolve(String.format("%s.json", configId));
   }
 
   private static Path buildTypePath(final AirbyteConfig configType, final Path storageRoot) {
     return storageRoot.resolve(configType.toString());
   }
-
 }

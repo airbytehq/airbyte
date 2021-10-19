@@ -20,11 +20,16 @@ public class V0_30_4_001__Add_timestamp_columns extends BaseJavaMigration {
   public void migrate(final Context context) {
     final DSLContext dsl = DSL.using(context.getConnection());
     dsl.alterTable(ToysDatabaseInstance.TABLE_NAME)
-        .addColumn(field("created_at", SQLDataType.TIMESTAMP.defaultValue(currentTimestamp()).nullable(false)))
+        .addColumn(
+            field(
+                "created_at",
+                SQLDataType.TIMESTAMP.defaultValue(currentTimestamp()).nullable(false)))
         .execute();
     dsl.alterTable(ToysDatabaseInstance.TABLE_NAME)
-        .addColumn(field("updated_at", SQLDataType.TIMESTAMP.defaultValue(currentTimestamp()).nullable(false)))
+        .addColumn(
+            field(
+                "updated_at",
+                SQLDataType.TIMESTAMP.defaultValue(currentTimestamp()).nullable(false)))
         .execute();
   }
-
 }

@@ -10,10 +10,10 @@ import io.airbyte.db.instance.FlywayDatabaseMigrator;
 public class JobsDatabaseMigrator extends FlywayDatabaseMigrator {
 
   public static final String DB_IDENTIFIER = "jobs";
-  public static final String MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/jobs/migrations";
+  public static final String MIGRATION_FILE_LOCATION =
+      "classpath:io/airbyte/db/instance/jobs/migrations";
 
   public JobsDatabaseMigrator(final Database database, final String migrationRunner) {
     super(database, DB_IDENTIFIER, migrationRunner, MIGRATION_FILE_LOCATION);
   }
-
 }

@@ -47,7 +47,8 @@ public class Exceptions {
     castCheckedToRuntime(voidCallable, IllegalArgumentException::new);
   }
 
-  private static void castCheckedToRuntime(final Procedure voidCallable, final Function<Exception, RuntimeException> exceptionFactory) {
+  private static void castCheckedToRuntime(
+      final Procedure voidCallable, final Function<Exception, RuntimeException> exceptionFactory) {
     try {
       voidCallable.call();
     } catch (final RuntimeException e) {
@@ -68,7 +69,5 @@ public class Exceptions {
   public interface Procedure {
 
     void call() throws Exception;
-
   }
-
 }

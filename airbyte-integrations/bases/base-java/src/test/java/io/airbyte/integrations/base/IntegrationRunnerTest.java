@@ -58,8 +58,11 @@ class IntegrationRunnerTest {
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final AirbyteCatalog CATALOG =
+      new AirbyteCatalog()
+          .withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG =
+      CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
   private IntegrationCliParser cliParser;
@@ -80,14 +83,16 @@ class IntegrationRunnerTest {
     final Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
-    configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
+    configuredCatalogPath =
+        IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
   }
 
   @Test
   void testSpecSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output =
+        new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.spec()).thenReturn(output);
@@ -101,7 +106,8 @@ class IntegrationRunnerTest {
   @Test
   void testSpecDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output =
+        new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.spec()).thenReturn(output);
@@ -115,7 +121,8 @@ class IntegrationRunnerTest {
   @Test
   void testCheckSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final AirbyteConnectionStatus output =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.check(CONFIG)).thenReturn(output);
@@ -127,14 +134,16 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testCheckDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final AirbyteConnectionStatus output =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);
@@ -145,18 +154,21 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator)
+        .run(ARGS);
 
     verify(destination).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testDiscover() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.discover(configPath);
-    final AirbyteCatalog output = new AirbyteCatalog()
-        .withStreams(Lists.newArrayList(new AirbyteStream().withName("oceans")));
+    final AirbyteCatalog output =
+        new AirbyteCatalog()
+            .withStreams(Lists.newArrayList(new AirbyteStream().withName("oceans")));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.discover(CONFIG)).thenReturn(output);
@@ -175,12 +187,20 @@ class IntegrationRunnerTest {
 
   @Test
   void testRead() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
-        statePath);
-    final AirbyteMessage message1 = new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
-    final AirbyteMessage message2 = new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
-        .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
+    final IntegrationConfig intConfig =
+        IntegrationConfig.read(configPath, configuredCatalogPath, statePath);
+    final AirbyteMessage message1 =
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
+    final AirbyteMessage message2 =
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
@@ -204,7 +224,8 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer))
+        .thenReturn(airbyteMessageConsumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
@@ -212,7 +233,10 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
+    final IntegrationRunner runner =
+        spy(
+            new IntegrationRunner(
+                cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
 
     verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
@@ -221,25 +245,35 @@ class IntegrationRunnerTest {
 
   @Test
   void testDestinationConsumerLifecycleSuccess() throws Exception {
-    final AirbyteMessage singerMessage1 = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
-            .withStream(STREAM_NAME)
-            .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage singerMessage2 = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
-            .withStream(STREAM_NAME)
-            .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage stateMessage = new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(new AirbyteStateMessage()
-            .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n"
-        + Jsons.serialize(singerMessage2) + "\n"
-        + Jsons.serialize(stateMessage)).getBytes()));
+    final AirbyteMessage singerMessage1 =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
+                    .withStream(STREAM_NAME)
+                    .withEmittedAt(EMITTED_AT));
+    final AirbyteMessage singerMessage2 =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
+                    .withStream(STREAM_NAME)
+                    .withEmittedAt(EMITTED_AT));
+    final AirbyteMessage stateMessage =
+        new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(
+                new AirbyteStateMessage().withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
+    System.setIn(
+        new ByteArrayInputStream(
+            (Jsons.serialize(singerMessage1)
+                    + "\n"
+                    + Jsons.serialize(singerMessage2)
+                    + "\n"
+                    + Jsons.serialize(stateMessage))
+                .getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
@@ -253,29 +287,35 @@ class IntegrationRunnerTest {
 
   @Test
   void testDestinationConsumerLifecycleFailure() throws Exception {
-    final AirbyteMessage singerMessage1 = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
-            .withStream(STREAM_NAME)
-            .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage singerMessage2 = new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
-            .withStream(STREAM_NAME)
-            .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    final AirbyteMessage singerMessage1 =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
+                    .withStream(STREAM_NAME)
+                    .withEmittedAt(EMITTED_AT));
+    final AirbyteMessage singerMessage2 =
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
+                    .withStream(STREAM_NAME)
+                    .withEmittedAt(EMITTED_AT));
+    System.setIn(
+        new ByteArrayInputStream(
+            (Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(singerMessage1);
 
-    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+    assertThrows(
+        IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
     final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();
   }
-
 }

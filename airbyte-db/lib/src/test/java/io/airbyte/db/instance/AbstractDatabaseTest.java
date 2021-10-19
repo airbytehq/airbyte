@@ -18,10 +18,11 @@ public abstract class AbstractDatabaseTest {
 
   @BeforeAll
   public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
+    container =
+        new PostgreSQLContainer<>("postgres:13-alpine")
+            .withDatabaseName("airbyte")
+            .withUsername("docker")
+            .withPassword("docker");
     container.start();
   }
 
@@ -34,7 +35,9 @@ public abstract class AbstractDatabaseTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database =
+        getAndInitializeDatabase(
+            container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterEach
@@ -43,9 +46,9 @@ public abstract class AbstractDatabaseTest {
   }
 
   /**
-   * Create an initialized database. The downstream implementation should do it by calling
-   * {@link DatabaseInstance#getAndInitialize}.
+   * Create an initialized database. The downstream implementation should do it by calling {@link
+   * DatabaseInstance#getAndInitialize}.
    */
-  public abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
-
+  public abstract Database getAndInitializeDatabase(
+      String username, String password, String connectionString) throws IOException;
 }

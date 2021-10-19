@@ -18,13 +18,14 @@ import org.slf4j.MDC;
 
 public class LineGobbler implements VoidCallable {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
 
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
     gobble(is, consumer, "generic");
   }
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller) {
+  public static void gobble(
+      final InputStream is, final Consumer<String> consumer, final String caller) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
     final var gobbler = new LineGobbler(is, consumer, executor, mdc, caller);
@@ -37,18 +38,20 @@ public class LineGobbler implements VoidCallable {
   private final Map<String, String> mdc;
   private final String caller;
 
-  LineGobbler(final InputStream is,
-              final Consumer<String> consumer,
-              final ExecutorService executor,
-              final Map<String, String> mdc) {
+  LineGobbler(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final ExecutorService executor,
+      final Map<String, String> mdc) {
     this(is, consumer, executor, mdc, "generic");
   }
 
-  LineGobbler(final InputStream is,
-              final Consumer<String> consumer,
-              final ExecutorService executor,
-              final Map<String, String> mdc,
-              final String caller) {
+  LineGobbler(
+      final InputStream is,
+      final Consumer<String> consumer,
+      final ExecutorService executor,
+      final Map<String, String> mdc,
+      final String caller) {
     this.is = IOs.newBufferedReader(is);
     this.consumer = consumer;
     this.executor = executor;
@@ -65,12 +68,14 @@ public class LineGobbler implements VoidCallable {
         consumer.accept(line);
       }
     } catch (final IOException i) {
-      LOGGER.warn("{} gobbler IOException: {}. Typically happens when cancelling a job.", caller, i.getMessage());
+      LOGGER.warn(
+          "{} gobbler IOException: {}. Typically happens when cancelling a job.",
+          caller,
+          i.getMessage());
     } catch (final Exception e) {
       LOGGER.error("{} gobbler error when reading stream", caller, e);
     } finally {
       executor.shutdown();
     }
   }
-
 }

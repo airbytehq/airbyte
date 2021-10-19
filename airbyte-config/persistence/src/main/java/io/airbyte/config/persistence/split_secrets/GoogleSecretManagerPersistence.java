@@ -30,7 +30,7 @@ import org.joda.time.Days;
  * Uses Google Secret Manager (https://cloud.google.com/secret-manager) as a K/V store to access
  * secrets. In the future we will likely want to introduce more granular permission handling here.
  *
- * It's important to note that we are not making use of the versioning feature of Google Secret
+ * <p>It's important to note that we are not making use of the versioning feature of Google Secret
  * Manager. This is for a few reasons: 1. There isn't a clean interface for getting the most recent
  * version. 2. Version writes must be sequential. This means that if we wanted to move between
  * secrets management platforms such as Hashicorp Vault and GSM, we would need to create secrets in
@@ -45,13 +45,11 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
    */
   private static final String LATEST = "latest";
 
-  private static final Duration EPHEMERAL_TTL = Duration.newBuilder()
-      .setSeconds(Days.days(5).toStandardSeconds().getSeconds())
-      .build();
+  private static final Duration EPHEMERAL_TTL =
+      Duration.newBuilder().setSeconds(Days.days(5).toStandardSeconds().getSeconds()).build();
 
-  private static final Replication REPLICATION_POLICY = Replication.newBuilder()
-      .setAutomatic(Replication.Automatic.newBuilder().build())
-      .build();
+  private static final Replication REPLICATION_POLICY =
+      Replication.newBuilder().setAutomatic(Replication.Automatic.newBuilder().build()).build();
 
   private final String gcpProjectId;
   private final Supplier<SecretManagerServiceClient> clientSupplier;
@@ -59,10 +57,11 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
   private final @Nullable Duration ttl;
 
   /**
-   * Creates a persistence with an infinite TTL for stored secrets. Used for source/destination config
-   * secret storage.
+   * Creates a persistence with an infinite TTL for stored secrets. Used for source/destination
+   * config secret storage.
    */
-  public static GoogleSecretManagerPersistence getLongLived(final String gcpProjectId, final String gcpCredentialsJson) {
+  public static GoogleSecretManagerPersistence getLongLived(
+      final String gcpProjectId, final String gcpCredentialsJson) {
     return new GoogleSecretManagerPersistence(gcpProjectId, gcpCredentialsJson, null);
   }
 
@@ -71,20 +70,24 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
    * operations such as check/discover operations where we need to use secret storage to communicate
    * from the server to Temporal, but where we don't want to maintain the secrets indefinitely.
    */
-  public static GoogleSecretManagerPersistence getEphemeral(final String gcpProjectId, final String gcpCredentialsJson) {
+  public static GoogleSecretManagerPersistence getEphemeral(
+      final String gcpProjectId, final String gcpCredentialsJson) {
     return new GoogleSecretManagerPersistence(gcpProjectId, gcpCredentialsJson, EPHEMERAL_TTL);
   }
 
-  private GoogleSecretManagerPersistence(final String gcpProjectId, final String gcpCredentialsJson, final @Nullable Duration ttl) {
+  private GoogleSecretManagerPersistence(
+      final String gcpProjectId, final String gcpCredentialsJson, final @Nullable Duration ttl) {
     this.gcpProjectId = gcpProjectId;
-    this.clientSupplier = () -> Exceptions.toRuntime(() -> getSecretManagerServiceClient(gcpCredentialsJson));
+    this.clientSupplier =
+        () -> Exceptions.toRuntime(() -> getSecretManagerServiceClient(gcpCredentialsJson));
     this.ttl = ttl;
   }
 
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
     try (final var client = clientSupplier.get()) {
-      final var secretVersionName = SecretVersionName.of(gcpProjectId, coordinate.getFullCoordinate(), LATEST);
+      final var secretVersionName =
+          SecretVersionName.of(gcpProjectId, coordinate.getFullCoordinate(), LATEST);
       final var response = client.accessSecretVersion(secretVersionName);
       return Optional.of(response.getPayload().getData().toStringUtf8());
     } catch (final NotFoundException e) {
@@ -102,26 +105,28 @@ public class GoogleSecretManagerPersistence implements SecretPersistence {
           secretBuilder.setTtl(ttl);
         }
 
-        client.createSecret(ProjectName.of(gcpProjectId), coordinate.getFullCoordinate(), secretBuilder.build());
+        client.createSecret(
+            ProjectName.of(gcpProjectId), coordinate.getFullCoordinate(), secretBuilder.build());
       }
 
       final var name = SecretName.of(gcpProjectId, coordinate.getFullCoordinate());
-      final var secretPayload = SecretPayload.newBuilder()
-          .setData(ByteString.copyFromUtf8(payload))
-          .build();
+      final var secretPayload =
+          SecretPayload.newBuilder().setData(ByteString.copyFromUtf8(payload)).build();
 
       client.addSecretVersion(name, secretPayload);
     }
   }
 
-  public static SecretManagerServiceClient getSecretManagerServiceClient(final String credentialsJson) throws IOException {
-    final var credentialsByteStream = new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8));
+  public static SecretManagerServiceClient getSecretManagerServiceClient(
+      final String credentialsJson) throws IOException {
+    final var credentialsByteStream =
+        new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8));
     final var credentials = ServiceAccountCredentials.fromStream(credentialsByteStream);
-    final var clientSettings = SecretManagerServiceSettings.newBuilder()
-        .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-        .build();
+    final var clientSettings =
+        SecretManagerServiceSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .build();
 
     return SecretManagerServiceClient.create(clientSettings);
   }
-
 }

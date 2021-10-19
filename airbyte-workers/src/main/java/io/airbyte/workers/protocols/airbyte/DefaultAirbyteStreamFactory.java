@@ -19,8 +19,7 @@ import org.slf4j.LoggerFactory;
  * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
  * dropped. Each record MUST be new line separated.
  *
- * <p>
- * If a line starts with a AirbyteMessage and then has other characters after it, that
+ * <p>If a line starts with a AirbyteMessage and then has other characters after it, that
  * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
  * line, only the first will be parsed.
  */
@@ -35,7 +34,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this(new AirbyteProtocolPredicate(), LOGGER);
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger) {
+  DefaultAirbyteStreamFactory(
+      final AirbyteProtocolPredicate protocolPredicate, final Logger logger) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
   }
@@ -44,43 +44,47 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
-        .map(s -> {
-          final Optional<JsonNode> j = Jsons.tryDeserialize(s);
-          if (j.isEmpty()) {
-            // we log as info all the lines that are not valid json
-            // some sources actually log their process on stdout, we
-            // want to make sure this info is available in the logs.
-            logger.info(s);
-          }
-          return j;
-        })
+        .map(
+            s -> {
+              final Optional<JsonNode> j = Jsons.tryDeserialize(s);
+              if (j.isEmpty()) {
+                // we log as info all the lines that are not valid json
+                // some sources actually log their process on stdout, we
+                // want to make sure this info is available in the logs.
+                logger.info(s);
+              }
+              return j;
+            })
         .filter(Optional::isPresent)
         .map(Optional::get)
         // filter invalid messages
-        .filter(j -> {
-          final boolean res = protocolValidator.test(j);
-          if (!res) {
-            logger.error("Validation failed: {}", Jsons.serialize(j));
-          }
-          return res;
-        })
-        .map(j -> {
-          final Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
-          if (m.isEmpty()) {
-            logger.error("Deserialization failed: {}", Jsons.serialize(j));
-          }
-          return m;
-        })
+        .filter(
+            j -> {
+              final boolean res = protocolValidator.test(j);
+              if (!res) {
+                logger.error("Validation failed: {}", Jsons.serialize(j));
+              }
+              return res;
+            })
+        .map(
+            j -> {
+              final Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
+              if (m.isEmpty()) {
+                logger.error("Deserialization failed: {}", Jsons.serialize(j));
+              }
+              return m;
+            })
         .filter(Optional::isPresent)
         .map(Optional::get)
         // filter logs
-        .filter(m -> {
-          final boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
-          if (isLog) {
-            internalLog(m.getLog());
-          }
-          return !isLog;
-        });
+        .filter(
+            m -> {
+              final boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
+              if (isLog) {
+                internalLog(m.getLog());
+              }
+              return !isLog;
+            });
   }
 
   private void internalLog(final AirbyteLogMessage logMessage) {
@@ -92,5 +96,4 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       case TRACE -> logger.trace(logMessage.getMessage());
     }
   }
-
 }

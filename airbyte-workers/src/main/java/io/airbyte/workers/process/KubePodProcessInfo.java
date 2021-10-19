@@ -12,7 +12,7 @@ import java.util.Optional;
 /**
  * Minimal Process info implementation to assist with debug logging.
  *
- * Current implement only logs out the Kubernetes pod corresponding to the JVM process.
+ * <p>Current implement only logs out the Kubernetes pod corresponding to the JVM process.
  */
 public class KubePodProcessInfo implements Info {
 
@@ -51,5 +51,4 @@ public class KubePodProcessInfo implements Info {
   public Optional<String> user() {
     return Optional.empty();
   }
-
 }

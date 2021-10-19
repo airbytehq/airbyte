@@ -11,5 +11,4 @@ import java.sql.SQLException;
 public interface JdbcQueryFunction<T> {
 
   T query(Connection connection) throws SQLException;
-
 }

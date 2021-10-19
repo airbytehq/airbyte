@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum ConfigsDatabaseSchema implements TableSchema {
-
   AIRBYTE_CONFIGS("AirbyteConfigs.yaml");
 
-  static final Path SCHEMAS_ROOT = JsonSchemas.prepareSchemas("configs_database", ConfigsDatabaseSchema.class);
+  static final Path SCHEMAS_ROOT =
+      JsonSchemas.prepareSchemas("configs_database", ConfigsDatabaseSchema.class);
 
   private final String schemaFilename;
 
@@ -37,11 +37,10 @@ public enum ConfigsDatabaseSchema implements TableSchema {
     return JsonSchemaValidator.getSchema(schemaFile);
   }
 
-  /**
-   * @return table names in lower case
-   */
+  /** @return table names in lower case */
   public static Set<String> getTableNames() {
-    return Stream.of(ConfigsDatabaseSchema.values()).map(ConfigsDatabaseSchema::getTableName).collect(Collectors.toSet());
+    return Stream.of(ConfigsDatabaseSchema.values())
+        .map(ConfigsDatabaseSchema::getTableName)
+        .collect(Collectors.toSet());
   }
-
 }

@@ -23,9 +23,7 @@ import org.slf4j.LoggerFactory;
 
 // todo (cgardens) - use argparse4j.github.io instead of org.apache.commons.cli to leverage better
 // sub-parser support.
-/**
- * Parses command line args to a type safe config object for each command type.
- */
+/** Parses command line args to a type safe config object for each command type. */
 public class IntegrationCliParser {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationCliParser.class);
@@ -34,26 +32,31 @@ public class IntegrationCliParser {
 
   static {
     COMMAND_GROUP.setRequired(true);
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.SPEC.toString().toLowerCase())
-        .desc("outputs the json configuration specification")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.CHECK.toString().toLowerCase())
-        .desc("checks the config can be used to connect")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.DISCOVER.toString().toLowerCase())
-        .desc("outputs a catalog describing the source's catalog")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.READ.toString().toLowerCase())
-        .desc("reads the source and outputs messages to STDOUT")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.WRITE.toString().toLowerCase())
-        .desc("writes messages from STDIN to the integration")
-        .build());
+    COMMAND_GROUP.addOption(
+        Option.builder()
+            .longOpt(Command.SPEC.toString().toLowerCase())
+            .desc("outputs the json configuration specification")
+            .build());
+    COMMAND_GROUP.addOption(
+        Option.builder()
+            .longOpt(Command.CHECK.toString().toLowerCase())
+            .desc("checks the config can be used to connect")
+            .build());
+    COMMAND_GROUP.addOption(
+        Option.builder()
+            .longOpt(Command.DISCOVER.toString().toLowerCase())
+            .desc("outputs a catalog describing the source's catalog")
+            .build());
+    COMMAND_GROUP.addOption(
+        Option.builder()
+            .longOpt(Command.READ.toString().toLowerCase())
+            .desc("reads the source and outputs messages to STDOUT")
+            .build());
+    COMMAND_GROUP.addOption(
+        Option.builder()
+            .longOpt(Command.WRITE.toString().toLowerCase())
+            .desc("writes messages from STDIN to the integration")
+            .build());
   }
 
   public IntegrationConfig parse(final String[] args) {
@@ -81,27 +84,56 @@ public class IntegrationCliParser {
   private static IntegrationConfig parseOptions(final String[] args, final Command command) {
 
     final Options options = new Options();
-    options.addOptionGroup(COMMAND_GROUP); // so that the parser does not throw an exception when encounter command args.
+    options.addOptionGroup(
+        COMMAND_GROUP); // so that the parser does not throw an exception when encounter command
+    // args.
 
     switch (command) {
       case SPEC -> {
         // no args.
       }
-      case CHECK, DISCOVER -> options.addOption(Option
-          .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
+      case CHECK, DISCOVER -> options.addOption(
+          Option.builder()
+              .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+              .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+              .hasArg(true)
+              .required(true)
+              .build());
       case READ -> {
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CATALOG_KEY).desc(JavaBaseConstants.ARGS_CATALOG_DESC).hasArg(true).build());
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_STATE_KEY).desc(JavaBaseConstants.ARGS_PATH_DESC).hasArg(true).build());
+        options.addOption(
+            Option.builder()
+                .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+                .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+                .hasArg(true)
+                .required(true)
+                .build());
+        options.addOption(
+            Option.builder()
+                .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
+                .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
+                .hasArg(true)
+                .build());
+        options.addOption(
+            Option.builder()
+                .longOpt(JavaBaseConstants.ARGS_STATE_KEY)
+                .desc(JavaBaseConstants.ARGS_PATH_DESC)
+                .hasArg(true)
+                .build());
       }
       case WRITE -> {
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CATALOG_KEY).desc(JavaBaseConstants.ARGS_CATALOG_DESC).hasArg(true).build());
+        options.addOption(
+            Option.builder()
+                .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+                .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+                .hasArg(true)
+                .required(true)
+                .build());
+        options.addOption(
+            Option.builder()
+                .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
+                .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
+                .hasArg(true)
+                .build());
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
@@ -128,7 +160,9 @@ public class IntegrationCliParser {
         return IntegrationConfig.read(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY)),
-            argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY) ? Path.of(argsMap.get(JavaBaseConstants.ARGS_STATE_KEY)) : null);
+            argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY)
+                ? Path.of(argsMap.get(JavaBaseConstants.ARGS_STATE_KEY))
+                : null);
       }
       case WRITE -> {
         return IntegrationConfig.write(
@@ -139,7 +173,8 @@ public class IntegrationCliParser {
     }
   }
 
-  private static CommandLine runParse(final Options options, final String[] args, final Command command) {
+  private static CommandLine runParse(
+      final Options options, final String[] args, final Command command) {
     final CommandLineParser parser = new DefaultParser();
     final HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -155,7 +190,8 @@ public class IntegrationCliParser {
   private static class RelaxedParser extends DefaultParser {
 
     @Override
-    public CommandLine parse(final Options options, final String[] arguments) throws ParseException {
+    public CommandLine parse(final Options options, final String[] arguments)
+        throws ParseException {
       final List<String> knownArgs = new ArrayList<>();
       for (int i = 0; i < arguments.length; i++) {
         if (options.hasOption(arguments[i])) {
@@ -167,7 +203,5 @@ public class IntegrationCliParser {
       }
       return super.parse(options, knownArgs.toArray(new String[0]));
     }
-
   }
-
 }

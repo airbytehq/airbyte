@@ -31,5 +31,4 @@ public class ListConsumer<T> implements Consumer<T> {
   public List<T> getConsumed() {
     return new ArrayList<>(consumed);
   }
-
 }

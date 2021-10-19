@@ -48,11 +48,12 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final Properties properties;
   private final ConfiguredAirbyteCatalog catalog;
 
-  public DebeziumRecordPublisher(final Properties properties,
-                                 final JsonNode config,
-                                 final ConfiguredAirbyteCatalog catalog,
-                                 final AirbyteFileOffsetBackingStore offsetManager,
-                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+  public DebeziumRecordPublisher(
+      final Properties properties,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final AirbyteFileOffsetBackingStore offsetManager,
+      final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
@@ -66,27 +67,31 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   }
 
   public void start(final Queue<ChangeEvent<String, String>> queue) {
-    engine = DebeziumEngine.create(Json.class)
-        .using(getDebeziumProperties())
-        .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
-        .notifying(e -> {
-          // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
-          // interacts with kafka. we want to ignore it.
-          // more on the tombstone:
-          // https://debezium.io/documentation/reference/configuration/event-flattening.html
-          if (e.value() != null) {
-            boolean inserted = false;
-            while (!inserted) {
-              inserted = queue.offer(e);
-            }
-          }
-        })
-        .using((success, message, error) -> {
-          LOGGER.info("Debezium engine shutdown.");
-          thrownError.set(error);
-          engineLatch.countDown();
-        })
-        .build();
+    engine =
+        DebeziumEngine.create(Json.class)
+            .using(getDebeziumProperties())
+            .using(new OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
+            .notifying(
+                e -> {
+                  // debezium outputs a tombstone event that has a value of null. this is an
+                  // artifact of how it
+                  // interacts with kafka. we want to ignore it.
+                  // more on the tombstone:
+                  // https://debezium.io/documentation/reference/configuration/event-flattening.html
+                  if (e.value() != null) {
+                    boolean inserted = false;
+                    while (!inserted) {
+                      inserted = queue.offer(e);
+                    }
+                  }
+                })
+            .using(
+                (success, message, error) -> {
+                  LOGGER.info("Debezium engine shutdown.");
+                  thrownError.set(error);
+                  engineLatch.countDown();
+                })
+            .build();
 
     // Run the engine asynchronously ...
     executor.execute(engine);
@@ -139,8 +144,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       // changes. If we don't do this, we can't fetch records for the table
       // We have implemented our own implementation to filter out the schema information from other
       // databases that the connector is not syncing
-      props.setProperty("database.history", "io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory");
-      props.setProperty("database.history.file.filename", schemaHistoryManager.get().getPath().toString());
+      props.setProperty(
+          "database.history",
+          "io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory");
+      props.setProperty(
+          "database.history.file.filename", schemaHistoryManager.get().getPath().toString());
     }
 
     // https://debezium.io/documentation/reference/configuration/avro.html
@@ -162,7 +170,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     }
 
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.
-    // The "double" type may cause a loss of precision, so set Debezium's config to store it as a String
+    // The "double" type may cause a loss of precision, so set Debezium's config to store it as a
+    // String
     // explicitly in its Kafka messages for more details see:
     // https://debezium.io/documentation/reference/1.4/connectors/postgresql.html#postgresql-decimal-types
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
@@ -186,5 +195,4 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
   }
-
 }

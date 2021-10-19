@@ -62,11 +62,10 @@ public class AirbyteVersion {
   /**
    * Compares two Airbyte Version to check if they are equivalent.
    *
-   * Only the major and minor part of the Version is taken into account.
+   * <p>Only the major and minor part of the Version is taken into account.
    */
   public int compatibleVersionCompareTo(final AirbyteVersion another) {
-    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION))
-      return 0;
+    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) return 0;
     final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
       return majorDiff;
@@ -74,9 +73,7 @@ public class AirbyteVersion {
     return compareVersion(minor, another.minor);
   }
 
-  /**
-   * Compares two Airbyte Version to check if they are equivalent (including patch version).
-   */
+  /** Compares two Airbyte Version to check if they are equivalent (including patch version). */
   public int patchVersionCompareTo(final AirbyteVersion another) {
     if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
       return 0;
@@ -94,14 +91,15 @@ public class AirbyteVersion {
 
   /**
    * Version string needs to be converted to integer for comparison, because string comparison does
-   * not handle version string with different digits correctly. For example:
-   * {@code "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
+   * not handle version string with different digits correctly. For example: {@code
+   * "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
    */
   private static int compareVersion(final String v1, final String v2) {
     return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));
   }
 
-  public static void assertIsCompatible(final String version1, final String version2) throws IllegalStateException {
+  public static void assertIsCompatible(final String version1, final String version2)
+      throws IllegalStateException {
     if (!isCompatible(version1, version2)) {
       throw new IllegalStateException(getErrorMessage(version1, version2));
     }
@@ -111,8 +109,8 @@ public class AirbyteVersion {
     final String cleanVersion1 = version1.replace("\n", "").strip();
     final String cleanVersion2 = version2.replace("\n", "").strip();
     return String.format(
-        "Version mismatch between %s and %s.\n" +
-            "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
+        "Version mismatch between %s and %s.\n"
+            + "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
         cleanVersion1, cleanVersion2);
   }
 
@@ -124,25 +122,34 @@ public class AirbyteVersion {
 
   @Override
   public String toString() {
-    return "AirbyteVersion{" +
-        "version='" + version + '\'' +
-        ", major='" + major + '\'' +
-        ", minor='" + minor + '\'' +
-        ", patch='" + patch + '\'' +
-        '}';
+    return "AirbyteVersion{"
+        + "version='"
+        + version
+        + '\''
+        + ", major='"
+        + major
+        + '\''
+        + ", minor='"
+        + minor
+        + '\''
+        + ", patch='"
+        + patch
+        + '\''
+        + '}';
   }
 
   public static AirbyteVersion versionWithoutPatch(final AirbyteVersion airbyteVersion) {
-    final String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
-        + "."
-        + airbyteVersion.getMinorVersion()
-        + ".0-"
-        + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
+    final String versionWithoutPatch =
+        ""
+            + airbyteVersion.getMajorVersion()
+            + "."
+            + airbyteVersion.getMinorVersion()
+            + ".0-"
+            + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
     return new AirbyteVersion(versionWithoutPatch);
   }
 
   public static AirbyteVersion versionWithoutPatch(final String airbyteVersion) {
     return versionWithoutPatch(new AirbyteVersion(airbyteVersion));
   }
-
 }

@@ -47,23 +47,27 @@ class DefaultAirbyteSourceTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."));
-  private static final JsonNode CONFIG = Jsons.jsonNode(Map.of(
-      "apiKey", "123",
-      "region", "us-east"));
-  private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
-      "hudi:latest",
-      NAMESPACE,
-      Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+  private static final JsonNode STATE =
+      Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."));
+  private static final JsonNode CONFIG =
+      Jsons.jsonNode(
+          Map.of(
+              "apiKey", "123",
+              "region", "us-east"));
+  private static final ConfiguredAirbyteCatalog CATALOG =
+      CatalogHelpers.createConfiguredAirbyteCatalog(
+          "hudi:latest", NAMESPACE, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
-  private static final WorkerSourceConfig SOURCE_CONFIG = new WorkerSourceConfig()
-      .withState(new State().withState(STATE))
-      .withSourceConnectionConfiguration(CONFIG)
-      .withCatalog(CATALOG);
+  private static final WorkerSourceConfig SOURCE_CONFIG =
+      new WorkerSourceConfig()
+          .withState(new State().withState(STATE))
+          .withSourceConnectionConfiguration(CONFIG)
+          .withCatalog(CATALOG);
 
-  private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
-      AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
-      AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
+  private static final List<AirbyteMessage> MESSAGES =
+      Lists.newArrayList(
+          AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
+          AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -80,16 +84,18 @@ class DefaultAirbyteSourceTest {
     heartbeatMonitor = mock(HeartbeatMonitor.class);
     final InputStream inputStream = mock(InputStream.class);
     when(integrationLauncher.read(
-        jobRoot,
-        WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-        Jsons.serialize(CONFIG),
-        WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(CATALOG),
-        WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        Jsons.serialize(STATE))).thenReturn(process);
+            jobRoot,
+            WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+            Jsons.serialize(CONFIG),
+            WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
+            Jsons.serialize(CATALOG),
+            WorkerConstants.INPUT_STATE_JSON_FILENAME,
+            Jsons.serialize(STATE)))
+        .thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
-    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
+    when(process.getErrorStream())
+        .thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
     streamFactory = noop -> MESSAGES.stream();
   }
@@ -99,7 +105,8 @@ class DefaultAirbyteSourceTest {
   public void testSuccessfulLifecycle() throws Exception {
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource source =
+        new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -118,23 +125,25 @@ class DefaultAirbyteSourceTest {
 
     assertEquals(MESSAGES, messages);
 
-    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
-      while (process.getErrorStream().available() != 0) {
-        Thread.sleep(50);
-      }
-    });
+    Assertions.assertTimeout(
+        Duration.ofSeconds(5),
+        () -> {
+          while (process.getErrorStream().available() != 0) {
+            Thread.sleep(50);
+          }
+        });
 
     verify(process).exitValue();
   }
 
   @Test
   public void testNonzeroExitCodeThrows() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource tap =
+        new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(SOURCE_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
 
     Assertions.assertThrows(WorkerException.class, tap::close);
   }
-
 }

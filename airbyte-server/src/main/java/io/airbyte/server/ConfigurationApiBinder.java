@@ -12,9 +12,6 @@ public class ConfigurationApiBinder extends AbstractBinder {
 
   @Override
   protected void configure() {
-    bindFactory(ConfigurationApiFactory.class)
-        .to(ConfigurationApi.class)
-        .in(RequestScoped.class);
+    bindFactory(ConfigurationApiFactory.class).to(ConfigurationApi.class).in(RequestScoped.class);
   }
-
 }

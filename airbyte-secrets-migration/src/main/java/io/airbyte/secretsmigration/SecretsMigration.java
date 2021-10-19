@@ -32,7 +32,8 @@ public class SecretsMigration {
   final ConfigRepository readFrom;
   final ConfigRepository writeTo;
 
-  public SecretsMigration(final ConfigRepository readFrom, final ConfigRepository writeTo, final boolean dryRun) {
+  public SecretsMigration(
+      final ConfigRepository readFrom, final ConfigRepository writeTo, final boolean dryRun) {
     this.readFrom = readFrom;
     this.writeTo = writeTo;
     this.dryRun = dryRun;
@@ -45,7 +46,10 @@ public class SecretsMigration {
     Map<String, Stream<JsonNode>> configurations = readFrom.dumpConfigs();
     writeTo.replaceAllConfigsDeserializing(configurations, true);
 
-    LOGGER.info("... With dryRun=" + dryRun + ": deserializing configurations and writing to the new store...");
+    LOGGER.info(
+        "... With dryRun="
+            + dryRun
+            + ": deserializing configurations and writing to the new store...");
     configurations = readFrom.dumpConfigs();
     writeTo.replaceAllConfigsDeserializing(configurations, dryRun);
 
@@ -55,13 +59,15 @@ public class SecretsMigration {
   public static void main(final String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    final Database database = new ConfigsDatabaseInstance(
-        "docker", // configs.getConfigDatabaseUser(),
-        "docker", // configs.getConfigDatabasePassword(),
-        "jdbc:postgresql://localhost:8011/airbyte") // configs.getConfigDatabaseUrl())
+    final Database database =
+        new ConfigsDatabaseInstance(
+                "docker", // configs.getConfigDatabaseUser(),
+                "docker", // configs.getConfigDatabasePassword(),
+                "jdbc:postgresql://localhost:8011/airbyte") // configs.getConfigDatabaseUrl())
             .getInitialized();
 
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(database).withValidation();
+    final ConfigPersistence configPersistence =
+        new DatabaseConfigPersistence(database).withValidation();
 
     final ConfigRepository configRepository =
         new ConfigRepository(
@@ -70,13 +76,18 @@ public class SecretsMigration {
             Optional.of(new LocalTestingSecretPersistence(database)),
             Optional.of(new LocalTestingSecretPersistence(database)));
 
-    configRepository.setSpecFetcher(dockerImage -> BucketSpecCacheSchedulerClient
-        .attemptToFetchSpecFromBucket(StorageOptions.getDefaultInstance().getService(), "io-airbyte-cloud-spec-cache", dockerImage).get());
+    configRepository.setSpecFetcher(
+        dockerImage ->
+            BucketSpecCacheSchedulerClient.attemptToFetchSpecFromBucket(
+                    StorageOptions.getDefaultInstance().getService(),
+                    "io-airbyte-cloud-spec-cache",
+                    dockerImage)
+                .get());
 
-    final SecretsMigration migration = new SecretsMigration(configRepository, configRepository, false);
+    final SecretsMigration migration =
+        new SecretsMigration(configRepository, configRepository, false);
     LOGGER.info("starting: {}", SecretsMigration.class);
     migration.run();
     LOGGER.info("completed: {}", SecretsMigration.class);
   }
-
 }

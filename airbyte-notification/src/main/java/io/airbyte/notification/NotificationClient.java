@@ -19,17 +19,11 @@ public abstract class NotificationClient {
   }
 
   public abstract boolean notifyJobFailure(
-                                           String sourceConnector,
-                                           String destinationConnector,
-                                           String jobDescription,
-                                           String logUrl)
+      String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
       throws IOException, InterruptedException;
 
   public abstract boolean notifyJobSuccess(
-                                           String sourceConnector,
-                                           String destinationConnector,
-                                           String jobDescription,
-                                           String logUrl)
+      String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
       throws IOException, InterruptedException;
 
   public abstract boolean notifySuccess(String message) throws IOException, InterruptedException;
@@ -40,8 +34,8 @@ public abstract class NotificationClient {
     if (notification.getNotificationType() == NotificationType.SLACK) {
       return new SlackNotificationClient(notification);
     } else {
-      throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
+      throw new IllegalArgumentException(
+          "Unknown notification type:" + notification.getNotificationType());
     }
   }
-
 }

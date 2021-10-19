@@ -57,7 +57,13 @@ class SourceDefinitionsHandlerTest {
 
     source = generateSource();
 
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
+    sourceHandler =
+        new SourceDefinitionsHandler(
+            configRepository,
+            dockerImageValidator,
+            uuidSupplier,
+            schedulerSynchronousClient,
+            githubStore);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -77,91 +83,109 @@ class SourceDefinitionsHandlerTest {
   void testListSourceDefinitions() throws JsonValidationException, IOException, URISyntaxException {
     final StandardSourceDefinition source2 = generateSource();
 
-    when(configRepository.listStandardSourceDefinitions()).thenReturn(Lists.newArrayList(source, source2));
+    when(configRepository.listStandardSourceDefinitions())
+        .thenReturn(Lists.newArrayList(source, source2));
 
-    final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
-        .sourceDefinitionId(source.getSourceDefinitionId())
-        .name(source.getName())
-        .dockerRepository(source.getDockerRepository())
-        .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
+    final SourceDefinitionRead expectedSourceDefinitionRead1 =
+        new SourceDefinitionRead()
+            .sourceDefinitionId(source.getSourceDefinitionId())
+            .name(source.getName())
+            .dockerRepository(source.getDockerRepository())
+            .dockerImageTag(source.getDockerImageTag())
+            .documentationUrl(new URI(source.getDocumentationUrl()))
+            .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
-    final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
-        .sourceDefinitionId(source2.getSourceDefinitionId())
-        .name(source2.getName())
-        .dockerRepository(source.getDockerRepository())
-        .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
+    final SourceDefinitionRead expectedSourceDefinitionRead2 =
+        new SourceDefinitionRead()
+            .sourceDefinitionId(source2.getSourceDefinitionId())
+            .name(source2.getName())
+            .dockerRepository(source.getDockerRepository())
+            .dockerImageTag(source.getDockerImageTag())
+            .documentationUrl(new URI(source.getDocumentationUrl()))
+            .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
-    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceHandler.listSourceDefinitions();
+    final SourceDefinitionReadList actualSourceDefinitionReadList =
+        sourceHandler.listSourceDefinitions();
 
-    assertEquals(Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
+    assertEquals(
+        Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
         actualSourceDefinitionReadList.getSourceDefinitions());
   }
 
   @Test
   @DisplayName("getSourceDefinition should return the right source")
-  void testGetSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+  void testGetSourceDefinition()
+      throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(source);
 
-    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
-        .sourceDefinitionId(source.getSourceDefinitionId())
-        .name(source.getName())
-        .dockerRepository(source.getDockerRepository())
-        .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
+    final SourceDefinitionRead expectedSourceDefinitionRead =
+        new SourceDefinitionRead()
+            .sourceDefinitionId(source.getSourceDefinitionId())
+            .name(source.getName())
+            .dockerRepository(source.getDockerRepository())
+            .dockerImageTag(source.getDockerImageTag())
+            .documentationUrl(new URI(source.getDocumentationUrl()))
+            .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId());
 
-    final SourceDefinitionRead actualSourceDefinitionRead = sourceHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
+    final SourceDefinitionRead actualSourceDefinitionRead =
+        sourceHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
 
     assertEquals(expectedSourceDefinitionRead, actualSourceDefinitionRead);
   }
 
   @Test
   @DisplayName("createSourceDefinition should correctly create a sourceDefinition")
-  void testCreateSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
+  void testCreateSourceDefinition()
+      throws URISyntaxException, IOException, JsonValidationException {
     final StandardSourceDefinition source = generateSource();
     when(uuidSupplier.get()).thenReturn(source.getSourceDefinitionId());
-    final SourceDefinitionCreate create = new SourceDefinitionCreate()
-        .name(source.getName())
-        .dockerRepository(source.getDockerRepository())
-        .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(source.getIcon());
+    final SourceDefinitionCreate create =
+        new SourceDefinitionCreate()
+            .name(source.getName())
+            .dockerRepository(source.getDockerRepository())
+            .dockerImageTag(source.getDockerImageTag())
+            .documentationUrl(new URI(source.getDocumentationUrl()))
+            .icon(source.getIcon());
 
-    final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
-        .name(source.getName())
-        .dockerRepository(source.getDockerRepository())
-        .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()))
-        .sourceDefinitionId(source.getSourceDefinitionId())
-        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
+    final SourceDefinitionRead expectedRead =
+        new SourceDefinitionRead()
+            .name(source.getName())
+            .dockerRepository(source.getDockerRepository())
+            .dockerImageTag(source.getDockerImageTag())
+            .documentationUrl(new URI(source.getDocumentationUrl()))
+            .sourceDefinitionId(source.getSourceDefinitionId())
+            .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
+    verify(dockerImageValidator)
+        .assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
   }
 
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
-  void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId())).thenReturn(source);
+  void testUpdateSourceDefinition()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
-    final SourceDefinitionRead sourceDefinition = sourceHandler
-        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId()));
+    final SourceDefinitionRead sourceDefinition =
+        sourceHandler.getSourceDefinition(
+            new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId()));
     final String dockerRepository = sourceDefinition.getDockerRepository();
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    final SourceDefinitionRead sourceDefinitionRead = sourceHandler
-        .updateSourceDefinition(new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
+    final SourceDefinitionRead sourceDefinitionRead =
+        sourceHandler.updateSourceDefinition(
+            new SourceDefinitionUpdate()
+                .sourceDefinitionId(source.getSourceDefinitionId())
+                .dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
@@ -178,11 +202,14 @@ class SourceDefinitionsHandlerTest {
       final StandardSourceDefinition sourceDefinition = generateSource();
       when(githubStore.getLatestSources()).thenReturn(Collections.singletonList(sourceDefinition));
 
-      final var sourceDefinitionReadList = sourceHandler.listLatestSourceDefinitions().getSourceDefinitions();
+      final var sourceDefinitionReadList =
+          sourceHandler.listLatestSourceDefinitions().getSourceDefinitions();
       assertEquals(1, sourceDefinitionReadList.size());
 
       final var sourceDefinitionRead = sourceDefinitionReadList.get(0);
-      assertEquals(SourceDefinitionsHandler.buildSourceDefinitionRead(sourceDefinition), sourceDefinitionRead);
+      assertEquals(
+          SourceDefinitionsHandler.buildSourceDefinitionRead(sourceDefinition),
+          sourceDefinitionRead);
     }
 
     @Test
@@ -199,7 +226,5 @@ class SourceDefinitionsHandlerTest {
       assert (icon.length() > 3000);
       assert (icon.length() < 6000);
     }
-
   }
-
 }

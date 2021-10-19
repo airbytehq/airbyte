@@ -44,28 +44,36 @@ public class AsanaOAuthFlowTest {
     definitionId = UUID.randomUUID();
     configRepository = mock(ConfigRepository.class);
     httpClient = mock(HttpClient.class);
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
-    asanaoAuthFlow = new AsanaOAuthFlow(configRepository, httpClient, AsanaOAuthFlowTest::getConstantState);
-
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", "test_client_id")
+                                .put("client_secret", "test_client_secret")
+                                .build()))));
+    asanaoAuthFlow =
+        new AsanaOAuthFlow(configRepository, httpClient, AsanaOAuthFlowTest::getConstantState);
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testGetSourceConcentUrl()
+      throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
         asanaoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl,
+    assertEquals(
+        concentUrl,
         "https://app.asana.com/-/oauth_authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state");
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
+  public void testCompleteSourceOAuth()
+      throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
 
     Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
@@ -74,7 +82,8 @@ public class AsanaOAuthFlowTest {
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
         asanaoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(
+        Jsons.serialize(Map.of("credentials", returnedCredentials)),
+        Jsons.serialize(actualQueryParams));
   }
-
 }

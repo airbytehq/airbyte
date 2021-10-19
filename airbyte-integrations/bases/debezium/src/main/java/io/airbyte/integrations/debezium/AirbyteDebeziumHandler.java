@@ -38,9 +38,9 @@ public class AirbyteDebeziumHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteDebeziumHandler.class);
   /**
-   * We use 10000 as capacity cause the default queue size and batch size of debezium is :
-   * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE}is 2048
-   * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
+   * We use 10000 as capacity cause the default queue size and batch size of debezium is : {@link
+   * io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE}is 2048 {@link
+   * io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
    */
   private static final int QUEUE_CAPACITY = 10000;
 
@@ -52,11 +52,12 @@ public class AirbyteDebeziumHandler {
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
 
-  public AirbyteDebeziumHandler(final JsonNode config,
-                                final CdcTargetPosition targetPosition,
-                                final Properties connectorProperties,
-                                final ConfiguredAirbyteCatalog catalog,
-                                final boolean trackSchemaHistory) {
+  public AirbyteDebeziumHandler(
+      final JsonNode config,
+      final CdcTargetPosition targetPosition,
+      final Properties connectorProperties,
+      final ConfiguredAirbyteCatalog catalog,
+      final boolean trackSchemaHistory) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.connectorProperties = connectorProperties;
@@ -65,59 +66,75 @@ public class AirbyteDebeziumHandler {
     this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final CdcSavedInfoFetcher cdcSavedInfoFetcher,
-                                                                             final CdcStateHandler cdcStateHandler,
-                                                                             final CdcMetadataInjector cdcMetadataInjector,
-                                                                             final Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+      final CdcStateHandler cdcStateHandler,
+      final CdcMetadataInjector cdcMetadataInjector,
+      final Instant emittedAt) {
     LOGGER.info("using CDC: {}", true);
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
-    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
-    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
-        schemaHistoryManager);
+    final AirbyteFileOffsetBackingStore offsetManager =
+        AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
+    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager =
+        schemaHistoryManager(cdcSavedInfoFetcher);
+    final DebeziumRecordPublisher publisher =
+        new DebeziumRecordPublisher(
+            connectorProperties, config, catalog, offsetManager, schemaHistoryManager);
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
-        queue,
-        targetPosition,
-        publisher::hasClosed,
-        publisher::close);
+    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator =
+        new DebeziumRecordIterator(queue, targetPosition, publisher::hasClosed, publisher::close);
 
     // convert to airbyte message.
-    final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
-        .transform(
+    final AutoCloseableIterator<AirbyteMessage> messageIterator =
+        AutoCloseableIterators.transform(
             eventIterator,
             (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
 
-    // our goal is to get the state at the time this supplier is called (i.e. after all message records
+    // our goal is to get the state at the time this supplier is called (i.e. after all message
+    // records
     // have been produced)
-    final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-      final Map<String, String> offset = offsetManager.read();
-      final String dbHistory = trackSchemaHistory ? schemaHistoryManager
-          .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
+    final Supplier<AirbyteMessage> stateMessageSupplier =
+        () -> {
+          final Map<String, String> offset = offsetManager.read();
+          final String dbHistory =
+              trackSchemaHistory
+                  ? schemaHistoryManager
+                      .orElseThrow(
+                          () ->
+                              new RuntimeException(
+                                  "Schema History Tracking is true but manager is not initialised"))
+                      .read()
+                  : null;
 
-      return cdcStateHandler.saveState(offset, dbHistory);
-    };
+          return cdcStateHandler.saveState(offset, dbHistory);
+        };
 
     // wrap the supplier in an iterator so that we can concat it to the message iterator.
-    final Iterator<AirbyteMessage> stateMessageIterator = MoreIterators.singletonIteratorFromSupplier(stateMessageSupplier);
+    final Iterator<AirbyteMessage> stateMessageIterator =
+        MoreIterators.singletonIteratorFromSupplier(stateMessageSupplier);
 
-    // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
-    // state file. we want this so that we have a guarantee that the debezium offset file (which we use
+    // this structure guarantees that the debezium engine will be closed, before we attempt to emit
+    // the
+    // state file. we want this so that we have a guarantee that the debezium offset file (which we
+    // use
     // to produce the state file) is up-to-date.
     final CompositeIterator<AirbyteMessage> messageIteratorWithStateDecorator =
-        AutoCloseableIterators.concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
+        AutoCloseableIterators.concatWithEagerClose(
+            messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
 
     return Collections.singletonList(messageIteratorWithStateDecorator);
   }
 
-  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
+  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(
+      final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
-      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
+      return Optional.of(
+          AirbyteSchemaHistoryStorage.initializeDBHistory(
+              cdcSavedInfoFetcher.getSavedSchemaHistory()));
     }
 
     return Optional.empty();
   }
-
 }

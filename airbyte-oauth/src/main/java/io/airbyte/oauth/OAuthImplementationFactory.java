@@ -19,14 +19,21 @@ public class OAuthImplementationFactory {
   private final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING;
 
   public OAuthImplementationFactory(final ConfigRepository configRepository) {
-    OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
-        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
-        .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
-        .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
-        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
-        .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
-        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
-        .build();
+    OAUTH_FLOW_MAPPING =
+        ImmutableMap.<String, OAuthFlowImplementation>builder()
+            .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
+            .put(
+                "airbyte/source-facebook-marketing",
+                new FacebookMarketingOAuthFlow(configRepository))
+            .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
+            .put(
+                "airbyte/source-google-analytics-v4",
+                new GoogleAnalyticsOAuthFlow(configRepository))
+            .put(
+                "airbyte/source-google-search-console",
+                new GoogleSearchConsoleOAuthFlow(configRepository))
+            .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
+            .build();
   }
 
   public OAuthFlowImplementation create(final String imageName) {
@@ -34,8 +41,9 @@ public class OAuthImplementationFactory {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {
       throw new IllegalStateException(
-          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
+          String.format(
+              "Requested OAuth implementation for %s, but it is not included in the oauth mapping.",
+              imageName));
     }
   }
-
 }

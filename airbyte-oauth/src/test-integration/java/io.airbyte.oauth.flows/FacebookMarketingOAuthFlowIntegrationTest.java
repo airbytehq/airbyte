@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 
 public class FacebookMarketingOAuthFlowIntegrationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FacebookMarketingOAuthFlowIntegrationTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(FacebookMarketingOAuthFlowIntegrationTest.class);
   private static final String REDIRECT_URL = "http://localhost/code";
   private static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
 
@@ -47,8 +48,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest {
   @BeforeEach
   public void setup() throws IOException {
     if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a oauth credentials file.");
+      throw new IllegalStateException("Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
     facebookMarketingOAuthFlow = new FacebookMarketingOAuthFlow(configRepository);
@@ -66,21 +66,28 @@ public class FacebookMarketingOAuthFlowIntegrationTest {
   }
 
   @Test
-  public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullGoogleOAuthFlow()
+      throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", credentialsJson.get("client_id").asText())
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
-    final String url = facebookMarketingOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", credentialsJson.get("client_id").asText())
+                                .put("client_secret", credentialsJson.get("client_secret").asText())
+                                .build()))));
+    final String url =
+        facebookMarketingOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -89,8 +96,9 @@ public class FacebookMarketingOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = facebookMarketingOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+    final Map<String, Object> params =
+        facebookMarketingOAuthFlow.completeSourceOAuth(
+            workspaceId, definitionId, Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("access_token"));
     assertTrue(params.get("access_token").toString().length() > 0);
@@ -98,7 +106,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest {
 
   static class ServerHandler implements HttpHandler {
 
-    final private String expectedParam;
+    private final String expectedParam;
     private String paramValue;
     private boolean succeeded;
 
@@ -126,8 +134,10 @@ public class FacebookMarketingOAuthFlowIntegrationTest {
         final String response;
         if (data != null && data.containsKey(expectedParam)) {
           paramValue = data.get(expectedParam);
-          response = String.format("Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
-              expectedParam, paramValue);
+          response =
+              String.format(
+                  "Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
+                  expectedParam, paramValue);
           LOGGER.info(response);
           t.sendResponseHeaders(200, response.length());
           succeeded = true;
@@ -158,7 +168,5 @@ public class FacebookMarketingOAuthFlowIntegrationTest {
       }
       return result;
     }
-
   }
-
 }

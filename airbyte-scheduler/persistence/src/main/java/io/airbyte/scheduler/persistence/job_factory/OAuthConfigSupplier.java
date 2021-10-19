@@ -31,29 +31,38 @@ public class OAuthConfigSupplier {
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthConfigSupplier.class);
 
   public static final String SECRET_MASK = "******";
-  final private ConfigRepository configRepository;
+  private final ConfigRepository configRepository;
   private final boolean maskSecrets;
   private final TrackingClient trackingClient;
 
-  public OAuthConfigSupplier(final ConfigRepository configRepository, final boolean maskSecrets, final TrackingClient trackingClient) {
+  public OAuthConfigSupplier(
+      final ConfigRepository configRepository,
+      final boolean maskSecrets,
+      final TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.maskSecrets = maskSecrets;
     this.trackingClient = trackingClient;
   }
 
-  public JsonNode injectSourceOAuthParameters(final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
+  public JsonNode injectSourceOAuthParameters(
+      final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
       throws IOException {
     try {
       final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionId);
       // TODO there will be cases where we shouldn't write oauth params. See
       // https://github.com/airbytehq/airbyte/issues/5989
-      MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
+      MoreOAuthParameters.getSourceOAuthParameter(
+              configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
           .ifPresent(
               sourceOAuthParameter -> {
-                injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration());
+                injectJsonNode(
+                    (ObjectNode) sourceConnectorConfig,
+                    (ObjectNode) sourceOAuthParameter.getConfiguration());
                 if (!maskSecrets) {
                   // when maskSecrets = true, no real oauth injections is happening
-                  Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
+                  Exceptions.swallow(
+                      () ->
+                          trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
                 }
               });
       return sourceConnectorConfig;
@@ -62,21 +71,28 @@ public class OAuthConfigSupplier {
     }
   }
 
-  public JsonNode injectDestinationOAuthParameters(final UUID destinationDefinitionId,
-                                                   final UUID workspaceId,
-                                                   final JsonNode destinationConnectorConfig)
+  public JsonNode injectDestinationOAuthParameters(
+      final UUID destinationDefinitionId,
+      final UUID workspaceId,
+      final JsonNode destinationConnectorConfig)
       throws IOException {
     try {
-      final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionId);
-      MoreOAuthParameters.getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId)
-          .ifPresent(destinationOAuthParameter -> {
-            injectJsonNode((ObjectNode) destinationConnectorConfig,
-                (ObjectNode) destinationOAuthParameter.getConfiguration());
-            if (!maskSecrets) {
-              // when maskSecrets = true, no real oauth injections is happening
-              trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata);
-            }
-          });
+      final ImmutableMap<String, Object> metadata =
+          generateDestinationMetadata(destinationDefinitionId);
+      MoreOAuthParameters.getDestinationOAuthParameter(
+              configRepository.listDestinationOAuthParam().stream(),
+              workspaceId,
+              destinationDefinitionId)
+          .ifPresent(
+              destinationOAuthParameter -> {
+                injectJsonNode(
+                    (ObjectNode) destinationConnectorConfig,
+                    (ObjectNode) destinationOAuthParameter.getConfiguration());
+                if (!maskSecrets) {
+                  // when maskSecrets = true, no real oauth injections is happening
+                  trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata);
+                }
+              });
       return destinationConnectorConfig;
     } catch (final JsonValidationException | ConfigNotFoundException e) {
       throw new IOException(e);
@@ -88,7 +104,8 @@ public class OAuthConfigSupplier {
     // TODO this method might make sense to have as a general utility in Jsons
     for (final String key : Jsons.keys(fromConfig)) {
       if (fromConfig.get(key).getNodeType() == OBJECT) {
-        // nested objects are merged rather than overwrite the contents of the equivalent object in config
+        // nested objects are merged rather than overwrite the contents of the equivalent object in
+        // config
         if (mainConfig.get(key) == null) {
           injectJsonNode(mainConfig.putObject(key), (ObjectNode) fromConfig.get(key));
         } else if (mainConfig.get(key).getNodeType() == OBJECT) {
@@ -110,7 +127,6 @@ public class OAuthConfigSupplier {
           }
         }
       }
-
     }
   }
 
@@ -120,14 +136,16 @@ public class OAuthConfigSupplier {
 
   private ImmutableMap<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final StandardSourceDefinition sourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionId);
     return TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
   }
 
-  private ImmutableMap<String, Object> generateDestinationMetadata(final UUID destinationDefinitionId)
+  private ImmutableMap<String, Object> generateDestinationMetadata(
+      final UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final StandardDestinationDefinition destinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     return TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
   }
-
 }

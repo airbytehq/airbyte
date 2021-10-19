@@ -5,9 +5,9 @@
 package io.airbyte.config.helpers;
 
 /**
- * Configuration required to retrieve logs. This is a subset of the methods defined in
- * {@link io.airbyte.config.Configs} so actual look up can be delegated in
- * {@link LogConfigDelegator}. This prevents conflicting configuration existing at once.
+ * Configuration required to retrieve logs. This is a subset of the methods defined in {@link
+ * io.airbyte.config.Configs} so actual look up can be delegated in {@link LogConfigDelegator}. This
+ * prevents conflicting configuration existing at once.
  */
 public interface LogConfigs {
 
@@ -24,5 +24,4 @@ public interface LogConfigs {
   String getGcpStorageBucket();
 
   String getGoogleApplicationCredentials();
-
 }

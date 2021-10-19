@@ -9,25 +9,24 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 
 /**
- * Interface for the destination's consumption of incoming records wrapped in an
- * {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * Interface for the destination's consumption of incoming records wrapped in an {@link
+ * io.airbyte.protocol.models.AirbyteMessage}.
  *
- * This is via the accept method, which commonly handles parsing, validation, batching and writing
- * of the transformed data to the final destination i.e. the technical system data is being written
- * to.
+ * <p>This is via the accept method, which commonly handles parsing, validation, batching and
+ * writing of the transformed data to the final destination i.e. the technical system data is being
+ * written to.
  *
- * Lifecycle:
- * <li>1. Instantiate consumer.</li>
+ * <p>Lifecycle:
+ * <li>1. Instantiate consumer.
  * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
- * any messages.</li>
- * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}</li>
- * <li>4. Always (on success or failure) finalize by calling
- * {@link AirbyteMessageConsumer#close()}</li>
- *
- * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
- * class.
+ *     any messages.
+ * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}
+ * <li>4. Always (on success or failure) finalize by calling {@link AirbyteMessageConsumer#close()}
+ *     We encourage implementing this interface using the {@link
+ *     FailureTrackingAirbyteMessageConsumer} class.
  */
-public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+public interface AirbyteMessageConsumer
+    extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   void start() throws Exception;
 
@@ -37,10 +36,9 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
   @Override
   void close() throws Exception;
 
-  /**
-   * Append a function to be called on {@link AirbyteMessageConsumer#close}.
-   */
-  static AirbyteMessageConsumer appendOnClose(final AirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
+  /** Append a function to be called on {@link AirbyteMessageConsumer#close}. */
+  static AirbyteMessageConsumer appendOnClose(
+      final AirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
     return new AirbyteMessageConsumer() {
 
       @Override
@@ -58,8 +56,6 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
         consumer.close();
         voidCallable.call();
       }
-
     };
   }
-
 }

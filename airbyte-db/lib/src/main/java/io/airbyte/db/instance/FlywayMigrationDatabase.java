@@ -17,11 +17,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * Custom database for jOOQ code generation. It performs the following operations:
- * <li>Run Flyway migration.</li>
- * <li>Dump the database schema.</li>
- * <li>Create a connection for jOOQ code generation.</li>
- * <p/>
- * Reference: https://github.com/sabomichal/jooq-meta-postgres-flyway
+ * <li>Run Flyway migration.
+ * <li>Dump the database schema.
+ * <li>Create a connection for jOOQ code generation.
+ *
+ *     <p>Reference: https://github.com/sabomichal/jooq-meta-postgres-flyway
  */
 public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
@@ -35,7 +35,8 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     this.schemaDumpFile = schemaDumpFile;
   }
 
-  protected abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
+  protected abstract Database getAndInitializeDatabase(
+      String username, String password, String connectionString) throws IOException;
 
   protected abstract DatabaseMigrator getDatabaseMigrator(Database database);
 
@@ -61,13 +62,16 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
       dockerImage = DEFAULT_DOCKER_IMAGE;
     }
 
-    final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(dockerImage)
-        .withDatabaseName("jooq_airbyte_configs")
-        .withUsername("jooq_generator")
-        .withPassword("jooq_generator");
+    final PostgreSQLContainer<?> container =
+        new PostgreSQLContainer<>(dockerImage)
+            .withDatabaseName("jooq_airbyte_configs")
+            .withUsername("jooq_generator")
+            .withPassword("jooq_generator");
     container.start();
 
-    final Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    final Database database =
+        getAndInitializeDatabase(
+            container.getUsername(), container.getPassword(), container.getJdbcUrl());
     final DatabaseMigrator migrator = getDatabaseMigrator(database);
     migrator.migrate();
 
@@ -81,5 +85,4 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     connection = null;
     super.close();
   }
-
 }

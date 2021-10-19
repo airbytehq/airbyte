@@ -21,47 +21,148 @@ public class ArrayTestCase implements SecretsTestCase {
   @Override
   public Map<SecretCoordinate, String> getFirstSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1), "key1",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1), "key2",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(2), 1), "key3",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(3), 1), "key1",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(4), 1), "key2",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(5), 1), "key3");
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(0),
+                1),
+            "key1",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(1),
+                1),
+            "key2",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(2),
+                1),
+            "key3",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(3),
+                1),
+            "key1",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(4),
+                1),
+            "key2",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(5),
+                1),
+            "key3");
   }
 
   @Override
   public Map<SecretCoordinate, String> getSecondSecretMap() {
     return Map.of(
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 2), "key5",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 2), "key6",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(2), 2), "key7",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(3), 2), "key8",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(4), 2), "key9",
-        new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(5), 2), "key10");
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(0),
+                2),
+            "key5",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(1),
+                2),
+            "key6",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(2),
+                2),
+            "key7",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(3),
+                2),
+            "key8",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(4),
+                2),
+            "key9",
+        new SecretCoordinate(
+                "airbyte_workspace_"
+                    + SecretsHelpersTest.WORKSPACE_ID
+                    + "_secret_"
+                    + SecretsHelpersTest.UUIDS.get(5),
+                2),
+            "key10");
   }
 
   @Override
   public Consumer<SecretPersistence> getPersistenceUpdater() {
     return secretPersistence -> {
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(0), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(0),
+              1),
           "key1");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(1), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(1),
+              1),
           "key2");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(2), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(2),
+              1),
           "key3");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(3), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(3),
+              1),
           "key1");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(4), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(4),
+              1),
           "key2");
       secretPersistence.write(
-          new SecretCoordinate("airbyte_workspace_" + SecretsHelpersTest.WORKSPACE_ID + "_secret_" + SecretsHelpersTest.UUIDS.get(5), 1),
+          new SecretCoordinate(
+              "airbyte_workspace_"
+                  + SecretsHelpersTest.WORKSPACE_ID
+                  + "_secret_"
+                  + SecretsHelpersTest.UUIDS.get(5),
+              1),
           "key3");
     };
   }
-
 }

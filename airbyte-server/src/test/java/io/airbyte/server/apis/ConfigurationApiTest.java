@@ -27,19 +27,19 @@ public class ConfigurationApiTest {
     final Configs configs = mock(Configs.class);
     when(configs.getWebappUrl()).thenReturn("http://localhost");
 
-    final ConfigurationApi configurationApi = new ConfigurationApi(
-        mock(ConfigRepository.class),
-        mock(JobPersistence.class),
-        mock(ConfigPersistence.class),
-        mock(SchedulerJobClient.class),
-        mock(CachingSynchronousSchedulerClient.class),
-        configs,
-        mock(FileTtlManager.class),
-        mock(WorkflowServiceStubs.class),
-        mock(Database.class),
-        mock(Database.class),
-        mock(TrackingClient.class));
+    final ConfigurationApi configurationApi =
+        new ConfigurationApi(
+            mock(ConfigRepository.class),
+            mock(JobPersistence.class),
+            mock(ConfigPersistence.class),
+            mock(SchedulerJobClient.class),
+            mock(CachingSynchronousSchedulerClient.class),
+            configs,
+            mock(FileTtlManager.class),
+            mock(WorkflowServiceStubs.class),
+            mock(Database.class),
+            mock(Database.class),
+            mock(TrackingClient.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
-
 }

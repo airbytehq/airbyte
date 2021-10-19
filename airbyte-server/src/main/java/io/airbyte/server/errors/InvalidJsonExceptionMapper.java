@@ -15,9 +15,10 @@ public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseExce
   @Override
   public Response toResponse(final JsonParseException e) {
     return Response.status(422)
-        .entity(KnownException.infoFromThrowableWithMessage(e, "Invalid json. " + e.getMessage() + " " + e.getOriginalMessage()))
+        .entity(
+            KnownException.infoFromThrowableWithMessage(
+                e, "Invalid json. " + e.getMessage() + " " + e.getOriginalMessage()))
         .type("application/json")
         .build();
   }
-
 }

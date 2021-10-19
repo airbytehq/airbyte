@@ -15,11 +15,12 @@ public class MigrateTest {
 
   @Test
   void testGetPreviousMigration() {
-    final List<AirbyteVersion> versions = ImmutableList.of(
-        new AirbyteVersion("0.14.0"),
-        new AirbyteVersion("0.14.1"),
-        new AirbyteVersion("0.14.4"),
-        new AirbyteVersion("0.15.0"));
+    final List<AirbyteVersion> versions =
+        ImmutableList.of(
+            new AirbyteVersion("0.14.0"),
+            new AirbyteVersion("0.14.1"),
+            new AirbyteVersion("0.14.4"),
+            new AirbyteVersion("0.15.0"));
     assertEquals(0, Migrate.getPreviousMigration(versions, new AirbyteVersion("0.14.0")));
     assertEquals(1, Migrate.getPreviousMigration(versions, new AirbyteVersion("0.14.1")));
     assertEquals(1, Migrate.getPreviousMigration(versions, new AirbyteVersion("0.14.3")));
@@ -28,5 +29,4 @@ public class MigrateTest {
     assertEquals(3, Migrate.getPreviousMigration(versions, new AirbyteVersion("0.15.0")));
     assertEquals(-1, Migrate.getPreviousMigration(versions, new AirbyteVersion("0.16.0")));
   }
-
 }

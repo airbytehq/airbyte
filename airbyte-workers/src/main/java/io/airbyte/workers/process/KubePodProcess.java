@@ -57,30 +57,28 @@ import org.slf4j.MDC;
  * is so the parent process can forward data into the child's stdin and read the child's stdout and
  * stderr streams and copy configuration files over.
  *
- * This is made possible by:
+ * <p>This is made possible by:
  * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
- * a shared volume.</li>
+ *     a shared volume.
  * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into
- * a shared volume.</li>
+ *     a shared volume.
  * <li>3) Redirecting the stdin named pipe to the original image's entrypoint and it's output into
- * the respective named pipes for stdout and stderr.</li>
+ *     the respective named pipes for stdout and stderr.
  * <li>4) Each named pipe has a corresponding side car. Each side car forwards its stream
- * accordingly using socat. e.g. stderr/stdout is forwarded to parent process while input from the
- * parent process is forwarded into stdin.</li>
+ *     accordingly using socat. e.g. stderr/stdout is forwarded to parent process while input from
+ *     the parent process is forwarded into stdin.
  * <li>5) The parent process listens on the stdout and stederr sockets for an incoming TCP
- * connection. It also initiates a TCP connection to the child process aka the Kube pod on the
- * specified stdin socket.</li>
+ *     connection. It also initiates a TCP connection to the child process aka the Kube pod on the
+ *     specified stdin socket.
  * <li>6) The child process is able to access configuration data via the shared volume. It's inputs
- * and outputs - stdin, stdout and stderr - are forwarded the parent process via the sidecars.</li>
+ *     and outputs - stdin, stdout and stderr - are forwarded the parent process via the sidecars.
  * <li>7) The main process has its entrypoint wrapped to perform IO redirection and better error
- * handling.</li>
+ *     handling.
  * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
- * pod will fail.</li>
+ *     pod will fail. The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT
+ *     which contains the entrypoint we will wrap when creating the main container in the pod.
  *
- * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
- * entrypoint we will wrap when creating the main container in the pod.
- *
- * See the constructor for more information.
+ *     <p>See the constructor for more information.
  */
 
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
@@ -107,7 +105,8 @@ public class KubePodProcess extends Process {
 
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
-  // Necessary since it is not possible to retrieve the pod's actual exit code upon termination. This
+  // Necessary since it is not possible to retrieve the pod's actual exit code upon termination.
+  // This
   // is because the Kube API server does not keep
   // terminated pod history like it does for successful pods.
   // This variable should be set in functions where the pod is forcefully terminated. See
@@ -126,7 +125,8 @@ public class KubePodProcess extends Process {
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
-  public static String getPodIP(final KubernetesClient client, final String podName, final String namespace) {
+  public static String getPodIP(
+      final KubernetesClient client, final String podName, final String namespace) {
     final var pod = client.pods().inNamespace(namespace).withName(podName).get();
     if (pod == null) {
       throw new RuntimeException("Error: unable to find pod!");
@@ -134,14 +134,18 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
-  private static Container getInit(final boolean usesStdin, final List<VolumeMount> mainVolumeMounts) {
-    var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
+  private static Container getInit(
+      final boolean usesStdin, final List<VolumeMount> mainVolumeMounts) {
+    var initEntrypointStr =
+        String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
 
     if (usesStdin) {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.00001; done;", SUCCESS_FILE_NAME);
+    initEntrypointStr =
+        initEntrypointStr
+            + String.format(" && until [ -f %s ]; do sleep 0.00001; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -152,48 +156,58 @@ public class KubePodProcess extends Process {
         .build();
   }
 
-  private static Container getMain(final String image,
-                                   final String imagePullPolicy,
-                                   final boolean usesStdin,
-                                   final String entrypointOverride,
-                                   final List<VolumeMount> mainVolumeMounts,
-                                   final ResourceRequirements resourceRequirements,
-                                   final String[] args)
+  private static Container getMain(
+      final String image,
+      final String imagePullPolicy,
+      final boolean usesStdin,
+      final String entrypointOverride,
+      final List<VolumeMount> mainVolumeMounts,
+      final ResourceRequirements resourceRequirements,
+      final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
     final var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE) : "";
-    final var entrypointOverrideValue = entrypointOverride == null ? "" : StringEscapeUtils.escapeXSI(entrypointOverride);
+    final var entrypointOverrideValue =
+        entrypointOverride == null ? "" : StringEscapeUtils.escapeXSI(entrypointOverride);
 
-    // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
+    // communicates its completion to the heartbeat check via a file and closes itself if the
+    // heartbeat
     // fails
-    final var mainCommand = MoreResources.readResource("entrypoints/main.sh")
-        .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
-        .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
-        .replaceAll("OPTIONAL_STDIN", optionalStdin)
-        .replace("ENTRYPOINT_OVERRIDE_VALUE", entrypointOverrideValue) // use replace and not replaceAll to preserve escaping and quoting
-        .replaceAll("ARGS", argsStr)
-        .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
-        .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
+    final var mainCommand =
+        MoreResources.readResource("entrypoints/main.sh")
+            .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
+            .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
+            .replaceAll("OPTIONAL_STDIN", optionalStdin)
+            .replace(
+                "ENTRYPOINT_OVERRIDE_VALUE",
+                entrypointOverrideValue) // use replace and not replaceAll to preserve escaping and
+            // quoting
+            .replaceAll("ARGS", argsStr)
+            .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
+            .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
-    final ContainerBuilder containerBuilder = new ContainerBuilder()
-        .withName("main")
-        .withImage(image)
-        .withImagePullPolicy(imagePullPolicy)
-        .withCommand("sh", "-c", mainCommand)
-        .withWorkingDir(CONFIG_DIR)
-        .withVolumeMounts(mainVolumeMounts);
+    final ContainerBuilder containerBuilder =
+        new ContainerBuilder()
+            .withName("main")
+            .withImage(image)
+            .withImagePullPolicy(imagePullPolicy)
+            .withCommand("sh", "-c", mainCommand)
+            .withWorkingDir(CONFIG_DIR)
+            .withVolumeMounts(mainVolumeMounts);
 
-    final ResourceRequirementsBuilder resourceRequirementsBuilder = getResourceRequirementsBuilder(resourceRequirements);
+    final ResourceRequirementsBuilder resourceRequirementsBuilder =
+        getResourceRequirementsBuilder(resourceRequirements);
     if (resourceRequirementsBuilder != null) {
       containerBuilder.withResources(resourceRequirementsBuilder.build());
     }
     return containerBuilder.build();
   }
 
-  private static void copyFilesToKubeConfigVolume(final ApiClient officialClient,
-                                                  final String podName,
-                                                  final String namespace,
-                                                  final Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolume(
+      final ApiClient officialClient,
+      final String podName,
+      final String namespace,
+      final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed
@@ -217,18 +231,29 @@ public class KubePodProcess extends Process {
   }
 
   /**
-   * The calls in this function aren't straight-forward due to api limitations. There is no proper way
-   * to directly look for containers within a pod or query if a container is in a running state beside
-   * checking if the getRunning field is set. We could put this behind an interface, but that seems
-   * heavy-handed compared to the 10 lines here.
+   * The calls in this function aren't straight-forward due to api limitations. There is no proper
+   * way to directly look for containers within a pod or query if a container is in a running state
+   * beside checking if the getRunning field is set. We could put this behind an interface, but that
+   * seems heavy-handed compared to the 10 lines here.
    */
-  private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
+  private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition)
+      throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
+    client
+        .pods()
+        .inNamespace(podDefinition.getMetadata().getNamespace())
+        .withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(
+            p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container present..");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
+    client
+        .pods()
+        .inNamespace(podDefinition.getMetadata().getNamespace())
+        .withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(
+            p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null,
+            5,
+            TimeUnit.MINUTES);
     LOGGER.info("Init container ready..");
   }
 
@@ -236,34 +261,38 @@ public class KubePodProcess extends Process {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }
-    return tolerations.stream().map(workerPodToleration -> new TolerationBuilder()
-        .withKey(workerPodToleration.getKey())
-        .withEffect(workerPodToleration.getEffect())
-        .withOperator(workerPodToleration.getOperator())
-        .withValue(workerPodToleration.getValue())
-        .build())
+    return tolerations.stream()
+        .map(
+            workerPodToleration ->
+                new TolerationBuilder()
+                    .withKey(workerPodToleration.getKey())
+                    .withEffect(workerPodToleration.getEffect())
+                    .withOperator(workerPodToleration.getOperator())
+                    .withValue(workerPodToleration.getValue())
+                    .build())
         .toArray(Toleration[]::new);
   }
 
-  public KubePodProcess(final String processRunnerHost,
-                        final ApiClient officialClient,
-                        final KubernetesClient fabricClient,
-                        final String podName,
-                        final String namespace,
-                        final String image,
-                        final String imagePullPolicy,
-                        final int stdoutLocalPort,
-                        final int stderrLocalPort,
-                        final String kubeHeartbeatUrl,
-                        final boolean usesStdin,
-                        final Map<String, String> files,
-                        final String entrypointOverride,
-                        final ResourceRequirements resourceRequirements,
-                        final String imagePullSecret,
-                        final List<WorkerPodToleration> tolerations,
-                        final Map<String, String> nodeSelectors,
-                        final Map<String, String> labels,
-                        final String... args)
+  public KubePodProcess(
+      final String processRunnerHost,
+      final ApiClient officialClient,
+      final KubernetesClient fabricClient,
+      final String podName,
+      final String namespace,
+      final String image,
+      final String imagePullPolicy,
+      final int stdoutLocalPort,
+      final int stderrLocalPort,
+      final String kubeHeartbeatUrl,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypointOverride,
+      final ResourceRequirements resourceRequirements,
+      final String imagePullSecret,
+      final List<WorkerPodToleration> tolerations,
+      final Map<String, String> nodeSelectors,
+      final Map<String, String> labels,
+      final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
     this.stdoutLocalPort = stdoutLocalPort;
@@ -278,105 +307,118 @@ public class KubePodProcess extends Process {
       LOGGER.info("Found entrypoint override: {}", entrypointOverride);
     }
 
-    final Volume pipeVolume = new VolumeBuilder()
-        .withName("airbyte-pipes")
-        .withNewEmptyDir()
-        .endEmptyDir()
-        .build();
+    final Volume pipeVolume =
+        new VolumeBuilder().withName("airbyte-pipes").withNewEmptyDir().endEmptyDir().build();
 
-    final VolumeMount pipeVolumeMount = new VolumeMountBuilder()
-        .withName("airbyte-pipes")
-        .withMountPath(PIPES_DIR)
-        .build();
+    final VolumeMount pipeVolumeMount =
+        new VolumeMountBuilder().withName("airbyte-pipes").withMountPath(PIPES_DIR).build();
 
-    final Volume configVolume = new VolumeBuilder()
-        .withName("airbyte-config")
-        .withNewEmptyDir()
-        .withMedium("Memory")
-        .endEmptyDir()
-        .build();
+    final Volume configVolume =
+        new VolumeBuilder()
+            .withName("airbyte-config")
+            .withNewEmptyDir()
+            .withMedium("Memory")
+            .endEmptyDir()
+            .build();
 
-    final VolumeMount configVolumeMount = new VolumeMountBuilder()
-        .withName("airbyte-config")
-        .withMountPath(CONFIG_DIR)
-        .build();
+    final VolumeMount configVolumeMount =
+        new VolumeMountBuilder().withName("airbyte-config").withMountPath(CONFIG_DIR).build();
 
-    final Volume terminationVolume = new VolumeBuilder()
-        .withName("airbyte-termination")
-        .withNewEmptyDir()
-        .endEmptyDir()
-        .build();
+    final Volume terminationVolume =
+        new VolumeBuilder().withName("airbyte-termination").withNewEmptyDir().endEmptyDir().build();
 
-    final VolumeMount terminationVolumeMount = new VolumeMountBuilder()
-        .withName("airbyte-termination")
-        .withMountPath(TERMINATION_DIR)
-        .build();
+    final VolumeMount terminationVolumeMount =
+        new VolumeMountBuilder()
+            .withName("airbyte-termination")
+            .withMountPath(TERMINATION_DIR)
+            .build();
 
     final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
-    final Container main = getMain(
-        image,
-        imagePullPolicy,
-        usesStdin,
-        entrypointOverride,
-        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
-        resourceRequirements,
-        args);
+    final Container main =
+        getMain(
+            image,
+            imagePullPolicy,
+            usesStdin,
+            entrypointOverride,
+            List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+            resourceRequirements,
+            args);
 
-    final Container remoteStdin = new ContainerBuilder()
-        .withName("remote-stdin")
-        .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
-        .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .build();
+    final Container remoteStdin =
+        new ContainerBuilder()
+            .withName("remote-stdin")
+            .withImage("alpine/socat:1.7.4.1-r1")
+            .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
+            .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+            .build();
 
-    final Container relayStdout = new ContainerBuilder()
-        .withName("relay-stdout")
-        .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
-        .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .build();
+    final Container relayStdout =
+        new ContainerBuilder()
+            .withName("relay-stdout")
+            .withImage("alpine/socat:1.7.4.1-r1")
+            .withCommand(
+                "sh",
+                "-c",
+                String.format(
+                    "cat %s | socat -d -d -d - TCP:%s:%s",
+                    STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
+            .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+            .build();
 
-    final Container relayStderr = new ContainerBuilder()
-        .withName("relay-stderr")
-        .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
-        .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .build();
+    final Container relayStderr =
+        new ContainerBuilder()
+            .withName("relay-stderr")
+            .withImage("alpine/socat:1.7.4.1-r1")
+            .withCommand(
+                "sh",
+                "-c",
+                String.format(
+                    "cat %s | socat -d -d -d - TCP:%s:%s",
+                    STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
+            .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
+            .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
     // main container completes
-    final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
-        .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
-        .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
-        .replaceAll("HEARTBEAT_URL", kubeHeartbeatUrl);
+    final String heartbeatCommand =
+        MoreResources.readResource("entrypoints/check.sh")
+            .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
+            .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
+            .replaceAll("HEARTBEAT_URL", kubeHeartbeatUrl);
 
-    final Container callHeartbeatServer = new ContainerBuilder()
-        .withName("call-heartbeat-server")
-        .withImage("curlimages/curl:7.77.0")
-        .withCommand("sh")
-        .withArgs("-c", heartbeatCommand)
-        .withVolumeMounts(terminationVolumeMount)
-        .build();
+    final Container callHeartbeatServer =
+        new ContainerBuilder()
+            .withName("call-heartbeat-server")
+            .withImage("curlimages/curl:7.77.0")
+            .withCommand("sh")
+            .withArgs("-c", heartbeatCommand)
+            .withVolumeMounts(terminationVolumeMount)
+            .build();
 
-    final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
-        : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
+    final List<Container> containers =
+        usesStdin
+            ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
+            : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    final Pod pod = new PodBuilder()
-        .withApiVersion("v1")
-        .withNewMetadata()
-        .withName(podName)
-        .withLabels(labels)
-        .endMetadata()
-        .withNewSpec()
-        .withTolerations(buildPodTolerations(tolerations))
-        .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
-        .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
-        .withRestartPolicy("Never")
-        .withInitContainers(init)
-        .withContainers(containers)
-        .withVolumes(pipeVolume, configVolume, terminationVolume)
-        .endSpec()
-        .build();
+    final Pod pod =
+        new PodBuilder()
+            .withApiVersion("v1")
+            .withNewMetadata()
+            .withName(podName)
+            .withLabels(labels)
+            .endMetadata()
+            .withNewSpec()
+            .withTolerations(buildPodTolerations(tolerations))
+            .withImagePullSecrets(
+                new LocalObjectReference(
+                    imagePullSecret)) // An empty string turns this into a no-op setting.
+            .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
+            .withRestartPolicy("Never")
+            .withInitContainers(init)
+            .withContainers(containers)
+            .withVolumes(pipeVolume, configVolume, terminationVolume)
+            .endSpec()
+            .build();
 
     LOGGER.info("Creating pod...");
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
@@ -389,15 +431,22 @@ public class KubePodProcess extends Process {
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our
     // heartbeating mechanism.
-    // This also handles the case where a very short pod already completes before this check completes
+    // This also handles the case where a very short pod already completes before this check
+    // completes
     // the first time.
-    // This doesn't manage things like pods that are blocked from running for some cluster reason or if
+    // This doesn't manage things like pods that are blocked from running for some cluster reason or
+    // if
     // the init
     // container got stuck somehow.
-    fabricClient.resource(podDefinition).waitUntilCondition(p -> {
-      final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
-      return isReady || isTerminal(p);
-    }, 10, TimeUnit.DAYS);
+    fabricClient
+        .resource(podDefinition)
+        .waitUntilCondition(
+            p -> {
+              final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
+              return isReady || isTerminal(p);
+            },
+            10,
+            TimeUnit.DAYS);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -416,28 +465,30 @@ public class KubePodProcess extends Process {
 
   private void setupStdOutAndStdErrListeners() {
     final var context = MDC.getCopyOfContextMap();
-    executorService.submit(() -> {
-      MDC.setContextMap(context);
-      try {
-        LOGGER.info("Creating stdout socket server...");
-        final var socket = stdoutServerSocket.accept(); // blocks until connected
-        LOGGER.info("Setting stdout...");
-        this.stdout = socket.getInputStream();
-      } catch (final IOException e) {
-        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
-      }
-    });
-    executorService.submit(() -> {
-      MDC.setContextMap(context);
-      try {
-        LOGGER.info("Creating stderr socket server...");
-        final var socket = stderrServerSocket.accept(); // blocks until connected
-        LOGGER.info("Setting stderr...");
-        this.stderr = socket.getInputStream();
-      } catch (final IOException e) {
-        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
-      }
-    });
+    executorService.submit(
+        () -> {
+          MDC.setContextMap(context);
+          try {
+            LOGGER.info("Creating stdout socket server...");
+            final var socket = stdoutServerSocket.accept(); // blocks until connected
+            LOGGER.info("Setting stdout...");
+            this.stdout = socket.getInputStream();
+          } catch (final IOException e) {
+            e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+          }
+        });
+    executorService.submit(
+        () -> {
+          MDC.setContextMap(context);
+          try {
+            LOGGER.info("Creating stderr socket server...");
+            final var socket = stderrServerSocket.accept(); // blocks until connected
+            LOGGER.info("Setting stderr...");
+            this.stderr = socket.getInputStream();
+          } catch (final IOException e) {
+            e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+          }
+        });
   }
 
   @Override
@@ -455,13 +506,15 @@ public class KubePodProcess extends Process {
     return this.stderr;
   }
 
-  /**
-   * Immediately terminates the Kube Pod backing this process and cleans up IO resources.
-   */
+  /** Immediately terminates the Kube Pod backing this process and cleans up IO resources. */
   @Override
   public int waitFor() throws InterruptedException {
     final Pod refreshedPod =
-        fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+        fabricClient
+            .pods()
+            .inNamespace(podDefinition.getMetadata().getNamespace())
+            .withName(podDefinition.getMetadata().getName())
+            .get();
     fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
     wasKilled.set(true);
     return exitValue();
@@ -476,14 +529,15 @@ public class KubePodProcess extends Process {
     return super.waitFor(timeout, unit);
   }
 
-  /**
-   * Immediately terminates the Kube Pod backing this process and cleans up IO resources.
-   */
+  /** Immediately terminates the Kube Pod backing this process and cleans up IO resources. */
   @Override
   public void destroy() {
     LOGGER.info("Destroying Kube process: {}", podDefinition.getMetadata().getName());
     try {
-      fabricClient.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
+      fabricClient
+          .resource(podDefinition)
+          .withPropagationPolicy(DeletionPropagation.FOREGROUND)
+          .delete();
       wasKilled.set(true);
     } finally {
       close();
@@ -499,7 +553,7 @@ public class KubePodProcess extends Process {
   /**
    * Close all open resource in the opposite order of resource creation.
    *
-   * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
+   * <p>Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
@@ -524,9 +578,7 @@ public class KubePodProcess extends Process {
 
   private boolean isTerminal(final Pod pod) {
     if (pod.getStatus() != null) {
-      return pod.getStatus()
-          .getContainerStatuses()
-          .stream()
+      return pod.getStatus().getContainerStatuses().stream()
           .anyMatch(e -> e.getState() != null && e.getState().getTerminated() != null);
     } else {
       return false;
@@ -543,21 +595,26 @@ public class KubePodProcess extends Process {
     }
 
     // Reuse the last status check result to prevent overloading the Kube Api server.
-    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < STATUS_CHECK_INTERVAL_MS) {
+    if (lastStatusCheck != null
+        && System.currentTimeMillis() - lastStatusCheck < STATUS_CHECK_INTERVAL_MS) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
     final var name = pod.getMetadata().getName();
-    final Pod refreshedPod = fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
+    final Pod refreshedPod =
+        fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
     if (refreshedPod == null) {
       if (wasKilled.get()) {
-        LOGGER.info("Unable to find pod {} to retrieve exit value. Defaulting to  value {}. This is expected if the job was cancelled.", name,
+        LOGGER.info(
+            "Unable to find pod {} to retrieve exit value. Defaulting to  value {}. This is expected if the job was cancelled.",
+            name,
             KILLED_EXIT_CODE);
         return KILLED_EXIT_CODE;
       }
       // If the pod cannot be found and was not killed, it either means 1) the pod was not created
       // properly 2) this method is incorrectly called.
-      throw new RuntimeException("Cannot find pod while trying to retrieve exit code. This probably means the Pod was not correctly created.");
+      throw new RuntimeException(
+          "Cannot find pod while trying to retrieve exit code. This probably means the Pod was not correctly created.");
     }
 
     if (!isTerminal(refreshedPod)) {
@@ -565,14 +622,18 @@ public class KubePodProcess extends Process {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
-    returnCode = refreshedPod.getStatus().getContainerStatuses()
-        .stream()
-        .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
-        .map(containerStatus -> {
-          return containerStatus.getState().getTerminated().getExitCode();
-        })
-        .reduce(Integer::sum)
-        .orElseThrow();
+    returnCode =
+        refreshedPod.getStatus().getContainerStatuses().stream()
+            .filter(
+                containerStatus ->
+                    containerStatus.getState() != null
+                        && containerStatus.getState().getTerminated() != null)
+            .map(
+                containerStatus -> {
+                  return containerStatus.getState().getTerminated().getExitCode();
+                })
+            .reduce(Integer::sum)
+            .orElseThrow();
 
     LOGGER.info("Exit code for pod {} is {}", name, returnCode);
     return returnCode;
@@ -586,14 +647,16 @@ public class KubePodProcess extends Process {
     // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
     // indicates that all kernel resources were shut down.
     // Because this is a custom implementation, manually close all the resources.
-    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
+    // Further, since the local resources are used to talk to Kubernetes resources, shut local
+    // resources
     // down after Kubernetes resources are shut down, regardless of Kube termination status.
     close();
     LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
     return returnCode;
   }
 
-  private static ResourceRequirementsBuilder getResourceRequirementsBuilder(final ResourceRequirements resourceRequirements) {
+  private static ResourceRequirementsBuilder getResourceRequirementsBuilder(
+      final ResourceRequirements resourceRequirements) {
     if (resourceRequirements != null) {
       final Map<String, Quantity> requestMap = new HashMap<>();
       // if null then use unbounded resource allocation
@@ -610,11 +673,8 @@ public class KubePodProcess extends Process {
       if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
         limitMap.put("memory", Quantity.parse(resourceRequirements.getMemoryLimit()));
       }
-      return new ResourceRequirementsBuilder()
-          .withRequests(requestMap)
-          .withLimits(limitMap);
+      return new ResourceRequirementsBuilder().withRequests(requestMap).withLimits(limitMap);
     }
     return null;
   }
-
 }

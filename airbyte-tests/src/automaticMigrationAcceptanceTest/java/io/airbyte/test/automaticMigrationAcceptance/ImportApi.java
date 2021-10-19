@@ -55,23 +55,26 @@ public class ImportApi {
   public ApiResponse<ImportRead> importArchiveWithHttpInfo(final File body) throws ApiException {
     final HttpRequest.Builder localVarRequestBuilder = importArchiveRequestBuilder(body);
     try {
-      final HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
+      final HttpResponse<InputStream> localVarResponse =
+          memberVarHttpClient.send(
+              localVarRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
       if (localVarResponse.statusCode() / 100 != 2) {
-        throw new ApiException(localVarResponse.statusCode(),
+        throw new ApiException(
+            localVarResponse.statusCode(),
             "importArchive call received non-success response",
             localVarResponse.headers(),
-            localVarResponse.body() == null ? null
+            localVarResponse.body() == null
+                ? null
                 : new String(localVarResponse.body().readAllBytes()));
       }
       return new ApiResponse<ImportRead>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<ImportRead>() {}));
+          memberVarObjectMapper.readValue(
+              localVarResponse.body(), new TypeReference<ImportRead>() {}));
     } catch (final IOException e) {
       throw new ApiException(e);
     } catch (final InterruptedException e) {
@@ -83,8 +86,8 @@ public class ImportApi {
   private HttpRequest.Builder importArchiveRequestBuilder(final File body) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
-      throw new ApiException(400,
-          "Missing the required parameter 'body' when calling importArchive");
+      throw new ApiException(
+          400, "Missing the required parameter 'body' when calling importArchive");
     }
 
     final HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
@@ -109,5 +112,4 @@ public class ImportApi {
     }
     return localVarRequestBuilder;
   }
-
 }

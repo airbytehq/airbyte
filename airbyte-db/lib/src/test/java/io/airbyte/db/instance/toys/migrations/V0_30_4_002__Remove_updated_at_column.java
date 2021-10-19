@@ -17,9 +17,6 @@ public class V0_30_4_002__Remove_updated_at_column extends BaseJavaMigration {
   @Override
   public void migrate(final Context context) {
     final DSLContext dsl = DSL.using(context.getConnection());
-    dsl.alterTable(ToysDatabaseInstance.TABLE_NAME)
-        .dropColumn(field("updated_at"))
-        .execute();
+    dsl.alterTable(ToysDatabaseInstance.TABLE_NAME).dropColumn(field("updated_at")).execute();
   }
-
 }

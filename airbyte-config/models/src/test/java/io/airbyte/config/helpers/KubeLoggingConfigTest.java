@@ -43,7 +43,7 @@ public class KubeLoggingConfigTest {
    * unable to perform injection, and instead rely on env vars set in
    * ./tools/bin/cloud_storage_logging_test.sh.
    *
-   * This test will fail if certain env vars aren't set.
+   * <p>This test will fail if certain env vars aren't set.
    */
   @Test
   public void testLoggingConfiguration() throws IOException, InterruptedException {
@@ -62,7 +62,8 @@ public class KubeLoggingConfigTest {
     Thread.sleep(LOG_PUBLISH_DELAY);
 
     logPath = randPath + "/logs.log/";
-    // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve the
+    // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve
+    // the
     // log file.
     final var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
@@ -72,5 +73,4 @@ public class KubeLoggingConfigTest {
       assertTrue(logsLine.contains(l));
     }
   }
-
 }

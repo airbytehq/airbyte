@@ -11,7 +11,8 @@ public class IncrementalUtils {
 
   public static String getCursorField(final ConfiguredAirbyteStream stream) {
     if (stream.getCursorField().size() == 0) {
-      throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
+      throw new IllegalStateException(
+          "No cursor field specified for stream attempting to do incremental.");
     } else if (stream.getCursorField().size() > 1) {
       throw new IllegalStateException("Source does not support nested cursor fields.");
     } else {
@@ -19,28 +20,43 @@ public class IncrementalUtils {
     }
   }
 
-  public static JsonSchemaPrimitive getCursorType(final ConfiguredAirbyteStream stream, final String cursorField) {
+  public static JsonSchemaPrimitive getCursorType(
+      final ConfiguredAirbyteStream stream, final String cursorField) {
     if (stream.getStream().getJsonSchema().get("properties") == null) {
-      throw new IllegalStateException(String.format("No properties found in stream: %s.", stream.getStream().getName()));
+      throw new IllegalStateException(
+          String.format("No properties found in stream: %s.", stream.getStream().getName()));
     }
 
     if (stream.getStream().getJsonSchema().get("properties").get(cursorField) == null) {
       throw new IllegalStateException(
-          String.format("Could not find cursor field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
+          String.format(
+              "Could not find cursor field: %s in schema for stream: %s.",
+              cursorField, stream.getStream().getName()));
     }
 
     if (stream.getStream().getJsonSchema().get("properties").get(cursorField).get("type") == null) {
       throw new IllegalStateException(
-          String.format("Could not find cursor type for field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
+          String.format(
+              "Could not find cursor type for field: %s in schema for stream: %s.",
+              cursorField, stream.getStream().getName()));
     }
 
-    return JsonSchemaPrimitive.valueOf(stream.getStream().getJsonSchema().get("properties").get(cursorField).get("type").asText().toUpperCase());
+    return JsonSchemaPrimitive.valueOf(
+        stream
+            .getStream()
+            .getJsonSchema()
+            .get("properties")
+            .get(cursorField)
+            .get("type")
+            .asText()
+            .toUpperCase());
   }
 
   // x < 0 mean replace original
   // x == 0 means keep original
   // x > 0 means keep original
-  public static int compareCursors(final String original, final String candidate, final JsonSchemaPrimitive type) {
+  public static int compareCursors(
+      final String original, final String candidate, final JsonSchemaPrimitive type) {
     if (original == null && candidate == null) {
       return 0;
     }
@@ -64,9 +80,9 @@ public class IncrementalUtils {
       case BOOLEAN -> {
         return Boolean.compare(Boolean.parseBoolean(original), Boolean.parseBoolean(candidate));
       }
-      // includes OBJECT, ARRAY, NULL
-      default -> throw new IllegalStateException(String.format("Cannot use field of type %s as a comparable", type));
+        // includes OBJECT, ARRAY, NULL
+      default -> throw new IllegalStateException(
+          String.format("Cannot use field of type %s as a comparable", type));
     }
   }
-
 }

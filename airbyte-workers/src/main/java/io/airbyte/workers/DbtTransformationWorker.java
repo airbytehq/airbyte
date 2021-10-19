@@ -24,10 +24,11 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   private final AtomicBoolean cancelled;
 
-  public DbtTransformationWorker(final String jobId,
-                                 final int attempt,
-                                 final ResourceRequirements resourceRequirements,
-                                 final DbtTransformationRunner dbtTransformationRunner) {
+  public DbtTransformationWorker(
+      final String jobId,
+      final int attempt,
+      final ResourceRequirements resourceRequirements,
+      final DbtTransformationRunner dbtTransformationRunner) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.dbtTransformationRunner = dbtTransformationRunner;
@@ -37,7 +38,8 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
   }
 
   @Override
-  public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
+  public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot)
+      throws WorkerException {
     final long startTime = System.currentTimeMillis();
 
     try (dbtTransformationRunner) {
@@ -76,5 +78,4 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
       e.printStackTrace();
     }
   }
-
 }

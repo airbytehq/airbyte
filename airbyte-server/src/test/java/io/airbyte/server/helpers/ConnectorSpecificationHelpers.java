@@ -29,5 +29,4 @@ public class ConnectorSpecificationHelpers {
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -17,8 +17,8 @@ import javax.sql.DataSource;
 
 /**
  * This database allows a developer to specify a {@link JdbcStreamingQueryConfiguration}. This
- * allows the developer to specify the correct configuration in order for a
- * {@link PreparedStatement} to execute as in a streaming / chunked manner.
+ * allows the developer to specify the correct configuration in order for a {@link
+ * PreparedStatement} to execute as in a streaming / chunked manner.
  */
 public class StreamingJdbcDatabase extends JdbcDatabase {
 
@@ -26,16 +26,18 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   private final JdbcDatabase database;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public StreamingJdbcDatabase(final DataSource dataSource,
-                               final JdbcDatabase database,
-                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+  public StreamingJdbcDatabase(
+      final DataSource dataSource,
+      final JdbcDatabase database,
+      final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this(dataSource, database, jdbcStreamingQueryConfiguration, database.sourceOperations);
   }
 
-  public StreamingJdbcDatabase(final DataSource dataSource,
-                               final JdbcDatabase database,
-                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
-                               final JdbcSourceOperations sourceOperations) {
+  public StreamingJdbcDatabase(
+      final DataSource dataSource,
+      final JdbcDatabase database,
+      final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+      final JdbcSourceOperations sourceOperations) {
     super(sourceOperations);
     this.dataSource = dataSource;
     this.database = database;
@@ -53,15 +55,17 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   }
 
   @Override
-  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> List<T> bufferedResultSetQuery(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.bufferedResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> resultSetQuery(
+      final CheckedFunction<Connection, ResultSet, SQLException> query,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.resultSetQuery(query, recordTransform);
   }
@@ -76,30 +80,33 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
-   *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
-   *        returned from recordTransform.
+   *     just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
+   *     returned from recordTransform.
    * @param <T> type that each record will be mapped to.
    * @return Result of the query mapped to a stream. This stream must be closed!
    * @throws SQLException SQL related exceptions.
    */
   @Override
-  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> query(
+      final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try {
       final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
-      return sourceOperations.toStream(ps.executeQuery(), recordTransform)
-          .onClose(() -> {
-            try {
-              connection.setAutoCommit(true);
-              connection.close();
-            } catch (final SQLException e) {
-              throw new RuntimeException(e);
-            }
-          });
+      return sourceOperations
+          .toStream(ps.executeQuery(), recordTransform)
+          .onClose(
+              () -> {
+                try {
+                  connection.setAutoCommit(true);
+                  connection.close();
+                } catch (final SQLException e) {
+                  throw new RuntimeException(e);
+                }
+              });
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -109,5 +116,4 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   public void close() throws Exception {
     database.close();
   }
-
 }

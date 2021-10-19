@@ -31,16 +31,11 @@ class YamlsTest {
   @Test
   void testSerialize() {
     assertEquals(
-        "---\n"
-            + "str: \"abc\"\n"
-            + "num: 999\n"
-            + "numLong: 888\n",
+        "---\n" + "str: \"abc\"\n" + "num: 999\n" + "numLong: 888\n",
         Yamls.serialize(new ToClass("abc", 999, 888L)));
 
     assertEquals(
-        "---\n"
-            + "test: \"abc\"\n"
-            + "test2: \"def\"\n",
+        "---\n" + "test: \"abc\"\n" + "test2: \"def\"\n",
         Yamls.serialize(
             ImmutableMap.of(
                 "test", "abc",
@@ -50,19 +45,16 @@ class YamlsTest {
   @Test
   void testSerializeJsonNode() {
     assertEquals(
-        "---\n"
-            + "str: \"abc\"\n"
-            + "num: 999\n"
-            + "numLong: 888\n",
+        "---\n" + "str: \"abc\"\n" + "num: 999\n" + "numLong: 888\n",
         Yamls.serialize(Jsons.jsonNode(new ToClass("abc", 999, 888L))));
 
     assertEquals(
-        "---\n"
-            + "test: \"abc\"\n"
-            + "test2: \"def\"\n",
-        Yamls.serialize(Jsons.jsonNode(ImmutableMap.of(
-            "test", "abc",
-            "test2", "def"))));
+        "---\n" + "test: \"abc\"\n" + "test2: \"def\"\n",
+        Yamls.serialize(
+            Jsons.jsonNode(
+                ImmutableMap.of(
+                    "test", "abc",
+                    "test2", "def"))));
   }
 
   @Test
@@ -70,29 +62,16 @@ class YamlsTest {
     assertEquals(
         new ToClass("abc", 999, 888L),
         Yamls.deserialize(
-            "---\n"
-                + "str: \"abc\"\n"
-                + "num: \"999\"\n"
-                + "numLong: \"888\"\n",
-            ToClass.class));
+            "---\n" + "str: \"abc\"\n" + "num: \"999\"\n" + "numLong: \"888\"\n", ToClass.class));
   }
 
   @Test
   void testDeserializeToJsonNode() {
-    assertEquals(
-        "{\"str\":\"abc\"}",
-        Yamls.deserialize(
-            "---\n"
-                + "str: \"abc\"\n")
-            .toString());
+    assertEquals("{\"str\":\"abc\"}", Yamls.deserialize("---\n" + "str: \"abc\"\n").toString());
 
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
-        Yamls.deserialize(
-            "---\n"
-                + "- str: \"abc\"\n"
-                + "- str: \"abc\"\n")
-            .toString());
+        Yamls.deserialize("---\n" + "- str: \"abc\"\n" + "- str: \"abc\"\n").toString());
   }
 
   @Test
@@ -111,11 +90,10 @@ class YamlsTest {
 
   @Test
   void testStreamRead() throws IOException {
-    final List<ToClass> classes = Lists.newArrayList(
-        new ToClass("1", 1, 1),
-        new ToClass("2", 2, 2),
-        new ToClass("3", 3, 3));
-    final ByteArrayInputStream input = spy(new ByteArrayInputStream(Yamls.serialize(classes).getBytes(StandardCharsets.UTF_8)));
+    final List<ToClass> classes =
+        Lists.newArrayList(new ToClass("1", 1, 1), new ToClass("2", 2, 2), new ToClass("3", 3, 3));
+    final ByteArrayInputStream input =
+        spy(new ByteArrayInputStream(Yamls.serialize(classes).getBytes(StandardCharsets.UTF_8)));
 
     try (final AutoCloseableIterator<JsonNode> iterator = Yamls.deserializeArray(input)) {
       assertEquals(
@@ -167,7 +145,5 @@ class YamlsTest {
     public int hashCode() {
       return Objects.hash(str, num, numLong);
     }
-
   }
-
 }

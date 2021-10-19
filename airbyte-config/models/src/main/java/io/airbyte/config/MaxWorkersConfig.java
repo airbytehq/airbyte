@@ -11,7 +11,11 @@ public class MaxWorkersConfig {
   private final int maxDiscoverWorkers;
   private final int maxSyncWorkers;
 
-  public MaxWorkersConfig(final int maxSpecWorkers, final int maxCheckWorkers, final int maxDiscoverWorkers, final int maxSyncWorkers) {
+  public MaxWorkersConfig(
+      final int maxSpecWorkers,
+      final int maxCheckWorkers,
+      final int maxDiscoverWorkers,
+      final int maxSyncWorkers) {
     this.maxSpecWorkers = maxSpecWorkers;
     this.maxCheckWorkers = maxCheckWorkers;
     this.maxDiscoverWorkers = maxDiscoverWorkers;
@@ -36,12 +40,15 @@ public class MaxWorkersConfig {
 
   @Override
   public String toString() {
-    return "MaxWorkersConfig{" +
-        "maxSpecWorkers=" + maxSpecWorkers +
-        ", maxCheckWorkers=" + maxCheckWorkers +
-        ", maxDiscoverWorkers=" + maxDiscoverWorkers +
-        ", maxSyncWorkers=" + maxSyncWorkers +
-        '}';
+    return "MaxWorkersConfig{"
+        + "maxSpecWorkers="
+        + maxSpecWorkers
+        + ", maxCheckWorkers="
+        + maxCheckWorkers
+        + ", maxDiscoverWorkers="
+        + maxDiscoverWorkers
+        + ", maxSyncWorkers="
+        + maxSyncWorkers
+        + '}';
   }
-
 }

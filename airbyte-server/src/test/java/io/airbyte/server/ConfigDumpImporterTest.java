@@ -73,94 +73,112 @@ class ConfigDumpImporterTest {
     when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
 
     configDumpImporter =
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher, true);
+        new ConfigDumpImporter(
+            configRepository,
+            jobPersistence,
+            workspaceHelper,
+            mock(JsonSchemaValidator.class),
+            specFetcher,
+            true);
     configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
 
     workspaceId = UUID.randomUUID();
     when(jobPersistence.getVersion()).thenReturn(Optional.of(TEST_VERSION));
 
-    standardSourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withName("test-standard-source")
-        .withDockerRepository("test")
-        .withDocumentationUrl("http://doc")
-        .withIcon("hello")
-        .withDockerImageTag("dev");
-    sourceConnection = new SourceConnection()
-        .withSourceId(UUID.randomUUID())
-        .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
-        .withConfiguration(Jsons.emptyObject())
-        .withName("test-source")
-        .withTombstone(false)
-        .withWorkspaceId(workspaceId);
+    standardSourceDefinition =
+        new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withName("test-standard-source")
+            .withDockerRepository("test")
+            .withDocumentationUrl("http://doc")
+            .withIcon("hello")
+            .withDockerImageTag("dev");
+    sourceConnection =
+        new SourceConnection()
+            .withSourceId(UUID.randomUUID())
+            .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+            .withConfiguration(Jsons.emptyObject())
+            .withName("test-source")
+            .withTombstone(false)
+            .withWorkspaceId(workspaceId);
     when(configRepository.listStandardSourceDefinitions())
         .thenReturn(List.of(standardSourceDefinition));
-    when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(
+            standardSourceDefinition.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
-    when(configRepository.getSourceConnection(any()))
-        .thenReturn(sourceConnection);
+    when(configRepository.getSourceConnection(any())).thenReturn(sourceConnection);
 
-    standardDestinationDefinition = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(UUID.randomUUID())
-        .withName("test-standard-destination")
-        .withDockerRepository("test")
-        .withDocumentationUrl("http://doc")
-        .withIcon("hello")
-        .withDockerImageTag("dev");
-    destinationConnection = new DestinationConnection()
-        .withDestinationId(UUID.randomUUID())
-        .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-        .withConfiguration(Jsons.emptyObject())
-        .withName("test-source")
-        .withTombstone(false)
-        .withWorkspaceId(workspaceId);
+    standardDestinationDefinition =
+        new StandardDestinationDefinition()
+            .withDestinationDefinitionId(UUID.randomUUID())
+            .withName("test-standard-destination")
+            .withDockerRepository("test")
+            .withDocumentationUrl("http://doc")
+            .withIcon("hello")
+            .withDockerImageTag("dev");
+    destinationConnection =
+        new DestinationConnection()
+            .withDestinationId(UUID.randomUUID())
+            .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+            .withConfiguration(Jsons.emptyObject())
+            .withName("test-source")
+            .withTombstone(false)
+            .withWorkspaceId(workspaceId);
     when(configRepository.listStandardDestinationDefinitions())
         .thenReturn(List.of(standardDestinationDefinition));
-    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+    when(configRepository.getStandardDestinationDefinition(
+            standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(configRepository.getDestinationConnection(any()))
-        .thenReturn(destinationConnection);
+    when(configRepository.getDestinationConnection(any())).thenReturn(destinationConnection);
 
-    operation = new StandardSyncOperation()
-        .withOperationId(UUID.randomUUID())
-        .withName("test-operation")
-        .withWorkspaceId(workspaceId)
-        .withTombstone(false)
-        .withOperatorType(OperatorType.DBT);
-    when(configRepository.getStandardSyncOperation(any()))
-        .thenReturn(operation);
+    operation =
+        new StandardSyncOperation()
+            .withOperationId(UUID.randomUUID())
+            .withName("test-operation")
+            .withWorkspaceId(workspaceId)
+            .withTombstone(false)
+            .withOperatorType(OperatorType.DBT);
+    when(configRepository.getStandardSyncOperation(any())).thenReturn(operation);
 
-    connection = new StandardSync()
-        .withConnectionId(UUID.randomUUID())
-        .withSourceId(sourceConnection.getSourceId())
-        .withDestinationId(destinationConnection.getDestinationId())
-        .withOperationIds(List.of(operation.getOperationId()))
-        .withName("test-sync")
-        .withStatus(Status.ACTIVE);
+    connection =
+        new StandardSync()
+            .withConnectionId(UUID.randomUUID())
+            .withSourceId(sourceConnection.getSourceId())
+            .withDestinationId(destinationConnection.getDestinationId())
+            .withOperationIds(List.of(operation.getOperationId()))
+            .withName("test-sync")
+            .withStatus(Status.ACTIVE);
 
-    when(workspaceHelper.getWorkspaceForConnection(sourceConnection.getSourceId(), destinationConnection.getDestinationId()))
+    when(workspaceHelper.getWorkspaceForConnection(
+            sourceConnection.getSourceId(), destinationConnection.getDestinationId()))
         .thenReturn(workspaceId);
   }
 
   @Test
-  public void testImportIntoWorkspaceWithConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testImportIntoWorkspaceWithConflicts()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listSourceConnectionWithSecrets())
-        .thenReturn(List.of(sourceConnection,
-            new SourceConnection()
-                .withSourceId(UUID.randomUUID())
-                .withWorkspaceId(UUID.randomUUID())));
+        .thenReturn(
+            List.of(
+                sourceConnection,
+                new SourceConnection()
+                    .withSourceId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())));
     when(configRepository.listDestinationConnectionWithSecrets())
-        .thenReturn(List.of(destinationConnection,
-            new DestinationConnection()
-                .withDestinationId(UUID.randomUUID())
-                .withWorkspaceId(UUID.randomUUID())));
+        .thenReturn(
+            List.of(
+                destinationConnection,
+                new DestinationConnection()
+                    .withDestinationId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())));
     when(configRepository.listStandardSyncOperations())
-        .thenReturn(List.of(operation,
-            new StandardSyncOperation()
-                .withOperationId(UUID.randomUUID())
-                .withWorkspaceId(UUID.randomUUID())));
-    when(configRepository.listStandardSyncs())
-        .thenReturn(List.of(connection));
+        .thenReturn(
+            List.of(
+                operation,
+                new StandardSyncOperation()
+                    .withOperationId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(connection));
     final File archive = configDumpExporter.exportWorkspace(workspaceId);
 
     final UUID newWorkspaceId = UUID.randomUUID();
@@ -168,48 +186,71 @@ class ConfigDumpImporterTest {
 
     verify(configRepository)
         .writeSourceConnection(
-            Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))),
+            Jsons.clone(sourceConnection)
+                .withWorkspaceId(newWorkspaceId)
+                .withSourceId(not(eq(sourceConnection.getSourceId()))),
             eq(emptyConnectorSpec));
-    verify(configRepository).writeDestinationConnection(
-        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))),
-        eq(emptyConnectorSpec));
     verify(configRepository)
-        .writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId).withOperationId(not(eq(operation.getOperationId()))));
-    verify(configRepository).writeStandardSync(Jsons.clone(connection).withConnectionId(not(eq(connection.getConnectionId()))));
+        .writeDestinationConnection(
+            Jsons.clone(destinationConnection)
+                .withWorkspaceId(newWorkspaceId)
+                .withDestinationId(not(eq(destinationConnection.getDestinationId()))),
+            eq(emptyConnectorSpec));
+    verify(configRepository)
+        .writeStandardSyncOperation(
+            Jsons.clone(operation)
+                .withWorkspaceId(newWorkspaceId)
+                .withOperationId(not(eq(operation.getOperationId()))));
+    verify(configRepository)
+        .writeStandardSync(
+            Jsons.clone(connection).withConnectionId(not(eq(connection.getConnectionId()))));
   }
 
   @Test
-  public void testImportIntoWorkspaceWithoutConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testImportIntoWorkspaceWithoutConflicts()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listSourceConnectionWithSecrets())
         // First called for export
-        .thenReturn(List.of(sourceConnection,
-            new SourceConnection()
-                .withSourceId(UUID.randomUUID())
-                .withWorkspaceId(UUID.randomUUID())))
+        .thenReturn(
+            List.of(
+                sourceConnection,
+                new SourceConnection()
+                    .withSourceId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())))
         // then called for import
-        .thenReturn(List.of(new SourceConnection()
-            .withSourceId(UUID.randomUUID())
-            .withWorkspaceId(UUID.randomUUID())));
+        .thenReturn(
+            List.of(
+                new SourceConnection()
+                    .withSourceId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())));
     when(configRepository.listDestinationConnectionWithSecrets())
         // First called for export
-        .thenReturn(List.of(destinationConnection,
-            new DestinationConnection()
-                .withDestinationId(UUID.randomUUID())
-                .withWorkspaceId(UUID.randomUUID())))
+        .thenReturn(
+            List.of(
+                destinationConnection,
+                new DestinationConnection()
+                    .withDestinationId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())))
         // then called for import
-        .thenReturn(List.of(new DestinationConnection()
-            .withDestinationId(UUID.randomUUID())
-            .withWorkspaceId(UUID.randomUUID())));
+        .thenReturn(
+            List.of(
+                new DestinationConnection()
+                    .withDestinationId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())));
     when(configRepository.listStandardSyncOperations())
         // First called for export
-        .thenReturn(List.of(operation,
-            new StandardSyncOperation()
-                .withOperationId(UUID.randomUUID())
-                .withWorkspaceId(UUID.randomUUID())))
+        .thenReturn(
+            List.of(
+                operation,
+                new StandardSyncOperation()
+                    .withOperationId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())))
         // then called for import
-        .thenReturn(List.of(new StandardSyncOperation()
-            .withOperationId(UUID.randomUUID())
-            .withWorkspaceId(UUID.randomUUID())));
+        .thenReturn(
+            List.of(
+                new StandardSyncOperation()
+                    .withOperationId(UUID.randomUUID())
+                    .withWorkspaceId(UUID.randomUUID())));
     when(configRepository.listStandardSyncs())
         // First called for export
         .thenReturn(List.of(connection))
@@ -220,11 +261,14 @@ class ConfigDumpImporterTest {
     final UUID newWorkspaceId = UUID.randomUUID();
     configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
 
-    verify(configRepository).writeSourceConnection(
-        Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId),
-        emptyConnectorSpec);
-    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId), emptyConnectorSpec);
-    verify(configRepository).writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId));
+    verify(configRepository)
+        .writeSourceConnection(
+            Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId), emptyConnectorSpec);
+    verify(configRepository)
+        .writeDestinationConnection(
+            Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId), emptyConnectorSpec);
+    verify(configRepository)
+        .writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId));
     verify(configRepository).writeStandardSync(connection);
   }
 
@@ -233,29 +277,44 @@ class ConfigDumpImporterTest {
     final UUID oldDeploymentUuid = UUID.randomUUID();
     final UUID newDeploymentUuid = UUID.randomUUID();
 
-    final JsonNode airbyteVersion = Jsons.deserialize("{\"key\":\"airbyte_version\",\"value\":\"dev\"}");
-    final JsonNode serverUuid = Jsons.deserialize("{\"key\":\"server_uuid\",\"value\":\"e895a584-7dbf-48ce-ace6-0bc9ea570c34\"}");
+    final JsonNode airbyteVersion =
+        Jsons.deserialize("{\"key\":\"airbyte_version\",\"value\":\"dev\"}");
+    final JsonNode serverUuid =
+        Jsons.deserialize(
+            "{\"key\":\"server_uuid\",\"value\":\"e895a584-7dbf-48ce-ace6-0bc9ea570c34\"}");
     final JsonNode date = Jsons.deserialize("{\"key\":\"date\",\"value\":\"1956-08-17\"}");
-    final JsonNode oldDeploymentId = Jsons.deserialize(
-        String.format("{\"key\":\"%s\",\"value\":\"%s\"}", DefaultJobPersistence.DEPLOYMENT_ID_KEY, oldDeploymentUuid));
-    final JsonNode newDeploymentId = Jsons.deserialize(
-        String.format("{\"key\":\"%s\",\"value\":\"%s\"}", DefaultJobPersistence.DEPLOYMENT_ID_KEY, newDeploymentUuid));
+    final JsonNode oldDeploymentId =
+        Jsons.deserialize(
+            String.format(
+                "{\"key\":\"%s\",\"value\":\"%s\"}",
+                DefaultJobPersistence.DEPLOYMENT_ID_KEY, oldDeploymentUuid));
+    final JsonNode newDeploymentId =
+        Jsons.deserialize(
+            String.format(
+                "{\"key\":\"%s\",\"value\":\"%s\"}",
+                DefaultJobPersistence.DEPLOYMENT_ID_KEY, newDeploymentUuid));
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
     // when new deployment id does not exist, the old deployment id is removed
     when(jobPersistence.getDeployment()).thenReturn(Optional.empty());
-    final Stream<JsonNode> inputStream1 = Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
-    final Stream<JsonNode> outputStream1 = ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream1);
+    final Stream<JsonNode> inputStream1 =
+        Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
+    final Stream<JsonNode> outputStream1 =
+        ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream1);
     final Stream<JsonNode> expectedStream1 = Stream.of(airbyteVersion, serverUuid, date);
-    assertEquals(expectedStream1.collect(Collectors.toList()), outputStream1.collect(Collectors.toList()));
+    assertEquals(
+        expectedStream1.collect(Collectors.toList()), outputStream1.collect(Collectors.toList()));
 
     // when new deployment id exists, the old deployment id is replaced with the new one
     when(jobPersistence.getDeployment()).thenReturn(Optional.of(newDeploymentUuid));
-    final Stream<JsonNode> inputStream2 = Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
-    final Stream<JsonNode> outputStream2 = ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream2);
-    final Stream<JsonNode> expectedStream2 = Stream.of(airbyteVersion, serverUuid, date, newDeploymentId);
-    assertEquals(expectedStream2.collect(Collectors.toList()), outputStream2.collect(Collectors.toList()));
+    final Stream<JsonNode> inputStream2 =
+        Stream.of(airbyteVersion, serverUuid, date, oldDeploymentId);
+    final Stream<JsonNode> outputStream2 =
+        ConfigDumpImporter.replaceDeploymentMetadata(jobPersistence, inputStream2);
+    final Stream<JsonNode> expectedStream2 =
+        Stream.of(airbyteVersion, serverUuid, date, newDeploymentId);
+    assertEquals(
+        expectedStream2.collect(Collectors.toList()), outputStream2.collect(Collectors.toList()));
   }
-
 }

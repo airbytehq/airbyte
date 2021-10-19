@@ -39,78 +39,99 @@ public class WorkspaceHelper {
   private final LoadingCache<UUID, UUID> operationToWorkspaceCache;
   private final LoadingCache<Long, UUID> jobToWorkspaceCache;
 
-  public WorkspaceHelper(final ConfigRepository configRepository, final JobPersistence jobPersistence) {
+  public WorkspaceHelper(
+      final ConfigRepository configRepository, final JobPersistence jobPersistence) {
 
-    this.sourceToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
+    this.sourceToWorkspaceCache =
+        getExpiringCache(
+            new CacheLoader<>() {
 
-      @Override
-      public UUID load(@NonNull final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final SourceConnection source = configRepository.getSourceConnection(sourceId);
-        return source.getWorkspaceId();
-      }
+              @Override
+              public UUID load(@NonNull final UUID sourceId)
+                  throws JsonValidationException, ConfigNotFoundException, IOException {
+                final SourceConnection source = configRepository.getSourceConnection(sourceId);
+                return source.getWorkspaceId();
+              }
+            });
 
-    });
+    this.destinationToWorkspaceCache =
+        getExpiringCache(
+            new CacheLoader<>() {
 
-    this.destinationToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
+              @Override
+              public UUID load(@NonNull final UUID destinationId)
+                  throws JsonValidationException, ConfigNotFoundException, IOException {
+                final DestinationConnection destination =
+                    configRepository.getDestinationConnection(destinationId);
+                return destination.getWorkspaceId();
+              }
+            });
 
-      @Override
-      public UUID load(@NonNull final UUID destinationId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final DestinationConnection destination = configRepository.getDestinationConnection(destinationId);
-        return destination.getWorkspaceId();
-      }
+    this.connectionToWorkspaceCache =
+        getExpiringCache(
+            new CacheLoader<>() {
 
-    });
+              @Override
+              public UUID load(@NonNull final UUID connectionId)
+                  throws JsonValidationException, ConfigNotFoundException, IOException {
+                final StandardSync connection = configRepository.getStandardSync(connectionId);
+                final UUID sourceId = connection.getSourceId();
+                final UUID destinationId = connection.getDestinationId();
+                return getWorkspaceForConnectionIgnoreExceptions(sourceId, destinationId);
+              }
+            });
 
-    this.connectionToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
+    this.operationToWorkspaceCache =
+        getExpiringCache(
+            new CacheLoader<>() {
 
-      @Override
-      public UUID load(@NonNull final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final StandardSync connection = configRepository.getStandardSync(connectionId);
-        final UUID sourceId = connection.getSourceId();
-        final UUID destinationId = connection.getDestinationId();
-        return getWorkspaceForConnectionIgnoreExceptions(sourceId, destinationId);
-      }
+              @Override
+              public UUID load(@NonNull final UUID operationId)
+                  throws JsonValidationException, ConfigNotFoundException, IOException {
+                final StandardSyncOperation operation =
+                    configRepository.getStandardSyncOperation(operationId);
+                return operation.getWorkspaceId();
+              }
+            });
 
-    });
+    this.jobToWorkspaceCache =
+        getExpiringCache(
+            new CacheLoader<>() {
 
-    this.operationToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
-
-      @Override
-      public UUID load(@NonNull final UUID operationId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final StandardSyncOperation operation = configRepository.getStandardSyncOperation(operationId);
-        return operation.getWorkspaceId();
-      }
-
-    });
-
-    this.jobToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
-
-      @Override
-      public UUID load(@NonNull final Long jobId) throws ConfigNotFoundException, IOException {
-        final Job job = jobPersistence.getJob(jobId);
-        if (job == null) {
-          throw new ConfigNotFoundException(Job.class.toString(), jobId.toString());
-        }
-        if (job.getConfigType() == JobConfig.ConfigType.SYNC || job.getConfigType() == JobConfig.ConfigType.RESET_CONNECTION) {
-          return getWorkspaceForConnectionIdIgnoreExceptions(UUID.fromString(job.getScope()));
-        } else {
-          throw new IllegalArgumentException("Only sync/reset jobs are associated with workspaces! A " + job.getConfigType() + " job was requested!");
-        }
-      }
-
-    });
+              @Override
+              public UUID load(@NonNull final Long jobId)
+                  throws ConfigNotFoundException, IOException {
+                final Job job = jobPersistence.getJob(jobId);
+                if (job == null) {
+                  throw new ConfigNotFoundException(Job.class.toString(), jobId.toString());
+                }
+                if (job.getConfigType() == JobConfig.ConfigType.SYNC
+                    || job.getConfigType() == JobConfig.ConfigType.RESET_CONNECTION) {
+                  return getWorkspaceForConnectionIdIgnoreExceptions(
+                      UUID.fromString(job.getScope()));
+                } else {
+                  throw new IllegalArgumentException(
+                      "Only sync/reset jobs are associated with workspaces! A "
+                          + job.getConfigType()
+                          + " job was requested!");
+                }
+              }
+            });
   }
 
   /**
-   * There are generally two kinds of helper methods present here. The first kind propagate exceptions
-   * for the method backing the cache. The second ignores them. The former is meant to be used with
-   * proper api calls, while the latter is meant to be use with asserts and precondtions checks.
+   * There are generally two kinds of helper methods present here. The first kind propagate
+   * exceptions for the method backing the cache. The second ignores them. The former is meant to be
+   * used with proper api calls, while the latter is meant to be use with asserts and precondtions
+   * checks.
    *
-   * In API calls, distinguishing between various exceptions helps return the correct status code.
+   * <p>In API calls, distinguishing between various exceptions helps return the correct status
+   * code.
    */
 
   // SOURCE ID
-  public UUID getWorkspaceForSourceId(final UUID sourceId) throws ConfigNotFoundException, JsonValidationException {
+  public UUID getWorkspaceForSourceId(final UUID sourceId)
+      throws ConfigNotFoundException, JsonValidationException {
     return handleCacheExceptions(() -> sourceToWorkspaceCache.get(sourceId));
   }
 
@@ -119,7 +140,8 @@ public class WorkspaceHelper {
   }
 
   // DESTINATION ID
-  public UUID getWorkspaceForDestinationId(final UUID destinationId) throws JsonValidationException, ConfigNotFoundException {
+  public UUID getWorkspaceForDestinationId(final UUID destinationId)
+      throws JsonValidationException, ConfigNotFoundException {
     return handleCacheExceptions(() -> destinationToWorkspaceCache.get(destinationId));
   }
 
@@ -128,7 +150,8 @@ public class WorkspaceHelper {
   }
 
   // JOB ID
-  public UUID getWorkspaceForJobId(final Long jobId) throws JsonValidationException, ConfigNotFoundException {
+  public UUID getWorkspaceForJobId(final Long jobId)
+      throws JsonValidationException, ConfigNotFoundException {
     return handleCacheExceptions(() -> jobToWorkspaceCache.get(jobId));
   }
 
@@ -137,23 +160,30 @@ public class WorkspaceHelper {
   }
 
   // CONNECTION ID
-  public UUID getWorkspaceForConnection(final UUID sourceId, final UUID destinationId) throws JsonValidationException, ConfigNotFoundException {
+  public UUID getWorkspaceForConnection(final UUID sourceId, final UUID destinationId)
+      throws JsonValidationException, ConfigNotFoundException {
     final UUID sourceWorkspace = getWorkspaceForSourceId(sourceId);
     final UUID destinationWorkspace = getWorkspaceForDestinationId(destinationId);
 
-    Preconditions.checkArgument(Objects.equals(sourceWorkspace, destinationWorkspace), "Source and destination must be from the same workspace!");
+    Preconditions.checkArgument(
+        Objects.equals(sourceWorkspace, destinationWorkspace),
+        "Source and destination must be from the same workspace!");
     return sourceWorkspace;
   }
 
-  public UUID getWorkspaceForConnectionIgnoreExceptions(final UUID sourceId, final UUID destinationId) {
+  public UUID getWorkspaceForConnectionIgnoreExceptions(
+      final UUID sourceId, final UUID destinationId) {
     final UUID sourceWorkspace = getWorkspaceForSourceIdIgnoreExceptions(sourceId);
     final UUID destinationWorkspace = getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
 
-    Preconditions.checkArgument(Objects.equals(sourceWorkspace, destinationWorkspace), "Source and destination must be from the same workspace!");
+    Preconditions.checkArgument(
+        Objects.equals(sourceWorkspace, destinationWorkspace),
+        "Source and destination must be from the same workspace!");
     return sourceWorkspace;
   }
 
-  public UUID getWorkspaceForConnectionId(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException {
+  public UUID getWorkspaceForConnectionId(final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException {
     return handleCacheExceptions(() -> connectionToWorkspaceCache.get(connectionId));
   }
 
@@ -162,7 +192,8 @@ public class WorkspaceHelper {
   }
 
   // OPERATION ID
-  public UUID getWorkspaceForOperationId(final UUID operationId) throws JsonValidationException, ConfigNotFoundException {
+  public UUID getWorkspaceForOperationId(final UUID operationId)
+      throws JsonValidationException, ConfigNotFoundException {
     return handleCacheExceptions(() -> operationToWorkspaceCache.get(operationId));
   }
 
@@ -170,7 +201,8 @@ public class WorkspaceHelper {
     return swallowExecutionException(() -> operationToWorkspaceCache.get(operationId));
   }
 
-  private static UUID handleCacheExceptions(final CheckedSupplier<UUID, ExecutionException> supplier)
+  private static UUID handleCacheExceptions(
+      final CheckedSupplier<UUID, ExecutionException> supplier)
       throws ConfigNotFoundException, JsonValidationException {
     try {
       return supplier.get();
@@ -195,9 +227,6 @@ public class WorkspaceHelper {
   }
 
   private static <K, V> LoadingCache<K, V> getExpiringCache(final CacheLoader<K, V> cacheLoader) {
-    return CacheBuilder.newBuilder()
-        .maximumSize(20000)
-        .build(cacheLoader);
+    return CacheBuilder.newBuilder().maximumSize(20000).build(cacheLoader);
   }
-
 }

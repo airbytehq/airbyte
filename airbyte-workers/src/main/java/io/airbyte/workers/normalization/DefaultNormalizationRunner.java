@@ -44,70 +44,119 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, final String normalizationImageName) {
+  public DefaultNormalizationRunner(
+      final DestinationType destinationType,
+      final ProcessFactory processFactory,
+      final String normalizationImageName) {
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
   }
 
   @Override
-  public boolean configureDbt(final String jobId,
-                              final int attempt,
-                              final Path jobRoot,
-                              final JsonNode config,
-                              final ResourceRequirements resourceRequirements,
-                              final OperatorDbt dbtConfig)
+  public boolean configureDbt(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final JsonNode config,
+      final ResourceRequirements resourceRequirements,
+      final OperatorDbt dbtConfig)
       throws Exception {
-    final Map<String, String> files = ImmutableMap.of(
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
+    final Map<String, String> files =
+        ImmutableMap.of(WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     final String gitRepoUrl = dbtConfig.getGitRepoUrl();
     if (Strings.isNullOrEmpty(gitRepoUrl)) {
       throw new WorkerException("Git Repo Url is required");
     }
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
-      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--git-repo", gitRepoUrl);
+      return runProcess(
+          jobId,
+          attempt,
+          jobRoot,
+          files,
+          resourceRequirements,
+          "configure-dbt",
+          "--integration-type",
+          destinationType.toString().toLowerCase(),
+          "--config",
+          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--git-repo",
+          gitRepoUrl);
     } else {
-      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--git-repo", gitRepoUrl,
-          "--git-branch", gitRepoBranch);
+      return runProcess(
+          jobId,
+          attempt,
+          jobRoot,
+          files,
+          resourceRequirements,
+          "configure-dbt",
+          "--integration-type",
+          destinationType.toString().toLowerCase(),
+          "--config",
+          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--git-repo",
+          gitRepoUrl,
+          "--git-branch",
+          gitRepoBranch);
     }
   }
 
   @Override
-  public boolean normalize(final String jobId,
-                           final int attempt,
-                           final Path jobRoot,
-                           final JsonNode config,
-                           final ConfiguredAirbyteCatalog catalog,
-                           final ResourceRequirements resourceRequirements)
+  public boolean normalize(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final ResourceRequirements resourceRequirements)
       throws Exception {
-    final Map<String, String> files = ImmutableMap.of(
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+    final Map<String, String> files =
+        ImmutableMap.of(
+            WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
+            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
-        "--integration-type", destinationType.toString().toLowerCase(),
-        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
+    return runProcess(
+        jobId,
+        attempt,
+        jobRoot,
+        files,
+        resourceRequirements,
+        "run",
+        "--integration-type",
+        destinationType.toString().toLowerCase(),
+        "--config",
+        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        "--catalog",
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
 
-  private boolean runProcess(final String jobId,
-                             final int attempt,
-                             final Path jobRoot,
-                             final Map<String, String> files,
-                             final ResourceRequirements resourceRequirements,
-                             final String... args)
+  private boolean runProcess(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final Map<String, String> files,
+      final ResourceRequirements resourceRequirements,
+      final String... args)
       throws Exception {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
-      process = processFactory.create(jobId, attempt, jobRoot, normalizationImageName, false, files, null, resourceRequirements,
-          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
+      process =
+          processFactory.create(
+              jobId,
+              attempt,
+              jobRoot,
+              normalizationImageName,
+              false,
+              files,
+              null,
+              resourceRequirements,
+              Map.of(
+                  KubeProcessFactory.JOB_TYPE,
+                  KubeProcessFactory.SYNC_JOB,
+                  KubeProcessFactory.SYNC_STEP,
+                  KubeProcessFactory.NORMALISE_STEP),
+              args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -141,5 +190,4 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   DestinationType getDestinationType() {
     return destinationType;
   }
-
 }

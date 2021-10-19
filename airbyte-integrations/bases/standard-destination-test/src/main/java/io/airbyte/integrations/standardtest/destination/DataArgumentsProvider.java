@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 /**
  * Class encapsulating all arguments required for Standard Destination Tests.
  *
- * All files defined here can be found in src/main/resources of this package.
+ * <p>All files defined here can be found in src/main/resources of this package.
  */
 public class DataArgumentsProvider implements ArgumentsProvider {
 
@@ -26,10 +26,9 @@ public class DataArgumentsProvider implements ArgumentsProvider {
     return Stream.of(
         Arguments.of(EXCHANGE_RATE_CONFIG.messageFile, EXCHANGE_RATE_CONFIG.catalogFile),
         Arguments.of(EDGE_CASE_CONFIG.messageFile, EDGE_CASE_CONFIG.catalogFile)
-    // todo - need to use the new protocol to capture this.
-    // Arguments.of("stripe_messages.txt", "stripe_schema.json")
-    );
-
+        // todo - need to use the new protocol to capture this.
+        // Arguments.of("stripe_messages.txt", "stripe_schema.json")
+        );
   }
 
   public static class CatalogMessageTestConfigPair {
@@ -41,7 +40,5 @@ public class DataArgumentsProvider implements ArgumentsProvider {
       this.catalogFile = catalogFile;
       this.messageFile = messageFile;
     }
-
   }
-
 }

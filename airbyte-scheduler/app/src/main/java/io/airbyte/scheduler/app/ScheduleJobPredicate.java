@@ -33,7 +33,8 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean shouldSchedule(final Optional<Job> previousJobOptional, final boolean timeForJobNewJob) {
+  private boolean shouldSchedule(
+      final Optional<Job> previousJobOptional, final boolean timeForJobNewJob) {
     if (previousJobOptional.isEmpty()) {
       return true;
     }
@@ -42,12 +43,14 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     return switch (previousJob.getStatus()) {
       case CANCELLED, SUCCEEDED, FAILED -> timeForJobNewJob;
       case INCOMPLETE, PENDING, RUNNING -> false;
-      default -> throw new IllegalArgumentException("Unrecognized status: " + previousJob.getStatus());
+      default -> throw new IllegalArgumentException(
+          "Unrecognized status: " + previousJob.getStatus());
     };
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean isTimeForNewJob(final Optional<Job> previousJobOptional, final StandardSync standardSync) {
+  private boolean isTimeForNewJob(
+      final Optional<Job> previousJobOptional, final StandardSync standardSync) {
     // if non-manual scheduler, and there has never been a previous run, always schedule.
     if (previousJobOptional.isEmpty()) {
       return true;
@@ -60,9 +63,10 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
       return false;
     }
 
-    final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
-    final long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
+    final long prevRunStart =
+        previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
+    final long nextRunStart =
+        prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
     return nextRunStart < timeSupplier.get().getEpochSecond();
   }
-
 }

@@ -22,11 +22,11 @@ public class SpecFetcher {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
 
-  private static ConnectorSpecification getSpecFromJob(final SynchronousResponse<ConnectorSpecification> response) {
+  private static ConnectorSpecification getSpecFromJob(
+      final SynchronousResponse<ConnectorSpecification> response) {
     Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
     Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
 
     return response.getOutput();
   }
-
 }

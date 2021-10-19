@@ -27,10 +27,10 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_24_0.class);
 
-  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
-  protected static final ResourceId STANDARD_SYNC_SCHEDULE_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_SCHEDULE");
+  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  protected static final ResourceId STANDARD_SYNC_SCHEDULE_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_SCHEDULE");
 
   private static final String MIGRATION_VERSION = "0.24.0-alpha";
   private static final Path CONFIG_PATH = Path.of("migrations/migrationV0_24_0");
@@ -49,8 +49,8 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(
-        previousMigration.getOutputSchema());
+    final Map<ResourceId, JsonNode> outputSchema =
+        new HashMap<>(previousMigration.getOutputSchema());
     outputSchema.remove(STANDARD_SYNC_SCHEDULE_RESOURCE_ID);
     outputSchema.put(
         STANDARD_SYNC_RESOURCE_ID,
@@ -59,13 +59,15 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData,
-                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     // Create a map from connection id to standard sync schedule nodes
     // to "join" the schedule onto the standard sync node later.
-    final Map<String, JsonNode> connectionToScheduleNodes = inputData
-        .get(STANDARD_SYNC_SCHEDULE_RESOURCE_ID)
-        .collect(Collectors.toMap(r -> r.get("connectionId").asText(), r -> r));
+    final Map<String, JsonNode> connectionToScheduleNodes =
+        inputData
+            .get(STANDARD_SYNC_SCHEDULE_RESOURCE_ID)
+            .collect(Collectors.toMap(r -> r.get("connectionId").asText(), r -> r));
 
     for (final Map.Entry<ResourceId, Stream<JsonNode>> inputEntry : inputData.entrySet()) {
       // Skip standard sync schedule.
@@ -73,37 +75,42 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
         continue;
       }
 
-      inputEntry.getValue().forEach(jsonNode -> {
-        if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)) {
-          // "Join" the standard sync schedule node onto the standard sync.
-          final String connectionId = jsonNode.get("connectionId").asText();
-          final ObjectNode standardSync = (ObjectNode) jsonNode;
-          final ObjectNode syncSchedule = (ObjectNode) connectionToScheduleNodes.get(connectionId);
-          if (syncSchedule == null) {
-            LOGGER.warn(
-                "No standard sync schedule config exists for connection {}, will default to manual sync",
-                connectionId);
-            standardSync.set("manual", Jsons.jsonNode(true));
-            return;
-          }
+      inputEntry
+          .getValue()
+          .forEach(
+              jsonNode -> {
+                if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)) {
+                  // "Join" the standard sync schedule node onto the standard sync.
+                  final String connectionId = jsonNode.get("connectionId").asText();
+                  final ObjectNode standardSync = (ObjectNode) jsonNode;
+                  final ObjectNode syncSchedule =
+                      (ObjectNode) connectionToScheduleNodes.get(connectionId);
+                  if (syncSchedule == null) {
+                    LOGGER.warn(
+                        "No standard sync schedule config exists for connection {}, will default to manual sync",
+                        connectionId);
+                    standardSync.set("manual", Jsons.jsonNode(true));
+                    return;
+                  }
 
-          final JsonNode manual = syncSchedule.get("manual");
-          standardSync.set("manual", manual);
+                  final JsonNode manual = syncSchedule.get("manual");
+                  standardSync.set("manual", manual);
 
-          final JsonNode schedule = syncSchedule.get("schedule");
-          if (schedule != null && !manual.asBoolean()) {
-            standardSync.set("schedule", schedule);
-          }
+                  final JsonNode schedule = syncSchedule.get("schedule");
+                  if (schedule != null && !manual.asBoolean()) {
+                    standardSync.set("schedule", schedule);
+                  }
 
-          LOGGER.info(
-              "Schedule added to standard sync config for connection {} (manual: {}, schedule: {})",
-              connectionId, manual, schedule);
-        }
+                  LOGGER.info(
+                      "Schedule added to standard sync config for connection {} (manual: {}, schedule: {})",
+                      connectionId,
+                      manual,
+                      schedule);
+                }
 
-        final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
-        outputConsumer.accept(jsonNode);
-      });
+                final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
+                outputConsumer.accept(jsonNode);
+              });
     }
   }
-
 }

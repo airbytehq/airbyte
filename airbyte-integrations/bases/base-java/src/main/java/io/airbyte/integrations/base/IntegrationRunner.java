@@ -48,11 +48,13 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
-                    final Destination destination,
-                    final Source source) {
-    Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
+  IntegrationRunner(
+      final IntegrationCliParser cliParser,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final Destination destination,
+      final Source source) {
+    Preconditions.checkState(
+        destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
@@ -63,11 +65,12 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
-                    final Destination destination,
-                    final Source source,
-                    final JsonSchemaValidator jsonSchemaValidator) {
+  IntegrationRunner(
+      final IntegrationCliParser cliParser,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final Destination destination,
+      final Source source,
+      final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
     this.validator = jsonSchemaValidator;
   }
@@ -81,50 +84,59 @@ public class IntegrationRunner {
     LOGGER.info("Integration config: {}", parsed);
 
     switch (parsed.getCommand()) {
-      // common
-      case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
+        // common
+      case SPEC -> outputRecordCollector.accept(
+          new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         try {
           validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
         } catch (final Exception e) {
           // if validation fails don't throw an exception, return a failed connection check message
-          outputRecordCollector
-              .accept(
-                  new AirbyteMessage()
-                      .withType(Type.CONNECTION_STATUS)
-                      .withConnectionStatus(
-                          new AirbyteConnectionStatus()
-                              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                              .withMessage(e.getMessage())));
+          outputRecordCollector.accept(
+              new AirbyteMessage()
+                  .withType(Type.CONNECTION_STATUS)
+                  .withConnectionStatus(
+                      new AirbyteConnectionStatus()
+                          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                          .withMessage(e.getMessage())));
         }
 
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
+        outputRecordCollector.accept(
+            new AirbyteMessage()
+                .withType(Type.CONNECTION_STATUS)
+                .withConnectionStatus(integration.check(config)));
       }
-      // source only
+        // source only
       case DISCOVER -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
+        outputRecordCollector.accept(
+            new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
       }
-      // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
-      // envelope) while the other commands return what goes inside it.
+        // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
+        // envelope) while the other commands return what goes inside it.
       case READ -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+        final ConfiguredAirbyteCatalog catalog =
+            parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        final Optional<JsonNode> stateOptional =
+            parsed.getStatePath().map(IntegrationRunner::parseConfig);
+        final AutoCloseableIterator<AirbyteMessage> messageIterator =
+            source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
           messageIterator.forEachRemaining(outputRecordCollector::accept);
         }
       }
-      // destination only
+        // destination only
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
+        final ConfiguredAirbyteCatalog catalog =
+            parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        final AirbyteMessageConsumer consumer =
+            destination.getConsumer(config, catalog, outputRecordCollector);
         consumeWriteStream(consumer);
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -142,7 +154,8 @@ public class IntegrationRunner {
       consumer.start();
       while (input.hasNext()) {
         final String inputString = input.next();
-        final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+        final Optional<AirbyteMessage> singerMessageOptional =
+            Jsons.tryDeserialize(inputString, AirbyteMessage.class);
         if (singerMessageOptional.isPresent()) {
           consumer.accept(singerMessageOptional.get());
         } else {
@@ -152,11 +165,15 @@ public class IntegrationRunner {
     }
   }
 
-  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
+  private static void validateConfig(
+      final JsonNode schemaJson, final JsonNode objectJson, final String operationType)
+      throws Exception {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
-      throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
-          operationType, validationResult));
+      throw new Exception(
+          String.format(
+              "Verification error(s) occurred for %s. Errors: %s ",
+              operationType, validationResult));
     }
   }
 
@@ -168,5 +185,4 @@ public class IntegrationRunner {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }
-
 }

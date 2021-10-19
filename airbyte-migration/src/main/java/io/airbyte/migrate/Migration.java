@@ -41,10 +41,10 @@ public interface Migration {
    * Execute migration.
    *
    * @param inputData Map of the relative path of the file resource within the input archive to a
-   *        stream of its records.
+   *     stream of its records.
    * @param outputData Map of the relative path of the file resource within the output archive to a
-   *        consumer that takes the transformed records.
+   *     consumer that takes the transformed records.
    */
-  void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData);
-
+  void migrate(
+      Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData);
 }

@@ -41,7 +41,9 @@ public class GoogleSearchConsoleOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    googleSearchConsoleOAuthFlow = new GoogleSearchConsoleOAuthFlow(configRepository, httpClient, GoogleSearchConsoleOAuthFlowTest::getConstantState);
+    googleSearchConsoleOAuthFlow =
+        new GoogleSearchConsoleOAuthFlow(
+            configRepository, httpClient, GoogleSearchConsoleOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -52,47 +54,71 @@ public class GoogleSearchConsoleOAuthFlowTest {
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("authorization", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
+  public void testCompleteSourceOAuth()
+      throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            Map.of(
+                                "authorization",
+                                ImmutableMap.builder()
+                                    .put("client_id", "test_client_id")
+                                    .put("client_secret", "test_client_secret")
+                                    .build())))));
 
-    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials =
+        Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleSearchConsoleOAuthFlow
-        .completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        googleSearchConsoleOAuthFlow.completeSourceOAuth(
+            workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("authorization", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(
+        Jsons.serialize(Map.of("authorization", returnedCredentials)),
+        Jsons.serialize(actualQueryParams));
   }
 
   @Test
-  public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("authorization", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
+  public void testCompleteDestinationOAuth()
+      throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
+    when(configRepository.listDestinationOAuthParam())
+        .thenReturn(
+            List.of(
+                new DestinationOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withDestinationDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            Map.of(
+                                "authorization",
+                                ImmutableMap.builder()
+                                    .put("client_id", "test_client_id")
+                                    .put("client_secret", "test_client_secret")
+                                    .build())))));
 
-    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials =
+        Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleSearchConsoleOAuthFlow
-        .completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        googleSearchConsoleOAuthFlow.completeDestinationOAuth(
+            workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("authorization", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(
+        Jsons.serialize(Map.of("authorization", returnedCredentials)),
+        Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -101,8 +127,11 @@ public class GoogleSearchConsoleOAuthFlowTest {
     final Map<String, String> clientIdMap = Map.of("client_id", clientId);
     final Map<String, Map<String, String>> nestedConfig = Map.of("authorization", clientIdMap);
 
-    assertThrows(IllegalArgumentException.class, () -> googleSearchConsoleOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientId, googleSearchConsoleOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(nestedConfig)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> googleSearchConsoleOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
+    assertEquals(
+        clientId, googleSearchConsoleOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(nestedConfig)));
   }
 
   @Test
@@ -111,8 +140,11 @@ public class GoogleSearchConsoleOAuthFlowTest {
     final Map<String, String> clientIdMap = Map.of("client_secret", clientSecret);
     final Map<String, Map<String, String>> nestedConfig = Map.of("authorization", clientIdMap);
 
-    assertThrows(IllegalArgumentException.class, () -> googleSearchConsoleOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientSecret, googleSearchConsoleOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> googleSearchConsoleOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
+    assertEquals(
+        clientSecret,
+        googleSearchConsoleOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
   }
-
 }

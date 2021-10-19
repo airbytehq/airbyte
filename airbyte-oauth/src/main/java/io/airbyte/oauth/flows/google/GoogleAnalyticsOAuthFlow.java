@@ -22,7 +22,10 @@ public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
   }
 
   @VisibleForTesting
-  GoogleAnalyticsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  GoogleAnalyticsOAuthFlow(
+      final ConfigRepository configRepository,
+      final HttpClient httpClient,
+      final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
@@ -50,5 +53,4 @@ public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
     // the config object containing refresh token is nested inside the "credentials" object
     return Map.of("credentials", super.extractRefreshToken(data));
   }
-
 }

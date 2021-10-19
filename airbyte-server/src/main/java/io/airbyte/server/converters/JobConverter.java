@@ -35,7 +35,10 @@ public class JobConverter {
   public static JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptInfoRead).collect(Collectors.toList()));
+        .attempts(
+            job.getAttempts().stream()
+                .map(JobConverter::getAttemptInfoRead)
+                .collect(Collectors.toList()));
   }
 
   public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
@@ -43,14 +46,18 @@ public class JobConverter {
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
     return new JobWithAttemptsRead()
-        .job(new JobRead()
-            .id(job.getId())
-            .configId(configId)
-            .configType(configType)
-            .createdAt(job.getCreatedAtInSecond())
-            .updatedAt(job.getUpdatedAtInSecond())
-            .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).collect(Collectors.toList()));
+        .job(
+            new JobRead()
+                .id(job.getId())
+                .configId(configId)
+                .configType(configType)
+                .createdAt(job.getCreatedAtInSecond())
+                .updatedAt(job.getUpdatedAtInSecond())
+                .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
+        .attempts(
+            job.getAttempts().stream()
+                .map(JobConverter::getAttemptRead)
+                .collect(Collectors.toList()));
   }
 
   public static AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {
@@ -63,16 +70,20 @@ public class JobConverter {
     return new AttemptRead()
         .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
-        .bytesSynced(attempt.getOutput()
-            .map(JobOutput::getSync)
-            .map(StandardSyncOutput::getStandardSyncSummary)
-            .map(StandardSyncSummary::getBytesSynced)
-            .orElse(null))
-        .recordsSynced(attempt.getOutput()
-            .map(JobOutput::getSync)
-            .map(StandardSyncOutput::getStandardSyncSummary)
-            .map(StandardSyncSummary::getRecordsSynced)
-            .orElse(null))
+        .bytesSynced(
+            attempt
+                .getOutput()
+                .map(JobOutput::getSync)
+                .map(StandardSyncOutput::getStandardSyncSummary)
+                .map(StandardSyncSummary::getBytesSynced)
+                .orElse(null))
+        .recordsSynced(
+            attempt
+                .getOutput()
+                .map(JobOutput::getSync)
+                .map(StandardSyncOutput::getStandardSyncSummary)
+                .map(StandardSyncSummary::getRecordsSynced)
+                .orElse(null))
         .createdAt(attempt.getCreatedAtInSecond())
         .updatedAt(attempt.getUpdatedAtInSecond())
         .endedAt(attempt.getEndedAtInSecond().orElse(null));
@@ -103,5 +114,4 @@ public class JobConverter {
         .succeeded(metadata.isSucceeded())
         .logs(JobConverter.getLogRead(metadata.getLogPath()));
   }
-
 }

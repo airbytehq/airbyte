@@ -26,47 +26,56 @@ import java.util.Map;
  * such lists are Airbyte's master definition lists, which can be seen in the resources folder of
  * the airbyte-config/seed module.
  *
- * In addition to usual deserialization validations, we check: 1) The given list contains no
+ * <p>In addition to usual deserialization validations, we check: 1) The given list contains no
  * duplicate names. 2) The given list contains no duplicate ids.
  *
- * Methods in these class throw Runtime exceptions upon validation failure.
+ * <p>Methods in these class throw Runtime exceptions upon validation failure.
  */
 public class YamlListToStandardDefinitions {
 
-  private static final Map<String, String> classNameToIdName = Map.ofEntries(
-      new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
-      new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
+  private static final Map<String, String> classNameToIdName =
+      Map.ofEntries(
+          new SimpleImmutableEntry<>(
+              StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
+          new SimpleImmutableEntry<>(
+              StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
 
-  public static List<StandardSourceDefinition> toStandardSourceDefinitions(final String yamlStr) throws RuntimeException {
+  public static List<StandardSourceDefinition> toStandardSourceDefinitions(final String yamlStr)
+      throws RuntimeException {
     return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
-  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(final String yamlStr) throws RuntimeException {
+  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(
+      final String yamlStr) throws RuntimeException {
     return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
   }
 
-  public static JsonNode verifyAndConvertToJsonNode(final String idName, final String yamlStr) throws RuntimeException {
+  public static JsonNode verifyAndConvertToJsonNode(final String idName, final String yamlStr)
+      throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return jsonNode;
   }
 
   @VisibleForTesting
-  static <T> List<T> verifyAndConvertToModelList(final Class<T> klass, final String yamlStr) throws RuntimeException {
+  static <T> List<T> verifyAndConvertToModelList(final Class<T> klass, final String yamlStr)
+      throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     final var idName = classNameToIdName.get(klass.getCanonicalName());
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return toStandardXDefinitions(jsonNode.elements(), klass);
   }
 
-  private static void checkYamlIsPresentWithNoDuplicates(final JsonNode deserialize, final String idName) throws RuntimeException {
+  private static void checkYamlIsPresentWithNoDuplicates(
+      final JsonNode deserialize, final String idName) throws RuntimeException {
     final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
     Preconditions.checkState(presentDestList, "Definition list is empty");
     checkNoDuplicateNames(deserialize.elements());
     checkNoDuplicateIds(deserialize.elements(), idName);
   }
 
-  private static void checkNoDuplicateNames(final Iterator<JsonNode> iter) throws IllegalArgumentException {
+  private static void checkNoDuplicateNames(final Iterator<JsonNode> iter)
+      throws IllegalArgumentException {
     final var names = new HashSet<String>();
     while (iter.hasNext()) {
       final var element = Jsons.clone(iter.next());
@@ -78,7 +87,8 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator, final String idName) throws IllegalArgumentException {
+  private static void checkNoDuplicateIds(
+      final Iterator<JsonNode> fileIterator, final String idName) throws IllegalArgumentException {
     final var ids = new HashSet<String>();
     while (fileIterator.hasNext()) {
       final var element = Jsons.clone(fileIterator.next());
@@ -90,7 +100,8 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static <T> List<T> toStandardXDefinitions(final Iterator<JsonNode> iter, final Class<T> c) throws RuntimeException {
+  private static <T> List<T> toStandardXDefinitions(final Iterator<JsonNode> iter, final Class<T> c)
+      throws RuntimeException {
     final Iterable<JsonNode> iterable = () -> iter;
     final var defList = new ArrayList<T>();
     for (final JsonNode n : iterable) {
@@ -99,5 +110,4 @@ public class YamlListToStandardDefinitions {
     }
     return defList;
   }
-
 }

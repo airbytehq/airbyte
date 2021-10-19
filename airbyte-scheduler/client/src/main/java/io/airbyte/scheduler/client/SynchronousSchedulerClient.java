@@ -17,14 +17,15 @@ import java.io.IOException;
  */
 public interface SynchronousSchedulerClient {
 
-  SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+  SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(
+      SourceConnection source, String dockerImage) throws IOException;
+
+  SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(
+      DestinationConnection destination, String dockerImage) throws IOException;
+
+  SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(
+      SourceConnection source, String dockerImage) throws IOException;
+
+  SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage)
       throws IOException;
-
-  SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
-      throws IOException;
-
-  SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
-  SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
-
 }

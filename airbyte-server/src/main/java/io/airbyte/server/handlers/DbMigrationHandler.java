@@ -24,14 +24,19 @@ public class DbMigrationHandler {
   private final DatabaseMigrator jobDbMigrator;
 
   public DbMigrationHandler(final Database configsDatabase, final Database jobsDatabase) {
-    this.configDbMigrator = new ConfigsDatabaseMigrator(configsDatabase, DbMigrationHandler.class.getSimpleName());
-    this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
+    this.configDbMigrator =
+        new ConfigsDatabaseMigrator(configsDatabase, DbMigrationHandler.class.getSimpleName());
+    this.jobDbMigrator =
+        new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
   }
 
   public DbMigrationReadList list(final DbMigrationRequestBody request) {
     final DatabaseMigrator migrator = getMigrator(request.getDatabase());
     return new DbMigrationReadList()
-        .migrations(migrator.list().stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
+        .migrations(
+            migrator.list().stream()
+                .map(DbMigrationHandler::toMigrationRead)
+                .collect(Collectors.toList()));
   }
 
   public DbMigrationExecutionRead migrate(final DbMigrationRequestBody request) {
@@ -40,7 +45,10 @@ public class DbMigrationHandler {
     return new DbMigrationExecutionRead()
         .initialVersion(result.initialSchemaVersion)
         .targetVersion(result.targetSchemaVersion)
-        .executedMigrations(result.migrations.stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
+        .executedMigrations(
+            result.migrations.stream()
+                .map(DbMigrationHandler::toMigrationRead)
+                .collect(Collectors.toList()));
   }
 
   private DatabaseMigrator getMigrator(final String database) {
@@ -70,5 +78,4 @@ public class DbMigrationHandler {
         .migrationDescription(output.description)
         .migrationScript(output.filepath);
   }
-
 }

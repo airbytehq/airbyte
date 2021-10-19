@@ -17,5 +17,4 @@ public class SourceDefinitionHelpers {
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org");
   }
-
 }

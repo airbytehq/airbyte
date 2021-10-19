@@ -13,5 +13,4 @@ public class WorkerException extends Exception {
   public WorkerException(final String message, final Throwable cause) {
     super(message, cause);
   }
-
 }

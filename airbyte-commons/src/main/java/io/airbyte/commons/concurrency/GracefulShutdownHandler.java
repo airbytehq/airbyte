@@ -16,7 +16,8 @@ public class GracefulShutdownHandler extends Thread {
   private final Duration terminateWaitDuration;
   private final ExecutorService[] threadPools;
 
-  public GracefulShutdownHandler(final Duration terminateWaitDuration, final ExecutorService... threadPools) {
+  public GracefulShutdownHandler(
+      final Duration terminateWaitDuration, final ExecutorService... threadPools) {
     this.terminateWaitDuration = terminateWaitDuration;
     this.threadPools = threadPools;
   }
@@ -35,5 +36,4 @@ public class GracefulShutdownHandler extends Thread {
       }
     }
   }
-
 }

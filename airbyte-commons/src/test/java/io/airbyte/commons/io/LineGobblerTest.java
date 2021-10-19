@@ -24,7 +24,8 @@ class LineGobblerTest {
   @SuppressWarnings("unchecked")
   void readAllLines() {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
-    final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
+    final InputStream is =
+        new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
     final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
     executor.submit(new LineGobbler(is, consumer, executor, ImmutableMap.of()));
@@ -38,7 +39,8 @@ class LineGobblerTest {
   @SuppressWarnings("unchecked")
   void shutdownOnSuccess() {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
-    final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
+    final InputStream is =
+        new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
     final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
     executor.submit(new LineGobbler(is, consumer, executor, ImmutableMap.of()));
@@ -52,7 +54,8 @@ class LineGobblerTest {
   void shutdownOnError() {
     final Consumer<String> consumer = Mockito.mock(Consumer.class);
     Mockito.doThrow(RuntimeException.class).when(consumer).accept(anyString());
-    final InputStream is = new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
+    final InputStream is =
+        new ByteArrayInputStream("test\ntest2\n".getBytes(StandardCharsets.UTF_8));
     final ExecutorService executor = spy(MoreExecutors.newDirectExecutorService());
 
     executor.submit(new LineGobbler(is, consumer, executor, ImmutableMap.of()));
@@ -60,5 +63,4 @@ class LineGobblerTest {
     verify(consumer).accept(anyString());
     Mockito.verify(executor).shutdown();
   }
-
 }

@@ -19,8 +19,8 @@ import java.util.Set;
  */
 public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamNameNamespacePair> {
 
-  final private String name;
-  final private String namespace;
+  private final String name;
+  private final String namespace;
 
   public AirbyteStreamNameNamespacePair(final String name, final String namespace) {
     this.name = name;
@@ -37,10 +37,14 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
 
   @Override
   public String toString() {
-    return "AirbyteStreamNameNamespacePair{" +
-        "name='" + name + '\'' +
-        ", namespace='" + namespace + '\'' +
-        '}';
+    return "AirbyteStreamNameNamespacePair{"
+        + "name='"
+        + name
+        + '\''
+        + ", namespace='"
+        + namespace
+        + '\''
+        + '}';
   }
 
   @Override
@@ -97,11 +101,13 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace());
   }
 
-  public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(final ConfiguredAirbyteStream stream) {
+  public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(
+      final ConfiguredAirbyteStream stream) {
     return fromAirbyteSteam(stream.getStream());
   }
 
-  public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(final ConfiguredAirbyteCatalog catalog) {
+  public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(
+      final ConfiguredAirbyteCatalog catalog) {
     final var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
 
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -111,5 +117,4 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
 
     return pairs;
   }
-
 }

@@ -42,50 +42,59 @@ public class TrelloOAuthFlowTest {
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
 
-    transport = new MockHttpTransport() {
-
-      @Override
-      public LowLevelHttpRequest buildRequest(final String method, final String url) throws IOException {
-        return new MockLowLevelHttpRequest() {
+    transport =
+        new MockHttpTransport() {
 
           @Override
-          public LowLevelHttpResponse execute() throws IOException {
-            final MockLowLevelHttpResponse response = new MockLowLevelHttpResponse();
-            response.setStatusCode(200);
-            response.setContentType("application/x-www-form-urlencoded");
-            response.setContent("oauth_token=test_token&oauth_token_secret=test_secret&oauth_callback_confirmed=true");
-            return response;
+          public LowLevelHttpRequest buildRequest(final String method, final String url)
+              throws IOException {
+            return new MockLowLevelHttpRequest() {
+
+              @Override
+              public LowLevelHttpResponse execute() throws IOException {
+                final MockLowLevelHttpResponse response = new MockLowLevelHttpResponse();
+                response.setStatusCode(200);
+                response.setContentType("application/x-www-form-urlencoded");
+                response.setContent(
+                    "oauth_token=test_token&oauth_token_secret=test_secret&oauth_callback_confirmed=true");
+                return response;
+              }
+            };
           }
-
         };
-      }
-
-    };
     configRepository = mock(ConfigRepository.class);
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withSourceDefinitionId(definitionId)
+                    .withWorkspaceId(workspaceId)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.builder()
+                                .put("client_id", "test_client_id")
+                                .put("client_secret", "test_client_secret")
+                                .build()))));
     trelloOAuthFlow = new TrelloOAuthFlow(configRepository, transport);
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testGetSourceConcentUrl()
+      throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
         trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     assertEquals(concentUrl, "https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token");
   }
 
   @Test
-  public void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
-    final Map<String, String> expectedParams = Map.of("key", "test_client_id", "token", "test_token");
-    final Map<String, Object> queryParams = Map.of("oauth_token", "token", "oauth_verifier", "verifier");
+  public void testCompleteSourceAuth()
+      throws IOException, InterruptedException, ConfigNotFoundException {
+    final Map<String, String> expectedParams =
+        Map.of("key", "test_client_id", "token", "test_token");
+    final Map<String, Object> queryParams =
+        Map.of("oauth_token", "token", "oauth_verifier", "verifier");
     final Map<String, Object> returnedParams =
         trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(returnedParams, expectedParams);
   }
-
 }

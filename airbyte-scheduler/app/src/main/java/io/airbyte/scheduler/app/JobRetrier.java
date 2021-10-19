@@ -27,10 +27,11 @@ public class JobRetrier implements Runnable {
   private final JobNotifier jobNotifier;
   private final int maxSyncJobAttempts;
 
-  public JobRetrier(final JobPersistence jobPersistence,
-                    final Supplier<Instant> timeSupplier,
-                    final JobNotifier jobNotifier,
-                    final int maxSyncJobAttempts) {
+  public JobRetrier(
+      final JobPersistence jobPersistence,
+      final Supplier<Instant> timeSupplier,
+      final JobNotifier jobNotifier,
+      final int maxSyncJobAttempts) {
     this.persistence = jobPersistence;
     this.timeSupplier = timeSupplier;
     this.jobNotifier = jobNotifier;
@@ -45,15 +46,16 @@ public class JobRetrier implements Runnable {
     final AtomicInteger retriedJobs = new AtomicInteger();
     final List<Job> incompleteJobs = incompleteJobs();
 
-    incompleteJobs.forEach(job -> {
-      if (hasReachedMaxAttempt(job)) {
-        failJob(job);
-        failedJobs.incrementAndGet();
-      } else if (shouldRetry(job)) {
-        retriedJobs.incrementAndGet();
-        resetJob(job);
-      }
-    });
+    incompleteJobs.forEach(
+        job -> {
+          if (hasReachedMaxAttempt(job)) {
+            failJob(job);
+            failedJobs.incrementAndGet();
+          } else if (shouldRetry(job)) {
+            retriedJobs.incrementAndGet();
+            resetJob(job);
+          }
+        });
 
     LOGGER.debug("Completed Job Retrier...");
 
@@ -61,7 +63,8 @@ public class JobRetrier implements Runnable {
     final int failedJobCount = failedJobs.get();
     final int retriedJobCount = retriedJobs.get();
     if (incompleteJobCount > 0 || failedJobCount > 0 || retriedJobCount > 0) {
-      LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
+      LOGGER.info(
+          "Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
           incompleteJobs.size(),
           failedJobs.get(),
           retriedJobs.get());
@@ -88,7 +91,8 @@ public class JobRetrier implements Runnable {
     if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
       final long lastRun = job.getUpdatedAtInSecond();
       // todo (cgardens) - use exponential backoff.
-      return lastRun < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
+      return lastRun
+          < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
     } else {
       return false;
     }
@@ -110,5 +114,4 @@ public class JobRetrier implements Runnable {
       throw new RuntimeException("failed to update status for job: " + job.getId(), e);
     }
   }
-
 }

@@ -18,5 +18,4 @@ public class ConnectFailureKnownException extends KnownException {
   public int getHttpCode() {
     return 400;
   }
-
 }

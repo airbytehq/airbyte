@@ -14,9 +14,7 @@ import org.jooq.SQLDialect;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DefaultDSLContext;
 
-/**
- * This class is a temporary and will be removed as part of the issue @TODO #4547
- */
+/** This class is a temporary and will be removed as part of the issue @TODO #4547 */
 public class TempBigQueryJoolDatabaseImpl extends Database {
 
   private final BigQueryDatabase realDatabase;
@@ -63,7 +61,5 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
       }
       return null;
     }
-
   }
-
 }

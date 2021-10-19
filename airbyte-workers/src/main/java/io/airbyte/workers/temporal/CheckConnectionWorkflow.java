@@ -31,35 +31,38 @@ import java.util.function.Supplier;
 public interface CheckConnectionWorkflow {
 
   @WorkflowMethod
-  StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                    IntegrationLauncherConfig launcherConfig,
-                                    StandardCheckConnectionInput connectionConfiguration);
+  StandardCheckConnectionOutput run(
+      JobRunConfig jobRunConfig,
+      IntegrationLauncherConfig launcherConfig,
+      StandardCheckConnectionInput connectionConfiguration);
 
   class WorkflowImpl implements CheckConnectionWorkflow {
 
-    final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofHours(1))
-        .setRetryOptions(TemporalUtils.NO_RETRY)
-        .build();
-    private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
+    final ActivityOptions options =
+        ActivityOptions.newBuilder()
+            .setScheduleToCloseTimeout(Duration.ofHours(1))
+            .setRetryOptions(TemporalUtils.NO_RETRY)
+            .build();
+    private final CheckConnectionActivity activity =
+        Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
     @Override
-    public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
-                                             final IntegrationLauncherConfig launcherConfig,
-                                             final StandardCheckConnectionInput connectionConfiguration) {
+    public StandardCheckConnectionOutput run(
+        final JobRunConfig jobRunConfig,
+        final IntegrationLauncherConfig launcherConfig,
+        final StandardCheckConnectionInput connectionConfiguration) {
       return activity.run(jobRunConfig, launcherConfig, connectionConfiguration);
     }
-
   }
 
   @ActivityInterface
   interface CheckConnectionActivity {
 
     @ActivityMethod
-    StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                      IntegrationLauncherConfig launcherConfig,
-                                      StandardCheckConnectionInput connectionConfiguration);
-
+    StandardCheckConnectionOutput run(
+        JobRunConfig jobRunConfig,
+        IntegrationLauncherConfig launcherConfig,
+        StandardCheckConnectionInput connectionConfiguration);
   }
 
   class CheckConnectionActivityImpl implements CheckConnectionActivity {
@@ -68,48 +71,54 @@ public interface CheckConnectionWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(final ProcessFactory processFactory, final SecretsHydrator secretsHydrator, final Path workspaceRoot) {
+    public CheckConnectionActivityImpl(
+        final ProcessFactory processFactory,
+        final SecretsHydrator secretsHydrator,
+        final Path workspaceRoot) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
-                                             final IntegrationLauncherConfig launcherConfig,
-                                             final StandardCheckConnectionInput connectionConfiguration) {
+    public StandardCheckConnectionOutput run(
+        final JobRunConfig jobRunConfig,
+        final IntegrationLauncherConfig launcherConfig,
+        final StandardCheckConnectionInput connectionConfiguration) {
 
-      final JsonNode fullConfig = secretsHydrator.hydrate(connectionConfiguration.getConnectionConfiguration());
+      final JsonNode fullConfig =
+          secretsHydrator.hydrate(connectionConfiguration.getConnectionConfiguration());
 
-      final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
-          .withConnectionConfiguration(fullConfig);
+      final StandardCheckConnectionInput input =
+          new StandardCheckConnectionInput().withConnectionConfiguration(fullConfig);
 
       final Supplier<StandardCheckConnectionInput> inputSupplier = () -> input;
 
-      final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
-          new TemporalAttemptExecution<>(
-              workspaceRoot,
-              jobRunConfig,
-              getWorkerFactory(launcherConfig),
-              inputSupplier,
-              new CancellationHandler.TemporalCancellationHandler());
+      final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput>
+          temporalAttemptExecution =
+              new TemporalAttemptExecution<>(
+                  workspaceRoot,
+                  jobRunConfig,
+                  getWorkerFactory(launcherConfig),
+                  inputSupplier,
+                  new CancellationHandler.TemporalCancellationHandler());
 
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
-                                                                                                                             final IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<
+            Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception>
+        getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
       return () -> {
-        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
-            launcherConfig.getJobId(),
-            Math.toIntExact(launcherConfig.getAttemptId()),
-            launcherConfig.getDockerImage(),
-            processFactory,
-            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        final IntegrationLauncher integrationLauncher =
+            new AirbyteIntegrationLauncher(
+                launcherConfig.getJobId(),
+                Math.toIntExact(launcherConfig.getAttemptId()),
+                launcherConfig.getDockerImage(),
+                processFactory,
+                WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
         return new DefaultCheckConnectionWorker(integrationLauncher);
       };
     }
-
   }
-
 }

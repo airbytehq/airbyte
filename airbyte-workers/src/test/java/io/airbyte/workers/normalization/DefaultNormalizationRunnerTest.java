@@ -48,18 +48,33 @@ class DefaultNormalizationRunnerTest {
     config = mock(JsonNode.class);
     catalog = mock(ConfiguredAirbyteCatalog.class);
 
-    final Map<String, String> files = ImmutableMap.of(
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+    final Map<String, String> files =
+        ImmutableMap.of(
+            WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
+            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME, false, files, null,
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
-        "run",
-        "--integration-type", "bigquery",
-        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
-            .thenReturn(process);
+    when(processFactory.create(
+            JOB_ID,
+            JOB_ATTEMPT,
+            jobRoot,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
+            false,
+            files,
+            null,
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+            Map.of(
+                KubeProcessFactory.JOB_TYPE,
+                KubeProcessFactory.SYNC_JOB,
+                KubeProcessFactory.SYNC_STEP,
+                KubeProcessFactory.NORMALISE_STEP),
+            "run",
+            "--integration-type",
+            "bigquery",
+            "--config",
+            WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+            "--catalog",
+            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
+        .thenReturn(process);
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
   }
@@ -67,11 +82,21 @@ class DefaultNormalizationRunnerTest {
   @Test
   void test() throws Exception {
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+        new DefaultNormalizationRunner(
+            DestinationType.BIGQUERY,
+            processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
+    assertTrue(
+        runner.normalize(
+            JOB_ID,
+            JOB_ATTEMPT,
+            jobRoot,
+            config,
+            catalog,
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
   }
 
   @Test
@@ -79,8 +104,12 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
-    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        new DefaultNormalizationRunner(
+            DestinationType.BIGQUERY,
+            processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+    runner.normalize(
+        JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     runner.close();
 
     verify(process).waitFor();
@@ -91,11 +120,21 @@ class DefaultNormalizationRunnerTest {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
-    assertThrows(RuntimeException.class,
-        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
+        new DefaultNormalizationRunner(
+            DestinationType.BIGQUERY,
+            processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+    assertThrows(
+        RuntimeException.class,
+        () ->
+            runner.normalize(
+                JOB_ID,
+                JOB_ATTEMPT,
+                jobRoot,
+                config,
+                catalog,
+                WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
 
     verify(process).destroy();
   }
-
 }

@@ -26,26 +26,35 @@ public class SourceMatcher implements Matchable<SourceRead> {
 
     final SourceRead fromSearch = new SourceRead();
     fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
-    fromSearch.sourceDefinitionId(search.getSourceDefinitionId() == null ? query.getSourceDefinitionId() : search.getSourceDefinitionId());
+    fromSearch.sourceDefinitionId(
+        search.getSourceDefinitionId() == null
+            ? query.getSourceDefinitionId()
+            : search.getSourceDefinitionId());
     fromSearch.sourceId(search.getSourceId() == null ? query.getSourceId() : search.getSourceId());
-    fromSearch.sourceName(Strings.isBlank(search.getSourceName()) ? query.getSourceName() : search.getSourceName());
-    fromSearch.workspaceId(search.getWorkspaceId() == null ? query.getWorkspaceId() : search.getWorkspaceId());
+    fromSearch.sourceName(
+        Strings.isBlank(search.getSourceName()) ? query.getSourceName() : search.getSourceName());
+    fromSearch.workspaceId(
+        search.getWorkspaceId() == null ? query.getWorkspaceId() : search.getWorkspaceId());
     if (search.getConnectionConfiguration() == null) {
       fromSearch.connectionConfiguration(query.getConnectionConfiguration());
     } else if (query.getConnectionConfiguration() == null) {
       fromSearch.connectionConfiguration(search.getConnectionConfiguration());
     } else {
       final JsonNode connectionConfiguration = search.getConnectionConfiguration();
-      query.getConnectionConfiguration().fieldNames()
-          .forEachRemaining(field -> {
-            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-              ((ObjectNode) connectionConfiguration).set(field, query.getConnectionConfiguration().get(field));
-            }
-          });
+      query
+          .getConnectionConfiguration()
+          .fieldNames()
+          .forEachRemaining(
+              field -> {
+                if (!connectionConfiguration.has(field)
+                    && connectionConfiguration instanceof ObjectNode) {
+                  ((ObjectNode) connectionConfiguration)
+                      .set(field, query.getConnectionConfiguration().get(field));
+                }
+              });
       fromSearch.connectionConfiguration(connectionConfiguration);
     }
 
     return fromSearch;
   }
-
 }

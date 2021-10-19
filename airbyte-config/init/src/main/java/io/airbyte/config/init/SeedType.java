@@ -5,7 +5,6 @@
 package io.airbyte.config.init;
 
 public enum SeedType {
-
   STANDARD_SOURCE_DEFINITION("/seed/source_definitions.yaml", "sourceDefinitionId"),
   STANDARD_DESTINATION_DEFINITION("/seed/destination_definitions.yaml", "destinationDefinitionId");
 
@@ -25,5 +24,4 @@ public enum SeedType {
   public String getIdName() {
     return idName;
   }
-
 }

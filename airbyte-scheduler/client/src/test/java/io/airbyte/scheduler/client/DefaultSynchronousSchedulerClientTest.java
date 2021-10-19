@@ -53,18 +53,19 @@ class DefaultSynchronousSchedulerClientTest {
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
-  private static final JsonNode CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
-      .put("username", "airbyte")
-      .put("password", "abc")
-      .build());
-  private static final SourceConnection SOURCE_CONNECTION = new SourceConnection()
-      .withSourceId(UUID1)
-      .withSourceDefinitionId(UUID2)
-      .withConfiguration(CONFIGURATION);
-  private static final DestinationConnection DESTINATION_CONNECTION = new DestinationConnection()
-      .withDestinationId(UUID1)
-      .withDestinationDefinitionId(UUID2)
-      .withConfiguration(CONFIGURATION);
+  private static final JsonNode CONFIGURATION =
+      Jsons.jsonNode(
+          ImmutableMap.builder().put("username", "airbyte").put("password", "abc").build());
+  private static final SourceConnection SOURCE_CONNECTION =
+      new SourceConnection()
+          .withSourceId(UUID1)
+          .withSourceDefinitionId(UUID2)
+          .withConfiguration(CONFIGURATION);
+  private static final DestinationConnection DESTINATION_CONNECTION =
+      new DestinationConnection()
+          .withDestinationId(UUID1)
+          .withDestinationDefinitionId(UUID2)
+          .withConfiguration(CONFIGURATION);
 
   private TemporalClient temporalClient;
   private JobTracker jobTracker;
@@ -76,16 +77,17 @@ class DefaultSynchronousSchedulerClientTest {
     temporalClient = mock(TemporalClient.class);
     jobTracker = mock(JobTracker.class);
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+    schedulerClient =
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
 
-    when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
-    when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
+    when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION)))
+        .thenReturn(CONFIGURATION);
+    when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION)))
+        .thenReturn(CONFIGURATION);
   }
 
   private static JobMetadata createMetadata(final boolean succeeded) {
-    return new JobMetadata(
-        succeeded,
-        LOG_PATH);
+    return new JobMetadata(succeeded, LOG_PATH);
   }
 
   @Nested
@@ -97,10 +99,12 @@ class DefaultSynchronousSchedulerClientTest {
     void testExecuteJobSuccess() {
       final UUID sourceDefinitionId = UUID.randomUUID();
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
+      when(function.apply(any(UUID.class)))
+          .thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
-      final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID);
+      final SynchronousResponse<String> response =
+          schedulerClient.execute(
+              ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
@@ -110,8 +114,12 @@ class DefaultSynchronousSchedulerClientTest {
       assertTrue(response.getMetadata().isSucceeded());
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
+      verify(jobTracker)
+          .trackDiscover(
+              any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker)
+          .trackDiscover(
+              any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
     }
 
     @SuppressWarnings("unchecked")
@@ -119,10 +127,12 @@ class DefaultSynchronousSchedulerClientTest {
     void testExecuteJobFailure() {
       final UUID sourceDefinitionId = UUID.randomUUID();
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
+      when(function.apply(any(UUID.class)))
+          .thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
-      final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID);
+      final SynchronousResponse<String> response =
+          schedulerClient.execute(
+              ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID);
 
       assertNotNull(response);
       assertNull(response.getOutput());
@@ -132,8 +142,12 @@ class DefaultSynchronousSchedulerClientTest {
       assertFalse(response.getMetadata().isSucceeded());
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verify(jobTracker)
+          .trackDiscover(
+              any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker)
+          .trackDiscover(
+              any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
     }
 
     @SuppressWarnings("unchecked")
@@ -145,12 +159,17 @@ class DefaultSynchronousSchedulerClientTest {
 
       assertThrows(
           RuntimeException.class,
-          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID));
+          () ->
+              schedulerClient.execute(
+                  ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, WORKSPACE_ID));
 
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
-      verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verify(jobTracker)
+          .trackDiscover(
+              any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
+      verify(jobTracker)
+          .trackDiscover(
+              any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
     }
-
   }
 
   @Nested
@@ -159,12 +178,14 @@ class DefaultSynchronousSchedulerClientTest {
 
     @Test
     void testCreateSourceCheckConnectionJob() throws IOException {
-      final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-          .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+      final JobCheckConnectionConfig jobCheckConnectionConfig =
+          new JobCheckConnectionConfig()
+              .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
+              .withDockerImage(DOCKER_IMAGE);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
-      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
+      when(temporalClient.submitCheckConnection(
+              any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE);
@@ -173,12 +194,14 @@ class DefaultSynchronousSchedulerClientTest {
 
     @Test
     void testCreateDestinationCheckConnectionJob() throws IOException {
-      final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-          .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+      final JobCheckConnectionConfig jobCheckConnectionConfig =
+          new JobCheckConnectionConfig()
+              .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
+              .withDockerImage(DOCKER_IMAGE);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
-      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
+      when(temporalClient.submitCheckConnection(
+              any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DOCKER_IMAGE);
@@ -187,14 +210,17 @@ class DefaultSynchronousSchedulerClientTest {
 
     @Test
     void testCreateDiscoverSchemaJob() throws IOException {
-      final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-          .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+      final JobDiscoverCatalogConfig jobDiscoverCatalogConfig =
+          new JobDiscoverCatalogConfig()
+              .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
+              .withDockerImage(DOCKER_IMAGE);
 
       final AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
-      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))
+      when(temporalClient.submitDiscoverSchema(
+              any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))
           .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
-      final SynchronousResponse<AirbyteCatalog> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE);
+      final SynchronousResponse<AirbyteCatalog> response =
+          schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }
 
@@ -205,10 +231,9 @@ class DefaultSynchronousSchedulerClientTest {
       final ConnectorSpecification mockOutput = mock(ConnectorSpecification.class);
       when(temporalClient.submitGetSpec(any(UUID.class), eq(0), eq(jobSpecConfig)))
           .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
-      final SynchronousResponse<ConnectorSpecification> response = schedulerClient.createGetSpecJob(DOCKER_IMAGE);
+      final SynchronousResponse<ConnectorSpecification> response =
+          schedulerClient.createGetSpecJob(DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }
-
   }
-
 }

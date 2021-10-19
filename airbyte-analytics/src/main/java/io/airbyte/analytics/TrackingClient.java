@@ -16,5 +16,4 @@ public interface TrackingClient {
   void track(UUID workspaceId, String action);
 
   void track(UUID workspaceId, String action, Map<String, Object> metadata);
-
 }

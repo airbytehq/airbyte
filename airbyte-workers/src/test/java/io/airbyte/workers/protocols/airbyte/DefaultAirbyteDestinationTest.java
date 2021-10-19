@@ -45,9 +45,10 @@ class DefaultAirbyteDestinationTest {
   private static final WorkerDestinationConfig DESTINATION_CONFIG =
       WorkerUtils.syncToWorkerDestinationConfig(TestConfigHelpers.createSyncConfig().getValue());
 
-  private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
-      AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
-      AirbyteMessageUtils.createStateMessage("checkpoint", "2"));
+  private static final List<AirbyteMessage> MESSAGES =
+      Lists.newArrayList(
+          AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
+          AirbyteMessageUtils.createStateMessage("checkpoint", "2"));
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -62,18 +63,20 @@ class DefaultAirbyteDestinationTest {
     process = mock(Process.class);
     outputStream = spy(new ByteArrayOutputStream());
     when(process.getOutputStream()).thenReturn(outputStream);
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("input".getBytes(StandardCharsets.UTF_8)));
-    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
+    when(process.getInputStream())
+        .thenReturn(new ByteArrayInputStream("input".getBytes(StandardCharsets.UTF_8)));
+    when(process.getErrorStream())
+        .thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     final InputStream inputStream = mock(InputStream.class);
     when(integrationLauncher.write(
-        jobRoot,
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        Jsons.serialize(DESTINATION_CONFIG.getDestinationConnectionConfiguration()),
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-        Jsons.serialize(DESTINATION_CONFIG.getCatalog())))
-            .thenReturn(process);
+            jobRoot,
+            WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+            Jsons.serialize(DESTINATION_CONFIG.getDestinationConnectionConfiguration()),
+            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
+            Jsons.serialize(DESTINATION_CONFIG.getCatalog())))
+        .thenReturn(process);
 
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
@@ -84,10 +87,12 @@ class DefaultAirbyteDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    final AirbyteDestination destination =
+        new DefaultAirbyteDestination(integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
-    final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    final AirbyteMessage recordMessage =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
     destination.accept(recordMessage);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -111,11 +116,13 @@ class DefaultAirbyteDestinationTest {
 
     Assertions.assertEquals(MESSAGES, messages);
 
-    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
-      while (process.getErrorStream().available() != 0) {
-        Thread.sleep(50);
-      }
-    });
+    Assertions.assertTimeout(
+        Duration.ofSeconds(5),
+        () -> {
+          while (process.getErrorStream().available() != 0) {
+            Thread.sleep(50);
+          }
+        });
 
     verify(process).exitValue();
   }
@@ -141,5 +148,4 @@ class DefaultAirbyteDestinationTest {
     when(process.exitValue()).thenReturn(1);
     Assertions.assertThrows(WorkerException.class, destination::close);
   }
-
 }

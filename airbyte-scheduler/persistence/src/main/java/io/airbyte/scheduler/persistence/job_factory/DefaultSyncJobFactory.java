@@ -27,9 +27,10 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   private final ConfigRepository configRepository;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
-                               final ConfigRepository configRepository,
-                               final OAuthConfigSupplier oAuthConfigSupplier) {
+  public DefaultSyncJobFactory(
+      final DefaultJobCreator jobCreator,
+      final ConfigRepository configRepository,
+      final OAuthConfigSupplier oAuthConfigSupplier) {
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
@@ -38,44 +39,58 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   public Long create(final UUID connectionId) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-      final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
-      final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
-      final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
-          sourceConnection.getSourceDefinitionId(),
-          sourceConnection.getWorkspaceId(),
-          sourceConnection.getConfiguration());
+      final SourceConnection sourceConnection =
+          configRepository.getSourceConnection(standardSync.getSourceId());
+      final DestinationConnection destinationConnection =
+          configRepository.getDestinationConnection(standardSync.getDestinationId());
+      final JsonNode sourceConfiguration =
+          oAuthConfigSupplier.injectSourceOAuthParameters(
+              sourceConnection.getSourceDefinitionId(),
+              sourceConnection.getWorkspaceId(),
+              sourceConnection.getConfiguration());
       sourceConnection.withConfiguration(sourceConfiguration);
-      final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
-          destinationConnection.getDestinationDefinitionId(),
-          destinationConnection.getWorkspaceId(),
-          destinationConnection.getConfiguration());
+      final JsonNode destinationConfiguration =
+          oAuthConfigSupplier.injectDestinationOAuthParameters(
+              destinationConnection.getDestinationDefinitionId(),
+              destinationConnection.getWorkspaceId(),
+              destinationConnection.getConfiguration());
       destinationConnection.withConfiguration(destinationConfiguration);
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+      final StandardSourceDefinition sourceDefinition =
+          configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition =
-          configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+          configRepository.getStandardDestinationDefinition(
+              destinationConnection.getDestinationDefinitionId());
 
-      final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+      final String sourceImageName =
+          DockerUtils.getTaggedImageName(
+              sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
       final String destinationImageName =
-          DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
+          DockerUtils.getTaggedImageName(
+              destinationDefinition.getDockerRepository(),
+              destinationDefinition.getDockerImageTag());
 
       final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
       for (final var operationId : standardSync.getOperationIds()) {
-        final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
+        final StandardSyncOperation standardSyncOperation =
+            configRepository.getStandardSyncOperation(operationId);
         standardSyncOperations.add(standardSyncOperation);
       }
 
-      return jobCreator.createSyncJob(
-          sourceConnection,
-          destinationConnection,
-          standardSync,
-          sourceImageName,
-          destinationImageName,
-          standardSyncOperations)
-          .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
+      return jobCreator
+          .createSyncJob(
+              sourceConnection,
+              destinationConnection,
+              standardSync,
+              sourceImageName,
+              destinationImageName,
+              standardSyncOperations)
+          .orElseThrow(
+              () ->
+                  new IllegalStateException(
+                      "We shouldn't be trying to create a new sync job if there is one running already."));
 
     } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
       throw new RuntimeException(e);
     }
   }
-
 }

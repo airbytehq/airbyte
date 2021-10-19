@@ -57,10 +57,13 @@ class WorkerUtilsTest {
     void testStartsWait() throws InterruptedException {
       when(process.isAlive()).thenReturn(true);
       final AtomicInteger recordedBeats = new AtomicInteger(0);
-      doAnswer((ignored) -> {
-        recordedBeats.incrementAndGet();
-        return true;
-      }).when(heartbeatMonitor).isBeating();
+      doAnswer(
+              (ignored) -> {
+                recordedBeats.incrementAndGet();
+                return true;
+              })
+          .when(heartbeatMonitor)
+          .isBeating();
 
       final Thread thread = new Thread(this::runShutdown);
 
@@ -105,7 +108,5 @@ class WorkerUtilsTest {
 
       verifyNoInteractions(forceShutdown);
     }
-
   }
-
 }

@@ -8,7 +8,6 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 public enum JobStatus {
-
   PENDING,
   RUNNING,
   INCOMPLETE,
@@ -17,5 +16,4 @@ public enum JobStatus {
   CANCELLED;
 
   public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
-
 }

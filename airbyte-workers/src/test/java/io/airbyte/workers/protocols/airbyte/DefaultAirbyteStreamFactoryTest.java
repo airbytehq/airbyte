@@ -45,12 +45,14 @@ class DefaultAirbyteStreamFactoryTest {
 
   @Test
   public void testValid() {
-    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record1 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(record1));
     final Stream<AirbyteMessage> expectedStream = Stream.of(record1);
 
-    assertEquals(expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
+    assertEquals(
+        expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
     verifyNoInteractions(logger);
   }
 
@@ -67,7 +69,8 @@ class DefaultAirbyteStreamFactoryTest {
 
   @Test
   public void testLoggingLevel() {
-    final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
+    final AirbyteMessage logMessage =
+        AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
 
@@ -105,8 +108,10 @@ class DefaultAirbyteStreamFactoryTest {
   @Test
   @Disabled
   public void testMissingNewLineBetweenValidRecords() {
-    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
-    final AirbyteMessage record2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+    final AirbyteMessage record1 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record2 =
+        AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 
     final String inputString = Jsons.serialize(record1) + Jsons.serialize(record2);
 
@@ -122,5 +127,4 @@ class DefaultAirbyteStreamFactoryTest {
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
     return new DefaultAirbyteStreamFactory(protocolPredicate, logger).create(bufferedReader);
   }
-
 }

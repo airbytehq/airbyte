@@ -40,7 +40,8 @@ class IOsTest {
   void testWriteBytes() throws IOException {
     final Path path = Files.createTempDirectory("tmp");
 
-    final Path filePath = IOs.writeFile(path.resolve("file"), "abc".getBytes(StandardCharsets.UTF_8));
+    final Path filePath =
+        IOs.writeFile(path.resolve("file"), "abc".getBytes(StandardCharsets.UTF_8));
 
     assertEquals(path.resolve("file"), filePath);
     assertEquals("abc", IOs.readFile(path, "file"));
@@ -63,17 +64,9 @@ class IOsTest {
   public void testGetTailExists() throws IOException {
     final Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
 
-    final List<String> head = List.of(
-        "line1",
-        "line2",
-        "line3",
-        "line4");
+    final List<String> head = List.of("line1", "line2", "line3", "line4");
 
-    final List<String> expectedTail = List.of(
-        "line5",
-        "line6",
-        "line7",
-        "line8");
+    final List<String> expectedTail = List.of("line5", "line6", "line7", "line8");
 
     final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
 
@@ -89,9 +82,11 @@ class IOsTest {
 
   @Test
   void testInputStream() {
-    assertThrows(RuntimeException.class, () -> {
-      IOs.inputStream(Path.of("idontexist"));
-    });
+    assertThrows(
+        RuntimeException.class,
+        () -> {
+          IOs.inputStream(Path.of("idontexist"));
+        });
   }
 
   @Test
@@ -103,5 +98,4 @@ class IOsTest {
     Mockito.doThrow(new IOException()).when(closeable).close();
     assertThrows(RuntimeException.class, () -> IOs.silentClose(closeable));
   }
-
 }

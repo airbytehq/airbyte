@@ -26,39 +26,61 @@ public class SshBastionContainer {
 
   public void initAndStartBastion() {
     network = Network.newNetwork();
-    bastion = new GenericContainer(
-        new ImageFromDockerfile("bastion-test")
-            .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
-                .withNetwork(network)
-                .withExposedPorts(22);
+    bastion =
+        new GenericContainer(
+                new ImageFromDockerfile("bastion-test")
+                    .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
+            .withNetwork(network)
+            .withExposedPorts(22);
     bastion.start();
   }
 
-  public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema)
+  public JsonNode getTunnelConfig(
+      final SshTunnel.TunnelMethod tunnelMethod,
+      final ImmutableMap.Builder<Object, Object> builderWithSchema)
       throws IOException, InterruptedException {
 
-    return Jsons.jsonNode(builderWithSchema
-        .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-            .put("tunnel_host",
-                Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
-                    .getNetworks()
-                    .get(((Network.NetworkImpl) network).getName())
-                    .getIpAddress()))
-            .put("tunnel_method", tunnelMethod)
-            .put("tunnel_port", bastion.getExposedPorts().get(0))
-            .put("tunnel_user", SSH_USER)
-            .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
-            .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
-            .build()))
-        .build());
+    return Jsons.jsonNode(
+        builderWithSchema
+            .put(
+                "tunnel_method",
+                Jsons.jsonNode(
+                    ImmutableMap.builder()
+                        .put(
+                            "tunnel_host",
+                            Objects.requireNonNull(
+                                bastion
+                                    .getContainerInfo()
+                                    .getNetworkSettings()
+                                    .getNetworks()
+                                    .get(((Network.NetworkImpl) network).getName())
+                                    .getIpAddress()))
+                        .put("tunnel_method", tunnelMethod)
+                        .put("tunnel_port", bastion.getExposedPorts().get(0))
+                        .put("tunnel_user", SSH_USER)
+                        .put(
+                            "tunnel_user_password",
+                            tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
+                        .put(
+                            "ssh_key",
+                            tunnelMethod.equals(SSH_KEY_AUTH)
+                                ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout()
+                                : "")
+                        .build()))
+            .build());
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(
+      final JdbcDatabaseContainer<?> db) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) getNetWork()).getName())
-            .getIpAddress()))
+        .put(
+            "host",
+            Objects.requireNonNull(
+                db.getContainerInfo()
+                    .getNetworkSettings()
+                    .getNetworks()
+                    .get(((Network.NetworkImpl) getNetWork()).getName())
+                    .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
@@ -77,5 +99,4 @@ public class SshBastionContainer {
     bastion.close();
     network.close();
   }
-
 }

@@ -28,11 +28,12 @@ public class StubAirbyteDB implements AutoCloseable {
     container.start();
 
     final String jobsDatabaseSchema = MoreResources.readResource("migration/schema.sql");
-    database = new JobsDatabaseInstance(
-        container.getUsername(),
-        container.getPassword(),
-        container.getJdbcUrl(),
-        jobsDatabaseSchema)
+    database =
+        new JobsDatabaseInstance(
+                container.getUsername(),
+                container.getPassword(),
+                container.getJdbcUrl(),
+                jobsDatabaseSchema)
             .getAndInitialize();
   }
 
@@ -41,5 +42,4 @@ public class StubAirbyteDB implements AutoCloseable {
     database.close();
     container.close();
   }
-
 }

@@ -25,51 +25,66 @@ public class ConfigurationUpdate {
   private final SpecFetcher specFetcher;
   private final JsonSecretsProcessor secretsProcessor;
 
-  public ConfigurationUpdate(final ConfigRepository configRepository, final SpecFetcher specFetcher) {
+  public ConfigurationUpdate(
+      final ConfigRepository configRepository, final SpecFetcher specFetcher) {
     this(configRepository, specFetcher, new JsonSecretsProcessor());
   }
 
-  public ConfigurationUpdate(final ConfigRepository configRepository, final SpecFetcher specFetcher, final JsonSecretsProcessor secretsProcessor) {
+  public ConfigurationUpdate(
+      final ConfigRepository configRepository,
+      final SpecFetcher specFetcher,
+      final JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
     this.specFetcher = specFetcher;
     this.secretsProcessor = secretsProcessor;
   }
 
-  public SourceConnection source(final UUID sourceId, final String sourceName, final JsonNode newConfiguration)
+  public SourceConnection source(
+      final UUID sourceId, final String sourceName, final JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
-    final SourceConnection persistedSource = configRepository.getSourceConnectionWithSecrets(sourceId);
+    final SourceConnection persistedSource =
+        configRepository.getSourceConnectionWithSecrets(sourceId);
     persistedSource.setName(sourceName);
     // get spec
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+    final StandardSourceDefinition sourceDefinition =
+        configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
+    final String imageName =
+        DockerUtils.getTaggedImageName(
+            sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current source to the incoming updated source
-    final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
-        persistedSource.getConfiguration(),
-        newConfiguration,
-        spec.getConnectionSpecification());
+    final JsonNode updatedConfiguration =
+        secretsProcessor.copySecrets(
+            persistedSource.getConfiguration(),
+            newConfiguration,
+            spec.getConnectionSpecification());
 
     return Jsons.clone(persistedSource).withConfiguration(updatedConfiguration);
   }
 
-  public DestinationConnection destination(final UUID destinationId, final String destName, final JsonNode newConfiguration)
+  public DestinationConnection destination(
+      final UUID destinationId, final String destName, final JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing destination
-    final DestinationConnection persistedDestination = configRepository.getDestinationConnectionWithSecrets(destinationId);
+    final DestinationConnection persistedDestination =
+        configRepository.getDestinationConnectionWithSecrets(destinationId);
     persistedDestination.setName(destName);
     // get spec
-    final StandardDestinationDefinition destinationDefinition = configRepository
-        .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
+    final StandardDestinationDefinition destinationDefinition =
+        configRepository.getStandardDestinationDefinition(
+            persistedDestination.getDestinationDefinitionId());
+    final String imageName =
+        DockerUtils.getTaggedImageName(
+            destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current destination to the incoming updated destination
-    final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
-        persistedDestination.getConfiguration(),
-        newConfiguration,
-        spec.getConnectionSpecification());
+    final JsonNode updatedConfiguration =
+        secretsProcessor.copySecrets(
+            persistedDestination.getConfiguration(),
+            newConfiguration,
+            spec.getConnectionSpecification());
 
     return Jsons.clone(persistedDestination).withConfiguration(updatedConfiguration);
   }
-
 }

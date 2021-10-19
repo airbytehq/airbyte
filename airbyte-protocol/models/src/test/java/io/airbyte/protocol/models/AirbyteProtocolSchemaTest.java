@@ -15,7 +15,8 @@ class AirbyteProtocolSchemaTest {
 
   @Test
   void testFile() throws IOException {
-    final String schema = Files.readString(AirbyteProtocolSchema.PROTOCOL.getFile().toPath(), StandardCharsets.UTF_8);
+    final String schema =
+        Files.readString(AirbyteProtocolSchema.PROTOCOL.getFile().toPath(), StandardCharsets.UTF_8);
     assertTrue(schema.contains("title"));
   }
 
@@ -25,5 +26,4 @@ class AirbyteProtocolSchemaTest {
       assertTrue(Files.exists(value.getFile().toPath()));
     }
   }
-
 }

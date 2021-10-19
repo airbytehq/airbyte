@@ -28,9 +28,9 @@ class DockerProcessFactoryTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   /**
-   * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs get
-   * swallowed when run from gradle. This test exists to explicitly fail with a clear error message
-   * when jq is not installed.
+   * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs
+   * get swallowed when run from gradle. This test exists to explicitly fail with a clear error
+   * message when jq is not installed.
    */
   @Test
   public void testJqExists() throws IOException {
@@ -42,18 +42,23 @@ class DockerProcessFactoryTest {
 
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
-    assertEquals(0, process.exitValue(),
-        String.format("Error while checking for jq. STDOUT: %s STDERR: %s Please make sure jq is installed (used by testImageExists)", out, err));
+    assertEquals(
+        0,
+        process.exitValue(),
+        String.format(
+            "Error while checking for jq. STDOUT: %s STDERR: %s Please make sure jq is installed (used by testImageExists)",
+            out, err));
   }
 
   /**
-   * This test will fail if jq is not installed. If run from gradle the log line that mentions the jq
-   * issue will be swallowed. The exception is visible if run from intellij or with STDERR logging
-   * turned on in gradle.
+   * This test will fail if jq is not installed. If run from gradle the log line that mentions the
+   * jq issue will be swallowed. The exception is visible if run from intellij or with STDERR
+   * logging turned on in gradle.
    */
   @Test
   public void testImageExists() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot =
+        Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertTrue(processFactory.checkImageExists("busybox"));
@@ -61,7 +66,8 @@ class DockerProcessFactoryTest {
 
   @Test
   public void testImageDoesNotExist() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot =
+        Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
@@ -69,16 +75,24 @@ class DockerProcessFactoryTest {
 
   @Test
   public void testFileWriting() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot =
+        Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
-    processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+    processFactory.create(
+        "job_id",
+        0,
+        jobRoot,
+        "busybox",
+        false,
+        ImmutableMap.of("config.json", "{\"data\": 2}"),
+        "echo hi",
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Map.of());
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),
         Jsons.deserialize(IOs.readFile(jobRoot, "config.json")));
   }
-
 }

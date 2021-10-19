@@ -28,7 +28,10 @@ public interface SecretsTestCase {
   Consumer<SecretPersistence> getPersistenceUpdater();
 
   default ConnectorSpecification getSpec() {
-    return Exceptions.toRuntime(() -> new ConnectorSpecification().withConnectionSpecification(getNodeResource(getName(), "spec.json")));
+    return Exceptions.toRuntime(
+        () ->
+            new ConnectorSpecification()
+                .withConnectionSpecification(getNodeResource(getName(), "spec.json")));
   }
 
   default JsonNode getFullConfig() {
@@ -47,8 +50,8 @@ public interface SecretsTestCase {
     return Exceptions.toRuntime(() -> getNodeResource(getName(), "updated_partial_config.json"));
   }
 
-  default JsonNode getNodeResource(final String testCase, final String fileName) throws IOException {
+  default JsonNode getNodeResource(final String testCase, final String fileName)
+      throws IOException {
     return Jsons.deserialize(MoreResources.readResource(testCase + "/" + fileName));
   }
-
 }

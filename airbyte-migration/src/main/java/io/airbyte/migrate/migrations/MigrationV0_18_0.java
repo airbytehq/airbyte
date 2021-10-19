@@ -29,17 +29,19 @@ import org.slf4j.LoggerFactory;
  * fields: syncMode (used by source to specify full_refresh/incremental) and destinationSyncMode
  * (used by destination to specify append/overwrite/append_dedup)
  *
- * The primaryKey column is filled if available from the stream if defined by source
+ * <p>The primaryKey column is filled if available from the stream if defined by source
  *
- * Additionally, this migration updates the JSON Schema for StandardWorkspace with a new field
+ * <p>Additionally, this migration updates the JSON Schema for StandardWorkspace with a new field
  * 'tombstone' introduced in 0.17.1
  */
 public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_18_0.class);
 
-  private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
-  private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
+  private static final ResourceId STANDARD_SYNC_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   private static final String MIGRATION_VERSION = "0.18.0-alpha";
 
@@ -57,10 +59,12 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getInputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
+    final Map<ResourceId, JsonNode> outputSchema =
+        new HashMap<>(previousMigration.getOutputSchema());
     outputSchema.put(
         STANDARD_WORKSPACE_RESOURCE_ID,
-        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_18_0"), STANDARD_WORKSPACE_RESOURCE_ID));
+        MigrationUtils.getSchemaFromResourcePath(
+            Path.of("migrations/migrationV0_18_0"), STANDARD_WORKSPACE_RESOURCE_ID));
     return outputSchema;
   }
 
@@ -70,67 +74,95 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(
+      final Map<ResourceId, Stream<JsonNode>> inputData,
+      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      entry.getValue().forEach(r -> {
-        if (entry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)) {
-          ((ObjectNode) r).set("catalog", migrateCatalog(r.get("catalog")));
-        }
-        recordConsumer.accept(r);
-      });
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                if (entry.getKey().equals(STANDARD_SYNC_RESOURCE_ID)) {
+                  ((ObjectNode) r).set("catalog", migrateCatalog(r.get("catalog")));
+                }
+                recordConsumer.accept(r);
+              });
     }
   }
 
   private JsonNode migrateCatalog(final JsonNode catalog) {
-    final List<Map<String, JsonNode>> configuredStreams = MoreIterators.toList(catalog.get("streams").elements())
-        .stream()
-        .map(stream -> {
-          final JsonNode airbyteStream = stream.get("stream");
-          assert airbyteStream != null;
-          JsonNode syncMode = stream.get("sync_mode");
-          if (syncMode == null) {
-            syncMode = Jsons.jsonNode(SyncMode.FULL_REFRESH.toString());
-            LOGGER.info("Migrating {} to default source sync_mode: {}", airbyteStream.get("name"), syncMode);
-          }
-          JsonNode destinationSyncMode = stream.get("destination_sync_mode");
-          if (destinationSyncMode == null) {
-            if (SyncMode.fromValue(syncMode.asText()) == SyncMode.FULL_REFRESH) {
-              destinationSyncMode = Jsons.jsonNode(DestinationSyncMode.OVERWRITE.toString());
-              LOGGER.debug("Migrating {} to source sync_mode: {} destination_sync_mode: {}", airbyteStream.get("name"), syncMode,
-                  destinationSyncMode);
-            } else if (SyncMode.fromValue(syncMode.asText()) == SyncMode.INCREMENTAL) {
-              destinationSyncMode = Jsons.jsonNode(DestinationSyncMode.APPEND.toString());
-              LOGGER.debug("Migrating {} to source sync_mode: {} destination_sync_mode: {}", airbyteStream.get("name"), syncMode,
-                  destinationSyncMode);
-            } else {
-              syncMode = Jsons.jsonNode(SyncMode.FULL_REFRESH.toString());
-              destinationSyncMode = Jsons.jsonNode(DestinationSyncMode.OVERWRITE.toString());
-              LOGGER.info("Migrating {} to default source sync_mode: {} destination_sync_mode: {}", airbyteStream.get("name"), syncMode,
-                  destinationSyncMode);
-            }
-          }
-          JsonNode primaryKey = stream.get("primary_key");
-          if (primaryKey == null) {
-            final JsonNode sourceDefinedPrimaryKey = airbyteStream.get("source_defined_primary_key");
-            primaryKey = sourceDefinedPrimaryKey != null ? sourceDefinedPrimaryKey : Jsons.jsonNode(Collections.emptyList());
-          }
-          // configured catalog fields
-          return (Map<String, JsonNode>) ImmutableMap.<String, JsonNode>builder()
-              .put("stream", airbyteStream)
-              .put("sync_mode", syncMode)
-              .put("cursor_field", stream.get("cursor_field") != null ? stream.get("cursor_field") : Jsons.jsonNode(Collections.emptyList()))
-              .put("destination_sync_mode", destinationSyncMode)
-              .put("primary_key", primaryKey)
-              .build();
-        })
-        .collect(Collectors.toList());
+    final List<Map<String, JsonNode>> configuredStreams =
+        MoreIterators.toList(catalog.get("streams").elements()).stream()
+            .map(
+                stream -> {
+                  final JsonNode airbyteStream = stream.get("stream");
+                  assert airbyteStream != null;
+                  JsonNode syncMode = stream.get("sync_mode");
+                  if (syncMode == null) {
+                    syncMode = Jsons.jsonNode(SyncMode.FULL_REFRESH.toString());
+                    LOGGER.info(
+                        "Migrating {} to default source sync_mode: {}",
+                        airbyteStream.get("name"),
+                        syncMode);
+                  }
+                  JsonNode destinationSyncMode = stream.get("destination_sync_mode");
+                  if (destinationSyncMode == null) {
+                    if (SyncMode.fromValue(syncMode.asText()) == SyncMode.FULL_REFRESH) {
+                      destinationSyncMode =
+                          Jsons.jsonNode(DestinationSyncMode.OVERWRITE.toString());
+                      LOGGER.debug(
+                          "Migrating {} to source sync_mode: {} destination_sync_mode: {}",
+                          airbyteStream.get("name"),
+                          syncMode,
+                          destinationSyncMode);
+                    } else if (SyncMode.fromValue(syncMode.asText()) == SyncMode.INCREMENTAL) {
+                      destinationSyncMode = Jsons.jsonNode(DestinationSyncMode.APPEND.toString());
+                      LOGGER.debug(
+                          "Migrating {} to source sync_mode: {} destination_sync_mode: {}",
+                          airbyteStream.get("name"),
+                          syncMode,
+                          destinationSyncMode);
+                    } else {
+                      syncMode = Jsons.jsonNode(SyncMode.FULL_REFRESH.toString());
+                      destinationSyncMode =
+                          Jsons.jsonNode(DestinationSyncMode.OVERWRITE.toString());
+                      LOGGER.info(
+                          "Migrating {} to default source sync_mode: {} destination_sync_mode: {}",
+                          airbyteStream.get("name"),
+                          syncMode,
+                          destinationSyncMode);
+                    }
+                  }
+                  JsonNode primaryKey = stream.get("primary_key");
+                  if (primaryKey == null) {
+                    final JsonNode sourceDefinedPrimaryKey =
+                        airbyteStream.get("source_defined_primary_key");
+                    primaryKey =
+                        sourceDefinedPrimaryKey != null
+                            ? sourceDefinedPrimaryKey
+                            : Jsons.jsonNode(Collections.emptyList());
+                  }
+                  // configured catalog fields
+                  return (Map<String, JsonNode>)
+                      ImmutableMap.<String, JsonNode>builder()
+                          .put("stream", airbyteStream)
+                          .put("sync_mode", syncMode)
+                          .put(
+                              "cursor_field",
+                              stream.get("cursor_field") != null
+                                  ? stream.get("cursor_field")
+                                  : Jsons.jsonNode(Collections.emptyList()))
+                          .put("destination_sync_mode", destinationSyncMode)
+                          .put("primary_key", primaryKey)
+                          .build();
+                })
+            .collect(Collectors.toList());
     return Jsons.jsonNode(ImmutableMap.of("streams", configuredStreams));
   }
 
   public enum SyncMode {
-
     FULL_REFRESH("full_refresh"),
 
     INCREMENTAL("incremental");
@@ -153,11 +185,9 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
       }
       throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
-
   }
 
   public enum DestinationSyncMode {
-
     APPEND("append"),
     OVERWRITE("overwrite"),
     APPEND_DEDUP("append_dedup");
@@ -180,7 +210,5 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
       }
       throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
-
   }
-
 }

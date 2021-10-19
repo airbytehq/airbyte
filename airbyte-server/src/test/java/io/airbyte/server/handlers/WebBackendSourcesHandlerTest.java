@@ -43,45 +43,56 @@ class WebBackendSourcesHandlerTest {
     sourceHandler = mock(SourceHandler.class);
     configRepository = mock(ConfigRepository.class);
     trackingClient = mock(TrackingClient.class);
-    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient);
-    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withName("test")
-        .withDockerImageTag("dev"));
+    webBackendSourcesHandler =
+        new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient);
+    when(configRepository.getStandardSourceDefinition(any()))
+        .thenReturn(
+            new StandardSourceDefinition()
+                .withSourceDefinitionId(UUID.randomUUID())
+                .withName("test")
+                .withDockerImageTag("dev"));
   }
 
   @Test
-  public void testWebBackendCreateSourceEmptyOAuthParameters() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testWebBackendCreateSourceEmptyOAuthParameters()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID sourceDefinitionId = UUID.randomUUID();
     final SourceConnection sourceConnection = SourceHelpers.generateSource(sourceDefinitionId);
-    final SourceCreate sourceCreate = new SourceCreate()
-        .name(sourceConnection.getName())
-        .workspaceId(sourceConnection.getWorkspaceId())
-        .sourceDefinitionId(sourceDefinitionId)
-        .connectionConfiguration(sourceConnection.getConfiguration());
+    final SourceCreate sourceCreate =
+        new SourceCreate()
+            .name(sourceConnection.getName())
+            .workspaceId(sourceConnection.getWorkspaceId())
+            .sourceDefinitionId(sourceDefinitionId)
+            .connectionConfiguration(sourceConnection.getConfiguration());
     webBackendSourcesHandler.webBackendCreateSource(Jsons.clone(sourceCreate));
     verify(sourceHandler).createSource(sourceCreate);
     assertNoTracking();
   }
 
   @Test
-  public void testWebBackendCreateSourceWithMaskedOAuthParameters() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testWebBackendCreateSourceWithMaskedOAuthParameters()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID sourceDefinitionId = UUID.randomUUID();
     final SourceConnection sourceConnection = SourceHelpers.generateSource(sourceDefinitionId);
-    final SourceCreate sourceCreate = new SourceCreate()
-        .name(sourceConnection.getName())
-        .workspaceId(sourceConnection.getWorkspaceId())
-        .sourceDefinitionId(sourceDefinitionId)
-        .connectionConfiguration(sourceConnection.getConfiguration());
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
-        new SourceOAuthParameter()
-            .withOauthParameterId(UUID.randomUUID())
-            .withSourceDefinitionId(sourceDefinitionId)
-            .withWorkspaceId(null)
-            .withConfiguration(Jsons.jsonNode(ImmutableMap.<String, String>builder()
-                .put("api_secret", "mysecret")
-                .put("api_client", UUID.randomUUID().toString())
-                .build()))));
+    final SourceCreate sourceCreate =
+        new SourceCreate()
+            .name(sourceConnection.getName())
+            .workspaceId(sourceConnection.getWorkspaceId())
+            .sourceDefinitionId(sourceDefinitionId)
+            .connectionConfiguration(sourceConnection.getConfiguration());
+    when(configRepository.listSourceOAuthParam())
+        .thenReturn(
+            List.of(
+                new SourceOAuthParameter()
+                    .withOauthParameterId(UUID.randomUUID())
+                    .withSourceDefinitionId(sourceDefinitionId)
+                    .withWorkspaceId(null)
+                    .withConfiguration(
+                        Jsons.jsonNode(
+                            ImmutableMap.<String, String>builder()
+                                .put("api_secret", "mysecret")
+                                .put("api_client", UUID.randomUUID().toString())
+                                .build()))));
     final SourceCreate expectedSourceCreate = Jsons.clone(sourceCreate);
     ((ObjectNode) expectedSourceCreate.getConnectionConfiguration())
         .put("api_secret", OAuthConfigSupplier.SECRET_MASK)
@@ -94,5 +105,4 @@ class WebBackendSourcesHandlerTest {
   private void assertNoTracking() {
     verify(trackingClient, times(0)).track(any(), anyString(), anyMap());
   }
-
 }

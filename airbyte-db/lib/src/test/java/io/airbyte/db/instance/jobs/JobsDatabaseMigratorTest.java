@@ -15,10 +15,10 @@ public class JobsDatabaseMigratorTest extends AbstractJobsDatabaseTest {
 
   @Test
   public void dumpSchema() throws IOException {
-    final DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigratorTest.class.getSimpleName());
+    final DatabaseMigrator migrator =
+        new JobsDatabaseMigrator(database, JobsDatabaseMigratorTest.class.getSimpleName());
     migrator.migrate();
     final String schema = migrator.dumpSchema();
     MigrationDevHelper.dumpSchema(schema, SCHEMA_DUMP_FILE, false);
   }
-
 }

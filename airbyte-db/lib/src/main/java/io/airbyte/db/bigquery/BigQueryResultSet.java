@@ -24,5 +24,4 @@ public class BigQueryResultSet {
   public FieldList getFieldList() {
     return fieldList;
   }
-
 }

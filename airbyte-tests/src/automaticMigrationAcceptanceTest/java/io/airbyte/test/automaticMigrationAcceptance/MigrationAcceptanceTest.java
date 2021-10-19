@@ -55,7 +55,8 @@ public class MigrationAcceptanceTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationAcceptanceTest.class);
 
   // assume env file is one directory level up from airbyte-tests.
-  private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+  private static final File ENV_FILE =
+      Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
   @Test
   public void testAutomaticMigration() throws Exception {
@@ -75,12 +76,14 @@ public class MigrationAcceptanceTest {
   }
 
   private Consumer<String> logConsumerForServer(final Set<String> expectedLogs) {
-    return logLine -> expectedLogs.removeIf(entry -> {
-      if (logLine.contains("Migrating from version")) {
-        System.out.println("logLine = " + logLine);
-      }
-      return logLine.contains(entry);
-    });
+    return logLine ->
+        expectedLogs.removeIf(
+            entry -> {
+              if (logLine.contains("Migrating from version")) {
+                System.out.println("logLine = " + logLine);
+              }
+              return logLine.contains(entry);
+            });
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -88,13 +91,17 @@ public class MigrationAcceptanceTest {
     // 0.17.0-alpha-db-patch is specifically built for this test;
     // it connects to the database with retries to fix flaky connection issue
     // https://github.com/airbytehq/airbyte/issues/4955
-    final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha-db-patch");
+    final Map<String, String> environmentVariables =
+        getEnvironmentVariables("0.17.0-alpha-db-patch");
 
     final Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: 0.17.0-alpha-db-patch");
 
     final AirbyteTestContainer airbyteTestContainer =
-        new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-0-17-0-alpha.yaml").toURI()))
+        new AirbyteTestContainer.Builder(
+                new File(
+                    Resources.getResource("docker-compose-migration-test-0-17-0-alpha.yaml")
+                        .toURI()))
             .setEnv(environmentVariables)
             .setLogListener("server", logConsumerForServer(logsToExpect))
             .build();
@@ -116,24 +123,29 @@ public class MigrationAcceptanceTest {
   private void secondRun(final String targetVersion) throws Exception {
     final Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: " + targetVersion);
-    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: " + targetVersionWithoutPatch(targetVersion));
+    logsToExpect.add(
+        "Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: "
+            + targetVersionWithoutPatch(targetVersion));
     logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
     logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
     logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
     logsToExpect.add("Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.");
     logsToExpect.add("Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.");
-    logsToExpect.add("Migrations complete. Now on version: " + targetVersionWithoutPatch(targetVersion));
+    logsToExpect.add(
+        "Migrations complete. Now on version: " + targetVersionWithoutPatch(targetVersion));
 
-    final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose.yaml").toURI()))
-        .setEnv(ENV_FILE)
-        // override to use test mounts.
-        .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
-        .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
-        .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
-        .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
-        .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
-        .setLogListener("server", logConsumerForServer(logsToExpect))
-        .build();
+    final AirbyteTestContainer airbyteTestContainer =
+        new AirbyteTestContainer.Builder(
+                new File(Resources.getResource("docker-compose.yaml").toURI()))
+            .setEnv(ENV_FILE)
+            // override to use test mounts.
+            .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
+            .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
+            .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
+            .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
+            .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
+            .setLogListener("server", logConsumerForServer(logsToExpect))
+            .build();
 
     airbyteTestContainer.start();
 
@@ -155,17 +167,25 @@ public class MigrationAcceptanceTest {
 
   private void assertSourceDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final SourceDefinitionApi sourceDefinitionApi = new SourceDefinitionApi(apiClient);
-    final List<SourceDefinitionRead> sourceDefinitions = sourceDefinitionApi.listSourceDefinitions().getSourceDefinitions();
+    final List<SourceDefinitionRead> sourceDefinitions =
+        sourceDefinitionApi.listSourceDefinitions().getSourceDefinitions();
     assertTrue(sourceDefinitions.size() >= 58);
     boolean foundMysqlSourceDefinition = false;
     boolean foundPostgresSourceDefinition = false;
     for (final SourceDefinitionRead sourceDefinitionRead : sourceDefinitions) {
-      if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("435bb9a5-7887-4809-aa58-28c27df0d7ad")) {
+      if (sourceDefinitionRead
+          .getSourceDefinitionId()
+          .toString()
+          .equals("435bb9a5-7887-4809-aa58-28c27df0d7ad")) {
         assertEquals(sourceDefinitionRead.getName(), "MySQL");
         assertEquals(sourceDefinitionRead.getDockerImageTag(), "0.2.0");
         foundMysqlSourceDefinition = true;
-      } else if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
-        final String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
+      } else if (sourceDefinitionRead
+          .getSourceDefinitionId()
+          .toString()
+          .equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
+        final String[] tagBrokenAsArray =
+            sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
         assertEquals(3, tagBrokenAsArray.length);
         assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
         assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -179,9 +199,12 @@ public class MigrationAcceptanceTest {
     assertTrue(foundPostgresSourceDefinition);
   }
 
-  private void assertDestinationDefinitionInformation(final ApiClient apiClient) throws ApiException {
-    final DestinationDefinitionApi destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
-    final List<DestinationDefinitionRead> destinationDefinitions = destinationDefinitionApi.listDestinationDefinitions().getDestinationDefinitions();
+  private void assertDestinationDefinitionInformation(final ApiClient apiClient)
+      throws ApiException {
+    final DestinationDefinitionApi destinationDefinitionApi =
+        new DestinationDefinitionApi(apiClient);
+    final List<DestinationDefinitionRead> destinationDefinitions =
+        destinationDefinitionApi.listDestinationDefinitions().getDestinationDefinitions();
     assertTrue(destinationDefinitions.size() >= 10);
     boolean foundPostgresDestinationDefinition = false;
     boolean foundLocalCSVDestinationDefinition = false;
@@ -199,7 +222,8 @@ public class MigrationAcceptanceTest {
           foundLocalCSVDestinationDefinition = true;
         }
         case "424892c4-daac-4491-b35d-c6688ba547ba" -> {
-          final String[] tagBrokenAsArray = destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
+          final String[] tagBrokenAsArray =
+              destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
           assertEquals(3, tagBrokenAsArray.length);
           assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
           assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -215,22 +239,30 @@ public class MigrationAcceptanceTest {
     assertTrue(foundSnowflakeDestinationDefintion);
   }
 
-  private void assertConnectionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody) throws ApiException {
+  private void assertConnectionInformation(
+      final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ApiException {
     final ConnectionApi connectionApi = new ConnectionApi(apiClient);
-    final List<ConnectionRead> connections = connectionApi.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
+    final List<ConnectionRead> connections =
+        connectionApi.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
     assertEquals(connections.size(), 2);
     for (final ConnectionRead connection : connections) {
       if (connection.getConnectionId().toString().equals("a294256f-1abe-4837-925f-91602c7207b4")) {
         assertEquals("", connection.getPrefix());
         assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", connection.getSourceId().toString());
-        assertEquals("4e00862d-5484-4f50-9860-f3bbb4317397", connection.getDestinationId().toString());
+        assertEquals(
+            "4e00862d-5484-4f50-9860-f3bbb4317397", connection.getDestinationId().toString());
         assertEquals("default", connection.getName());
         assertEquals(ConnectionStatus.ACTIVE, connection.getStatus());
         assertNull(connection.getSchedule());
-      } else if (connection.getConnectionId().toString().equals("49dae3f0-158b-4737-b6e4-0eed77d4b74e")) {
+      } else if (connection
+          .getConnectionId()
+          .toString()
+          .equals("49dae3f0-158b-4737-b6e4-0eed77d4b74e")) {
         assertEquals("", connection.getPrefix());
         assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", connection.getSourceId().toString());
-        assertEquals("5434615d-a3b7-4351-bc6b-a9a695555a30", connection.getDestinationId().toString());
+        assertEquals(
+            "5434615d-a3b7-4351-bc6b-a9a695555a30", connection.getDestinationId().toString());
         assertEquals("default", connection.getName());
         assertEquals(ConnectionStatus.ACTIVE, connection.getStatus());
         assertNull(connection.getSchedule());
@@ -240,7 +272,8 @@ public class MigrationAcceptanceTest {
     }
   }
 
-  private WorkspaceIdRequestBody assertWorkspaceInformation(final ApiClient apiClient) throws ApiException {
+  private WorkspaceIdRequestBody assertWorkspaceInformation(final ApiClient apiClient)
+      throws ApiException {
     final WorkspaceApi workspaceApi = new WorkspaceApi(apiClient);
     final WorkspaceRead workspace = workspaceApi.listWorkspaces().getWorkspaces().get(0);
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
@@ -261,11 +294,11 @@ public class MigrationAcceptanceTest {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  private void populateDataForFirstRun(final ApiClient apiClient) throws ApiException, URISyntaxException {
+  private void populateDataForFirstRun(final ApiClient apiClient)
+      throws ApiException, URISyntaxException {
     final ImportApi deploymentApi = new ImportApi(apiClient);
-    final File file = Path
-        .of(Resources.getResource("03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
-        .toFile();
+    final File file =
+        Path.of(Resources.getResource("03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI()).toFile();
     final ImportRead importRead = deploymentApi.importArchive(file);
     assertEquals(importRead.getStatus(), StatusEnum.SUCCEEDED);
   }
@@ -276,15 +309,13 @@ public class MigrationAcceptanceTest {
       final HealthCheckRead healthCheck = healthApi.getHealthCheck();
       assertTrue(healthCheck.getDb());
     } catch (final ApiException e) {
-      throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
+      throw new RuntimeException(
+          "Health check failed, usually due to auto migration failure. Please check the logs for details.");
     }
   }
 
   private ApiClient getApiClient() {
-    return new ApiClient().setScheme("http")
-        .setHost("localhost")
-        .setPort(8001)
-        .setBasePath("/api");
+    return new ApiClient().setScheme("http").setHost("localhost").setPort(8001).setBasePath("/api");
   }
 
   private Map<String, String> getEnvironmentVariables(final String version) {
@@ -313,5 +344,4 @@ public class MigrationAcceptanceTest {
     env.put("GCP_STORAGE_BUCKET", "");
     return env;
   }
-
 }

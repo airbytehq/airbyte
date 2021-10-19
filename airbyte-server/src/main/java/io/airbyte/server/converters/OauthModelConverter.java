@@ -15,18 +15,23 @@ public class OauthModelConverter {
     if (spec.getAuthSpecification() == null) {
       return Optional.empty();
     }
-    final io.airbyte.protocol.models.AuthSpecification incomingAuthSpec = spec.getAuthSpecification();
+    final io.airbyte.protocol.models.AuthSpecification incomingAuthSpec =
+        spec.getAuthSpecification();
 
     final AuthSpecification authSpecification = new AuthSpecification();
-    if (incomingAuthSpec.getAuthType() == io.airbyte.protocol.models.AuthSpecification.AuthType.OAUTH_2_0) {
-      authSpecification.authType(AuthSpecification.AuthTypeEnum.OAUTH2_0)
-          .oauth2Specification(new OAuth2Specification()
-              .rootObject(incomingAuthSpec.getOauth2Specification().getRootObject())
-              .oauthFlowInitParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowInitParameters())
-              .oauthFlowOutputParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowOutputParameters()));
+    if (incomingAuthSpec.getAuthType()
+        == io.airbyte.protocol.models.AuthSpecification.AuthType.OAUTH_2_0) {
+      authSpecification
+          .authType(AuthSpecification.AuthTypeEnum.OAUTH2_0)
+          .oauth2Specification(
+              new OAuth2Specification()
+                  .rootObject(incomingAuthSpec.getOauth2Specification().getRootObject())
+                  .oauthFlowInitParameters(
+                      incomingAuthSpec.getOauth2Specification().getOauthFlowInitParameters())
+                  .oauthFlowOutputParameters(
+                      incomingAuthSpec.getOauth2Specification().getOauthFlowOutputParameters()));
     }
 
     return Optional.ofNullable(authSpecification);
   }
-
 }

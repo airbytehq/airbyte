@@ -7,5 +7,4 @@ package io.airbyte.server;
 public interface ServerRunnable {
 
   void start() throws Exception;
-
 }

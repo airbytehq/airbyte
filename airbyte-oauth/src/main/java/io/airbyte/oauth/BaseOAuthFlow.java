@@ -31,53 +31,62 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   private final Supplier<String> stateSupplier;
 
   public BaseOAuthFlow(final ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
+    this(
+        configRepository,
+        HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
+        BaseOAuthFlow::generateRandomState);
   }
 
-  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  public BaseOAuthFlow(
+      final ConfigRepository configRepository,
+      final HttpClient httpClient,
+      final Supplier<String> stateSupplier) {
     super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
   }
 
   @Override
-  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+  public String getSourceConsentUrl(
+      final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
   @Override
-  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
+  public String getDestinationConsentUrl(
+      final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
-    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
+    final JsonNode oAuthParamConfig =
+        getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
+    return formatConsentUrl(
+        destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
   /**
    * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
-   * especially in the query parameters to be provided. This function should generate such consent URL
-   * accordingly.
+   * especially in the query parameters to be provided. This function should generate such consent
+   * URL accordingly.
    */
-  protected abstract String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException;
+  protected abstract String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl)
+      throws IOException;
 
   private static String generateRandomState() {
     return RandomStringUtils.randomAlphanumeric(7);
   }
 
-  /**
-   * Generate a string to use as state in the OAuth process.
-   */
+  /** Generate a string to use as state in the OAuth process. */
   protected String getState() {
     return stateSupplier.get();
   }
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-                                                 final UUID workspaceId,
-                                                 final UUID sourceDefinitionId,
-                                                 final Map<String, Object> queryParams,
-                                                 final String redirectUrl)
+      final UUID workspaceId,
+      final UUID sourceDefinitionId,
+      final Map<String, Object> queryParams,
+      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -88,12 +97,14 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   @Override
-  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
-                                                      final UUID destinationDefinitionId,
-                                                      final Map<String, Object> queryParams,
-                                                      final String redirectUrl)
+  public Map<String, Object> completeDestinationOAuth(
+      final UUID workspaceId,
+      final UUID destinationDefinitionId,
+      final Map<String, Object> queryParams,
+      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
-    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
+    final JsonNode oAuthParamConfig =
+        getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return completeOAuthFlow(
         getClientIdUnsafe(oAuthParamConfig),
         getClientSecretUnsafe(oAuthParamConfig),
@@ -101,26 +112,36 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         redirectUrl);
   }
 
-  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
+  private Map<String, Object> completeOAuthFlow(
+      final String clientId,
+      final String clientSecret,
+      final String authCode,
+      final String redirectUrl)
       throws IOException {
-    final HttpRequest request = HttpRequest.newBuilder()
-        .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-        .uri(URI.create(getAccessTokenUrl()))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .build();
+    final HttpRequest request =
+        HttpRequest.newBuilder()
+            .POST(
+                HttpRequest.BodyPublishers.ofString(
+                    toUrlEncodedString(
+                        getAccessTokenQueryParameters(
+                            clientId, clientSecret, authCode, redirectUrl))))
+            .uri(URI.create(getAccessTokenUrl()))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .build();
     // TODO: Handle error response to report better messages
     try {
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());;
+      final HttpResponse<String> response =
+          httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      ;
       return extractRefreshToken(Jsons.deserialize(response.body()));
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
   }
 
-  /**
-   * Query parameters to provide the access token url with.
-   */
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  /** Query parameters to provide the access token url with. */
+  protected Map<String, String> getAccessTokenQueryParameters(
+      String clientId, String clientSecret, String authCode, String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
@@ -132,8 +153,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   /**
    * Once the user is redirected after getting their consent, the API should redirect them to a
-   * specific redirection URL along with query parameters. This function should parse and extract the
-   * code from these query parameters in order to continue the OAuth Flow.
+   * specific redirection URL along with query parameters. This function should parse and extract
+   * the code from these query parameters in order to continue the OAuth Flow.
    */
   protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("code")) {
@@ -143,14 +164,12 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     }
   }
 
-  /**
-   * Returns the URL where to retrieve the access token from.
-   */
+  /** Returns the URL where to retrieve the access token from. */
   protected abstract String getAccessTokenUrl();
 
   /**
-   * Once the auth code is exchange for a refresh token, the oauth flow implementation can extract and
-   * returns the values of fields to be used in the connector's configurations.
+   * Once the auth code is exchange for a refresh token, the oauth flow implementation can extract
+   * and returns the values of fields to be used in the connector's configurations.
    */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
@@ -172,5 +191,4 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     }
     return result.toString();
   }
-
 }

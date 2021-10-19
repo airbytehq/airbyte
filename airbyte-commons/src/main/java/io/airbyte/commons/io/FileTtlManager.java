@@ -32,20 +32,24 @@ public class FileTtlManager {
   private final long expirationDuration;
   private final TimeUnit expirationTimeUnit;
 
-  public FileTtlManager(final long expirationDuration, final TimeUnit expirationTimeUnit, final long maxSize) {
+  public FileTtlManager(
+      final long expirationDuration, final TimeUnit expirationTimeUnit, final long maxSize) {
     this.expirationDuration = expirationDuration;
     this.expirationTimeUnit = expirationTimeUnit;
-    cache = CacheBuilder.newBuilder()
-        .expireAfterWrite(expirationDuration, expirationTimeUnit)
-        .maximumSize(maxSize)
-        .removalListener((RemovalNotification<Path, Instant> removalNotification) -> {
-          try {
-            Files.deleteIfExists(removalNotification.getKey());
-          } catch (final IOException e) {
-            throw new RuntimeException("Failed to delete file at end of ttl: " + removalNotification.getKey(), e);
-          }
-        })
-        .build();
+    cache =
+        CacheBuilder.newBuilder()
+            .expireAfterWrite(expirationDuration, expirationTimeUnit)
+            .maximumSize(maxSize)
+            .removalListener(
+                (RemovalNotification<Path, Instant> removalNotification) -> {
+                  try {
+                    Files.deleteIfExists(removalNotification.getKey());
+                  } catch (final IOException e) {
+                    throw new RuntimeException(
+                        "Failed to delete file at end of ttl: " + removalNotification.getKey(), e);
+                  }
+                })
+            .build();
   }
 
   public void register(final Path path) {
@@ -61,21 +65,32 @@ public class FileTtlManager {
 
   private void reportCacheStatus() {
     final Instant now = Instant.now();
-    final StringBuilder sb = new StringBuilder(String.format("Files with ttls (total files: %s):\n", cache.size()));
+    final StringBuilder sb =
+        new StringBuilder(String.format("Files with ttls (total files: %s):\n", cache.size()));
 
-    cache.asMap().forEach((path, registeredAt) -> {
-      try {
-        final Duration timeElapsed = Duration.between(registeredAt, now);
-        final Duration diffBetweenTotalLifeTimeAndTimeElapsed = Duration.of(expirationDuration, expirationTimeUnit.toChronoUnit()).minus(timeElapsed);
-        final long minutesRemaining = Math.max(diffBetweenTotalLifeTimeAndTimeElapsed.toMinutes(), 0L);
+    cache
+        .asMap()
+        .forEach(
+            (path, registeredAt) -> {
+              try {
+                final Duration timeElapsed = Duration.between(registeredAt, now);
+                final Duration diffBetweenTotalLifeTimeAndTimeElapsed =
+                    Duration.of(expirationDuration, expirationTimeUnit.toChronoUnit())
+                        .minus(timeElapsed);
+                final long minutesRemaining =
+                    Math.max(diffBetweenTotalLifeTimeAndTimeElapsed.toMinutes(), 0L);
 
-        sb.append(String.format("File name: %s, Size (MB) %s, TTL %s\n", path, FileUtils.byteCountToDisplaySize(Files.size(path)), minutesRemaining));
-      } catch (final IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+                sb.append(
+                    String.format(
+                        "File name: %s, Size (MB) %s, TTL %s\n",
+                        path,
+                        FileUtils.byteCountToDisplaySize(Files.size(path)),
+                        minutesRemaining));
+              } catch (final IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
     sb.append("---\n");
     LOGGER.info(sb.toString());
   }
-
 }

@@ -96,5 +96,4 @@ class OnDiskQueueTest {
   private static byte[] toBytes(final String string) {
     return string.getBytes(Charsets.UTF_8);
   }
-
 }

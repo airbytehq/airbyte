@@ -47,10 +47,12 @@ class CompositeIteratorTest {
 
   @Test
   void testMultipleIterators() throws Exception {
-    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1),
-        AutoCloseableIterators.fromIterator(MoreIterators.of("d", "e", "f"), onClose2),
-        AutoCloseableIterators.fromIterator(MoreIterators.of("g", "h", "i"), onClose3)));
+    final AutoCloseableIterator<String> iterator =
+        new CompositeIterator<>(
+            ImmutableList.of(
+                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1),
+                AutoCloseableIterators.fromIterator(MoreIterators.of("d", "e", "f"), onClose2),
+                AutoCloseableIterators.fromIterator(MoreIterators.of("g", "h", "i"), onClose3)));
 
     assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3));
     assertNext(iterator, "a");
@@ -77,10 +79,12 @@ class CompositeIteratorTest {
 
   @Test
   void testWithEmptyIterators() throws Exception {
-    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1),
-        AutoCloseableIterators.fromIterator(MoreIterators.of(), onClose2),
-        AutoCloseableIterators.fromIterator(MoreIterators.of("g", "h", "i"), onClose3)));
+    final AutoCloseableIterator<String> iterator =
+        new CompositeIterator<>(
+            ImmutableList.of(
+                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1),
+                AutoCloseableIterators.fromIterator(MoreIterators.of(), onClose2),
+                AutoCloseableIterators.fromIterator(MoreIterators.of("g", "h", "i"), onClose3)));
 
     assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3));
     assertNext(iterator, "a");
@@ -96,8 +100,10 @@ class CompositeIteratorTest {
 
   @Test
   void testCloseBeforeUsingItUp() throws Exception {
-    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1)));
+    final AutoCloseableIterator<String> iterator =
+        new CompositeIterator<>(
+            ImmutableList.of(
+                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1)));
 
     assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1));
     assertNext(iterator, "a");
@@ -110,8 +116,10 @@ class CompositeIteratorTest {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
   void testCannotOperateAfterClosing() throws Exception {
-    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1)));
+    final AutoCloseableIterator<String> iterator =
+        new CompositeIterator<>(
+            ImmutableList.of(
+                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1)));
 
     assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1));
     assertNext(iterator, "a");
@@ -127,7 +135,9 @@ class CompositeIteratorTest {
     assertEquals(value, iterator.next());
   }
 
-  private void assertOnCloseInvocations(final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed) throws Exception {
+  private void assertOnCloseInvocations(
+      final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed)
+      throws Exception {
     for (final VoidCallable voidCallable : haveClosed) {
       verify(voidCallable).call();
     }
@@ -136,5 +146,4 @@ class CompositeIteratorTest {
       verify(voidCallable, never()).call();
     }
   }
-
 }

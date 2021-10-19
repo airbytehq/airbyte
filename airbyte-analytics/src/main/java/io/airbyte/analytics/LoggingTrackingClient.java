@@ -28,7 +28,10 @@ public class LoggingTrackingClient implements TrackingClient {
 
   @Override
   public void alias(final UUID workspaceId, final String previousCustomerId) {
-    LOGGER.info("merge. userId: {} previousUserId: {}", identityFetcher.apply(workspaceId).getCustomerId(), previousCustomerId);
+    LOGGER.info(
+        "merge. userId: {} previousUserId: {}",
+        identityFetcher.apply(workspaceId).getCustomerId(),
+        previousCustomerId);
   }
 
   @Override
@@ -37,12 +40,13 @@ public class LoggingTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
-    LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
+  public void track(
+      final UUID workspaceId, final String action, final Map<String, Object> metadata) {
+    LOGGER.info(
+        "track. version: {}, userId: {}, action: {}, metadata: {}",
         identityFetcher.apply(workspaceId).getAirbyteVersion(),
         identityFetcher.apply(workspaceId).getCustomerId(),
         action,
         metadata);
   }
-
 }

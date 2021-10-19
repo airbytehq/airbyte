@@ -18,5 +18,4 @@ public class InternalServerKnownException extends KnownException {
   public int getHttpCode() {
     return 500;
   }
-
 }

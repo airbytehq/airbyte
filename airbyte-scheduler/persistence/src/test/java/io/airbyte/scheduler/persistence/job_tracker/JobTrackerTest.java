@@ -72,31 +72,34 @@ class JobTrackerTest {
   private static final long SYNC_BYTES_SYNC = 42L;
   private static final long SYNC_RECORDS_SYNC = 4L;
 
-  private static final ImmutableMap<String, Object> STARTED_STATE_METADATA = ImmutableMap.<String, Object>builder()
-      .put("attempt_stage", "STARTED")
-      .build();
-  private static final ImmutableMap<String, Object> SUCCEEDED_STATE_METADATA = ImmutableMap.<String, Object>builder()
-      .put("attempt_stage", "ENDED")
-      .put("attempt_completion_status", JobState.SUCCEEDED)
-      .build();
-  private static final ImmutableMap<String, Object> FAILED_STATE_METADATA = ImmutableMap.<String, Object>builder()
-      .put("attempt_stage", "ENDED")
-      .put("attempt_completion_status", JobState.FAILED)
-      .build();
-  private static final ImmutableMap<String, Object> ATTEMPT_METADATA = ImmutableMap.<String, Object>builder()
-      .put("duration", SYNC_DURATION)
-      .put("volume_rows", SYNC_RECORDS_SYNC)
-      .put("volume_mb", SYNC_BYTES_SYNC)
-      .build();
-  private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
-      .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
-      .put(JobTracker.CONFIG + ".destination.key", false)
-      .put(JobTracker.CATALOG + ".sync_mode.full_refresh", JobTracker.SET)
-      .put(JobTracker.CATALOG + ".destination_sync_mode.append", JobTracker.SET)
-      .put("namespace_definition", NamespaceDefinitionType.SOURCE)
-      .put("table_prefix", false)
-      .put("operation_count", 0)
-      .build();
+  private static final ImmutableMap<String, Object> STARTED_STATE_METADATA =
+      ImmutableMap.<String, Object>builder().put("attempt_stage", "STARTED").build();
+  private static final ImmutableMap<String, Object> SUCCEEDED_STATE_METADATA =
+      ImmutableMap.<String, Object>builder()
+          .put("attempt_stage", "ENDED")
+          .put("attempt_completion_status", JobState.SUCCEEDED)
+          .build();
+  private static final ImmutableMap<String, Object> FAILED_STATE_METADATA =
+      ImmutableMap.<String, Object>builder()
+          .put("attempt_stage", "ENDED")
+          .put("attempt_completion_status", JobState.FAILED)
+          .build();
+  private static final ImmutableMap<String, Object> ATTEMPT_METADATA =
+      ImmutableMap.<String, Object>builder()
+          .put("duration", SYNC_DURATION)
+          .put("volume_rows", SYNC_RECORDS_SYNC)
+          .put("volume_mb", SYNC_BYTES_SYNC)
+          .build();
+  private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA =
+      ImmutableMap.<String, Object>builder()
+          .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
+          .put(JobTracker.CONFIG + ".destination.key", false)
+          .put(JobTracker.CATALOG + ".sync_mode.full_refresh", JobTracker.SET)
+          .put(JobTracker.CATALOG + ".destination_sync_mode.append", JobTracker.SET)
+          .put("namespace_definition", NamespaceDefinitionType.SOURCE)
+          .put("table_prefix", false)
+          .put("operation_count", 0)
+          .build();
 
   private ConfigRepository configRepository;
 
@@ -115,81 +118,96 @@ class JobTrackerTest {
   }
 
   @Test
-  void testTrackCheckConnectionSource() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.CHECK_CONNECTION_SOURCE)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
-        .put("connector_source", SOURCE_DEF_NAME)
-        .put("connector_source_definition_id", UUID1)
-        .put("connector_source_version", CONNECTOR_VERSION)
-        .build();
+  void testTrackCheckConnectionSource()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ImmutableMap<String, Object> metadata =
+        ImmutableMap.<String, Object>builder()
+            .put("job_type", ConfigType.CHECK_CONNECTION_SOURCE)
+            .put("job_id", JOB_ID.toString())
+            .put("attempt_id", 0)
+            .put("connector_source", SOURCE_DEF_NAME)
+            .put("connector_source_definition_id", UUID1)
+            .put("connector_source_version", CONNECTOR_VERSION)
+            .build();
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
-            .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardSourceDefinition()
+                .withSourceDefinitionId(UUID1)
+                .withName(SOURCE_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCheckConnCorrectMessageForEachState(
-        (jobState, output) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, WORKSPACE_ID, jobState, output),
+        (jobState, output) ->
+            jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, WORKSPACE_ID, jobState, output),
         metadata,
         true);
     assertCheckConnCorrectMessageForEachState(
-        (jobState, output) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, null, jobState, output),
+        (jobState, output) ->
+            jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, null, jobState, output),
         metadata,
         false);
   }
 
   @Test
-  void testTrackCheckConnectionDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.CHECK_CONNECTION_DESTINATION)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
-        .put("connector_destination", DESTINATION_DEF_NAME)
-        .put("connector_destination_definition_id", UUID2)
-        .put("connector_destination_version", CONNECTOR_VERSION)
-        .build();
+  void testTrackCheckConnectionDestination()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ImmutableMap<String, Object> metadata =
+        ImmutableMap.<String, Object>builder()
+            .put("job_type", ConfigType.CHECK_CONNECTION_DESTINATION)
+            .put("job_id", JOB_ID.toString())
+            .put("attempt_id", 0)
+            .put("connector_destination", DESTINATION_DEF_NAME)
+            .put("connector_destination_definition_id", UUID2)
+            .put("connector_destination_version", CONNECTOR_VERSION)
+            .build();
 
     when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDestinationDefinitionId(UUID2)
-            .withName(DESTINATION_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardDestinationDefinition()
+                .withDestinationDefinitionId(UUID2)
+                .withName(DESTINATION_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCheckConnCorrectMessageForEachState(
-        (jobState, output) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, WORKSPACE_ID, jobState, output),
+        (jobState, output) ->
+            jobTracker.trackCheckConnectionDestination(
+                JOB_ID, UUID2, WORKSPACE_ID, jobState, output),
         metadata,
         true);
     assertCheckConnCorrectMessageForEachState(
-        (jobState, output) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, null, jobState, output),
+        (jobState, output) ->
+            jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, null, jobState, output),
         metadata,
         false);
   }
 
   @Test
   void testTrackDiscover() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.DISCOVER_SCHEMA)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
-        .put("connector_source", SOURCE_DEF_NAME)
-        .put("connector_source_definition_id", UUID1)
-        .put("connector_source_version", CONNECTOR_VERSION)
-        .build();
+    final ImmutableMap<String, Object> metadata =
+        ImmutableMap.<String, Object>builder()
+            .put("job_type", ConfigType.DISCOVER_SCHEMA)
+            .put("job_id", JOB_ID.toString())
+            .put("attempt_id", 0)
+            .put("connector_source", SOURCE_DEF_NAME)
+            .put("connector_source_definition_id", UUID1)
+            .put("connector_source_version", CONNECTOR_VERSION)
+            .build();
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
-            .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardSourceDefinition()
+                .withSourceDefinitionId(UUID1)
+                .withName(SOURCE_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, WORKSPACE_ID, jobState), metadata);
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata, false);
+    assertCorrectMessageForEachState(
+        (jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, WORKSPACE_ID, jobState), metadata);
+    assertCorrectMessageForEachState(
+        (jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata, false);
   }
 
   @Test
@@ -202,12 +220,14 @@ class JobTrackerTest {
     testAsynchronous(ConfigType.RESET_CONNECTION);
   }
 
-  void testAsynchronous(final ConfigType configType) throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testAsynchronous(final ConfigType configType)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     testAsynchronous(configType, Collections.emptyMap());
   }
 
   // todo update with connection-specific test
-  void testAsynchronous(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
+  void testAsynchronous(
+      final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // for sync the job id is a long not a uuid.
     final long jobId = 10L;
@@ -216,24 +236,27 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
-    final Map<String, Object> manualMetadata = MoreMaps.merge(
-        metadata,
-        ImmutableMap.of("frequency", "manual"),
-        additionalExpectedMetadata);
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackSync(job, jobState), manualMetadata);
+    final Map<String, Object> manualMetadata =
+        MoreMaps.merge(
+            metadata, ImmutableMap.of("frequency", "manual"), additionalExpectedMetadata);
+    assertCorrectMessageForEachState(
+        (jobState) -> jobTracker.trackSync(job, jobState), manualMetadata);
 
     // test when frequency is scheduled.
     when(configRepository.getStandardSync(CONNECTION_ID))
-        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false)
-            .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
-    final Map<String, Object> scheduledMetadata = MoreMaps.merge(
-        metadata,
-        ImmutableMap.of("frequency", "1 min"),
-        additionalExpectedMetadata);
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackSync(job, jobState), scheduledMetadata);
+        .thenReturn(
+            new StandardSync()
+                .withConnectionId(CONNECTION_ID)
+                .withManual(false)
+                .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
+    final Map<String, Object> scheduledMetadata =
+        MoreMaps.merge(metadata, ImmutableMap.of("frequency", "1 min"), additionalExpectedMetadata);
+    assertCorrectMessageForEachState(
+        (jobState) -> jobTracker.trackSync(job, jobState), scheduledMetadata);
   }
 
   @Test
@@ -242,7 +265,8 @@ class JobTrackerTest {
   }
 
   @Test
-  void testTrackResetAttempt() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testTrackResetAttempt()
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     testAsynchronousAttempt(ConfigType.RESET_CONNECTION);
   }
 
@@ -251,22 +275,25 @@ class JobTrackerTest {
     final String configJson = MoreResources.readResource("example_config.json");
     final JsonNode config = Jsons.deserialize(configJson);
 
-    final Map<String, Object> expected = ImmutableMap.of(
-        JobTracker.CONFIG + ".username", JobTracker.SET,
-        JobTracker.CONFIG + ".has_ssl", false,
-        JobTracker.CONFIG + ".password", JobTracker.SET,
-        JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET);
+    final Map<String, Object> expected =
+        ImmutableMap.of(
+            JobTracker.CONFIG + ".username", JobTracker.SET,
+            JobTracker.CONFIG + ".has_ssl", false,
+            JobTracker.CONFIG + ".password", JobTracker.SET,
+            JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET);
 
     final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config);
 
     assertEquals(expected, actual);
   }
 
-  void testAsynchronousAttempt(final ConfigType configType) throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testAsynchronousAttempt(final ConfigType configType)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     testAsynchronousAttempt(configType, Collections.emptyMap());
   }
 
-  void testAsynchronousAttempt(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
+  void testAsynchronousAttempt(
+      final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // for sync the job id is a long not a uuid.
     final long jobId = 10L;
@@ -274,15 +301,17 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobWithAttemptsMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId)).thenReturn(WORKSPACE_ID);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
-    final Map<String, Object> manualMetadata = MoreMaps.merge(
-        ATTEMPT_METADATA,
-        metadata,
-        ImmutableMap.of("frequency", "manual"),
-        additionalExpectedMetadata);
+    final Map<String, Object> manualMetadata =
+        MoreMaps.merge(
+            ATTEMPT_METADATA,
+            metadata,
+            ImmutableMap.of("frequency", "manual"),
+            additionalExpectedMetadata);
 
     jobTracker.trackSync(job, JobState.SUCCEEDED);
     assertCorrectMessageForSucceededState(manualMetadata);
@@ -291,38 +320,47 @@ class JobTrackerTest {
     assertCorrectMessageForFailedState(manualMetadata);
   }
 
-  private Job getJobMock(final ConfigType configType, final long jobId) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private Job getJobMock(final ConfigType configType, final long jobId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
-            .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardSourceDefinition()
+                .withSourceDefinitionId(UUID1)
+                .withName(SOURCE_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDestinationDefinitionId(UUID2)
-            .withName(DESTINATION_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardDestinationDefinition()
+                .withDestinationDefinitionId(UUID2)
+                .withName(DESTINATION_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
-            .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardSourceDefinition()
+                .withSourceDefinitionId(UUID1)
+                .withName(SOURCE_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDestinationDefinitionId(UUID2)
-            .withName(DESTINATION_DEF_NAME)
-            .withDockerImageTag(CONNECTOR_VERSION));
+        .thenReturn(
+            new StandardDestinationDefinition()
+                .withDestinationDefinitionId(UUID2)
+                .withName(DESTINATION_DEF_NAME)
+                .withDockerImageTag(CONNECTOR_VERSION));
 
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+    final ConfiguredAirbyteCatalog catalog =
+        new ConfiguredAirbyteCatalog()
+            .withStreams(
+                List.of(
+                    new ConfiguredAirbyteStream()
+                        .withSyncMode(SyncMode.FULL_REFRESH)
+                        .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", "some_value")))
-        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)))
-        .withConfiguredAirbyteCatalog(catalog);
+    final JobSyncConfig jobSyncConfig =
+        new JobSyncConfig()
+            .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", "some_value")))
+            .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)))
+            .withConfiguredAirbyteCatalog(catalog);
 
     final JobConfig jobConfig = mock(JobConfig.class);
     when(jobConfig.getConfigType()).thenReturn(configType);
@@ -360,7 +398,8 @@ class JobTrackerTest {
     return job;
   }
 
-  private ImmutableMap<String, Object> getJobMetadata(final ConfigType configType, final long jobId) {
+  private ImmutableMap<String, Object> getJobMetadata(
+      final ConfigType configType, final long jobId) {
     return ImmutableMap.<String, Object>builder()
         .put("job_type", configType)
         .put("job_id", String.valueOf(jobId))
@@ -378,9 +417,10 @@ class JobTrackerTest {
         .build();
   }
 
-  private void assertCheckConnCorrectMessageForEachState(final BiConsumer<JobState, StandardCheckConnectionOutput> jobStateConsumer,
-                                                         final Map<String, Object> metadata,
-                                                         final boolean workspaceSet) {
+  private void assertCheckConnCorrectMessageForEachState(
+      final BiConsumer<JobState, StandardCheckConnectionOutput> jobStateConsumer,
+      final Map<String, Object> metadata,
+      final boolean workspaceSet) {
     reset(trackingClient);
 
     // Output does not exist when job has started.
@@ -389,12 +429,14 @@ class JobTrackerTest {
     final var successOutput = new StandardCheckConnectionOutput();
     successOutput.setStatus(Status.SUCCEEDED);
     jobStateConsumer.accept(JobState.SUCCEEDED, successOutput);
-    final ImmutableMap<String, Object> checkConnSuccessMetadata = ImmutableMap.of("check_connection_outcome", "succeeded");
+    final ImmutableMap<String, Object> checkConnSuccessMetadata =
+        ImmutableMap.of("check_connection_outcome", "succeeded");
 
     final var failureOutput = new StandardCheckConnectionOutput();
     failureOutput.setStatus(Status.FAILED);
     jobStateConsumer.accept(JobState.SUCCEEDED, failureOutput);
-    final ImmutableMap<String, Object> checkConnFailureMetadata = ImmutableMap.of("check_connection_outcome", "failed");
+    final ImmutableMap<String, Object> checkConnFailureMetadata =
+        ImmutableMap.of("check_connection_outcome", "failed");
 
     // Failure implies the job threw an exception which almost always meant no output.
     jobStateConsumer.accept(JobState.FAILED, null);
@@ -408,7 +450,8 @@ class JobTrackerTest {
     }
   }
 
-  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer, final Map<String, Object> expectedMetadata) {
+  private void assertCorrectMessageForEachState(
+      final Consumer<JobState> jobStateConsumer, final Map<String, Object> expectedMetadata) {
     assertCorrectMessageForEachState(jobStateConsumer, expectedMetadata, true);
   }
 
@@ -416,12 +459,13 @@ class JobTrackerTest {
    * Tests that the tracker emits the correct message for when the job starts, succeeds, and fails.
    *
    * @param jobStateConsumer - consumer that takes in a job state and then calls the relevant method
-   *        on the job tracker with it. if testing discover, it calls trackDiscover, etc.
+   *     on the job tracker with it. if testing discover, it calls trackDiscover, etc.
    * @param expectedMetadata - expected metadata (except job state).
    */
-  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer,
-                                                final Map<String, Object> expectedMetadata,
-                                                final boolean workspaceSet) {
+  private void assertCorrectMessageForEachState(
+      final Consumer<JobState> jobStateConsumer,
+      final Map<String, Object> expectedMetadata,
+      final boolean workspaceSet) {
     jobStateConsumer.accept(JobState.STARTED);
     assertCorrectMessageForStartedState(expectedMetadata);
     jobStateConsumer.accept(JobState.SUCCEEDED);
@@ -431,15 +475,27 @@ class JobTrackerTest {
   }
 
   private void assertCorrectMessageForStartedState(final Map<String, Object> metadata) {
-    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, STARTED_STATE_METADATA, mockWorkspaceInfo()));
+    verify(trackingClient)
+        .track(
+            WORKSPACE_ID,
+            JobTracker.MESSAGE_NAME,
+            MoreMaps.merge(metadata, STARTED_STATE_METADATA, mockWorkspaceInfo()));
   }
 
   private void assertCorrectMessageForSucceededState(final Map<String, Object> metadata) {
-    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, SUCCEEDED_STATE_METADATA, mockWorkspaceInfo()));
+    verify(trackingClient)
+        .track(
+            WORKSPACE_ID,
+            JobTracker.MESSAGE_NAME,
+            MoreMaps.merge(metadata, SUCCEEDED_STATE_METADATA, mockWorkspaceInfo()));
   }
 
   private void assertCorrectMessageForFailedState(final Map<String, Object> metadata) {
-    verify(trackingClient).track(WORKSPACE_ID, JobTracker.MESSAGE_NAME, MoreMaps.merge(metadata, FAILED_STATE_METADATA, mockWorkspaceInfo()));
+    verify(trackingClient)
+        .track(
+            WORKSPACE_ID,
+            JobTracker.MESSAGE_NAME,
+            MoreMaps.merge(metadata, FAILED_STATE_METADATA, mockWorkspaceInfo()));
   }
 
   private Map<String, Object> mockWorkspaceInfo() {
@@ -448,5 +504,4 @@ class JobTrackerTest {
     map.put("workspace_name", WORKSPACE_NAME);
     return map;
   }
-
 }

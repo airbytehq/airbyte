@@ -89,5 +89,4 @@ class EnumsTest {
     Assertions.assertEquals(Optional.of(E5.value_4), toEnum("VALUE_4", E5.class));
     Assertions.assertEquals(Optional.empty(), toEnum("VALUE_5", E5.class));
   }
-
 }

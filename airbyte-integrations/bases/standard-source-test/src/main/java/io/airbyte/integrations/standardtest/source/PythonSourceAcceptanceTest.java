@@ -71,7 +71,8 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
+    testRoot =
+        Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
   }
 
@@ -134,5 +135,4 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
     return testRoot;
   }
-
 }

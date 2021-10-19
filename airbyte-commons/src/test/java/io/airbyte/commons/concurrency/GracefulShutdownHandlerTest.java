@@ -16,11 +16,11 @@ class GracefulShutdownHandlerTest {
   @Test
   public void testRun() throws InterruptedException {
     final ExecutorService executorService = mock(ExecutorService.class);
-    final GracefulShutdownHandler gracefulShutdownHandler = new GracefulShutdownHandler(Duration.ofSeconds(30), executorService);
+    final GracefulShutdownHandler gracefulShutdownHandler =
+        new GracefulShutdownHandler(Duration.ofSeconds(30), executorService);
     gracefulShutdownHandler.start();
     gracefulShutdownHandler.join();
 
     verify(executorService).shutdown();
   }
-
 }

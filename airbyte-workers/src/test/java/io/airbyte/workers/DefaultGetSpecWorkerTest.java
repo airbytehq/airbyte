@@ -54,16 +54,21 @@ class DefaultGetSpecWorkerTest {
   public void testSuccessfulRun() throws IOException, InterruptedException, WorkerException {
     final String expectedSpecString = MoreResources.readResource("valid_spec.json");
 
-    final AirbyteMessage message = new AirbyteMessage()
-        .withType(Type.SPEC)
-        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
+    final AirbyteMessage message =
+        new AirbyteMessage()
+            .withType(Type.SPEC)
+            .withSpec(
+                Jsons.deserialize(
+                    expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
 
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
+    when(process.getInputStream())
+        .thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
     final ConnectorSpecification actualOutput = worker.run(config, jobRoot);
-    final ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
+    final ConnectorSpecification expectedOutput =
+        Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
 
     assertEquals(expectedOutput, actualOutput);
   }
@@ -71,7 +76,8 @@ class DefaultGetSpecWorkerTest {
   @Test
   public void testFailureOnInvalidSpec() throws InterruptedException {
     final String expectedSpecString = "{\"key\":\"value\"}";
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
+    when(process.getInputStream())
+        .thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
@@ -85,5 +91,4 @@ class DefaultGetSpecWorkerTest {
 
     assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
   }
-
 }

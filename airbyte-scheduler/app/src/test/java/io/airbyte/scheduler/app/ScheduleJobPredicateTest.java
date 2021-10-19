@@ -25,11 +25,10 @@ import org.junit.jupiter.params.provider.EnumSource.Mode;
 
 class ScheduleJobPredicateTest {
 
-  private static final StandardSync STANDARD_SYNC = new StandardSync()
-      .withManual(false)
-      .withSchedule(new Schedule()
-          .withTimeUnit(Schedule.TimeUnit.DAYS)
-          .withUnits(1L));
+  private static final StandardSync STANDARD_SYNC =
+      new StandardSync()
+          .withManual(false)
+          .withSchedule(new Schedule().withTimeUnit(Schedule.TimeUnit.DAYS).withUnits(1L));
 
   private ScheduleJobPredicate scheduleJobPredicate;
   private Instant now;
@@ -60,7 +59,8 @@ class ScheduleJobPredicateTest {
   @Test
   public void testScheduleNotReady() {
     when(job.getStatus()).thenReturn(JobStatus.SUCCEEDED);
-    when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(1)).getEpochSecond()));
+    when(job.getStartedAtInSecond())
+        .thenReturn(Optional.of(now.minus(Duration.ofDays(1)).getEpochSecond()));
 
     assertFalse(scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC));
   }
@@ -68,25 +68,32 @@ class ScheduleJobPredicateTest {
   // use Mode.EXCLUDE so that when new values are added to the enum, these tests will fail if that
   // value has not also been added to the switch statement.
   @ParameterizedTest
-  @EnumSource(value = JobStatus.class,
-              mode = Mode.EXCLUDE,
-              names = {"PENDING", "RUNNING", "INCOMPLETE"})
+  @EnumSource(
+      value = JobStatus.class,
+      mode = Mode.EXCLUDE,
+      names = {"PENDING", "RUNNING", "INCOMPLETE"})
   public void testShouldScheduleBasedOnPreviousJobStatus(final JobStatus status) {
     when(job.getStatus()).thenReturn(status);
-    when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
+    when(job.getStartedAtInSecond())
+        .thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
-    assertTrue(scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC), "job status: " + status.toString());
+    assertTrue(
+        scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC),
+        "job status: " + status.toString());
   }
 
   @ParameterizedTest
-  @EnumSource(value = JobStatus.class,
-              mode = Mode.EXCLUDE,
-              names = {"FAILED", "SUCCEEDED", "CANCELLED"})
+  @EnumSource(
+      value = JobStatus.class,
+      mode = Mode.EXCLUDE,
+      names = {"FAILED", "SUCCEEDED", "CANCELLED"})
   public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(final JobStatus status) {
     when(job.getStatus()).thenReturn(status);
-    when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
+    when(job.getStartedAtInSecond())
+        .thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
-    assertFalse(scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC), "job status: " + status.toString());
+    assertFalse(
+        scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC),
+        "job status: " + status.toString());
   }
-
 }

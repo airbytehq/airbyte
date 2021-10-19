@@ -32,11 +32,14 @@ public class MigrateConfig {
 
   @Override
   public String toString() {
-    return "MigrateConfig{" +
-        "inputPath=" + inputPath +
-        ", outputPath=" + outputPath +
-        ", targetVersion='" + targetVersion + '\'' +
-        '}';
+    return "MigrateConfig{"
+        + "inputPath="
+        + inputPath
+        + ", outputPath="
+        + outputPath
+        + ", targetVersion='"
+        + targetVersion
+        + '\''
+        + '}';
   }
-
 }

@@ -29,7 +29,8 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   private Process process;
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+  public DefaultGetSpecWorker(
+      final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
@@ -39,7 +40,8 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   }
 
   @Override
-  public ConnectorSpecification run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {
+  public ConnectorSpecification run(final JobGetSpecConfig config, final Path jobRoot)
+      throws WorkerException {
     try {
       process = integrationLauncher.spec(jobRoot);
 
@@ -47,14 +49,18 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
       final Optional<ConnectorSpecification> spec;
       try (final InputStream stdout = process.getInputStream()) {
-        spec = streamFactory.create(IOs.newBufferedReader(stdout))
-            .filter(message -> message.getType() == Type.SPEC)
-            .map(AirbyteMessage::getSpec)
-            .findFirst();
+        spec =
+            streamFactory
+                .create(IOs.newBufferedReader(stdout))
+                .filter(message -> message.getType() == Type.SPEC)
+                .map(AirbyteMessage::getSpec)
+                .findFirst();
 
-        // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
+        // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need
+        // account for
         // this.
-        // retrieving spec should generally be instantaneous, but since docker images might not be pulled
+        // retrieving spec should generally be instantaneous, but since docker images might not be
+        // pulled
         // it could take a while longer depending on internet conditions as well.
         WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
       }
@@ -68,17 +74,17 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         return spec.get();
 
       } else {
-        throw new WorkerException(String.format("Spec job subprocess finished with exit code %s", exitCode));
+        throw new WorkerException(
+            String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
     } catch (final Exception e) {
-      throw new WorkerException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
+      throw new WorkerException(
+          String.format("Error while getting spec from image %s", config.getDockerImage()), e);
     }
-
   }
 
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);
   }
-
 }

@@ -10,9 +10,7 @@ import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
-/**
- * Database object for interacting with a Jooq connection.
- */
+/** Database object for interacting with a Jooq connection. */
 public class Database implements AutoCloseable {
 
   private final DataSource ds;
@@ -28,7 +26,8 @@ public class Database implements AutoCloseable {
   }
 
   public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
-    return DSL.using(ds, dialect).transactionResult(configuration -> transform.query(DSL.using(configuration)));
+    return DSL.using(ds, dialect)
+        .transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
 
   public DataSource getDataSource() {
@@ -38,7 +37,8 @@ public class Database implements AutoCloseable {
   @Override
   public void close() throws Exception {
     // Just a safety in case we are using a datasource implementation that requires closing.
-    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
+    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse
+    // connections.
 
     if (ds instanceof AutoCloseable) {
       ((AutoCloseable) ds).close();
@@ -47,5 +47,4 @@ public class Database implements AutoCloseable {
       ((Closeable) ds).close();
     }
   }
-
 }

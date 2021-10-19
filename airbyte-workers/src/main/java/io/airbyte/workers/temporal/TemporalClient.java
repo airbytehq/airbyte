@@ -40,74 +40,93 @@ public class TemporalClient {
     this.workspaceRoot = workspaceRoot;
   }
 
-  public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
+  public TemporalResponse<ConnectorSpecification> submitGetSpec(
+      final UUID jobId, final int attempt, final JobGetSpecConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
-    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId.toString())
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
-    return execute(jobRunConfig,
-        () -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig));
-
+    final IntegrationLauncherConfig launcherConfig =
+        new IntegrationLauncherConfig()
+            .withJobId(jobId.toString())
+            .withAttemptId((long) attempt)
+            .withDockerImage(config.getDockerImage());
+    return execute(
+        jobRunConfig,
+        () ->
+            getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC)
+                .run(jobRunConfig, launcherConfig));
   }
 
-  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(final UUID jobId,
-                                                                               final int attempt,
-                                                                               final JobCheckConnectionConfig config) {
+  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(
+      final UUID jobId, final int attempt, final JobCheckConnectionConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
-    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId.toString())
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
-    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
+    final IntegrationLauncherConfig launcherConfig =
+        new IntegrationLauncherConfig()
+            .withJobId(jobId.toString())
+            .withAttemptId((long) attempt)
+            .withDockerImage(config.getDockerImage());
+    final StandardCheckConnectionInput input =
+        new StandardCheckConnectionInput()
+            .withConnectionConfiguration(config.getConnectionConfiguration());
 
-    return execute(jobRunConfig,
-        () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
+    return execute(
+        jobRunConfig,
+        () ->
+            getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION)
+                .run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(final UUID jobId, final int attempt, final JobDiscoverCatalogConfig config) {
+  public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(
+      final UUID jobId, final int attempt, final JobDiscoverCatalogConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
-    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId.toString())
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
-    final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
+    final IntegrationLauncherConfig launcherConfig =
+        new IntegrationLauncherConfig()
+            .withJobId(jobId.toString())
+            .withAttemptId((long) attempt)
+            .withDockerImage(config.getDockerImage());
+    final StandardDiscoverCatalogInput input =
+        new StandardDiscoverCatalogInput()
+            .withConnectionConfiguration(config.getConnectionConfiguration());
 
-    return execute(jobRunConfig,
-        () -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(jobRunConfig, launcherConfig, input));
+    return execute(
+        jobRunConfig,
+        () ->
+            getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA)
+                .run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<StandardSyncOutput> submitSync(final long jobId, final int attempt, final JobSyncConfig config) {
+  public TemporalResponse<StandardSyncOutput> submitSync(
+      final long jobId, final int attempt, final JobSyncConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
-    final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
-        .withJobId(String.valueOf(jobId))
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getSourceDockerImage());
+    final IntegrationLauncherConfig sourceLauncherConfig =
+        new IntegrationLauncherConfig()
+            .withJobId(String.valueOf(jobId))
+            .withAttemptId((long) attempt)
+            .withDockerImage(config.getSourceDockerImage());
 
-    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
-        .withJobId(String.valueOf(jobId))
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getDestinationDockerImage());
+    final IntegrationLauncherConfig destinationLauncherConfig =
+        new IntegrationLauncherConfig()
+            .withJobId(String.valueOf(jobId))
+            .withAttemptId((long) attempt)
+            .withDockerImage(config.getDestinationDockerImage());
 
-    final StandardSyncInput input = new StandardSyncInput()
-        .withNamespaceDefinition(config.getNamespaceDefinition())
-        .withNamespaceFormat(config.getNamespaceFormat())
-        .withPrefix(config.getPrefix())
-        .withSourceConfiguration(config.getSourceConfiguration())
-        .withDestinationConfiguration(config.getDestinationConfiguration())
-        .withOperationSequence(config.getOperationSequence())
-        .withCatalog(config.getConfiguredAirbyteCatalog())
-        .withState(config.getState())
-        .withResourceRequirements(config.getResourceRequirements());
+    final StandardSyncInput input =
+        new StandardSyncInput()
+            .withNamespaceDefinition(config.getNamespaceDefinition())
+            .withNamespaceFormat(config.getNamespaceFormat())
+            .withPrefix(config.getPrefix())
+            .withSourceConfiguration(config.getSourceConfiguration())
+            .withDestinationConfiguration(config.getDestinationConfiguration())
+            .withOperationSequence(config.getOperationSequence())
+            .withCatalog(config.getConfiguredAirbyteCatalog())
+            .withState(config.getState())
+            .withResourceRequirements(config.getResourceRequirements());
 
-    return execute(jobRunConfig,
-        () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
-            jobRunConfig,
-            sourceLauncherConfig,
-            destinationLauncherConfig,
-            input));
+    return execute(
+        jobRunConfig,
+        () ->
+            getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC)
+                .run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, input));
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
@@ -131,5 +150,4 @@ public class TemporalClient {
     final JobMetadata metadata = new JobMetadata(exception == null, logPath);
     return new TemporalResponse<>(operationOutput, metadata);
   }
-
 }

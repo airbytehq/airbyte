@@ -7,9 +7,7 @@ package io.airbyte.db;
 import java.io.IOException;
 import java.sql.SQLException;
 
-/**
- * Wraps a {@link Database} object and throwing IOExceptions instead of SQLExceptions.
- */
+/** Wraps a {@link Database} object and throwing IOExceptions instead of SQLExceptions. */
 public class ExceptionWrappingDatabase implements AutoCloseable {
 
   private final Database database;
@@ -38,5 +36,4 @@ public class ExceptionWrappingDatabase implements AutoCloseable {
   public void close() throws Exception {
     database.close();
   }
-
 }

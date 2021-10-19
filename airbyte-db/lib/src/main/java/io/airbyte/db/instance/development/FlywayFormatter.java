@@ -29,22 +29,27 @@ public class FlywayFormatter {
 
   private static final DSLContext CTX = new DefaultDSLContext(SQLDialect.DEFAULT);
 
-  /**
-   * Format the {@link DatabaseMigrator#list} output.
-   */
+  /** Format the {@link DatabaseMigrator#list} output. */
   static String formatMigrationInfoList(final List<MigrationInfo> migrationInfoList) {
     final Field<String> type = field("Type", SQLDataType.VARCHAR);
     final Field<String> version = field("Version", SQLDataType.VARCHAR);
     final Field<String> description = field("Description", SQLDataType.VARCHAR);
     final Field<String> state = field("State", SQLDataType.VARCHAR);
     final Field<Date> migratedAt = field("MigratedAt", SQLDataType.DATE);
-    final Result<Record5<String, String, String, String, Date>> result = CTX.newResult(type, version, description, state, migratedAt);
-    migrationInfoList.forEach(info -> result.add(CTX.newRecord(type, version, description, state, migratedAt).values(
-        info.getType().name(),
-        info.getVersion().toString(),
-        info.getDescription(),
-        info.getState().getDisplayName(),
-        info.getInstalledOn() == null ? null : new Date(info.getInstalledOn().getTime()))));
+    final Result<Record5<String, String, String, String, Date>> result =
+        CTX.newResult(type, version, description, state, migratedAt);
+    migrationInfoList.forEach(
+        info ->
+            result.add(
+                CTX.newRecord(type, version, description, state, migratedAt)
+                    .values(
+                        info.getType().name(),
+                        info.getVersion().toString(),
+                        info.getDescription(),
+                        info.getState().getDisplayName(),
+                        info.getInstalledOn() == null
+                            ? null
+                            : new Date(info.getInstalledOn().getTime()))));
     return result.format();
   }
 
@@ -53,22 +58,25 @@ public class FlywayFormatter {
     final Field<String> version = field("Version", SQLDataType.VARCHAR);
     final Field<String> description = field("Description", SQLDataType.VARCHAR);
     final Field<String> script = field("Script", SQLDataType.VARCHAR);
-    final Result<Record4<String, String, String, String>> result = CTX.newResult(type, version, description, script);
-    migrationOutputList.forEach(output -> result.add(CTX.newRecord(type, version, description, script).values(
-        String.format("%s %s", output.type, output.category),
-        output.version,
-        output.description,
-        output.filepath)));
+    final Result<Record4<String, String, String, String>> result =
+        CTX.newResult(type, version, description, script);
+    migrationOutputList.forEach(
+        output ->
+            result.add(
+                CTX.newRecord(type, version, description, script)
+                    .values(
+                        String.format("%s %s", output.type, output.category),
+                        output.version,
+                        output.description,
+                        output.filepath)));
     return result.format();
   }
 
-  /**
-   * Format the {@link DatabaseMigrator#migrate} output.
-   */
+  /** Format the {@link DatabaseMigrator#migrate} output. */
   static String formatMigrationResult(final MigrateResult result) {
-    return String.format("Version: %s -> %s\n", result.initialSchemaVersion, result.targetSchemaVersion)
+    return String.format(
+            "Version: %s -> %s\n", result.initialSchemaVersion, result.targetSchemaVersion)
         + String.format("Migrations executed: %s\n", result.migrationsExecuted)
         + formatMigrationOutputList(result.migrations);
   }
-
 }

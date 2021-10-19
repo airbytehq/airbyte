@@ -25,7 +25,10 @@ class AirbyteProtocolPredicateTest {
 
   @Test
   void testValid() {
-    assertTrue(predicate.test(Jsons.jsonNode(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))));
+    assertTrue(
+        predicate.test(
+            Jsons.jsonNode(
+                AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))));
   }
 
   @Test
@@ -37,7 +40,8 @@ class AirbyteProtocolPredicateTest {
   void testConcatenatedValid() {
     final String concatenated =
         Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"))
-            + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
+            + Jsons.serialize(
+                AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
     assertTrue(predicate.test(Jsons.deserialize(concatenated)));
   }
@@ -55,9 +59,9 @@ class AirbyteProtocolPredicateTest {
   void testMissingNewLineAndLineStartsWithInvalidRecord() {
     final String concatenated =
         "{ \"fish\": \"tuna\"}"
-            + Jsons.serialize(AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"));
+            + Jsons.serialize(
+                AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green"));
 
     assertFalse(predicate.test(Jsons.deserialize(concatenated)));
   }
-
 }

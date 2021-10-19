@@ -29,20 +29,21 @@ public class SegmentTrackingClient implements TrackingClient {
   private final String airbyteRole;
 
   @VisibleForTesting
-  SegmentTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher,
-                        final Deployment deployment,
-                        final String airbyteRole,
-                        final Analytics analytics) {
+  SegmentTrackingClient(
+      final Function<UUID, TrackingIdentity> identityFetcher,
+      final Deployment deployment,
+      final String airbyteRole,
+      final Analytics analytics) {
     this.identityFetcher = identityFetcher;
     this.deployment = deployment;
     this.analytics = analytics;
     this.airbyteRole = airbyteRole;
   }
 
-  public SegmentTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher,
-                               final Deployment deployment,
-
-                               final String airbyteRole) {
+  public SegmentTrackingClient(
+      final Function<UUID, TrackingIdentity> identityFetcher,
+      final Deployment deployment,
+      final String airbyteRole) {
     this(identityFetcher, deployment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
@@ -68,15 +69,18 @@ public class SegmentTrackingClient implements TrackingClient {
       identityMetadata.put(AIRBYTE_ROLE, airbyteRole);
     }
 
-    analytics.enqueue(IdentifyMessage.builder()
-        // user id is scoped by workspace. there is no cross-workspace tracking.
-        .userId(trackingIdentity.getCustomerId().toString())
-        .traits(identityMetadata));
+    analytics.enqueue(
+        IdentifyMessage.builder()
+            // user id is scoped by workspace. there is no cross-workspace tracking.
+            .userId(trackingIdentity.getCustomerId().toString())
+            .traits(identityMetadata));
   }
 
   @Override
   public void alias(final UUID workspaceId, final String previousCustomerId) {
-    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identityFetcher.apply(workspaceId).getCustomerId().toString()));
+    analytics.enqueue(
+        AliasMessage.builder(previousCustomerId)
+            .userId(identityFetcher.apply(workspaceId).getCustomerId().toString()));
   }
 
   @Override
@@ -85,16 +89,17 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
+  public void track(
+      final UUID workspaceId, final String action, final Map<String, Object> metadata) {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
     if (!metadata.isEmpty()) {
       trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
     }
-    analytics.enqueue(TrackMessage.builder(action)
-        .userId(trackingIdentity.getCustomerId().toString())
-        .properties(mapCopy));
+    analytics.enqueue(
+        TrackMessage.builder(action)
+            .userId(trackingIdentity.getCustomerId().toString())
+            .properties(mapCopy));
   }
-
 }

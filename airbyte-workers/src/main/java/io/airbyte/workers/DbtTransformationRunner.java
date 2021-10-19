@@ -33,7 +33,8 @@ public class DbtTransformationRunner implements AutoCloseable {
   private final NormalizationRunner normalizationRunner;
   private Process process = null;
 
-  public DbtTransformationRunner(final ProcessFactory processFactory, final NormalizationRunner normalizationRunner) {
+  public DbtTransformationRunner(
+      final ProcessFactory processFactory, final NormalizationRunner normalizationRunner) {
     this.processFactory = processFactory;
     this.normalizationRunner = normalizationRunner;
   }
@@ -43,48 +44,67 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   /**
-   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure
-   * to have the right python, dbt, dependencies etc software installed to successfully run our
-   * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
-   * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
-   * and pull the custom git repository into the workspace.
+   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't
+   * ensure to have the right python, dbt, dependencies etc software installed to successfully run
+   * our transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we
+   * depend on the NormalizationRunner to configure the dbt project with the appropriate destination
+   * settings and pull the custom git repository into the workspace.
    *
-   * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
-   * provided by the user to execute whatever extra transformation has been implemented.
+   * <p>Once the workspace folder/files is setup to run, we invoke the custom transformation command
+   * as provided by the user to execute whatever extra transformation has been implemented.
    */
-  public boolean run(final String jobId,
-                     final int attempt,
-                     final Path jobRoot,
-                     final JsonNode config,
-                     final ResourceRequirements resourceRequirements,
-                     final OperatorDbt dbtConfig)
+  public boolean run(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final JsonNode config,
+      final ResourceRequirements resourceRequirements,
+      final OperatorDbt dbtConfig)
       throws Exception {
-    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
+    if (!normalizationRunner.configureDbt(
+        jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
       return false;
     }
     return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
-  public boolean transform(final String jobId,
-                           final int attempt,
-                           final Path jobRoot,
-                           final JsonNode config,
-                           final ResourceRequirements resourceRequirements,
-                           final OperatorDbt dbtConfig)
+  public boolean transform(
+      final String jobId,
+      final int attempt,
+      final Path jobRoot,
+      final JsonNode config,
+      final ResourceRequirements resourceRequirements,
+      final OperatorDbt dbtConfig)
       throws Exception {
     try {
-      final Map<String, String> files = ImmutableMap.of(
-          DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
-          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
+      final Map<String, String> files =
+          ImmutableMap.of(
+              DBT_ENTRYPOINT_SH,
+              MoreResources.readResource("dbt_transformation_entrypoint.sh"),
+              "sshtunneling.sh",
+              MoreResources.readResource("sshtunneling.sh"));
       final List<String> dbtArguments = new ArrayList<>();
       dbtArguments.add(DBT_ENTRYPOINT_SH);
       if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
         throw new WorkerException("Dbt Arguments are required");
       }
-      Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
+      Collections.addAll(
+          dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       process =
-          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
-              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
+          processFactory.create(
+              jobId,
+              attempt,
+              jobRoot,
+              dbtConfig.getDockerImage(),
+              false,
+              files,
+              "/bin/bash",
+              resourceRequirements,
+              Map.of(
+                  KubeProcessFactory.JOB_TYPE,
+                  KubeProcessFactory.SYNC_JOB,
+                  KubeProcessFactory.SYNC_STEP,
+                  KubeProcessFactory.CUSTOM_STEP),
               dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
@@ -116,5 +136,4 @@ public class DbtTransformationRunner implements AutoCloseable {
       throw new WorkerException("Dbt transformation process wasn't successful");
     }
   }
-
 }

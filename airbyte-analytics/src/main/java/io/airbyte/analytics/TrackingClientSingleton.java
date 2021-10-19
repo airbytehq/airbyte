@@ -35,16 +35,18 @@ public class TrackingClientSingleton {
     }
   }
 
-  public static void initialize(final Configs.TrackingStrategy trackingStrategy,
-                                final Deployment deployment,
-                                final String airbyteRole,
-                                final String airbyteVersion,
-                                final ConfigRepository configRepository) {
-    initialize(createTrackingClient(
-        trackingStrategy,
-        deployment,
-        airbyteRole,
-        (workspaceId) -> getTrackingIdentity(configRepository, airbyteVersion, workspaceId)));
+  public static void initialize(
+      final Configs.TrackingStrategy trackingStrategy,
+      final Deployment deployment,
+      final String airbyteRole,
+      final String airbyteVersion,
+      final ConfigRepository configRepository) {
+    initialize(
+        createTrackingClient(
+            trackingStrategy,
+            deployment,
+            airbyteRole,
+            (workspaceId) -> getTrackingIdentity(configRepository, airbyteVersion, workspaceId)));
   }
 
   // fallback on a logging client with an empty identity.
@@ -53,11 +55,16 @@ public class TrackingClientSingleton {
   }
 
   @VisibleForTesting
-  static TrackingIdentity getTrackingIdentity(final ConfigRepository configRepository, final String airbyteVersion, final UUID workspaceId) {
+  static TrackingIdentity getTrackingIdentity(
+      final ConfigRepository configRepository,
+      final String airbyteVersion,
+      final UUID workspaceId) {
     try {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       String email = null;
-      if (workspace.getEmail() != null && workspace.getAnonymousDataCollection() != null && !workspace.getAnonymousDataCollection()) {
+      if (workspace.getEmail() != null
+          && workspace.getAnonymousDataCollection() != null
+          && !workspace.getAnonymousDataCollection()) {
         email = workspace.getEmail();
       }
       return new TrackingIdentity(
@@ -81,23 +88,23 @@ public class TrackingClientSingleton {
    *
    * @param trackingStrategy - what type of tracker we want to use.
    * @param deployment - deployment tracking info. static because it should not change once the
-   *        instance is running.
+   *     instance is running.
    * @param airbyteRole
    * @param trackingIdentityFetcher - how we get the identity of the user. we have a function that
-   *        takes in workspaceId and returns the tracking identity. it does not have any caching as
-   *        email or other fields on the identity can change over time.
+   *     takes in workspaceId and returns the tracking identity. it does not have any caching as
+   *     email or other fields on the identity can change over time.
    * @return tracking client
    */
   @VisibleForTesting
-  static TrackingClient createTrackingClient(final Configs.TrackingStrategy trackingStrategy,
-                                             final Deployment deployment,
-                                             final String airbyteRole,
-                                             final Function<UUID, TrackingIdentity> trackingIdentityFetcher) {
+  static TrackingClient createTrackingClient(
+      final Configs.TrackingStrategy trackingStrategy,
+      final Deployment deployment,
+      final String airbyteRole,
+      final Function<UUID, TrackingIdentity> trackingIdentityFetcher) {
     return switch (trackingStrategy) {
       case SEGMENT -> new SegmentTrackingClient(trackingIdentityFetcher, deployment, airbyteRole);
       case LOGGING -> new LoggingTrackingClient(trackingIdentityFetcher);
       default -> throw new IllegalStateException("unrecognized tracking strategy");
     };
   }
-
 }

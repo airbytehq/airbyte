@@ -37,10 +37,11 @@ import org.testcontainers.utility.MountableFile;
 
 public class TestStreamingJdbcDatabase {
 
-  private static final List<JsonNode> RECORDS_AS_JSON = Lists.newArrayList(
-      Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
-      Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
-      Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")));
+  private static final List<JsonNode> RECORDS_AS_JSON =
+      Lists.newArrayList(
+          Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
+          Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
+          Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -53,7 +54,6 @@ public class TestStreamingJdbcDatabase {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
-
   }
 
   @BeforeEach
@@ -65,25 +65,36 @@ public class TestStreamingJdbcDatabase {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName("org.postgresql.Driver");
     connectionPool.setUsername(config.get("username").asText());
     connectionPool.setPassword(config.get("password").asText());
-    connectionPool.setUrl(String.format("jdbc:postgresql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    connectionPool.setUrl(
+        String.format(
+            "jdbc:postgresql://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()));
 
     defaultJdbcDatabase = spy(new DefaultJdbcDatabase(connectionPool));
-    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQueryConfiguration);
+    streamingJdbcDatabase =
+        new StreamingJdbcDatabase(
+            connectionPool, defaultJdbcDatabase, jdbcStreamingQueryConfiguration);
 
-    defaultJdbcDatabase.execute(connection -> {
-      connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-    });
+    defaultJdbcDatabase.execute(
+        connection -> {
+          connection
+              .createStatement()
+              .execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        });
   }
 
   @AfterAll
@@ -107,9 +118,10 @@ public class TestStreamingJdbcDatabase {
   void testBufferedResultQuery() throws SQLException {
     doReturn(RECORDS_AS_JSON).when(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
 
-    final List<JsonNode> actual = streamingJdbcDatabase.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
+    final List<JsonNode> actual =
+        streamingJdbcDatabase.bufferedResultSetQuery(
+            connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
+            sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual);
     verify(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
@@ -120,9 +132,10 @@ public class TestStreamingJdbcDatabase {
   void testResultSetQuery() throws SQLException {
     doReturn(RECORDS_AS_JSON.stream()).when(defaultJdbcDatabase).resultSetQuery(any(), any());
 
-    final Stream<JsonNode> actual = streamingJdbcDatabase.resultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
+    final Stream<JsonNode> actual =
+        streamingJdbcDatabase.resultSetQuery(
+            connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
+            sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
     actual.close();
 
@@ -136,14 +149,16 @@ public class TestStreamingJdbcDatabase {
     // invoked.
     final AtomicReference<Connection> connection1 = new AtomicReference<>();
     final AtomicReference<PreparedStatement> ps1 = new AtomicReference<>();
-    final Stream<JsonNode> actual = streamingJdbcDatabase.query(
-        connection -> {
-          connection1.set(connection);
-          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM id_and_name;");
-          ps1.set(ps);
-          return ps;
-        },
-        sourceOperations::rowToJson);
+    final Stream<JsonNode> actual =
+        streamingJdbcDatabase.query(
+            connection -> {
+              connection1.set(connection);
+              final PreparedStatement ps =
+                  connection.prepareStatement("SELECT * FROM id_and_name;");
+              ps1.set(ps);
+              return ps;
+            },
+            sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
     // verify that the query configuration is invoked.
@@ -151,13 +166,13 @@ public class TestStreamingJdbcDatabase {
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", psqlDb.getHost())
+            .put("port", psqlDb.getFirstMappedPort())
+            .put("database", dbName)
+            .put("username", psqlDb.getUsername())
+            .put("password", psqlDb.getPassword())
+            .build());
   }
-
 }

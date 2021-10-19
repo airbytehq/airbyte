@@ -37,7 +37,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConnectorTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest.class);
 
   private final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
@@ -52,8 +53,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * The column name will be used for a test column in the test tables. Override it if default name is
-   * not valid for your source.
+   * The column name will be used for a test column in the test tables. Override it if default name
+   * is not valid for your source.
    *
    * @return Test column name
    */
@@ -62,16 +63,15 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * Setup the test database. All tables and data described in the registered tests will be put there.
+   * Setup the test database. All tables and data described in the registered tests will be put
+   * there.
    *
    * @return configured test database
    * @throws Exception - might throw any exception during initialization.
    */
   protected abstract Database setupDatabase() throws Exception;
 
-  /**
-   * Put all required tests here using method {@link #addDataTypeTestData(TestDataHolder)}
-   */
+  /** Put all required tests here using method {@link #addDataTypeTestData(TestDataHolder)} */
   protected abstract void initTests();
 
   @Override
@@ -80,42 +80,55 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * Provide a source namespace. It's allocated place for table creation. It also known ask "Database
-   * Schema" or "Dataset"
+   * Provide a source namespace. It's allocated place for table creation. It also known ask
+   * "Database Schema" or "Dataset"
    *
    * @return source name space
    */
   protected abstract String getNameSpace();
 
-  /**
-   * The test checks that connector can fetch prepared data without failure.
-   */
+  /** The test checks that connector can fetch prepared data without failure. */
   @Test
   public void testDataTypes() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     final List<AirbyteMessage> allMessages = runRead(catalog);
-    final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    final List<AirbyteMessage> recordMessages =
+        allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     final Map<String, List<String>> expectedValues = new HashMap<>();
-    testDataHolders.forEach(testDataHolder -> {
-      if (!testDataHolder.getExpectedValues().isEmpty())
-        expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
-    });
+    testDataHolders.forEach(
+        testDataHolder -> {
+          if (!testDataHolder.getExpectedValues().isEmpty())
+            expectedValues.put(
+                testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
+        });
 
     for (final AirbyteMessage msg : recordMessages) {
       final String streamName = msg.getRecord().getStream();
       final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
         final var a = msg.getRecord().getData().get(getTestColumnName());
-        final String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
-        assertTrue(expectedValuesForStream.contains(value),
-            "Returned value '" + value + "' by streamer " + streamName
-                + " should be in the expected list: " + expectedValuesForStream);
+        final String value =
+            getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
+        assertTrue(
+            expectedValuesForStream.contains(value),
+            "Returned value '"
+                + value
+                + "' by streamer "
+                + streamName
+                + " should be in the expected list: "
+                + expectedValuesForStream);
         expectedValuesForStream.remove(value);
       }
     }
 
-    expectedValues.forEach((streamName, values) -> assertTrue(values.isEmpty(),
-        "The streamer " + streamName + " should return all expected values. Missing values: " + values));
+    expectedValues.forEach(
+        (streamName, values) ->
+            assertTrue(
+                values.isEmpty(),
+                "The streamer "
+                    + streamName
+                    + " should return all expected values. Missing values: "
+                    + values));
   }
 
   protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
@@ -124,7 +137,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         return jsonNode.toString();
       }
 
-      String value = (jsonNode.isBinary() ? Arrays.toString(jsonNode.binaryValue()) : jsonNode.asText());
+      String value =
+          (jsonNode.isBinary() ? Arrays.toString(jsonNode.binaryValue()) : jsonNode.asText());
       value = (value != null && value.equals("null") ? null : value);
       return value;
     }
@@ -135,7 +149,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * Creates all tables and insert data described in the registered data type tests.
    *
    * @throws Exception might raise exception if configuration goes wrong or tables creation/insert
-   *         scripts failed.
+   *     scripts failed.
    */
   private void setupDatabaseInternal() throws Exception {
     final Database database = setupDatabase();
@@ -143,12 +157,13 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     initTests();
 
     for (final TestDataHolder test : testDataHolders) {
-      database.query(ctx -> {
-        ctx.fetch(test.getCreateSqlQuery());
-        LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
-        test.getInsertSqlQueries().forEach(ctx::fetch);
-        return null;
-      });
+      database.query(
+          ctx -> {
+            ctx.fetch(test.getCreateSqlQuery());
+            LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
+            test.getInsertSqlQueries().forEach(ctx::fetch);
+            return null;
+          });
     }
 
     database.close();
@@ -160,23 +175,28 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * @return configured catalog
    */
   private ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(
-        testDataHolders
-            .stream()
-            .map(test -> new ConfiguredAirbyteStream()
-                .withSyncMode(SyncMode.INCREMENTAL)
-                .withCursorField(Lists.newArrayList(getIdColumnName()))
-                .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s", test.getNameWithTestPrefix()),
-                    String.format("%s", getNameSpace()),
-                    Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
-                    Field.of(getTestColumnName(), test.getAirbyteType()))
-                    .withSourceDefinedCursor(true)
-                    .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))
-                    .withSupportedSyncModes(
-                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))))
-            .collect(Collectors.toList()));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            testDataHolders.stream()
+                .map(
+                    test ->
+                        new ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withCursorField(Lists.newArrayList(getIdColumnName()))
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withStream(
+                                CatalogHelpers.createAirbyteStream(
+                                        String.format("%s", test.getNameWithTestPrefix()),
+                                        String.format("%s", getNameSpace()),
+                                        Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
+                                        Field.of(getTestColumnName(), test.getAirbyteType()))
+                                    .withSourceDefinedCursor(true)
+                                    .withSourceDefinedPrimaryKey(
+                                        List.of(List.of(getIdColumnName())))
+                                    .withSupportedSyncModes(
+                                        Lists.newArrayList(
+                                            SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))))
+                .collect(Collectors.toList()));
   }
 
   /**
@@ -188,7 +208,10 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    */
   public void addDataTypeTestData(final TestDataHolder test) {
     testDataHolders.add(test);
-    test.setTestNumber(testDataHolders.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
+    test.setTestNumber(
+        testDataHolders.stream()
+            .filter(t -> t.getSourceType().equals(test.getSourceType()))
+            .count());
     test.setNameSpace(getNameSpace());
     test.setIdColumnName(getIdColumnName());
     test.setTestColumnName(getTestColumnName());
@@ -205,21 +228,26 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    * @return formatted list of test cases
    */
   public String getMarkdownTestTable() {
-    final StringBuilder table = new StringBuilder()
-        .append("|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n")
-        .append("|----|----|----|----|----|\n");
+    final StringBuilder table =
+        new StringBuilder()
+            .append(
+                "|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n")
+            .append("|----|----|----|----|----|\n");
 
-    testDataHolders.forEach(test -> table.append(String.format("| %s | %s | %s | %s | %s |\n",
-        test.getSourceType(),
-        formatCollection(test.getValues()),
-        formatCollection(test.getExpectedValues()),
-        "",
-        "Ok")));
+    testDataHolders.forEach(
+        test ->
+            table.append(
+                String.format(
+                    "| %s | %s | %s | %s | %s |\n",
+                    test.getSourceType(),
+                    formatCollection(test.getValues()),
+                    formatCollection(test.getExpectedValues()),
+                    "",
+                    "Ok")));
     return table.toString();
   }
 
   protected void printMarkdownTestTable() {
     LOGGER.info(getMarkdownTestTable());
   }
-
 }
