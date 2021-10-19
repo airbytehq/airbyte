@@ -35,7 +35,6 @@ include ':airbyte-protocol:models'
 include ':airbyte-metrics'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
-include ':airbyte-secrets-migration'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.
@@ -58,6 +57,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-server'
     include ':airbyte-tests'
     include ':airbyte-webapp'
+    include ':airbyte-secrets-migration'
 
     include ':tools:code-generator'
 }
