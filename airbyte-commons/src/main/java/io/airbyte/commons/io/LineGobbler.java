@@ -23,12 +23,13 @@ public class LineGobbler implements VoidCallable {
   private final static String DEFAULT_CALLER = "generic";
   private final static String DEFAULT_PREFIX = "";
 
-  @VisibleForTesting final static String SEPARATOR = " - ";
+  @VisibleForTesting
+  final static String SEPARATOR = " - ";
 
   /**
    * Create a {@LineGobbler} which will forward the logs of the input stream a consumer.
    *
-   * @param is       - the input stream to be consume
+   * @param is - the input stream to be consume
    * @param consumer - the consumer which will process the
    */
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
@@ -38,9 +39,10 @@ public class LineGobbler implements VoidCallable {
   /**
    * Create a {@LineGobbler} which will forward the logs of the input stream a consumer.
    *
-   * @param is       - the input stream to be consume
+   * @param is - the input stream to be consume
    * @param consumer - the consumer which will process the
-   * @param caller   - A caller, which is a tag that will be used when logging that the operation is success or failure
+   * @param caller - A caller, which is a tag that will be used when logging that the operation is
+   *        success or failure
    */
   public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller) {
     gobble(is, consumer, caller, DEFAULT_PREFIX);
@@ -49,10 +51,12 @@ public class LineGobbler implements VoidCallable {
   /**
    * Create a {@LineGobbler} which will forward the logs of the input stream a consumer.
    *
-   * @param is       - the input stream to be consume
+   * @param is - the input stream to be consume
    * @param consumer - the consumer which will process the
-   * @param caller   - A caller, which is a tag that will be used when logging that the operation is success or failure
-   * @param prefix   - A prefix that will be added to every line coming from the input stream, it will be seperated from the line by " - "
+   * @param caller - A caller, which is a tag that will be used when logging that the operation is
+   *        success or failure
+   * @param prefix - A prefix that will be added to every line coming from the input stream, it will
+   *        be seperated from the line by " - "
    */
   public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller, final String prefix) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
