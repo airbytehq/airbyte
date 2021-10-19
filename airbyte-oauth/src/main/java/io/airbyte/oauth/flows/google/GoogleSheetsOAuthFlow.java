@@ -15,8 +15,10 @@ import java.util.function.Supplier;
 
 public class GoogleSheetsOAuthFlow extends GoogleOAuthFlow {
 
+  // space-delimited string for multiple scopes, see:
+  // https://datatracker.ietf.org/doc/html/rfc6749#section-3.3
   @VisibleForTesting
-  static final String SCOPE_URL = "https://www.googleapis.com/auth/spreadsheets.readonly";
+  static final String SCOPE_URL = "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly";
 
   public GoogleSheetsOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
