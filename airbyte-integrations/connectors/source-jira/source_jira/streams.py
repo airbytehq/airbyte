@@ -2,35 +2,17 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs
 
 import pendulum
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from vcr.cassette import Cassette
 
 API_VERSION = 3
-
-
-def request_cache() -> Cassette:
-    """
-    Builds VCR instance.
-    It deletes file everytime we create it, normally should be called only once.
-    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
-    """
-    filename = "request_cache.yml"
-    try:
-        os.remove(filename)
-    except FileNotFoundError:
-        pass
-
-    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
 class JiraStream(HttpStream, ABC):
@@ -38,23 +20,13 @@ class JiraStream(HttpStream, ABC):
     Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/
     """
 
-    cache = request_cache()
     primary_key = "id"
     parse_response_root = None
 
-    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
-    # Here's an example of dangerous behavior:
-    # cache = Cassette.use('whatever')
-    # with cache:
-    #     with cache:
-    #         pass
-    #
-    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
-    top_level_stream = True
-
-    def __init__(self, domain: str, **kwargs):
+    def __init__(self, domain: str, projects: List[str], **kwargs):
         super(JiraStream, self).__init__(**kwargs)
         self._domain = domain
+        self._projects = projects
 
     @property
     def url_base(self) -> str:
@@ -95,13 +67,6 @@ class JiraStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        if self.top_level_stream:
-            with self.cache:
-                yield from super().read_records(**kwargs)
-        else:
-            yield from super().read_records(**kwargs)
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         records = response_json if not self.parse_response_root else response_json.get(self.parse_response_root, [])
@@ -121,7 +86,13 @@ class V1ApiJiraStream(JiraStream, ABC):
         return f"https://{self._domain}/rest/agile/1.0/"
 
 
-class IncrementalJiraStream(JiraStream, ABC):
+class StartDateJiraStream(JiraStream, ABC):
+    def __init__(self, start_date: str = "", **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+
+
+class IncrementalJiraStream(StartDateJiraStream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -131,13 +102,14 @@ class IncrementalJiraStream(JiraStream, ABC):
         """
         pass
 
-    @abstractmethod
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent
-        state object and returning an updated state object.
-        """
-        return {}
+        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
+        if current_stream_state:
+            current_stream_state = current_stream_state.get(self.cursor_field)
+            if current_stream_state:
+                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
+        else:
+            return {self.cursor_field: str(latest_record_date)}
 
 
 class ApplicationRoles(JiraStream):
@@ -172,7 +144,7 @@ class Boards(V1ApiJiraStream):
     """
 
     parse_response_root = "values"
-    top_level_stream = False
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "board"
@@ -183,12 +155,44 @@ class Boards(V1ApiJiraStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+            yield from super().read_records(stream_slice={"project_id": project["id"], "project_key": project["key"]}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
+        record["projectKey"] = stream_slice["project_key"]
+        return record
+
+
+class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-issue-get
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "issues"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        board_id = stream_slice["board_id"]
+        return f"board/{board_id}/issue"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["fields"] = ["key", "updated"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"{self.cursor_field} > '{issues_state_row}'"
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["boardId"] = stream_slice["board_id"]
         return record
 
 
@@ -203,12 +207,46 @@ class Dashboards(JiraStream):
         return "dashboard"
 
 
+class Epics(IncrementalJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "issues"
+
+    def path(self, **kwargs) -> str:
+        return "search"
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
+        stream_state = stream_state or {}
+        project_id = stream_slice["project_id"]
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["fields"] = ["summary", "description", "status", "updated"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"issuetype = 'Epic' and project = '{project_id}' and {self.cursor_field} > '{issues_state_row}'"
+        params["expand"] = "renderedFields"
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"project_id": project["id"], "project_key": project["key"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = stream_slice["project_id"]
+        record["projectKey"] = stream_slice["project_key"]
+        return record
+
+
 class Filters(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "filter/search"
@@ -219,14 +257,12 @@ class FilterSharing(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
     """
 
-    top_level_stream = False
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         filter_id = stream_slice["filter_id"]
         return f"filter/{filter_id}/permission"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        filters_stream = Filters(authenticator=self.authenticator, domain=self._domain)
+        filters_stream = Filters(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for filters in filters_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"filter_id": filters["id"]}, **kwargs)
 
@@ -249,44 +285,78 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     parse_response_root = "issues"
+    use_cache = True
+
+    def __init__(self, additional_fields: List[str] = [], expand_changelog: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._additional_fields = additional_fields
+        self._expand_changelog = expand_changelog
 
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
-        if stream_state.get(self.cursor_field):
-            issues_state = pendulum.parse(stream_state.get(self.cursor_field))
-            issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-            params["jql"] = f"updated > '{issues_state_row}'"
+        project_id = stream_slice["project_id"]
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["fields"] = stream_slice["fields"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"project = '{project_id}' and {self.cursor_field} > '{issues_state_row}'"
+        if self._expand_changelog:
+            params["expand"] = "changelog"
         return params
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
-        if current_stream_state:
-            current_stream_state = current_stream_state.get(self.cursor_field)
-            if current_stream_state:
-                return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
-        else:
-            return {self.cursor_field: str(latest_record_date)}
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
+        field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
+        fields = [
+            "assignee",
+            "attachment",
+            "created",
+            "creator",
+            "description",
+            "issuelinks",
+            "issuetype",
+            "labels",
+            "parent",
+            "priority",
+            "project",
+            "security",
+            "status",
+            "subtasks",
+            "summary",
+            "updated",
+        ]
+        additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
+        for name in additional_field_names + self._additional_fields:
+            if name in field_ids_by_name:
+                fields.append(field_ids_by_name[name])
+        projects_stream = Projects(**stream_args)
+        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(
+                stream_slice={"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}, **kwargs
+            )
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = stream_slice["project_id"]
+        record["projectKey"] = stream_slice["project_key"]
+        return record
 
 
-class IssueComments(JiraStream):
+class IssueComments(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
     """
 
     parse_response_root = "comments"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/comment"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
@@ -296,8 +366,13 @@ class IssueFields(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
     """
 
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "field"
+
+    def field_ids_by_name(self) -> Mapping[str, str]:
+        return {f["name"]: f["id"] for f in self.read_records(sync_mode=SyncMode.full_refresh)}
 
 
 class IssueFieldConfigurations(JiraStream):
@@ -317,14 +392,13 @@ class IssueCustomFieldContexts(JiraStream):
     """
 
     parse_response_root = "values"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         field_id = stream_slice["field_id"]
         return f"field/{field_id}/context"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain)
+        fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for field in fields_stream.read_records(sync_mode=SyncMode.full_refresh):
             if field.get("custom", False):
                 yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
@@ -376,7 +450,7 @@ class IssuePropertyKeys(JiraStream):
     """
 
     parse_response_root = "key"
-    top_level_stream = False
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -387,12 +461,10 @@ class IssuePropertyKeys(JiraStream):
         yield from super().read_records(stream_slice={"key": issue_key}, **kwargs)
 
 
-class IssueProperties(JiraStream):
+class IssueProperties(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
-
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -400,26 +472,24 @@ class IssueProperties(JiraStream):
         return f"issue/{issue_key}/properties/{key}"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             for property_key in issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
                 yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
 
 
-class IssueRemoteLinks(JiraStream):
+class IssueRemoteLinks(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     """
-
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/remotelink"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
@@ -466,7 +536,7 @@ class IssueTypeScreenSchemes(JiraStream):
         return "issuetypescreenscheme"
 
 
-class IssueVotes(JiraStream):
+class IssueVotes(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
 
@@ -477,19 +547,18 @@ class IssueVotes(JiraStream):
     """
 
     # parse_response_root = "voters"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/votes"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWatchers(JiraStream):
+class IssueWatchers(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
 
@@ -497,32 +566,30 @@ class IssueWatchers(JiraStream):
     """
 
     # parse_response_root = "watchers"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/watchers"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWorklogs(JiraStream):
+class IssueWorklogs(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
     """
 
     parse_response_root = "worklogs"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/worklog"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
@@ -578,17 +645,27 @@ class Projects(JiraStream):
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "project/search"
+
+    def request_params(self, **kwargs):
+        params = super().request_params(**kwargs)
+        params["expand"] = "description"
+        return params
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for project in super().read_records(**kwargs):
+            if project["key"] in self._projects:
+                yield project
+        yield from []
 
 
 class ProjectAvatars(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
-
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
@@ -600,7 +677,7 @@ class ProjectAvatars(JiraStream):
             yield from records
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -620,14 +697,13 @@ class ProjectComponents(JiraStream):
     """
 
     parse_response_root = "values"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/component"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -637,14 +713,12 @@ class ProjectEmail(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
     """
 
-    top_level_stream = False
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_id = stream_slice["project_id"]
         return f"project/{project_id}/email"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
 
@@ -654,14 +728,12 @@ class ProjectPermissionSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
     """
 
-    top_level_stream = False
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/securitylevel"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -681,14 +753,13 @@ class ProjectVersions(JiraStream):
     """
 
     parse_response_root = "values"
-    top_level_stream = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/version"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
@@ -699,6 +770,7 @@ class Screens(JiraStream):
     """
 
     parse_response_root = "values"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "screens"
@@ -710,14 +782,14 @@ class ScreenTabs(JiraStream):
     """
 
     raise_on_http_errors = False
-    top_level_stream = False
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         return f"screens/{screen_id}/tabs"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        screens_stream = Screens(authenticator=self.authenticator, domain=self._domain)
+        screens_stream = Screens(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from self.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs)
 
@@ -731,16 +803,14 @@ class ScreenTabFields(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
     """
 
-    top_level_stream = False
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         tab_id = stream_slice["tab_id"]
         return f"screens/{screen_id}/tabs/{tab_id}/fields"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        screens_stream = Screens(authenticator=self.authenticator, domain=self._domain)
-        screen_tabs_stream = ScreenTabs(authenticator=self.authenticator, domain=self._domain)
+        screens_stream = Screens(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        screen_tabs_stream = ScreenTabs(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
             for tab in screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
                 if id in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
@@ -764,17 +834,55 @@ class Sprints(V1ApiJiraStream):
     """
 
     parse_response_root = "values"
-    raise_on_http_errors = False
-    top_level_stream = False
+    use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         board_id = stream_slice["board_id"]
         return f"board/{board_id}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain)
+        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+            if board["type"] == "scrum":
+                yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+        yield from []
+
+
+class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-agile-1-0-sprint-sprintid-issue-get
+    """
+
+    cursor_field = "updated"
+    parse_response_root = "issues"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        sprint_id = stream_slice["sprint_id"]
+        return f"sprint/{sprint_id}/issue"
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["fields"] = stream_slice["fields"]
+        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
+        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+        params["jql"] = f"{self.cursor_field} > '{issues_state_row}'"
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
+        field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
+        fields = ["key", "status", "updated"]
+        for name in ["Story Points", "Story point estimate"]:
+            if name in field_ids_by_name:
+                fields.append(field_ids_by_name[name])
+        sprints_stream = Sprints(**stream_args)
+        for sprints in sprints_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"sprint_id": sprints["id"], "fields": fields}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["sprintId"] = stream_slice["sprint_id"]
+        return record
 
 
 class TimeTracking(JiraStream):
