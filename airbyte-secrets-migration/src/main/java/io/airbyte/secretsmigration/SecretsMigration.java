@@ -65,30 +65,34 @@ public class SecretsMigration {
     for (final SourceConnection sourceWithoutSecrets : configRepository.listSourceConnection()) {
       System.out.println("getting source...");
       final var source = configRepository.getSourceConnectionWithSecrets(sourceWithoutSecrets.getSourceId());
-      try {
-        System.out.println("getting definition...");
-        final var definition = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-        System.out.println("getting connector spec...");
-        final var connectorSpec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, definition);
-        System.out.println("writing source...");
-        configRepository.writeSourceConnection(source, connectorSpec);
-        System.out.println("source_pass: " + source.getSourceId());
-      } catch (Throwable e) {
-        System.out.println("source_" + e.getClass()  + ": " + source.getSourceId());
-        e.printStackTrace();
+      if (!source.getTombstone()) {
+        try {
+          System.out.println("getting definition...");
+          final var definition = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+          System.out.println("getting connector spec...");
+          final var connectorSpec = SourceHandler.getSpecFromSourceDefinitionId(specFetcher, definition);
+          System.out.println("writing source...");
+          configRepository.writeSourceConnection(source, connectorSpec);
+          System.out.println("source_pass: " + source.getSourceId());
+        } catch (Throwable e) {
+          System.out.println("source_" + e.getClass() + ": " + source.getSourceId());
+          e.printStackTrace();
+        }
       }
     }
 
     for (final DestinationConnection destinationWithoutSecrets : configRepository.listDestinationConnection()) {
       final var destination = configRepository.getDestinationConnectionWithSecrets(destinationWithoutSecrets.getDestinationId());
-      try {
-        final var definition = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-        final var connectorSpec = DestinationHandler.getSpec(specFetcher, definition);
-        configRepository.writeDestinationConnection(destination, connectorSpec);
-        System.out.println("destination_pass: " + destination.getDestinationId());
-      } catch (Throwable e) {
-        System.out.println("destination_" + e.getClass()  + ": " + destination.getDestinationId());
-        e.printStackTrace();
+      if (!destination.getTombstone()) {
+        try {
+          final var definition = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+          final var connectorSpec = DestinationHandler.getSpec(specFetcher, definition);
+          configRepository.writeDestinationConnection(destination, connectorSpec);
+          System.out.println("destination_pass: " + destination.getDestinationId());
+        } catch (Throwable e) {
+          System.out.println("destination_" + e.getClass() + ": " + destination.getDestinationId());
+          e.printStackTrace();
+        }
       }
     }
   }
