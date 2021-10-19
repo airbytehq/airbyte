@@ -16,20 +16,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 public class RedshiftSource extends AbstractJdbcSource implements Source {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
-    public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
+  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
 
-    // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
-    // constructor.
-    public RedshiftSource() {
-        super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration());
-    }
+  public RedshiftSource() {
+    super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration());
+  }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode redshiftConfig) {
@@ -51,22 +45,22 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
         .build());
   }
 
-    private void readSsl(final JsonNode redshiftConfig, List<String> additionalProperties) {
+  private void readSsl(final JsonNode redshiftConfig, List<String> additionalProperties) {
 
-        boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
-        if (!tls) {
-            additionalProperties.add("ssl=false");
-            // assume ssl if not explicitly mentioned.
-        } else if (!redshiftConfig.has("tls") || redshiftConfig.get("tls").asBoolean()) {
-            additionalProperties.add("ssl=true");
-            additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
-        }
+    boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
+    if (!tls) {
+      additionalProperties.add("ssl=false");
+      // assume ssl if not explicitly mentioned.
+    } else if (!redshiftConfig.has("tls") || redshiftConfig.get("tls").asBoolean()) {
+      additionalProperties.add("ssl=true");
+      additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
     }
+  }
 
-    @Override
-    public Set<String> getExcludedInternalNameSpaces() {
-        return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
-    }
+  @Override
+  public Set<String> getExcludedInternalNameSpaces() {
+    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
 
   public static void main(final String[] args) throws Exception {
     final Source source = new RedshiftSource();
