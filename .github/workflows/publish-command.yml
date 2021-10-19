@@ -39,6 +39,10 @@ jobs:
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+        with:
+          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
