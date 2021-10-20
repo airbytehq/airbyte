@@ -104,13 +104,13 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
     cursor_field = "_cursor"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        current = current_stream_state.get(self.cursor_field)
-        latest = latest_record.get(self.cursor_field)
+        current = current_stream_state.get(self.cursor_field, "")
+        latest = latest_record.get(self.cursor_field, "")
 
-        if current:
-            return {self.cursor_field: max(arrow.get(latest), arrow.get(current)).isoformat()}
+        if current and latest:
+            return {self.cursor_field: max(arrow.get(latest), arrow.get(current)).datetime.replace(tzinfo=None).isoformat()}
 
-        return {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest, current)}
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if stream_state is None:
