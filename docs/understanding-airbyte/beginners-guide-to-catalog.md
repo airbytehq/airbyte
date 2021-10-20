@@ -136,7 +136,7 @@ Just as with the `AirbyteCatalog` the `ConfiguredAirbyteCatalog` contains a list
 Let's walk through each field in the `ConfiguredAirbyteStream`:
 
 * `sync_mode` - This field must be one of the values that was in `supported_sync_modes` in the `AirbyteStream` - Configures which sync mode will be used when data is replicated.
-* `stream` - Hopefully this one looks familiar! This field contains an `AirbyteStream`. It should be _identical_ the one we saw in the `AirbyteCatalog`.
+* `stream` - Hopefully this one looks familiar! This field contains an `AirbyteStream`. It should be _identical_ to the one we saw in the `AirbyteCatalog`.
 * `cursor_field` - When `sync_mode` is `INCREMENTAL` and `source_defined_cursor = false`, this field configures which field in the stream will be used to determine if a record should be replicated or not. Read more about this concept in our [documentation of incremental replication](connections/incremental-append.md).
 
 ### Summary of the Postgres Example
