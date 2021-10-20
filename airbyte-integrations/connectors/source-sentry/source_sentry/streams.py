@@ -24,6 +24,19 @@ class SentryStream(HttpStream, ABC):
         return self._url_base
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+
+class SentryStreamPagination(SentryStream):
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Expect the link header field to always contain the values ​​for `rel`, `results`, and `cursor`.
         If there is actually the next page, rel="next"; results="true"; cursor="<next-page-token>".
@@ -39,13 +52,17 @@ class SentryStream(HttpStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        return {}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
 
-class Events(SentryStream):
+class Events(SentryStreamPagination):
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
         self._organization = organization
@@ -65,10 +82,13 @@ class Events(SentryStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        return {"full": "true"}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"full": "true"})
+
+        return params
 
 
-class Issues(SentryStream):
+class Issues(SentryStreamPagination):
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
         self._organization = organization
@@ -88,7 +108,20 @@ class Issues(SentryStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        return {"statsPeriod": "", "query": ""}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"statsPeriod": "", "query": ""})
+
+        return params
+
+
+class Projects(SentryStreamPagination):
+    def path(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return "projects/"
 
 
 class ProjectDetail(SentryStream):
@@ -107,13 +140,3 @@ class ProjectDetail(SentryStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
-
-
-class Projects(SentryStream):
-    def path(
-        self,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return "projects/"
