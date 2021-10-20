@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from requests.models import Response
 from source_appsflyer.source import AppsflyerStream
 
 
