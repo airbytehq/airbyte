@@ -145,7 +145,7 @@ When thinking about `AirbyteCatalog` and `ConfiguredAirbyteCatalog`, remember th
 
 ## API Examples
 
-The `AirbyteCatalog` offers the flexibility in how to model the data for an API. In the next two example, we will model data from the same API--a stock ticker--in two different ways. In the first, the source will return a single stream called `ticker`, and in the second, the source with return a stream for each stock symbol it is configured to retrieve data for. Each stream's name will be a stock symbol.
+The `AirbyteCatalog` offers the flexibility in how to model the data for an API. In the next two examples, we will model data from the same API--a stock ticker--in two different ways. In the first, the source will return a single stream called `ticker`, and in the second, the source with return a stream for each stock symbol it is configured to retrieve data for. Each stream's name will be a stock symbol.
 
 ### Static Streams Example
 
