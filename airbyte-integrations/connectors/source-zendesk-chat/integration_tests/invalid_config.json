@@ -1,6 +1,7 @@
 {
-  "credentials": {
-    "access_token": "wrongkey-access-token",
-    "start_date": "2020-12-12T00:00:00Z"
-  }
+  "start_date": "2020-10-01T00:00:00Z",
+  "authorization": {
+      "authorization": "access_token",
+      "access_token": "wrong_access_token"
+  } 
 }
