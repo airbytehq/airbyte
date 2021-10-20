@@ -7,7 +7,6 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.*;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -54,12 +53,6 @@ public class ElasticsearchDestinationTest {
         container.close();
     }
 
-    @AfterEach
-    public void afterEach() throws Exception {
-        final var connection = new ElasticsearchConnection(ConnectorConfiguration.FromJsonNode(config));
-        //connection.deleteIndexIfPresent(INDEX_NAME);
-    }
-
     @Test
     public void withAppend() throws Exception {
         e2e(getCatalog(DestinationSyncMode.APPEND));
@@ -67,7 +60,7 @@ public class ElasticsearchDestinationTest {
 
     @Test
     public void withOverwrite() throws Exception {
-       e2e(getCatalog(DestinationSyncMode.OVERWRITE));
+        e2e(getCatalog(DestinationSyncMode.OVERWRITE));
     }
 
     @Test
@@ -112,7 +105,7 @@ public class ElasticsearchDestinationTest {
                 .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(NAMESPACE + "." + STREAM_NAME, 10)))));
         consumer.close();
 
-        final var connection = new ElasticsearchConnection(ConnectorConfiguration.FromJsonNode(config));
+        final var connection = new ElasticsearchConnection(ConnectorConfiguration.fromJsonNode(config));
 
         final List<JsonNode> actualRecords =
                 connection.getRecords(INDEX_NAME);

@@ -26,7 +26,9 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
 
     public static void main(String[] args) throws Exception {
+        LOGGER.info("starting destination: {}", ElasticsearchDestination.class);
         new IntegrationRunner(new ElasticsearchDestination()).run(args);
+        LOGGER.info("completed destination: {}", ElasticsearchDestination.class);
     }
 
     @Override
@@ -42,7 +44,6 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
         }
 
         final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
-        //return connection.check();
 
         if (connection.ping()) {
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);

@@ -18,7 +18,7 @@ public class ConnectorConfiguration {
     public ConnectorConfiguration() {
     }
 
-    public static ConnectorConfiguration FromJsonNode(JsonNode config) {
+    public static ConnectorConfiguration fromJsonNode(JsonNode config) {
         return new ObjectMapper().convertValue(config, ConnectorConfiguration.class);
     }
 

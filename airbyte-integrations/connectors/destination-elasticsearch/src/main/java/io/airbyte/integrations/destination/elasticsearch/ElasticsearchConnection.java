@@ -59,7 +59,7 @@ public class ElasticsearchConnection {
         RestClient restClient = RestClient.builder(httpHost)
                 .setDefaultHeaders(configureHeaders(config))
                 .setHttpClientConfigCallback(new ElasticsearchHttpClientConfigCallback(config))
-                .setFailureListener(new failureListener())
+                .setFailureListener(new FailureListener())
                 .build();
         // Create the transport that provides JSON and http services to API clients
         Transport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
@@ -67,7 +67,7 @@ public class ElasticsearchConnection {
         client = new ElasticsearchClient(transport);
     }
 
-    static class failureListener extends RestClient.FailureListener {
+    static class FailureListener extends RestClient.FailureListener {
         @Override
         public void onFailure(Node node) {
             log.error("RestClient failure: {}", node);
@@ -155,9 +155,7 @@ public class ElasticsearchConnection {
         StringBuilder sb = new StringBuilder();
         if (optFirst.isPresent()) {
             log.debug("trying to extract primary key using {}", optFirst.get());
-            optFirst.get().stream().forEach(s -> {
-                sb.append(String.format("/%s", s));
-            });
+            optFirst.get().forEach(s -> sb.append(String.format("/%s", s)));
         }
         if (sb.length() > 0) {
             JsonPointer ptr = JsonPointer.valueOf(sb.toString());
