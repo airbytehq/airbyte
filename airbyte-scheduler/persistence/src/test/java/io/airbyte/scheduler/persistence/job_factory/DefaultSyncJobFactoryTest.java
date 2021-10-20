@@ -18,6 +18,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -73,7 +74,7 @@ class DefaultSyncJobFactoryTest {
             .withDockerImageTag(dstDockerTag));
 
     final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository, mock(OAuthConfigSupplier.class));
-    final long actualJobId = factory.create(connectionId);
+    final long actualJobId = factory.create(connectionId, new ConnectorSpecification());
     assertEquals(jobId, actualJobId);
 
     verify(jobCreator)
