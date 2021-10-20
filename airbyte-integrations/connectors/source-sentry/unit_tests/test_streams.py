@@ -27,11 +27,19 @@ def test_next_page_token(patch_base_class):
     assert stream.next_page_token(**inputs) == expected_token
 
 
+def test_next_page_token_is_none(patch_base_class):
+    stream = SentryStream(hostname="sentry.io")
+    resp = MagicMock()
+    resp.links = {"next": {"results": "false", "cursor": "no_next"}}
+    inputs = {"response": resp}
+    expected_token = None
+    assert stream.next_page_token(**inputs) == expected_token
+
+
 def next_page_token_inputs():
     links_headers = [
         {},
         {"next": {}},
-        {"next": {"results": "false", "cursor": "no_next"}},
     ]
     responses = [MagicMock() for _ in links_headers]
     for mock, header in zip(responses, links_headers):
@@ -41,11 +49,11 @@ def next_page_token_inputs():
 
 
 @pytest.mark.parametrize("response", next_page_token_inputs())
-def test_next_page_token_is_none(patch_base_class, response):
+def test_next_page_token_raises(patch_base_class, response):
     stream = SentryStream(hostname="sentry.io")
     inputs = {"response": response}
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    with pytest.raises(KeyError):
+        stream.next_page_token(**inputs)
 
 
 def test_events_path():
