@@ -104,9 +104,12 @@ class SourceStrava(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        auth = self.getOauth(config)
-        _ = auth.get_auth_header()
-        return True, None
+        try:
+            auth = self.getOauth(config)
+            _ = auth.get_auth_header()
+            return True, None
+        except Exception as e:
+            return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -114,7 +117,7 @@ class SourceStrava(AbstractSource):
         """
         auth = self.getOauth(config)
         return [AthleteStats(authenticator=auth, athlete_id=config["athlete_id"]),
-                Activities(authenticator=auth, after=config["starting_after"])]
+                Activities(authenticator=auth, after=config["start_date"])]
 
     def getOauth(self, config):
         return Oauth2Authenticator(

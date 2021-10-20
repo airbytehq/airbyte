@@ -33,7 +33,7 @@
         "pattern": "^[0-9_\\-]+$",
         "examples": ["17831421"]
       },
-      "starting_after": {
+      "start_date": {
         "type": "string",
         "description": "Start Query Timestamp in UTC",
         "examples": ["2016-12-31 23:59:59"]

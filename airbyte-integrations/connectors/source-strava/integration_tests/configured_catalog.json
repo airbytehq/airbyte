@@ -24,7 +24,7 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "starting_after": {
+            "start_date": {
               "type": "string"
             }
           }
