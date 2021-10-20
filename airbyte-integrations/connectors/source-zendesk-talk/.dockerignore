@@ -2,5 +2,6 @@
 !Dockerfile
 !Dockerfile.test
 !source_zendesk_talk
+!main_dev.py
 !setup.py
 !secrets
