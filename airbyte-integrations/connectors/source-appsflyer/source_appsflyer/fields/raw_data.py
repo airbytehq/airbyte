@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 # This order matters
 main_fields = (
     "attributed_touch_type",
@@ -121,5 +125,5 @@ additional_fields = (
     "blocked_reason_rule",
     "blocked_sub_reason",
     "rejected_reason",
-    "rejected_reason_value"
+    "rejected_reason_value",
 )
