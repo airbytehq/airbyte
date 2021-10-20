@@ -12,6 +12,9 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation "org.flywaydb:flyway-core:7.14.0"
     implementation "org.testcontainers:postgresql:1.15.3"
+    implementation 'net.java.dev.jna:jna:5.8.0'
+    implementation 'net.java.dev.jna:jna-platform:5.8.0'
+
 
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
