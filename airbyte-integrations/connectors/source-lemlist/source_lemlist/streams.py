@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-
 
 LEMLIST_API_URL_BASE = "https://api.lemlist.com/api/"
 
@@ -50,6 +53,7 @@ class LemlistStream(HttpStream):
             self.logger.info("Retry-after header not found. Using default backoff value")
             return 2
 
+
 class Team(LemlistStream):
     """https://developer.lemlist.com/#get-team-information"""
 
@@ -60,11 +64,13 @@ class Team(LemlistStream):
         records = response.json()
         yield from [records]
 
+
 class Campaigns(LemlistStream):
     """https://developer.lemlist.com/#campaigns"""
 
     def path(self, **kwargs) -> str:
         return "campaigns"
+
 
 class Activities(LemlistStream):
     """https://developer.lemlist.com/#activities"""
@@ -72,9 +78,9 @@ class Activities(LemlistStream):
     def path(self, **kwargs) -> str:
         return "activities"
 
+
 class Unsubscribes(LemlistStream):
     """https://developer.lemlist.com/#unsubscribes"""
 
     def path(self, **kwargs) -> str:
         return "unsubscribes"
-    

@@ -5,12 +5,12 @@
 
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_lemlist.auth import HttpBasicAuthenticator
-from airbyte_cdk.models import SyncMode
 
-from .streams import Team, Campaigns, Activities, Unsubscribes
+from .streams import Activities, Campaigns, Team, Unsubscribes
 
 
 class SourceLemlist(AbstractSource):
@@ -25,7 +25,7 @@ class SourceLemlist(AbstractSource):
 
             team_stream = Team(authenticator=auth)
             team_gen = team_stream.read_records(sync_mode=SyncMode.full_refresh)
-            
+
             next(team_gen)
             return True, None
         except Exception as error:
@@ -38,7 +38,4 @@ class SourceLemlist(AbstractSource):
                 config["api_key"],
             ),
         )
-        return [Team(authenticator=auth), 
-                Campaigns(authenticator=auth), 
-                Activities(authenticator=auth),
-                Unsubscribes(authenticator=auth)]
+        return [Team(authenticator=auth), Campaigns(authenticator=auth), Activities(authenticator=auth), Unsubscribes(authenticator=auth)]

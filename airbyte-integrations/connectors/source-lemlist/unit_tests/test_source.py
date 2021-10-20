@@ -7,11 +7,9 @@ from unittest.mock import MagicMock, patch
 from source_lemlist.source import SourceLemlist
 
 
-@patch("source_lemlist.source.Team.read_records", return_value = iter(["item"]))
+@patch("source_lemlist.source.Team.read_records", return_value=iter(["item"]))
 def test_check_connection(_):
-    test_config = {
-        "api_key": "test-api-key"
-    }
+    test_config = {"api_key": "test-api-key"}
     logger_mock = MagicMock()
 
     source = SourceLemlist()

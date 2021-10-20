@@ -16,15 +16,8 @@ def setup_responses():
         responses.GET,
         "https://api.lemlist.com/api/example_endpoint",
         json=[
-            {
-                "_id": "cam_aaWL92T22Sei3Bz6v",
-                "name": "Campaign1",
-                "labels": ["label 1", "label 2"]
-            }, 
-            {
-                "_id": "cam_aaXwBiebA8pWPKqpK",
-                "name": "Campaign2"
-            }
+            {"_id": "cam_aaWL92T22Sei3Bz6v", "name": "Campaign1", "labels": ["label 1", "label 2"]},
+            {"_id": "cam_aaXwBiebA8pWPKqpK", "name": "Campaign2"},
         ],
     )
 
@@ -62,11 +55,7 @@ def test_parse_response(patch_base_class):
     setup_responses()
     stream = LemlistStream()
     inputs = {"response": requests.get("https://api.lemlist.com/api/example_endpoint")}
-    expected_parsed_object = {
-        "_id": "cam_aaWL92T22Sei3Bz6v",
-        "name": "Campaign1",
-        "labels": ["label 1", "label 2"]
-    }
+    expected_parsed_object = {"_id": "cam_aaWL92T22Sei3Bz6v", "name": "Campaign1", "labels": ["label 1", "label 2"]}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
