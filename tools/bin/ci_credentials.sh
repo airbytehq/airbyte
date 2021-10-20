@@ -30,6 +30,7 @@ write_standard_creds destination-kvdb "$DESTINATION_KVDB_TEST_CREDS"
 write_standard_creds destination-keen "$DESTINATION_KEEN_TEST_CREDS"
 
 write_standard_creds destination-postgres "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
+write_standard_creds destination-mongodb-strict-encrypt "$MONGODB_TEST_CREDS" "credentials.json"
 write_standard_creds destination-mysql "$MYSQL_SSH_KEY_TEST_CREDS" "ssh-key-config.json"
 write_standard_creds destination-mysql "$MYSQL_SSH_PWD_TEST_CREDS" "ssh-pwd-config.json"
 write_standard_creds destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
