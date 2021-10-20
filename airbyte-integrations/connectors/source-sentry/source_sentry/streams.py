@@ -63,6 +63,10 @@ class SentryStreamPagination(SentryStream):
 
 
 class Events(SentryStreamPagination):
+    """
+    Docs: https://docs.sentry.io/api/events/list-a-projects-events/
+    """
+
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
         self._organization = organization
@@ -89,6 +93,10 @@ class Events(SentryStreamPagination):
 
 
 class Issues(SentryStreamPagination):
+    """
+    Docs: https://docs.sentry.io/api/events/list-a-projects-issues/
+    """
+
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
         self._organization = organization
@@ -115,6 +123,10 @@ class Issues(SentryStreamPagination):
 
 
 class Projects(SentryStreamPagination):
+    """
+    Docs: https://docs.sentry.io/api/projects/list-your-projects/
+    """
+
     def path(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -125,6 +137,10 @@ class Projects(SentryStreamPagination):
 
 
 class ProjectDetail(SentryStream):
+    """
+    Docs: https://docs.sentry.io/api/projects/retrieve-a-project/
+    """
+
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
         self._organization = organization
