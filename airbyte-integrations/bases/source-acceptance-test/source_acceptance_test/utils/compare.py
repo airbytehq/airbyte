@@ -6,6 +6,7 @@ import functools
 import json
 from typing import List, Mapping, Optional
 
+import dpath.exceptions
 import dpath.util
 import icdiff
 import py
@@ -74,8 +75,10 @@ def serialize(value, exclude_fields: List = None) -> str:
         # If value is Mapping, some fields can be excluded
         if exclude_fields:
             for field in exclude_fields:
-                if dpath.util.search(value, field):
+                try:
                     dpath.util.delete(value, field)
+                except dpath.exceptions.PathNotFound:
+                    pass
         return DictWithHash(value)
     if isinstance(value, List):
         return sorted([serialize(v) for v in value])
