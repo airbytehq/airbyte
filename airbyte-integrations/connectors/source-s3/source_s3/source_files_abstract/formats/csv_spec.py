@@ -53,5 +53,5 @@ class CsvFormat(BaseModel):
     advanced_options: str = Field(
         default="{}",
         description="Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
-        examples=["{\"column_names\": [\"column1\", \"column2\"]}"],
+        examples=['{"column_names": ["column1", "column2"]}'],
     )
