@@ -4,6 +4,10 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.SYNC_STATE;
+import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,7 +25,6 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.db.instance.configs.jooq.tables.SyncState;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -32,6 +35,7 @@ import java.math.BigInteger;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -318,15 +322,66 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
-    final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    writeOutputToAttemptTable(jobId, attemptNumber, output, now);
+    writeOutputToSyncStateTable(jobId, output, now);
+  }
 
-    jobDatabase.query(
-        ctx -> ctx.execute(
-            "UPDATE attempts SET output = CAST(? as JSONB), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
-            Jsons.serialize(output),
-            now,
-            jobId,
-            attemptNumber));
+  private <T> void writeOutputToAttemptTable(final long jobId,
+                                             final int attemptNumber,
+                                             final T output,
+                                             final OffsetDateTime now)
+      throws IOException {
+    jobDatabase.transaction(
+        ctx -> ctx.update(ATTEMPTS)
+            .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
+            .set(ATTEMPTS.UPDATED_AT, now)
+            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+            .execute());
+  }
+
+  private <T> void writeOutputToSyncStateTable(final long jobId, final T output, final OffsetDateTime now) throws IOException {
+    if (!(output instanceof JobOutput)) {
+      return;
+    }
+    final JobOutput jobOutput = (JobOutput) output;
+    if (jobOutput.getSync() == null) {
+      return;
+    }
+
+    final Record1<String> jobConnectionId = jobDatabase.query(ctx -> ctx
+        .select(JOBS.SCOPE)
+        .from(JOBS)
+        .where(JOBS.ID.eq(jobId))
+        .fetchAny());
+    final State syncState = jobOutput.getSync().getState();
+
+    if (jobConnectionId == null) {
+      LOGGER.error("No job can be found for id {}", jobId);
+      return;
+    }
+
+    final UUID connectionId = UUID.fromString(jobConnectionId.value1());
+    configDatabase.transaction(
+        ctx -> {
+          final boolean hasExistingRecord = ctx.fetchExists(SYNC_STATE, SYNC_STATE.SYNC_ID.eq(connectionId));
+          if (hasExistingRecord) {
+            LOGGER.info("Updating connection {} state", connectionId);
+            return ctx.update(SYNC_STATE)
+                .set(SYNC_STATE.STATE, JSONB.valueOf(Jsons.serialize(syncState)))
+                .set(SYNC_STATE.UPDATED_AT, now)
+                .where(SYNC_STATE.SYNC_ID.eq(connectionId))
+                .execute();
+          } else {
+            LOGGER.info("Inserting new state for connection {}", connectionId);
+            return ctx.insertInto(SYNC_STATE)
+                .set(SYNC_STATE.SYNC_ID, UUID.fromString(jobConnectionId.value1()))
+                .set(SYNC_STATE.STATE, JSONB.valueOf(Jsons.serialize(syncState)))
+                .set(SYNC_STATE.CREATED_AT, now)
+                .set(SYNC_STATE.UPDATED_AT, now)
+                .execute();
+          }
+        });
   }
 
   @Override
@@ -396,9 +451,9 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public Optional<State> getCurrentState(final UUID connectionId) throws IOException {
     return configDatabase.query(ctx -> {
-      final Record1<JSONB> record = ctx.select(SyncState.SYNC_STATE.STATE)
-          .from(SyncState.SYNC_STATE)
-          .where(SyncState.SYNC_STATE.SYNC_ID.eq(connectionId))
+      final Record1<JSONB> record = ctx.select(SYNC_STATE.STATE)
+          .from(SYNC_STATE)
+          .where(SYNC_STATE.SYNC_ID.eq(connectionId))
           .fetchAny();
       if (record == null) {
         return Optional.empty();

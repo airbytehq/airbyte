@@ -32,7 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Create a new table to store the latest job state for each standard sync. Issue:
+ * Create a new table to store the latest job state for each standard sync.
+ * <li>Column sync_id: the connectionId in StandardSync</><li>Column state: a json node representing
+ * a State object</li>
  */
 public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
 
@@ -55,7 +57,7 @@ public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
   }
 
   @VisibleForTesting
-  V0_29_21_001__Store_last_sync_state(Configs configs) {
+  V0_29_21_001__Store_last_sync_state(final Configs configs) {
     this.configs = configs;
   }
 
@@ -87,7 +89,7 @@ public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
 
   @VisibleForTesting
   static void copyData(final DSLContext ctx, final Map<String, JsonNode> syncToStateMap, final OffsetDateTime timestamp) {
-    for (Map.Entry<String, JsonNode> entry : syncToStateMap.entrySet()) {
+    for (final Map.Entry<String, JsonNode> entry : syncToStateMap.entrySet()) {
       ctx.insertInto(SYNC_STATE_TABLE)
           .set(COLUMN_SYNC_ID, UUID.fromString(entry.getKey()))
           .set(COLUMN_STATE, JSONB.valueOf(Jsons.serialize(entry.getValue())))

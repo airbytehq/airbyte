@@ -66,6 +66,8 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   private static final UUID SYNC_1_ID = UUID.randomUUID();
   private static final UUID SYNC_2_ID = UUID.randomUUID();
   private static final UUID SYNC_3_ID = UUID.randomUUID();
+  // these are State objects, see State.yaml for its schema;
+  // we cannot construct the POJO directly because State is defined in an downstream module
   private static final JsonNode SYNC_2_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 2222 } }");
   private static final JsonNode SYNC_3_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 3333 } }");
 
@@ -104,12 +106,12 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
       createJob(ctx, SYNC_1_ID);
 
       // The second job has one attempt.
-      long job2 = createJob(ctx, SYNC_2_ID);
+      final long job2 = createJob(ctx, SYNC_2_ID);
       createAttempt(ctx, job2, 1, createAttemptOutput(SYNC_2_STATE));
 
       // The third job has multiple attempts. The third attempt has the latest state.
-      long job3 = createJob(ctx, SYNC_3_ID);
-      JsonNode attempt31State = Jsons.deserialize("{ \"state\": { \"cursor\": 31 } }");
+      final long job3 = createJob(ctx, SYNC_3_ID);
+      final JsonNode attempt31State = Jsons.deserialize("{ \"state\": { \"cursor\": 31 } }");
       createAttempt(ctx, job3, 1, createAttemptOutput(attempt31State));
       createAttempt(ctx, job3, 2, null);
       createAttempt(ctx, job3, 3, createAttemptOutput(SYNC_3_STATE));
@@ -205,7 +207,7 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
       public Connection getConnection() {
         try {
           return database.getDataSource().getConnection();
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
           throw new RuntimeException(e);
         }
       }
@@ -221,7 +223,7 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   /**
    * Create a job record whose scope equals to the passed in standard sync id, and return the job id.
    */
-  private static long createJob(DSLContext ctx, UUID standardSyncId) {
+  private static long createJob(final DSLContext ctx, final UUID standardSyncId) {
     final int insertCount = ctx.insertInto(JOBS_TABLE, JOB_SCOPE_FIELD)
         .values(standardSyncId.toString())
         .execute();
@@ -234,7 +236,7 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         .get(JOB_ID_FIELD);
   }
 
-  private static void createAttempt(DSLContext ctx, long jobId, int attemptNumber, JsonNode attemptOutput) {
+  private static void createAttempt(final DSLContext ctx, final long jobId, final int attemptNumber, final JsonNode attemptOutput) {
     final int insertCount = ctx.insertInto(ATTEMPTS_TABLE, ATTEMPT_JOB_ID_FIELD, ATTEMPT_NUMBER_FIELD, ATTEMPT_OUTPUT_FIELD)
         .values(jobId, attemptNumber, JSONB.valueOf(Jsons.serialize(attemptOutput)))
         .execute();
@@ -252,7 +254,7 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
    *
    * @param state The state object within a StandardSyncOutput.
    */
-  private static JsonNode createAttemptOutput(JsonNode state) {
+  private static JsonNode createAttemptOutput(final JsonNode state) {
     final ObjectNode standardSyncOutput = OBJECT_MAPPER.createObjectNode()
         .set("state", state);
     return OBJECT_MAPPER.createObjectNode()
@@ -280,7 +282,7 @@ class V0_29_21_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
   private static void checkSyncStates(final DSLContext ctx,
                                       final Map<String, JsonNode> expectedSyncStates,
-                                      @Nullable OffsetDateTime expectedTimestamp) {
+                                      @Nullable final OffsetDateTime expectedTimestamp) {
     for (final Map.Entry<String, JsonNode> entry : expectedSyncStates.entrySet()) {
       final var record = ctx
           .select(V0_29_21_001__Store_last_sync_state.COLUMN_STATE,

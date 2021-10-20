@@ -4,6 +4,10 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.SYNC_STATE;
+import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
+import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -175,9 +179,12 @@ class DefaultJobPersistenceTest {
 
   private void resetDb() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    jobDatabase.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
-    jobDatabase.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
-    jobDatabase.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
+    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).execute());
+    // the airbyte_configs table cannot be truncated because the config database
+    // is considered ready for consumption only when there are records in this table
+    configDatabase.query(ctx -> ctx.truncateTable(SYNC_STATE).execute());
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
