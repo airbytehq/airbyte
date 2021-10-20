@@ -30,9 +30,6 @@ class ZuoraStream(HttpStream, ABC):
     Parent class for all other classes, except of SourceZuora.
     """
 
-    # Instance of native CDK logger
-    logger = AirbyteLogger()
-
     # Define primary key
     primary_key = "id"
 
@@ -42,6 +39,7 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
+        self.window_in_days = float(config["window_in_days"])
         self._config = config
 
     @property
@@ -154,8 +152,8 @@ class ZuoraObjectsBase(ZuoraBase):
     """
 
     @property
-    def state_checkpoint_interval(self) -> int:
-        return self._config["window_in_days"]
+    def state_checkpoint_interval(self) -> float:
+        return self.window_in_days
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
@@ -250,7 +248,7 @@ class ZuoraObjectsBase(ZuoraBase):
         date_slices = []
 
         while start_date <= end_date:
-            end_date_slice = start_date.add(days=self._config["window_in_days"])
+            end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
             start_date = end_date_slice
 
@@ -266,7 +264,6 @@ class ZuoraListObjects(ZuoraBase):
         return "SHOW TABLES"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # self.logger.info("Retrieving the list of available Objects from Zuora")
         return [name["Table"] for name in response]
 
 
@@ -281,7 +278,6 @@ class ZuoraDescribeObject(ZuoraBase):
         self.zuora_object_name = zuora_object_name
 
     def query(self, **kwargs) -> str:
-        # self.logger.info(f"Getting schema information for {self.zuora_object_name}")
         return f"DESCRIBE {self.zuora_object_name}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[Dict]:
