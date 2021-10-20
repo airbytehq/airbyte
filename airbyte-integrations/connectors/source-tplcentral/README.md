@@ -1,6 +1,6 @@
-# Tplcentral Source
+# 3PL Central Source
 
-This is the repository for the Tplcentral source connector, written in Python.
+This is the repository for the 3PL Central source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/tplcentral).
 
 ## Local development
