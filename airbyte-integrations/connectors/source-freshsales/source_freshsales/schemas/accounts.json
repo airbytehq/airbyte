@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "address": { "type": "string" },
+    "city": { "type": "string" },
+    "state": { "type": "string" },
+    "zipcode": { "type": "string" },
+    "country": { "type": "string" },
+    "industry_type_id": { "type": "integer" },
+    "business_type_id": { "type": "integer" },
+    "number_of_employees": { "type": "integer" },
+    "annual_revenue": { "type": "number" },
+    "website": { "type": "string" },
+    "phone": { "type": "string" },
+    "owner_id": { "type": "integer" },
+    "facebook": { "type": "string" },
+    "twitter": { "type": "string" },
+    "linkedin": { "type": "string" },
+    "territory_id": { "type": "integer" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "parent_sales_account_id": { "type": "integer" }
+  }
+}
