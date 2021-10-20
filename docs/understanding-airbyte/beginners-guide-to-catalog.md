@@ -31,7 +31,7 @@ CREATE TABLE "airlines" (
 CREATE TABLE "pilots" (
     "id"   INTEGER,
     "airline_id" INTEGER,
-    "name" INTEGER
+    "name" VARCHAR
 );
 ```
 
